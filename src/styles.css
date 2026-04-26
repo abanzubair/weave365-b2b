@@ -613,7 +613,7 @@ img {
 
 .image-button {
   width: 100%;
-  aspect-ratio: 0.94;
+  aspect-ratio: 4 / 5;
   border: 0;
   padding: 0;
   background: #f3ebe3;
@@ -1339,6 +1339,30 @@ img {
   margin-top: 4px;
 }
 
+.you-may-like .product-row {
+  grid-template-columns: repeat(5, 1fr);
+  max-width: 1100px;
+}
+
+.you-may-like .product-card-copy {
+  padding: 10px 12px 12px;
+}
+
+.you-may-like .product-card-copy > button {
+  font-size: 13px;
+}
+
+.you-may-like .price-line {
+  min-height: 32px;
+  margin: 4px 0 8px;
+  font-size: 12px;
+}
+
+.you-may-like .card-actions button {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
 .product-detail {
   display: grid;
   grid-template-columns: minmax(320px, 0.95fr) 1fr;
@@ -1759,6 +1783,10 @@ img {
   .product-highlight-grid section:last-child {
     grid-column: 1 / -1;
   }
+
+  .you-may-like .product-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 820px) {
@@ -1836,6 +1864,10 @@ img {
 
   .product-view {
     padding-top: 18px;
+  }
+
+  .you-may-like .product-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .breadcrumb {
