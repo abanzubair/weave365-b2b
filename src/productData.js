@@ -1,0 +1,189 @@
+import Papa from 'papaparse';
+import { categoryCodes, csvUrl } from './config.js';
+
+const moneyColumns = {
+  mrp: 'B2B',
+  single: 'D2C/Export',
+  cod: 'COD',
+  offer: 'Offer',
+};
+
+export async function fetchProducts() {
+  const response = await fetch(csvUrl, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`Unable to load products (${response.status})`);
+  }
+
+  const text = await response.text();
+  return parseProductCsv(text);
+}
+
+export function parseProductCsv(text) {
+  const parsed = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: false,
+    transformHeader: (header) => header.trim(),
+  });
+
+  if (parsed.errors.length) {
+    throw new Error(parsed.errors[0].message);
+  }
+
+  const products = new Map();
+  let currentGroupKey = null;
+
+  for (const rawRow of parsed.data) {
+    const row = normalizeRow(rawRow);
+    const image = driveImageUrl(row['Product Link']);
+    const hasCode = Boolean(row.Code);
+    const hasProductData = hasCode || Boolean(row['Pre Code']) || Boolean(row.Category);
+
+    if (!hasProductData && image && currentGroupKey && products.has(currentGroupKey)) {
+      products.get(currentGroupKey).images.push(image);
+      continue;
+    }
+
+    if (!hasProductData) {
+      continue;
+    }
+
+    const codeInfo = parseCode(row.Code, row['Pre Code'], row.Color);
+    const groupKey = codeInfo.groupKey;
+    currentGroupKey = groupKey;
+
+    const existing = products.get(groupKey);
+    const variant = buildVariant(row, codeInfo, image);
+
+    if (existing) {
+      existing.variants.push(variant);
+      if (image) existing.images.push(image);
+      continue;
+    }
+
+    const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
+    const product = {
+      id: groupKey,
+      groupKey,
+      categoryCode: codeInfo.category,
+      vendorCode: codeInfo.vendor,
+      designCode: codeInfo.design,
+      category,
+      subCategory: row['Sub Category'],
+      style: row.Style,
+      occasion: row.Occasion,
+      fabric: row.Fabric,
+      work: row.Work,
+      pattern: row.Pattern,
+      weave: row.Weave,
+      purity: row.Purity,
+      type: row.Type,
+      title: productTitle(row, category),
+      summary: row.Summary || wholesaleSummary(row),
+      description: row.Description || wholesaleDescription(row),
+      images: image ? [image] : [],
+      variants: [variant],
+      raw: row,
+    };
+
+    products.set(groupKey, product);
+  }
+
+  return Array.from(products.values()).map((product) => ({
+    ...product,
+    images: unique(product.images),
+    variants: product.variants.map((variant, index) => ({
+      ...variant,
+      image: variant.image || product.images[index] || product.images[0],
+    })),
+  }));
+}
+
+function normalizeRow(row) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [key.trim(), String(value || '').trim()]),
+  );
+}
+
+function buildVariant(row, codeInfo, image) {
+  return {
+    code: row.Code || codeInfo.variantCode,
+    preCode: row['Pre Code'],
+    color: codeInfo.color || row.Color,
+    image,
+    prices: {
+      mrp: parsePrice(row[moneyColumns.mrp]),
+      single: parsePrice(row[moneyColumns.single]),
+      cod: parsePrice(row[moneyColumns.cod]),
+      offer: parsePrice(row[moneyColumns.offer]),
+    },
+  };
+}
+
+function parseCode(code = '', preCode = '', color = '') {
+  const cleanCode = String(code || '').replace(/\s+/g, '');
+  const cleanPreCode = String(preCode || '').replace(/\s+/g, '');
+  let base = cleanPreCode;
+  let colorCode = String(color || '').trim();
+
+  if (cleanCode.includes('-')) {
+    const [beforeDash, afterDash] = cleanCode.split('-');
+    base = beforeDash;
+    colorCode = afterDash || colorCode;
+  } else if (!base && cleanCode.length > 6) {
+    base = cleanCode.slice(0, 6);
+    colorCode = cleanCode.slice(6) || colorCode;
+  } else if (!base) {
+    base = cleanCode;
+  }
+
+  const category = base.slice(0, 1) || '1';
+  const vendor = base.slice(1, 3) || '00';
+  const design = base.slice(3, 6) || base.slice(3) || '000';
+
+  return {
+    category,
+    vendor,
+    design,
+    color: colorCode,
+    groupKey: `${category}${vendor}${design}`,
+    variantCode: cleanCode || `${category}${vendor}${design}${colorCode}`,
+  };
+}
+
+function productTitle(row, category) {
+  if (row['Product Name']) return row['Product Name'];
+  if (row.Title) return row.Title;
+
+  const parts = [row.Fabric, row.Occasion, category].filter(Boolean);
+  return parts.length ? parts.join(' ') : 'Premium Saree';
+}
+
+function wholesaleSummary(row) {
+  const pieces = [row.Fabric, row.Work, row.Pattern].filter(Boolean);
+  return pieces.length ? pieces.join(' / ') : 'Premium wholesale design for resellers.';
+}
+
+function wholesaleDescription(row) {
+  const details = [row.Fabric, row.Work, row.Pattern, row.Weave, row.Purity].filter(Boolean);
+  return details.length
+    ? `A refined ${details.join(', ')} piece curated for wholesale and single-unit orders.`
+    : 'A refined saree curated for wholesale and single-unit orders.';
+}
+
+function parsePrice(value) {
+  const cleaned = String(value || '').replace(/[^\d.]/g, '');
+  return cleaned ? Number(cleaned) : null;
+}
+
+function driveImageUrl(link) {
+  const value = String(link || '').trim();
+  if (!value) return '';
+
+  const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
+  if (!idMatch) return value;
+  return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
+}
+
+function unique(items) {
+  return Array.from(new Set(items.filter(Boolean)));
+}
