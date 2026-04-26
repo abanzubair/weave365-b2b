@@ -200,30 +200,28 @@ export default function App() {
           <a href="#why">Why Us</a>
           <a href="#contact">Contact Us</a>
         </nav>
-        <div className="header-right">
-          <label className="search-box">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              onFocus={() => navigate('catalog')}
-              placeholder="Search products..."
-            />
-            <Search size={18} />
-          </label>
-          <div className="header-actions">
-            <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
-              <User size={18} />
-              {user ? user.email || 'Account' : 'Login / Register'}
-            </button>
-            <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
-              <Heart size={22} />
-              {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
-            </button>
-            <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
-              <ShoppingBag size={22} />
-              {cart.length > 0 && <span className="badge">{cart.length}</span>}
-            </button>
-          </div>
+        <label className="search-box">
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            onFocus={() => navigate('catalog')}
+            placeholder="Search products..."
+          />
+          <Search size={18} />
+        </label>
+        <div className="header-actions">
+          <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
+            <User size={18} />
+            {user ? user.email || 'Account' : 'Login / Register'}
+          </button>
+          <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
+            <Heart size={22} />
+            {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
+          </button>
+          <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
+            <ShoppingBag size={22} />
+            {cart.length > 0 && <span className="badge">{cart.length}</span>}
+          </button>
         </div>
       </header>
 
@@ -319,20 +317,29 @@ export default function App() {
 
 
 function TopBar() {
+  const items = [
+    [<Award size={14} key="a" />, 'Wholesale Only'],
+    [<Truck size={14} key="t" />, `Min. Order ₹${storeConfig.minimumOrderValue.toLocaleString('en-IN')}`],
+    [<PackageCheck size={14} key="p" />, 'Pan India Delivery'],
+    [<User size={14} key="u" />, 'Login for Best Prices'],
+  ];
+
   return (
     <div className="top-bar">
-      <span>
-        <Award size={16} /> Wholesale Only
-      </span>
-      <span>
-        <Truck size={16} /> Minimum Order Value ₹{storeConfig.minimumOrderValue.toLocaleString('en-IN')}
-      </span>
-      <span>
-        <PackageCheck size={16} /> Pan India Delivery
-      </span>
-      <span className="top-login">
-        <User size={16} /> Login / Register for Best Prices
-      </span>
+      {/* Desktop: static grid */}
+      <div className="top-bar-static">
+        {items.map(([icon, text], i) => (
+          <span key={i}>{icon} {text}</span>
+        ))}
+      </div>
+      {/* Mobile: scrolling marquee */}
+      <div className="top-bar-marquee" aria-hidden="true">
+        <div className="marquee-track">
+          {[...items, ...items].map(([icon, text], i) => (
+            <span key={i}>{icon} {text}</span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -804,17 +811,44 @@ function Footer() {
 }
 
 function MobileMenu({ onClose, navigate, user, openAuth }) {
+  const navItems = [
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: 'Home', action: () => navigate('home') },
+    { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
+    { icon: <ShoppingBag size={20} />, label: 'Collections', action: () => navigate('catalog') },
+    { icon: <Heart size={20} />, label: 'Favourites', action: () => navigate('favorites') },
+  ];
+
   return (
-    <div className="mobile-menu">
-      <button className="icon-button modal-close" onClick={onClose}>
-        <X />
-      </button>
-      <button onClick={() => navigate('home')}>Home</button>
-      <button onClick={() => navigate('catalog')}>Categories</button>
-      <button onClick={() => navigate('catalog')}>Collections</button>
-      <button onClick={() => navigate('favorites')}>Favourites</button>
-      <button onClick={openAuth}>{user ? 'Account' : 'Login / Register'}</button>
-    </div>
+    <>
+      <div className="mobile-menu-backdrop" onClick={onClose} />
+      <aside className="mobile-menu">
+        <div className="mobile-menu-head">
+          <img src={brandLogo} alt={storeConfig.name} className="brand-logo" style={{ height: 36 }} />
+          <button className="icon-button" onClick={onClose} aria-label="Close menu">
+            <X size={22} />
+          </button>
+        </div>
+        <nav className="mobile-menu-nav">
+          {navItems.map(({ icon, label, action }) => (
+            <button key={label} onClick={action} className="mobile-menu-item">
+              <span className="mobile-menu-icon">{icon}</span>
+              {label}
+              <ArrowRight size={16} className="mobile-menu-arrow" />
+            </button>
+          ))}
+        </nav>
+        <div className="mobile-menu-divider" />
+        <button className="mobile-menu-item mobile-menu-account" onClick={openAuth}>
+          <span className="mobile-menu-icon"><User size={20} /></span>
+          {user ? user.email || 'Account' : 'Login / Register'}
+          <ArrowRight size={16} className="mobile-menu-arrow" />
+        </button>
+        <div className="mobile-menu-footer">
+          <span><Headphones size={16} /> {storeConfig.phone}</span>
+          <span><MessageCircle size={16} /> {storeConfig.email}</span>
+        </div>
+      </aside>
+    </>
   );
 }
 
