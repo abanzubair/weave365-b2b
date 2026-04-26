@@ -28,6 +28,7 @@ import { fetchProducts } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
 import heroBanner from '../assets/hero.png';
+import brandLogo from '../assets/Weave365.svg';
 
 const fallbackHero = heroBanner;
 
@@ -183,8 +184,7 @@ export default function App() {
           <Menu size={22} />
         </button>
         <button className="brand" type="button" onClick={() => navigate('home')}>
-          <span>{storeConfig.name}</span>
-          <small>{storeConfig.subtitle}</small>
+          <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
         </button>
         <nav className="main-nav">
           <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
@@ -200,28 +200,30 @@ export default function App() {
           <a href="#why">Why Us</a>
           <a href="#contact">Contact Us</a>
         </nav>
-        <label className="search-box">
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onFocus={() => navigate('catalog')}
-            placeholder="Search products..."
-          />
-          <Search size={18} />
-        </label>
-        <div className="header-actions">
-          <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
-            <User size={18} />
-            {user ? user.email || 'Account' : 'Login / Register'}
-          </button>
-          <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
-            <Heart size={22} />
-            {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
-          </button>
-          <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
-            <ShoppingBag size={22} />
-            {cart.length > 0 && <span className="badge">{cart.length}</span>}
-          </button>
+        <div className="header-right">
+          <label className="search-box">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              onFocus={() => navigate('catalog')}
+              placeholder="Search products..."
+            />
+            <Search size={18} />
+          </label>
+          <div className="header-actions">
+            <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
+              <User size={18} />
+              {user ? user.email || 'Account' : 'Login / Register'}
+            </button>
+            <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
+              <Heart size={22} />
+              {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
+            </button>
+            <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
+              <ShoppingBag size={22} />
+              {cart.length > 0 && <span className="badge">{cart.length}</span>}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -773,8 +775,7 @@ function Footer() {
     <footer id="contact" className="footer">
       <div>
         <button className="brand footer-brand">
-          <span>{storeConfig.name}</span>
-          <small>{storeConfig.subtitle}</small>
+          <img src={brandLogo} alt={storeConfig.name} className="brand-logo footer-logo" />
         </button>
         <p>Your trusted wholesale partner for premium quality sarees at unbeatable wholesale prices.</p>
       </div>

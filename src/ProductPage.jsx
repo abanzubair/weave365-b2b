@@ -3,14 +3,18 @@ import { useParams } from 'react-router-dom';
 import {
   ArrowRight,
   Award,
+  Download,
   Heart,
   Layers,
   LockKeyhole,
   MessageCircle,
   PackageCheck,
+  Share2,
   ShoppingBag,
   ZoomIn,
 } from 'lucide-react';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { storeConfig } from './config.js';
 import heroBanner from '../assets/hero.png';
 import {
@@ -50,6 +54,56 @@ export function ProductDetail({
 }) {
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
   const [variantCode, setVariantCode] = useState(product.variants[0]?.code);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const downloadImagesAsZip = async () => {
+    try {
+      setIsDownloading(true);
+      const zip = new JSZip();
+      
+      const promises = product.images.map(async (url, index) => {
+        // Use wsrv.nl (a dedicated image proxy) which strips CORS headers and serves the raw image data reliably
+        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const blob = await response.blob();
+        // Generate a unique, readable filename for each image
+        const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        const filename = `${safeTitle}-${index + 1}.jpg`;
+        zip.file(filename, blob);
+      });
+      
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-images.zip`);
+    } catch (error) {
+      console.error('Error downloading images:', error);
+      alert('Failed to download images. They might be hosted on a server that restricts direct downloads.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const shareProductImages = async () => {
+    const text = `*${product.title}*\n\nHere are the product images:\n${product.images.join('\n')}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.title,
+          text: text,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Image links copied to clipboard!');
+      } catch (err) {
+        alert('Sharing is not supported on this device.');
+      }
+    }
+  };
 
   useEffect(() => {
     setSelectedImage(product.images[0]);
@@ -209,6 +263,14 @@ export function ProductDetail({
             >
               <MessageCircle size={20} /> Buy Via WhatsApp
             </a>
+            <div className="product-actions-row">
+              <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
+                <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download Images'}
+              </button>
+              <button className="secondary-action-btn" type="button" onClick={shareProductImages}>
+                <Share2 size={18} /> Share Product
+              </button>
+            </div>
             <p className="buyer-note">
               <LockKeyhole size={16} /> Only for registered wholesale buyers. Login to save best prices.
             </p>
