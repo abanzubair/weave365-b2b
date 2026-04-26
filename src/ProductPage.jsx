@@ -168,7 +168,7 @@ export function ProductDetail({
               </button>
             </div>
 
-            <div className="catalog-design-strip">
+            <div className="catalog-design-strip desktop-only">
               <div>
                 <strong>{totalDesigns} Designs in this Catalog</strong>
                 <button type="button">
@@ -271,6 +271,22 @@ export function ProductDetail({
                 <Share2 size={18} /> Share Product
               </button>
             </div>
+
+            <div className="catalog-design-strip mobile-only">
+              <div>
+                <strong>{totalDesigns} Designs in this Catalog</strong>
+                <button type="button">
+                  View all designs <ArrowRight size={16} />
+                </button>
+              </div>
+              <div className="design-thumb-row">
+                {product.images.slice(0, 4).map((image) => (
+                  <button key={image} onClick={() => setSelectedImage(image)}>
+                    <img src={image} alt={`${product.title} design`} />
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="buyer-note">
               <LockKeyhole size={16} /> Only for registered wholesale buyers. Login to save best prices.
             </p>
@@ -306,8 +322,8 @@ export function ProductDetail({
           <div className="section-heading-row">
             <SectionTitle title="You May Also Like" align="left" />
           </div>
-          <div className="product-row">
-            {recommendationItems.slice(0, 5).map((item, index) => (
+          <div className="product-row scrollable-mobile">
+            {recommendationItems.slice(0, 10).map((item, index) => (
               <ProductCard
                 key={`${item.id}-${index}`}
                 product={item}
