@@ -252,18 +252,18 @@ export function ProductDetail({
               {codStatus === 'unavailable' && <p className="warning">COD is not available for this pincode.</p>}
             </div>
 
-            <button className="catalog-add-button" onClick={() => addToCart(product, variant, totalDesigns)}>
-              <ShoppingBag size={20} /> Add Full Catalog
-            </button>
-            <a
-              className="whatsapp-button"
-              href={buildSingleProductWhatsappUrl(product, variant, totalDesigns, pincode, codStatus)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <MessageCircle size={20} /> Buy Via WhatsApp
-            </a>
-            <div className="product-actions-row">
+            <div className="product-main-actions">
+              <button className="catalog-add-button" onClick={() => addToCart(product, variant, totalDesigns)}>
+                <ShoppingBag size={20} /> Add Full Catalog
+              </button>
+              <a
+                className="whatsapp-button"
+                href={buildSingleProductWhatsappUrl(product, variant, totalDesigns, pincode, codStatus)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle size={20} /> Buy Via WhatsApp
+              </a>
               <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
                 <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download Images'}
               </button>

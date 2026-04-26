@@ -34,12 +34,14 @@ export function parseProductCsv(text) {
 
   for (const rawRow of parsed.data) {
     const row = normalizeRow(rawRow);
-    const image = driveImageUrl(row['Product Link']);
+    const links = String(row['Product Link'] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const images = links.map(driveImageUrl);
+    const primaryImage = images[0] || '';
     const hasCode = Boolean(row.Code);
     const hasProductData = hasCode || Boolean(row['Pre Code']) || Boolean(row.Category);
 
-    if (!hasProductData && image && currentGroupKey && products.has(currentGroupKey)) {
-      products.get(currentGroupKey).images.push(image);
+    if (!hasProductData && images.length > 0 && currentGroupKey && products.has(currentGroupKey)) {
+      products.get(currentGroupKey).images.push(...images);
       continue;
     }
 
@@ -52,11 +54,11 @@ export function parseProductCsv(text) {
     currentGroupKey = groupKey;
 
     const existing = products.get(groupKey);
-    const variant = buildVariant(row, codeInfo, image);
+    const variant = buildVariant(row, codeInfo, primaryImage);
 
     if (existing) {
       existing.variants.push(variant);
-      if (image) existing.images.push(image);
+      if (images.length > 0) existing.images.push(...images);
       continue;
     }
 
@@ -80,7 +82,7 @@ export function parseProductCsv(text) {
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
-      images: image ? [image] : [],
+      images: images,
       variants: [variant],
       raw: row,
     };

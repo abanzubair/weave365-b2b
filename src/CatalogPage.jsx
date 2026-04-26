@@ -7,7 +7,7 @@ export function Catalog(props) {
       <div className="catalog-toolbar">
         <div>
           <SectionTitle title="Wholesale Catalogue" align="left" />
-          <p>Browse live products from the Google Sheets catalogue.</p>
+          {/* <p>Browse live products from the Google Sheets catalogue.</p> */}
         </div>
         <label className="search-box wide">
           <input
