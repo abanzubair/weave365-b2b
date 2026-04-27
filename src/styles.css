@@ -1086,7 +1086,7 @@ img {
 
 .product-hero-grid {
   display: grid;
-  grid-template-columns: minmax(520px, 1.04fr) minmax(410px, 0.96fr);
+  grid-template-columns: minmax(400px, 0.85fr) minmax(410px, 1.15fr);
   gap: 48px;
   align-items: start;
 }
@@ -1171,7 +1171,7 @@ img {
   display: grid;
   place-items: center;
   height: 100%;
-  min-height: 520px;
+  min-height: 440px;
   overflow: hidden;
   border-radius: 6px;
   background: #eee1d6;
