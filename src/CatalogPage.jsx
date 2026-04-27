@@ -1,4 +1,3 @@
-import { Search } from 'lucide-react';
 import { SectionTitle, StateMessage, ProductCard } from './App.jsx';
 
 export function Catalog(props) {
@@ -9,14 +8,6 @@ export function Catalog(props) {
           <SectionTitle title="Wholesale Catalogue" align="left" />
           {/* <p>Browse live products from the Google Sheets catalogue.</p> */}
         </div>
-        <label className="search-box wide">
-          <input
-            value={props.search}
-            onChange={(event) => props.setSearch(event.target.value)}
-            placeholder="Search by fabric, work, occasion..."
-          />
-          <Search size={18} />
-        </label>
       </div>
       <div className="filter-tabs">
         {props.categories.map((name) => (

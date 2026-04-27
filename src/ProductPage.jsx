@@ -128,7 +128,7 @@ export function ProductDetail({
     ...(codStatus === 'available' && variant.prices.cod ? [['COD Price', formatMoney(variant.prices.cod)]] : []),
     ['Total Design', totalDesigns],
     ['Weight', `${catalogWeight} KG`],
-    ['MOQ', 'Minimum 4 Pic'],
+    ['MOQ', '1 Set'],
     ['Fabric', product.fabric || 'Premium Saree'],
     ['Work', product.work || 'Designer Work'],
     ['Occasion', product.occasion || 'Casual Wear'],

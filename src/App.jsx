@@ -231,7 +231,7 @@ export default function App() {
           {/* <button onClick={() => navigate('catalog')}>
             Collections <ChevronDown size={14} />
           </button> */}
-          {/* <a href="#about">About Us</a> */}
+          <a href="#about">Ready to Ship</a>
           <a href="#why">Why Us</a>
           <a href="#contact">Contact Us</a>
         </nav>
@@ -388,8 +388,8 @@ export default function App() {
 function TopBar() {
   const items = [
     [<Award size={14} key="a" />, 'Wholesale Only'],
-    [<Truck size={14} key="t" />, `Min. Order ₹${storeConfig.minimumOrderValue.toLocaleString('en-IN')}`],
-    [<PackageCheck size={14} key="p" />, 'Pan India Delivery'],
+    [<Truck size={14} key="t" />, 'MOQ: 1 Set'],
+    [<PackageCheck size={14} key="p" />, 'Global Delivery'],
     [<User size={14} key="u" />, 'Login for Best Prices'],
   ];
 
