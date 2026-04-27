@@ -1544,7 +1544,7 @@ img {
   min-height: 0;
   border-radius: 6px;
   background: var(--surface-soft);
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .perfect-list {
