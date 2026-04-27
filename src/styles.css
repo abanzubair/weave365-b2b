@@ -4,13 +4,24 @@
   --ink: #171411;
   --muted: #6d6259;
   --line: #eadfd3;
-  --paper: #fffaf5;
+  --paper: #ffffff;
   --cream: #f5ece2;
   --gold: #bd8a47;
   --gold-dark: #9b6d32;
   --white: #ffffff;
   --shadow: 0 18px 45px rgba(67, 48, 31, 0.12);
 }
+/* :root {
+  --ink: #171411;
+  --muted: #6d6259;
+  --line: #eadfd3;
+  --paper: #fffaf5;
+  --cream: #f5ece2;
+  --gold: #bd8a47;
+  --gold-dark: #9b6d32;
+  --white: #ffffff;
+  --shadow: 0 18px 45px rgba(67, 48, 31, 0.12);
+} */
 
 * {
   box-sizing: border-box;
@@ -100,7 +111,8 @@ img {
   gap: clamp(12px, 2vw, 26px);
   align-items: center;
   padding: 22px clamp(24px, 4vw, 48px);
-  background: rgba(255, 250, 245, 0.96);
+  /* background: rgba(255, 250, 245, 0.96); */
+  background: rgb(255 255 255);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -610,7 +622,7 @@ img {
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 18px;
   margin-top: 22px;
 }
@@ -686,7 +698,8 @@ img {
   gap: 36px;
   align-items: center;
   padding: 44px max(48px, calc((100vw - 1280px) / 2));
-  background: #f4eee9;
+  /* background: #f4eee9; */
+  background: #f5f5f5;
 }
 
 .why-band p {
@@ -877,7 +890,8 @@ img {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   padding: 22px max(48px, calc((100vw - 1280px) / 2));
-  background: #f3e9df;
+  /* background: #f3e9df; */
+  background: #f5f5f5;
 }
 
 .reseller-band {
@@ -2289,9 +2303,13 @@ img {
   }
 
   .product-row,
-  .catalog-grid,
-  .category-grid {
+  .catalog-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(6, 1fr);
     gap: 12px;
   }
 
@@ -2596,5 +2614,43 @@ img {
 
   .marquee-track span::after {
     margin-left: 18px;
+  }
+}
+/* --- Ultra Wide Screens (1920x1080 and above) --- */
+@media screen and (min-width: 1900px) {
+  .section,
+  .feature-strip {
+    width: min(1600px, calc(100% - 120px)) !important;
+  }
+
+  .hero-copy,
+  .why-band,
+  .benefit-strip,
+  .reseller-band,
+  .newsletter,
+  .footer,
+  .site-header {
+    padding-left: max(60px, calc((100vw - 1600px) / 2)) !important;
+    padding-right: max(60px, calc((100vw - 1600px) / 2)) !important;
+  }
+
+  .product-view {
+    width: min(1700px, calc(100% - 80px)) !important;
+  }
+
+  .hero h1 {
+    max-width: 1000px !important;
+  }
+
+  .hero p {
+    max-width: 580px !important;
+  }
+
+  .reseller-band h2 {
+    max-width: 500px !important;
+  }
+
+  .reseller-band p {
+    max-width: 600px !important;
   }
 }

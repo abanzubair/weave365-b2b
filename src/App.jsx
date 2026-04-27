@@ -311,6 +311,7 @@ export default function App() {
               error={error}
               heroImage={heroImage}
               navigate={navigate}
+              setCategory={setCategory}
               openAuth={() => setAuthOpen(true)}
               addToCart={addToCart}
               toggleFavorite={toggleFavorite}
@@ -412,14 +413,15 @@ function TopBar() {
   );
 }
 
-function Home({ products, status, error, heroImage, navigate, openAuth, addToCart, toggleFavorite, favorites }) {
+function Home({ products, status, error, heroImage, navigate, setCategory, openAuth, addToCart, toggleFavorite, favorites }) {
   const arrivals = expandedProductCards(products).slice(0, 5);
   const categories = [
-    'Silk Sarees',
-    'Fancy Sarees',
-    'Cotton Sarees',
-    'Printed Sarees',
-    'Designer Sarees',
+    'Saree',
+    'Suit',
+    'Dupatta',
+    'Lehenga',
+    'Fabric',
+    'Accessories',
   ];
 
   return (
@@ -452,7 +454,7 @@ function Home({ products, status, error, heroImage, navigate, openAuth, addToCar
         <SectionTitle title="Shop By Category" />
         <div className="category-grid">
           {categories.map((name, index) => (
-            <button key={name} className="category-card" onClick={() => navigate('catalog')}>
+            <button key={name} className="category-card" onClick={() => { setCategory(name); navigate('catalog'); }}>
               <img
                 src={products[0]?.images[index % Math.max(products[0]?.images.length || 1, 1)] || heroImage}
                 alt={name}
