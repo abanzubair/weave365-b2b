@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   ArrowRight,
@@ -55,6 +55,8 @@ export function ProductDetail({
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
   const [variantCode, setVariantCode] = useState(product.variants[0]?.code);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [galleryHeight, setGalleryHeight] = useState(null);
+  const mainImageRef = useRef(null);
 
   const downloadImagesAsZip = async () => {
     try {
@@ -110,6 +112,31 @@ export function ProductDetail({
     setVariantCode(product.variants[0]?.code);
   }, [product]);
 
+  useEffect(() => {
+    const mainImageElement = mainImageRef.current;
+    if (!mainImageElement || typeof ResizeObserver === 'undefined') return undefined;
+
+    const syncGalleryHeight = (height) => {
+      const nextHeight = Math.round(height);
+      setGalleryHeight((currentHeight) => (currentHeight === nextHeight ? currentHeight : nextHeight));
+    };
+
+    syncGalleryHeight(mainImageElement.getBoundingClientRect().height);
+
+    const observer = new ResizeObserver((entries) => {
+      const [entry] = entries;
+      if (entry) {
+        syncGalleryHeight(entry.contentRect.height);
+      }
+    });
+
+    observer.observe(mainImageElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [product.id]);
+
   const variant = product.variants.find((item) => item.code === variantCode) || product.variants[0];
   const totalDesigns =
     product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4));
@@ -149,7 +176,7 @@ export function ProductDetail({
 
         <div className="product-hero-grid">
           <div className="product-media">
-            <div className="vertical-thumbs">
+            <div className="vertical-thumbs" style={galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined}>
               {product.images.map((image, index) => (
                 <button
                   key={image}
@@ -161,7 +188,7 @@ export function ProductDetail({
               ))}
             </div>
 
-            <div className="catalog-main-image">
+            <div className="catalog-main-image" ref={mainImageRef}>
               <img src={selectedImage || product.images[0] || fallbackHero} alt={product.title} />
               <button className="zoom-button" aria-label="View larger image">
                 <ZoomIn size={18} />

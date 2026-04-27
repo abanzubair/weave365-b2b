@@ -1123,7 +1123,8 @@ img {
   display: grid;
   gap: 16px;
   align-content: start;
-  max-height: min(760px, calc(100vh - 190px));
+  height: var(--gallery-height, auto);
+  max-height: var(--gallery-height, min(760px, calc(100vh - 190px)));
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -1411,8 +1412,9 @@ img {
 }
 
 .catalog-design-strip.desktop-only {
-  width: calc((100% - 48px) * 0.52);
-  min-width: 520px;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
 }
 
 .catalog-design-strip.mobile-only {
@@ -2091,7 +2093,8 @@ img {
   }
 
   .vertical-thumbs {
-    max-height: min(700px, calc(100vh - 180px));
+    height: var(--gallery-height, auto);
+    max-height: var(--gallery-height, min(700px, calc(100vh - 180px)));
   }
 
   .catalog-main-image {
@@ -2430,6 +2433,7 @@ img {
     display: flex;
     grid-template-columns: none;
     order: 2;
+    height: auto;
     max-height: none;
     overflow-x: auto;
     overflow-y: hidden;
