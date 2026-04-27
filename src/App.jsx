@@ -49,6 +49,7 @@ export default function App() {
   const [favorites, setFavorites] = useState([]);
   const [pincode, setPincode] = useState('');
   const [codStatus, setCodStatus] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(null);
 
   useEffect(() => {
     fetchProducts()
@@ -75,6 +76,16 @@ export default function App() {
     });
 
     return () => data.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!event.target.closest('.nav-item-dropdown')) {
+        setDropdownOpen(null);
+      }
+    }
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -190,9 +201,33 @@ export default function App() {
           <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
             Home
           </button>
-          <button onClick={() => navigate('catalog')}>
-            Categories <ChevronDown size={14} />
-          </button>
+          <div className="nav-item-dropdown">
+            <button
+              className={dropdownOpen === 'categories' ? 'active' : ''}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
+              }}
+            >
+              Categories <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
+            </button>
+            {dropdownOpen === 'categories' && (
+              <div className="dropdown-menu">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setCategory(cat);
+                      navigate('catalog');
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={() => navigate('catalog')}>
             Collections <ChevronDown size={14} />
           </button>
@@ -200,15 +235,48 @@ export default function App() {
           <a href="#why">Why Us</a>
           <a href="#contact">Contact Us</a>
         </nav>
-        <label className="search-box">
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onFocus={() => navigate('catalog')}
-            placeholder="Search products..."
-          />
-          <Search size={18} />
-        </label>
+        <div className="search-box-wrapper">
+          <label className="search-box">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search products..."
+            />
+            <Search size={18} />
+          </label>
+          {search && route !== 'catalog' && (
+            <div className="search-suggestions">
+              {visibleProducts.length > 0 ? (
+                <>
+                  {visibleProducts.slice(0, 6).map((product) => {
+                    const price = product.variants?.[0]?.price;
+                    const image = product.images?.[0] || fallbackHero;
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => {
+                          navigate(`product/${product.id}`);
+                          setSearch('');
+                        }}
+                      >
+                        <img src={image} alt="" />
+                        <div>
+                          <span>{product.name || product.title}</span>
+                          {price !== undefined && <small>{formatMoney(price)}</small>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  <button className="view-all-results" onClick={() => navigate('catalog')}>
+                    See all results for "{search}"
+                  </button>
+                </>
+              ) : (
+                <div className="no-results">No products found for "{search}"</div>
+              )}
+            </div>
+          )}
+        </div>
         <div className="header-actions">
           <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
             <User size={18} />
