@@ -228,9 +228,9 @@ export default function App() {
               </div>
             )}
           </div>
-          <button onClick={() => navigate('catalog')}>
+          {/* <button onClick={() => navigate('catalog')}>
             Collections <ChevronDown size={14} />
-          </button>
+          </button> */}
           {/* <a href="#about">About Us</a> */}
           <a href="#why">Why Us</a>
           <a href="#contact">Contact Us</a>
@@ -880,7 +880,7 @@ function Footer() {
 
 function MobileMenu({ onClose, navigate, user, openAuth }) {
   const navItems = [
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: 'Home', action: () => navigate('home') },
+    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>, label: 'Home', action: () => navigate('home') },
     { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
     { icon: <ShoppingBag size={20} />, label: 'Collections', action: () => navigate('catalog') },
     { icon: <Heart size={20} />, label: 'Favourites', action: () => navigate('favorites') },

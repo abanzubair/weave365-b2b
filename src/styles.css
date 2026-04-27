@@ -617,7 +617,7 @@ img {
 
 .category-card {
   position: relative;
-  min-height: 210px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 0;
   border-radius: 7px;
