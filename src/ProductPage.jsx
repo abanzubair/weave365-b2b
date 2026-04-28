@@ -82,7 +82,7 @@ export function ProductDetail({
   );
   const detailRows = useMemo(
     () => [
-      ['Catalog Name', product.title],
+      ['Code', variant.code],
       ['MRP', formatMoney(variant.prices.mrp)],
       ['Single Unit Price', formatMoney(variant.prices.single)],
       ...(variant.prices.offer ? [['Offer Price', formatMoney(variant.prices.offer)]] : []),
@@ -93,10 +93,11 @@ export function ProductDetail({
       ['Fabric', product.fabric || 'Premium Saree'],
       ['Work', product.work || 'Designer Work'],
       ['Occasion', product.occasion || 'Casual Wear'],
-      ['Fabric Description', product.description],
-      ['Brand', `${storeConfig.name} ${storeConfig.subtitle}`],
+      ['Description', product.description],
+      // ['Brand', `${storeConfig.name} ${storeConfig.subtitle}`],
+      ['Brand', "Weave 365"],
     ],
-    [catalogWeight, codStatus, product, totalDesigns, variant.prices],
+    [catalogWeight, codStatus, product, totalDesigns, variant],
   );
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
@@ -257,9 +258,9 @@ export function ProductDetail({
                 <strong>{formatMoney(displayPrice)}</strong>
                 <span>{variant.prices.offer ? 'Offer Price / Piece' : 'Single Unit / Piece'}</span>
               </div>
-              <div>
-                <span>MRP</span>
+              <div className="mrp-side">
                 <strong>{formatMoney(variant.prices.mrp)}</strong>
+                <span>MRP</span>
               </div>
             </div>
 

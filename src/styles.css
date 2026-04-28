@@ -1159,6 +1159,7 @@ img {
 .vertical-thumbs button {
   width: 100px;
   height: 122px;
+  aspect-ratio: 3/4;
 }
 
 .vertical-thumbs .active {
@@ -1253,29 +1254,35 @@ img {
 }
 
 .catalog-price-row {
-  display: grid;
-  grid-template-columns: 1.25fr 0.8fr;
-  align-items: center;
-  gap: 28px;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
   margin: 0 0 28px;
 }
 
-.catalog-price-row>div:first-child {
+.catalog-price-row > div {
   display: flex;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.catalog-price-row>div:last-child {
-  padding-left: 28px;
-  border-left: 1px solid var(--surface-strong);
+.mrp-side {
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.mrp-side strong {
+  font-size: 28px !important;
+  text-decoration: line-through;
+  opacity: 0.6;
 }
 
 .catalog-price-row strong {
   color: var(--gold);
   font-family: 'Playfair Display', serif;
-  font-size: 42px;
+  font-size: 44px;
   line-height: 1;
 }
 
@@ -1283,6 +1290,7 @@ img {
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .quick-facts {
@@ -1457,7 +1465,7 @@ img {
 
 .design-thumb-row button {
   height: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3/4;
 }
 
 .product-trust-strip {
@@ -2445,7 +2453,7 @@ img {
     width: clamp(62px, 18vw, 86px);
     flex: 0 0 clamp(62px, 18vw, 86px);
     height: auto;
-    aspect-ratio: 0.82;
+    aspect-ratio: 3/4;
   }
 
   .catalog-main-image {
@@ -2464,19 +2472,14 @@ img {
     font-size: 36px;
   }
 
-  .catalog-price-row,
-  .catalog-table div {
-    grid-template-columns: 1fr;
-  }
-
   .catalog-price-row {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
   }
 
-  .catalog-price-row>div:last-child {
-    padding: 14px 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--line);
+  .catalog-table div {
+    grid-template-columns: 1fr;
   }
 
   .catalog-price-row strong {
@@ -2745,6 +2748,7 @@ img {
   .vertical-thumbs button {
     width: 100%;
     height: 124px;
+    aspect-ratio: 3/4;
   }
 
   .hero h1 {
@@ -2792,6 +2796,7 @@ img {
   .vertical-thumbs button {
     width: 100%;
     height: 116px;
+    aspect-ratio: 3/4;
   }
 
   .catalog-main-image {
@@ -2850,6 +2855,7 @@ img {
 
   .vertical-thumbs button {
     height: 124px;
+    aspect-ratio: 3/4;
   }
 
   .product-info-panel {

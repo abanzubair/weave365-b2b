@@ -116,11 +116,11 @@ export function PriceLine({ prices }) {
       {prices.offer ? (
         <>
           <strong>{formatMoney(prices.offer)}</strong>
-          {prices.mrp && <span>MRP {formatMoney(prices.mrp)}</span>}
+          {prices.mrp && <span>{formatMoney(prices.mrp)} MRP</span>}
         </>
       ) : (
         <>
-          {prices.mrp && <strong>MRP {formatMoney(prices.mrp)}</strong>}
+          {prices.mrp && <strong>{formatMoney(prices.mrp)} MRP</strong>}
           {prices.single && <span>Single {formatMoney(prices.single)}</span>}
         </>
       )}

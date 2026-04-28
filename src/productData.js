@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { categoryCodes, csvUrl } from './config.js';
+import { categoryCodes, csvUrl, heroCsvUrl } from './config.js';
 
 const moneyColumns = {
   mrp: 'B2B',
@@ -188,4 +188,27 @@ function driveImageUrl(link) {
 
 function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
+}
+export async function fetchHeroData() {
+  try {
+    const response = await fetch(heroCsvUrl, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const text = await response.text();
+    const parsed = Papa.parse(text, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
+    });
+
+    return parsed.data.map((row) => ({
+      image: driveImageUrl(row['Image Link'] || row['Image'] || row['ImageLink']),
+      title: row.Title || row.title,
+      subtitle: row.Subtitle || row.subtitle || row.Description,
+      buttonText: row['Button Text'] || row.buttonText,
+      buttonLink: row['Button Link'] || row.buttonLink,
+    })).filter(hero => hero.image);
+  } catch (error) {
+    console.error('Error fetching hero data:', error);
+    return [];
+  }
 }

@@ -28,7 +28,7 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { fetchProducts } from './productData.js';
+import { fetchProducts, fetchHeroData } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
 import heroBanner from '../assets/hero.png';
@@ -50,8 +50,8 @@ import {
 const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 const topBarItems = [
   { icon: Award, text: 'Wholesale Only' },
-  { icon: Truck, text: 'MOQ: 1 Set' },
-  { icon: PackageCheck, text: 'Global Delivery' },
+  { icon: PackageCheck, text: 'MOQ: 1 Set' },
+  { icon: Truck, text: 'Global Delivery' },
   { icon: User, text: 'Login for Best Prices' },
 ];
 const featureStripItems = [
@@ -91,6 +91,8 @@ export default function App() {
   const [pincode, setPincode] = useState('');
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [heroData, setHeroData] = useState(null);
+
 
   useEffect(() => {
     let isActive = true;
@@ -107,7 +109,17 @@ export default function App() {
         setStatus('error');
       });
 
+    fetchHeroData()
+      .then((data) => {
+        if (!isActive) return;
+        if (data && data.length > 0) {
+          setHeroData(data[0]);
+        }
+      })
+      .catch(console.error);
+
     return () => {
+
       isActive = false;
     };
   }, []);
@@ -205,7 +217,7 @@ export default function App() {
     [favoriteKeySet, products],
   );
 
-  const heroImage = heroBanner;
+  const heroImage = heroData?.image || heroBanner;
 
   const addToCart = useCallback((product, variant, quantity = 1) => {
     if (!user) {
@@ -393,12 +405,14 @@ export default function App() {
                 status={status}
                 error={error}
                 heroImage={heroImage}
+                heroData={heroData}
                 navigate={navigate}
                 setCategory={setCategory}
                 openAuth={() => setAuthOpen(true)}
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
+
               />
             } />
             <Route path="/catalog" element={
@@ -498,12 +512,14 @@ function Home({
   status,
   error,
   heroImage,
+  heroData,
   navigate,
   setCategory,
   openAuth,
   addToCart,
   toggleFavorite,
   favoriteKeys,
+
 }) {
   const arrivals = useMemo(() => expandedProductCards(products).slice(0, 5), [products]);
   const categoryPreviewImages = useMemo(() => {
@@ -516,14 +532,26 @@ function Home({
       <section className="hero">
         <div className="hero-copy">
           <h1>
-            <span>Premium</span> Sarees.
-            <br />
-            Wholesale <strong>Prices.</strong>
+            {heroData?.title ? (
+              heroData.title.split('.').map((part, i, arr) => (
+                <span key={i}>
+                  {part}{i < arr.length - 1 ? '.' : ''}
+                  {i < arr.length - 1 && <br />}
+                </span>
+              ))
+            ) : (
+              <>
+                <span>Premium</span> Sarees.
+                <br />
+                Wholesale <strong>Prices.</strong>
+              </>
+            )}
           </h1>
-          <p>Your trusted partner for quality sarees in bulk at the best prices.</p>
+          <p>{heroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}</p>
+
           <div className="hero-actions">
-            <button className="primary-button" onClick={() => navigate('catalog')}>
-              Shop Collection <ArrowRight size={18} />
+            <button className="primary-button" onClick={() => heroData?.buttonLink ? (heroData.buttonLink.startsWith('http') ? window.open(heroData.buttonLink, '_blank') : navigate(heroData.buttonLink)) : navigate('catalog')}>
+              {heroData?.buttonText || 'Shop Collection'} <ArrowRight size={18} />
             </button>
             <button className="secondary-button" onClick={openAuth}>
               Register Now
