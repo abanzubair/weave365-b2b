@@ -75,9 +75,9 @@ export function ProductDetail({
       related.length
         ? related
         : expandedProductCards([product]).slice(1, 6).map((item) => ({
-            ...item.product,
-            images: [item.image, ...item.product.images],
-          })),
+          ...item.product,
+          images: [item.image, ...item.product.images],
+        })),
     [product, related],
   );
   const detailRows = useMemo(
@@ -359,12 +359,14 @@ export function ProductDetail({
               <li>Comes with unstitched blouse piece</li>
             </ul>
           </section>
-          <img
-            src={product.images[1] || product.images[0] || fallbackProductImage}
-            alt={`${product.title} fabric close-up`}
-            loading="lazy"
-            decoding="async"
-          />
+          <div className="highlight-image">
+            <img
+              src={product.images[1] || product.images[0] || fallbackProductImage}
+              alt={`${product.title} fabric close-up`}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
           <section>
             <h2>Perfect For</h2>
             <ul className="perfect-list">
