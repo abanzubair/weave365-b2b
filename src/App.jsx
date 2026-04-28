@@ -31,7 +31,6 @@ import {
 import { fetchProducts, fetchHeroData } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
-import heroBanner from '../assets/hero.png';
 import brandLogo from '../assets/Weave365.svg';
 import {
   buildWhatsappUrl,
@@ -91,7 +90,7 @@ export default function App() {
   const [pincode, setPincode] = useState('');
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
-  const [heroData, setHeroData] = useState(null);
+  const [heroSlides, setHeroSlides] = useState([]);
 
 
   useEffect(() => {
@@ -113,7 +112,7 @@ export default function App() {
       .then((data) => {
         if (!isActive) return;
         if (data && data.length > 0) {
-          setHeroData(data[0]);
+          setHeroSlides(data);
         }
       })
       .catch(console.error);
@@ -217,7 +216,7 @@ export default function App() {
     [favoriteKeySet, products],
   );
 
-  const heroImage = heroData?.image || heroBanner;
+  // We no longer need heroImage here as Home will manage it from slides
 
   const addToCart = useCallback((product, variant, quantity = 1) => {
     if (!user) {
@@ -244,9 +243,9 @@ export default function App() {
       const next = exists
         ? currentFavorites.filter((item) => item.productGroupKey !== product.id)
         : [
-            ...currentFavorites,
-            { productGroupKey: product.id, variantCode: product.variants[0]?.code || '' },
-          ];
+          ...currentFavorites,
+          { productGroupKey: product.id, variantCode: product.variants[0]?.code || '' },
+        ];
       void persistFavorites(next, user.id);
       return next;
     });
@@ -404,8 +403,8 @@ export default function App() {
                 products={products}
                 status={status}
                 error={error}
-                heroImage={heroImage}
-                heroData={heroData}
+                heroSlides={heroSlides}
+                fallbackHeroImage={fallbackProductImage}
                 navigate={navigate}
                 setCategory={setCategory}
                 openAuth={() => setAuthOpen(true)}
@@ -511,55 +510,99 @@ function Home({
   products,
   status,
   error,
-  heroImage,
-  heroData,
+  heroSlides,
+  fallbackHeroImage,
   navigate,
   setCategory,
   openAuth,
   addToCart,
   toggleFavorite,
   favoriteKeys,
-
 }) {
-  const arrivals = useMemo(() => expandedProductCards(products).slice(0, 5), [products]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const bannerSlides = useMemo(() => heroSlides.filter(s => s.type === 'banner'), [heroSlides]);
+
+  useEffect(() => {
+    if (bannerSlides.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 5000); // 5 seconds interval
+
+    return () => clearInterval(interval);
+  }, [bannerSlides.length]);
+
+  const fixedHeroData = bannerSlides[0] || null;
+
+  const arrivals = useMemo(() => 
+    products.slice(0, 8).map(p => ({
+      product: p,
+      image: p.images[0] || fallbackHeroImage,
+      variant: p.variants[0]
+    })), 
+    [products, fallbackHeroImage]
+  );
+
+  const categoryImages = useMemo(() => {
+    const map = {};
+    heroSlides.forEach(slide => {
+      if (slide.type !== 'banner') {
+        map[slide.type] = slide.image;
+      }
+    });
+    return map;
+  }, [heroSlides]);
+
   const categoryPreviewImages = useMemo(() => {
-    const images = expandedProductCards(products).map((item) => item.image).filter(Boolean);
-    return images.length ? images : [heroImage];
-  }, [heroImage, products]);
+    const productImages = expandedProductCards(products).map((item) => item.image).filter(Boolean);
+    return productImages.length ? productImages : [fallbackHeroImage];
+  }, [fallbackHeroImage, products]);
 
   return (
     <>
       <section className="hero">
-        <div className="hero-copy">
-          <h1>
-            {heroData?.title ? (
-              heroData.title.split('.').map((part, i, arr) => (
-                <span key={i}>
-                  {part}{i < arr.length - 1 ? '.' : ''}
-                  {i < arr.length - 1 && <br />}
-                </span>
-              ))
-            ) : (
-              <>
-                <span>Premium</span> Sarees.
-                <br />
-                Wholesale <strong>Prices.</strong>
-              </>
-            )}
-          </h1>
-          <p>{heroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}</p>
+        {/* Static Copy Overlay */}
+        <div className="hero-copy-wrapper">
+          <div className="hero-copy">
+            <h1>
+              {fixedHeroData?.title ? (
+                fixedHeroData.title.split('.').map((part, i, arr) => (
+                  <span key={i}>
+                    {part}{i < arr.length - 1 ? '.' : ''}
+                    {i < arr.length - 1 && <br />}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span>Premium</span> Sarees.
+                  <br />
+                  Wholesale <strong>Prices.</strong>
+                </>
+              )}
+            </h1>
+            <p>{fixedHeroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}</p>
 
-          <div className="hero-actions">
-            <button className="primary-button" onClick={() => heroData?.buttonLink ? (heroData.buttonLink.startsWith('http') ? window.open(heroData.buttonLink, '_blank') : navigate(heroData.buttonLink)) : navigate('catalog')}>
-              {heroData?.buttonText || 'Shop Collection'} <ArrowRight size={18} />
-            </button>
-            <button className="secondary-button" onClick={openAuth}>
-              Register Now
-            </button>
+            <div className="hero-actions">
+              <button className="primary-button" onClick={() => fixedHeroData?.buttonLink ? (fixedHeroData.buttonLink.startsWith('http') ? window.open(fixedHeroData.buttonLink, '_blank') : navigate(fixedHeroData.buttonLink)) : navigate('catalog')}>
+                {fixedHeroData?.buttonText || 'Shop Collection'} <ArrowRight size={18} />
+              </button>
+              <button className="secondary-button" onClick={openAuth}>
+                Register Now
+              </button>
+            </div>
           </div>
         </div>
-        <div className="hero-visual" aria-label="Featured saree">
-          <img src={heroImage} alt="Premium saree collection" fetchPriority="high" decoding="async" />
+
+        {/* Sliding Background Track */}
+        <div className="hero-slider-track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+          {(bannerSlides.length > 0 ? bannerSlides : [{}]).map((slide, index) => (
+            <div key={index} className="hero-slide">
+              <div className="hero-visual" aria-label="Featured saree">
+                <img src={slide.image || fallbackHeroImage} alt={slide.title || 'Premium saree collection'} fetchPriority={index === 0 ? "high" : "low"} decoding="async" />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -578,7 +621,7 @@ function Home({
               }}
             >
               <img
-                src={categoryPreviewImages[index % categoryPreviewImages.length]}
+                src={categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length]}
                 alt={name}
                 loading="lazy"
                 decoding="async"
@@ -617,7 +660,7 @@ function Home({
           </button>
         </div>
         <StateMessage status={status} error={error} />
-        <div className="product-row">
+        <div className="product-row scrollable-row">
           {arrivals.map(({ product, image, variant }, index) => (
             <ProductCard
               key={`${product.id}-${index}`}

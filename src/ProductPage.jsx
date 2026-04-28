@@ -56,8 +56,8 @@ export function ProductDetail({
   const mainImageRef = useRef(null);
 
   const totalDesigns = useMemo(
-    () => (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
-    [product.images.length, product.variants.length],
+    () => product.totalDesigns || (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
+    [product.images.length, product.variants.length, product.totalDesigns],
   );
   const catalogWeight = useMemo(() => Math.max(1, totalDesigns), [totalDesigns]);
   const variant = useMemo(

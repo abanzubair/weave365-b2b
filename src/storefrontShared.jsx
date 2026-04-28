@@ -9,10 +9,9 @@ import {
   Tag,
   Truck,
 } from 'lucide-react';
-import heroBanner from '../assets/hero.png';
 import { storeConfig } from './config.js';
 
-export const fallbackProductImage = heroBanner;
+export const fallbackProductImage = 'https://placehold.co/1200x800/f8efe5/b78646?text=No+Image+Available';
 
 const moneyFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',

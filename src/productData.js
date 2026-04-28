@@ -84,6 +84,7 @@ export function parseProductCsv(text) {
       description: row.Description || wholesaleDescription(row),
       images: images,
       variants: [variant],
+      totalDesigns: parseInt(row['Total Design'] || row.Designs || 0, 10),
       raw: row,
     };
 
@@ -200,13 +201,17 @@ export async function fetchHeroData() {
       transformHeader: (header) => header.trim(),
     });
 
-    return parsed.data.map((row) => ({
-      image: driveImageUrl(row['Image Link'] || row['Image'] || row['ImageLink']),
-      title: row.Title || row.title,
-      subtitle: row.Subtitle || row.subtitle || row.Description,
-      buttonText: row['Button Text'] || row.buttonText,
-      buttonLink: row['Button Link'] || row.buttonLink,
-    })).filter(hero => hero.image);
+    return parsed.data.map((row) => {
+      const buttonParts = (row['Button Text/Link'] || row['Button'] || '').split(',').map(s => s.trim());
+      return {
+        image: driveImageUrl(row['Image Link'] || row['Image'] || row['ImageLink'] || row['Image:']),
+        title: row.Title || row.title,
+        subtitle: row.Subtitle || row.subtitle || row.Description || row['Subtitle:'],
+        buttonText: row['Button Text'] || row.buttonText || buttonParts[0],
+        buttonLink: row['Button Link'] || row.buttonLink || buttonParts[1],
+        type: (row.Type || row.type || 'banner').toLowerCase(),
+      };
+    }).filter(hero => hero.image);
   } catch (error) {
     console.error('Error fetching hero data:', error);
     return [];
