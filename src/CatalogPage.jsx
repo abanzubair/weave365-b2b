@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
 
 export function Catalog({
@@ -12,6 +13,8 @@ export function Catalog({
   toggleFavorite,
   favoriteKeys,
 }) {
+  const [visibleCount, setVisibleCount] = useState(24);
+
   return (
     <section className="section catalog-page">
       <div className="catalog-toolbar">
@@ -25,7 +28,10 @@ export function Catalog({
           <button
             key={name}
             className={category === name ? 'active' : ''}
-            onClick={() => setCategory(name)}
+            onClick={() => {
+              setCategory(name);
+              setVisibleCount(24); // Reset count on category change
+            }}
           >
             {name}
           </button>
@@ -33,7 +39,7 @@ export function Catalog({
       </div>
       <StateMessage status={status} error={error} />
       <div className="catalog-grid">
-        {products.map((product) => (
+        {products.slice(0, visibleCount).map((product) => (
           <ProductCard
             key={product.id}
             product={product}
@@ -45,6 +51,15 @@ export function Catalog({
           />
         ))}
       </div>
+      
+      {products.length > visibleCount && (
+        <div className="load-more-row">
+          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 24)}>
+            Show more products
+          </button>
+        </div>
+      )}
+
       {status === 'ready' && products.length === 0 && (
         <p className="empty-state">No products match this search.</p>
       )}
