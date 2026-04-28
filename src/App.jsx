@@ -13,6 +13,8 @@ import {
   Award,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Heart,
   Headphones,
   Layers,
@@ -660,18 +662,42 @@ function Home({
           </button>
         </div>
         <StateMessage status={status} error={error} />
-        <div className="product-row scrollable-row">
-          {arrivals.map(({ product, image, variant }, index) => (
-            <ProductCard
-              key={`${product.id}-${index}`}
-              product={{ ...product, images: [image, ...product.images] }}
-              variant={variant}
-              navigate={navigate}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              isFavorite={favoriteKeys.has(product.id)}
-            />
-          ))}
+        <div className="scroll-wrapper">
+          <button 
+            className="scroll-arrow left" 
+            onClick={() => {
+              const el = document.getElementById('new-arrivals-row');
+              el.scrollBy({ left: -500, behavior: 'smooth' });
+            }}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <div className="product-row scrollable-row" id="new-arrivals-row">
+            {arrivals.map(({ product, image, variant }, index) => (
+              <ProductCard
+                key={`${product.id}-${index}`}
+                product={{ ...product, images: [image, ...product.images] }}
+                variant={variant}
+                navigate={navigate}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                isFavorite={favoriteKeys.has(product.id)}
+              />
+            ))}
+          </div>
+
+          <button 
+            className="scroll-arrow right" 
+            onClick={() => {
+              const el = document.getElementById('new-arrivals-row');
+              el.scrollBy({ left: 500, behavior: 'smooth' });
+            }}
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </section>
 

@@ -59,6 +59,13 @@ export function parseProductCsv(text) {
     if (existing) {
       existing.variants.push(variant);
       if (images.length > 0) existing.images.push(...images);
+      
+      const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'color') || 'Color';
+      const val = String(row[key] || '').trim();
+      const p = parseInt(val, 10);
+      if (!isNaN(p) && p > 0 && existing.totalColors === null) {
+        existing.totalColors = p;
+      }
       continue;
     }
 
@@ -77,14 +84,19 @@ export function parseProductCsv(text) {
       work: row.Work,
       pattern: row.Pattern,
       weave: row.Weave,
-      purity: row.Purity,
+     purity: row.Purity,
       type: row.Type,
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
       images: images,
       variants: [variant],
-      totalDesigns: parseInt(row['Total Design'] || row.Designs || 0, 10),
+      totalColors: (function() {
+        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'color') || 'Color';
+        const val = String(row[key] || '').trim();
+        const p = parseInt(val, 10);
+        return isNaN(p) ? null : p;
+      })(),
       raw: row,
     };
 

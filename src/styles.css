@@ -811,6 +811,51 @@ img {
   text-transform: uppercase;
 }
 
+.scroll-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(58, 41, 26, 0.08);
+  color: var(--gold);
+  transition: all 0.2s ease;
+}
+
+.scroll-arrow:hover {
+  background: var(--surface-soft);
+  color: var(--gold-dark);
+  box-shadow: 0 6px 16px rgba(58, 41, 26, 0.12);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.scroll-arrow.left {
+  left: -22px;
+}
+
+.scroll-arrow.right {
+  right: -22px;
+}
+
+@media (max-width: 1024px) {
+  .scroll-arrow {
+    display: none;
+  }
+}
+
 .product-row,
 .catalog-grid {
   display: grid;
@@ -1321,7 +1366,7 @@ img {
 }
 
 .mrp-side strong {
-  font-size: 28px !important;
+  font-size: 30px !important;
   text-decoration: line-through;
   opacity: 0.6;
 }

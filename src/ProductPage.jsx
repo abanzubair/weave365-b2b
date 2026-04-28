@@ -55,11 +55,11 @@ export function ProductDetail({
   const [galleryHeight, setGalleryHeight] = useState(null);
   const mainImageRef = useRef(null);
 
-  const totalDesigns = useMemo(
-    () => product.totalDesigns || (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
-    [product.images.length, product.variants.length, product.totalDesigns],
+  const totalColors = useMemo(
+    () => product.totalColors ?? (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
+    [product.images.length, product.variants.length, product.totalColors],
   );
-  const catalogWeight = useMemo(() => Math.max(1, totalDesigns), [totalDesigns]);
+  const catalogWeight = useMemo(() => Math.max(1, totalColors), [totalColors]);
   const variant = useMemo(
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
@@ -83,21 +83,15 @@ export function ProductDetail({
   const detailRows = useMemo(
     () => [
       ['Code', variant.code],
-      ['MRP', formatMoney(variant.prices.mrp)],
-      ['Single Unit Price', formatMoney(variant.prices.single)],
-      ...(variant.prices.offer ? [['Offer Price', formatMoney(variant.prices.offer)]] : []),
-      ...(codStatus === 'available' && variant.prices.cod ? [['COD Price', formatMoney(variant.prices.cod)]] : []),
-      ['Total Design', totalDesigns],
+      ['Price / Piece', formatMoney(variant.prices.mrp)],
+      ['Price Full Set', formatMoney((variant.prices.mrp || 0) * totalColors)],
       ['Weight', `${catalogWeight} KG`],
       ['MOQ', '1 Set'],
       ['Fabric', product.fabric || 'Premium Saree'],
-      ['Work', product.work || 'Designer Work'],
-      ['Occasion', product.occasion || 'Casual Wear'],
       ['Description', product.description],
-      // ['Brand', `${storeConfig.name} ${storeConfig.subtitle}`],
-      ['Brand', "Weave 365"],
+      ['Brand', 'Weave 365'],
     ],
-    [catalogWeight, codStatus, product, totalDesigns, variant],
+    [variant, totalColors, catalogWeight, product.fabric, product.description],
   );
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
@@ -229,9 +223,9 @@ export function ProductDetail({
 
             <div className="catalog-design-strip desktop-only">
               <div>
-                <strong>{totalDesigns} Designs in this Catalog</strong>
+                <strong>{totalColors} Colors in this Catalog</strong>
                 <button type="button">
-                  View all designs <ArrowRight size={16} />
+                  View all colors <ArrowRight size={16} />
                 </button>
               </div>
               <div className="design-thumb-row">
@@ -260,13 +254,13 @@ export function ProductDetail({
               </div>
               <div className="mrp-side">
                 <strong>{formatMoney(variant.prices.mrp)}</strong>
-                <span>MRP</span>
+                <span>Price</span>
               </div>
             </div>
 
             <div className="quick-facts">
               <span>
-                <Layers size={18} /> Total Designs: <strong>{totalDesigns}</strong>
+                <Layers size={18} /> Total Colors: <strong>{totalColors}</strong>
               </span>
               <span>
                 <ShoppingBag size={18} /> Weight: <strong>{catalogWeight} KG</strong>
@@ -312,12 +306,12 @@ export function ProductDetail({
             </div>
 
             <div className="product-main-actions">
-              <button className="catalog-add-button" onClick={() => addToCart(product, variant, totalDesigns)}>
+              <button className="catalog-add-button" onClick={() => addToCart(product, variant, totalColors)}>
                 <ShoppingBag size={20} /> Add Full Catalog
               </button>
               <a
                 className="whatsapp-button"
-                href={buildSingleProductWhatsappUrl(product, variant, totalDesigns, pincode, codStatus)}
+                href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus)}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -333,9 +327,9 @@ export function ProductDetail({
 
             <div className="catalog-design-strip mobile-only">
               <div>
-                <strong>{totalDesigns} Designs in this Catalog</strong>
+                <strong>{totalColors} Colors in this Catalog</strong>
                 <button type="button">
-                  View all designs <ArrowRight size={16} />
+                  View all colors <ArrowRight size={16} />
                 </button>
               </div>
               <div className="design-thumb-row">
