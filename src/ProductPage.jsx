@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   ArrowRight,
@@ -13,27 +13,24 @@ import {
   ShoppingBag,
   ZoomIn,
 } from 'lucide-react';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 import { storeConfig } from './config.js';
-import heroBanner from '../assets/hero.png';
 import {
-  formatMoney,
-  customerPrice,
   buildSingleProductWhatsappUrl,
+  customerPrice,
+  expandedProductCards,
+  fallbackProductImage,
+  formatMoney,
+  Newsletter,
   ProductTrustStrip,
   ProductCard,
-  Newsletter,
   SectionTitle,
-  expandedProductCards,
-} from './App.jsx';
-
-const fallbackHero = heroBanner;
+  normalizePincodeInput,
+} from './storefrontShared.jsx';
 
 export function ProductDetailWrapper(props) {
   const { id } = useParams();
-  const product = props.products.find((p) => p.id === id) || props.products[0] || null;
-  const isFavorite = props.favorites.some((item) => item.productGroupKey === product?.id);
+  const product = props.productsById?.get(id) || props.products[0] || null;
+  const isFavorite = product ? props.favoriteKeys.has(product.id) : false;
 
   if (!product) return null;
 
@@ -58,23 +55,73 @@ export function ProductDetail({
   const [galleryHeight, setGalleryHeight] = useState(null);
   const mainImageRef = useRef(null);
 
-  const downloadImagesAsZip = async () => {
+  const totalDesigns = useMemo(
+    () => (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
+    [product.images.length, product.variants.length],
+  );
+  const catalogWeight = useMemo(() => Math.max(1, totalDesigns), [totalDesigns]);
+  const variant = useMemo(
+    () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
+    [product.variants, variantCode],
+  );
+  const displayPrice = useMemo(() => customerPrice(variant.prices), [variant.prices]);
+  const designStripImages = useMemo(() => product.images.slice(0, 4), [product.images]);
+  const related = useMemo(
+    () => products.filter((item) => item.id !== product.id).slice(0, 5),
+    [product.id, products],
+  );
+  const recommendationItems = useMemo(
+    () =>
+      related.length
+        ? related
+        : expandedProductCards([product]).slice(1, 6).map((item) => ({
+            ...item.product,
+            images: [item.image, ...item.product.images],
+          })),
+    [product, related],
+  );
+  const detailRows = useMemo(
+    () => [
+      ['Catalog Name', product.title],
+      ['MRP', formatMoney(variant.prices.mrp)],
+      ['Single Unit Price', formatMoney(variant.prices.single)],
+      ...(variant.prices.offer ? [['Offer Price', formatMoney(variant.prices.offer)]] : []),
+      ...(codStatus === 'available' && variant.prices.cod ? [['COD Price', formatMoney(variant.prices.cod)]] : []),
+      ['Total Design', totalDesigns],
+      ['Weight', `${catalogWeight} KG`],
+      ['MOQ', '1 Set'],
+      ['Fabric', product.fabric || 'Premium Saree'],
+      ['Work', product.work || 'Designer Work'],
+      ['Occasion', product.occasion || 'Casual Wear'],
+      ['Fabric Description', product.description],
+      ['Brand', `${storeConfig.name} ${storeConfig.subtitle}`],
+    ],
+    [catalogWeight, codStatus, product, totalDesigns, variant.prices],
+  );
+  const galleryStyle = useMemo(
+    () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
+    [galleryHeight],
+  );
+
+  const downloadImagesAsZip = useCallback(async () => {
     try {
       setIsDownloading(true);
+      const [{ default: JSZip }, { saveAs }] = await Promise.all([
+        import('jszip'),
+        import('file-saver'),
+      ]);
       const zip = new JSZip();
-      
+
+      const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const promises = product.images.map(async (url, index) => {
-        // Use wsrv.nl (a dedicated image proxy) which strips CORS headers and serves the raw image data reliably
         const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const blob = await response.blob();
-        // Generate a unique, readable filename for each image
-        const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
         const filename = `${safeTitle}-${index + 1}.jpg`;
         zip.file(filename, blob);
       });
-      
+
       await Promise.all(promises);
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-images.zip`);
@@ -84,9 +131,9 @@ export function ProductDetail({
     } finally {
       setIsDownloading(false);
     }
-  };
+  }, [product.images, product.title]);
 
-  const shareProductImages = async () => {
+  const shareProductImages = useCallback(async () => {
     const text = `*${product.title}*\n\nHere are the product images:\n${product.images.join('\n')}`;
     if (navigator.share) {
       try {
@@ -105,7 +152,7 @@ export function ProductDetail({
         alert('Sharing is not supported on this device.');
       }
     }
-  };
+  }, [product.images, product.title]);
 
   useEffect(() => {
     setSelectedImage(product.images[0]);
@@ -137,32 +184,6 @@ export function ProductDetail({
     };
   }, [product.id]);
 
-  const variant = product.variants.find((item) => item.code === variantCode) || product.variants[0];
-  const totalDesigns =
-    product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4));
-  const catalogWeight = Math.max(1, totalDesigns);
-  const displayPrice = customerPrice(variant.prices);
-  const related = products.filter((item) => item.id !== product.id).slice(0, 5);
-  const recommendationItems = related.length ? related : expandedProductCards([product]).slice(1, 6).map((item) => ({
-    ...item.product,
-    images: [item.image, ...item.product.images],
-  }));
-  const detailRows = [
-    ['Catalog Name', product.title],
-    ['MRP', formatMoney(variant.prices.mrp)],
-    ['Single Unit Price', formatMoney(variant.prices.single)],
-    ...(variant.prices.offer ? [['Offer Price', formatMoney(variant.prices.offer)]] : []),
-    ...(codStatus === 'available' && variant.prices.cod ? [['COD Price', formatMoney(variant.prices.cod)]] : []),
-    ['Total Design', totalDesigns],
-    ['Weight', `${catalogWeight} KG`],
-    ['MOQ', '1 Set'],
-    ['Fabric', product.fabric || 'Premium Saree'],
-    ['Work', product.work || 'Designer Work'],
-    ['Occasion', product.occasion || 'Casual Wear'],
-    ['Fabric Description', product.description],
-    ['Brand', `${storeConfig.name} ${storeConfig.subtitle}`],
-  ];
-
   return (
     <>
       <section className="product-view">
@@ -176,20 +197,30 @@ export function ProductDetail({
 
         <div className="product-hero-grid">
           <div className="product-media">
-            <div className="vertical-thumbs" style={galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined}>
+            <div className="vertical-thumbs" style={galleryStyle}>
               {product.images.map((image, index) => (
                 <button
                   key={image}
                   className={selectedImage === image ? 'active' : ''}
                   onClick={() => setSelectedImage(image)}
                 >
-                  <img src={image} alt={`${product.title} view ${index + 1}`} />
+                  <img
+                    src={image}
+                    alt={`${product.title} view ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </button>
               ))}
             </div>
 
             <div className="catalog-main-image" ref={mainImageRef}>
-              <img src={selectedImage || product.images[0] || fallbackHero} alt={product.title} />
+              <img
+                src={selectedImage || product.images[0] || fallbackProductImage}
+                alt={product.title}
+                fetchPriority="high"
+                decoding="async"
+              />
               <button className="zoom-button" aria-label="View larger image">
                 <ZoomIn size={18} />
               </button>
@@ -203,9 +234,9 @@ export function ProductDetail({
                 </button>
               </div>
               <div className="design-thumb-row">
-                {product.images.slice(0, 4).map((image) => (
+                {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img src={image} alt={`${product.title} design`} />
+                    <img src={image} alt={`${product.title} design`} loading="lazy" decoding="async" />
                   </button>
                 ))}
               </div>
@@ -269,7 +300,7 @@ export function ProductDetail({
                 <span>
                   <input
                     value={pincode}
-                    onChange={(event) => setPincode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onChange={(event) => setPincode(normalizePincodeInput(event.target.value))}
                     placeholder="Enter pincode"
                   />
                   <button onClick={checkPincode}>Check</button>
@@ -307,9 +338,9 @@ export function ProductDetail({
                 </button>
               </div>
               <div className="design-thumb-row">
-                {product.images.slice(0, 4).map((image) => (
+                {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img src={image} alt={`${product.title} design`} />
+                    <img src={image} alt={`${product.title} design`} loading="lazy" decoding="async" />
                   </button>
                 ))}
               </div>
@@ -333,7 +364,12 @@ export function ProductDetail({
               <li>Comes with unstitched blouse piece</li>
             </ul>
           </section>
-          <img src={product.images[1] || product.images[0] || fallbackHero} alt={`${product.title} fabric close-up`} />
+          <img
+            src={product.images[1] || product.images[0] || fallbackProductImage}
+            alt={`${product.title} fabric close-up`}
+            loading="lazy"
+            decoding="async"
+          />
           <section>
             <h2>Perfect For</h2>
             <ul className="perfect-list">
@@ -367,32 +403,5 @@ export function ProductDetail({
 
       <Newsletter />
     </>
-  );
-}
-
-export function PriceBlock({ prices, codVisible }) {
-  return (
-    <div className="price-block">
-      {prices.offer && (
-        <div className="offer-price">
-          <span>Offer Price</span>
-          <strong>{formatMoney(prices.offer)}</strong>
-        </div>
-      )}
-      <div>
-        <span>MRP</span>
-        <strong>{formatMoney(prices.mrp)}</strong>
-      </div>
-      <div>
-        <span>Single Unit / Export</span>
-        <strong>{formatMoney(prices.single)}</strong>
-      </div>
-      {codVisible && prices.cod && (
-        <div>
-          <span>COD Price</span>
-          <strong>{formatMoney(prices.cod)}</strong>
-        </div>
-      )}
-    </div>
   );
 }

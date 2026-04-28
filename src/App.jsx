@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { ProductDetailWrapper } from './ProductPage.jsx';
-import { Catalog } from './CatalogPage.jsx';
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowRight,
   Award,
@@ -10,7 +16,6 @@ import {
   Heart,
   Headphones,
   Layers,
-  LockKeyhole,
   LogOut,
   Menu,
   MessageCircle,
@@ -21,7 +26,6 @@ import {
   Tag,
   Truck,
   User,
-  ZoomIn,
   X,
 } from 'lucide-react';
 import { fetchProducts } from './productData.js';
@@ -29,8 +33,45 @@ import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
 import heroBanner from '../assets/hero.png';
 import brandLogo from '../assets/Weave365.svg';
+import {
+  buildWhatsappUrl,
+  customerPrice,
+  expandedProductCards,
+  fallbackProductImage,
+  formatMoney,
+  Newsletter,
+  normalizePincodeInput,
+  PriceLine,
+  ProductCard,
+  SectionTitle,
+  StateMessage,
+} from './storefrontShared.jsx';
 
-const fallbackHero = heroBanner;
+const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
+const topBarItems = [
+  { icon: Award, text: 'Wholesale Only' },
+  { icon: Truck, text: 'MOQ: 1 Set' },
+  { icon: PackageCheck, text: 'Global Delivery' },
+  { icon: User, text: 'Login for Best Prices' },
+];
+const featureStripItems = [
+  { icon: Award, title: 'Premium Quality', copy: 'Finest fabrics, crafted to perfection' },
+  { icon: Tag, title: 'Best Wholesale Prices', copy: 'Competitive pricing for maximum profit' },
+  { icon: Truck, title: 'Pan India Delivery', copy: 'Safe and fast delivery across India' },
+  { icon: Headphones, title: 'Dedicated Support', copy: '24/7 support for all your business needs' },
+];
+const benefitStripItems = [
+  { icon: PackageCheck, title: 'Easy Returns', copy: 'Hassle-free returns for eligible issues' },
+  { icon: ShieldCheck, title: 'Secure Payments', copy: '100% secure payments and data safety' },
+  { icon: Tag, title: 'Bulk Discounts', copy: 'Special offers on bulk and repeat orders' },
+  { icon: Truck, title: 'Fast Dispatch', copy: 'Quick processing and on-time dispatch' },
+];
+const Catalog = lazy(() =>
+  import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })),
+);
+const ProductDetailWrapper = lazy(() =>
+  import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })),
+);
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -52,15 +93,23 @@ export default function App() {
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
   useEffect(() => {
+    let isActive = true;
+
     fetchProducts()
       .then((items) => {
+        if (!isActive) return;
         setProducts(items);
         setStatus('ready');
       })
       .catch((err) => {
+        if (!isActive) return;
         setError(err.message || 'Unable to load products.');
         setStatus('error');
       });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -79,14 +128,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!dropdownOpen) return undefined;
+
     function handleClickOutside(event) {
       if (!event.target.closest('.nav-item-dropdown')) {
         setDropdownOpen(null);
       }
     }
+
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  }, [dropdownOpen]);
 
   useEffect(() => {
     if (!user) {
@@ -112,70 +164,100 @@ export default function App() {
     return ['All', ...Array.from(new Set(names))];
   }, [products]);
 
+  const searchTerm = useDeferredValue(search.trim().toLowerCase());
+
   const visibleProducts = useMemo(() => {
     return products.filter((product) => {
       const text = [product.title, product.fabric, product.work, product.occasion, product.category]
         .join(' ')
         .toLowerCase();
-      const matchesSearch = text.includes(search.toLowerCase());
+      const matchesSearch = text.includes(searchTerm);
       const matchesCategory =
         category === 'All' || product.fabric === category || product.category === category;
       return matchesSearch && matchesCategory;
     });
-  }, [category, products, search]);
+  }, [category, products, searchTerm]);
 
+  const productsById = useMemo(
+    () => new Map(products.map((product) => [product.id, product])),
+    [products],
+  );
 
+  const favoriteKeySet = useMemo(
+    () => new Set(favorites.map((item) => item.productGroupKey)),
+    [favorites],
+  );
 
-  const cartProducts = cart
-    .map((item) => {
-      const product = products.find((entry) => entry.id === item.productGroupKey);
-      const variant = product?.variants.find((entry) => entry.code === item.variantCode);
-      return product && variant ? { ...item, product, variant } : null;
-    })
-    .filter(Boolean);
+  const cartProducts = useMemo(
+    () =>
+      cart
+        .map((item) => {
+          const product = productsById.get(item.productGroupKey);
+          const variant = product?.variants.find((entry) => entry.code === item.variantCode);
+          return product && variant ? { ...item, product, variant } : null;
+        })
+        .filter(Boolean),
+    [cart, productsById],
+  );
+
+  const favoriteProducts = useMemo(
+    () => products.filter((product) => favoriteKeySet.has(product.id)),
+    [favoriteKeySet, products],
+  );
 
   const heroImage = heroBanner;
 
-  async function addToCart(product, variant, quantity = 1) {
+  const addToCart = useCallback((product, variant, quantity = 1) => {
     if (!user) {
       setAuthOpen(true);
       return;
     }
 
-    const next = upsertCart(cart, product, variant, quantity);
-    setCart(next);
-    await persistCart(next, user.id);
+    setCart((currentCart) => {
+      const next = upsertCart(currentCart, product, variant, quantity);
+      void persistCart(next, user.id);
+      return next;
+    });
     setCartOpen(true);
-  }
+  }, [user]);
 
-  async function toggleFavorite(product) {
+  const toggleFavorite = useCallback((product) => {
     if (!user) {
       setAuthOpen(true);
       return;
     }
 
-    const exists = favorites.some((item) => item.productGroupKey === product.id);
-    const next = exists
-      ? favorites.filter((item) => item.productGroupKey !== product.id)
-      : [...favorites, { productGroupKey: product.id, variantCode: product.variants[0]?.code || '' }];
-    setFavorites(next);
-    await persistFavorites(next, user.id);
-  }
+    setFavorites((currentFavorites) => {
+      const exists = currentFavorites.some((item) => item.productGroupKey === product.id);
+      const next = exists
+        ? currentFavorites.filter((item) => item.productGroupKey !== product.id)
+        : [
+            ...currentFavorites,
+            { productGroupKey: product.id, variantCode: product.variants[0]?.code || '' },
+          ];
+      void persistFavorites(next, user.id);
+      return next;
+    });
+  }, [user]);
 
-  async function updateQuantity(item, quantity) {
-    const next = cart
-      .map((entry) => (entry.variantCode === item.variantCode ? { ...entry, quantity } : entry))
-      .filter((entry) => entry.quantity > 0);
-    setCart(next);
-    if (user) await persistCart(next, user.id);
-  }
+  const updateQuantity = useCallback((item, quantity) => {
+    setCart((currentCart) => {
+      const next = currentCart
+        .map((entry) => (entry.variantCode === item.variantCode ? { ...entry, quantity } : entry))
+        .filter((entry) => entry.quantity > 0);
+      if (user) {
+        void persistCart(next, user.id);
+      }
+      return next;
+    });
+  }, [user]);
 
-  function checkPincode() {
+  const checkPincode = useCallback(() => {
     const serviceable = serviceablePincodes.includes(pincode.trim());
     setCodStatus(serviceable ? 'available' : 'unavailable');
-  }
+  }, [pincode]);
 
-  function navigate(nextRoute, productId = null) {
+  const navigate = useCallback((nextRoute, productId = null) => {
     if (nextRoute === 'product') {
       routerNavigate(`/product/${productId}`);
     } else if (nextRoute === 'home') {
@@ -185,7 +267,7 @@ export default function App() {
     }
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  }, [routerNavigate]);
 
   return (
     <>
@@ -249,20 +331,20 @@ export default function App() {
               {visibleProducts.length > 0 ? (
                 <>
                   {visibleProducts.slice(0, 6).map((product) => {
-                    const price = product.variants?.[0]?.price;
-                    const image = product.images?.[0] || fallbackHero;
+                    const price = customerPrice(product.variants?.[0]?.prices || {});
+                    const image = product.images?.[0] || fallbackProductImage;
                     return (
                       <button
                         key={product.id}
                         onClick={() => {
-                          navigate(`product/${product.id}`);
+                          navigate('product', product.id);
                           setSearch('');
                         }}
                       >
                         <img src={image} alt="" />
                         <div>
                           <span>{product.name || product.title}</span>
-                          {price !== undefined && <small>{formatMoney(price)}</small>}
+                          {price > 0 && <small>{formatMoney(price)}</small>}
                         </div>
                       </button>
                     );
@@ -303,63 +385,62 @@ export default function App() {
       )}
 
       <main>
-        <Routes>
-          <Route path="/" element={
-            <Home
-              products={products}
-              status={status}
-              error={error}
-              heroImage={heroImage}
-              navigate={navigate}
-              setCategory={setCategory}
-              openAuth={() => setAuthOpen(true)}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              favorites={favorites}
-            />
-          } />
-          <Route path="/catalog" element={
-            <Catalog
-              products={visibleProducts}
-              status={status}
-              error={error}
-              categories={categories}
-              category={category}
-              setCategory={setCategory}
-              search={search}
-              setSearch={setSearch}
-              navigate={navigate}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              favorites={favorites}
-            />
-          } />
-          <Route path="/product/:id" element={
-            <ProductDetailWrapper
-              products={products}
-              navigate={navigate}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              favorites={favorites}
-              pincode={pincode}
-              setPincode={setPincode}
-              codStatus={codStatus}
-              checkPincode={checkPincode}
-            />
-          } />
-          <Route path="/favorites" element={
-            <Favorites
-              products={products.filter((product) =>
-                favorites.some((item) => item.productGroupKey === product.id),
-              )}
-              user={user}
-              navigate={navigate}
-              openAuth={() => setAuthOpen(true)}
-              toggleFavorite={toggleFavorite}
-              addToCart={addToCart}
-            />
-          } />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={
+              <Home
+                products={products}
+                status={status}
+                error={error}
+                heroImage={heroImage}
+                navigate={navigate}
+                setCategory={setCategory}
+                openAuth={() => setAuthOpen(true)}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                favoriteKeys={favoriteKeySet}
+              />
+            } />
+            <Route path="/catalog" element={
+              <Catalog
+                products={visibleProducts}
+                status={status}
+                error={error}
+                categories={categories}
+                category={category}
+                setCategory={setCategory}
+                navigate={navigate}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                favoriteKeys={favoriteKeySet}
+              />
+            } />
+            <Route path="/product/:id" element={
+              <ProductDetailWrapper
+                products={products}
+                productsById={productsById}
+                navigate={navigate}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                favoriteKeys={favoriteKeySet}
+                pincode={pincode}
+                setPincode={setPincode}
+                codStatus={codStatus}
+                checkPincode={checkPincode}
+              />
+            } />
+            <Route path="/favorites" element={
+              <Favorites
+                products={favoriteProducts}
+                user={user}
+                navigate={navigate}
+                openAuth={() => setAuthOpen(true)}
+                toggleFavorite={toggleFavorite}
+                addToCart={addToCart}
+              />
+            } />
+          </Routes>
+        </Suspense>
       </main>
 
       <Footer />
@@ -385,27 +466,26 @@ export default function App() {
 
 
 
-function TopBar() {
-  const items = [
-    [<Award size={14} key="a" />, 'Wholesale Only'],
-    [<Truck size={14} key="t" />, 'MOQ: 1 Set'],
-    [<PackageCheck size={14} key="p" />, 'Global Delivery'],
-    [<User size={14} key="u" />, 'Login for Best Prices'],
-  ];
+function RouteFallback() {
+  return (
+    <section className="section">
+      <StateMessage status="loading" error="" />
+    </section>
+  );
+}
 
+function TopBar() {
   return (
     <div className="top-bar">
-      {/* Desktop: static grid */}
       <div className="top-bar-static">
-        {items.map(([icon, text], i) => (
-          <span key={i}>{icon} {text}</span>
+        {topBarItems.map(({ icon: Icon, text }) => (
+          <span key={text}><Icon size={14} /> {text}</span>
         ))}
       </div>
-      {/* Mobile: scrolling marquee */}
       <div className="top-bar-marquee" aria-hidden="true">
         <div className="marquee-track">
-          {[...items, ...items].map(([icon, text], i) => (
-            <span key={i}>{icon} {text}</span>
+          {[...topBarItems, ...topBarItems].map(({ icon: Icon, text }, index) => (
+            <span key={`${text}-${index}`}><Icon size={14} /> {text}</span>
           ))}
         </div>
       </div>
@@ -413,16 +493,23 @@ function TopBar() {
   );
 }
 
-function Home({ products, status, error, heroImage, navigate, setCategory, openAuth, addToCart, toggleFavorite, favorites }) {
-  const arrivals = expandedProductCards(products).slice(0, 5);
-  const categories = [
-    'Saree',
-    'Suit',
-    'Dupatta',
-    'Lehenga',
-    'Fabric',
-    'Accessories',
-  ];
+function Home({
+  products,
+  status,
+  error,
+  heroImage,
+  navigate,
+  setCategory,
+  openAuth,
+  addToCart,
+  toggleFavorite,
+  favoriteKeys,
+}) {
+  const arrivals = useMemo(() => expandedProductCards(products).slice(0, 5), [products]);
+  const categoryPreviewImages = useMemo(() => {
+    const images = expandedProductCards(products).map((item) => item.image).filter(Boolean);
+    return images.length ? images : [heroImage];
+  }, [heroImage, products]);
 
   return (
     <>
@@ -444,7 +531,7 @@ function Home({ products, status, error, heroImage, navigate, setCategory, openA
           </div>
         </div>
         <div className="hero-visual" aria-label="Featured saree">
-          <img src={heroImage} alt="Premium saree collection" />
+          <img src={heroImage} alt="Premium saree collection" fetchPriority="high" decoding="async" />
         </div>
       </section>
 
@@ -453,11 +540,20 @@ function Home({ products, status, error, heroImage, navigate, setCategory, openA
       <section className="section category-section">
         <SectionTitle title="Shop By Category" />
         <div className="category-grid">
-          {categories.map((name, index) => (
-            <button key={name} className="category-card" onClick={() => { setCategory(name); navigate('catalog'); }}>
+          {homeCategoryNames.map((name, index) => (
+            <button
+              key={name}
+              className="category-card"
+              onClick={() => {
+                setCategory(name);
+                navigate('catalog');
+              }}
+            >
               <img
-                src={products[0]?.images[index % Math.max(products[0]?.images.length || 1, 1)] || heroImage}
+                src={categoryPreviewImages[index % categoryPreviewImages.length]}
                 alt={name}
+                loading="lazy"
+                decoding="async"
               />
               <span>{name}</span>
               <ArrowRight size={18} />
@@ -502,7 +598,7 @@ function Home({ products, status, error, heroImage, navigate, setCategory, openA
               navigate={navigate}
               addToCart={addToCart}
               toggleFavorite={toggleFavorite}
-              isFavorite={favorites.some((item) => item.productGroupKey === product.id)}
+              isFavorite={favoriteKeys.has(product.id)}
             />
           ))}
         </div>
@@ -571,62 +667,12 @@ function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCa
   );
 }
 
-export function ProductCard({ product, variant, navigate, addToCart, toggleFavorite, isFavorite }) {
-  const selectedVariant = variant || product.variants[0];
-  return (
-    <article className="product-card">
-      <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
-        <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
-      </button>
-      <button className="image-button" onClick={() => navigate('product', product.id)}>
-        <span className="new-badge">New</span>
-        <img src={product.images[0] || fallbackHero} alt={product.title} />
-      </button>
-      <div className="product-card-copy">
-        <button onClick={() => navigate('product', product.id)}>{product.title}</button>
-        <PriceLine prices={selectedVariant.prices} />
-        <div className="card-actions">
-          <span>{selectedVariant.code}</span>
-          <button onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={16} /> Add
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function PriceLine({ prices }) {
-  return (
-    <p className="price-line">
-      {prices.offer ? (
-        <>
-          <strong>{formatMoney(prices.offer)}</strong>
-          {prices.mrp && <span>MRP {formatMoney(prices.mrp)}</span>}
-        </>
-      ) : (
-        <>
-          {prices.mrp && <strong>MRP {formatMoney(prices.mrp)}</strong>}
-          {prices.single && <span>Single {formatMoney(prices.single)}</span>}
-        </>
-      )}
-    </p>
-  );
-}
-
 function FeatureStrip() {
-  const items = [
-    [<Award />, 'Premium Quality', 'Finest fabrics, crafted to perfection'],
-    [<Tag />, 'Best Wholesale Prices', 'Competitive pricing for maximum profit'],
-    [<Truck />, 'Pan India Delivery', 'Safe and fast delivery across India'],
-    [<Headphones />, 'Dedicated Support', '24/7 support for all your business needs'],
-  ];
-
   return (
     <section className="feature-strip">
-      {items.map(([icon, title, copy]) => (
+      {featureStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          {icon}
+          <Icon />
           <span>
             <strong>{title}</strong>
             {copy}
@@ -638,41 +684,11 @@ function FeatureStrip() {
 }
 
 function BenefitStrip() {
-  const items = [
-    [<PackageCheck />, 'Easy Returns', 'Hassle-free returns for eligible issues'],
-    [<ShieldCheck />, 'Secure Payments', '100% secure payments and data safety'],
-    [<Tag />, 'Bulk Discounts', 'Special offers on bulk and repeat orders'],
-    [<Truck />, 'Fast Dispatch', 'Quick processing and on-time dispatch'],
-  ];
-
   return (
     <section className="benefit-strip">
-      {items.map(([icon, title, copy]) => (
+      {benefitStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          {icon}
-          <span>
-            <strong>{title}</strong>
-            {copy}
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-export function ProductTrustStrip() {
-  const items = [
-    [<Truck />, 'Pan India Delivery', 'Fast and secure delivery across India'],
-    [<Tag />, 'Best Wholesale Prices', 'Get the best prices on bulk orders'],
-    [<PackageCheck />, 'Easy Returns', 'Hassle-free returns for eligible issues'],
-    [<Headphones />, 'Dedicated Support', "We're here to help you at every step"],
-  ];
-
-  return (
-    <section className="product-trust-strip">
-      {items.map(([icon, title, copy]) => (
-        <div key={title}>
-          {icon}
+          <Icon />
           <span>
             <strong>{title}</strong>
             {copy}
@@ -693,8 +709,14 @@ function CartDrawer({
   codStatus,
   checkPincode,
 }) {
-  const total = items.reduce((sum, item) => sum + customerPrice(item.variant.prices) * item.quantity, 0);
-  const whatsappUrl = buildWhatsappUrl(items, total, pincode, codStatus);
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + customerPrice(item.variant.prices) * item.quantity, 0),
+    [items],
+  );
+  const whatsappUrl = useMemo(
+    () => buildWhatsappUrl(items, total, pincode, codStatus),
+    [codStatus, items, pincode, total],
+  );
 
   return (
     <aside className={`cart-drawer ${open ? 'open' : ''}`} aria-hidden={!open}>
@@ -708,7 +730,12 @@ function CartDrawer({
         {items.length === 0 && <p className="empty-state">Your cart is empty.</p>}
         {items.map((item) => (
           <div className="cart-item" key={item.variantCode}>
-            <img src={item.variant.image || item.product.images[0] || fallbackHero} alt={item.product.title} />
+            <img
+              src={item.variant.image || item.product.images[0] || fallbackProductImage}
+              alt={item.product.title}
+              loading="lazy"
+              decoding="async"
+            />
             <div>
               <strong>{item.product.title}</strong>
               <span>{item.variant.code}</span>
@@ -729,7 +756,7 @@ function CartDrawer({
             <span>
               <input
                 value={pincode}
-                onChange={(event) => setPincode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(event) => setPincode(normalizePincodeInput(event.target.value))}
                 placeholder="Pincode"
               />
               <button onClick={checkPincode}>Check</button>
@@ -922,15 +949,6 @@ function MobileMenu({ onClose, navigate, user, openAuth }) {
   );
 }
 
-export function SectionTitle({ title, align = 'center' }) {
-  return (
-    <div className={`section-title ${align}`}>
-      <h2>{title}</h2>
-      <span />
-    </div>
-  );
-}
-
 function Stat({ icon, value, label }) {
   return (
     <div>
@@ -939,88 +957,6 @@ function Stat({ icon, value, label }) {
       <span>{label}</span>
     </div>
   );
-}
-
-export function Newsletter() {
-  return (
-    <section className="newsletter">
-      <div>
-        <PackageCheck />
-        <span>
-          <strong>Stay Updated</strong>
-          Sign up for our newsletter and get updates on new arrivals, exclusive offers and more.
-        </span>
-      </div>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <input type="email" placeholder="Enter your email" />
-        <button>Subscribe</button>
-      </form>
-    </section>
-  );
-}
-
-export function StateMessage({ status, error }) {
-  if (status === 'loading') return <p className="empty-state">Loading live catalogue...</p>;
-  if (status === 'error') return <p className="error-state">{error}</p>;
-  return null;
-}
-
-export function expandedProductCards(products) {
-  if (!products.length) return [];
-  return products.flatMap((product) => {
-    const images = product.images.length ? product.images : [fallbackHero];
-    return images.map((image, index) => ({
-      product,
-      image,
-      variant: product.variants[index] || product.variants[0],
-    }));
-  });
-}
-
-export function formatMoney(value) {
-  if (!value) return 'On request';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-export function customerPrice(prices) {
-  return prices.offer || prices.single || prices.mrp || 0;
-}
-
-function buildWhatsappUrl(items, total, pincode, codStatus) {
-  const lines = [
-    `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
-    '',
-    ...items.map((item) => {
-      const price = customerPrice(item.variant.prices);
-      return `${item.product.title} | Code: ${item.variant.code} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
-    }),
-    '',
-    `Estimated total: ${formatMoney(total)}`,
-    pincode ? `Pincode: ${pincode}` : '',
-    codStatus === 'available' ? 'COD checked: Available' : '',
-  ].filter(Boolean);
-
-  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
-}
-
-export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus) {
-  const price = customerPrice(variant.prices);
-  const lines = [
-    `Hello ${storeConfig.name}, I want to buy this catalog:`,
-    '',
-    `${product.title}`,
-    `Code: ${variant.code}`,
-    `Designs: ${quantity}`,
-    `Price: ${formatMoney(price)} / piece`,
-    pincode ? `Pincode: ${pincode}` : '',
-    codStatus === 'available' ? 'COD checked: Available' : '',
-  ].filter(Boolean);
-
-  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
 function upsertCart(cart, product, variant, quantity) {
