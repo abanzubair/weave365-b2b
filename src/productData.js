@@ -91,6 +91,11 @@ export function parseProductCsv(text) {
       description: row.Description || wholesaleDescription(row),
       images: images,
       variants: [variant],
+      weight: (function() {
+        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'weight') || 'Weight';
+        const val = String(row[key] || '').replace(/[^\d.]/g, '');
+        return val ? Number(val) : null;
+      })(),
       totalColors: (function() {
         const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'color') || 'Color';
         const val = String(row[key] || '').trim();

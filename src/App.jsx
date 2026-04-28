@@ -53,7 +53,7 @@ const topBarItems = [
   { icon: Award, text: 'Wholesale Only' },
   { icon: PackageCheck, text: 'MOQ: 1 Set' },
   { icon: Truck, text: 'Global Delivery' },
-  { icon: User, text: 'Login for Best Prices' },
+  { icon: User, text: 'Register for New Arrivals' },
 ];
 const featureStripItems = [
   { icon: Award, title: 'Premium Quality', copy: 'Finest fabrics, crafted to perfection' },
@@ -993,6 +993,13 @@ function Footer() {
         <a>Return & Refund</a>
         <a>Terms & Conditions</a>
         <a>FAQ</a>
+      </div>
+      <div>
+        <h3>Social Links</h3>
+        <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+        <a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a>
+        <a href="https://youtube.com" target="_blank" rel="noreferrer">Youtube</a>
+        <a href="https://facebook.com" target="_blank" rel="noreferrer">Facebook</a>
       </div>
       <div>
         <h3>Get In Touch</h3>

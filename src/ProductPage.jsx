@@ -59,7 +59,8 @@ export function ProductDetail({
     () => product.totalColors ?? (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
     [product.images.length, product.variants.length, product.totalColors],
   );
-  const catalogWeight = useMemo(() => Math.max(1, totalColors), [totalColors]);
+  const singleWeight = useMemo(() => Number(product.weight || 1), [product.weight]);
+  const catalogWeight = useMemo(() => singleWeight * totalColors, [totalColors, singleWeight]);
   const variant = useMemo(
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
@@ -85,8 +86,8 @@ export function ProductDetail({
       ['Code', variant.code],
       ['Price / Piece', formatMoney(variant.prices.mrp)],
       ['Price Full Set', formatMoney((variant.prices.mrp || 0) * totalColors)],
-      ['Weight', `${catalogWeight} KG`],
-      ['MOQ', '1 Set'],
+      ['Set Weight', `${catalogWeight} KG`],
+      ['MOQ', '1 Set or 10 PCS Assorted'],
       ['Fabric', product.fabric || 'Premium Saree'],
       ['Description', product.description],
       ['Brand', 'Weave 365'],
@@ -263,7 +264,7 @@ export function ProductDetail({
                 <Layers size={18} /> Total Colors: <strong>{totalColors}</strong>
               </span>
               <span>
-                <ShoppingBag size={18} /> Weight: <strong>{catalogWeight} KG</strong>
+                <ShoppingBag size={18} /> Weight: <strong>{singleWeight} KG</strong>
               </span>
             </div>
 
