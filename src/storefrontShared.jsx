@@ -98,12 +98,7 @@ export const ProductCard = memo(function ProductCard({
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
 
-  const features = [
-    product.fabric,
-    product.work || product.pattern,
-    product.weave,
-    product.purity || 'With Unstitched Blouse',
-  ].filter(Boolean).slice(0, 4);
+
 
   return (
     <article className="product-card">
@@ -115,6 +110,11 @@ export const ProductCard = memo(function ProductCard({
           decoding="async"
           onError={(e) => { e.target.style.opacity = '0'; }}
         />
+        <div className="card-brand-vertical">
+          <BadgeCheck size={14} />
+          <span>Weave 365</span>
+          <div className="brand-line" />
+        </div>
         <span className="new-badge"><Sparkles size={11} /> New</span>
         <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
       </button>
@@ -129,25 +129,6 @@ export const ProductCard = memo(function ProductCard({
           <span className="card-price-divider-diamond" />
         </div>
         <PriceLine prices={selectedVariant.prices} />
-        
-        <div className="card-feature-strip">
-          <div className="feature-item">
-            <div className="feature-icon"><Feather size={10} /></div>
-            <span>Lightweight Drape</span>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Layers size={10} /></div>
-            <span>Premium Weave</span>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Flower size={10} /></div>
-            <span>Intricate Zari Work</span>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Shirt size={10} /></div>
-            <span>With Blouse</span>
-          </div>
-        </div>
 
         <div className="card-actions">
           <a
@@ -169,17 +150,30 @@ export const ProductCard = memo(function ProductCard({
 });
 
 export function PriceLine({ prices }) {
+  const discount = prices.mrp && prices.offer ? Math.round(((prices.mrp - prices.offer) / prices.mrp) * 100) : 0;
+
   return (
     <p className="price-line">
       {prices.offer ? (
         <>
           <strong>{formatMoney(prices.offer)}</strong>
-          {prices.mrp && <><span>{formatMoney(prices.mrp)}</span><em className="price-mrp-label">MRP</em></>}
+          {prices.mrp && (
+            <>
+              <span>{formatMoney(prices.mrp)}</span>
+              <em>MRP</em>
+              {discount > 0 && <span className="discount-badge">{discount}% OFF</span>}
+            </>
+          )}
         </>
       ) : (
         <>
           {prices.mrp && <strong>{formatMoney(prices.mrp)}</strong>}
-          {prices.single && <><span>{formatMoney(prices.single)}</span><em className="price-mrp-label">MRP</em></>}
+          {prices.single && (
+            <>
+              <span>{formatMoney(prices.single)}</span>
+              <em>MRP</em>
+            </>
+          )}
         </>
       )}
     </p>

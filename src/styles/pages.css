@@ -717,7 +717,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 14px 0 6px;
+  margin: 16px 0 8px;
 }
 
 .card-price-divider::after {
@@ -765,65 +765,58 @@ button {
   font-size: 11px;
   font-weight: 700;
   color: var(--muted);
-  opacity: 0.75;
+  opacity: 0.7;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 12px;
+}
+
+.discount-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: #f4eee7;
+  color: #8d6e52;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
   letter-spacing: 0.3px;
 }
 
-.card-feature-strip {
+.card-brand-vertical {
+  position: absolute;
+  top: 60px;
+  left: 12px;
   display: flex;
-  align-items: stretch;
-  background: #fdfaf7;
-  border: 1px solid #f2ece6;
-  border-radius: 10px;
-  padding: 4px 6px;
-  margin: 12px 0 16px;
-  overflow: hidden;
-}
-
-.feature-item {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  flex: 1;
-  justify-content: center;
-  min-width: 0;
-  padding: 4px 2px;
-}
-
-.feature-item:not(:last-child) {
-  border-right: 1px solid #eee6de;
-}
-
-.feature-icon {
-  width: 16px;
-  height: 16px;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  border-radius: 50%;
+  gap: 8px;
+  z-index: 2;
   color: #8d6e52;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  flex-shrink: 0;
+  opacity: 0.7;
 }
 
-.feature-item span {
-  font-size: 7.5px;
+.card-brand-vertical span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 11px;
   font-weight: 700;
-  color: #53453a;
-  line-height: 1.1;
   text-transform: uppercase;
-  letter-spacing: 0;
-  white-space: normal;
-  text-align: center;
+  letter-spacing: 1.5px;
 }
 
-
+.brand-line {
+  width: 1.5px;
+  height: 60px;
+  background: #8d6e52;
+  opacity: 0.4;
+}
 
 .card-actions {
   display: flex;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 14px;
 }
 
 .card-chat-btn {
