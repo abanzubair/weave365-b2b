@@ -234,7 +234,7 @@ export async function fetchHeroData() {
         title: row['Title'] || '',
         subtitle: row['Subtitle'] || '',
         buttonText: row['Button Text'] || '',
-        buttonLink: row['Button link'] || '',
+        buttonLink: row['Button Link'] || '',
         type: (row['Type'] || 'banner').toLowerCase(),
       };
     }).filter(hero => hero.image || hero.video);

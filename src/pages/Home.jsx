@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Fragment } from 'react';
 import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck } from 'lucide-react';
 import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter } from '../storefrontShared.jsx';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
@@ -67,12 +67,26 @@ export function Home({
           <div className="hero-copy">
             <h1>
               {fixedHeroData?.title ? (
-                fixedHeroData.title.split('.').map((part, i, arr) => (
-                  <span key={i}>
-                    {part}{i < arr.length - 1 ? '.' : ''}
-                    {i < arr.length - 1 && <br />}
-                  </span>
-                ))
+                fixedHeroData.title.split('|').map((part, i, arr) => {
+                  const trimmed = part.trim();
+                  if (!trimmed) return null;
+                  const words = trimmed.split(/\s+/);
+                  const firstWord = words[0];
+                  const rest = words.slice(1).join(' ');
+
+                  return (
+                    <Fragment key={i}>
+                      {i === 0 ? (
+                        <>
+                          <span>{firstWord}</span> {rest}
+                        </>
+                      ) : (
+                        trimmed
+                      )}
+                      {i < arr.length - 1 && <br />}
+                    </Fragment>
+                  );
+                })
               ) : (
                 <>
                   <span>Premium</span> Sarees.
