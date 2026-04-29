@@ -138,7 +138,7 @@ export const ProductCard = memo(function ProductCard({
             className="card-chat-btn"
             aria-label="Enquire on WhatsApp"
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={18} /> Enquire
           </a>
           <button className="card-add-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
             <ShoppingBag size={18} /> Add to Bag
@@ -150,24 +150,21 @@ export const ProductCard = memo(function ProductCard({
 });
 
 export function PriceLine({ prices }) {
-  const discount = prices.mrp && prices.offer ? Math.round(((prices.mrp - prices.offer) / prices.mrp) * 100) : 0;
-
   return (
     <p className="price-line">
       {prices.offer ? (
         <>
-          <strong>{formatMoney(prices.offer)}</strong>
+          <strong>{formatMoney(prices.offer)} <small className="price-unit">/piece</small></strong>
           {prices.mrp && (
             <>
               <span>{formatMoney(prices.mrp)}</span>
               <em>MRP</em>
-              {discount > 0 && <span className="discount-badge">{discount}% OFF</span>}
             </>
           )}
         </>
       ) : (
         <>
-          {prices.mrp && <strong>{formatMoney(prices.mrp)}</strong>}
+          {prices.mrp && <strong>{formatMoney(prices.mrp)} <small className="price-unit">/piece</small></strong>}
           {prices.single && (
             <>
               <span>{formatMoney(prices.single)}</span>
