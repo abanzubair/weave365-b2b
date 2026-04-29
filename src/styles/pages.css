@@ -592,6 +592,8 @@ button {
   border-radius: 7px;
   background: var(--white);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
@@ -646,6 +648,9 @@ button {
 
 .product-card-copy {
   padding: 13px 14px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card-copy>button {
@@ -678,6 +683,7 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  margin-top: auto;
 }
 
 .card-wa-btn {
