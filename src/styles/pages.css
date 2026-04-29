@@ -680,6 +680,23 @@ button {
   gap: 10px;
 }
 
+.card-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  transition: all 0.2s;
+}
+
+.card-wa-btn:hover {
+  background: var(--surface-accent);
+  color: #25D366;
+}
+
 .card-actions span {
   color: var(--muted);
   font-size: 12px;
