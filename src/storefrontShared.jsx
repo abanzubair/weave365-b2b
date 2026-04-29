@@ -104,9 +104,9 @@ export const ProductCard = memo(function ProductCard({
       </button>
       <div className="product-card-copy">
         <button onClick={() => navigate('product', product.id)}>{product.title}</button>
+        <span className="product-card-code">{selectedVariant.code}</span>
         <PriceLine prices={selectedVariant.prices} />
         <div className="card-actions">
-          <span>{selectedVariant.code}</span>
           <div style={{ display: 'flex', gap: '6px' }}>
             <a
               href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
