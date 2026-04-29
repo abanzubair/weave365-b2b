@@ -138,10 +138,10 @@ export const ProductCard = memo(function ProductCard({
             className="card-chat-btn"
             aria-label="Enquire on WhatsApp"
           >
-            <MessageCircle size={18} /> Enquire
+            <MessageCircle size={16} /> Enquire
           </a>
           <button className="card-add-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={18} /> Add to Bag
+            <ShoppingBag size={16} /> Add to Bag
           </button>
         </div>
       </div>
