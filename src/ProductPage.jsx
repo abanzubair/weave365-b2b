@@ -20,6 +20,7 @@ import {
   expandedProductCards,
   fallbackProductImage,
   formatMoney,
+  formatWeight,
   Newsletter,
   ProductTrustStrip,
   ProductCard,
@@ -86,7 +87,7 @@ export function ProductDetail({
       ['Code', variant.code],
       ['Price / Piece', formatMoney(variant.prices.mrp)],
       ['Price Full Set', formatMoney((variant.prices.mrp || 0) * totalColors)],
-      ['Set Weight', `${catalogWeight} KG`],
+      ['Set Weight', formatWeight(catalogWeight)],
       ['MOQ', '1 Set or 10 PCS Assorted'],
       ['Fabric', product.fabric || 'Premium Saree'],
       ['Description', product.description],
@@ -205,6 +206,7 @@ export function ProductDetail({
                     alt={`${product.title} view ${index + 1}`}
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => { e.target.style.opacity = '0'; }}
                   />
                 </button>
               ))}
@@ -216,6 +218,7 @@ export function ProductDetail({
                 alt={product.title}
                 fetchPriority="high"
                 decoding="async"
+                onError={(e) => { e.target.style.opacity = '0'; }}
               />
               <button className="zoom-button" aria-label="View larger image">
                 <ZoomIn size={18} />
@@ -232,7 +235,13 @@ export function ProductDetail({
               <div className="design-thumb-row">
                 {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img src={image} alt={`${product.title} design`} loading="lazy" decoding="async" />
+                    <img 
+                      src={image} 
+                      alt={`${product.title} design`} 
+                      loading="lazy" 
+                      decoding="async" 
+                      onError={(e) => { e.target.style.opacity = '0'; }}
+                    />
                   </button>
                 ))}
               </div>
@@ -264,7 +273,7 @@ export function ProductDetail({
                 <Layers size={18} /> Total Colors: <strong>{totalColors}</strong>
               </span>
               <span>
-                <ShoppingBag size={18} /> Weight: <strong>{singleWeight} KG</strong>
+                <ShoppingBag size={18} /> Weight: <strong>{formatWeight(singleWeight)}</strong>
               </span>
             </div>
 
@@ -336,7 +345,13 @@ export function ProductDetail({
               <div className="design-thumb-row">
                 {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img src={image} alt={`${product.title} design`} loading="lazy" decoding="async" />
+                    <img 
+                      src={image} 
+                      alt={`${product.title} design`} 
+                      loading="lazy" 
+                      decoding="async" 
+                      onError={(e) => { e.target.style.opacity = '0'; }}
+                    />
                   </button>
                 ))}
               </div>
@@ -366,6 +381,7 @@ export function ProductDetail({
               alt={`${product.title} fabric close-up`}
               loading="lazy"
               decoding="async"
+              onError={(e) => { e.target.style.opacity = '0'; }}
             />
           </div>
           <section>

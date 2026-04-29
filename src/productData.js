@@ -204,6 +204,15 @@ function driveImageUrl(link) {
   return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
 }
 
+function driveVideoUrl(link) {
+  const value = String(link || '').trim();
+  if (!value) return '';
+
+  const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
+  if (!idMatch) return value;
+  return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+}
+
 function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
@@ -219,16 +228,16 @@ export async function fetchHeroData() {
     });
 
     return parsed.data.map((row) => {
-      const buttonParts = (row['Button Text/Link'] || row['Button'] || '').split(',').map(s => s.trim());
       return {
-        image: driveImageUrl(row['Image Link'] || row['Image'] || row['ImageLink'] || row['Image:']),
-        title: row.Title || row.title,
-        subtitle: row.Subtitle || row.subtitle || row.Description || row['Subtitle:'],
-        buttonText: row['Button Text'] || row.buttonText || buttonParts[0],
-        buttonLink: row['Button Link'] || row.buttonLink || buttonParts[1],
-        type: (row.Type || row.type || 'banner').toLowerCase(),
+        image: driveImageUrl(row['Image URL']),
+        video: driveVideoUrl(row['Video URL']),
+        title: row['Title'] || '',
+        subtitle: row['Subtitle'] || '',
+        buttonText: row['Button Text'] || '',
+        buttonLink: row['Button link'] || '',
+        type: (row['Type'] || 'banner').toLowerCase(),
       };
-    }).filter(hero => hero.image);
+    }).filter(hero => hero.image || hero.video);
   } catch (error) {
     console.error('Error fetching hero data:', error);
     return [];

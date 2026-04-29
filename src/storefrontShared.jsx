@@ -8,10 +8,11 @@ import {
   ShoppingBag,
   Tag,
   Truck,
+  MessageCircle,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 
-export const fallbackProductImage = 'https://placehold.co/1200x800/f8efe5/b78646?text=No+Image+Available';
+export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const moneyFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -93,16 +94,34 @@ export const ProductCard = memo(function ProductCard({
       </button>
       <button className="image-button" onClick={() => navigate('product', product.id)}>
         <span className="new-badge">New</span>
-        <img src={image} alt={product.title} loading="lazy" decoding="async" />
+        <img 
+          src={image} 
+          alt={product.title} 
+          loading="lazy" 
+          decoding="async" 
+          onError={(e) => { e.target.style.opacity = '0'; }}
+        />
       </button>
       <div className="product-card-copy">
         <button onClick={() => navigate('product', product.id)}>{product.title}</button>
         <PriceLine prices={selectedVariant.prices} />
         <div className="card-actions">
           <span>{selectedVariant.code}</span>
-          <button onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={16} /> Add
-          </button>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <a
+              href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
+              target="_blank"
+              rel="noreferrer"
+              className="card-wa-btn"
+              aria-label="Enquire on WhatsApp"
+              title="Enquire on WhatsApp"
+            >
+              <MessageCircle size={16} />
+            </a>
+            <button onClick={() => addToCart(product, selectedVariant, 1)}>
+              <ShoppingBag size={16} /> Add
+            </button>
+          </div>
         </div>
       </div>
     </article>
@@ -143,6 +162,14 @@ export function expandedProductCards(products) {
 export function formatMoney(value) {
   if (value == null || Number.isNaN(value)) return 'On request';
   return moneyFormatter.format(value);
+}
+
+export function formatWeight(weightInKg) {
+  const w = Number(weightInKg) || 0;
+  if (w < 1 && w > 0) {
+    return `${w * 1000} Grams`;
+  }
+  return `${w} KG`;
 }
 
 export function customerPrice(prices) {

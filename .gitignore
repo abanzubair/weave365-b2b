@@ -1,6 +1,26 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
+build/
+
+# Environment
 .env
+.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor & OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Project specific
 qa-*.png
 qa-playwright.cjs
-.g
+split_css.cjs

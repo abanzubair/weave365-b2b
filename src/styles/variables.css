@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+  --ink: #221813;
+  --muted: #6f6055;
+  --line: #e7dbcf;
+  --paper: #ffffff;
+  --cream: #f8efe5;
+  --surface: #fffaf4;
+  --surface-soft: #f8f2ea;
+  --surface-muted: #f3ebe1;
+  --surface-accent: #efe1cf;
+  --surface-strong: #e8d5bf;
+  --gold: #b78646;
+  --gold-dark: #8f6433;
+  --olive: #5f735d;
+  --hero-blush: #f8eee6;
+  --hero-mist: #ecdfd1;
+  --white: #ffffff;
+  --shadow: 0 18px 45px rgba(74, 52, 33, 0.1);
+}
+
+/* :root {
+  --ink: #171411;
+  --muted: #6d6259;
+  --line: #eadfd3;
+  --paper: #fffaf5;
+  --cream: #f5ece2;
+  --gold: #bd8a47;
+  --gold-dark: #9b6d32;
+  --white: #ffffff;
+  --shadow: 0 18px 45px rgba(67, 48, 31, 0.12);
+} */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
