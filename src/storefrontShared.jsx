@@ -5,6 +5,8 @@ import {
   BadgeCheck,
   CheckCircle2,
   Download,
+  Feather,
+  Flower,
   Heart,
   Headphones,
   Layers,
@@ -12,6 +14,7 @@ import {
   MessageCircle,
   PackageCheck,
   Share2,
+  Shirt,
   ShoppingBag,
   Sparkles,
   Tag,
@@ -122,15 +125,33 @@ export const ProductCard = memo(function ProductCard({
       <div className="product-card-copy">
         <button className="card-title-btn" onClick={() => navigate('product', product.id)}>{product.title}</button>
         <span className="product-card-code">{selectedVariant.code}</span>
-        <div className="card-price-divider"><span className="card-price-divider-diamond" /></div>
+        <div className="card-price-divider">
+          <span className="card-price-divider-diamond" />
+        </div>
         <PriceLine prices={selectedVariant.prices} />
-        {features.length > 0 && (
-          <div className="card-features">
-            {features.map((f, i) => (
-              <span key={i}>{f}</span>
-            ))}
+        
+        <div className="card-feature-strip">
+          <div className="feature-item">
+            <div className="feature-icon"><Feather size={12} /></div>
+            <span>Lightweight Drape</span>
           </div>
-        )}
+          <div className="feature-sep" />
+          <div className="feature-item">
+            <div className="feature-icon"><Layers size={12} /></div>
+            <span>Premium Weave</span>
+          </div>
+          <div className="feature-sep" />
+          <div className="feature-item">
+            <div className="feature-icon"><Flower size={12} /></div>
+            <span>Intricate Zari Work</span>
+          </div>
+          <div className="feature-sep" />
+          <div className="feature-item">
+            <div className="feature-icon"><Shirt size={12} /></div>
+            <span>With Unstitched Blouse</span>
+          </div>
+        </div>
+
         <div className="card-actions">
           <a
             href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
@@ -142,7 +163,7 @@ export const ProductCard = memo(function ProductCard({
             <MessageCircle size={18} />
           </a>
           <button className="card-add-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={16} /> Add to Bag
+            <ShoppingBag size={18} /> Add to Bag
           </button>
         </div>
       </div>

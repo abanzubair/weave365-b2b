@@ -716,16 +716,16 @@ button {
 .card-price-divider {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 10px 0 4px;
+  gap: 12px;
+  margin: 12px 0 6px;
 }
 
-.card-price-divider::before,
 .card-price-divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--line);
+  opacity: 0.8;
 }
 
 .card-price-divider-diamond {
@@ -735,7 +735,6 @@ button {
   transform: rotate(45deg);
   flex-shrink: 0;
   border-radius: 0.5px;
-  opacity: 0.8;
 }
 .price-line {
   margin: 4px 0 10px;
@@ -749,8 +748,9 @@ button {
 
 .price-line strong {
   color: var(--gold-dark);
-  font-size: 21px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
 }
 
 .price-line span {
@@ -770,27 +770,53 @@ button {
   letter-spacing: 0.3px;
 }
 
-.card-features {
+.card-feature-strip {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 12px;
+  align-items: center;
+  justify-content: space-between;
+  background: #fdfaf7;
+  border: 1px solid #f2ece6;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin: 10px 0 16px;
 }
 
-.card-features span {
-  padding: 4px 11px;
-  border-radius: 6px;
-  background: #f8f4f0;
-  font-size: 11px;
-  font-weight: 600;
-  color: #7c6a5a;
-  white-space: nowrap;
-  border: 1px solid #eee6de;
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.feature-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border-radius: 50%;
+  color: #8d6e52;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.feature-item span {
+  font-size: 9px;
+  font-weight: 700;
+  color: #53453a;
+  line-height: 1.1;
+  max-width: 45px;
+}
+
+.feature-sep {
+  width: 1px;
+  height: 18px;
+  background: #eee6de;
+  margin: 0 8px;
 }
 
 .card-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: auto;
 }
 
@@ -798,12 +824,12 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--white);
+  border: 1px solid #f2ece6;
+  border-radius: 12px;
+  background: #fdfaf7;
   color: var(--ink);
   transition: all 0.2s;
   text-decoration: none;
@@ -811,7 +837,7 @@ button {
 
 .card-chat-btn:hover {
   border-color: var(--gold);
-  color: var(--gold);
+  background: #fff;
 }
 
 .card-add-btn {
@@ -819,7 +845,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   height: 48px;
   border: 0;
   border-radius: 12px;
@@ -827,9 +853,13 @@ button {
   color: #fff;
   font-size: 14px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   transition: all 0.2s;
+}
+
+.card-add-btn:hover {
+  background: #a67c52;
+  transform: translateY(-1px);
 }
 
 .card-add-btn:hover {
