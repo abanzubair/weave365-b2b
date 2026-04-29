@@ -915,10 +915,10 @@ button {
 
 .catalog-main-image {
   position: relative;
-  display: grid;
-  place-items: center;
+
+
   width: 100%;
-  aspect-ratio: 3 / 4;
+
   overflow: hidden;
   border-radius: 6px;
   background: var(--surface-muted);
@@ -926,8 +926,9 @@ button {
 
 .catalog-main-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
+
   object-position: center;
 }
 
