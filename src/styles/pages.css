@@ -714,9 +714,8 @@ button {
 .card-price-divider {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin: 10px 0 4px;
-  color: var(--gold);
 }
 
 .card-price-divider::before,
@@ -727,8 +726,14 @@ button {
   background: var(--line);
 }
 
-
-
+.card-price-divider-diamond {
+  width: 7px;
+  height: 7px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  border-radius: 1px;
+}
 .price-line {
   margin: 4px 0 10px;
   color: var(--muted);
@@ -770,14 +775,13 @@ button {
 }
 
 .card-features span {
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: #f5ebe0;
+  background: var(--surface-muted);
   font-size: 10px;
   font-weight: 600;
-  color: #7a5c43;
+  color: var(--muted);
   white-space: nowrap;
-  border: 1px solid #eadacc;
 }
 
 .card-actions {

@@ -1,21 +1,22 @@
 import { memo } from 'react';
 import {
   ArrowRight,
+  Award,
+  BadgeCheck,
   CheckCircle2,
   Download,
   Heart,
+  Headphones,
   Layers,
   LockKeyhole,
-  Medal,
   MessageCircle,
   PackageCheck,
   Share2,
   ShoppingBag,
   Sparkles,
-  ZoomIn,
   Tag,
   Truck,
-  Headphones,
+  ZoomIn,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 
@@ -112,7 +113,7 @@ export const ProductCard = memo(function ProductCard({
           onError={(e) => { e.target.style.opacity = '0'; }}
         />
         <span className="new-badge"><Sparkles size={11} /> New</span>
-        <span className="bestseller-badge"><Medal size={12} /> Bestseller</span>
+        <span className="bestseller-badge"><BadgeCheck size={12} /> Bestseller</span>
       </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -121,7 +122,7 @@ export const ProductCard = memo(function ProductCard({
       <div className="product-card-copy">
         <button className="card-title-btn" onClick={() => navigate('product', product.id)}>{product.title}</button>
         <span className="product-card-code">{selectedVariant.code}</span>
-        <div className="card-price-divider"><Tag size={10} /></div>
+        <div className="card-price-divider"><span className="card-price-divider-diamond" /></div>
         <PriceLine prices={selectedVariant.prices} />
         {features.length > 0 && (
           <div className="card-features">
