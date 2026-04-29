@@ -153,15 +153,7 @@ export function PriceLine({ prices }) {
   return (
     <p className="price-line">
       {prices.offer ? (
-        <>
-          <strong>{formatMoney(prices.offer)} <small className="price-unit">/piece</small></strong>
-          {prices.mrp && (
-            <>
-              <span>{formatMoney(prices.mrp)}</span>
-              <em>MRP</em>
-            </>
-          )}
-        </>
+        <strong>{formatMoney(prices.offer)} <small className="price-unit">/piece</small></strong>
       ) : (
         <>
           {prices.mrp && <strong>{formatMoney(prices.mrp)} <small className="price-unit">/piece</small></strong>}
