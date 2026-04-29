@@ -1,14 +1,21 @@
 import { memo } from 'react';
 import {
   ArrowRight,
-  Award,
-  Headphones,
+  CheckCircle2,
+  Download,
   Heart,
+  Layers,
+  LockKeyhole,
+  Medal,
+  MessageCircle,
   PackageCheck,
+  Share2,
   ShoppingBag,
+  Sparkles,
+  ZoomIn,
   Tag,
   Truck,
-  MessageCircle,
+  Headphones,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 
@@ -104,8 +111,8 @@ export const ProductCard = memo(function ProductCard({
           decoding="async"
           onError={(e) => { e.target.style.opacity = '0'; }}
         />
-        <span className="new-badge"><Award size={12} /> New</span>
-        <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+        <span className="new-badge"><Sparkles size={11} /> New</span>
+        <span className="bestseller-badge"><Medal size={12} /> Bestseller</span>
       </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -148,12 +155,12 @@ export function PriceLine({ prices }) {
       {prices.offer ? (
         <>
           <strong>{formatMoney(prices.offer)}</strong>
-          {prices.mrp && <span>{formatMoney(prices.mrp)} MRP</span>}
+          {prices.mrp && <><span>{formatMoney(prices.mrp)}</span><em className="price-mrp-label">MRP</em></>}
         </>
       ) : (
         <>
-          {prices.mrp && <strong>{formatMoney(prices.mrp)} MRP</strong>}
-          {prices.single && <span>Single {formatMoney(prices.single)}</span>}
+          {prices.mrp && <strong>{formatMoney(prices.mrp)}</strong>}
+          {prices.single && <><span>{formatMoney(prices.single)}</span><em className="price-mrp-label">MRP</em></>}
         </>
       )}
     </p>
