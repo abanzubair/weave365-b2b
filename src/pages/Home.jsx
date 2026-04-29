@@ -67,26 +67,29 @@ export function Home({
           <div className="hero-copy">
             <h1>
               {fixedHeroData?.title ? (
-                fixedHeroData.title.split('|').map((part, i, arr) => {
-                  const trimmed = part.trim();
-                  if (!trimmed) return null;
-                  const words = trimmed.split(/\s+/);
-                  const firstWord = words[0];
-                  const rest = words.slice(1).join(' ');
-
-                  return (
-                    <Fragment key={i}>
-                      {i === 0 ? (
-                        <>
-                          <span>{firstWord}</span> {rest}
-                        </>
-                      ) : (
-                        trimmed
-                      )}
-                      {i < arr.length - 1 && <br />}
-                    </Fragment>
-                  );
-                })
+                (() => {
+                  const lines = fixedHeroData.title.split('|').map(l => l.trim()).filter(Boolean);
+                  const totalLines = lines.length;
+                  return lines.map((line, i) => {
+                    const words = line.split(/\s+/);
+                    const totalWords = words.length;
+                    return (
+                      <Fragment key={i}>
+                        {words.map((word, j) => {
+                          const isFirst = i === 0 && j === 0;
+                          const isLast = i === totalLines - 1 && j === totalWords - 1;
+                          return (
+                            <Fragment key={j}>
+                              {isFirst || isLast ? <span>{word}</span> : word}
+                              {j < totalWords - 1 ? ' ' : ''}
+                            </Fragment>
+                          );
+                        })}
+                        {i < totalLines - 1 && <br />}
+                      </Fragment>
+                    );
+                  });
+                })()
               ) : (
                 <>
                   <span>Premium</span> Sarees.
