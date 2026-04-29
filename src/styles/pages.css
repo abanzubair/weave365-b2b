@@ -1213,45 +1213,106 @@ button {
 .product-highlight-grid {
   display: grid;
   grid-template-columns: 1fr 300px 1fr;
-  gap: 40px;
+  gap: 0;
   align-items: stretch;
   margin: 60px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(75, 55, 37, 0.1);
+  border: 1px solid var(--line);
 }
 
 .product-highlight-grid section {
-  min-height: 260px;
-  border-radius: 8px;
-  padding: 34px 38px;
-  background: var(--white);
-  box-shadow: 0 10px 26px rgba(75, 55, 37, 0.06);
-  border: 1px solid var(--line);
+  min-height: 280px;
+  padding: 40px 38px;
   display: flex;
   flex-direction: column;
-  justify-content: normal;
+  justify-content: center;
+  position: relative;
+}
+
+.product-highlight-grid section:first-child {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-soft) 100%);
+  border-right: 1px solid var(--line);
+}
+
+.product-highlight-grid section:last-child {
+  background: linear-gradient(225deg, var(--surface) 0%, var(--surface-soft) 100%);
+  border-left: 1px solid var(--line);
+}
+
+.product-highlight-grid section::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+
+.product-highlight-grid section:first-child::before {
+  left: 38px;
+}
+
+.product-highlight-grid section:last-child::before {
+  right: 38px;
+  left: auto;
 }
 
 .product-highlight-grid ul {
   display: grid;
-  gap: 16px;
+  gap: 18px;
   margin: 0;
-  padding-left: 18px;
+  padding-left: 0;
+  list-style: none;
   color: #53453a;
-  line-height: 1.55;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.product-highlight-grid ul li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.product-highlight-grid ul:not(.perfect-list) li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.7;
 }
 
 .highlight-image {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--line);
+  background: var(--ink);
+  position: relative;
+}
+
+.highlight-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(34, 24, 19, 0.5) 100%);
+  pointer-events: none;
 }
 
 .highlight-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.highlight-image:hover img {
+  transform: scale(1.04);
 }
 
 .perfect-list {
@@ -1262,11 +1323,20 @@ button {
 .perfect-list li {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  padding: 10px 14px !important;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  font-weight: 600;
+}
+
+.perfect-list li:hover {
+  background: var(--surface-accent);
 }
 
 .perfect-list svg {
   color: var(--gold);
+  flex-shrink: 0;
 }
 
 .you-may-like {
