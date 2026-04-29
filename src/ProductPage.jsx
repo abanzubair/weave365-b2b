@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   ArrowRight,
   Award,
+  CheckCircle2,
   Download,
   Heart,
   Layers,
@@ -11,6 +12,7 @@ import {
   PackageCheck,
   Share2,
   ShoppingBag,
+  Star,
   ZoomIn,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
@@ -367,12 +369,15 @@ export function ProductDetail({
 
         <div className="product-highlight-grid">
           <section>
-            <h2>Product Highlights</h2>
-            <ul>
-              <li>Premium {product.fabric || 'saree'} with {product.work || 'designer'} work</li>
-              <li>Smooth texture and lightweight feel</li>
-              <li>Elegant border with intricate detailing</li>
-              <li>Comes with unstitched blouse piece</li>
+            <div className="highlight-heading">
+              <span className="highlight-icon"><Star size={20} /></span>
+              <h2>Product Highlights</h2>
+            </div>
+            <ul className="highlight-list">
+              <li><CheckCircle2 size={18} /> Premium {product.fabric || 'saree'} with {product.work || 'designer'} work</li>
+              <li><CheckCircle2 size={18} /> Smooth texture and lightweight feel</li>
+              <li><CheckCircle2 size={18} /> Elegant border with intricate detailing</li>
+              <li><CheckCircle2 size={18} /> Comes with unstitched blouse piece</li>
             </ul>
           </section>
           <div className="highlight-image">
@@ -385,7 +390,10 @@ export function ProductDetail({
             />
           </div>
           <section>
-            <h2>Perfect For</h2>
+            <div className="highlight-heading">
+              <span className="highlight-icon"><Heart size={20} /></span>
+              <h2>Perfect For</h2>
+            </div>
             <ul className="perfect-list">
               <li><PackageCheck size={18} /> Casual Wear</li>
               <li><Heart size={18} /> Daily Wear</li>
