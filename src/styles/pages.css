@@ -915,10 +915,8 @@ button {
 
 .catalog-main-image {
   position: relative;
-
-
-  width: 100%;
-
+  width: fit-content;
+  max-width: 100%;
   overflow: hidden;
   border-radius: 6px;
   background: var(--surface-muted);
@@ -928,7 +926,6 @@ button {
   width: 100%;
   height: auto;
   display: block;
-
   object-position: center;
 }
 
@@ -1653,15 +1650,20 @@ button {
   }
 
   .catalog-main-image {
-    width: min(100%, calc((100vh - 270px) * 0.75));
-    height: min(100%, calc(100vh - 270px));
+    width: fit-content;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(100vh - 270px);
     min-height: 0;
     margin: 0;
-    aspect-ratio: 3 / 4;
   }
 
   .catalog-main-image img {
-    object-fit: contain;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: inherit;
+    display: block;
   }
 
   .product-info-panel {
