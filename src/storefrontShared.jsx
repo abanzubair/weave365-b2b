@@ -132,23 +132,20 @@ export const ProductCard = memo(function ProductCard({
         
         <div className="card-feature-strip">
           <div className="feature-item">
-            <div className="feature-icon"><Feather size={12} /></div>
+            <div className="feature-icon"><Feather size={10} /></div>
             <span>Lightweight Drape</span>
           </div>
-          <div className="feature-sep" />
           <div className="feature-item">
-            <div className="feature-icon"><Layers size={12} /></div>
+            <div className="feature-icon"><Layers size={10} /></div>
             <span>Premium Weave</span>
           </div>
-          <div className="feature-sep" />
           <div className="feature-item">
-            <div className="feature-icon"><Flower size={12} /></div>
+            <div className="feature-icon"><Flower size={10} /></div>
             <span>Intricate Zari Work</span>
           </div>
-          <div className="feature-sep" />
           <div className="feature-item">
-            <div className="feature-icon"><Shirt size={12} /></div>
-            <span>With Unstitched Blouse</span>
+            <div className="feature-icon"><Shirt size={10} /></div>
+            <span>With Blouse</span>
           </div>
         </div>
 
