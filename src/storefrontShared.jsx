@@ -113,7 +113,7 @@ export const ProductCard = memo(function ProductCard({
           onError={(e) => { e.target.style.opacity = '0'; }}
         />
         <span className="new-badge"><Sparkles size={11} /> New</span>
-        <span className="bestseller-badge"><BadgeCheck size={12} /> Bestseller</span>
+        <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
       </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
