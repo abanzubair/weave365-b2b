@@ -87,41 +87,55 @@ export const ProductCard = memo(function ProductCard({
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
 
+  const features = [
+    product.fabric,
+    product.work || product.pattern,
+    product.weave,
+    product.purity || 'With Unstitched Blouse',
+  ].filter(Boolean).slice(0, 4);
+
   return (
     <article className="product-card">
+      <button className="image-button" onClick={() => navigate('product', product.id)}>
+        <img
+          src={image}
+          alt={product.title}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => { e.target.style.opacity = '0'; }}
+        />
+        <span className="new-badge"><Award size={12} /> New</span>
+        <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+      </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
-      <button className="image-button" onClick={() => navigate('product', product.id)}>
-        <span className="new-badge">New</span>
-        <img 
-          src={image} 
-          alt={product.title} 
-          loading="lazy" 
-          decoding="async" 
-          onError={(e) => { e.target.style.opacity = '0'; }}
-        />
-      </button>
+
       <div className="product-card-copy">
-        <button onClick={() => navigate('product', product.id)}>{product.title}</button>
+        <button className="card-title-btn" onClick={() => navigate('product', product.id)}>{product.title}</button>
         <span className="product-card-code">{selectedVariant.code}</span>
+        <div className="card-price-divider"><Tag size={10} /></div>
         <PriceLine prices={selectedVariant.prices} />
-        <div className="card-actions">
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <a
-              href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
-              target="_blank"
-              rel="noreferrer"
-              className="card-wa-btn"
-              aria-label="Enquire on WhatsApp"
-              title="Enquire on WhatsApp"
-            >
-              <MessageCircle size={16} />
-            </a>
-            <button onClick={() => addToCart(product, selectedVariant, 1)}>
-              <ShoppingBag size={16} /> Add
-            </button>
+        {features.length > 0 && (
+          <div className="card-features">
+            {features.map((f, i) => (
+              <span key={i}>{f}</span>
+            ))}
           </div>
+        )}
+        <div className="card-actions">
+          <a
+            href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
+            target="_blank"
+            rel="noreferrer"
+            className="card-chat-btn"
+            aria-label="Enquire on WhatsApp"
+          >
+            <MessageCircle size={18} />
+          </a>
+          <button className="card-add-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
+            <ShoppingBag size={16} /> Add to Bag
+          </button>
         </div>
       </div>
     </article>

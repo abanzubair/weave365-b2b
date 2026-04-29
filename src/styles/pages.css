@@ -587,18 +587,18 @@ button {
 
 .product-card {
   position: relative;
-  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 18px;
   background: var(--white);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .product-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 35px rgba(58, 41, 26, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(58, 41, 26, 0.13);
 }
 
 .image-button {
@@ -609,125 +609,213 @@ button {
   background: var(--surface-muted);
   position: relative;
   overflow: hidden;
+  border-radius: 0;
 }
 
 .image-button img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .image-button img {
+  transform: scale(1.04);
 }
 
 .new-badge {
   position: absolute;
-  z-index: 1;
-  top: 9px;
-  left: 9px;
-  padding: 4px 8px;
-  border-radius: 2px;
-  background: var(--ink);
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--gold);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.bestseller-badge {
+  position: absolute;
+  z-index: 2;
+  bottom: 14px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 250, 244, 0.96);
+  color: var(--gold-dark);
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(183, 134, 70, 0.2);
 }
 
 .fav-button {
   position: absolute;
-  z-index: 2;
-  top: 9px;
-  right: 9px;
-  width: 34px;
-  height: 34px;
+  z-index: 3;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 250, 244, 0.92);
-  color: var(--ink);
+  background: rgba(255, 250, 244, 0.96);
+  color: var(--gold-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.fav-button:hover {
+  background: #fff;
+  transform: scale(1.08);
 }
 
 .product-card-copy {
-  padding: 13px 14px 14px;
+  padding: 16px 16px 14px;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.product-card-copy>button {
+.card-title-btn {
   width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
   text-align: left;
-  font-weight: 800;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--ink);
+  font-family: 'Playfair Display', serif;
 }
 
 .product-card-code {
   display: block;
-  margin-top: 5px;
+  margin-top: 4px;
   font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600;
   color: var(--muted);
+  letter-spacing: 0.2px;
+}
+
+.card-price-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 2px;
+  color: var(--gold);
+}
+
+.card-price-divider::before,
+.card-price-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+
+.card-price-divider::after {
+  background: linear-gradient(270deg, var(--line), transparent);
 }
 
 .price-line {
-  min-height: 38px;
-  margin: 7px 0 10px;
+  margin: 4px 0 10px;
   color: var(--muted);
   font-size: 13px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .price-line strong {
   color: var(--gold-dark);
-  margin-right: 8px;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: 'Playfair Display', serif;
 }
 
 .price-line span {
-  display: inline-block;
+  text-decoration: line-through;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.card-features span {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .card-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: auto;
 }
 
-.card-wa-btn {
+.card-chat-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 4px;
-  background: var(--surface-soft);
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
   color: var(--ink);
   transition: all 0.2s;
+  text-decoration: none;
 }
 
-.card-wa-btn:hover {
-  background: var(--surface-accent);
-  color: #25D366;
+.card-chat-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
-.card-actions span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.card-actions button {
+.card-add-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
   border: 0;
-  border-radius: 4px;
-  background: var(--surface-accent);
-  padding: 8px 10px;
-  font-size: 12px;
+  border-radius: 10px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 13px;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: background 0.2s;
+}
+
+.card-add-btn:hover {
+  background: var(--gold-dark);
 }
 
 .benefit-strip {
