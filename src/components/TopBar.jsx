@@ -1,9 +1,9 @@
 import { Award, PackageCheck, Truck, User } from 'lucide-react';
 
 const topBarItems = [
-  { icon: Award, text: 'Wholesale Only' },
-  { icon: PackageCheck, text: 'MOQ: 1 Set' },
-  { icon: Truck, text: 'Global Delivery' },
+  { icon: Award, text: 'B2B Wholesale Only' },
+  { icon: PackageCheck, text: 'Bulk Pricing Advantage' },
+  { icon: Truck, text: 'PAN India & Export Delivery' },
   { icon: User, text: 'Register for New Arrivals' },
 ];
 

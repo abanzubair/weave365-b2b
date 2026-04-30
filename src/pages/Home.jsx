@@ -35,6 +35,18 @@ export function Home({
 
   const fixedHeroData = bannerSlides[0] || null;
 
+  const bestsellers = useMemo(() => 
+    products
+      .filter(p => p.status && p.status.toLowerCase() === 'bestseller')
+      .slice(0, 8)
+      .map(p => ({
+        product: p,
+        image: p.images[0] || fallbackHeroImage,
+        variant: p.variants[0]
+      })), 
+    [products, fallbackHeroImage]
+  );
+
   const arrivals = useMemo(() => 
     products.slice(0, 8).map(p => ({
       product: p,
@@ -187,6 +199,55 @@ export function Home({
         </div>
       </section>
 
+      {bestsellers.length > 0 && (
+        <section className="section">
+          <div className="section-heading-row">
+            <SectionTitle title="Best Sellers" align="left" />
+            <button className="text-button" onClick={() => navigate('catalog')}>
+              View All <ArrowRight size={17} />
+            </button>
+          </div>
+          <StateMessage status={status} error={error} />
+          <div className="scroll-wrapper">
+            <button 
+              className="scroll-arrow left" 
+              onClick={() => {
+                const el = document.getElementById('bestsellers-row');
+                el.scrollBy({ left: -500, behavior: 'smooth' });
+              }}
+              aria-label="Scroll left"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <div className="product-row scrollable-row" id="bestsellers-row">
+              {bestsellers.map(({ product, image, variant }, index) => (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  product={{ ...product, images: [image, ...product.images] }}
+                  variant={variant}
+                  navigate={navigate}
+                  addToCart={addToCart}
+                  toggleFavorite={toggleFavorite}
+                  isFavorite={favoriteKeys.has(product.id)}
+                />
+              ))}
+            </div>
+
+            <button 
+              className="scroll-arrow right" 
+              onClick={() => {
+                const el = document.getElementById('bestsellers-row');
+                el.scrollBy({ left: 500, behavior: 'smooth' });
+              }}
+              aria-label="Scroll right"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="section">
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
@@ -240,9 +301,14 @@ export function Home({
         <div>
           <h2>Built for Business. Made for Resellers.</h2>
           <p>Join thousands of retailers who trust {storeConfig.name} wholesale for premium quality sarees.</p>
-          <button className="gold-button" onClick={openAuth}>
-            Register Now <ArrowRight size={17} />
-          </button>
+          <div className="reseller-actions">
+            <button className="gold-button" onClick={() => navigate('bulk-inquiry')}>
+              Bulk Inquiry <ArrowRight size={17} />
+            </button>
+            <button className="reseller-link-button" onClick={openAuth}>
+              Register Now
+            </button>
+          </div>
         </div>
         <ul>
           <li>

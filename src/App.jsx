@@ -19,6 +19,7 @@ import { Favorites } from './pages/Favorites.jsx';
 
 const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
+const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -235,9 +236,9 @@ export default function App() {
           <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
         </button>
         <nav className="main-nav">
-          <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
+          {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
             Home
-          </button>
+          </button> */}
           <div className="nav-item-dropdown">
             <button
               className={dropdownOpen === 'categories' ? 'active' : ''}
@@ -265,9 +266,14 @@ export default function App() {
               </div>
             )}
           </div>
-          <a href="#about">Ready to Ship</a>
-          <a href="#why">Why Us</a>
-          <a href="#contact">Contact Us</a>
+          <a href="#">Bestsellers</a>
+          <a href="#">New Arrivals</a>
+          <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
+            Bulk Order
+          </button>
+          <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
+            Catalogue
+          </button>
         </nav>
         <div className="search-box-wrapper">
           <label className="search-box">
@@ -395,6 +401,9 @@ export default function App() {
                 toggleFavorite={toggleFavorite}
                 addToCart={addToCart}
               />
+            } />
+            <Route path="/bulk-inquiry" element={
+              <BulkInquiry navigate={navigate} />
             } />
           </Routes>
         </Suspense>

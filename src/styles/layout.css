@@ -309,7 +309,8 @@
 @media screen and (min-width: 1900px) {
 
   .section,
-  .feature-strip {
+  .feature-strip,
+  .bulk-inquiry-page {
     width: min(1600px, calc(100% - 120px)) !important;
   }
 

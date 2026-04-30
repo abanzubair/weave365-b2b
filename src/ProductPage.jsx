@@ -329,6 +329,9 @@ export function ProductDetail({
               >
                 <MessageCircle size={20} /> Buy Via WhatsApp
               </a>
+              <button className="secondary-action-btn" type="button" onClick={() => navigate('bulk-inquiry')}>
+                <PackageCheck size={18} /> Need Bulk Quantity?
+              </button>
               <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
                 <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download Images'}
               </button>
