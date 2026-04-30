@@ -699,11 +699,20 @@ button {
   transform: scale(1.04);
 }
 
-.new-badge {
+.card-status-row {
   position: absolute;
   z-index: 2;
-  top: 12px;
   left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+.new-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -718,14 +727,10 @@ button {
 }
 
 .bestseller-badge {
-  position: absolute;
-  z-index: 2;
-  bottom: 14px;
-  left: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 6px 13px;
   border-radius: 999px;
   background: rgba(255, 252, 248, 0.98);
   color: #8d6e52;
@@ -745,10 +750,6 @@ button {
 }
 
 .out-of-stock-badge {
-  position: absolute;
-  z-index: 2;
-  top: 12px;
-  left: 12px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -763,27 +764,33 @@ button {
 }
 
 .fast-moving-badge {
-  position: absolute;
-  z-index: 2;
-  top: 12px;
-  left: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #e85d26, #f59e0b);
-  color: #fff;
+  border: 1px solid rgba(183, 134, 70, 0.34);
+  background: rgba(255, 252, 248, 0.94);
+  color: var(--gold-dark);
+  box-shadow: 0 8px 18px rgba(58, 41, 26, 0.12);
+  backdrop-filter: blur(8px);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  animation: fastMovingPulse 2.5s ease-in-out infinite;
 }
 
-@keyframes fastMovingPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 93, 38, 0.35); }
-  50% { box-shadow: 0 0 0 6px rgba(232, 93, 38, 0); }
+.fast-moving-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(183, 134, 70, 0.14);
+}
+
+.fast-moving-badge svg {
+  display: none;
 }
 
 .card-add-btn.disabled,
@@ -953,7 +960,8 @@ button {
 .card-actions {
   display: flex;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding-top: 16px;
 }
 
 .card-chat-btn {
