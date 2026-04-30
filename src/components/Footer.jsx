@@ -1,13 +1,20 @@
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
-export function Footer() {
+export function Footer({ navigate }) {
   return (
     <footer id="contact" className="footer">
       <div>
-        <button className="brand footer-brand">
+        <a 
+          href="/" 
+          className="brand footer-brand"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('home');
+          }}
+        >
           <img src={brandLogo} alt={storeConfig.name} className="brand-logo footer-logo" />
-        </button>
+        </a>
         <p>Your trusted wholesale partner for premium quality sarees at unbeatable wholesale prices.</p>
       </div>
       <div>

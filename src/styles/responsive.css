@@ -419,6 +419,45 @@
     font-size: 11px;
   }
 
+  .catalog-page .catalog-grid .card-actions {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .catalog-page .catalog-grid .card-chat-btn,
+  .catalog-page .catalog-grid .card-add-btn {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    border-radius: 9px;
+  }
+
+  .catalog-page .catalog-grid .card-chat-btn {
+    padding: 0;
+    font-size: 0;
+    gap: 0;
+  }
+
+  .catalog-page .catalog-grid .card-chat-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .catalog-page .catalog-grid .card-add-btn {
+    padding: 0 8px;
+    gap: 5px;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .catalog-page .catalog-grid .card-add-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
   .product-view {
     padding-top: 18px;
   }

@@ -116,7 +116,9 @@ export const ProductCard = memo(function ProductCard({
           <div className="brand-line" />
         </div>
         <span className="new-badge"><Sparkles size={11} /> New</span>
-        <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+        {product.status && product.status.toLowerCase() === 'bestseller' && (
+          <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+        )}
       </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />

@@ -1,14 +1,39 @@
-import { Layers, ShoppingBag, Heart, User, Headphones, MessageCircle, ArrowRight, X, PackageCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  BadgeCheck,
+  Headphones,
+  Layers,
+  MessageCircle,
+  PackageCheck,
+  Sparkles,
+  Store,
+  User,
+  X,
+} from 'lucide-react';
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
-export function MobileMenu({ onClose, navigate, user, openAuth }) {
+export function MobileMenu({ onClose, navigate, setCategory, user, openAuth }) {
   const navItems = [
-    { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>, label: 'Home', action: () => navigate('home') },
     { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
-    { icon: <ShoppingBag size={20} />, label: 'Collections', action: () => navigate('catalog') },
-    { icon: <PackageCheck size={20} />, label: 'Bulk Inquiry', action: () => navigate('bulk-inquiry') },
-    { icon: <Heart size={20} />, label: 'Favourites', action: () => navigate('favorites') },
+    {
+      icon: <BadgeCheck size={20} />,
+      label: 'Bestsellers',
+      action: () => {
+        setCategory('Bestsellers');
+        navigate('catalog');
+      },
+    },
+    {
+      icon: <Sparkles size={20} />,
+      label: 'New Arrivals',
+      action: () => {
+        setCategory('All');
+        navigate('catalog');
+      },
+    },
+    { icon: <PackageCheck size={20} />, label: 'Bulk Order', action: () => navigate('bulk-inquiry') },
+    { icon: <Store size={20} />, label: 'Catalogue', action: () => navigate('catalog') },
   ];
 
   return (

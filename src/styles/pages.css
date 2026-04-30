@@ -367,6 +367,59 @@ button {
   line-height: 1.5;
 }
 
+@media screen and (min-width: 1900px) {
+  .feature-strip {
+    min-height: 124px;
+    padding: 34px 36px;
+  }
+
+  .benefit-strip {
+    min-height: 104px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .feature-strip div {
+    padding: 0 24px;
+    gap: 14px;
+  }
+
+  .benefit-strip div {
+    padding: 0 24px;
+    gap: 14px;
+  }
+
+  .feature-strip svg {
+    width: 46px;
+    height: 46px;
+  }
+
+  .benefit-strip svg {
+    width: 42px;
+    height: 42px;
+  }
+
+  .feature-strip strong {
+    margin-bottom: 7px;
+    font-size: 14px;
+  }
+
+  .benefit-strip strong {
+    margin-bottom: 7px;
+    font-size: 14px;
+  }
+
+  .feature-strip span {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .benefit-strip span {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
 .section {
   width: min(1280px, calc(100% - 96px));
   margin: 0 auto;
@@ -518,6 +571,7 @@ button {
 .scroll-wrapper {
   position: relative;
   width: 100%;
+  overflow: visible;
 }
 
 .scroll-arrow {
@@ -562,12 +616,15 @@ button {
 }
 
 .scrollable-row {
+  --rail-gap: 20px;
   display: flex !important;
   overflow-x: auto;
   overflow-y: hidden;
-  gap: 20px;
-  padding-bottom: 20px;
-  margin-bottom: -20px;
+  gap: var(--rail-gap);
+  padding: 18px 2px 58px;
+  margin: -18px -2px 0;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   /* Hide for cleaner look */
 }
@@ -578,7 +635,20 @@ button {
 
 .scrollable-row>* {
   flex: 0 0 260px;
+  scroll-snap-align: start;
   /* Fixed width for items in scrollable row */
+}
+
+@media screen and (min-width: 821px) {
+  .scrollable-row>* {
+    flex-basis: calc((100% - (var(--rail-gap) * 4)) / 5);
+  }
+}
+
+@media screen and (min-width: 1900px) {
+  .scrollable-row>* {
+    flex-basis: calc((100% - (var(--rail-gap) * 5)) / 6);
+  }
 }
 
 .catalog-grid {
@@ -589,7 +659,7 @@ button {
 .product-card {
   position: relative;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 8px;
   background: #fffcf8;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
   display: flex;
@@ -602,6 +672,11 @@ button {
   box-shadow: 0 20px 40px rgba(58, 41, 26, 0.13);
 }
 
+.scrollable-row .product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 38px rgba(58, 41, 26, 0.14);
+}
+
 .image-button {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -610,7 +685,7 @@ button {
   background: var(--surface-muted);
   position: relative;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .image-button img {
@@ -1827,14 +1902,11 @@ button {
 
 .reseller-actions .gold-button {
   min-width: 170px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
-  background: linear-gradient(180deg, #c8934c, #b9823f);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
 .reseller-actions .gold-button:hover {
-  background: linear-gradient(180deg, #d19b54, #a97738);
+  background: var(--gold-dark);
   transform: translateY(-1px);
 }
 

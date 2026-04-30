@@ -237,11 +237,11 @@ export function ProductDetail({
               <div className="design-thumb-row">
                 {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img 
-                      src={image} 
-                      alt={`${product.title} design`} 
-                      loading="lazy" 
-                      decoding="async" 
+                    <img
+                      src={image}
+                      alt={`${product.title} design`}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => { e.target.style.opacity = '0'; }}
                     />
                   </button>
@@ -350,11 +350,11 @@ export function ProductDetail({
               <div className="design-thumb-row">
                 {designStripImages.map((image) => (
                   <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img 
-                      src={image} 
-                      alt={`${product.title} design`} 
-                      loading="lazy" 
-                      decoding="async" 
+                    <img
+                      src={image}
+                      alt={`${product.title} design`}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => { e.target.style.opacity = '0'; }}
                     />
                   </button>

@@ -1,17 +1,17 @@
-import { Award, Tag, Truck, Headphones, PackageCheck, ShieldCheck } from 'lucide-react';
+import { Award, BadgeIndianRupee, HeartHandshake, PackagePlus, Tag, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 
 const featureStripItems = [
-  { icon: Award, title: 'Premium Quality', copy: 'Finest fabrics, crafted to perfection' },
-  { icon: Tag, title: 'Best Wholesale Prices', copy: 'Competitive pricing for maximum profit' },
-  { icon: Truck, title: 'Pan India Delivery', copy: 'Safe and fast delivery across India' },
-  { icon: Headphones, title: 'Dedicated Support', copy: '24/7 support for all your business needs' },
+  { icon: BadgeIndianRupee, title: 'Bulk Pricing Advantage', copy: 'Better margins for wholesale buyers' },
+  { icon: PackagePlus, title: 'Daily New Stock', copy: 'Fresh catalog updates for repeat buying' },
+  { icon: Truck, title: 'Pan India + Export Delivery', copy: 'Reliable dispatch across India and overseas' },
+  { icon: Award, title: 'Low MOQ / Flexible Buying', copy: 'Start small and scale your orders easily' },
 ];
 
 const benefitStripItems = [
-  { icon: PackageCheck, title: 'Easy Returns', copy: 'Hassle-free returns for eligible issues' },
-  { icon: ShieldCheck, title: 'Secure Payments', copy: '100% secure payments and data safety' },
-  { icon: Tag, title: 'Bulk Discounts', copy: 'Special offers on bulk and repeat orders' },
-  { icon: Truck, title: 'Fast Dispatch', copy: 'Quick processing and on-time dispatch' },
+  { icon: PackageCheck, title: '1000+ Designs Available', copy: 'Wide catalog depth for every market' },
+  { icon: ShieldCheck, title: '500+ Active Buyers', copy: 'Trusted by repeat wholesale customers' },
+  { icon: Tag, title: '10+ Years in Banaras Network', copy: 'Strong sourcing relationships and local reach' },
+  { icon: HeartHandshake, title: '95% Repeat Buyer Rate', copy: 'Reliable products, pricing, and dispatch' },
 ];
 
 export function FeatureStrip() {

@@ -119,7 +119,7 @@ export default function App() {
 
   const categories = useMemo(() => {
     const names = products.map((product) => product.fabric || product.category).filter(Boolean);
-    return ['All', ...Array.from(new Set(names))];
+    return ['All', 'Bestsellers', ...Array.from(new Set(names))];
   }, [products]);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
@@ -131,7 +131,10 @@ export default function App() {
         .toLowerCase();
       const matchesSearch = text.includes(searchTerm);
       const matchesCategory =
-        category === 'All' || product.fabric === category || product.category === category;
+        category === 'All' ||
+        (category === 'Bestsellers' && product.status && product.status.toLowerCase() === 'bestseller') ||
+        product.fabric === category ||
+        product.category === category;
       return matchesSearch && matchesCategory;
     });
   }, [category, products, searchTerm]);
@@ -232,9 +235,16 @@ export default function App() {
         <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
           <Menu size={22} />
         </button>
-        <button className="brand" type="button" onClick={() => navigate('home')}>
+        <a 
+          href="/" 
+          className="brand" 
+          onClick={(e) => { 
+            e.preventDefault(); 
+            navigate('home'); 
+          }}
+        >
           <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
-        </button>
+        </a>
         <nav className="main-nav">
           {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
             Home
@@ -266,7 +276,7 @@ export default function App() {
               </div>
             )}
           </div>
-          <a href="#">Bestsellers</a>
+          <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
           <a href="#">New Arrivals</a>
           <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
             Bulk Order
@@ -341,6 +351,7 @@ export default function App() {
         <MobileMenu
           onClose={() => setMenuOpen(false)}
           navigate={navigate}
+          setCategory={setCategory}
           user={user}
           openAuth={() => setAuthOpen(true)}
         />
@@ -409,7 +420,7 @@ export default function App() {
         </Suspense>
       </main>
 
-      <Footer />
+      <Footer navigate={navigate} />
       <CartDrawer
         open={cartOpen}
         onClose={() => setCartOpen(false)}
