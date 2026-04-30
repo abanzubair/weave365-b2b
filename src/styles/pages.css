@@ -1568,8 +1568,7 @@ button {
   height: 100%;
   border-radius: 14px;
   overflow: hidden;
-  background: var(--ink);
-  border: 3px solid var(--ink);
+  border: 1px solid var(--line);
 }
 
 .highlight-image img {
