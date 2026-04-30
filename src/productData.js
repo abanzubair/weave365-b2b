@@ -115,12 +115,10 @@ export function parseProductCsv(text) {
     const statusLower = (product.status || '').toLowerCase().trim();
     const isOutOfStock = statusLower === 'out of stock';
     const isFastMoving = statusLower === 'fast moving';
-    const newColumnKey = Object.keys(product.raw).find(k => k.trim().toLowerCase() === 'new');
-    const newColumnVal = newColumnKey ? String(product.raw[newColumnKey]).toLowerCase().trim() : '';
-    const isManualNew = statusLower.includes('new') || ['yes', 'true', '1', 'new'].includes(newColumnVal);
+    const isManualNew = statusLower.includes('new');
 
     const isDateNew = product.stockInDate
-      ? (now - product.stockInDate) <= 30 * 24 * 60 * 60 * 1000
+      ? (now - product.stockInDate) <= 15 * 24 * 60 * 60 * 1000
       : false;
 
     const isNew = isManualNew || isDateNew;
