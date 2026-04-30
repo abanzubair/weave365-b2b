@@ -712,7 +712,11 @@ button {
   pointer-events: none;
 }
 
-.new-badge {
+.card-new-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -724,6 +728,8 @@ button {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
 }
 
 .bestseller-badge {

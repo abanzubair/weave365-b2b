@@ -102,9 +102,7 @@ export const ProductCard = memo(function ProductCard({
     ? { className: 'out-of-stock-badge', icon: null, label: 'Out of Stock' }
     : product.isFastMoving
       ? { className: 'fast-moving-badge', icon: <Flame size={11} />, label: 'Fast Moving' }
-      : product.isNew
-        ? { className: 'new-badge', icon: <Sparkles size={11} />, label: 'New' }
-        : null;
+      : null;
   const isBestseller = product.status?.toLowerCase() === 'bestseller';
 
 
@@ -120,6 +118,11 @@ export const ProductCard = memo(function ProductCard({
         />
         {product.isOutOfStock && (
           <span className="out-of-stock-overlay" />
+        )}
+        {product.isNew && (
+          <span className="card-new-tag">
+            <Sparkles size={11} /> New
+          </span>
         )}
         <div className="card-brand-vertical">
           <BadgeCheck size={14} />
