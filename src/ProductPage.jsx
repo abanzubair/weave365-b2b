@@ -252,7 +252,12 @@ export function ProductDetail({
 
           <aside className="product-info-panel">
             <div className="panel-topline">
-              <span className="pill">Wholesale Only</span>
+              <div className="panel-status-tags">
+                <span className="pill">Wholesale Only</span>
+                {product.isNew && <span className="pill pill-new">New Arrival</span>}
+                {product.isFastMoving && <span className="pill pill-fast">Fast Moving</span>}
+                {product.isOutOfStock && <span className="pill pill-stock">Out of Stock</span>}
+              </div>
               <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
                 <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
               </button>

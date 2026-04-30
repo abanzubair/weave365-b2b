@@ -190,6 +190,7 @@ function parseCode(code = '', preCode = '', color = '') {
 }
 
 function productTitle(row, category) {
+  if (row.Name) return row.Name;
   if (row['Product Name']) return row['Product Name'];
   if (row.Title) return row.Title;
 

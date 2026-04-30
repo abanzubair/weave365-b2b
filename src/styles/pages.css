@@ -1697,6 +1697,28 @@ button {
   text-transform: uppercase;
 }
 
+.panel-status-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill-new {
+  background: var(--gold);
+  color: #fff;
+}
+
+.pill-fast {
+  background: #fffcf8;
+  border: 1px solid rgba(183, 134, 70, 0.3);
+  color: var(--gold-dark);
+}
+
+.pill-stock {
+  background: #6b5c52;
+  color: #fff;
+}
+
 .price-block {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
