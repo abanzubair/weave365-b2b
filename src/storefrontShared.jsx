@@ -98,7 +98,14 @@ export const ProductCard = memo(function ProductCard({
 }) {
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
-
+  const statusBadge = product.isOutOfStock
+    ? { className: 'out-of-stock-badge', icon: null, label: 'Out of Stock' }
+    : product.isFastMoving
+      ? { className: 'fast-moving-badge', icon: <Flame size={11} />, label: 'Fast Moving' }
+      : product.isNew
+        ? { className: 'new-badge', icon: <Sparkles size={11} />, label: 'New' }
+        : null;
+  const isBestseller = product.status?.toLowerCase() === 'bestseller';
 
 
   return (
@@ -119,17 +126,15 @@ export const ProductCard = memo(function ProductCard({
           <span>Weave 365</span>
           <div className="brand-line" />
         </div>
-        {product.isOutOfStock && (
-          <span className="out-of-stock-badge">Out of Stock</span>
-        )}
-        {!product.isOutOfStock && product.isFastMoving && (
-          <span className="fast-moving-badge"><Flame size={11} /> Fast Moving</span>
-        )}
-        {!product.isOutOfStock && !product.isFastMoving && product.isNew && (
-          <span className="new-badge"><Sparkles size={11} /> New</span>
-        )}
-        {product.status && product.status.toLowerCase() === 'bestseller' && (
-          <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+        {(statusBadge || isBestseller) && (
+          <span className="card-status-row">
+            {statusBadge && (
+              <span className={statusBadge.className}>{statusBadge.icon}{statusBadge.label}</span>
+            )}
+            {isBestseller && (
+              <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
+            )}
+          </span>
         )}
       </button>
       <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">

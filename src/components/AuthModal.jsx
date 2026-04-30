@@ -18,7 +18,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
       const demoUser = { id: email || 'demo-user', email: email || 'demo@sareeva.local' };
       localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
       setUser(demoUser);
-      setMessage('Demo login active. Add Supabase keys in .env for real accounts.');
+      setMessage('Demo login active. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
       return;
     }
 
@@ -54,7 +54,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
           <>
             <h2>Your Account</h2>
             <p>{user.email || 'Demo account'}</p>
-            {!isSupabaseConfigured && <p className="warning">Demo mode: configure Supabase env keys for real login.</p>}
+            {!isSupabaseConfigured && <p className="warning">Demo mode: configure Supabase in .env or .env.local for real login.</p>}
             <button className="secondary-button icon-label" onClick={logout}>
               <LogOut size={18} /> Logout
             </button>
