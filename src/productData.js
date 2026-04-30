@@ -237,12 +237,16 @@ function parseStockInDate(row) {
   const val = String(row[key] || '').trim();
   if (!val) return null;
 
-  // Try DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, or ISO format
-  const dmy = val.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  // Try DD/MM/YY, DD-MM-YY, DD/MM/YYYY, DD-MM-YYYY
+  const dmy = val.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{2,4})$/);
   if (dmy) {
-    const [, a, b, year] = dmy;
+    const [, a, b, yearStr] = dmy;
+    let year = Number(yearStr);
+    if (yearStr.length === 2) {
+      year += 2000;
+    }
     // Assume DD/MM/YYYY (Indian date format)
-    const date = new Date(Number(year), Number(b) - 1, Number(a));
+    const date = new Date(year, Number(b) - 1, Number(a));
     if (!isNaN(date.getTime())) return date;
   }
 
