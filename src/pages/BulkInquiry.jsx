@@ -40,7 +40,6 @@ export function BulkInquiry({ navigate }) {
   const [inquiry, setInquiry] = useState(initialInquiry);
   const [selectedPreferences, setSelectedPreferences] = useState([]);
   const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState({});
 
   const whatsappUrl = useMemo(
     () => buildBulkInquiryWhatsappUrl(inquiry, selectedPreferences),
@@ -52,13 +51,6 @@ export function BulkInquiry({ navigate }) {
       ...current,
       [field]: field === 'pincode' ? normalizePincodeInput(value) : value,
     }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
-    }
   }
 
   function togglePreference(preference) {
@@ -69,31 +61,8 @@ export function BulkInquiry({ navigate }) {
     );
   }
 
-  function validateForm() {
-    const newErrors = {};
-    if (!inquiry.name.trim()) newErrors.name = 'Name is required';
-    else if (inquiry.name.trim().length < 3) newErrors.name = 'Name must be at least 3 characters';
-
-    const phoneRegex = /^[6-9]\d{9}$/;
-    const cleanPhone = inquiry.phone.replace(/\D/g, '');
-    if (!inquiry.phone) newErrors.phone = 'Phone number is required';
-    else if (!phoneRegex.test(cleanPhone)) newErrors.phone = 'Enter valid 10-digit mobile number';
-
-    if (inquiry.email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(inquiry.email)) newErrors.email = 'Enter valid email address';
-    }
-
-    if (inquiry.pincode && inquiry.pincode.length !== 6) newErrors.pincode = 'Enter 6-digit pincode';
-    if (!inquiry.quantity.trim()) newErrors.quantity = 'Quantity is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
   function submitInquiry(event) {
     event.preventDefault();
-    if (!validateForm()) return;
     setSubmitted(true);
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
@@ -138,34 +107,30 @@ export function BulkInquiry({ navigate }) {
               </span>
             </div>
             <div className="bulk-field-grid two-columns">
-              <label className={errors.name ? 'has-error' : ''}>
+              <label>
                 Name
-                <input value={inquiry.name} onChange={(event) => updateField('name', event.target.value)} placeholder="Full Name" />
-                {errors.name && <span className="field-error">{errors.name}</span>}
+                <input value={inquiry.name} onChange={(event) => updateField('name', event.target.value)} required />
               </label>
               <label>
                 Business / Shop Name
-                <input value={inquiry.businessName} onChange={(event) => updateField('businessName', event.target.value)} placeholder="Shop Name" />
+                <input value={inquiry.businessName} onChange={(event) => updateField('businessName', event.target.value)} />
               </label>
-              <label className={errors.phone ? 'has-error' : ''}>
+              <label>
                 Phone
                 <input
                   value={inquiry.phone}
                   onChange={(event) => updateField('phone', event.target.value)}
                   inputMode="tel"
-                  placeholder="10-digit Mobile"
+                  required
                 />
-                {errors.phone && <span className="field-error">{errors.phone}</span>}
               </label>
-              <label className={errors.email ? 'has-error' : ''}>
+              <label>
                 Email
                 <input
                   type="email"
                   value={inquiry.email}
                   onChange={(event) => updateField('email', event.target.value)}
-                  placeholder="your@email.com"
                 />
-                {errors.email && <span className="field-error">{errors.email}</span>}
               </label>
               <label>
                 City
@@ -195,14 +160,14 @@ export function BulkInquiry({ navigate }) {
                   ))}
                 </select>
               </label>
-              <label className={errors.quantity ? 'has-error' : ''}>
+              <label>
                 Quantity / Sets
                 <input
                   value={inquiry.quantity}
                   onChange={(event) => updateField('quantity', event.target.value)}
                   placeholder="Example: 50 pieces"
+                  required
                 />
-                {errors.quantity && <span className="field-error">{errors.quantity}</span>}
               </label>
               <label>
                 Budget
@@ -253,16 +218,14 @@ export function BulkInquiry({ navigate }) {
               </span>
             </div>
             <div className="bulk-field-grid two-columns">
-              <label className={errors.pincode ? 'has-error' : ''}>
+              <label>
                 Delivery Pincode
                 <input
                   value={inquiry.pincode}
                   onChange={(event) => updateField('pincode', event.target.value)}
                   inputMode="numeric"
                   maxLength={6}
-                  placeholder="6-digit Pincode"
                 />
-                {errors.pincode && <span className="field-error">{errors.pincode}</span>}
               </label>
               <label>
                 Timeline
