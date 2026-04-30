@@ -87,6 +87,7 @@ export function parseProductCsv(text) {
       purity: row.Purity,
       type: row.Type,
       status: row.Status,
+      stockInDate: parseStockInDate(row),
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
@@ -109,14 +110,27 @@ export function parseProductCsv(text) {
     products.set(groupKey, product);
   }
 
-  return Array.from(products.values()).map((product) => ({
-    ...product,
-    images: unique(product.images),
-    variants: product.variants.map((variant, index) => ({
-      ...variant,
-      image: variant.image || product.images[index] || product.images[0],
-    })),
-  }));
+  const now = new Date();
+  return Array.from(products.values()).map((product) => {
+    const statusLower = (product.status || '').toLowerCase().trim();
+    const isOutOfStock = statusLower === 'out of stock';
+    const isFastMoving = statusLower === 'fast moving';
+    const isNew = product.stockInDate
+      ? (now - product.stockInDate) <= 30 * 24 * 60 * 60 * 1000
+      : false;
+
+    return {
+      ...product,
+      isNew,
+      isOutOfStock,
+      isFastMoving,
+      images: unique(product.images),
+      variants: product.variants.map((variant, index) => ({
+        ...variant,
+        image: variant.image || product.images[index] || product.images[0],
+      })),
+    };
+  });
 }
 
 function normalizeRow(row) {
@@ -212,6 +226,24 @@ function driveVideoUrl(link) {
   const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
   if (!idMatch) return value;
   return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+}
+
+function parseStockInDate(row) {
+  const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'stock in') || 'Stock in';
+  const val = String(row[key] || '').trim();
+  if (!val) return null;
+
+  // Try DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, or ISO format
+  const dmy = val.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  if (dmy) {
+    const [, a, b, year] = dmy;
+    // Assume DD/MM/YYYY (Indian date format)
+    const date = new Date(Number(year), Number(b) - 1, Number(a));
+    if (!isNaN(date.getTime())) return date;
+  }
+
+  const parsed = new Date(val);
+  return isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function unique(items) {

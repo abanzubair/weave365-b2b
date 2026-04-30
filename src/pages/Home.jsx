@@ -47,14 +47,15 @@ export function Home({
     [products, fallbackHeroImage]
   );
 
-  const arrivals = useMemo(() => 
-    products.slice(0, 8).map(p => ({
+  const arrivals = useMemo(() => {
+    const newProducts = products.filter(p => p.isNew);
+    const source = newProducts.length > 0 ? newProducts.slice(0, 8) : products.slice(0, 8);
+    return source.map(p => ({
       product: p,
       image: p.images[0] || fallbackHeroImage,
       variant: p.variants[0]
-    })), 
-    [products, fallbackHeroImage]
-  );
+    }));
+  }, [products, fallbackHeroImage]);
 
   const categoryImages = useMemo(() => {
     const map = {};

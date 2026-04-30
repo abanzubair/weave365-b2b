@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Download,
   Feather,
+  Flame,
   Flower,
   Heart,
   Headphones,
@@ -110,12 +111,23 @@ export const ProductCard = memo(function ProductCard({
           decoding="async"
           onError={(e) => { e.target.style.opacity = '0'; }}
         />
+        {product.isOutOfStock && (
+          <span className="out-of-stock-overlay" />
+        )}
         <div className="card-brand-vertical">
           <BadgeCheck size={14} />
           <span>Weave 365</span>
           <div className="brand-line" />
         </div>
-        <span className="new-badge"><Sparkles size={11} /> New</span>
+        {product.isOutOfStock && (
+          <span className="out-of-stock-badge">Out of Stock</span>
+        )}
+        {!product.isOutOfStock && product.isFastMoving && (
+          <span className="fast-moving-badge"><Flame size={11} /> Fast Moving</span>
+        )}
+        {!product.isOutOfStock && !product.isFastMoving && product.isNew && (
+          <span className="new-badge"><Sparkles size={11} /> New</span>
+        )}
         {product.status && product.status.toLowerCase() === 'bestseller' && (
           <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
         )}
@@ -142,8 +154,12 @@ export const ProductCard = memo(function ProductCard({
           >
             <MessageCircle size={16} /> Enquire
           </a>
-          <button className="card-add-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={16} /> Add to Bag
+          <button
+            className={`card-add-btn${product.isOutOfStock ? ' disabled' : ''}`}
+            onClick={() => !product.isOutOfStock && addToCart(product, selectedVariant, 1)}
+            disabled={product.isOutOfStock}
+          >
+            <ShoppingBag size={16} /> {product.isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
           </button>
         </div>
       </div>

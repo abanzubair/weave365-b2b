@@ -736,6 +736,69 @@ button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.out-of-stock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(245, 240, 235, 0.55);
+  pointer-events: none;
+}
+
+.out-of-stock-badge {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #6b5c52;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.fast-moving-badge {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e85d26, #f59e0b);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  animation: fastMovingPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes fastMovingPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 93, 38, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(232, 93, 38, 0); }
+}
+
+.card-add-btn.disabled,
+.card-add-btn:disabled {
+  background: #ccc3ba;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.card-add-btn.disabled:hover,
+.card-add-btn:disabled:hover {
+  background: #ccc3ba;
+  transform: none;
+}
+
 .fav-button {
   position: absolute;
   z-index: 3;

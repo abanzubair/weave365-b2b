@@ -119,7 +119,7 @@ export default function App() {
 
   const categories = useMemo(() => {
     const names = products.map((product) => product.fabric || product.category).filter(Boolean);
-    return ['All', 'Bestsellers', ...Array.from(new Set(names))];
+    return ['All', 'New Arrivals', 'Bestsellers', ...Array.from(new Set(names))];
   }, [products]);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
@@ -132,6 +132,7 @@ export default function App() {
       const matchesSearch = text.includes(searchTerm);
       const matchesCategory =
         category === 'All' ||
+        (category === 'New Arrivals' && product.isNew) ||
         (category === 'Bestsellers' && product.status && product.status.toLowerCase() === 'bestseller') ||
         product.fabric === category ||
         product.category === category;
@@ -277,7 +278,7 @@ export default function App() {
             )}
           </div>
           <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
-          <a href="#">New Arrivals</a>
+          <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
           <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
             Bulk Order
           </button>
