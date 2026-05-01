@@ -859,7 +859,7 @@ button {
 .product-card-code {
   display: block;
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.2px;
@@ -869,7 +869,9 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 16px 0 8px;
+  margin-top: auto;
+  margin-bottom: 8px;
+  padding-top: 16px;
 }
 
 .card-price-divider::after {
@@ -966,7 +968,6 @@ button {
 .card-actions {
   display: flex;
   gap: 8px;
-  margin-top: auto;
   padding-top: 16px;
 }
 
@@ -978,7 +979,7 @@ button {
   justify-content: center;
   gap: 5px;
   border: 1px solid #f2ece6;
-  border-radius: 10px;
+  border-radius: 6px;
   background: #fdfaf7;
   color: var(--ink);
   font-size: 12px;
@@ -1000,7 +1001,7 @@ button {
   gap: 6px;
   height: 42px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   background: var(--gold);
   color: #fff;
   font-size: 12px;

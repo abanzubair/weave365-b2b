@@ -1,5 +1,6 @@
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
+import { Linkedin, Instagram, Youtube, Facebook, Phone, Mail, Clock } from 'lucide-react';
 
 export function Footer({ navigate }) {
   return (
@@ -33,16 +34,16 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Social Links</h3>
-        <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer">LinkedIn</a>
-        <a href="https://www.instagram.com/weaves365.wholesale" target="_blank" rel="noreferrer">Instagram</a>
-        <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer">Youtube</a>
-        <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer">Facebook</a>
+        <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><Linkedin size={18} /> LinkedIn</a>
+        <a href="https://www.instagram.com/weaves365.wholesale" target="_blank" rel="noreferrer"><Instagram size={18} /> Instagram</a>
+        <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer"><Youtube size={18} /> Youtube</a>
+        <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer"><Facebook size={18} /> Facebook</a>
       </div>
       <div>
         <h3>Get In Touch</h3>
-        <p>{storeConfig.phone}</p>
-        <p>{storeConfig.email}</p>
-        <p>Mon - Sat (10AM - 6PM)</p>
+        <p><Phone size={18} /> {storeConfig.phone}</p>
+        <p><Mail size={18} /> {storeConfig.email}</p>
+        <p><Clock size={18} /> Mon - Sat (10AM - 6PM)</p>
       </div>
     </footer>
   );

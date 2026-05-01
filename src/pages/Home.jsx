@@ -194,7 +194,7 @@ export function Home({
         </div>
         <div className="stats-panel">
           <Stat icon={<User />} value="1000+" label="Unique Designs" />
-          <Stat icon={<Heart />} value="500+" label="Happy Customers" />
+          <Stat icon={<Heart />} value="500+" label="Active Buyers" />
           <Stat icon={<Award />} value="10+" label="Years of Trust" />
           <Stat icon={<CheckCircle2 />} value="100%" label="Quality Assured" />
         </div>
