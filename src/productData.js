@@ -86,7 +86,7 @@ export function parseProductCsv(text) {
       weave: row.Weave,
       purity: row.Purity,
       type: row.Type,
-      status: row.Status,
+      status: row.Tag || row.Status,
       stockInDate: parseStockInDate(row),
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),

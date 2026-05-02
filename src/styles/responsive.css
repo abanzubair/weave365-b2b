@@ -350,7 +350,7 @@
     gap: 14px;
     margin: 18px -17px 0;
     padding: 4px 17px 12px;
-    
+
     scrollbar-width: none;
   }
 
@@ -360,7 +360,7 @@
 
   .category-grid .category-card {
     flex: 0 0 170px;
-    
+
   }
 
   .scrollable-mobile {
@@ -368,7 +368,7 @@
     overflow-x: auto;
     gap: 16px !important;
     padding: 4px 2px 20px;
-    
+
     scrollbar-width: none;
     margin: 0 -17px;
     padding-left: 17px;
@@ -381,7 +381,7 @@
 
   .scrollable-mobile .product-card {
     flex: 0 0 240px;
-    
+
     border-radius: 8px;
   }
 
@@ -406,9 +406,14 @@
     padding: 10px 10px 12px;
   }
 
-  .card-actions { gap: 6px; }
+  .card-actions {
+    gap: 6px;
+  }
 
-  .card-wa-btn { width: 32px; height: 32px; }
+  .card-wa-btn {
+    width: 32px;
+    height: 32px;
+  }
 
   .card-actions button {
     padding: 6px 8px;
