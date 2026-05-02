@@ -126,7 +126,17 @@ export default function App() {
 
   const visibleProducts = useMemo(() => {
     return products.filter((product) => {
-      const text = [product.title, product.fabric, product.work, product.occasion, product.category]
+      const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
+      const text = [
+        product.title,
+        product.fabric,
+        product.work,
+        product.occasion,
+        product.category,
+        product.groupKey,
+        variantCodes,
+      ]
+        .filter(Boolean)
         .join(' ')
         .toLowerCase();
       const matchesSearch = text.includes(searchTerm);
