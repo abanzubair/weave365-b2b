@@ -5,6 +5,7 @@ import {
   Layers,
   MessageCircle,
   PackageCheck,
+  Search,
   Sparkles,
   Store,
   User,
@@ -13,7 +14,11 @@ import {
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
-export function MobileMenu({ onClose, navigate, setCategory, user, openAuth }) {
+import { fallbackProductImage, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { useState } from 'react';
+
+export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, search, setSearch, visibleProducts }) {
+  const [localSearch, setLocalSearch] = useState(search || '');
   const navItems = [
     { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
     {
@@ -45,6 +50,62 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth }) {
           <button className="icon-button" onClick={onClose} aria-label="Close menu">
             <X size={22} />
           </button>
+        </div>
+        <div className="mobile-menu-search">
+          <label className="mobile-search-box">
+            <Search size={18} />
+            <input
+              value={localSearch}
+              onChange={(e) => {
+                setLocalSearch(e.target.value);
+                setSearch(e.target.value);
+              }}
+              placeholder="Search products..."
+              autoFocus
+            />
+          </label>
+          {localSearch.trim() && (
+            <div className="mobile-search-results">
+              {visibleProducts.length > 0 ? (
+                <>
+                  {visibleProducts.slice(0, 5).map((product) => {
+                    const price = customerPrice(product.variants?.[0]?.prices || {});
+                    const image = product.images?.[0] || fallbackProductImage;
+                    return (
+                      <button
+                        key={product.id}
+                        className="mobile-search-item"
+                        onClick={() => {
+                          setSearch('');
+                          navigate('product', product.id);
+                        }}
+                      >
+                        <img
+                          src={image}
+                          alt=""
+                          onError={(e) => { e.target.style.opacity = '0'; }}
+                        />
+                        <div>
+                          <span>{product.name || product.title}</span>
+                          {price > 0 && <small>{formatMoney(price)}</small>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  <button
+                    className="mobile-search-view-all"
+                    onClick={() => {
+                      navigate('catalog');
+                    }}
+                  >
+                    See all results for "{localSearch}"
+                  </button>
+                </>
+              ) : (
+                <div className="mobile-search-empty">No products found</div>
+              )}
+            </div>
+          )}
         </div>
         <nav className="mobile-menu-nav">
           {navItems.map(({ icon, label, action }) => (

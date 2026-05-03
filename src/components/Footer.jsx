@@ -20,10 +20,10 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Quick Links</h3>
-        <a>Home</a>
-        <a>Categories</a>
-        <a>Collections</a>
-        <a>Contact Us</a>
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
+        <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }}>Shop Catalogue</a>
+        <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }}>Bulk Order</a>
+        <a href="/favorites" onClick={(e) => { e.preventDefault(); navigate('favorites'); }}>My Favorites</a>
       </div>
       <div>
         <h3>Customer Service</h3>

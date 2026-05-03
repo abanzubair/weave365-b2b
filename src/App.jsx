@@ -98,6 +98,34 @@ export default function App() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [dropdownOpen]);
 
+  /* Mobile: transparent header → frosted on scroll */
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 820px)');
+
+    function update() {
+      const header = document.querySelector('.site-header');
+      if (!header) return;
+      if (!mq.matches) {
+        header.classList.remove('scrolled');
+        return;
+      }
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    mq.addEventListener('change', update);
+    update();
+
+    return () => {
+      window.removeEventListener('scroll', update);
+      mq.removeEventListener('change', update);
+    };
+  }, []);
+
   useEffect(() => {
     if (!user) {
       setCart([]);
@@ -365,6 +393,9 @@ export default function App() {
           setCategory={setCategory}
           user={user}
           openAuth={() => setAuthOpen(true)}
+          search={search}
+          setSearch={setSearch}
+          visibleProducts={visibleProducts}
         />
       )}
 

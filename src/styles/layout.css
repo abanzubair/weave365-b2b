@@ -316,6 +316,126 @@
   color: var(--gold);
 }
 
+/* ---- Mobile Menu: Search ---- */
+.mobile-menu-search {
+  padding: 14px 20px 6px;
+}
+
+.mobile-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: #f5ece2;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.mobile-search-box:focus-within {
+  background: #fff;
+  border-color: var(--gold);
+}
+
+.mobile-search-box input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 14px;
+}
+
+.mobile-search-box svg {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.mobile-search-results {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.mobile-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid #f5f0ec;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.mobile-search-item:hover,
+.mobile-search-item:active {
+  background: var(--surface-soft);
+}
+
+.mobile-search-item img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  flex: 0 0 auto;
+}
+
+.mobile-search-item div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-search-item span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-search-item small {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.mobile-search-view-all {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: var(--surface-soft);
+  border-top: 1px solid var(--line);
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.mobile-search-empty {
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* --- Ultra Wide Screens (1920x1080 and above) --- */
 @media screen and (min-width: 1900px) {
 
