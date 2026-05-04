@@ -171,7 +171,7 @@ export default function App() {
       const matchesCategory =
         category === 'All' ||
         (category === 'New Arrivals' && product.isNew) ||
-        (category === 'Bestsellers' && product.status && product.status.toLowerCase() === 'bestseller') ||
+        (category === 'Bestsellers' && product.isTopSeller) ||
         product.fabric === category ||
         product.category === category;
       return matchesSearch && matchesCategory;

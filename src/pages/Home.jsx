@@ -37,7 +37,7 @@ export function Home({
 
   const bestsellers = useMemo(() => 
     products
-      .filter(p => p.status && p.status.toLowerCase() === 'bestseller')
+      .filter((p) => p.isTopSeller)
       .slice(0, 8)
       .map(p => ({
         product: p,

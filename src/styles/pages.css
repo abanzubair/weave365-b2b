@@ -712,39 +712,33 @@ button {
   pointer-events: none;
 }
 
-.card-new-tag {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 3;
+.card-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
-  background: var(--gold);
-  color: #fff;
+  border: 1px solid rgba(139, 107, 67, 0.16);
+  background: rgba(255, 252, 248, 0.96);
+  color: #7f6448;
+  box-shadow: 0 8px 18px rgba(58, 41, 26, 0.08);
+  backdrop-filter: blur(10px);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
 }
 
-.bestseller-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 13px;
-  border-radius: 999px;
-  background: rgba(255, 252, 248, 0.98);
-  color: #8d6e52;
-  font-size: 12px;
-  font-weight: 700;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(141, 110, 82, 0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.card-status-new-arrival,
+.card-status-top-seller,
+.card-status-bestseller,
+.pill-new-arrival,
+.pill-top-seller,
+.pill-bestseller {
+  background: linear-gradient(135deg, #d6a157, #b78646);
+  border-color: rgba(183, 134, 70, 0.45);
+  color: #fff;
 }
 
 .out-of-stock-overlay {
@@ -755,48 +749,43 @@ button {
   pointer-events: none;
 }
 
-.out-of-stock-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: 999px;
+.card-status-out-of-stock,
+.pill-out-of-stock {
   background: #6b5c52;
+  border-color: rgba(107, 92, 82, 0.5);
   color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
-.fast-moving-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(183, 134, 70, 0.34);
-  background: rgba(255, 252, 248, 0.94);
+.card-status-high-demand,
+.card-status-fast-moving,
+.pill-high-demand,
+.pill-fast-moving {
+  background: rgba(255, 252, 248, 0.97);
+  border-color: rgba(183, 134, 70, 0.34);
   color: var(--gold-dark);
-  box-shadow: 0 8px 18px rgba(58, 41, 26, 0.12);
-  backdrop-filter: blur(8px);
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
-.fast-moving-badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--gold);
-  box-shadow: 0 0 0 3px rgba(183, 134, 70, 0.14);
+.card-status-low-moq,
+.card-status-ready-stock,
+.pill-low-moq,
+.pill-ready-stock {
+  background: rgba(245, 249, 245, 0.96);
+  border-color: rgba(107, 142, 110, 0.24);
+  color: #4f7156;
 }
 
-.fast-moving-badge svg {
-  display: none;
+.card-status-pre-order,
+.pill-pre-order {
+  background: rgba(248, 242, 233, 0.98);
+  border-color: rgba(183, 134, 70, 0.28);
+  color: #8c6239;
+}
+
+.card-status-todays-deal,
+.pill-todays-deal {
+  background: rgba(255, 247, 239, 0.98);
+  border-color: rgba(210, 130, 80, 0.26);
+  color: #b15b2f;
 }
 
 .card-add-btn.disabled,
@@ -1704,20 +1693,8 @@ button {
   flex-wrap: wrap;
 }
 
-.pill-new {
-  background: var(--gold);
-  color: #fff;
-}
-
-.pill-fast {
-  background: #fffcf8;
-  border: 1px solid rgba(183, 134, 70, 0.3);
-  color: var(--gold-dark);
-}
-
-.pill-stock {
-  background: #6b5c52;
-  color: #fff;
+.pill-status {
+  border: 1px solid transparent;
 }
 
 .price-block {

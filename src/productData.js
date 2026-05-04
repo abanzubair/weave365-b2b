@@ -34,9 +34,12 @@ export function parseProductCsv(text) {
 
   for (const rawRow of parsed.data) {
     const row = normalizeRow(rawRow);
-    const links = String(row['Product Link'] || '').split(',').map((s) => s.trim()).filter(Boolean);
-    const images = links.map(driveImageUrl);
-    const primaryImage = images[0] || '';
+    const coverImage = driveImageUrl(row.Cover);
+    const colorEntries = parseColorEntries(row['Product Link'] || row.Color);
+    const colorImages = colorEntries.map((entry) => driveImageUrl(entry.image)).filter(Boolean);
+    const images = unique([coverImage, ...colorImages]);
+
+    const primaryImage = images[0] || colorImages[0] || '';
     const hasCode = Boolean(row.Code);
     const hasProductData = hasCode || Boolean(row['Pre Code']) || Boolean(row.Category);
 
@@ -49,27 +52,26 @@ export function parseProductCsv(text) {
       continue;
     }
 
-    const codeInfo = parseCode(row.Code, row['Pre Code'], row.Color);
+    const codeInfo = parseCode(row.Code, row['Pre Code'], getPrimaryColorName(row.Color));
     const groupKey = codeInfo.groupKey;
     currentGroupKey = groupKey;
 
     const existing = products.get(groupKey);
-    const variant = buildVariant(row, codeInfo, primaryImage);
+    const variant = buildVariant(row, codeInfo, primaryImage, colorEntries);
 
     if (existing) {
       existing.variants.push(variant);
       if (images.length > 0) existing.images.push(...images);
-      
-      const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'color') || 'Color';
-      const val = String(row[key] || '').trim();
-      const p = parseInt(val, 10);
-      if (!isNaN(p) && p > 0 && existing.totalColors === null) {
-        existing.totalColors = p;
+      existing.colorOptions.push(...colorEntries);
+      const parsedTotalColors = parseTotalColors(row.Color, colorEntries);
+      if (parsedTotalColors > 0 && existing.totalColors === null) {
+        existing.totalColors = parsedTotalColors;
       }
       continue;
     }
 
     const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
+    const rawStatus = row.Tag || row.Status;
     const product = {
       id: groupKey,
       groupKey,
@@ -86,24 +88,21 @@ export function parseProductCsv(text) {
       weave: row.Weave,
       purity: row.Purity,
       type: row.Type,
-      status: row.Tag || row.Status,
+      status: rawStatus,
+      statusTags: parseStatusTags(rawStatus),
       stockInDate: parseStockInDate(row),
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
       images: images,
       variants: [variant],
+      colorOptions: colorEntries,
       weight: (function() {
         const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'weight') || 'Weight';
         const val = String(row[key] || '').replace(/[^\d.]/g, '');
         return val ? Number(val) : null;
       })(),
-      totalColors: (function() {
-        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'color') || 'Color';
-        const val = String(row[key] || '').trim();
-        const p = parseInt(val, 10);
-        return isNaN(p) ? null : p;
-      })(),
+      totalColors: parseTotalColors(row.Col || row.Color, colorEntries),
       raw: row,
     };
 
@@ -112,26 +111,53 @@ export function parseProductCsv(text) {
 
   const now = new Date();
   return Array.from(products.values()).map((product) => {
-    const statusLower = (product.status || '').toLowerCase().trim();
-    const isOutOfStock = statusLower === 'out of stock';
-    const isFastMoving = statusLower === 'fast moving';
-    const isManualNew = statusLower.includes('new');
+    const baseStatusTags = dedupeStatusTags(product.statusTags);
+    const statusKeys = new Set(baseStatusTags.map((tag) => tag.key));
+    const isOutOfStock = statusKeys.has('out-of-stock');
+    const isFastMoving = statusKeys.has('high-demand') || statusKeys.has('fast-moving');
+    const isLowMoq = statusKeys.has('low-moq');
+    const isPreOrder = statusKeys.has('pre-order');
+    const isReadyStock = statusKeys.has('ready-stock');
+    const isDealOfDay = statusKeys.has('todays-deal');
+    const isTopSeller = statusKeys.has('top-seller') || statusKeys.has('bestseller');
+    const isManualNew = statusKeys.has('new-arrival');
 
     const isDateNew = product.stockInDate
       ? (now - product.stockInDate) <= 15 * 24 * 60 * 60 * 1000
       : false;
 
     const isNew = isManualNew || isDateNew;
+    const statusTags = isDateNew && !isManualNew
+      ? dedupeStatusTags([{ key: 'new-arrival', label: 'New Arrival' }, ...baseStatusTags])
+      : baseStatusTags;
+    const normalizedColorOptions = dedupeColorOptions(product.colorOptions).map((entry) => ({
+      ...entry,
+      image: driveImageUrl(entry.image),
+    }));
+    const normalizedImages = unique([
+      ...product.images,
+      ...normalizedColorOptions.map((entry) => entry.image),
+    ]);
+    const firstColorName = normalizedColorOptions[0]?.name || '';
 
     return {
       ...product,
       isNew,
       isOutOfStock,
       isFastMoving,
-      images: unique(product.images),
+      isLowMoq,
+      isPreOrder,
+      isReadyStock,
+      isDealOfDay,
+      isTopSeller,
+      statusTags,
+      colorOptions: normalizedColorOptions,
+      totalColors: product.totalColors || normalizedColorOptions.length || null,
+      images: normalizedImages,
       variants: product.variants.map((variant, index) => ({
         ...variant,
-        image: variant.image || product.images[index] || product.images[0],
+        color: variant.color || firstColorName,
+        image: variant.image || normalizedImages[index] || normalizedImages[0],
       })),
     };
   });
@@ -143,11 +169,12 @@ function normalizeRow(row) {
   );
 }
 
-function buildVariant(row, codeInfo, image) {
+function buildVariant(row, codeInfo, image, colorEntries = []) {
+  const firstColorName = colorEntries[0]?.name || codeInfo.color || getPrimaryColorName(row.Color);
   return {
     code: row.Code || codeInfo.variantCode,
     preCode: row['Pre Code'],
-    color: codeInfo.color || row.Color,
+    color: firstColorName,
     image,
     prices: {
       mrp: parsePrice(row[moneyColumns.mrp]),
@@ -213,6 +240,99 @@ function wholesaleDescription(row) {
 function parsePrice(value) {
   const cleaned = String(value || '').replace(/[^\d.]/g, '');
   return cleaned ? Number(cleaned) : null;
+}
+
+function parseColorEntries(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue || !rawValue.includes(':')) return [];
+
+  return rawValue
+    .split('|')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const match = entry.match(/^([^:]+):\s*(.+)$/);
+      if (!match) return null;
+      return {
+        name: match[1].trim(),
+        image: match[2].trim(),
+      };
+    })
+    .filter((entry) => entry && entry.image);
+}
+
+function parseTotalColors(value, colorEntries = []) {
+  if (colorEntries.length > 0) return colorEntries.length;
+
+  const rawValue = String(value || '').trim();
+  const parsed = parseInt(rawValue, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function getPrimaryColorName(value) {
+  const colorEntries = parseColorEntries(value);
+  if (colorEntries.length > 0) return colorEntries[0].name;
+  return String(value || '').trim();
+}
+
+function dedupeColorOptions(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    if (!item?.name && !item?.image) return false;
+    const key = `${item.name}|${item.image}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function parseStatusTags(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return [];
+
+  const parts = rawValue.split(/[,|/]+/).map((part) => part.trim()).filter(Boolean);
+  return parts
+    .map(normalizeStatusTag)
+    .filter(Boolean);
+}
+
+function normalizeStatusTag(value) {
+  const normalized = String(value || '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const tagMap = {
+    'high demand': { key: 'high-demand', label: 'High Demand' },
+    'fast moving': { key: 'fast-moving', label: 'Fast Moving' },
+    'low moq': { key: 'low-moq', label: 'Low MOQ' },
+    'new arrival': { key: 'new-arrival', label: 'New Arrival' },
+    'out of stock': { key: 'out-of-stock', label: 'Out of Stock' },
+    'pre-order': { key: 'pre-order', label: 'Pre-Order' },
+    preorder: { key: 'pre-order', label: 'Pre-Order' },
+    'ready stock': { key: 'ready-stock', label: 'Ready Stock' },
+    'todays deal': { key: 'todays-deal', label: "Today's Deal" },
+    'deals of the day': { key: 'todays-deal', label: "Today's Deal" },
+    'deal of the day': { key: 'todays-deal', label: "Today's Deal" },
+    'top seller': { key: 'top-seller', label: 'Top Seller' },
+    bestseller: { key: 'bestseller', label: 'Bestseller' },
+  };
+
+  return tagMap[normalized] || {
+    key: normalized.replace(/[^a-z0-9]+/g, '-'),
+    label: value.trim(),
+  };
+}
+
+function dedupeStatusTags(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    if (!item?.key) return false;
+    if (seen.has(item.key)) return false;
+    seen.add(item.key);
+    return true;
+  });
 }
 
 function driveImageUrl(link) {

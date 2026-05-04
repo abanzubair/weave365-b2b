@@ -5,9 +5,6 @@ import {
   BadgeCheck,
   CheckCircle2,
   Download,
-  Feather,
-  Flame,
-  Flower,
   Heart,
   Headphones,
   Layers,
@@ -98,12 +95,7 @@ export const ProductCard = memo(function ProductCard({
 }) {
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
-  const statusBadge = product.isOutOfStock
-    ? { className: 'out-of-stock-badge', icon: null, label: 'Out of Stock' }
-    : product.isFastMoving
-      ? { className: 'fast-moving-badge', icon: <Flame size={11} />, label: 'Fast Moving' }
-      : null;
-  const isBestseller = product.status?.toLowerCase() === 'bestseller';
+  const cardStatusTags = (product.statusTags || []).slice(0, 2);
 
 
   return (
@@ -119,24 +111,24 @@ export const ProductCard = memo(function ProductCard({
         {product.isOutOfStock && (
           <span className="out-of-stock-overlay" />
         )}
-        {product.isNew && (
-          <span className="card-new-tag">
-            <Sparkles size={11} /> New
-          </span>
-        )}
         <div className="card-brand-vertical">
           <BadgeCheck size={14} />
           <span>Weave 365</span>
           <div className="brand-line" />
         </div>
-        {(statusBadge || isBestseller) && (
+        {cardStatusTags.length > 0 && (
           <span className="card-status-row">
-            {statusBadge && (
-              <span className={statusBadge.className}>{statusBadge.icon}{statusBadge.label}</span>
-            )}
-            {isBestseller && (
-              <span className="bestseller-badge"><Award size={12} /> Bestseller</span>
-            )}
+            {cardStatusTags.map((tag) => (
+              <span
+                key={tag.key}
+                className={`card-status-badge card-status-${tag.key}`}
+              >
+                {tag.key === 'new-arrival' && <Sparkles size={11} />}
+                {tag.key === 'top-seller' && <Award size={11} />}
+                {tag.key === 'bestseller' && <Award size={11} />}
+                {tag.label}
+              </span>
+            ))}
           </span>
         )}
       </button>

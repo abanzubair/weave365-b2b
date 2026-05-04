@@ -52,7 +52,9 @@ export function ProductDetail({
   codStatus,
   checkPincode,
 }) {
+  const initialColorName = product.colorOptions?.[0]?.name || product.variants[0]?.color || '';
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
+  const [selectedColorName, setSelectedColorName] = useState(initialColorName);
   const [variantCode, setVariantCode] = useState(product.variants[0]?.code);
   const [isDownloading, setIsDownloading] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(null);
@@ -69,6 +71,27 @@ export function ProductDetail({
     [product.variants, variantCode],
   );
   const displayPrice = useMemo(() => customerPrice(variant.prices), [variant.prices]);
+  const colorOptions = useMemo(() => {
+    if (product.colorOptions?.length) return product.colorOptions;
+
+    const seen = new Set();
+    return product.variants
+      .map((item) => ({
+        name: item.color,
+        image: item.image,
+      }))
+      .filter((item) => {
+        if (!item.name && !item.image) return false;
+        const key = `${item.name}|${item.image}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }, [product.colorOptions, product.variants]);
+  const productStatusTags = useMemo(
+    () => (product.statusTags || []).filter((tag) => tag.key !== 'bestseller'),
+    [product.statusTags],
+  );
   const designStripImages = useMemo(() => product.images.slice(0, 4), [product.images]);
   const related = useMemo(
     () => products.filter((item) => item.id !== product.id).slice(0, 5),
@@ -155,6 +178,7 @@ export function ProductDetail({
 
   useEffect(() => {
     setSelectedImage(product.images[0]);
+    setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
     setVariantCode(product.variants[0]?.code);
   }, [product]);
 
@@ -182,6 +206,33 @@ export function ProductDetail({
       observer.disconnect();
     };
   }, [product.id]);
+
+  const handleVariantChange = useCallback((nextVariantCode) => {
+    setVariantCode(nextVariantCode);
+    const nextVariant = product.variants.find((item) => item.code === nextVariantCode);
+    if (!nextVariant) return;
+
+    if (nextVariant.color) {
+      setSelectedColorName(nextVariant.color);
+    }
+
+    if (nextVariant.image) {
+      setSelectedImage(nextVariant.image);
+    }
+  }, [product.variants]);
+
+  const handleColorChange = useCallback((nextColorName) => {
+    setSelectedColorName(nextColorName);
+    const nextColor = colorOptions.find((item) => item.name === nextColorName);
+    if (nextColor?.image) {
+      setSelectedImage(nextColor.image);
+    }
+
+    const matchingVariant = product.variants.find((item) => item.color === nextColorName);
+    if (matchingVariant?.code) {
+      setVariantCode(matchingVariant.code);
+    }
+  }, [colorOptions, product.variants]);
 
   return (
     <>
@@ -254,9 +305,11 @@ export function ProductDetail({
             <div className="panel-topline">
               <div className="panel-status-tags">
                 <span className="pill">Wholesale Only</span>
-                {product.isNew && <span className="pill pill-new">New Arrival</span>}
-                {product.isFastMoving && <span className="pill pill-fast">Fast Moving</span>}
-                {product.isOutOfStock && <span className="pill pill-stock">Out of Stock</span>}
+                {productStatusTags.map((tag) => (
+                  <span key={tag.key} className={`pill pill-status pill-${tag.key}`}>
+                    {tag.label}
+                  </span>
+                ))}
               </div>
               <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
                 <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -293,10 +346,23 @@ export function ProductDetail({
               ))}
             </div>
 
+            {colorOptions.length > 1 && (
+              <label className="field-label catalog-variant">
+                Available Colors
+                <select value={selectedColorName} onChange={(event) => handleColorChange(event.target.value)}>
+                  {colorOptions.map((item) => (
+                    <option key={`${item.name}-${item.image}`} value={item.name}>
+                      {item.name || 'Available color'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             {product.variants.length > 1 && (
               <label className="field-label catalog-variant">
                 Variant / Color
-                <select value={variantCode} onChange={(event) => setVariantCode(event.target.value)}>
+                <select value={variantCode} onChange={(event) => handleVariantChange(event.target.value)}>
                   {product.variants.map((item) => (
                     <option key={item.code} value={item.code}>
                       {item.code} {item.color ? `- Color ${item.color}` : ''}
