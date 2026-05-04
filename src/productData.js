@@ -22,7 +22,10 @@ export function parseProductCsv(text) {
   const parsed = Papa.parse(text, {
     header: true,
     skipEmptyLines: false,
-    transformHeader: (header) => header.trim(),
+    transformHeader: (header, index) => {
+      const trimmed = header.trim();
+      return trimmed || `__empty_${index}`;
+    },
   });
 
   if (parsed.errors.length) {
