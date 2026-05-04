@@ -84,7 +84,7 @@
   }
 
   /* -- Header: Transparent overlay, frosted on scroll -- */
-  .site-header {
+  .site-header.home-header {
     grid-template-columns: auto 1fr auto;
     gap: 0 10px;
     padding: 10px 16px;
@@ -96,13 +96,20 @@
     color: #fff;
   }
 
-  .site-header .brand-logo {
+  /* Non-home pages or default state */
+  .site-header {
+    grid-template-columns: auto 1fr auto;
+    gap: 0 10px;
+    padding: 10px 16px;
+  }
+
+  .site-header.home-header .brand-logo {
     filter: brightness(0) invert(1);
     transition: filter 0.3s ease;
   }
 
-  .site-header .icon-button,
-  .site-header .login-link {
+  .site-header.home-header .icon-button,
+  .site-header.home-header .login-link {
     color: #fff;
   }
 

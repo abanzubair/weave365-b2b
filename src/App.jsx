@@ -270,7 +270,7 @@ export default function App() {
   return (
     <>
       <TopBar />
-      <header className="site-header">
+      <header className={`site-header ${route === 'home' ? 'home-header' : ''}`}>
         <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
           <Menu size={22} />
         </button>
