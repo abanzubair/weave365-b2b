@@ -80,7 +80,7 @@
 
   /* -- Top Bar: Hidden on mobile for full-bleed hero -- */
   .top-bar {
-    display: none;
+    display: none !important;
   }
 
   /* -- Header: Transparent overlay, frosted on scroll -- */
@@ -187,7 +187,7 @@
     height: 100dvh;
     min-height: 100dvh;
     max-height: none;
-    margin-top: -56px;
+    margin-top: -60px;
   }
 
   .hero-copy {
@@ -254,7 +254,7 @@
   }
 
   .feature-strip {
-    margin-top: 20px;
+    margin-top: 0;
     padding: 20px;
   }
 
