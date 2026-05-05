@@ -37,8 +37,8 @@ export function parseProductCsv(text) {
 
   for (const rawRow of parsed.data) {
     const row = normalizeRow(rawRow);
-    const coverImage = driveImageUrl(row.Cover);
-    const colorEntries = parseColorEntries(row['Product Link'] || row.Color);
+    const coverImage = driveImageUrl(row['Cover Image'] || row.Cover);
+    const colorEntries = parseColorEntries(row['Product Images'] || row['Product Link'] || row.Color);
     const colorImages = colorEntries.map((entry) => driveImageUrl(entry.image)).filter(Boolean);
     const images = unique([coverImage, ...colorImages]);
 
