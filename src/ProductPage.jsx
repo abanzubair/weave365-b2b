@@ -70,7 +70,7 @@ export function ProductDetail({
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
   );
-  const displayPrice = useMemo(() => customerPrice(variant.prices), [variant.prices]);
+  const displayPrice = useMemo(() => customerPrice(variant.prices, product.isDealOfDay), [variant.prices, product.isDealOfDay]);
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
 
@@ -110,8 +110,8 @@ export function ProductDetail({
   const detailRows = useMemo(
     () => [
       ['Code', variant.code],
-      ['Price / Piece', formatMoney(variant.prices.mrp)],
-      ['Price Full Set', formatMoney((variant.prices.mrp || 0) * totalColors)],
+      ['Price / Piece', formatMoney(displayPrice)],
+      ['Price Full Set', formatMoney((displayPrice || 0) * totalColors)],
       ['Set Weight', formatWeight(catalogWeight)],
       ['MOQ', '1 Set or 10 PCS Assorted'],
       ['Fabric', product.fabric || 'Premium Saree'],
@@ -320,12 +320,14 @@ export function ProductDetail({
             <div className="catalog-price-row">
               <div>
                 <strong>{formatMoney(displayPrice)}</strong>
-                <span>{variant.prices.offer ? 'Offer Price / Piece' : 'Single Unit / Piece'}</span>
+                <span>{product.isDealOfDay && variant.prices.offer ? 'Offer Price / Piece' : 'B2B Price / Piece'}</span>
               </div>
-              <div className="mrp-side">
-                <strong>{formatMoney(variant.prices.mrp)}</strong>
-                <span>Price</span>
-              </div>
+              {!(product.isDealOfDay && variant.prices.offer) && variant.prices.mrp && (
+                <div className="mrp-side">
+                  <strong>{formatMoney(variant.prices.mrp)}</strong>
+                  <span>Price</span>
+                </div>
+              )}
             </div>
 
             <div className="quick-facts">

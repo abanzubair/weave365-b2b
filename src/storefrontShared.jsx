@@ -142,7 +142,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="card-price-divider">
           <span className="card-price-divider-diamond" />
         </div>
-        <PriceLine prices={selectedVariant.prices} />
+        <PriceLine prices={selectedVariant.prices} isDealOfDay={product.isDealOfDay} />
 
         <div className="card-actions">
           <a
@@ -167,10 +167,11 @@ export const ProductCard = memo(function ProductCard({
   );
 });
 
-export function PriceLine({ prices }) {
+export function PriceLine({ prices, isDealOfDay }) {
+  const showOffer = isDealOfDay && prices.offer;
   return (
     <p className="price-line">
-      {prices.offer ? (
+      {showOffer ? (
         <strong>{formatMoney(prices.offer)} <small className="price-unit">/piece</small></strong>
       ) : (
         <>
@@ -213,8 +214,9 @@ export function formatWeight(weightInKg) {
   return `${w} KG`;
 }
 
-export function customerPrice(prices) {
-  return prices.offer || prices.single || prices.mrp || 0;
+export function customerPrice(prices, isDealOfDay) {
+  if (isDealOfDay && prices.offer) return prices.offer;
+  return prices.mrp || prices.single || 0;
 }
 
 export function buildWhatsappUrl(items, total, pincode, codStatus) {
@@ -222,7 +224,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
     `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
     '',
     ...items.map((item) => {
-      const price = customerPrice(item.variant.prices);
+      const price = customerPrice(item.variant.prices, item.product.isDealOfDay);
       return `${item.product.title} | Code: ${item.variant.code} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
     }),
     '',
@@ -235,7 +237,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
 }
 
 export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus) {
-  const price = customerPrice(variant.prices);
+  const price = customerPrice(variant.prices, product.isDealOfDay);
   const lines = [
     `Hello ${storeConfig.name}, I want to buy this catalog:`,
     '',
