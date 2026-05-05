@@ -70,7 +70,7 @@ export function ProductDetail({
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
   );
-  const displayPrice = useMemo(() => customerPrice(variant.prices, product.isDealOfDay), [variant.prices, product.isDealOfDay]);
+  const displayPrice = useMemo(() => customerPrice(variant.prices), [variant.prices]);
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
 
@@ -110,15 +110,16 @@ export function ProductDetail({
   const detailRows = useMemo(
     () => [
       ['Code', variant.code],
-      ['Price / Piece', formatMoney(displayPrice)],
-      ['Price Full Set', formatMoney((displayPrice || 0) * totalColors)],
+      ['MRP', formatMoney(variant.prices.mrp)],
+      ['Buy Price / Piece', formatMoney(displayPrice)],
+      ['Buy Price Full Set', formatMoney(displayPrice * totalColors)],
       ['Set Weight', formatWeight(catalogWeight)],
       ['MOQ', '1 Set or 10 PCS Assorted'],
       ['Fabric', product.fabric || 'Premium Saree'],
       ['Description', product.description],
       ['Brand', 'Weave 365'],
     ],
-    [variant, totalColors, catalogWeight, product.fabric, product.description],
+    [variant, displayPrice, totalColors, catalogWeight, product.fabric, product.description],
   );
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
@@ -320,12 +321,12 @@ export function ProductDetail({
             <div className="catalog-price-row">
               <div>
                 <strong>{formatMoney(displayPrice)}</strong>
-                <span>{product.isDealOfDay && variant.prices.offer ? 'Offer Price / Piece' : 'B2B Price / Piece'}</span>
+                <span>{variant.prices.offer ? 'Offer Price / Piece' : 'MRP / Piece'}</span>
               </div>
-              {!(product.isDealOfDay && variant.prices.offer) && variant.prices.mrp && (
+              {variant.prices.offer && variant.prices.mrp && (
                 <div className="mrp-side">
                   <strong>{formatMoney(variant.prices.mrp)}</strong>
-                  <span>Price</span>
+                  <span>MRP</span>
                 </div>
               )}
             </div>

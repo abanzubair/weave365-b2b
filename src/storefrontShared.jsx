@@ -142,7 +142,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="card-price-divider">
           <span className="card-price-divider-diamond" />
         </div>
-        <PriceLine prices={selectedVariant.prices} isDealOfDay={product.isDealOfDay} />
+        <PriceLine prices={selectedVariant.prices} />
 
         <div className="card-actions">
           <a
@@ -167,22 +167,23 @@ export const ProductCard = memo(function ProductCard({
   );
 });
 
-export function PriceLine({ prices, isDealOfDay }) {
-  const showOffer = isDealOfDay && prices.offer;
+export function PriceLine({ prices }) {
+  const buyPrice = customerPrice(prices);
+
   return (
     <p className="price-line">
-      {showOffer ? (
-        <strong>{formatMoney(prices.offer)} <small className="price-unit">/piece</small></strong>
-      ) : (
+      {prices.offer ? (
         <>
-          {prices.mrp && <strong>{formatMoney(prices.mrp)} <small className="price-unit">/piece</small></strong>}
-          {prices.single && (
+          <strong>{formatMoney(buyPrice)} <small className="price-unit">/piece</small></strong>
+          {prices.mrp && (
             <>
-              <span>{formatMoney(prices.single)}</span>
+              <span>{formatMoney(prices.mrp)}</span>
               <em>MRP</em>
             </>
           )}
         </>
+      ) : (
+        buyPrice > 0 && <strong>{formatMoney(buyPrice)} <small className="price-unit">/piece</small></strong>
       )}
     </p>
   );
@@ -214,9 +215,8 @@ export function formatWeight(weightInKg) {
   return `${w} KG`;
 }
 
-export function customerPrice(prices, isDealOfDay) {
-  if (isDealOfDay && prices.offer) return prices.offer;
-  return prices.mrp || prices.single || 0;
+export function customerPrice(prices) {
+  return prices.offer || prices.mrp || 0;
 }
 
 export function buildWhatsappUrl(items, total, pincode, codStatus) {
@@ -224,7 +224,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
     `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
     '',
     ...items.map((item) => {
-      const price = customerPrice(item.variant.prices, item.product.isDealOfDay);
+      const price = customerPrice(item.variant.prices);
       return `${item.product.title} | Code: ${item.variant.code} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
     }),
     '',
@@ -237,7 +237,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
 }
 
 export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus) {
-  const price = customerPrice(variant.prices, product.isDealOfDay);
+  const price = customerPrice(variant.prices);
   const lines = [
     `Hello ${storeConfig.name}, I want to buy this catalog:`,
     '',
