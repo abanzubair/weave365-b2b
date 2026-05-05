@@ -246,6 +246,7 @@
   }
 
   .feature-strip,
+  .deal-section,
   .section,
   .product-detail,
   .product-view,
@@ -256,6 +257,82 @@
   .feature-strip {
     margin-top: 20px;
     padding: 20px;
+  }
+
+  .deal-section {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .deal-copy {
+    padding: 0;
+    gap: 12px;
+  }
+
+  .deal-copy h2 {
+    max-width: 100%;
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .deal-copy p {
+    max-width: 100%;
+    font-size: 14px;
+  }
+
+  .deal-timer {
+    width: 100%;
+    grid-template-columns: auto repeat(6, auto);
+    justify-content: center;
+  }
+
+  .deal-card-grid,
+  .deal-card-grid.deal-count-1 {
+    display: flex;
+    grid-template-columns: none;
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+
+  .deal-card-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .deal-card {
+    flex: 0 0 100%;
+    grid-template-columns: minmax(112px, 0.48fr) minmax(0, 0.52fr);
+    min-height: 210px;
+    scroll-snap-align: start;
+  }
+
+  .deal-card-copy {
+    padding: 16px;
+  }
+
+  .deal-card-copy strong {
+    font-size: 18px;
+  }
+
+  .deal-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .deal-price-row span {
+    font-size: 24px;
+  }
+
+  .deal-order-button {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 12px;
   }
 
   .why-band,

@@ -1,10 +1,26 @@
-import { useState, useMemo, useEffect, Fragment } from 'react';
-import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck } from 'lucide-react';
-import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter } from '../storefrontShared.jsx';
+import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
+import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag } from 'lucide-react';
+import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney } from '../storefrontShared.jsx';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { storeConfig } from '../config.js';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
+
+function getDealCountdown() {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(24, 0, 0, 0);
+  const remaining = Math.max(0, end - now);
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+
+  return { hours, minutes, seconds };
+}
+
+function twoDigit(value) {
+  return String(value).padStart(2, '0');
+}
 
 export function Home({
   products,
@@ -20,6 +36,8 @@ export function Home({
   favoriteKeys,
 }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
+  const dealRailRef = useRef(null);
 
   const bannerSlides = useMemo(() => heroSlides.filter(s => s.type === 'banner'), [heroSlides]);
 
@@ -32,6 +50,14 @@ export function Home({
 
     return () => clearInterval(interval);
   }, [bannerSlides.length]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDealCountdown(getDealCountdown());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fixedHeroData = bannerSlides[0] || null;
 
@@ -56,6 +82,57 @@ export function Home({
       variant: p.variants[0]
     }));
   }, [products, fallbackHeroImage]);
+
+  const dealProducts = useMemo(() => {
+    return products
+      .map((product) => {
+        const variant = product.variants?.[0];
+        const mrp = variant?.prices?.mrp;
+        const offer = variant?.prices?.offer;
+        if (!variant || !mrp || !offer || offer >= mrp) return null;
+
+        const discountPercent = Math.round(((mrp - offer) / mrp) * 100);
+        return {
+          product,
+          variant,
+          image: product.images[0] || fallbackHeroImage,
+          discountPercent,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        if (a.product.isDealOfDay !== b.product.isDealOfDay) {
+          return a.product.isDealOfDay ? -1 : 1;
+        }
+        return b.discountPercent - a.discountPercent;
+      })
+      .slice(0, 2);
+  }, [fallbackHeroImage, products]);
+
+  useEffect(() => {
+    if (dealProducts.length <= 1) return undefined;
+
+    const mediaQuery = window.matchMedia('(max-width: 820px)');
+    if (!mediaQuery.matches) return undefined;
+
+    const rail = dealRailRef.current;
+    if (!rail) return undefined;
+
+    let nextIndex = 0;
+
+    const interval = setInterval(() => {
+      const slideWidth = rail.clientWidth;
+      if (!slideWidth) return;
+
+      nextIndex = (nextIndex + 1) % dealProducts.length;
+      rail.scrollTo({
+        left: slideWidth * nextIndex,
+        behavior: 'smooth',
+      });
+    }, 4200);
+
+    return () => clearInterval(interval);
+  }, [dealProducts.length]);
 
   const categoryImages = useMemo(() => {
     const map = {};
@@ -154,6 +231,56 @@ export function Home({
       </section>
 
       <FeatureStrip />
+
+      {dealProducts.length > 0 && (
+        <section className="deal-section" aria-labelledby="deal-heading">
+          <div className="deal-copy">
+            <span className="deal-kicker"><BadgePercent size={15} /> Deal of the Day</span>
+            <h2 id="deal-heading">Today's strongest wholesale offers</h2>
+            <p>Limited-time prices on selected sarees. Pick the deal before the counter refreshes tonight.</p>
+            <div className="deal-timer" aria-label="Deal ends countdown">
+              <Clock3 size={18} />
+              <span>{twoDigit(dealCountdown.hours)}</span>
+              <small>Hrs</small>
+              <span>{twoDigit(dealCountdown.minutes)}</span>
+              <small>Min</small>
+              <span>{twoDigit(dealCountdown.seconds)}</span>
+              <small>Sec</small>
+            </div>
+          </div>
+
+          <div
+            ref={dealRailRef}
+            className={`deal-card-grid deal-count-${dealProducts.length}`}
+          >
+            {dealProducts.map(({ product, variant, image, discountPercent }) => (
+              <article className="deal-card" key={product.id}>
+                <button className="deal-image" type="button" onClick={() => navigate('product', product.id)}>
+                  <img
+                    src={image}
+                    alt={product.title}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.target.style.opacity = '0'; }}
+                  />
+                  <span>{discountPercent}% Off</span>
+                </button>
+                <div className="deal-card-copy">
+                  <strong>{product.title}</strong>
+                  <small>{variant.code}</small>
+                  <div className="deal-price-row">
+                    <span>{formatMoney(variant.prices.offer)}</span>
+                    <del>{formatMoney(variant.prices.mrp)}</del>
+                  </div>
+                  <button className="deal-order-button" type="button" onClick={() => navigate('product', product.id)}>
+                    <ShoppingBag size={16} /> Order Now
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="section category-section">
         <SectionTitle title="Shop By Category" />
