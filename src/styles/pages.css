@@ -401,19 +401,6 @@ button {
   object-position: center;
 }
 
-.feature-strip {
-  width: min(1280px, calc(100% - 96px));
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0;
-  margin: -52px auto 0;
-  padding: 24px 26px;
-  position: relative;
-  z-index: 3;
-  background: var(--white);
-  border-radius: 7px;
-  box-shadow: var(--shadow);
-}
 
 .feature-strip div,
 .benefit-strip div {
@@ -705,21 +692,21 @@ button {
 
   .feature-strip strong {
     margin-bottom: 7px;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .benefit-strip strong {
     margin-bottom: 7px;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .feature-strip span {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.55;
   }
 
   .benefit-strip span {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.55;
   }
 
