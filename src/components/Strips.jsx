@@ -19,7 +19,7 @@ export function FeatureStrip() {
     <section className="feature-strip">
       {featureStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          <Icon strokeWidth={1.5} />
+          <Icon />
           <span>
             <strong>{title}</strong>
             {copy}
@@ -35,7 +35,7 @@ export function BenefitStrip() {
     <section className="benefit-strip">
       {benefitStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          <Icon strokeWidth={1.5} />
+          <Icon />
           <span>
             <strong>{title}</strong>
             {copy}
