@@ -5,7 +5,7 @@ import { fetchProducts, fetchHeroData } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
-import { fallbackProductImage, formatMoney, customerPrice } from './storefrontShared.jsx';
+import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
 
 import { upsertCart, loadSavedState, persistCart, persistFavorites, readLocal } from './utils/cartHelpers.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
@@ -22,6 +22,7 @@ const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module
 const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 
 export default function App() {
+  useCurrency();
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');

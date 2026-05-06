@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import {
   ArrowRight,
   Award,
@@ -23,11 +23,43 @@ import { storeConfig } from './config.js';
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-const moneyFormatter = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 0,
-});
+export const CURRENCIES = [
+  { code: 'INR', label: '🇮🇳 India (IND)', locale: 'en-IN' },
+  { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US' },
+  { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB' },
+  { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE' },
+  { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG' },
+  { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY' },
+];
+
+let currentCurrency = 'INR';
+let exchangeRates = { INR: 1 };
+const currencyListeners = new Set();
+
+export const CurrencyManager = {
+  get currency() { return currentCurrency; },
+  get rates() { return exchangeRates; },
+  setCurrency(c) {
+    currentCurrency = c;
+    currencyListeners.forEach(l => l());
+  },
+  setRates(r) {
+    exchangeRates = { ...r, INR: 1 };
+    currencyListeners.forEach(l => l());
+  },
+  subscribe(l) {
+    currencyListeners.add(l);
+    return () => currencyListeners.delete(l);
+  }
+};
+
+export function useCurrency() {
+  const [currency, setCurrencyState] = useState(CurrencyManager.currency);
+  useEffect(() => {
+    return CurrencyManager.subscribe(() => setCurrencyState(CurrencyManager.currency));
+  }, []);
+  return currency;
+}
 
 const productTrustItems = [
   { icon: Truck, title: 'Pan India Delivery', copy: 'Fast and secure delivery across India' },
@@ -93,6 +125,7 @@ export const ProductCard = memo(function ProductCard({
   toggleFavorite,
   isFavorite,
 }) {
+  useCurrency();
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
   const cardStatusTags = (product.statusTags || []).slice(0, 2);
@@ -204,15 +237,28 @@ export function expandedProductCards(products) {
 
 export function formatMoney(value) {
   if (value == null || Number.isNaN(value)) return 'On request';
-  return moneyFormatter.format(value);
+  
+  const currencyCode = CurrencyManager.currency;
+  const rate = CurrencyManager.rates[currencyCode] || 1;
+  const convertedValue = value * rate;
+  
+  const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
+  
+  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
+    style: 'currency',
+    currency: currencyCode,
+    maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
+  });
+  
+  return formatter.format(convertedValue);
 }
 
 export function formatWeight(weightInKg) {
   const w = Number(weightInKg) || 0;
   if (w < 1 && w > 0) {
-    return `${w * 1000} Grams`;
+    return `${Number((w * 1000).toFixed(2))} Grams`;
   }
-  return `${w} KG`;
+  return `${Number(w.toFixed(2))} KG`;
 }
 
 export function customerPrice(prices) {

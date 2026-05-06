@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   Star,
   ZoomIn,
+  X,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 import {
@@ -58,6 +59,7 @@ export function ProductDetail({
   const [variantCode, setVariantCode] = useState(product.variants[0]?.code);
   const [isDownloading, setIsDownloading] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(null);
+  const [zoomImage, setZoomImage] = useState(null);
   const mainImageRef = useRef(null);
 
   const totalColors = useMemo(
@@ -274,7 +276,7 @@ export function ProductDetail({
                 decoding="async"
                 onError={(e) => { e.target.style.opacity = '0'; }}
               />
-              <button className="zoom-button" aria-label="View larger image">
+              <button className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
                 <ZoomIn size={18} />
               </button>
             </div>
@@ -321,7 +323,7 @@ export function ProductDetail({
             <div className="catalog-price-row">
               <div>
                 <strong>{formatMoney(displayPrice)}</strong>
-                <span>{variant.prices.offer ? 'Offer Price / Piece' : 'MRP / Piece'}</span>
+                <span>{variant.prices.offer ? 'Offer Price / Piece' : 'MRP / Piece'} (Excl. 5% GST)</span>
               </div>
               {variant.prices.offer && variant.prices.mrp && (
                 <div className="mrp-side">
@@ -501,6 +503,20 @@ export function ProductDetail({
       </section>
 
       <Newsletter />
+
+      {zoomImage && (
+        <div className="modal-backdrop" onClick={() => setZoomImage(null)}>
+          <button className="icon-button modal-close" onClick={() => setZoomImage(null)} style={{ background: 'white', zIndex: 10 }}>
+            <X />
+          </button>
+          <img 
+            src={zoomImage} 
+            alt="Zoomed view" 
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} 
+            onClick={(e) => e.stopPropagation()} 
+          />
+        </div>
+      )}
     </>
   );
 }
