@@ -3,7 +3,7 @@ import { Award, BadgeIndianRupee, HeartHandshake, PackagePlus, Tag, Truck, Packa
 const featureStripItems = [
   { icon: BadgeIndianRupee, title: 'Bulk Pricing Advantage', copy: 'Better margins for wholesale buyers' },
   { icon: PackagePlus, title: 'Daily New Stock', copy: 'Fresh catalog updates for repeat buying' },
-  { icon: Truck, title: 'Pan India + Export Delivery', copy: 'Reliable dispatch across India and overseas' },
+  { icon: Truck, title: 'Pan India + Export Delivery', copy: 'Reliable dispatch India and overseas' },
   { icon: Award, title: 'Low MOQ / Flexible Buying', copy: 'Start small and scale your orders easily' },
 ];
 
@@ -19,7 +19,7 @@ export function FeatureStrip() {
     <section className="feature-strip">
       {featureStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          <Icon />
+          <Icon strokeWidth={1.5} />
           <span>
             <strong>{title}</strong>
             {copy}
@@ -35,7 +35,7 @@ export function BenefitStrip() {
     <section className="benefit-strip">
       {benefitStripItems.map(({ icon: Icon, title, copy }) => (
         <div key={title}>
-          <Icon />
+          <Icon strokeWidth={1.5} />
           <span>
             <strong>{title}</strong>
             {copy}
