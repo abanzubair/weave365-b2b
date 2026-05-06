@@ -470,8 +470,8 @@ button {
 
 .deal-card {
   display: grid;
-  grid-template-columns: minmax(126px, 0.62fr) minmax(0, 1fr);
-  min-height: 250px;
+  grid-template-columns: minmax(150px, 0.55fr) minmax(0, 1fr);
+  align-items: center;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -482,7 +482,8 @@ button {
 .deal-image {
   position: relative;
   display: block;
-  min-height: 100%;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   padding: 0;
   border: 0;
   overflow: hidden;
@@ -638,7 +639,7 @@ button {
   }
 
   .deal-card {
-    min-height: 280px;
+    grid-template-columns: minmax(170px, 0.52fr) minmax(0, 1fr);
   }
 }
 
@@ -2506,6 +2507,12 @@ button {
 
 /* --- 1920x1080 style wide-but-short desktops: rebalance product page only --- */
 @media screen and (min-width: 1900px) and (max-height: 1120px) {
+  .deal-section {
+    width: min(1600px, calc(100% - 120px));
+    grid-template-columns: minmax(360px, 0.62fr) minmax(0, 1.38fr);
+    gap: 34px;
+  }
+
   .product-view {
     width: min(1560px, calc(100% - 96px)) !important;
     padding-top: 20px;

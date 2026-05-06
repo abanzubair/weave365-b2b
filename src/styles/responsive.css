@@ -307,8 +307,13 @@
   .deal-card {
     flex: 0 0 100%;
     grid-template-columns: minmax(112px, 0.48fr) minmax(0, 0.52fr);
-    min-height: 210px;
+    align-items: center;
     scroll-snap-align: start;
+  }
+
+  .deal-image {
+    aspect-ratio: 3 / 4;
+    min-height: 0;
   }
 
   .deal-card-copy {
