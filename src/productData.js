@@ -302,7 +302,7 @@ function parseStatusTags(value) {
 function normalizeStatusTag(value) {
   const normalized = String(value || '')
     .toLowerCase()
-    .replace(/[’']/g, '')
+    .replace(/[‘’']/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 

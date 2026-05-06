@@ -279,13 +279,20 @@
 
   .deal-copy p {
     max-width: 100%;
-    font-size: 16px;
+    font-size: 20px;
   }
 
   .deal-timer {
     width: 100%;
     grid-template-columns: auto repeat(6, auto);
     justify-content: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .deal-timer span {
+    min-width: 34px;
+    font-size: 30px;
   }
 
   .deal-card-grid,
@@ -323,9 +330,13 @@
   }
 
   .deal-card-copy strong {
-    font-size: 16px;
-    line-height: 1.16;
+    font-size: 20px;
+    line-height: 1.04;
     -webkit-line-clamp: 3;
+  }
+
+  .deal-card-copy small {
+    font-size: 15px;
   }
 
   .deal-price-row {
@@ -336,7 +347,7 @@
   }
 
   .deal-price-row span {
-    font-size: 21px;
+    font-size: 26px;
   }
 
   .deal-order-button {
@@ -505,7 +516,7 @@
   .catalog-page .catalog-grid .card-add-btn {
     width: 100%;
     min-width: 0;
-    height: 40px;
+    height: 36px;
     border-radius: 9px;
   }
 

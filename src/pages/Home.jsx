@@ -84,7 +84,7 @@ export function Home({
   }, [products, fallbackHeroImage]);
 
   const dealProducts = useMemo(() => {
-    return products
+    const discountedProducts = products
       .map((product) => {
         const variant = product.variants?.[0];
         const mrp = variant?.prices?.mrp;
@@ -100,13 +100,16 @@ export function Home({
         };
       })
       .filter(Boolean)
-      .sort((a, b) => {
-        if (a.product.isDealOfDay !== b.product.isDealOfDay) {
-          return a.product.isDealOfDay ? -1 : 1;
-        }
-        return b.discountPercent - a.discountPercent;
-      })
-      .slice(0, 2);
+      .sort((a, b) => b.discountPercent - a.discountPercent);
+
+    const taggedDeals = discountedProducts.filter(({ product }) => product.isDealOfDay);
+    if (!taggedDeals.length) return [];
+
+    const taggedProductIds = new Set(taggedDeals.map(({ product }) => product.id));
+    return [
+      ...taggedDeals,
+      ...discountedProducts.filter(({ product }) => !taggedProductIds.has(product.id)),
+    ].slice(0, 2);
   }, [fallbackHeroImage, products]);
 
   useEffect(() => {
@@ -328,7 +331,7 @@ export function Home({
       </section>
 
       {bestsellers.length > 0 && (
-        <section className="section">
+        <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
             <SectionTitle title="Best Sellers" align="left" />
             <button className="text-button" onClick={() => navigate('catalog')}>
@@ -376,7 +379,7 @@ export function Home({
         </section>
       )}
 
-      <section className="section">
+      <section className="section home-product-section new-arrivals-section">
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
           <button className="text-button" onClick={() => navigate('catalog')}>
