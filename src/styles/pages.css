@@ -611,7 +611,8 @@ button {
 
 .deal-card-copy small {
   color: var(--muted);
-  font-size: 12px;
+  font-family: var(--font-footer);
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -624,13 +625,14 @@ button {
 
 .deal-price-row span {
   color: var(--gold-dark);
-  font-family: var(--font-body);
+  font-family: var(--font-footer);
   font-size: 25px;
   font-weight: 800;
 }
 
 .deal-price-row del {
   color: var(--muted);
+  font-family: var(--font-footer);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1149,7 +1151,8 @@ button {
 .product-card-code {
   display: block;
   margin-top: 4px;
-  font-size: 13px;
+  font-family: var(--font-footer);
+  font-size: 14px;
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.2px;
@@ -1194,11 +1197,11 @@ button {
   color: var(--gold-dark);
   font-size: 25px;
   font-weight: 800;
-  font-family: var(--font-body);
+  font-family: var(--font-footer);
 }
 
 .price-unit {
-  font-family: var(--font-body);
+  font-family: var(--font-footer);
   font-size: 12px;
   font-weight: 500;
   color: var(--muted);
@@ -1207,6 +1210,7 @@ button {
 
 .price-line span {
   text-decoration: line-through;
+  font-family: var(--font-footer);
   font-size: 13px;
   color: var(--muted);
   opacity: 0.75;
