@@ -31,7 +31,7 @@ export function TopBar() {
         {topBarItems.map(({ icon: Icon, text, isLink }, i) => (
           isLink ? (
             <a key={text} href={waUrl} target="_blank" rel="noreferrer" className="whatsapp-span" style={{ textDecoration: 'none', color: 'inherit' }}>
-              +91 99191 01369 <Icon size={14} /> {text}
+              <span className="wa-number">+91 99191 01369</span> <Icon size={14} /> {text}
             </a>
           ) : (
             <span key={text} className={i === 3 ? 'whatsapp-span' : ''}>
@@ -54,7 +54,7 @@ export function TopBar() {
           {[...topBarItems, ...topBarItems].map(({ icon: Icon, text, isLink }, index) => (
             isLink ? (
               <a key={`${text}-${index}`} href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
-                +91 99191 01369 <Icon size={14} /> {text}
+                <span className="wa-number">+91 99191 01369</span> <Icon size={14} /> {text}
               </a>
             ) : (
               <span key={`${text}-${index}`}>

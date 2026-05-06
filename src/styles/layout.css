@@ -18,6 +18,11 @@
   margin-left: auto;
 }
 
+.wa-number {
+  font-family: var(--font-footer);
+  font-weight: 500;
+}
+
 .currency-select {
   background: transparent;
   border: 1px solid rgba(0, 0, 0, 0.1);
