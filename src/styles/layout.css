@@ -175,10 +175,6 @@
   color: var(--ink);
   background: transparent;
 }
-
-.search-box.wide {
-  max-width: 430px;
-  width: 100%;
 }
 
 .footer {
@@ -188,10 +184,7 @@
   padding: 34px max(48px, calc((100vw - 1280px) / 2));
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   border-top: 1px solid var(--surface-strong);
-}
-
-.footer-brand span {
-  font-size: 30px;
+  font-family: var(--font-footer);
 }
 
 .footer h3 {
