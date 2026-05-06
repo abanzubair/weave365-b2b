@@ -8,7 +8,6 @@ import {
   Heart,
   Layers,
   LockKeyhole,
-  MessageCircle,
   PackageCheck,
   Share2,
   ShoppingBag,
@@ -29,6 +28,8 @@ import {
   ProductCard,
   SectionTitle,
   normalizePincodeInput,
+  useCurrency,
+  WhatsappIcon,
 } from './storefrontShared.jsx';
 
 export function ProductDetailWrapper(props) {
@@ -403,7 +404,7 @@ export function ProductDetail({
                 target="_blank"
                 rel="noreferrer"
               >
-                <MessageCircle size={20} /> Buy Via WhatsApp
+                <WhatsappIcon size={20} /> Buy Via WhatsApp
               </a>
               {/* <button className="secondary-action-btn" type="button" onClick={() => navigate('bulk-inquiry')}>
                 <PackageCheck size={18} /> Need Bulk Quantity?

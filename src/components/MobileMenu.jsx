@@ -3,7 +3,7 @@ import {
   BadgeCheck,
   Headphones,
   Layers,
-  MessageCircle,
+  Mail,
   PackageCheck,
   Search,
   Sparkles,

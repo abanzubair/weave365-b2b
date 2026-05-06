@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Clock,
-  MessageCircle,
   PackageCheck,
   Phone,
   Send,
@@ -11,7 +10,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import { normalizePincodeInput } from '../storefrontShared.jsx';
+import { normalizePincodeInput, WhatsappIcon } from '../storefrontShared.jsx';
 
 const initialInquiry = {
   name: '',
@@ -79,7 +78,7 @@ export function BulkInquiry({ navigate }) {
           </p>
           <div className="bulk-hero-actions">
             <a className="primary-button" href={`https://wa.me/${storeConfig.whatsapp}`} target="_blank" rel="noreferrer">
-              <MessageCircle size={18} /> Chat Directly
+              <WhatsappIcon size={18} /> Chat Directly
             </a>
             <button className="secondary-button" type="button" onClick={() => navigate('catalog')}>
               Browse Catalog <ArrowRight size={18} />
@@ -272,7 +271,7 @@ export function BulkInquiry({ navigate }) {
           <SummaryRow label="Timeline" value={inquiry.timeline} />
           <SummaryRow label="Pincode" value={inquiry.pincode || 'Not added'} />
           <div className="bulk-summary-note">
-            <MessageCircle size={20} />
+            <WhatsappIcon size={20} />
             <p>The final inquiry is sent as a formatted WhatsApp message to {storeConfig.name}.</p>
           </div>
         </aside>

@@ -7,6 +7,7 @@ import {
   PriceLine,
   formatMoney,
   normalizePincodeInput,
+  WhatsappIcon,
 } from '../storefrontShared.jsx';
 
 export function CartDrawer({
@@ -81,7 +82,7 @@ export function CartDrawer({
           <strong>{formatMoney(total)}</strong>
         </div>
         <a className={`primary-button ${items.length ? '' : 'disabled'}`} href={items.length ? whatsappUrl : undefined} target="_blank" rel="noreferrer">
-          Send WhatsApp Enquiry <ArrowRight size={18} />
+          <WhatsappIcon size={20} /> Send WhatsApp Enquiry <ArrowRight size={18} />
         </a>
       </div>
     </aside>
