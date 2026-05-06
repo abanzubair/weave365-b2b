@@ -165,7 +165,7 @@ button {
 
 .login-link {
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -225,23 +225,23 @@ button {
 .hero h1 {
   max-width: 800px;
   margin: 0 0 22px;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(42px, 5vw, 72px);
-  line-height: 1.08;
-  font-weight: 500;
+  font-family: var(--font-heading);
+  font-size: clamp(48px, 5.4vw, 82px);
+  line-height: 1.02;
+  font-weight: 600;
 }
 
 .hero h1 span,
 .hero h1 strong {
   color: var(--gold);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .hero p {
   max-width: 420px;
   margin: 0 0 30px;
   color: #473b33;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.7;
 }
 
@@ -264,7 +264,7 @@ button {
   gap: 10px;
   padding: 0 24px;
   border-radius: 5px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.2px;
   text-transform: uppercase;
@@ -356,14 +356,14 @@ button {
   display: block;
   margin-bottom: 5px;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 14px;
   text-transform: uppercase;
 }
 
 .feature-strip span,
 .benefit-strip span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -410,9 +410,9 @@ button {
 .deal-copy h2 {
   max-width: 440px;
   margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(30px, 3vw, 44px);
-  line-height: 1.08;
+  font-family: var(--font-heading);
+  font-size: clamp(36px, 3.3vw, 52px);
+  line-height: 1.02;
   font-weight: 600;
   color: var(--ink);
 }
@@ -421,7 +421,7 @@ button {
   max-width: 420px;
   margin: 0;
   color: #57483d;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -441,10 +441,10 @@ button {
 }
 
 .deal-timer span {
-  min-width: 30px;
+  min-width: 36px;
   color: var(--ink);
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
+  font-family: var(--font-heading);
+  font-size: 31px;
   font-weight: 700;
   line-height: 1;
   text-align: center;
@@ -452,7 +452,7 @@ button {
 
 .deal-timer small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -461,6 +461,7 @@ button {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+  align-self: center;
 }
 
 .deal-card-grid.deal-count-1 {
@@ -522,16 +523,21 @@ button {
 .deal-card-copy {
   display: grid;
   align-content: center;
-  gap: 10px;
-  padding: 22px;
+  gap: 8px;
+  padding: 18px 20px;
   min-width: 0;
 }
 
 .deal-card-copy strong {
   color: var(--ink);
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  line-height: 1.2;
+  font-family: var(--font-body);
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 19px;
+  line-height: 1.18;
+  font-weight: 800;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .deal-card-copy small {
@@ -544,14 +550,14 @@ button {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin: 6px 0 8px;
+  margin: 3px 0 6px;
 }
 
 .deal-price-row span {
   color: var(--gold-dark);
-  font-family: 'Playfair Display', serif;
-  font-size: 27px;
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 25px;
+  font-weight: 800;
 }
 
 .deal-price-row del {
@@ -562,17 +568,17 @@ button {
 
 .deal-order-button {
   width: fit-content;
-  min-height: 42px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 18px;
+  padding: 0 17px;
   border: 0;
   border-radius: 6px;
   background: var(--ink);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   text-transform: uppercase;
   transition: background 0.2s, transform 0.2s;
@@ -694,7 +700,7 @@ button {
   left: 18px;
   bottom: 20px;
   z-index: 1;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -736,6 +742,7 @@ button {
 .why-band p {
   max-width: 430px;
   color: #4a3c33;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -767,13 +774,13 @@ button {
 }
 
 .stats-panel strong {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px;
+  font-family: var(--font-heading);
+  font-size: 38px;
 }
 
 .stats-panel span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .section-heading-row,
@@ -788,7 +795,7 @@ button {
 .text-button {
   border: 0;
   background: transparent;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -1063,17 +1070,17 @@ button {
   background: transparent;
   text-align: left;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 21px;
   line-height: 1.3;
   color: var(--ink);
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-body);
   margin-bottom: 2px;
 }
 
 .product-card-code {
   display: block;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.2px;
@@ -1107,7 +1114,7 @@ button {
 .price-line {
   margin: 4px 0 10px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -1116,14 +1123,14 @@ button {
 
 .price-line strong {
   color: var(--gold-dark);
-  font-size: 22px;
-  font-weight: 700;
-  font-family: 'Playfair Display', serif;
+  font-size: 25px;
+  font-weight: 800;
+  font-family: var(--font-body);
 }
 
 .price-unit {
-  font-family: var(--font-inter);
-  font-size: 11px;
+  font-family: var(--font-body);
+  font-size: 12px;
   font-weight: 500;
   color: var(--muted);
   margin-left: 2px;
@@ -1131,14 +1138,14 @@ button {
 
 .price-line span {
   text-decoration: line-through;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   opacity: 0.75;
 }
 
 .price-line em {
   font-style: normal;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--muted);
   opacity: 0.7;
@@ -1196,7 +1203,7 @@ button {
   border-radius: 6px;
   background: #fdfaf7;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   transition: all 0.2s;
   text-decoration: none;
@@ -1218,7 +1225,7 @@ button {
   border-radius: 6px;
   background: var(--gold);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2px;
   transition: all 0.2s;
@@ -1257,14 +1264,15 @@ button {
 .reseller-band h2 {
   max-width: 360px;
   margin: 0 0 16px;
-  font-family: 'Playfair Display', serif;
-  font-size: 36px;
+  font-family: var(--font-heading);
+  font-size: 44px;
   line-height: 1.15;
 }
 
 .reseller-band p {
   max-width: 460px;
   color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -1482,9 +1490,9 @@ button {
 
 .product-info-panel h1 {
   margin: 20px 0 22px;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(38px, 4vw, 58px);
-  line-height: 1.06;
+  font-family: var(--font-heading);
+  font-size: clamp(44px, 4.4vw, 68px);
+  line-height: 1.02;
   font-weight: 600;
 }
 
@@ -1516,14 +1524,15 @@ button {
 
 .catalog-price-row strong {
   color: var(--gold);
-  font-family: 'Playfair Display', serif;
-  font-size: 42px;
+  font-family: var(--font-body);
+  font-size: 44px;
+  font-weight: 800;
   line-height: 1;
 }
 
 .catalog-price-row span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1540,7 +1549,7 @@ button {
   padding: 13px 4px;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .catalog-table strong {
@@ -1618,7 +1627,7 @@ button {
   gap: 10px;
   margin: 20px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   text-align: center;
 }
@@ -1719,7 +1728,7 @@ button {
 
 .product-trust-strip span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.45;
 }
 
@@ -1769,7 +1778,7 @@ button {
   list-style: none;
   color: #53453a;
   line-height: 1.6;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .highlight-list li {
@@ -1891,9 +1900,9 @@ button {
 
 .detail-copy h1 {
   margin: 14px 0;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(34px, 4vw, 54px);
-  line-height: 1.08;
+  font-family: var(--font-heading);
+  font-size: clamp(42px, 4.4vw, 64px);
+  line-height: 1.03;
 }
 
 .detail-copy p {
@@ -2146,8 +2155,8 @@ button {
 
 .auth-modal h2 {
   margin: 0 0 12px;
-  font-family: 'Playfair Display', serif;
-  font-size: 32px;
+  font-family: var(--font-heading);
+  font-size: 38px;
 }
 
 .auth-modal form {
@@ -2178,9 +2187,9 @@ button {
 .bulk-inquiry-hero h1 {
   max-width: 780px;
   margin: 18px 0 18px;
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(38px, 4vw, 58px);
-  line-height: 1.08;
+  font-family: var(--font-heading);
+  font-size: clamp(44px, 4.4vw, 68px);
+  line-height: 1.03;
   font-weight: 600;
 }
 
@@ -2188,7 +2197,7 @@ button {
   max-width: 650px;
   margin: 0;
   color: var(--muted);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.8;
 }
 
@@ -2248,7 +2257,7 @@ button {
 
 .bulk-response-card strong {
   margin-bottom: 4px;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 25px;
 }
 
@@ -2317,12 +2326,12 @@ button {
   display: block;
   margin-bottom: 4px;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .bulk-section-heading span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -2343,7 +2352,7 @@ button {
   display: grid;
   gap: 8px;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -2446,7 +2455,7 @@ button {
 
 .bulk-summary-panel h2 {
   margin: 0 0 18px;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 28px;
   font-weight: 600;
 }
@@ -2568,8 +2577,8 @@ button {
   }
 
   .product-info-panel h1 {
-    font-size: clamp(34px, 2.8vw, 45px);
-    line-height: 1.08;
+    font-size: clamp(38px, 3vw, 50px);
+    line-height: 1.04;
     margin: 16px 0 18px;
   }
 
@@ -2616,8 +2625,8 @@ button {
   }
 
   .product-info-panel h1 {
-    font-size: clamp(34px, 2.55vw, 46px);
-    line-height: 1.08;
+    font-size: clamp(38px, 2.8vw, 52px);
+    line-height: 1.04;
   }
 
   .catalog-price-row {

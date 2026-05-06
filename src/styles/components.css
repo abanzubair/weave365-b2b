@@ -49,8 +49,8 @@
 
 .section-title h2 {
   margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 30px;
+  font-family: var(--font-heading);
+  font-size: 36px;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -104,8 +104,8 @@
 
 .newsletter strong {
   display: block;
-  font-family: 'Playfair Display', serif;
-  font-size: 23px;
+  font-family: var(--font-heading);
+  font-size: 27px;
   text-transform: uppercase;
 }
 
@@ -160,8 +160,8 @@
 .product-highlight-grid h2,
 .you-may-like .section-title h2 {
   margin: 0 0 20px;
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
+  font-family: var(--font-heading);
+  font-size: 34px;
   font-weight: 600;
   text-transform: none;
 }
@@ -180,7 +180,8 @@
 
 .drawer-head h2 {
   margin: 0;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
+  font-size: 28px;
 }
 
 .drawer-body {
