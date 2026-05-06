@@ -470,8 +470,8 @@ button {
 
 .deal-card {
   display: grid;
-  grid-template-columns: minmax(150px, 0.55fr) minmax(0, 1fr);
-  align-items: center;
+  grid-template-columns: minmax(190px, 0.9fr) minmax(0, 1fr);
+  align-items: start;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -484,6 +484,7 @@ button {
   display: block;
   width: 100%;
   aspect-ratio: 3 / 4;
+  align-self: start;
   padding: 0;
   border: 0;
   overflow: hidden;
@@ -523,6 +524,7 @@ button {
   align-content: center;
   gap: 10px;
   padding: 22px;
+  min-width: 0;
 }
 
 .deal-card-copy strong {
@@ -639,7 +641,7 @@ button {
   }
 
   .deal-card {
-    grid-template-columns: minmax(170px, 0.52fr) minmax(0, 1fr);
+    grid-template-columns: minmax(210px, 0.86fr) minmax(0, 1fr);
   }
 }
 

@@ -28,6 +28,7 @@ export const CURRENCIES = [
   { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US' },
   { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB' },
   { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE' },
+  { code: 'EUR', label: '🇪🇺 Euro (EUR)', locale: 'de-DE' },
   { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG' },
   { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY' },
 ];

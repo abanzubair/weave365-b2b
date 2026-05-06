@@ -306,22 +306,25 @@
 
   .deal-card {
     flex: 0 0 100%;
-    grid-template-columns: minmax(112px, 0.48fr) minmax(0, 0.52fr);
-    align-items: center;
+    grid-template-columns: minmax(158px, 0.48fr) minmax(0, 0.52fr);
+    align-items: start;
     scroll-snap-align: start;
   }
 
   .deal-image {
     aspect-ratio: 3 / 4;
     min-height: 0;
+    align-self: start;
   }
 
   .deal-card-copy {
-    padding: 16px;
+    gap: 8px;
+    padding: 14px;
   }
 
   .deal-card-copy strong {
-    font-size: 18px;
+    font-size: 16px;
+    line-height: 1.16;
   }
 
   .deal-price-row {
@@ -331,12 +334,12 @@
   }
 
   .deal-price-row span {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .deal-order-button {
     width: 100%;
-    min-height: 40px;
+    min-height: 38px;
     padding: 0 12px;
   }
 
