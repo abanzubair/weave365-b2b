@@ -9,10 +9,13 @@ import {
   Headphones,
   Layers,
   LockKeyhole,
+  Bookmark,
+  Package,
   PackageCheck,
   Share2,
   Shirt,
   ShoppingBag,
+  ShoppingCart,
   Sparkles,
   Tag,
   Truck,
@@ -134,72 +137,97 @@ export const ProductCard = memo(function ProductCard({
   useCurrency();
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
-  const cardStatusTags = (product.statusTags || []).slice(0, 2);
-
+  const basePrice = customerPrice(selectedVariant.prices);
+  
+  const tiers = [
+    { range: '10-24 pcs', price: basePrice },
+    { range: '25-49 pcs', price: basePrice > 500 ? basePrice - 50 : basePrice },
+    { range: '50+ pcs', price: basePrice > 500 ? basePrice - 100 : basePrice },
+  ];
 
   return (
     <article className="product-card">
-      <button className="image-button" onClick={() => navigate('product', product.id)}>
-        <img
-          src={image}
-          alt={product.title}
-          loading="lazy"
-          decoding="async"
-          onError={(e) => { e.target.style.opacity = '0'; }}
-        />
-        {product.isOutOfStock && (
-          <span className="out-of-stock-overlay" />
-        )}
-        <div className="card-brand-vertical">
-          <BadgeCheck size={14} />
-          <span>Weave 365</span>
-          <div className="brand-line" />
-        </div>
-        {cardStatusTags.length > 0 && (
-          <span className="card-status-row">
-            {cardStatusTags.map((tag) => (
-              <span
-                key={tag.key}
-                className={`card-status-badge card-status-${tag.key}`}
-              >
-                {tag.key === 'new-arrival' && <Sparkles size={11} />}
-                {tag.key === 'top-seller' && <Award size={11} />}
-                {tag.key === 'bestseller' && <Award size={11} />}
-                {tag.label}
-              </span>
-            ))}
-          </span>
-        )}
-      </button>
-      <button className="fav-button" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
-        <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
-      </button>
+      <div className="card-media">
+        <button className="image-button" onClick={() => navigate('product', product.id)}>
+          <img
+            src={image}
+            alt={product.title}
+            loading="lazy"
+            decoding="async"
+            onError={(e) => { e.target.style.opacity = '0'; }}
+          />
+          <span className="wholesale-badge">WHOLESALE</span>
+          {product.totalColors > 1 && (
+            <span className="colors-badge">+{product.totalColors} COLORS</span>
+          )}
+        </button>
+        <button 
+          className="fav-button" 
+          onClick={() => toggleFavorite(product)} 
+          aria-label={isFavorite ? "Remove from saved" : "Save for later"}
+        >
+          <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+        </button>
+      </div>
 
       <div className="product-card-copy">
-        <button className="card-title-btn" onClick={() => navigate('product', product.id)}>{product.title}</button>
-        <span className="product-card-code">{selectedVariant.code}</span>
-        <div className="card-price-divider">
-          <span className="card-price-divider-diamond" />
-        </div>
-        <PriceLine prices={selectedVariant.prices} />
+        <h3 className="card-title" onClick={() => navigate('product', product.id)}>
+          {product.title}
+        </h3>
+        <span className="card-category">{product.category.toUpperCase()}</span>
 
-        <div className="card-actions">
+        <div className="card-pricing-moq">
+          <div className="pricing-col">
+            <label>Starting at</label>
+            <strong>{formatMoney(basePrice)} <span>/pc</span></strong>
+          </div>
+          <div className="divider-v" />
+          <div className="moq-col">
+            <label>MOQ</label>
+            <strong>{product.isLowMoq ? '5' : '10'} pcs</strong>
+          </div>
+        </div>
+
+        <div className="pricing-tiers-grid">
+          {tiers.map((tier, i) => (
+            <div key={i} className="tier-item">
+              <span className="tier-range">{tier.range}</span>
+              <strong className="tier-price">{formatMoney(tier.price)}<small>/pc</small></strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="fulfillment-row">
+          <div className="fulfillment-item">
+            <Package size={14} /> Ready to Ship
+          </div>
+          <div className="divider-v" />
+          <div className="fulfillment-item">
+            <Truck size={14} /> Dispatch 24-48h
+          </div>
+        </div>
+
+        <div className="card-actions-v2">
           <a
             href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
             target="_blank"
             rel="noreferrer"
-            className="card-chat-btn"
-            aria-label="Enquire on WhatsApp"
+            className="whatsapp-btn"
           >
-            <WhatsappIcon size={16} /> Enquire
+            <WhatsappIcon size={18} /> Order on WhatsApp
           </a>
-          <button
-            className={`card-add-btn${product.isOutOfStock ? ' disabled' : ''}`}
-            onClick={() => !product.isOutOfStock && addToCart(product, selectedVariant, 1)}
-            disabled={product.isOutOfStock}
-          >
-            <ShoppingBag size={16} /> {product.isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
-          </button>
+          <div className="secondary-row">
+            <button
+              className="add-cart-btn"
+              onClick={() => !product.isOutOfStock && addToCart(product, selectedVariant, 1)}
+              disabled={product.isOutOfStock}
+            >
+              <ShoppingCart size={16} /> Add to Cart
+            </button>
+            <button className="save-btn" onClick={() => toggleFavorite(product)}>
+              <Bookmark size={16} fill={isFavorite ? 'currentColor' : 'none'} /> {isFavorite ? 'Saved' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>
     </article>

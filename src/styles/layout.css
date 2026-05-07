@@ -72,9 +72,9 @@
   z-index: 20;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
-  gap: clamp(12px, 2vw, 26px);
+  gap: clamp(12px, 1.5vw, 22px);
   align-items: center;
-  padding: 22px clamp(24px, 4vw, 48px);
+  padding: 22px var(--site-padding);
   /* background: rgba(255, 250, 245, 0.96); */
   background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid var(--line);
@@ -184,8 +184,8 @@
 .footer {
   display: grid;
   grid-template-columns: 1.2fr 0.7fr 0.8fr 1fr 1fr;
-  gap: 50px;
-  padding: 34px max(48px, calc((100vw - 1280px) / 2));
+  gap: clamp(20px, 3vw, 50px);
+  padding: 40px var(--site-padding);
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   border-top: 1px solid var(--surface-strong);
   font-family: var(--font-footer);
@@ -452,13 +452,14 @@
   color: var(--muted);
 }
 
-/* --- Ultra Wide Screens (1920x1080 and above) --- */
-@media screen and (min-width: 1900px) {
+/* --- Ultra Wide Screens (1500px and above) --- */
+@media screen and (min-width: 1500px) {
 
   .section,
   .feature-strip,
-  .bulk-inquiry-page {
-    width: min(1600px, calc(100% - 120px)) !important;
+  .bulk-inquiry-page,
+  .deal-section {
+    width: min(1560px, calc(100% - var(--site-padding) * 2.5)) !important;
   }
 
   .hero-copy,
@@ -468,8 +469,8 @@
   .newsletter,
   .footer,
   .site-header {
-    padding-left: max(60px, calc((100vw - 1600px) / 2)) !important;
-    padding-right: max(60px, calc((100vw - 1600px) / 2)) !important;
+    padding-left: var(--site-padding) !important;
+    padding-right: var(--site-padding) !important;
   }
 
   .product-view {
