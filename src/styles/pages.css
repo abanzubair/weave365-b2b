@@ -1040,10 +1040,9 @@ button {
   font-size: 9px;
   font-weight: 800;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 5px;
   letter-spacing: 0.5px;
   font-family: var(--font-ui);
-  line-height: 1;
 }
 
 .colors-badge {
@@ -1057,10 +1056,9 @@ button {
   font-size: 9px;
   font-weight: 800;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 5px;
   letter-spacing: 0.5px;
   font-family: var(--font-ui);
-  line-height: 1;
 }
 
 .fav-button {
