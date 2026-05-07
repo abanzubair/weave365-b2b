@@ -1159,8 +1159,10 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(34, 24, 19, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(34, 24, 19, 0.82);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   color: #fff;
   text-decoration: none;
   height: 44px;
@@ -1173,7 +1175,8 @@ button {
 }
 
 .whatsapp-btn:hover {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(34, 24, 19, 0.92);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
