@@ -1887,28 +1887,12 @@ button {
 }
 
 .you-may-like .product-row {
+  width: min(1440px, 100%);
+  margin: 0 auto;
   grid-template-columns: repeat(5, 1fr);
-  max-width: 1100px;
 }
 
-.you-may-like .product-card-copy {
-  padding: 10px 12px 12px;
-}
-
-.you-may-like .product-card-copy>button {
-  font-size: 13px;
-}
-
-.you-may-like .price-line {
-  min-height: 32px;
-  margin: 4px 0 8px;
-  font-size: 12px;
-}
-
-.you-may-like .card-actions button {
-  padding: 6px 8px;
-  font-size: 11px;
-}
+/* Removed unnecessary overrides to maintain standard card appearance */
 
 .product-detail {
   display: grid;
