@@ -97,6 +97,7 @@ export function parseProductCsv(text) {
       title: productTitle(row, category),
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
+      subtitle: row.Title || category,
       images: images,
       variants: [variant],
       colorOptions: colorEntries,

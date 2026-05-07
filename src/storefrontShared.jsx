@@ -174,7 +174,7 @@ export const ProductCard = memo(function ProductCard({
         <h3 className="card-title" onClick={() => navigate('product', product.id)}>
           {product.title}
         </h3>
-        <span className="card-category">{product.category.toUpperCase()}</span>
+        <span className="card-category">{product.subtitle}</span>
 
         <div className="card-pricing-moq">
           <div className="pricing-col">
