@@ -462,7 +462,6 @@
     width: min(1560px, calc(100% - var(--site-padding) * 2.5)) !important;
   }
 
-  .hero-copy,
   .why-band,
   .benefit-strip,
   .reseller-band,
@@ -471,6 +470,37 @@
   .site-header {
     padding-left: var(--site-padding) !important;
     padding-right: var(--site-padding) !important;
+  }
+
+  .hero-copy,
+  .top-bar-static {
+    padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
+    padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
+  }
+
+  .tier-range {
+    font-size: 12px !important;
+  }
+
+  .tier-price {
+    font-size: 17px !important;
+  }
+
+  .tier-price small {
+    font-size: 10px !important;
+  }
+
+  .fulfillment-item {
+    font-size: 12px !important;
+  }
+
+  .whatsapp-btn {
+    height: 50px !important;
+  }
+
+  .add-cart-btn,
+  .save-btn {
+    height: 44px !important;
   }
 
   .product-view {
@@ -515,5 +545,51 @@
   .main-nav a,
   .login-link {
     font-size: 15px !important;
+  }
+
+  .deal-copy h2 {
+    font-size: 64px !important;
+  }
+
+  .deal-copy p {
+    font-size: 24px !important;
+    max-width: 520px !important;
+  }
+
+  .deal-timer span {
+    font-size: 42px !important;
+  }
+
+  .deal-timer small {
+    font-size: 13px !important;
+  }
+
+  .deal-card-copy strong {
+    font-size: 28px !important;
+  }
+
+  .deal-price-row span {
+    font-size: 36px !important;
+  }
+
+  .wholesale-badge,
+  .colors-badge {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+    top: 15px !important;
+    left: 15px !important;
+  }
+
+  .colors-badge {
+    bottom: 15px !important;
+    right: 15px !important;
+    top: auto !important;
+    left: auto !important;
+  }
+
+  .deal-image span {
+    font-size: 14px !important;
+    min-height: 36px !important;
+    padding: 0 16px !important;
   }
 }

@@ -22,6 +22,7 @@ const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module
 const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 
 export default function App() {
+
   useCurrency();
   const [products, setProducts] = useState([]);
   const [status, setStatus] = useState('loading');
@@ -460,6 +461,7 @@ export default function App() {
               <BulkInquiry navigate={navigate} />
             } />
           </Routes>
+
         </Suspense>
       </main>
 

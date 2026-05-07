@@ -213,7 +213,7 @@ button {
 }
 
 .hero-copy {
-  padding: 80px max(48px, calc((100vw - 1280px) / 2)) 110px;
+  padding: 80px max(calc(var(--site-padding) + 38px), calc((100vw - 1440px) / 2 + 38px)) 110px;
   position: relative;
   z-index: 2;
   display: flex;
@@ -938,7 +938,7 @@ button {
 
 .card-media {
   position: relative;
-  padding: 8px;
+  padding: 0;
 }
 
 .image-button {
@@ -949,7 +949,6 @@ button {
   background: #f7f3f0;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
   display: block;
 }
 
@@ -970,7 +969,7 @@ button {
   top: 10px;
   left: 10px;
   z-index: 2;
-  background: rgba(34, 24, 19, 0.7);
+  background: rgba(34, 24, 19, 0.6);
   backdrop-filter: blur(8px);
   color: #fff;
   font-size: 9px;
@@ -986,7 +985,7 @@ button {
   bottom: 10px;
   right: 10px;
   z-index: 2;
-  background: rgba(34, 24, 19, 0.7);
+  background: rgba(34, 24, 19, 0.6);
   backdrop-filter: blur(8px);
   color: #fff;
   font-size: 9px;
@@ -1015,16 +1014,16 @@ button {
 }
 
 .product-card-copy {
-  padding: 0 16px 16px;
+  padding: 16px 16px 16px;
   display: flex;
   flex-direction: column;
 }
 
 .card-title {
   margin: 0;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 21px;
-  font-weight: 600;
+  font-weight: 700;
   color: #1a1512;
   cursor: pointer;
   line-height: 1.15;
@@ -1126,7 +1125,7 @@ button {
 .fulfillment-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   margin-top: 12px;
   padding: 6px 0;
   border-top: 1px solid #f0eeec;
@@ -1160,18 +1159,22 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #221813;
+  background: rgba(34, 24, 19, 0.85);
+  backdrop-filter: blur(8px);
   color: #fff;
   text-decoration: none;
   height: 44px;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 700;
-  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
 }
 
 .whatsapp-btn:hover {
-  background: #000;
+  background: rgba(0, 0, 0, 0.9);
+  transform: translateY(-1px);
 }
 
 .secondary-row {
