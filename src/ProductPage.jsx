@@ -117,7 +117,7 @@ export function ProductDetail({
       ['Buy Price / Piece', formatMoney(displayPrice)],
       ['Buy Price Full Set', formatMoney(displayPrice * totalColors)],
       ['Set Weight', formatWeight(catalogWeight)],
-      ['MOQ', '1 Set or 10 PCS Assorted'],
+      ['MOQ', '1 Set'],
       ['Fabric', product.fabric || 'Premium Saree'],
       ['Description', product.description],
       ['Brand', 'Weave 365'],

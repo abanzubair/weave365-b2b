@@ -184,7 +184,7 @@ export const ProductCard = memo(function ProductCard({
           <div className="divider-v" />
           <div className="moq-col">
             <label>MOQ</label>
-            <strong>{product.isLowMoq ? '5' : '10'} pcs</strong>
+            <strong>1 Set</strong>
           </div>
         </div>
 
