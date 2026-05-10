@@ -1,19 +1,19 @@
 import { useEffect } from 'react';
-import { Award, PackageCheck, Phone, Truck } from 'lucide-react';
-import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
+import { Award, PackageCheck, Truck, MessageCircle } from 'lucide-react';
+import { CURRENCIES, CurrencyManager, useCurrency, WhatsappIcon } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';
 
 const topBarItems = [
   { icon: Award, text: 'B2B Wholesale Only' },
   { icon: PackageCheck, text: 'Bulk Pricing Advantage' },
   { icon: Truck, text: 'PAN India & Export Delivery' },
-  { icon: Phone, text: 'Orders & Enquiry', isLink: true },
+  { icon: WhatsappIcon, text: '', isLink: true },
 ];
 
 export function TopBar() {
   const currentCurrency = useCurrency();
   const waUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(`Hello ${storeConfig.name}, I want to enquire about bulk orders.`)}`;
-  const topBarPhone = storeConfig.phone.replace(/\s+/g, '');
+  const topBarWhatsapp = '+91 99191 01369';
 
   useEffect(() => {
     fetch('https://api.exchangerate-api.com/v4/latest/INR')
@@ -32,7 +32,7 @@ export function TopBar() {
         {topBarItems.map(({ icon: Icon, text, isLink }, i) => (
           isLink ? (
             <a key={text} href={waUrl} target="_blank" rel="noreferrer" className="whatsapp-span" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <Icon size={14} /> <span className="wa-number">{topBarPhone}</span> {text}
+              <Icon size={14} /> <span className="wa-number">{topBarWhatsapp}</span>
             </a>
           ) : (
             <span key={text} className={i === 3 ? 'whatsapp-span' : ''}>
@@ -55,7 +55,7 @@ export function TopBar() {
           {[...topBarItems, ...topBarItems].map(({ icon: Icon, text, isLink }, index) => (
             isLink ? (
               <a key={`${text}-${index}`} href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <Icon size={14} /> <span className="wa-number">{topBarPhone}</span> {text}
+                <Icon size={14} /> <span className="wa-number">{topBarWhatsapp}</span>
               </a>
             ) : (
               <span key={`${text}-${index}`}>

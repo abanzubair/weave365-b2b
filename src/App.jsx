@@ -14,7 +14,7 @@ import { Footer } from './components/Footer.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
-import { Home } from './pages/Home.jsx';
+import { Home, homeCategoryNames } from './pages/Home.jsx';
 import { Favorites } from './pages/Favorites.jsx';
 import { ComingSoon } from './pages/ComingSoon.jsx';
 
@@ -149,9 +149,8 @@ export default function App() {
   }, [user]);
 
   const categories = useMemo(() => {
-    const names = products.map((product) => product.fabric || product.category).filter(Boolean);
-    return ['All', 'New Arrivals', 'Bestsellers', ...Array.from(new Set(names))];
-  }, [products]);
+    return homeCategoryNames;
+  }, []);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
@@ -322,11 +321,11 @@ export default function App() {
           </div>
           <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
           <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
-          <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
-            Bulk Order
-          </button>
           <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
             Catalogue
+          </button>
+          <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
+            Bulk Order
           </button>
         </nav>
         <div className="search-box-wrapper">

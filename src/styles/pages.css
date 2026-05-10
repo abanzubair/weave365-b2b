@@ -326,8 +326,8 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 0;
-  margin: -52px auto 0;
-  padding: 24px 26px;
+  margin: -48px auto 0;
+  padding: 16px 26px;
   position: relative;
   z-index: 3;
   background: var(--white);
@@ -359,7 +359,7 @@ button {
 .benefit-strip strong,
 .reseller-band strong {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
   color: var(--ink);
   font-size: 16px;
   text-transform: uppercase;
@@ -368,7 +368,7 @@ button {
 .feature-strip span,
 .benefit-strip span {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -603,8 +603,8 @@ button {
 
 @media screen and (min-width: 1900px) {
   .feature-strip {
-    min-height: 124px;
-    padding: 34px 36px;
+    min-height: 100px;
+    padding: 24px 36px;
   }
 
   .benefit-strip {
@@ -634,7 +634,7 @@ button {
   }
 
   .feature-strip strong {
-    margin-bottom: 7px;
+    margin-bottom: 1px;
     font-size: 16px;
   }
 
@@ -644,7 +644,7 @@ button {
   }
 
   .feature-strip span {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.55;
   }
 

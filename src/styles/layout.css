@@ -2,9 +2,10 @@
   min-height: 34px;
   background: var(--surface-accent);
   color: #3c2d22;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   overflow: hidden;
+  font-family: var(--font-body);
 }
 
 .top-bar-static {
@@ -19,8 +20,8 @@
 }
 
 .wa-number {
-  font-family: var(--font-footer);
-  font-weight: 500;
+  font-family: var(--font-body);
+  font-weight: 600;
 }
 
 .currency-select {
@@ -152,6 +153,29 @@
 .search-box-wrapper {
   position: relative;
   z-index: 1000;
+}
+
+.search-box {
+  height: 34px;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
 }
 
 
@@ -447,10 +471,14 @@
     padding-right: var(--site-padding) !important;
   }
 
-  .hero-copy,
-  .top-bar-static {
+  .hero-copy {
     padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
     padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
+  }
+
+  .top-bar-static {
+    padding-left: var(--site-padding) !important;
+    padding-right: var(--site-padding) !important;
   }
 
   .tier-range {
@@ -569,7 +597,7 @@
   }
 
   .search-box {
-    height: 42px !important;
+    height: 34px !important;
     width: 220px !important;
     display: flex;
     align-items: center;
@@ -596,3 +624,5 @@
     font-size: 14px !important;
   }
 }
+
+
