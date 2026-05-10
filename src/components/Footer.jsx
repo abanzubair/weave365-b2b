@@ -6,8 +6,8 @@ export function Footer({ navigate }) {
   return (
     <footer id="contact" className="footer">
       <div>
-        <a 
-          href="/" 
+        <a
+          href="/"
           className="brand footer-brand"
           onClick={(e) => {
             e.preventDefault();

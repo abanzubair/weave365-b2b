@@ -1,6 +1,6 @@
 /* Fix for 1920x1080 screens to show exactly 5 cards in rails */
 @media screen and (min-width: 1440px) {
   .scrollable-row > * {
-    flex: 0 0 calc((100% - (var(--rail-gap, 20px) * 4)) / 5) !important;
+    flex: 0 0 calc((100% - (var(--rail-gap, 10px) * 4)) / 5) !important;
   }
 }

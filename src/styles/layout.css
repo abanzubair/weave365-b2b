@@ -466,9 +466,10 @@
   .reseller-band,
   .newsletter,
   .footer,
+  .top-bar-static,
   .site-header {
-    padding-left: var(--site-padding) !important;
-    padding-right: var(--site-padding) !important;
+    padding-left: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
+    padding-right: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
   }
 
   .hero-copy {

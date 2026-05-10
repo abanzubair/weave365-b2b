@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag } from 'lucide-react';
-import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney } from '../storefrontShared.jsx';
+import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck } from 'lucide-react';
+import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon } from '../storefrontShared.jsx';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { storeConfig } from '../config.js';
 
@@ -195,7 +195,7 @@ export function Home({
 
             <div className="hero-actions">
               <button className="primary-button" onClick={() => fixedHeroData?.buttonLink ? (fixedHeroData.buttonLink.startsWith('http') ? window.open(fixedHeroData.buttonLink, '_blank') : navigate(fixedHeroData.buttonLink)) : navigate('catalog')}>
-                {fixedHeroData?.buttonText || 'Shop Collection'} <ArrowRight size={18} />
+                <WhatsappIcon size={18} /> {fixedHeroData?.buttonText || 'Shop Collection'}
               </button>
               <button className="secondary-button" onClick={openAuth}>
                 Register Now
@@ -317,7 +317,7 @@ export function Home({
       <section id="why" className="why-band">
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
-          <p>We understand your business and provide the best quality sarees with unbeatable wholesale prices to help you grow more.</p>
+          <p>We provide premium quality sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
           <button className="primary-button compact" onClick={() => navigate('catalog')}>
             Know More
           </button>
@@ -326,7 +326,8 @@ export function Home({
           <Stat icon={<User />} value="1000+" label="Unique Designs" />
           <Stat icon={<Heart />} value="500+" label="Active Buyers" />
           <Stat icon={<Award />} value="10+" label="Years of Trust" />
-          <Stat icon={<CheckCircle2 />} value="100%" label="Quality Assured" />
+          <Stat icon={<ShieldCheck />} value="95%" label="Repeat Buyers" />
+          <Stat icon={<Truck />} value="28+" label="States Covered" />
         </div>
       </section>
 

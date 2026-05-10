@@ -107,6 +107,14 @@ export function parseProductCsv(text) {
         return val ? Number(val) : null;
       })(),
       totalColors: parseTotalColors(row.Col || row.Color, colorEntries),
+      quantity: (function() {
+        const key = Object.keys(row).find(k => {
+          const lo = k.trim().toLowerCase();
+          return lo === 'quantity' || lo === 'qty' || lo === 'set qty' || lo === 'designs';
+        });
+        const val = String(row[key] || '').replace(/[^\d.]/g, '');
+        return val ? Number(val) : null;
+      })(),
       raw: row,
     };
 

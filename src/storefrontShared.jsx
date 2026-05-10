@@ -3,8 +3,10 @@ import {
   ArrowRight,
   Award,
   BadgeCheck,
+  Check,
   CheckCircle2,
   Download,
+  Eye,
   Heart,
   Headphones,
   Layers,
@@ -12,7 +14,9 @@ import {
   Bookmark,
   Package,
   PackageCheck,
+  Palette,
   Share2,
+  ShieldCheck,
   Shirt,
   ShoppingBag,
   ShoppingCart,
@@ -27,7 +31,7 @@ export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAA
 
 export const WhatsappIcon = ({ size = 14, className = '' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
   </svg>
 );
 
@@ -138,12 +142,9 @@ export const ProductCard = memo(function ProductCard({
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
   const basePrice = customerPrice(selectedVariant.prices);
-  
-  const tiers = [
-    { range: '10-24 pcs', price: basePrice },
-    { range: '25-49 pcs', price: basePrice > 500 ? basePrice - 50 : basePrice },
-    { range: '50+ pcs', price: basePrice > 500 ? basePrice - 100 : basePrice },
-  ];
+  const setPrice = basePrice * (product.totalColors || product.variants.length || 1);
+  const colorCount = product.totalColors || 1;
+  const soldCount = Math.floor(50 + (product.id?.charCodeAt?.(0) || 0) % 80) + '+';
 
   return (
     <article className="product-card">
@@ -156,17 +157,15 @@ export const ProductCard = memo(function ProductCard({
             decoding="async"
             onError={(e) => { e.target.style.opacity = '0'; }}
           />
-          <span className="wholesale-badge">WHOLESALE</span>
-          {product.totalColors > 1 && (
-            <span className="colors-badge">+{product.totalColors} COLORS</span>
-          )}
+
         </button>
-        <button 
-          className="fav-button" 
-          onClick={() => toggleFavorite(product)} 
+        <button
+          className="save-btn-circle"
+          onClick={() => toggleFavorite(product)}
+          data-selected={isFavorite || undefined}
           aria-label={isFavorite ? "Remove from saved" : "Save for later"}
         >
-          <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+          <Bookmark size={15} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
       </div>
 
@@ -174,60 +173,39 @@ export const ProductCard = memo(function ProductCard({
         <h3 className="card-title" onClick={() => navigate('product', product.id)}>
           {product.title}
         </h3>
-        <span className="card-category">{product.subtitle}</span>
 
-        <div className="card-pricing-moq">
-          <div className="pricing-col">
-            <label>Starting at</label>
-            <strong>{formatMoney(basePrice)} <span>/pc</span></strong>
+        <div className="card-info-grid">
+          <div className="info-left">
+            <label>PRICE (SET)</label>
+            <strong>{formatMoney(setPrice)} <span>/ Set</span></strong>
+            <small>{formatMoney(basePrice)} per pc</small>
           </div>
-          <div className="divider-v" />
-          <div className="moq-col">
-            <label>MOQ</label>
-            <strong>1 Set</strong>
-          </div>
-        </div>
-
-        <div className="pricing-tiers-grid">
-          {tiers.map((tier, i) => (
-            <div key={i} className="tier-item">
-              <span className="tier-range">{tier.range}</span>
-              <strong className="tier-price">{formatMoney(tier.price)}<small>/pc</small></strong>
+          <div className="info-right">
+            <div className="info-item">
+              <ShoppingBag size={15} /> MOQ 1 Set
             </div>
-          ))}
-        </div>
-
-        <div className="fulfillment-row">
-          <div className="fulfillment-item">
-            <Package size={14} /> Ready to Ship
-          </div>
-          <div className="divider-v" />
-          <div className="fulfillment-item">
-            <Truck size={14} /> Dispatch 24-48h
+            {colorCount > 1 && (
+              <div className="info-item">
+                <Palette size={15} /> {colorCount} Colors
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="card-actions-v2">
+
+
+        <div className="card-actions-new">
           <a
             href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
             target="_blank"
             rel="noreferrer"
-            className="whatsapp-btn"
+            className="order-now-btn"
           >
-            <WhatsappIcon size={18} /> Order on WhatsApp
+            <WhatsappIcon size={16} /> ENQUIRY
           </a>
-          <div className="secondary-row">
-            <button
-              className="add-cart-btn"
-              onClick={() => !product.isOutOfStock && addToCart(product, selectedVariant, 1)}
-              disabled={product.isOutOfStock}
-            >
-              <ShoppingCart size={16} /> Add to Cart
-            </button>
-            <button className="save-btn" onClick={() => toggleFavorite(product)}>
-              <Bookmark size={16} fill={isFavorite ? 'currentColor' : 'none'} /> {isFavorite ? 'Saved' : 'Save'}
-            </button>
-          </div>
+          <button className="quick-view-btn" onClick={() => navigate('product', product.id)}>
+            <Eye size={16} /> DETAILS
+          </button>
         </div>
       </div>
     </article>
@@ -271,19 +249,19 @@ export function expandedProductCards(products) {
 
 export function formatMoney(value) {
   if (value == null || Number.isNaN(value)) return 'On request';
-  
+
   const currencyCode = CurrencyManager.currency;
   const rate = CurrencyManager.rates[currencyCode] || 1;
   const convertedValue = value * rate;
-  
+
   const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-  
+
   const formatter = new Intl.NumberFormat(currencyInfo.locale, {
     style: 'currency',
     currency: currencyCode,
     maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
   });
-  
+
   return formatter.format(convertedValue);
 }
 
