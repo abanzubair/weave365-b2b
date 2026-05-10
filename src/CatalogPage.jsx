@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
 
 export function Catalog({
@@ -8,34 +9,79 @@ export function Catalog({
   categories,
   category,
   setCategory,
+  priceRanges,
+  priceRange,
+  setPriceRange,
   navigate,
   addToCart,
   toggleFavorite,
   favoriteKeys,
 }) {
   const [visibleCount, setVisibleCount] = useState(24);
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const toggleDropdown = (name) => {
+    setOpenDropdown(openDropdown === name ? null : name);
+  };
 
   return (
     <section className="section catalog-page">
       <div className="catalog-toolbar">
-        <div>
-          <SectionTitle title="Wholesale Catalogue" align="left" />
-          {/* <p>Browse live products from the Google Sheets catalogue.</p> */}
+        <SectionTitle title="Wholesale Catalogue" align="left" />
+        
+        <div className="catalog-filters-container">
+          {/* Category Dropdown */}
+          <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('category')}>
+              <div className="filter-label-wrap">
+                <label>Category</label>
+                <span>{category}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {categories.map((name) => (
+                <button
+                  key={name}
+                  className={category === name ? 'active' : ''}
+                  onClick={() => {
+                    setCategory(name);
+                    setVisibleCount(24);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Price Range Dropdown */}
+          <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('price')}>
+              <div className="filter-label-wrap">
+                <label>Price Range</label>
+                <span>{priceRange}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {priceRanges.map((range) => (
+                <button
+                  key={range}
+                  className={priceRange === range ? 'active' : ''}
+                  onClick={() => {
+                    setPriceRange(range);
+                    setVisibleCount(24);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  {range}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="filter-tabs">
-        {categories.map((name) => (
-          <button
-            key={name}
-            className={category === name ? 'active' : ''}
-            onClick={() => {
-              setCategory(name);
-              setVisibleCount(24); // Reset count on category change
-            }}
-          >
-            {name}
-          </button>
-        ))}
       </div>
       <StateMessage status={status} error={error} />
       <div className="catalog-grid">

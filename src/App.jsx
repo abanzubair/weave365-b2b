@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Heart, Search, ShoppingBag, User, Menu } from 'lucide-react';
-import { fetchProducts, fetchHeroData } from './productData.js';
+import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
@@ -33,6 +33,7 @@ export default function App() {
   const route = location.pathname === '/' ? 'home' : location.pathname.split('/')[1];
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const [priceRange, setPriceRange] = useState('All');
   const [authOpen, setAuthOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,6 +44,7 @@ export default function App() {
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [heroSlides, setHeroSlides] = useState([]);
+  const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [] });
 
   useEffect(() => {
     let isActive = true;
@@ -65,6 +67,13 @@ export default function App() {
         if (data && data.length > 0) {
           setHeroSlides(data);
         }
+      })
+      .catch(console.error);
+
+    fetchConfigOptions()
+      .then((opts) => {
+        if (!isActive) return;
+        setConfigOptions(opts);
       })
       .catch(console.error);
 
@@ -149,8 +158,22 @@ export default function App() {
   }, [user]);
 
   const categories = useMemo(() => {
-    return homeCategoryNames;
-  }, []);
+    if (configOptions.categories.length > 0) {
+      return ['All', ...configOptions.categories];
+    }
+    return ['All', ...homeCategoryNames];
+  }, [configOptions.categories]);
+
+  const priceRanges = useMemo(() => {
+    if (configOptions.priceRanges.length > 0) {
+      return ['All', ...configOptions.priceRanges];
+    }
+    const ranges = new Set();
+    products.forEach(p => {
+      if (p.priceRange) ranges.add(p.priceRange);
+    });
+    return ['All', ...Array.from(ranges).sort()];
+  }, [products, configOptions.priceRanges]);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
@@ -176,9 +199,11 @@ export default function App() {
         (category === 'Bestsellers' && product.isTopSeller) ||
         product.fabric === category ||
         product.category === category;
-      return matchesSearch && matchesCategory;
+      const matchesPrice = priceRange === 'All' || 
+        (product.priceRange && product.priceRange.trim() === priceRange.trim());
+      return matchesSearch && matchesCategory && matchesPrice;
     });
-  }, [category, products, searchTerm]);
+  }, [category, priceRange, products, searchTerm]);
 
   const productsById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
@@ -429,6 +454,9 @@ export default function App() {
                 categories={categories}
                 category={category}
                 setCategory={setCategory}
+                priceRanges={priceRanges}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
                 navigate={navigate}
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}

@@ -3,4 +3,7 @@
   .scrollable-row > * {
     flex: 0 0 calc((100% - (var(--rail-gap, 10px) * 4)) / 5) !important;
   }
+  .catalog-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
 }

@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { categoryCodes, csvUrl, heroCsvUrl } from './config.js';
+import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl } from './config.js';
 
 const moneyColumns = {
   mrp: 'B2B',
@@ -7,6 +7,27 @@ const moneyColumns = {
   cod: 'COD',
   offer: 'Offer',
 };
+
+export async function fetchConfigOptions() {
+  const response = await fetch(configCsvUrl, { cache: 'no-store' });
+  if (!response.ok) return { priceRanges: [], categories: [] };
+  const text = await response.text();
+  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+  
+  const priceRanges = parsed.data
+    .map(row => row['Price Range'] || row['PriceRange'])
+    .filter(Boolean)
+    .map(s => s.trim())
+    .slice(0, 6);
+
+  const categories = parsed.data
+    .map(row => row['Category'] || row['Category'])
+    .filter(Boolean)
+    .map(s => s.trim())
+    .slice(0, 6);
+
+  return { priceRanges, categories };
+}
 
 export async function fetchProducts() {
   const response = await fetch(csvUrl, { cache: 'no-store' });
@@ -114,6 +135,20 @@ export function parseProductCsv(text) {
         });
         const val = String(row[key] || '').replace(/[^\d.]/g, '');
         return val ? Number(val) : null;
+      })(),
+      priceRange: (function() {
+        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'price range');
+        if (row[key]) return String(row[key]).trim();
+        
+        // Derive from B2B price (mrp)
+        const price = Number(String(row.B2B || '').replace(/[^\d.]/g, '')) || 0;
+        if (price >= 10000) return '₹10,000+';
+        if (price >= 5000) return '₹5,000 \u2013 ₹9,999';
+        if (price >= 3000) return '₹3,000 \u2013 ₹4,999';
+        if (price >= 2000) return '₹2,000 \u2013 ₹2,999';
+        if (price >= 1000) return '₹1,000 \u2013 ₹1,999';
+        if (price >= 500) return '₹500 \u2013 ₹999';
+        return 'Below ₹500';
       })(),
       raw: row,
     };
