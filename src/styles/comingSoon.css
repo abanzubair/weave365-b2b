@@ -1,0 +1,276 @@
+.cs-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #ebdcb2;
+  font-family: var(--font-body), sans-serif;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+.cs-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 3vw 5vw;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "logo error"
+    "hero ."
+    "bottom bottom";
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.cs-logo-area {
+  grid-area: logo;
+}
+
+.cs-brand {
+  height: 65px;
+  width: auto;
+  object-fit: contain;
+
+}
+
+.cs-404-area {
+  grid-area: error;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: end;
+  margin-top: -3vw;
+  text-shadow: none;
+}
+
+.cs-404-number {
+  font-family: 'Cormorant Garamond', var(--font-heading), serif;
+  font-size: clamp(120px, 18vw, 260px);
+  line-height: 0.8;
+  font-weight: 300;
+  margin-bottom: 45px;
+  color: #ebdcb2;
+}
+
+.cs-404-text {
+  font-size: 16px;
+  letter-spacing: 4px;
+  line-height: 1.8;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 500;
+  color: rgba(15, 10, 5, 0.6);
+}
+
+.cs-line {
+  height: 1px;
+  background-color: #ebdcb2;
+  opacity: 0.6;
+}
+
+.cs-line-right {
+  width: 60px;
+}
+
+.cs-line-left {
+  width: 70px;
+  margin: 25px 0;
+}
+
+.cs-hero-text {
+  grid-area: hero;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 400px;
+  padding-top: 0;
+  margin-top: -15vh;
+}
+
+.cs-title {
+  font-family: 'Cormorant Garamond', var(--font-heading), serif;
+  font-size: clamp(40px, 6vw, 90px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 3px;
+  margin: 0;
+  color: #ebdcb2;
+}
+
+.cs-desc {
+  font-size: 17px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+.cs-subdesc {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.8;
+  font-weight: 300;
+}
+
+.cs-bottom-area {
+  grid-area: bottom;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 -5vw -3vw -5vw;
+  padding: 80px 5vw 2vw 5vw;
+  background: linear-gradient(to top, rgba(15, 10, 5, 0.98) 0%, rgba(15, 10, 5, 0.85) 5%, rgba(15, 10, 5, 0.35) 75%, transparent 100%);
+}
+
+.cs-features-grid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 20px;
+}
+
+.cs-feature-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding: 0 10px;
+}
+
+.cs-feature-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background-color: #ebdcb2;
+  opacity: 0.25;
+}
+
+.cs-feature-item svg {
+  margin-bottom: 15px;
+  color: #ebdcb2;
+}
+
+.cs-feature-item h4 {
+  font-size: 16px;
+  letter-spacing: 1px;
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: #ebdcb2;
+}
+
+.cs-feature-item p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+.cs-stay-tuned-row {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 10px;
+}
+
+.cs-line-long {
+  height: 1px;
+  width: 100px;
+  background-color: #ebdcb2;
+  opacity: 0.3;
+}
+
+.cs-stay-tuned-row h3 {
+  font-family: 'Cormorant Garamond', var(--font-heading), serif;
+  font-size: 16px;
+  letter-spacing: 6px;
+  margin: 0;
+  font-weight: 400;
+  color: #ebdcb2;
+}
+
+.cs-footer-text {
+  font-size: 15px;
+  opacity: 0.8;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 1024px) {
+  .cs-layout {
+    grid-template-areas:
+      "logo error"
+      "hero hero"
+      "bottom bottom";
+  }
+}
+
+@media (max-width: 768px) {
+  .cs-layout {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    overflow-y: auto;
+  }
+
+  .cs-wrapper {
+    overflow-y: auto;
+  }
+
+  .cs-logo-area {
+    align-self: center;
+    margin-bottom: 30px;
+  }
+
+  .cs-404-area {
+    margin-top: 20px;
+    align-items: center;
+    justify-self: center;
+  }
+
+  .cs-hero-text {
+    margin-top: 40px;
+    align-items: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cs-line-left {
+    margin: 20px auto;
+  }
+
+  .cs-bottom-area {
+    margin-top: 60px;
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: -30px;
+    padding: 40px 20px 30px 20px;
+  }
+
+  .cs-features-grid {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .cs-feature-item:not(:last-child)::after {
+    display: none;
+  }
+
+  .cs-line-long {
+    width: 50px;
+  }
+}

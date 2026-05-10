@@ -16,6 +16,7 @@ import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import { Home } from './pages/Home.jsx';
 import { Favorites } from './pages/Favorites.jsx';
+import { ComingSoon } from './pages/ComingSoon.jsx';
 
 const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
@@ -268,6 +269,8 @@ export default function App() {
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [routerNavigate]);
+
+  return <ComingSoon />;
 
   return (
     <>
