@@ -636,7 +636,7 @@ button {
 
   .feature-strip strong {
     margin-bottom: 1px;
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .benefit-strip strong {
@@ -645,7 +645,7 @@ button {
   }
 
   .feature-strip span {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.55;
   }
 
@@ -2125,13 +2125,13 @@ button {
 .product-trust-strip strong {
   display: block;
   margin-bottom: 5px;
-  font-size: 12px;
+  font-size: 15px;
   text-transform: uppercase;
 }
 
 .product-trust-strip span {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
 }
 
