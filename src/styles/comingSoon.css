@@ -8,7 +8,8 @@
   background-repeat: no-repeat;
   color: #ebdcb2;
   font-family: var(--font-body), sans-serif;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 99999;
 }
 
@@ -53,7 +54,7 @@
   font-size: clamp(120px, 18vw, 260px);
   line-height: 0.8;
   font-weight: 300;
-  margin-bottom: 45px;
+  margin-bottom: 3vh;
   color: #ebdcb2;
 }
 
@@ -125,7 +126,7 @@
   flex-direction: column;
   align-items: center;
   margin: 0 -5vw -3vw -5vw;
-  padding: 80px 5vw 2vw 5vw;
+  padding: 5vh 5vw 2vw 5vw;
   background: linear-gradient(to top, rgba(15, 10, 5, 0.98) 0%, rgba(15, 10, 5, 0.85) 5%, rgba(15, 10, 5, 0.35) 75%, transparent 100%);
 }
 
@@ -134,7 +135,7 @@
   justify-content: center;
   width: 100%;
   max-width: 1200px;
-  margin-bottom: 20px;
+  margin-bottom: 2vh;
 }
 
 .cs-feature-item {
@@ -215,6 +216,22 @@
       "logo error"
       "hero hero"
       "bottom bottom";
+  }
+}
+
+@media (max-height: 900px) {
+  .cs-404-number {
+    font-size: clamp(100px, 15vh, 200px);
+    margin-bottom: 1.5vh;
+  }
+  .cs-bottom-area {
+    padding-top: 3vh;
+  }
+  .cs-brand {
+    height: 50px;
+  }
+  .cs-hero-text {
+    margin-top: -10vh;
   }
 }
 
