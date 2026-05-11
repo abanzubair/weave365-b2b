@@ -294,7 +294,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [routerNavigate]);
 
-  // return <ComingSoon />;
+  return <ComingSoon />;
 
   return (
     <>
