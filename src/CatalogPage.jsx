@@ -9,6 +9,9 @@ export function Catalog({
   categories,
   category,
   setCategory,
+  fabrics,
+  fabric,
+  setFabric,
   priceRanges,
   priceRange,
   setPriceRange,
@@ -81,9 +84,37 @@ export function Catalog({
               ))}
             </div>
           </div>
+
+          {/* Fabric Dropdown */}
+          <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('fabric')}>
+              <div className="filter-label-wrap">
+                <label>Fabric</label>
+                <span>{fabric}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {fabrics.map((name) => (
+                <button
+                  key={name}
+                  className={fabric === name ? 'active' : ''}
+                  onClick={() => {
+                    setFabric(name);
+                    setVisibleCount(24);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
       <StateMessage status={status} error={error} />
+      
       <div className="catalog-grid">
         {products.slice(0, visibleCount).map((product) => (
           <ProductCard

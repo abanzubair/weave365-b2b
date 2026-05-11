@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ArrowRight,
   Award,
+  Bookmark,
   CheckCircle2,
   Download,
   Heart,
@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
+import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
 import {
   buildSingleProductWhatsappUrl,
   customerPrice,
@@ -61,6 +62,7 @@ export function ProductDetail({
   const [isDownloading, setIsDownloading] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(null);
   const [zoomImage, setZoomImage] = useState(null);
+  const [variationDrawerOpen, setVariationDrawerOpen] = useState(false);
   const mainImageRef = useRef(null);
 
   const totalColors = useMemo(
@@ -95,7 +97,6 @@ export function ProductDetail({
     () => (product.statusTags || []).filter((tag) => tag.key !== 'bestseller'),
     [product.statusTags],
   );
-  const designStripImages = useMemo(() => product.images.slice(0, 4), [product.images]);
   const related = useMemo(
     () => products.filter((item) => item.id !== product.id).slice(0, 5),
     [product.id, products],
@@ -112,15 +113,7 @@ export function ProductDetail({
   );
   const detailRows = useMemo(
     () => [
-      ['Code', variant.code],
-      ['MRP', formatMoney(variant.prices.mrp)],
-      ['Buy Price / Piece', formatMoney(displayPrice)],
-      ['Buy Price Full Set', formatMoney(displayPrice * totalColors)],
-      ['Set Weight', formatWeight(catalogWeight)],
-      ['MOQ', '1 Set'],
-      ['Fabric', product.fabric || 'Premium Saree'],
       ['Description', product.description],
-      ['Brand', 'Weave 365'],
     ],
     [variant, displayPrice, totalColors, catalogWeight, product.fabric, product.description],
   );
@@ -184,6 +177,7 @@ export function ProductDetail({
     setSelectedImage(product.images[0]);
     setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
     setVariantCode(product.variants[0]?.code);
+    setVariationDrawerOpen(false);
   }, [product]);
 
   useEffect(() => {
@@ -282,24 +276,22 @@ export function ProductDetail({
               </button>
             </div>
 
-            <div className="catalog-design-strip desktop-only">
-              <div>
-                <strong>{totalColors} Colors in this Catalog</strong>
-                <button type="button">
-                  View all colors <ArrowRight size={16} />
-                </button>
-              </div>
-              <div className="design-thumb-row">
-                {designStripImages.map((image) => (
-                  <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img
-                      src={image}
-                      alt={`${product.title} design`}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => { e.target.style.opacity = '0'; }}
-                    />
-                  </button>
+            <div className="product-specs-card">
+              <div className="specs-grid">
+                {[
+                  ['Style', product.style],
+                  ['Occasion', product.occasion],
+                  ['Fabric', product.fabric],
+                  ['Work', product.work],
+                  ['Pattern', product.pattern],
+                  ['Weave', product.weave],
+                  ['Purity', product.purity],
+                  ['Type', product.type],
+                ].map(([label, value]) => value && (
+                  <div key={label} className="spec-item">
+                    <span className="spec-label">{label}</span>
+                    <span className="spec-value">{value}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -308,24 +300,41 @@ export function ProductDetail({
           <aside className="product-info-panel">
             <div className="panel-topline">
               <div className="panel-status-tags">
-                <span className="pill">Wholesale Only</span>
+
                 {productStatusTags.map((tag) => (
-                  <span key={tag.key} className={`pill pill-status pill-${tag.key}`}>
+                  <span key={tag.key} className={`status-badge tag-${tag.key}`}>
                     {tag.label}
                   </span>
                 ))}
               </div>
-              <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save favourite">
-                <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
+              <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save for later">
+                <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
               </button>
             </div>
             <h1>{product.title}</h1>
+            <div className="product-code">
+              Code: <strong>{variant.code}</strong>
+            </div>
 
             <div className="catalog-price-row">
-              <div>
-                <strong>{formatMoney(displayPrice)}</strong>
-                <span>{variant.prices.offer ? 'Offer Price / Piece' : 'MRP / Piece'} (Excl. 5% GST)</span>
-              </div>
+                <div className="main-price-display">
+                  <strong>{formatMoney(displayPrice)}<span className="price-unit">/pc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOQ 1 Set</span></strong>
+                  <div className="tiered-pricing-grid">
+                    <div className="tier-col">
+                      <div className="tier-header">1-4 set</div>
+                      <div className="tier-body">{formatMoney(displayPrice * totalColors)}<span className="unit">/set</span></div>
+                    </div>
+                    <div className="tier-col">
+                      <div className="tier-header">5-9 set</div>
+                      <div className="tier-body">{formatMoney(displayPrice * totalColors * 0.98)}<span className="unit">/set</span></div>
+                    </div>
+                    <div className="tier-col">
+                      <div className="tier-header">10+ set</div>
+                      <div className="tier-body">{formatMoney(displayPrice * totalColors * 0.95)}<span className="unit">/set</span></div>
+                    </div>
+                  </div>
+                  <span className="gst-note">{variant.prices.offer ? 'Offer Price / Piece' : ''} Exclusive of GST & shipping</span>
+                </div>
               {variant.prices.offer && variant.prices.mrp && (
                 <div className="mrp-side">
                   <strong>{formatMoney(variant.prices.mrp)}</strong>
@@ -336,110 +345,88 @@ export function ProductDetail({
 
             <div className="quick-facts">
               <span>
-                <Layers size={18} /> Total Colors: <strong>{totalColors}</strong>
+                <Layers size={22} />Colors in a set: <strong>{totalColors}</strong>
               </span>
               <span>
-                <ShoppingBag size={18} /> Weight: <strong>{formatWeight(singleWeight)}</strong>
+                <ShoppingBag size={22} /> Weight per piece: <strong>{formatWeight(singleWeight)}</strong>
               </span>
             </div>
 
+            {colorOptions.length > 0 && (
+              <section className="product-variation-card" aria-labelledby="product-variation-heading">
+                <div className="variation-card-head">
+                  <h2 id="product-variation-heading">Variations</h2>
+                  <button type="button" onClick={() => setVariationDrawerOpen(true)}>
+                    Select now
+                  </button>
+                </div>
+                <p className="selected-color-label">
+                  <strong>Color:</strong> {selectedColorName || 'Selected'}
+                </p>
+                <div className="color-swatch-row" role="list" aria-label="Available colors">
+                  {colorOptions.map((option, index) => {
+                    const optionName = option.name || `Color ${index + 1}`;
+                    const isSelected = selectedColorName === option.name || selectedImage === option.image;
+
+                    return (
+                      <button
+                        key={`${optionName}-${option.image || index}`}
+                        type="button"
+                        className={isSelected ? 'active' : ''}
+                        onClick={() => handleColorChange(option.name)}
+                        aria-label={`Select ${optionName}`}
+                      >
+                        <img
+                          src={option.image || fallbackProductImage}
+                          alt={optionName}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => { e.target.style.opacity = '0'; }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             <div className="catalog-table">
               {detailRows.map(([label, value]) => (
-                <div key={label}>
-                  <span>{label}</span>
-                  <strong>{value || 'On request'}</strong>
+                <div key={label} className={label.toLowerCase().replace(/\s+/g, '-') + '-row'}>
+                  {label !== 'Description' && <span>{label}</span>}
+                  <strong className={label === 'Description' ? 'description-text' : ''}>
+                    {value || 'On request'}
+                  </strong>
                 </div>
               ))}
             </div>
 
-            {colorOptions.length > 1 && (
-              <label className="field-label catalog-variant">
-                Available Colors
-                <select value={selectedColorName} onChange={(event) => handleColorChange(event.target.value)}>
-                  {colorOptions.map((item) => (
-                    <option key={`${item.name}-${item.image}`} value={item.name}>
-                      {item.name || 'Available color'}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
 
-            {product.variants.length > 1 && (
-              <label className="field-label catalog-variant">
-                Variant / Color
-                <select value={variantCode} onChange={(event) => handleVariantChange(event.target.value)}>
-                  {product.variants.map((item) => (
-                    <option key={item.code} value={item.code}>
-                      {item.code} {item.color ? `- Color ${item.color}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
 
-            <div className="pincode-box product-pincode">
-              <label>
-                Check COD pincode availability
-                <span>
-                  <input
-                    value={pincode}
-                    onChange={(event) => setPincode(normalizePincodeInput(event.target.value))}
-                    placeholder="Enter pincode"
-                  />
-                  <button onClick={checkPincode}>Check</button>
-                </span>
-              </label>
-              {codStatus === 'available' && <p className="success">COD available. COD price is now visible.</p>}
-              {codStatus === 'unavailable' && <p className="warning">COD is not available for this pincode.</p>}
-            </div>
+
+
+
 
             <div className="product-main-actions">
-              <button className="catalog-add-button" onClick={() => addToCart(product, variant, totalColors)}>
-                <ShoppingBag size={20} /> Add Full Catalog
-              </button>
-              <a
-                className="whatsapp-button"
-                href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <WhatsappIcon size={20} /> Buy Via WhatsApp
-              </a>
-              {/* <button className="secondary-action-btn" type="button" onClick={() => navigate('bulk-inquiry')}>
-                <PackageCheck size={18} /> Need Bulk Quantity?
-              </button> */}
-              <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
-                <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download Images'}
-              </button>
-              <button className="secondary-action-btn" type="button" onClick={shareProductImages}>
-                <Share2 size={18} /> Share Product
-              </button>
-            </div>
-
-            <div className="catalog-design-strip mobile-only">
-              <div>
-                <strong>{totalColors} Colors in this Catalog</strong>
-                <button type="button">
-                  View all colors <ArrowRight size={16} />
+              <div className="product-secondary-actions">
+                <a
+                  className="whatsapp-button"
+                  href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <WhatsappIcon size={20} /> Enquiry
+                </a>
+                <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
+                  <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-              </div>
-              <div className="design-thumb-row">
-                {designStripImages.map((image) => (
-                  <button key={image} onClick={() => setSelectedImage(image)}>
-                    <img
-                      src={image}
-                      alt={`${product.title} design`}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => { e.target.style.opacity = '0'; }}
-                    />
-                  </button>
-                ))}
+                <button className="secondary-action-btn" type="button" onClick={shareProductImages}>
+                  <Share2 size={18} /> Share
+                </button>
               </div>
             </div>
             <p className="buyer-note">
-              <LockKeyhole size={16} /> Only for registered wholesale buyers. Login to save best prices.
+              <LockKeyhole size={16} /> Only registered buyers can download and share
             </p>
           </aside>
         </div>
@@ -447,7 +434,7 @@ export function ProductDetail({
 
         <ProductTrustStrip />
 
-        <div className="product-highlight-grid">
+        {/* <div className="product-highlight-grid">
           <section>
             <div className="highlight-heading">
               <span className="highlight-icon"><Star size={20} /></span>
@@ -481,7 +468,7 @@ export function ProductDetail({
               <li><Award size={18} /> Small Gatherings</li>
             </ul>
           </section>
-        </div>
+        </div> */}
 
         <section className="you-may-like">
           <div className="section-heading-row">
@@ -518,6 +505,16 @@ export function ProductDetail({
           />
         </div>
       )}
+
+      <VariationQuantityDrawer
+        open={variationDrawerOpen}
+        product={product}
+        colorOptions={colorOptions}
+        selectedColorName={selectedColorName}
+        selectedImage={selectedImage}
+        onClose={() => setVariationDrawerOpen(false)}
+        onSelectColor={handleColorChange}
+      />
     </>
   );
 }

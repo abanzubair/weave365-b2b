@@ -1,0 +1,216 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MessageCircle, Minus, Plus, X } from 'lucide-react';
+import { storeConfig } from '../config.js';
+import {
+  customerPrice,
+  fallbackProductImage,
+  formatMoney,
+  WhatsappIcon,
+} from '../storefrontShared.jsx';
+
+function buildQuantityMap(options) {
+  return options.reduce((map, option) => ({ ...map, [option.key]: 0 }), {});
+}
+
+function buildDrawerInquiryUrl(product, rows, subtotal) {
+  const selectedRows = rows.filter((row) => row.quantity > 0);
+  const lines = [
+    `Hello ${storeConfig.name}, I want to inquire about these variations:`,
+    '',
+    product.title,
+    '',
+    ...selectedRows.map((row) => (
+      `${row.name} | Code: ${row.variant.code} | Qty: ${row.quantity} | Price: ${formatMoney(row.price)} / piece`
+    )),
+    '',
+    `Estimated subtotal: ${formatMoney(subtotal)}`,
+  ].filter(Boolean);
+
+  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+}
+
+export function VariationQuantityDrawer({
+  open,
+  product,
+  colorOptions,
+  selectedColorName,
+  selectedImage,
+  onClose,
+  onSelectColor,
+}) {
+  const rows = useMemo(() => {
+    const source = colorOptions.length
+      ? colorOptions
+      : product.variants.map((variant) => ({
+        name: variant.color || variant.code,
+        image: variant.image,
+      }));
+
+    const seen = new Set();
+    return source
+      .map((option, index) => {
+        const name = option.name || `Color ${index + 1}`;
+        const variant = product.variants.find((item) => item.color === option.name) || product.variants[0];
+        const image = option.image || variant?.image || product.images[index] || product.images[0] || fallbackProductImage;
+        const key = `${name}-${image || index}`;
+
+        return {
+          key,
+          name,
+          image,
+          variant,
+          price: customerPrice(variant?.prices || {}),
+        };
+      })
+      .filter((row) => {
+        if (!row.variant || seen.has(row.key)) return false;
+        seen.add(row.key);
+        return true;
+      });
+  }, [colorOptions, product.images, product.variants]);
+
+  const [activeKey, setActiveKey] = useState(rows[0]?.key || '');
+  const [quantities, setQuantities] = useState(() => buildQuantityMap(rows));
+
+  useEffect(() => {
+    setQuantities(buildQuantityMap(rows));
+    const activeRow = rows.find((row) => row.name === selectedColorName || row.image === selectedImage) || rows[0];
+    setActiveKey(activeRow?.key || '');
+  }, [rows, selectedColorName, selectedImage]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.classList.add('drawer-lock');
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.classList.remove('drawer-lock');
+    };
+  }, [onClose, open]);
+
+  const selectedRow = rows.find((row) => row.key === activeKey) || rows[0];
+  const subtotal = rows.reduce((total, row) => total + row.price * (quantities[row.key] || 0), 0);
+  const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
+  const selectedInquiryUrl = buildDrawerInquiryUrl(
+    product,
+    rows.map((row) => ({ ...row, quantity: quantities[row.key] || 0 })),
+    subtotal,
+  );
+  const chatUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(`Hello ${storeConfig.name}, I need help choosing ${product.title}.`)}`;
+
+  const setQuantity = useCallback((key, nextQuantity) => {
+    setQuantities((current) => ({
+      ...current,
+      [key]: Math.max(0, nextQuantity),
+    }));
+  }, []);
+
+  const selectRow = useCallback((row) => {
+    setActiveKey(row.key);
+    onSelectColor(row.name);
+  }, [onSelectColor]);
+
+  if (!open) return null;
+
+  return (
+    <div className="variation-drawer-shell" role="presentation" onMouseDown={onClose}>
+      <aside
+        className="variation-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="variation-drawer-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header className="variation-drawer-head">
+          <h2 id="variation-drawer-title">Select variations and quantity</h2>
+          <button type="button" aria-label="Close variation selector" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="variation-drawer-body">
+          <section className="drawer-color-section" aria-label="Available colors">
+            <p><strong>Color:</strong> {selectedRow?.name || 'Selected'}</p>
+            <div className="drawer-color-row" role="list">
+              {rows.map((row) => (
+                <button
+                  key={row.key}
+                  type="button"
+                  className={row.key === activeKey ? 'active' : ''}
+                  onClick={() => selectRow(row)}
+                  aria-label={`Select ${row.name}`}
+                >
+                  <img
+                    src={row.image}
+                    alt={row.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(event) => { event.currentTarget.src = fallbackProductImage; }}
+                  />
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="variation-quantity-section" aria-label="Color quantities">
+            <h3>Colors</h3>
+            <div className="variation-quantity-list">
+              {rows.map((row) => {
+                const quantity = quantities[row.key] || 0;
+
+                return (
+                  <div className="variation-quantity-row" key={row.key}>
+                    <button
+                      type="button"
+                      className={`color-name-chip ${row.key === activeKey ? 'active' : ''}`}
+                      onClick={() => selectRow(row)}
+                    >
+                      {row.name}
+                    </button>
+                    <span className="variation-row-price">{formatMoney(row.price)}</span>
+                    <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
+                      <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
+                        <Minus size={16} />
+                      </button>
+                      <output>{quantity}</output>
+                      <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        <footer className="variation-drawer-foot">
+          <div className="drawer-subtotal-row">
+            <span>Subtotal</span>
+            <strong>{formatMoney(subtotal)}</strong>
+          </div>
+          <div className="drawer-action-row">
+            <a
+              className={`drawer-send-btn ${totalQuantity ? '' : 'disabled'}`}
+              href={totalQuantity ? selectedInquiryUrl : undefined}
+              target="_blank"
+              rel="noreferrer"
+              aria-disabled={!totalQuantity}
+            >
+              <WhatsappIcon size={18} /> Send inquiry
+            </a>
+            <a className="drawer-chat-btn" href={chatUrl} target="_blank" rel="noreferrer">
+              <MessageCircle size={18} /> Chat now
+            </a>
+          </div>
+        </footer>
+      </aside>
+    </div>
+  );
+}

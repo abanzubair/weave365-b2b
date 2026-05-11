@@ -10,7 +10,7 @@ const moneyColumns = {
 
 export async function fetchConfigOptions() {
   const response = await fetch(configCsvUrl, { cache: 'no-store' });
-  if (!response.ok) return { priceRanges: [], categories: [] };
+  if (!response.ok) return { priceRanges: [], categories: [], fabrics: [] };
   const text = await response.text();
   const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
   
@@ -18,15 +18,21 @@ export async function fetchConfigOptions() {
     .map(row => row['Price Range'] || row['PriceRange'])
     .filter(Boolean)
     .map(s => s.trim())
-    .slice(0, 6);
+    .slice(0, 50);
 
   const categories = parsed.data
     .map(row => row['Category'] || row['Category'])
     .filter(Boolean)
     .map(s => s.trim())
-    .slice(0, 6);
+    .slice(0, 50);
 
-  return { priceRanges, categories };
+  const fabrics = parsed.data
+    .map(row => row['Fabric'] || row['Fabric'])
+    .filter(Boolean)
+    .map(s => s.trim())
+    .slice(0, 50);
+
+  return { priceRanges, categories, fabrics };
 }
 
 export async function fetchProducts() {
@@ -166,8 +172,9 @@ export function parseProductCsv(text) {
     const isPreOrder = statusKeys.has('pre-order');
     const isReadyStock = statusKeys.has('ready-stock');
     const isDealOfDay = statusKeys.has('todays-deal');
-    const isTopSeller = statusKeys.has('top-seller') || statusKeys.has('bestseller');
+    const isTopSeller = statusKeys.has('bestseller');
     const isManualNew = statusKeys.has('new-arrival');
+    const isArchived = statusKeys.has('archived');
 
     const isDateNew = product.stockInDate
       ? (now - product.stockInDate) <= 15 * 24 * 60 * 60 * 1000
@@ -197,6 +204,7 @@ export function parseProductCsv(text) {
       isReadyStock,
       isDealOfDay,
       isTopSeller,
+      isArchived,
       statusTags,
       colorOptions: normalizedColorOptions,
       totalColors: product.totalColors || normalizedColorOptions.length || null,
@@ -351,19 +359,22 @@ function normalizeStatusTag(value) {
     .trim();
 
   const tagMap = {
-    'high demand': { key: 'high-demand', label: 'High Demand' },
-    'fast moving': { key: 'fast-moving', label: 'Fast Moving' },
-    'low moq': { key: 'low-moq', label: 'Low MOQ' },
     'new arrival': { key: 'new-arrival', label: 'New Arrival' },
-    'out of stock': { key: 'out-of-stock', label: 'Out of Stock' },
+    'best seller': { key: 'bestseller', label: 'Best Seller' },
+    'bestseller': { key: 'bestseller', label: 'Best Seller' },
+    'top seller': { key: 'bestseller', label: 'Best Seller' },
+    'top-seller': { key: 'bestseller', label: 'Best Seller' },
+    'high demand': { key: 'high-demand', label: 'High Demand' },
+    'fast moving': { key: 'high-demand', label: 'High Demand' },
+    'low moq': { key: 'low-moq', label: 'Low MOQ' },
     'pre-order': { key: 'pre-order', label: 'Pre-Order' },
-    preorder: { key: 'pre-order', label: 'Pre-Order' },
+    'preorder': { key: 'pre-order', label: 'Pre-Order' },
     'ready stock': { key: 'ready-stock', label: 'Ready Stock' },
     'todays deal': { key: 'todays-deal', label: "Today's Deal" },
     'deals of the day': { key: 'todays-deal', label: "Today's Deal" },
     'deal of the day': { key: 'todays-deal', label: "Today's Deal" },
-    'top seller': { key: 'top-seller', label: 'Top Seller' },
-    bestseller: { key: 'bestseller', label: 'Bestseller' },
+    'out of stock': { key: 'out-of-stock', label: 'Out of Stock' },
+    'archived': { key: 'archived', label: 'Archived' },
   };
 
   return tagMap[normalized] || {

@@ -6,7 +6,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  color: #ebdcb2;
+  color: var(--gold-pale);
   font-family: var(--font-body), sans-serif;
   overflow-y: auto;
   overflow-x: hidden;
@@ -55,7 +55,7 @@
   line-height: 0.8;
   font-weight: 300;
   margin-bottom: 3vh;
-  color: #ebdcb2;
+  color: var(--gold-pale);
 }
 
 .cs-404-text {
@@ -65,12 +65,12 @@
   text-align: center;
   margin-bottom: 20px;
   font-weight: 500;
-  color: rgba(15, 10, 5, 0.6);
+  color: rgba(31, 20, 13, 0.62);
 }
 
 .cs-line {
   height: 1px;
-  background-color: #ebdcb2;
+  background-color: var(--gold-pale);
   opacity: 0.6;
 }
 
@@ -101,7 +101,7 @@
   line-height: 1.1;
   letter-spacing: 3px;
   margin: 0;
-  color: #ebdcb2;
+  color: var(--gold-pale);
 }
 
 .cs-desc {
@@ -127,7 +127,7 @@
   align-items: center;
   margin: 0 -5vw -3vw -5vw;
   padding: 5vh 5vw 2vw 5vw;
-  background: linear-gradient(to top, rgba(15, 10, 5, 0.98) 0%, rgba(15, 10, 5, 0.85) 5%, rgba(15, 10, 5, 0.35) 75%, transparent 100%);
+  background: linear-gradient(to top, rgba(31, 20, 13, 0.98) 0%, rgba(31, 20, 13, 0.86) 5%, rgba(31, 20, 13, 0.36) 75%, transparent 100%);
 }
 
 .cs-features-grid {
@@ -155,13 +155,13 @@
   top: 15%;
   height: 70%;
   width: 1px;
-  background-color: #ebdcb2;
+  background-color: var(--gold-pale);
   opacity: 0.25;
 }
 
 .cs-feature-item svg {
   margin-bottom: 15px;
-  color: #ebdcb2;
+  color: var(--gold-pale);
 }
 
 .cs-feature-item h4 {
@@ -169,7 +169,7 @@
   letter-spacing: 1px;
   margin: 0 0 10px 0;
   font-weight: 500;
-  color: #ebdcb2;
+  color: var(--gold-pale);
 }
 
 .cs-feature-item p {
@@ -190,7 +190,7 @@
 .cs-line-long {
   height: 1px;
   width: 100px;
-  background-color: #ebdcb2;
+  background-color: var(--gold-pale);
   opacity: 0.3;
 }
 
@@ -200,7 +200,7 @@
   letter-spacing: 6px;
   margin: 0;
   font-weight: 400;
-  color: #ebdcb2;
+  color: var(--gold-pale);
 }
 
 .cs-footer-text {

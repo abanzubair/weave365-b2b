@@ -1,0 +1,336 @@
+.reseller-growth-tagline {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.reseller-growth-section {
+  padding-top: 20px;
+}
+
+.reseller-growth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, 0.97fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.reseller-growth-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(183, 134, 70, 0.22);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 249, 0.98), rgba(250, 242, 232, 0.94)),
+    radial-gradient(circle at 92% 16%, rgba(183, 134, 70, 0.16), transparent 34%);
+  box-shadow: 0 18px 42px rgba(128, 93, 49, 0.08);
+}
+
+.reseller-growth-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 0.94fr) minmax(260px, 0.82fr);
+  align-items: center;
+  gap: 22px;
+  min-height: 340px;
+  padding: 32px 24px 32px 34px;
+}
+
+.reseller-growth-copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+
+.reseller-growth-kicker {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(183, 134, 70, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--gold-dark);
+  font-family: var(--font-footer);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.reseller-growth-copy h2,
+.how-it-works-card h2 {
+  margin: 14px 0 18px;
+  color: var(--brown-900);
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 2.5vw, 33px);
+  font-weight: 600;
+  line-height: 1.04;
+  text-transform: uppercase;
+}
+
+.reseller-growth-copy h2 {
+  max-width: none;
+  font-size: clamp(28px, 2.2vw, 33px);
+}
+
+.reseller-growth-copy h2 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.reseller-growth-copy ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--brown-800);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.reseller-growth-copy li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.reseller-growth-copy li svg {
+  flex: 0 0 auto;
+  color: var(--gold);
+  stroke-width: 2.4;
+}
+
+.reseller-whatsapp-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 0 22px;
+  border-radius: 7px;
+  background: var(--brown-900);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.reseller-whatsapp-button:hover {
+  background: var(--gold-dark);
+  box-shadow: 0 12px 24px rgba(128, 93, 49, 0.2);
+  transform: translateY(-1px);
+}
+
+.reseller-growth-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  margin: -4px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+.reseller-growth-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.reseller-growth-image span {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2;
+  width: max-content;
+  max-width: calc(100% - 36px);
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 10px;
+  background: rgba(31, 20, 13, 0.62);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.how-it-works-card {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-height: 340px;
+  padding: 32px 34px;
+  text-align: center;
+}
+
+.how-it-works-head h2 {
+  margin-bottom: 6px;
+}
+
+.reseller-growth-tagline {
+  margin-top: 2px;
+}
+
+.how-it-works-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.how-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 6px 0;
+}
+
+.step-number {
+  position: absolute;
+  top: 38px;
+  left: max(4px, calc(50% - 56px));
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--surface-accent);
+  border-radius: 50%;
+  background: var(--brown-900);
+  color: var(--gold-pale);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.step-icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(183, 134, 70, 0.24);
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--gold);
+  box-shadow: 0 10px 24px rgba(128, 93, 49, 0.1);
+}
+
+.step-icon.whatsapp-step {
+  background: #075E54;
+  color: var(--white);
+}
+
+.how-step strong {
+  padding-top: 18px;
+  color: var(--brown-900);
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.how-step p {
+  max-width: 170px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+@media screen and (max-width: 1180px) {
+  .reseller-growth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reseller-growth-intro,
+  .how-it-works-card {
+    min-height: 0;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .reseller-growth-section {
+    width: min(100% - 28px, 520px);
+    padding-top: 10px;
+  }
+
+  .reseller-growth-grid {
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .reseller-growth-intro {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 24px 18px 18px;
+  }
+
+  .reseller-growth-copy h2,
+  .how-it-works-card h2 {
+    font-size: clamp(28px, 7vw, 36px);
+  }
+
+  .reseller-growth-copy ul {
+    font-size: 15px;
+  }
+
+  .reseller-whatsapp-button {
+    width: 100%;
+    min-height: 50px;
+  }
+
+  .reseller-growth-image {
+    margin: 0;
+    border-radius: 14px;
+  }
+
+  .reseller-growth-image span {
+    right: 12px;
+    bottom: 12px;
+    max-width: 180px;
+  }
+
+  .how-it-works-card {
+    padding: 24px 18px;
+  }
+
+  .how-it-works-steps {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .how-step {
+    grid-template-columns: 72px 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+  }
+
+  .step-number {
+    top: 0;
+    left: 48px;
+  }
+
+  .how-step strong,
+  .how-step p {
+    grid-column: 2;
+  }
+
+  .how-step p {
+    max-width: none;
+  }
+}

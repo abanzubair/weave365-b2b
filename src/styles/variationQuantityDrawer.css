@@ -1,0 +1,355 @@
+.drawer-lock {
+  overflow: hidden;
+}
+
+.variation-drawer-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(31, 20, 13, 0.38);
+}
+
+.variation-drawer {
+  width: min(596px, 100vw);
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--white);
+  box-shadow: -18px 0 48px rgba(31, 20, 13, 0.2);
+  animation: variationDrawerIn 0.22s ease-out;
+}
+
+.variation-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 22px 18px;
+}
+
+.variation-drawer-head h2 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.variation-drawer-head button {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+}
+
+.variation-drawer-head button:hover {
+  background: var(--surface-soft);
+}
+
+.variation-drawer-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 22px;
+  border-top: 1px solid var(--line);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 93, 49, 0.32) transparent;
+}
+
+.variation-drawer-body::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.variation-drawer-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.variation-drawer-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(128, 93, 49, 0.28);
+}
+
+.drawer-color-section p {
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.drawer-color-section strong {
+  font-weight: 800;
+}
+
+.drawer-color-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 0 22px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 93, 49, 0.28) transparent;
+}
+
+.drawer-color-row::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.drawer-color-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-color-row::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(128, 93, 49, 0.25);
+}
+
+.product-variation-card .color-swatch-row {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 93, 49, 0.25) transparent;
+}
+
+.product-variation-card .color-swatch-row::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.product-variation-card .color-swatch-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.product-variation-card .color-swatch-row::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(128, 93, 49, 0.22);
+}
+
+.drawer-color-row button {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--white);
+}
+
+.drawer-color-row button.active {
+  border-color: var(--ink);
+}
+
+.drawer-color-row img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 5px;
+  object-fit: cover;
+  object-position: center top;
+  background: var(--surface-muted);
+}
+
+.variation-quantity-section h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.variation-quantity-list {
+  display: grid;
+  gap: 2px;
+}
+
+.variation-quantity-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) auto 112px;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+}
+
+.color-name-chip {
+  justify-self: start;
+  min-width: 42px;
+  max-width: 180px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.color-name-chip.active {
+  border-color: var(--ink);
+  background: var(--white);
+}
+
+.variation-row-price {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.quantity-stepper {
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  width: 112px;
+  min-height: 34px;
+  border: 1px solid #cfd6dd;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.quantity-stepper button {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: #e4e8ed;
+  color: var(--ink);
+}
+
+.quantity-stepper button:last-child {
+  background: var(--white);
+}
+
+.quantity-stepper output {
+  color: var(--ink);
+  font-size: 17px;
+  text-align: center;
+}
+
+.variation-drawer-foot {
+  display: grid;
+  gap: 18px;
+  padding: 18px 22px 26px;
+  border-top: 1px solid var(--line);
+  background: var(--white);
+  box-shadow: 0 -10px 24px rgba(31, 20, 13, 0.06);
+}
+
+.drawer-subtotal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.drawer-subtotal-row strong {
+  font-size: 18px;
+}
+
+.drawer-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.drawer-send-btn,
+.drawer-chat-btn {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.drawer-send-btn {
+  border: 1px solid var(--gold-dark);
+  background: var(--gold-dark);
+  color: #fff;
+}
+
+.drawer-send-btn.disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.drawer-chat-btn {
+  border: 1px solid var(--ink);
+  background: var(--white);
+  color: var(--ink);
+}
+
+@keyframes variationDrawerIn {
+  from {
+    transform: translateX(24px);
+    opacity: 0.8;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .variation-drawer-shell {
+    align-items: end;
+  }
+
+  .variation-drawer {
+    width: 100vw;
+    height: min(92dvh, 760px);
+    border-radius: 18px 18px 0 0;
+  }
+
+  .variation-drawer-head {
+    padding: 24px 20px 16px;
+  }
+
+  .variation-drawer-body {
+    padding: 20px;
+  }
+
+  .variation-quantity-row {
+    grid-template-columns: minmax(70px, 1fr) auto 112px;
+    gap: 10px;
+  }
+
+  .color-name-chip {
+    max-width: 110px;
+  }
+
+  .drawer-action-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 440px) {
+  .variation-quantity-row {
+    grid-template-columns: minmax(0, 1fr) 104px;
+    row-gap: 4px;
+  }
+
+  .variation-row-price {
+    grid-column: 1;
+  }
+
+  .quantity-stepper {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .drawer-action-row {
+    grid-template-columns: 1fr;
+  }
+}

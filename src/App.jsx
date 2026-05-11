@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, Heart, Search, ShoppingBag, User, Menu } from 'lucide-react';
+import { ChevronDown, Bookmark, Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { serviceablePincodes, storeConfig } from './config.js';
@@ -33,6 +33,7 @@ export default function App() {
   const route = location.pathname === '/' ? 'home' : location.pathname.split('/')[1];
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const [fabric, setFabric] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [authOpen, setAuthOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function App() {
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [heroSlides, setHeroSlides] = useState([]);
-  const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [] });
+  const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
 
   useEffect(() => {
     let isActive = true;
@@ -175,6 +176,17 @@ export default function App() {
     return ['All', ...Array.from(ranges).sort()];
   }, [products, configOptions.priceRanges]);
 
+  const fabrics = useMemo(() => {
+    if (configOptions.fabrics.length > 0) {
+      return ['All', ...configOptions.fabrics];
+    }
+    const set = new Set();
+    products.forEach(p => {
+      if (p.fabric) set.add(p.fabric.trim());
+    });
+    return ['All', ...Array.from(set).sort()];
+  }, [products, configOptions.fabrics]);
+
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
   const visibleProducts = useMemo(() => {
@@ -201,9 +213,11 @@ export default function App() {
         product.category === category;
       const matchesPrice = priceRange === 'All' || 
         (product.priceRange && product.priceRange.trim() === priceRange.trim());
-      return matchesSearch && matchesCategory && matchesPrice;
+      const matchesFabric = fabric === 'All' ||
+        (product.fabric && product.fabric.trim() === fabric.trim());
+      return matchesSearch && matchesCategory && matchesPrice && matchesFabric && !product.isArchived;
     });
-  }, [category, priceRange, products, searchTerm]);
+  }, [category, priceRange, fabric, products, searchTerm]);
 
   const productsById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
@@ -405,7 +419,7 @@ export default function App() {
             {user ? user.email || 'Account' : 'Login / Register'}
           </button>
           <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
-            <Heart size={22} />
+            <Bookmark size={22} />
             {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
           </button>
           <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
@@ -454,6 +468,9 @@ export default function App() {
                 categories={categories}
                 category={category}
                 setCategory={setCategory}
+                fabrics={fabrics}
+                fabric={fabric}
+                setFabric={setFabric}
                 priceRanges={priceRanges}
                 priceRange={priceRange}
                 setPriceRange={setPriceRange}

@@ -3,7 +3,7 @@ import { Award, BadgeIndianRupee, HeartHandshake, PackagePlus, Tag, Truck, Packa
 const featureStripItems = [
   { icon: BadgeIndianRupee, title: 'Bulk Pricing Advantage', copy: 'Better margins for wholesale buyers' },
   { icon: PackagePlus, title: 'Daily New Stock', copy: 'Fresh catalog updates for repeat buying' },
-  { icon: Truck, title: 'Pan India + Export Delivery', copy: 'Reliable dispatch India and overseas' },
+  { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Reliable shipping across India and overseas' },
   { icon: Award, title: 'Low MOQ / Flexible Buying', copy: 'Start small and scale your orders easily' },
 ];
 

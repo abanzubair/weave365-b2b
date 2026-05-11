@@ -24,6 +24,7 @@ import {
   Tag,
   Truck,
   ZoomIn,
+  BellRing,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 
@@ -75,9 +76,9 @@ export function useCurrency() {
 }
 
 const productTrustItems = [
-  { icon: Truck, title: 'Pan India Delivery', copy: 'Fast and secure delivery across India' },
+  { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Secure shipping across India & overseas' },
   { icon: Tag, title: 'Best Wholesale Prices', copy: 'Get the best prices on bulk orders' },
-  { icon: PackageCheck, title: 'Easy Returns', copy: 'Hassle-free returns for eligible issues' },
+  { icon: ShieldCheck, title: 'Quality Guaranteed', copy: 'Every piece is hand-inspected for perfection' },
   { icon: Headphones, title: 'Dedicated Support', copy: "We're here to help you at every step" },
 ];
 
@@ -100,16 +101,27 @@ export function Newsletter() {
   return (
     <section className="newsletter">
       <div>
-        <PackageCheck />
+        <BellRing />
         <span>
           <strong>Stay Updated</strong>
           Sign up for our newsletter and get updates on new arrivals, exclusive offers and more.
         </span>
       </div>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <input type="email" placeholder="Enter your email" />
-        <button>Subscribe</button>
-      </form>
+      <div className="newsletter-actions">
+        <a 
+          href={storeConfig.whatsappGroup || "https://chat.whatsapp.com/your-group-id"} 
+          target="_blank" 
+          rel="noreferrer" 
+          className="whatsapp-group-btn"
+        >
+          <WhatsappIcon size={18} /> Join WhatsApp Group
+        </a>
+        <span className="divider-text">OR</span>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <input type="email" placeholder="Enter your email" />
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
     </section>
   );
 }
@@ -157,7 +169,15 @@ export const ProductCard = memo(function ProductCard({
             decoding="async"
             onError={(e) => { e.target.style.opacity = '0'; }}
           />
-
+          {product.statusTags && product.statusTags.length > 0 && (
+            <div className="card-status-badges">
+              {product.statusTags.map((tag) => (
+                <span key={tag.key} className={`status-badge tag-${tag.key}`}>
+                  {tag.label}
+                </span>
+              ))}
+            </div>
+          )}
         </button>
         <button
           className="save-btn-circle"
@@ -176,9 +196,9 @@ export const ProductCard = memo(function ProductCard({
 
         <div className="card-info-grid">
           <div className="info-left">
-            <label>PRICE (SET)</label>
-            <strong>{formatMoney(setPrice)} <span>/ Set</span></strong>
-            <small>{formatMoney(basePrice)} per pc</small>
+            <label>PRICE</label>
+            <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
+            <small>{formatMoney(setPrice)} / set</small>
           </div>
           <div className="info-right">
             <div className="info-item">

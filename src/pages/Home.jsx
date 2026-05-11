@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Heart, Award, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck } from 'lucide-react';
+import { ArrowRight, User, Heart, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck } from 'lucide-react';
 import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon } from '../storefrontShared.jsx';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
+import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { storeConfig } from '../config.js';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
@@ -151,6 +152,8 @@ export function Home({
     const productImages = expandedProductCards(products).map((item) => item.image).filter(Boolean);
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
+
+  const resellerSectionImage = categoryImages.collaboration || categoryPreviewImages[0] || fallbackHeroImage;
 
   return (
     <>
@@ -314,23 +317,6 @@ export function Home({
         </button>
       </section>
 
-      <section id="why" className="why-band">
-        <div>
-          <SectionTitle title="Why Choose Us?" align="left" />
-          <p>We provide premium quality sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <button className="primary-button compact" onClick={() => navigate('catalog')}>
-            Know More
-          </button>
-        </div>
-        <div className="stats-panel">
-          <Stat icon={<User />} value="1000+" label="Unique Designs" />
-          <Stat icon={<Heart />} value="500+" label="Active Buyers" />
-          <Stat icon={<Award />} value="10+" label="Years of Trust" />
-          <Stat icon={<ShieldCheck />} value="95%" label="Repeat Buyers" />
-          <Stat icon={<Truck />} value="28+" label="States Covered" />
-        </div>
-      </section>
-
       {bestsellers.length > 0 && (
         <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
@@ -355,13 +341,13 @@ export function Home({
             <div className="product-row scrollable-row" id="bestsellers-row">
               {bestsellers.map(({ product, image, variant }, index) => (
                 <ProductCard
-                  key={`${product.id}-${index}`}
-                  product={{ ...product, images: [image, ...product.images] }}
-                  variant={variant}
-                  navigate={navigate}
-                  addToCart={addToCart}
-                  toggleFavorite={toggleFavorite}
-                  isFavorite={favoriteKeys.has(product.id)}
+                key={`${product.id}-${index}`}
+                product={{ ...product, images: [image, ...product.images] }}
+                variant={variant}
+                navigate={navigate}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                isFavorite={favoriteKeys.has(product.id)}
                 />
               ))}
             </div>
@@ -403,13 +389,13 @@ export function Home({
           <div className="product-row scrollable-row" id="new-arrivals-row">
             {arrivals.map(({ product, image, variant }, index) => (
               <ProductCard
-                key={`${product.id}-${index}`}
-                product={{ ...product, images: [image, ...product.images] }}
-                variant={variant}
-                navigate={navigate}
-                addToCart={addToCart}
-                toggleFavorite={toggleFavorite}
-                isFavorite={favoriteKeys.has(product.id)}
+              key={`${product.id}-${index}`}
+              product={{ ...product, images: [image, ...product.images] }}
+              variant={variant}
+              navigate={navigate}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              isFavorite={favoriteKeys.has(product.id)}
               />
             ))}
           </div>
@@ -427,9 +413,28 @@ export function Home({
         </div>
       </section>
 
-      <BenefitStrip />
+      <section id="why" className="why-band">
+        <div>
+          <SectionTitle title="Why Choose Us?" align="left" />
+          <p>We provide premium quality sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
+          <button className="primary-button compact" onClick={() => navigate('catalog')}>
+            Know More
+          </button>
+        </div>
+        <div className="stats-panel">
+          <Stat icon={<User />} value="1000+" label="Unique Designs" />
+          <Stat icon={<Heart />} value="500+" label="Active Buyers" />
+          <Stat icon={<Award />} value="10+" label="Years of Trust" />
+          <Stat icon={<ShieldCheck />} value="95%" label="Repeat Buyers" />
+          <Stat icon={<Truck />} value="28+" label="States Covered" />
+        </div>
+      </section>
 
-      <section className="reseller-band">
+      <ResellerGrowth imageUrl={resellerSectionImage} />
+
+      {/* <BenefitStrip /> */}
+
+      {/* <section className="reseller-band">
         <div>
           <h2>Built for Business. Made for Resellers.</h2>
           <p>Join thousands of retailers who trust {storeConfig.name} wholesale for premium quality sarees.</p>
@@ -453,7 +458,8 @@ export function Home({
             <Award /> <span><strong>Reliable Partnership</strong>We grow when you grow. That's our promise.</span>
           </li>
         </ul>
-      </section>
+      </section> */}
+      
 
       <Newsletter />
     </>
