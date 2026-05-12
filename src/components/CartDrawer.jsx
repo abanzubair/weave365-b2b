@@ -151,7 +151,7 @@ export function CartDrawer({
             Kindly share your order quantity and delivery pincode for shipping charges and delivery time.
           </p>
           <a className={`primary-button ${items.length ? '' : 'disabled'}`} href={items.length ? whatsappUrl : undefined} target="_blank" rel="noreferrer">
-            <WhatsappIcon size={20} /> Send WhatsApp Enquiry <ArrowRight size={18} />
+            <WhatsappIcon size={20} /> Submit Enquiry <ArrowRight size={18} />
           </a>
         </div>
       </aside>

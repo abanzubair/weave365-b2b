@@ -2425,6 +2425,7 @@ button {
 .field-label select,
 .purchase-row input,
 .auth-modal input,
+.auth-modal select,
 .pincode-box input {
   min-height: 44px;
   border: 1px solid var(--line);
@@ -2758,7 +2759,6 @@ button {
   color: #000;
   text-align: left;
   line-height: 1.6;
-  font-style: italic;
   padding: 0 12px;
   border-top: 1px solid var(--line);
   padding-top: 16px;
@@ -2767,11 +2767,14 @@ button {
 
 .auth-modal {
   position: relative;
-  width: min(420px, 100%);
+  width: min(620px, 100%);
+  max-height: min(92dvh, 760px);
+  overflow: auto;
   padding: 32px;
   border-radius: 8px;
   background: var(--white);
   box-shadow: var(--shadow);
+  scrollbar-width: thin;
 }
 
 .auth-modal h2 {
@@ -2783,6 +2786,118 @@ button {
 .auth-modal form {
   display: grid;
   gap: 16px;
+}
+
+.auth-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.auth-phone-field {
+  display: grid;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-phone-field>div {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.auth-phone-field small,
+.buyer-type-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.auth-category-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.auth-category-fieldset legend {
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.auth-category-fieldset>div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.auth-category-fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-category-fieldset input {
+  width: 14px;
+  height: 14px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.account-profile-card {
+  display: grid;
+  gap: 5px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid rgba(183, 134, 70, 0.22);
+  border-radius: 8px;
+  background: rgba(183, 134, 70, 0.08);
+}
+
+.account-profile-card span {
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.account-profile-card strong {
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.account-profile-card small {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .auth-modal {
+    padding: 26px 20px;
+  }
+
+  .auth-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-phone-field>div,
+  .auth-category-fieldset>div {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bulk-inquiry-page {
