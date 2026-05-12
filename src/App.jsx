@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
-import { serviceablePincodes, storeConfig } from './config.js';
+import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
 
@@ -16,6 +16,7 @@ import {
   persistFavorites,
   readLocal,
 } from './utils/cartHelpers.js';
+import { syncProfileFromUser } from './utils/profileHelpers.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
@@ -29,6 +30,7 @@ import { ComingSoon } from './pages/ComingSoon.jsx';
 const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
 const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
+const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
 
 export default function App() {
 
@@ -54,6 +56,7 @@ export default function App() {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [heroSlides, setHeroSlides] = useState([]);
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
+  const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
 
   useEffect(() => {
     let isActive = true;
@@ -98,9 +101,19 @@ export default function App() {
       return;
     }
 
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user || null));
+    supabase.auth.getSession().then(({ data }) => {
+      const sessionUser = data.session?.user || null;
+      setUser(sessionUser);
+      if (sessionUser) {
+        void syncProfileFromUser(sessionUser);
+      }
+    });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+      const sessionUser = session?.user || null;
+      setUser(sessionUser);
+      if (sessionUser) {
+        void syncProfileFromUser(sessionUser);
+      }
     });
 
     return () => data.subscription.unsubscribe();
@@ -419,6 +432,11 @@ export default function App() {
           <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
             Bulk Order
           </button>
+          {isAdmin && (
+            <button className={route === 'admin' ? 'active' : ''} onClick={() => navigate('admin')}>
+              Admin
+            </button>
+          )}
         </nav>
         <div className="search-box-wrapper">
           <label className="search-box">
@@ -561,6 +579,12 @@ export default function App() {
             } />
             <Route path="/bulk-inquiry" element={
               <BulkInquiry navigate={navigate} />
+            } />
+            <Route path="/admin" element={
+              <Admin
+                user={user}
+                openAuth={() => setAuthOpen(true)}
+              />
             } />
           </Routes>
 

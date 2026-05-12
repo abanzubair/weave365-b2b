@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, LogOut } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
+import { syncProfileFromUser } from '../utils/profileHelpers.js';
 
 const buyerTypes = [
   { value: 'wholesale', label: 'Wholeseller' },
@@ -141,8 +142,19 @@ export function AuthModal({ open, onClose, user, setUser }) {
     if (result.error) {
       setMessage(result.error.message);
     } else {
-      setMessage(mode === 'login' ? 'Logged in successfully.' : 'Check your email to confirm registration.');
-      if (result.data.user) setUser(result.data.user);
+      if (result.data.user) {
+        setUser(result.data.user);
+      }
+
+      if (mode === 'register' && result.data.session && result.data.user) {
+        const profileResult = await syncProfileFromUser(result.data.user);
+        if (profileResult.error) {
+          setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
+          return;
+        }
+      }
+
+      setMessage(mode === 'login' ? 'Logged in successfully.' : 'Registration saved. Check your email if confirmation is required.');
     }
   }
 
@@ -207,30 +219,48 @@ export function AuthModal({ open, onClose, user, setUser }) {
                       />
                     </label>
                   </div>
-                  <div className="auth-phone-field">
-                    <span>WhatsApp Number</span>
-                    <div>
-                      <select
-                        value={profile.countryCode}
-                        onChange={(event) => updateProfile('countryCode', event.target.value)}
-                        aria-label="Country code"
-                        required
-                      >
-                        {countryCodes.map((item) => (
-                          <option key={item.value} value={item.value}>{item.label}</option>
-                        ))}
-                      </select>
-                      <input
-                        value={profile.whatsapp}
-                        onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
-                        inputMode="numeric"
-                        autoComplete="tel-national"
-                        placeholder="xxxxxxxxxx"
-                        pattern="[0-9]{10}"
-                        required
-                      />
+                  <div className="auth-field-grid auth-phone-pincode-grid">
+                    <div className="auth-phone-field single-field">
+                      <div className="auth-field-label-row">
+                        <span>Pincode</span>
+                      </div>
+                      <div>
+                        <input
+                          value={profile.pincode}
+                          onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
+                          inputMode="numeric"
+                          autoComplete="postal-code"
+                          required
+                        />
+                      </div>
                     </div>
-                    <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                    <div className="auth-phone-field">
+                      <div className="auth-field-label-row">
+                        <span>WhatsApp Number</span>
+                        <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                      </div>
+                      <div>
+                        <select
+                          value={profile.countryCode}
+                          onChange={(event) => updateProfile('countryCode', event.target.value)}
+                          aria-label="Country code"
+                          required
+                        >
+                          {countryCodes.map((item) => (
+                            <option key={item.value} value={item.value}>{item.label}</option>
+                          ))}
+                        </select>
+                        <input
+                          value={profile.whatsapp}
+                          onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          placeholder="xxxxxxxxxx"
+                          pattern="[0-9]{10}"
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div className="auth-field-grid">
                     <label>
@@ -244,10 +274,6 @@ export function AuthModal({ open, onClose, user, setUser }) {
                           <option key={item.value} value={item.value}>{item.label}</option>
                         ))}
                       </select>
-                      <small className="buyer-type-note">
-                        Wholesale: Wholesalers, Retail Shops, Boutiques, Exporters, Online Stores.<br />
-                        Reseller: Sell on WhatsApp, Instagram, Facebook.
-                      </small>
                     </label>
                     <label>
                       Buying Behaviour
@@ -262,16 +288,10 @@ export function AuthModal({ open, onClose, user, setUser }) {
                       </select>
                     </label>
                   </div>
-                  <label>
-                    Pincode
-                    <input
-                      value={profile.pincode}
-                      onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                      required
-                    />
-                  </label>
+                  <small className="buyer-type-note">
+                    Wholesale: Wholesalers, Retail Shops, Boutiques, Exporters, Online Stores.<br />
+                    Reseller: Sell on WhatsApp, Instagram, Facebook.
+                  </small>
                   <fieldset className="auth-category-fieldset">
                     <legend>Interested Categories</legend>
                     <div>

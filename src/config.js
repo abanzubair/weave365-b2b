@@ -34,3 +34,8 @@ export const storeConfig = {
   whatsapp: import.meta.env.VITE_STORE_WHATSAPP || '919919101369',
   minimumOrderValue: Number(import.meta.env.VITE_MIN_ORDER_VALUE || 10000),
 };
+
+export const adminEmails = String(import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
