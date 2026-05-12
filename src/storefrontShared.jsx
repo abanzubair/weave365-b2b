@@ -6,7 +6,7 @@ import {
   Check,
   CheckCircle2,
   Download,
-  Eye,
+
   Heart,
   Headphones,
   Layers,
@@ -223,8 +223,8 @@ export const ProductCard = memo(function ProductCard({
           >
             <WhatsappIcon size={16} /> ENQUIRY
           </a>
-          <button className="quick-view-btn" onClick={() => navigate('product', product.id)}>
-            <Eye size={16} /> DETAILS
+          <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
+            <ShoppingBag size={16} /> ADD TO BAG
           </button>
         </div>
       </div>
@@ -303,7 +303,8 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
     '',
     ...items.map((item) => {
       const price = customerPrice(item.variant.prices);
-      return `${item.product.title} | Code: ${item.variant.code} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
+      const color = item.selectedColorName ? ` | Color: ${item.selectedColorName}` : '';
+      return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
     }),
     '',
     `Estimated total: ${formatMoney(total)}`,

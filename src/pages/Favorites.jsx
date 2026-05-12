@@ -13,9 +13,25 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
     );
   }
 
+  const addAllToCart = () => {
+    products.forEach((product) => {
+      const variant = product.variants[0];
+      if (variant) {
+        addToCart(product, variant, 1);
+      }
+    });
+  };
+
   return (
     <section className="section catalog-page">
-      <SectionTitle title="Favourite Items" align="left" />
+      <div className="favorites-header">
+        <SectionTitle title="Favourite Items" align="left" />
+        {products.length > 0 && (
+          <button className="secondary-button add-all-btn" onClick={addAllToCart}>
+            Add All to Cart
+          </button>
+        )}
+      </div>
       <div className="catalog-grid">
         {products.map((product) => (
           <ProductCard

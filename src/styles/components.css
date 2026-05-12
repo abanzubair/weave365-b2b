@@ -196,6 +196,17 @@
   font-weight: 700;
 }
 
+.favorites-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.add-all-btn {
+  white-space: nowrap;
+}
+
 .quick-facts {
   display: flex;
   gap: 32px;

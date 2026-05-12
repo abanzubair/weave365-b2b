@@ -7,7 +7,16 @@ import { serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
 
-import { upsertCart, loadSavedState, persistCart, persistFavorites, readLocal } from './utils/cartHelpers.js';
+import {
+  changeCartColor,
+  parseCartVariantCode,
+  upsertCart,
+  upsertCartSelections,
+  loadSavedState,
+  persistCart,
+  persistFavorites,
+  readLocal,
+} from './utils/cartHelpers.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
@@ -234,8 +243,22 @@ export default function App() {
       cart
         .map((item) => {
           const product = productsById.get(item.productGroupKey);
-          const variant = product?.variants.find((entry) => entry.code === item.variantCode);
-          return product && variant ? { ...item, product, variant } : null;
+          const { baseVariantCode, colorName } = parseCartVariantCode(item.variantCode);
+          const variant = product?.variants.find((entry) => entry.code === baseVariantCode);
+          const colorOptions = product?.colorOptions || [];
+          const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
+          const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
+          return product && variant
+            ? {
+              ...item,
+              product,
+              variant,
+              baseVariantCode,
+              selectedColorName,
+              selectedColorImage: selectedColor?.image || variant.image || product.images[0],
+              colorOptions,
+            }
+            : null;
         })
         .filter(Boolean),
     [cart, productsById],
@@ -246,14 +269,31 @@ export default function App() {
     [favoriteKeySet, products],
   );
 
-  const addToCart = useCallback((product, variant, quantity = 1) => {
+  const addToCart = useCallback((product, variant, quantity = 1, colorSelection = {}) => {
     if (!user) {
       setAuthOpen(true);
       return;
     }
 
     setCart((currentCart) => {
-      const next = upsertCart(currentCart, product, variant, quantity);
+      const next = upsertCart(currentCart, product, variant, quantity, colorSelection);
+      void persistCart(next, user.id);
+      return next;
+    });
+    setCartOpen(true);
+  }, [user]);
+
+  const addCartSelections = useCallback((product, selections) => {
+    const selectedRows = selections.filter((selection) => selection?.variant && selection.quantity > 0);
+    if (!selectedRows.length) return;
+
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+
+    setCart((currentCart) => {
+      const next = upsertCartSelections(currentCart, product, selectedRows);
       void persistCart(next, user.id);
       return next;
     });
@@ -282,7 +322,11 @@ export default function App() {
   const updateQuantity = useCallback((item, quantity) => {
     setCart((currentCart) => {
       const next = currentCart
-        .map((entry) => (entry.variantCode === item.variantCode ? { ...entry, quantity } : entry))
+        .map((entry) => (
+          entry.productGroupKey === item.productGroupKey && entry.variantCode === item.variantCode
+            ? { ...entry, quantity }
+            : entry
+        ))
         .filter((entry) => entry.quantity > 0);
       if (user) {
         void persistCart(next, user.id);
@@ -290,6 +334,26 @@ export default function App() {
       return next;
     });
   }, [user]);
+
+  const updateCartColor = useCallback((item, nextColorName) => {
+    setCart((currentCart) => {
+      const next = changeCartColor(currentCart, item, nextColorName);
+      if (user) {
+        void persistCart(next, user.id);
+      }
+      return next;
+    });
+  }, [user]);
+
+  const addCartColor = useCallback((item, color) => {
+    if (!color?.name) return;
+    addCartSelections(item.product, [{
+      variant: item.variant,
+      quantity: 1,
+      colorName: color.name,
+      image: color.image,
+    }]);
+  }, [addCartSelections]);
 
   const checkPincode = useCallback(() => {
     const serviceable = serviceablePincodes.includes(pincode.trim());
@@ -456,6 +520,7 @@ export default function App() {
                 setCategory={setCategory}
                 openAuth={() => setAuthOpen(true)}
                 addToCart={addToCart}
+                addCartSelections={addCartSelections}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
               />
@@ -518,6 +583,8 @@ export default function App() {
         onClose={() => setCartOpen(false)}
         items={cartProducts}
         updateQuantity={updateQuantity}
+        updateCartColor={updateCartColor}
+        addCartColor={addCartColor}
         pincode={pincode}
         setPincode={setPincode}
         codStatus={codStatus}

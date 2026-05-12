@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageCircle, Minus, Plus, X } from 'lucide-react';
+import { MessageCircle, Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
   customerPrice,
@@ -37,6 +37,7 @@ export function VariationQuantityDrawer({
   selectedImage,
   onClose,
   onSelectColor,
+  onAddToCart,
 }) {
   const rows = useMemo(() => {
     const source = colorOptions.length
@@ -101,6 +102,17 @@ export function VariationQuantityDrawer({
     product,
     rows.map((row) => ({ ...row, quantity: quantities[row.key] || 0 })),
     subtotal,
+  );
+  const selectedCartRows = useMemo(
+    () => rows
+      .map((row) => ({
+        variant: row.variant,
+        quantity: quantities[row.key] || 0,
+        colorName: row.name,
+        image: row.image,
+      }))
+      .filter((row) => row.quantity > 0),
+    [quantities, rows],
   );
   const chatUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(`Hello ${storeConfig.name}, I need help choosing ${product.title}.`)}`;
 
@@ -196,6 +208,14 @@ export function VariationQuantityDrawer({
             <strong>{formatMoney(subtotal)}</strong>
           </div>
           <div className="drawer-action-row">
+            <button
+              className="drawer-cart-btn"
+              type="button"
+              disabled={!totalQuantity}
+              onClick={() => onAddToCart(selectedCartRows)}
+            >
+              <ShoppingBag size={18} /> Add to cart
+            </button>
             <a
               className={`drawer-send-btn ${totalQuantity ? '' : 'disabled'}`}
               href={totalQuantity ? selectedInquiryUrl : undefined}

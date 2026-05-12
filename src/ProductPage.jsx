@@ -48,6 +48,7 @@ export function ProductDetail({
   products,
   navigate,
   addToCart,
+  addCartSelections,
   toggleFavorite,
   isFavorite,
   pincode,
@@ -311,37 +312,46 @@ export function ProductDetail({
                 <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
               </button>
             </div>
-            <h1>{product.title}</h1>
-            <div className="product-code">
+            <h1 className="product-title-serif">{product.title}</h1>
+
+            <div className="product-separator">
+              <div className="sep-line" />
+              <svg className="sep-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2L13,6C13,6 18,6 18,11C18,16 13,16 13,16L12,22L11,16C11,16 6,16 6,11C6,6 11,6 11,6L12,2Z" />
+                <circle cx="12" cy="11" r="1" fill="white" />
+              </svg>
+              <div className="sep-line" />
+            </div>
+
+            <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
 
-            <div className="catalog-price-row">
-                <div className="main-price-display">
-                  <strong>{formatMoney(displayPrice)}<span className="price-unit">/pc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MOQ 1 Set</span></strong>
-                  <div className="tiered-pricing-grid">
-                    <div className="tier-col">
-                      <div className="tier-header">1-4 set</div>
-                      <div className="tier-body">{formatMoney(displayPrice * totalColors)}<span className="unit">/set</span></div>
-                    </div>
-                    <div className="tier-col">
-                      <div className="tier-header">5-9 set</div>
-                      <div className="tier-body">{formatMoney(displayPrice * totalColors * 0.98)}<span className="unit">/set</span></div>
-                    </div>
-                    <div className="tier-col">
-                      <div className="tier-header">10+ set</div>
-                      <div className="tier-body">{formatMoney(displayPrice * totalColors * 0.95)}<span className="unit">/set</span></div>
-                    </div>
-                  </div>
-                  <span className="gst-note">{variant.prices.offer ? 'Offer Price / Piece' : ''} Exclusive of GST & shipping</span>
-                </div>
-              {variant.prices.offer && variant.prices.mrp && (
-                <div className="mrp-side">
-                  <strong>{formatMoney(variant.prices.mrp)}</strong>
-                  <span>MRP</span>
-                </div>
-              )}
+            <div className="price-moq-row">
+              <div className="main-price-wrap">
+                <span className="price-value">{formatMoney(displayPrice)}</span>
+                <span className="price-unit">/pc</span>
+              </div>
+              <div className="moq-badge">MOQ 1 Set</div>
             </div>
+
+            <div className="tiered-pricing-card">
+              <div className="tier-column">
+                <div className="tier-label">1 - 4 SET</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/SET</span></div>
+              </div>
+              <div className="tier-column">
+                <div className="tier-label">5 - 9 SET</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/SET</span></div>
+              </div>
+              <div className="tier-column">
+                <div className="tier-label">10+ SET</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/SET</span></div>
+              </div>
+            </div>
+
+            <span className="gst-disclaimer">Exclusive of GST & shipping</span>
+
 
             <div className="quick-facts">
               <span>
@@ -417,6 +427,13 @@ export function ProductDetail({
                 >
                   <WhatsappIcon size={20} /> Enquiry
                 </a>
+                <button
+                  className="catalog-add-button"
+                  type="button"
+                  onClick={() => setVariationDrawerOpen(true)}
+                >
+                  <ShoppingBag size={20} /> Add to Bag
+                </button>
                 <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
@@ -514,6 +531,10 @@ export function ProductDetail({
         selectedImage={selectedImage}
         onClose={() => setVariationDrawerOpen(false)}
         onSelectColor={handleColorChange}
+        onAddToCart={(selections) => {
+          addCartSelections(product, selections);
+          setVariationDrawerOpen(false);
+        }}
       />
     </>
   );

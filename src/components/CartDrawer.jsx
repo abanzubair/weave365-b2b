@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Plus } from 'lucide-react';
 import {
   customerPrice,
   buildWhatsappUrl,
@@ -15,6 +15,7 @@ export function CartDrawer({
   onClose,
   items,
   updateQuantity,
+  addCartColor,
   pincode,
   setPincode,
   codStatus,
@@ -42,15 +43,57 @@ export function CartDrawer({
         {items.map((item) => (
           <div className="cart-item" key={item.variantCode}>
             <img
-              src={item.variant.image || item.product.images[0] || fallbackProductImage}
-              alt={item.product.title}
+              className="cart-item-image"
+              src={item.selectedColorImage || item.variant.image || item.product.images[0] || fallbackProductImage}
+              alt={`${item.product.title}${item.selectedColorName ? ` in ${item.selectedColorName}` : ''}`}
               loading="lazy"
               decoding="async"
               onError={(e) => { e.target.style.opacity = '0'; }}
             />
             <div>
               <strong>{item.product.title}</strong>
-              <span>{item.variant.code}</span>
+              <span className="cart-item-code">{item.variant.code}</span>
+              {item.selectedColorName && (
+                <div className="cart-selected-color">
+                  <span className="cart-selected-swatch">
+                    <img
+                      src={item.selectedColorImage || fallbackProductImage}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span>Selected: {item.selectedColorName}</span>
+                </div>
+              )}
+              {item.colorOptions.length > 0 && (
+                <div className="cart-color-picker">
+                  <span>Add more colors</span>
+                  <div className="cart-color-swatch-row">
+                    {item.colorOptions.map((color) => (
+                      <button
+                        key={`${color.name}-${color.image}`}
+                        type="button"
+                        className={color.name === item.selectedColorName ? 'active' : ''}
+                        onClick={() => addCartColor(item, color)}
+                        aria-label={`Add ${color.name}`}
+                        title={`Add ${color.name}`}
+                      >
+                        <img
+                          src={color.image || fallbackProductImage}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <Plus size={11} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {item.selectedColorName && item.colorOptions.length === 0 && (
+                <span className="cart-color-text">Color: {item.selectedColorName}</span>
+              )}
               <PriceLine prices={item.variant.prices} />
               <div className="qty-row">
                 <button onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
