@@ -4,7 +4,7 @@
   color: var(--brown-800);
   font-size: 13px;
   font-weight: 600;
-  overflow: hidden;
+  overflow: visible;
   font-family: var(--font-body);
 }
 
@@ -24,19 +24,98 @@
   font-weight: 600;
 }
 
-.currency-select {
-  background: transparent;
+.currency-dropdown-custom {
+  position: relative;
+}
+
+.currency-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(128, 93, 49, 0.2);
   border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 76px;
+  gap: 6px;
+}
+
+.currency-trigger:hover {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.flag-img {
+  width: 18px;
+  height: auto;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+.currency-trigger svg {
+  transition: transform 0.2s;
+  margin-left: auto;
+}
+
+.currency-trigger svg.rotate {
+  transform: rotate(180deg);
+}
+
+.currency-options-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 96px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(31, 20, 13, 0.15);
+  padding: 4px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.currency-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink);
-  padding: 2px 6px;
   cursor: pointer;
-  outline: none;
+  text-align: left;
+  transition: all 0.15s;
 }
-.currency-select:hover {
-  border-color: var(--gold);
+
+.currency-option:hover {
+  background: var(--surface-soft);
+  color: var(--gold-dark);
+}
+
+.currency-option.active {
+  background: rgba(183, 134, 70, 0.08);
+  color: var(--gold-dark);
+}
+
+.active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-left: auto;
 }
 
 .top-bar-marquee {
@@ -116,8 +195,8 @@
   background: transparent;
   text-decoration: none;
   font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 600;
   color: inherit;
   white-space: nowrap;
   letter-spacing: normal;
@@ -555,7 +634,7 @@
   .main-nav button,
   .main-nav a,
   .login-link {
-    font-size: 15px !important;
+    font-size: 13.5px !important;
   }
 
   .deal-copy h2 {

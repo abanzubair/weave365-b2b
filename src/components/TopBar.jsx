@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Award, PackageCheck, Truck, MessageCircle } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Award, PackageCheck, Truck, ChevronDown } from 'lucide-react';
 import { CURRENCIES, CurrencyManager, useCurrency, WhatsappIcon } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';
 
@@ -12,6 +12,8 @@ const topBarItems = [
 
 export function TopBar() {
   const currentCurrency = useCurrency();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const waUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(`Hello ${storeConfig.name}, I want to enquire about bulk orders.`)}`;
   const topBarWhatsapp = '+91 99191 01369';
 
@@ -25,6 +27,18 @@ export function TopBar() {
       })
       .catch(err => console.error('Failed to fetch exchange rates', err));
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const activeCurrency = CURRENCIES.find(c => c.code === currentCurrency) || CURRENCIES[0];
 
   return (
     <div className="top-bar">
@@ -40,15 +54,41 @@ export function TopBar() {
             </span>
           )
         ))}
-        <select 
-          className="currency-select"
-          value={currentCurrency} 
-          onChange={(e) => CurrencyManager.setCurrency(e.target.value)}
-        >
-          {CURRENCIES.map(c => (
-            <option key={c.code} value={c.code}>{c.code}</option>
-          ))}
-        </select>
+        
+        <div className="currency-dropdown-custom" ref={dropdownRef}>
+          <button 
+            className="currency-trigger" 
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+          >
+            <img 
+              src={`https://flagcdn.com/w20/${activeCurrency.flag}.png`} 
+              alt={activeCurrency.code}
+              className="flag-img"
+            />
+            <span>{activeCurrency.code}</span>
+            <ChevronDown size={12} className={isOpen ? 'rotate' : ''} />
+          </button>
+          
+          {isOpen && (
+            <div className="currency-options-panel">
+              {CURRENCIES.map(c => (
+                <button 
+                  key={c.code}
+                  className={`currency-option ${c.code === currentCurrency ? 'active' : ''}`}
+                  onClick={() => {
+                    CurrencyManager.setCurrency(c.code);
+                    setIsOpen(false);
+                  }}
+                >
+                  <img src={`https://flagcdn.com/w20/${c.flag}.png`} alt="" className="flag-img" />
+                  <span>{c.code}</span>
+                  {c.code === currentCurrency && <div className="active-dot" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <div className="top-bar-marquee" aria-hidden="true">
         <div className="marquee-track">

@@ -8,7 +8,6 @@ import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
 
 import {
-  changeCartColor,
   parseCartVariantCode,
   upsertCart,
   upsertCartSelections,
@@ -335,16 +334,6 @@ export default function App() {
     });
   }, [user]);
 
-  const updateCartColor = useCallback((item, nextColorName) => {
-    setCart((currentCart) => {
-      const next = changeCartColor(currentCart, item, nextColorName);
-      if (user) {
-        void persistCart(next, user.id);
-      }
-      return next;
-    });
-  }, [user]);
-
   const addCartColor = useCallback((item, color) => {
     if (!color?.name) return;
     addCartSelections(item.product, [{
@@ -551,6 +540,7 @@ export default function App() {
                 productsById={productsById}
                 navigate={navigate}
                 addToCart={addToCart}
+                addCartSelections={addCartSelections}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
                 pincode={pincode}
@@ -583,7 +573,6 @@ export default function App() {
         onClose={() => setCartOpen(false)}
         items={cartProducts}
         updateQuantity={updateQuantity}
-        updateCartColor={updateCartColor}
         addCartColor={addCartColor}
         pincode={pincode}
         setPincode={setPincode}

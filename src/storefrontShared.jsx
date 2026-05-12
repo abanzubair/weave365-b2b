@@ -6,7 +6,6 @@ import {
   Check,
   CheckCircle2,
   Download,
-
   Heart,
   Headphones,
   Layers,
@@ -37,13 +36,13 @@ export const WhatsappIcon = ({ size = 14, className = '' }) => (
 );
 
 export const CURRENCIES = [
-  { code: 'INR', label: '🇮🇳 India (IND)', locale: 'en-IN' },
-  { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US' },
-  { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB' },
-  { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE' },
-  { code: 'EUR', label: '🇪🇺 Euro (EUR)', locale: 'de-DE' },
-  { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG' },
-  { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY' },
+  { code: 'INR', label: '🇮🇳 India (IND)', locale: 'en-IN', flag: 'in' },
+  { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US', flag: 'us' },
+  { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB', flag: 'gb' },
+  { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE', flag: 'ae' },
+  { code: 'EUR', label: '🇪🇺 Euro (EUR)', locale: 'de-DE', flag: 'eu' },
+  { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG', flag: 'sg' },
+  { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY', flag: 'my' },
 ];
 
 let currentCurrency = 'INR';
@@ -193,6 +192,9 @@ export const ProductCard = memo(function ProductCard({
         <h3 className="card-title" onClick={() => navigate('product', product.id)}>
           {product.title}
         </h3>
+        <div className="card-product-code">
+          Code: {selectedVariant.code}
+        </div>
 
         <div className="card-info-grid">
           <div className="info-left">
