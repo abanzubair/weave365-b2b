@@ -313,16 +313,6 @@ export function ProductDetail({
               </button>
             </div>
             <h1 className="product-title-serif">{product.title}</h1>
-
-            <div className="product-separator">
-              <div className="sep-line" />
-              <svg className="sep-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12,2L13,6C13,6 18,6 18,11C18,16 13,16 13,16L12,22L11,16C11,16 6,16 6,11C6,6 11,6 11,6L12,2Z" />
-                <circle cx="12" cy="11" r="1" fill="white" />
-              </svg>
-              <div className="sep-line" />
-            </div>
-
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
@@ -337,16 +327,16 @@ export function ProductDetail({
 
             <div className="tiered-pricing-card">
               <div className="tier-column">
-                <div className="tier-label">1 - 4 SET</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/SET</span></div>
+                <div className="tier-label">1 - 4 Set</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/Set</span></div>
               </div>
               <div className="tier-column">
-                <div className="tier-label">5 - 9 SET</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/SET</span></div>
+                <div className="tier-label">5 - 9 Set</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/Set</span></div>
               </div>
               <div className="tier-column">
-                <div className="tier-label">10+ SET</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/SET</span></div>
+                <div className="tier-label">10+ Set</div>
+                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/Set</span></div>
               </div>
             </div>
 

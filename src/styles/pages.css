@@ -1722,33 +1722,11 @@ button {
   letter-spacing: -0.01em;
 }
 
-.product-separator {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 12px 0 24px;
-  color: var(--gold-pale);
-  max-width: 360px;
-}
-
-.sep-line {
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-  opacity: 0.6;
-}
-
-.sep-icon {
-  opacity: 0.9;
-  color: var(--gold-soft);
-  filter: drop-shadow(0 0 2px rgba(183, 134, 70, 0.3));
-}
-
 .product-code-new {
-  font-size: 14px;
+  font-size: 18px;
   color: var(--gold-mid);
   font-family: var(--font-ui);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .product-code-new strong {
@@ -1759,7 +1737,7 @@ button {
 
 .price-moq-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -1771,24 +1749,21 @@ button {
 }
 
 .price-value {
-  font-size: clamp(32px, 3.5vw, 42px);
+  font-size: 36px;
   font-weight: 600;
   color: var(--brown-900);
   font-family: var(--font-body);
 }
 
 .price-unit {
-  font-size: 18px;
-  color: var(--gold-mid);
+  font-size: 36px;
+  color: #000;
   font-weight: 500;
 }
 
 .moq-badge {
-  background: #f7efe4;
   color: var(--gold-mid);
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -1803,7 +1778,7 @@ button {
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 12px;
-  max-width: 500px;
+  max-width: 380px;
 }
 
 .tier-column {
@@ -1827,32 +1802,31 @@ button {
 }
 
 .tier-label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--ink);
+  color: #000;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
 .tier-price {
-  font-size: clamp(16px, 1.8vw, 19px);
+  font-size: clamp(18px, 1.8vw, 21px);
   font-weight: 700;
-  color: var(--gold-mid);
+  color: #000;
   display: flex;
   align-items: baseline;
   gap: 2px;
 }
 
 .tier-price .unit {
-  font-size: 9px;
-  color: var(--muted);
+  font-size: 16px;
+  color: #000;
 }
 
 .gst-disclaimer {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--muted);
+  color: #000;
   margin-bottom: 24px;
 }
 
