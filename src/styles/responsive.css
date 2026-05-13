@@ -34,6 +34,7 @@
     white-space: nowrap;
   }
 
+
   .marquee-track {
     display: flex;
     gap: 40px;
@@ -55,9 +56,10 @@
   }
 
   .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
     background: var(--white);
     padding: 10px var(--site-padding);
     grid-template-columns: auto 1fr auto;
@@ -65,16 +67,23 @@
     height: 64px;
     align-items: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    transition: background 0.3s ease, height 0.3s ease, box-shadow 0.3s ease;
   }
 
   .site-header.scrolled {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(31, 20, 13, 0.08);
-    height: 60px; /* Slightly more compact when scrolled */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(31, 20, 13, 0.12);
+    /* height: 60px; */
   }
+
+
 
   .brand-logo {
     height: 28px;
@@ -108,8 +117,8 @@
 
   /* Hero Section */
   .hero {
-    height: clamp(560px, 68svh, 640px);
-    min-height: 0;
+    height: calc(100svh - 102px) !important;
+    min-height: 500px; /* Ensure it doesn't get too small on very short screens */
     max-height: none;
     display: grid;
     isolation: isolate;
@@ -138,12 +147,12 @@
 
   .hero-copy {
     min-height: 100%;
-    padding: 34px var(--site-padding) 44px;
+    padding: 60px var(--site-padding);
     text-align: center;
     align-items: center;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .hero h1 {
@@ -160,15 +169,17 @@
   }
 
   .hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     width: 100%;
-    flex-direction: column;
     gap: 12px;
   }
 
   .hero-actions button {
     width: 100%;
-    max-width: 320px;
+    max-width: 240px;
   }
 
   .hero-visual {
@@ -185,7 +196,7 @@
   /* Feature Strip */
   .feature-strip {
     width: calc(100% - 40px);
-    margin-top: -22px;
+    margin: 20px auto 0;
     grid-template-columns: repeat(2, 1fr);
     padding: 14px;
     gap: 12px;

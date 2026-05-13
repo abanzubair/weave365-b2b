@@ -378,7 +378,7 @@ export default function App() {
 
   return (
     <>
-      <TopBar />
+      <TopBar isHome={route === 'home'} />
       <header className={`site-header ${route === 'home' ? 'home-header' : ''}`}>
         <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
           <Menu size={22} />
@@ -484,16 +484,19 @@ export default function App() {
             </div>
           )}
         </div>
+        <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
+          <Search size={22} />
+        </button>
         <div className="header-actions">
           <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
             <User size={18} />
             {user ? user.email || 'Account' : 'Login / Register'}
           </button>
-          <button className="icon-button" type="button" onClick={() => navigate('favorites')}>
+          <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
             <Bookmark size={22} />
             {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
           </button>
-          <button className="icon-button" type="button" onClick={() => setCartOpen(true)}>
+          <button className="icon-button cart-button" type="button" onClick={() => setCartOpen(true)}>
             <ShoppingBag size={22} />
             {cart.length > 0 && <span className="badge">{cart.length}</span>}
           </button>

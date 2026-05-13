@@ -10,7 +10,7 @@ const topBarItems = [
   { icon: WhatsappIcon, text: '', isLink: true },
 ];
 
-export function TopBar() {
+export function TopBar({ isHome = false }) {
   const currentCurrency = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -41,7 +41,7 @@ export function TopBar() {
   const activeCurrency = CURRENCIES.find(c => c.code === currentCurrency) || CURRENCIES[0];
 
   return (
-    <div className="top-bar">
+    <div className={`top-bar ${isHome ? 'home-top-bar' : ''}`}>
       <div className="top-bar-static">
         {topBarItems.map(({ icon: Icon, text, isLink }, i) => (
           isLink ? (

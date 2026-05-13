@@ -315,7 +315,9 @@
 
 /* ---- Mobile Menu: Slide-in Drawer ---- */
 .mobile-menu-backdrop {
-  z-index: 89;
+  position: fixed;
+  inset: 0;
+  z-index: 9998 !important;
   background: rgba(31, 20, 13, 0.46);
   animation: fadeInBackdrop 0.25s ease;
 }
@@ -325,7 +327,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 90;
+  z-index: 9999 !important;
   width: min(320px, 85vw);
   display: flex;
   flex-direction: column;

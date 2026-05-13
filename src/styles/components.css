@@ -17,6 +17,10 @@
   background: var(--surface-soft);
 }
 
+.mobile-search-button {
+  display: none;
+}
+
 .badge {
   position: absolute;
   top: 2px;
