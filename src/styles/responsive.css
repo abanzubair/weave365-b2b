@@ -1262,6 +1262,12 @@
     margin: 24px 0 !important;
   }
 
+  .you-may-like {
+    margin-left: calc(var(--site-padding) * -1) !important;
+    margin-right: calc(var(--site-padding) * -1) !important;
+    width: auto !important;
+  }
+
   .product-trust-strip div {
     border-right: 0 !important;
     border-bottom: 1px solid var(--line);
