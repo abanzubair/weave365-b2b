@@ -31,6 +31,9 @@
   
   /* Fluid Tokens */
   --site-padding: clamp(24px, 4vw, 80px);
+  
+  /* Fluid Tokens */
+  --site-padding: clamp(24px, 4vw, 80px);
   --section-gap: clamp(40px, 6vw, 100px);
   --h1-size: clamp(48px, 6vw, 100px);
   --h2-size: clamp(34px, 4.5vw, 64px);
@@ -39,6 +42,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 * {
@@ -52,6 +57,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   color: var(--ink);
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 body {
@@ -62,6 +68,8 @@ body {
   font-size: var(--body-size);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 img {

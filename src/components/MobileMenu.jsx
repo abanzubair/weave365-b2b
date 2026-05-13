@@ -10,14 +10,16 @@ import {
   Store,
   User,
   X,
+  MessageCircle,
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
-import { fallbackProductImage, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { fallbackProductImage, formatMoney, customerPrice, CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
 import { useState } from 'react';
 
 export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, search, setSearch, visibleProducts }) {
+  const currentCurrency = useCurrency();
   const [localSearch, setLocalSearch] = useState(search || '');
   const navItems = [
     { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
@@ -122,6 +124,23 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, sea
           {user ? user.email || 'Account' : 'Login / Register'}
           <ArrowRight size={16} className="mobile-menu-arrow" />
         </button>
+        <div className="mobile-menu-section">
+          <h4 className="mobile-menu-section-title">Select Currency</h4>
+          <div className="mobile-currency-grid">
+            {CURRENCIES.map(c => (
+              <button 
+                key={c.code}
+                className={`mobile-currency-btn ${c.code === currentCurrency ? 'active' : ''}`}
+                onClick={() => {
+                  CurrencyManager.setCurrency(c.code);
+                }}
+              >
+                <img src={`https://flagcdn.com/w20/${c.flag}.png`} alt="" className="flag-img" />
+                <span>{c.code}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="mobile-menu-footer">
           <span><Headphones size={16} /> {storeConfig.phone}</span>
           <span><MessageCircle size={16} /> {storeConfig.email}</span>

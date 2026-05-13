@@ -333,6 +333,8 @@
   box-shadow: 8px 0 40px rgba(31, 20, 13, 0.2);
   animation: slideInMenu 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 .mobile-menu-head {
@@ -394,6 +396,60 @@
 
 .mobile-menu-account {
   padding: 4px 20px;
+}
+
+.mobile-menu-section {
+  padding: 16px 20px;
+}
+
+.mobile-menu-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.mobile-currency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mobile-currency-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.mobile-currency-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-currency-btn.active {
+  background: var(--surface-soft);
+  border-color: var(--gold);
+  color: var(--gold-dark);
+  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.12);
+}
+
+.mobile-currency-btn img {
+  width: 24px;
+  height: auto;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .mobile-menu-footer {

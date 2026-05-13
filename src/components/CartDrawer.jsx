@@ -61,6 +61,7 @@ export function CartDrawer({
         className={`cart-drawer ${open ? 'open' : ''}`} 
         aria-hidden={!open}
         onMouseDown={(e) => e.stopPropagation()}
+        style={{ overscrollBehavior: 'contain' }}
       >
         <div className="drawer-head">
           <h2>Your Cart</h2>

@@ -53,8 +53,10 @@
   font-family: var(--font-heading);
   font-size: 36px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .section-title span {
