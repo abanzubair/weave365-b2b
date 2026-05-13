@@ -861,6 +861,7 @@ button {
 }
 
 .text-button {
+  margin-top: 6px;
   border: 0;
   background: transparent;
   font-size: 14px;
