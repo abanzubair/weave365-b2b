@@ -36,11 +36,25 @@ export function Home({
   toggleFavorite,
   favoriteKeys,
 }) {
+  const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 820px)').matches);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
 
-  const bannerSlides = useMemo(() => heroSlides.filter(s => s.type === 'banner'), [heroSlides]);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 820px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const bannerSlides = useMemo(() => {
+    const mobileBanners = heroSlides.filter(s => s.type === 'banner mobile');
+    const desktopBanners = heroSlides.filter(s => s.type === 'banner');
+
+    if (isMobile && mobileBanners.length > 0) return mobileBanners;
+    return desktopBanners;
+  }, [heroSlides, isMobile]);
 
   useEffect(() => {
     if (bannerSlides.length <= 1) return;
