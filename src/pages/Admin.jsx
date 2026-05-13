@@ -18,7 +18,6 @@ import { formatMoney } from '../storefrontShared.jsx';
 import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
 
 const optionalTables = [
-  { key: 'inquiries', label: 'Inquiries' },
   { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
   { key: 'follow_ups', label: 'Follow Ups' },
 ];
@@ -172,6 +171,60 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
     if (profile.id === user?.id && onProfileChange) {
       onProfileChange({ ...(buyerProfile || profile), ...update });
     }
+  }
+
+  async function updateInquiryStatus(inquiryId, status) {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const { error } = await supabase
+      .from('inquiries')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', inquiryId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setAdminData((current) => ({
+      ...current,
+      optional: {
+        ...current.optional,
+        inquiries: current.optional.inquiries.map((row) =>
+          row.id === inquiryId ? { ...row, status } : row
+        ),
+      },
+    }));
+  }
+
+  async function moveToFollowUp(inquiry) {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const { data: followUp, error: followUpError } = await supabase
+      .from('follow_ups')
+      .insert({
+        buyer_id: inquiry.user_id,
+        title: `Follow up: ${inquiry.buyer_name || 'Buyer'} inquiry`,
+        notes: `Inquiry ID: ${inquiry.id}\nProduct: ${inquiry.variant_code || 'Multiple'}\nMessage: ${inquiry.message || 'No message'}`,
+        status: 'open',
+      })
+      .select()
+      .single();
+
+    if (followUpError) {
+      alert(followUpError.message);
+      return;
+    }
+
+    await updateInquiryStatus(inquiry.id, 'followed_up');
+    
+    setAdminData((current) => ({
+      ...current,
+      optional: {
+        ...current.optional,
+        follow_ups: [followUp, ...(current.optional.follow_ups || [])],
+      },
+    }));
   }
 
   useEffect(() => {
@@ -331,6 +384,87 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
               {adminData.profiles.length === 0 && (
                 <tr>
                   <td colSpan="9">No profiles found yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article className="admin-panel">
+        <div className="admin-panel-head">
+          <span><MessageSquareText size={18} /> Product & Cart Inquiries</span>
+          <small>{enquiryRows.length} total inquiries logged</small>
+        </div>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Buyer</th>
+                <th>Items (Code / Color / Qty)</th>
+                <th>Status</th>
+                <th>CRM Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enquiryRows.map((inquiry) => (
+                <tr key={inquiry.id}>
+                  <td>{monthKey(inquiry.created_at)}</td>
+                  <td>
+                    <strong>{inquiry.buyer_name || 'Guest'}</strong>
+                    <span>{inquiry.email || 'No email'}</span>
+                    <span>{inquiry.phone || ''}</span>
+                  </td>
+                  <td>
+                    <div className="admin-items-list">
+                      {(inquiry.items || []).map((item, idx) => (
+                        <div key={idx} className="admin-item-row" style={{ display: 'flex', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
+                          <code style={{ background: '#f0f0f0', padding: '2px 4px', borderRadius: '4px' }}>{item.variant_code || inquiry.variant_code}</code>
+                          <span>{item.color || 'No color'}</span>
+                          <strong>x{item.quantity || 1}</strong>
+                        </div>
+                      ))}
+                      {(!inquiry.items || inquiry.items.length === 0) && (
+                        <code>{inquiry.variant_code || 'N/A'}</code>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`admin-status ${inquiry.status || 'new'}`}>
+                      {inquiry.status || 'new'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="admin-action-stack">
+                      {inquiry.status !== 'done' && inquiry.status !== 'followed_up' && (
+                        <>
+                          <button type="button" onClick={() => updateInquiryStatus(inquiry.id, 'done')}>
+                            Mark Done
+                          </button>
+                          <button type="button" onClick={() => moveToFollowUp(inquiry)}>
+                            Move to Follow-ups
+                          </button>
+                        </>
+                      )}
+                      {inquiry.phone && (
+                        <a 
+                          href={`https://wa.me/${inquiry.phone.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="admin-secondary-link"
+                          style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                        >
+                          Chat on WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {enquiryRows.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="admin-muted">No inquiries found.</td>
                 </tr>
               )}
             </tbody>

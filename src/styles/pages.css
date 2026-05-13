@@ -3470,14 +3470,28 @@ button {
   text-transform: capitalize;
 }
 
-.admin-status.approved {
+.admin-status.approved,
+.admin-status.done {
   background: rgba(37, 119, 68, 0.12);
   color: #257744 !important;
 }
 
-.admin-status.blocked {
+.admin-status.blocked,
+.admin-status.rejected {
   background: rgba(154, 70, 37, 0.12);
   color: #9a4625 !important;
+}
+
+}
+
+.admin-status.followed_up {
+  background: rgba(37, 78, 119, 0.12);
+  color: #254e77 !important;
+}
+
+.admin-status.new {
+  background: rgba(183, 134, 70, 0.12);
+  color: #b78646 !important;
 }
 
 .admin-compact-list,
