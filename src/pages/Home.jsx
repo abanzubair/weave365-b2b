@@ -76,6 +76,24 @@ export function Home({
 
   const activeHeroData = bannerSlides[currentSlide] || null;
 
+  useEffect(() => {
+    if (activeHeroData?.headerColor) {
+      document.documentElement.style.setProperty('--header-text-color', activeHeroData.headerColor);
+      if (activeHeroData.headerColor.toLowerCase() === 'white') {
+        document.documentElement.classList.add('header-over-dark');
+      } else {
+        document.documentElement.classList.remove('header-over-dark');
+      }
+    } else {
+      document.documentElement.style.removeProperty('--header-text-color');
+      document.documentElement.classList.remove('header-over-dark');
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--header-text-color');
+      document.documentElement.classList.remove('header-over-dark');
+    };
+  }, [activeHeroData]);
+
   const bestsellers = useMemo(() => 
     products
       .filter((p) => p.isTopSeller)

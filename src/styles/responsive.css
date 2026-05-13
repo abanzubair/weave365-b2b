@@ -101,6 +101,16 @@
     padding: 8px;
     margin-left: -8px;
   }
+  
+  .site-header:not(.scrolled) .menu-button,
+  .site-header:not(.scrolled) .header-actions button,
+  .site-header:not(.scrolled) .mobile-search-button {
+    color: var(--header-text-color, var(--ink)) !important;
+  }
+
+  .header-over-dark .site-header:not(.scrolled) .brand-logo {
+    filter: brightness(0) invert(1) !important;
+  }
 
   .search-box-wrapper {
     display: none; /* Hide desktop search box in header on mobile */

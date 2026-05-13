@@ -460,6 +460,7 @@ export async function fetchHeroData() {
         subheadingColor: row['Subheading Color'] || '',
         button1Color: row['Button 1 Color'] || '',
         button2Color: row['Button 2 Color'] || '',
+        headerColor: row['Header Color'] || '',
       };
     }).filter(hero => hero.image || hero.video);
   } catch (error) {
