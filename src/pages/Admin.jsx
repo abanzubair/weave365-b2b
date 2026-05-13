@@ -18,6 +18,7 @@ import { formatMoney } from '../storefrontShared.jsx';
 import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
 
 const optionalTables = [
+  { key: 'inquiries', label: 'Inquiries' },
   { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
   { key: 'follow_ups', label: 'Follow Ups' },
 ];
@@ -473,7 +474,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
       </article>
 
       <div className="admin-dashboard-grid">
-        {optionalTables.map((table) => {
+        {optionalTables.filter(t => t.key !== 'inquiries').map((table) => {
           const rows = adminData.optional[table.key] || [];
           const error = adminData.errors[table.key];
 
