@@ -30,8 +30,8 @@ export const storeConfig = {
   name: import.meta.env.VITE_STORE_NAME || 'Weave365',
   subtitle: import.meta.env.VITE_STORE_SUBTITLE || 'WHOLESALE',
   email: import.meta.env.VITE_STORE_EMAIL || 'weave365@gmail.com',
-  phone: import.meta.env.VITE_STORE_PHONE || '919919101369',
-  whatsapp: import.meta.env.VITE_STORE_WHATSAPP || '919919101369',
+  phone: import.meta.env.VITE_STORE_PHONE || '9919101369',
+  whatsapp: import.meta.env.VITE_STORE_WHATSAPP || '9919101369',
   minimumOrderValue: Number(import.meta.env.VITE_MIN_ORDER_VALUE || 10000),
 };
 
