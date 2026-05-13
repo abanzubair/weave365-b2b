@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
 
@@ -24,10 +24,49 @@ export function Catalog({
 }) {
   const [visibleCount, setVisibleCount] = useState(24);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const closeWithAnimation = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setOpenDropdown(null);
+      setIsClosing(false);
+    }, 250); // Match CSS duration
+  };
 
   const toggleDropdown = (name) => {
-    setOpenDropdown(openDropdown === name ? null : name);
+    if (openDropdown === name) {
+      closeWithAnimation();
+    } else {
+      setOpenDropdown(name);
+      setIsClosing(false);
+    }
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!openDropdown) return;
+    
+    const handleClickOutside = (event) => {
+      // If the click is not inside a filter-dropdown, close it
+      if (!event.target.closest('.filter-dropdown')) {
+        closeWithAnimation();
+      }
+    };
+
+    // Use a small timeout to avoid the same click that opens the dropdown from immediately closing it
+    // though e.stopPropagation() on the trigger would also work.
+    // Given the current structure, adding the listener on next tick is safer.
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const hasActiveFilters =
     category !== 'All' ||
@@ -46,7 +85,10 @@ export function Catalog({
   return (
     <section className="section catalog-page">
       {openDropdown && (
-        <div className="filter-backdrop-overlay" onClick={() => setOpenDropdown(null)} />
+        <div 
+          className={`filter-backdrop-overlay ${isClosing ? 'closing' : ''}`} 
+          onClick={closeWithAnimation} 
+        />
       )}
 
       <div className="catalog-toolbar">
@@ -81,8 +123,8 @@ export function Catalog({
 
         <div className="catalog-filters-container">
           {/* Category Dropdown */}
-          <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('category')}>
+          <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''} ${isClosing && openDropdown === 'category' ? 'closing' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('category'); }}>
               <div className="filter-label-wrap">
                 <label>Category</label>
                 <span>{category}</span>
@@ -97,7 +139,7 @@ export function Catalog({
                   onClick={() => {
                     setCategory(name);
                     setVisibleCount(24);
-                    setOpenDropdown(null);
+                    closeWithAnimation();
                   }}
                 >
                   {name}
@@ -107,8 +149,8 @@ export function Catalog({
           </div>
 
           {/* Price Range Dropdown */}
-          <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('price')}>
+          <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''} ${isClosing && openDropdown === 'price' ? 'closing' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
               <div className="filter-label-wrap">
                 <label>Price Range</label>
                 <span>{priceRange}</span>
@@ -123,7 +165,7 @@ export function Catalog({
                   onClick={() => {
                     setPriceRange(range);
                     setVisibleCount(24);
-                    setOpenDropdown(null);
+                    closeWithAnimation();
                   }}
                 >
                   {range}
@@ -133,8 +175,8 @@ export function Catalog({
           </div>
 
           {/* Fabric Dropdown */}
-          <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={() => toggleDropdown('fabric')}>
+          <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''} ${isClosing && openDropdown === 'fabric' ? 'closing' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('fabric'); }}>
               <div className="filter-label-wrap">
                 <label>Fabric</label>
                 <span>{fabric}</span>
@@ -149,7 +191,7 @@ export function Catalog({
                   onClick={() => {
                     setFabric(name);
                     setVisibleCount(24);
-                    setOpenDropdown(null);
+                    closeWithAnimation();
                   }}
                 >
                   {name}
