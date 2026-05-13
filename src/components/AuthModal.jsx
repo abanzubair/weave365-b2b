@@ -3,6 +3,7 @@ import { X, LogOut } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
+import { applyAutoApprovalToBuyerProfile, isVaranasiPincode } from '../utils/buyerAccess.js';
 
 const buyerTypes = [
   { 
@@ -46,7 +47,7 @@ function toTitleCaseName(value) {
     .join(' ');
 }
 
-export function AuthModal({ open, onClose, user, setUser }) {
+export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyerProfile }) {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,7 +65,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
 
   if (!open) return null;
 
-  const userProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
+  const userProfile = buyerProfile || user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
 
   function updateProfile(field, value) {
     setProfile((current) => ({ ...current, [field]: value }));
@@ -84,7 +85,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
 
   function buildBuyerProfile() {
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-    return {
+    return applyAutoApprovalToBuyerProfile({
       full_name: toTitleCaseName(profile.fullName),
       whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
       whatsapp_country_code: profile.countryCode,
@@ -95,8 +96,8 @@ export function AuthModal({ open, onClose, user, setUser }) {
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,
       price_group: profile.buyerType,
-      approval_status: 'pending',
-    };
+      approval_status: 'approved',
+    });
   }
 
   async function submit(event) {
@@ -128,6 +129,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
       };
       localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
       setUser(demoUser);
+      if (setBuyerProfile) setBuyerProfile(demoProfile);
       setMessage(mode === 'register'
         ? 'Demo registration saved with buyer profile.'
         : 'Demo login active. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
@@ -172,6 +174,7 @@ export function AuthModal({ open, onClose, user, setUser }) {
     }
     localStorage.removeItem('sareeva_user');
     setUser(null);
+    if (setBuyerProfile) setBuyerProfile(null);
     onClose();
   }
 
@@ -192,6 +195,13 @@ export function AuthModal({ open, onClose, user, setUser }) {
                 <small>
                   {userProfile.buying_behavior === 'order_basis' ? 'Order Basis' : 'Instant Buying'}
                   {userProfile.pincode ? ` · Pincode ${userProfile.pincode}` : ''}
+                </small>
+                <small>
+                  {userProfile.approval_status === 'approved'
+                    ? 'Price access approved'
+                    : isVaranasiPincode(userProfile.pincode)
+                      ? 'Varanasi pincode: admin approval required'
+                      : 'Approval pending'}
                 </small>
               </div>
             )}

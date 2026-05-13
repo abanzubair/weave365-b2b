@@ -21,6 +21,7 @@ export function Catalog({
   addToCart,
   toggleFavorite,
   favoriteKeys,
+  priceAccess,
 }) {
   const [visibleCount, setVisibleCount] = useState(24);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -71,7 +72,7 @@ export function Catalog({
   const hasActiveFilters =
     category !== 'All' ||
     fabric !== 'All' ||
-    priceRange !== 'All' ||
+    (priceAccess?.canViewPrices && priceRange !== 'All') ||
     (search && search.trim() !== '');
 
   const resetFilters = () => {
@@ -148,31 +149,32 @@ export function Catalog({
             </div>
           </div>
 
-          {/* Price Range Dropdown */}
-          <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''} ${isClosing && openDropdown === 'price' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
-              <div className="filter-label-wrap">
-                <label>Price Range</label>
-                <span>{priceRange}</span>
+          {priceAccess?.canViewPrices && (
+            <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''} ${isClosing && openDropdown === 'price' ? 'closing' : ''}`}>
+              <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
+                <div className="filter-label-wrap">
+                  <label>Price Range</label>
+                  <span>{priceRange}</span>
+                </div>
+                <ChevronDown size={18} />
+              </button>
+              <div className="filter-dropdown-menu">
+                {priceRanges.map((range) => (
+                  <button
+                    key={range}
+                    className={priceRange === range ? 'active' : ''}
+                    onClick={() => {
+                      setPriceRange(range);
+                      setVisibleCount(24);
+                      closeWithAnimation();
+                    }}
+                  >
+                    {range}
+                  </button>
+                ))}
               </div>
-              <ChevronDown size={18} />
-            </button>
-            <div className="filter-dropdown-menu">
-              {priceRanges.map((range) => (
-                <button
-                  key={range}
-                  className={priceRange === range ? 'active' : ''}
-                  onClick={() => {
-                    setPriceRange(range);
-                    setVisibleCount(24);
-                    closeWithAnimation();
-                  }}
-                >
-                  {range}
-                </button>
-              ))}
             </div>
-          </div>
+          )}
 
           {/* Fabric Dropdown */}
           <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''} ${isClosing && openDropdown === 'fabric' ? 'closing' : ''}`}>
@@ -214,6 +216,7 @@ export function Catalog({
             addToCart={addToCart}
             toggleFavorite={toggleFavorite}
             isFavorite={favoriteKeys.has(product.id)}
+            priceAccess={priceAccess}
           />
         ))}
       </div>

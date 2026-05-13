@@ -34,6 +34,7 @@ import {
   useCurrency,
   WhatsappIcon,
 } from './storefrontShared.jsx';
+import { priceNoticeForAccess } from './utils/buyerAccess.js';
 
 export function ProductDetailWrapper(props) {
   const { id } = useParams();
@@ -54,6 +55,7 @@ export function ProductDetail({
   toggleFavorite,
   isFavorite,
   favoriteKeys,
+  priceAccess,
   pincode,
   setPincode,
   codStatus,
@@ -79,7 +81,8 @@ export function ProductDetail({
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
   );
-  const displayPrice = useMemo(() => customerPrice(variant.prices), [variant.prices]);
+  const displayPrice = useMemo(() => customerPrice(variant.prices, priceAccess), [priceAccess, variant.prices]);
+  const canViewPrice = displayPrice != null && displayPrice > 0;
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
 
@@ -334,26 +337,34 @@ export function ProductDetail({
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
-                <span className="price-value">{formatMoney(displayPrice)}</span>
-                <span className="price-unit">/pc</span>
+                {canViewPrice ? (
+                  <>
+                    <span className="price-value">{formatMoney(displayPrice)}</span>
+                    <span className="price-unit">/pc</span>
+                  </>
+                ) : (
+                  <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>
+                )}
               </div>
               <div className="moq-badge">MOQ 1 Set</div>
             </div>
 
-            <div className="tiered-pricing-card">
-              <div className="tier-column">
-                <div className="tier-label">1 - 4 Set</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/Set</span></div>
+            {canViewPrice && (
+              <div className="tiered-pricing-card">
+                <div className="tier-column">
+                  <div className="tier-label">1 - 4 Set</div>
+                  <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/Set</span></div>
+                </div>
+                <div className="tier-column">
+                  <div className="tier-label">5 - 9 Set</div>
+                  <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/Set</span></div>
+                </div>
+                <div className="tier-column">
+                  <div className="tier-label">10+ Set</div>
+                  <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/Set</span></div>
+                </div>
               </div>
-              <div className="tier-column">
-                <div className="tier-label">5 - 9 Set</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/Set</span></div>
-              </div>
-              <div className="tier-column">
-                <div className="tier-label">10+ Set</div>
-                <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/Set</span></div>
-              </div>
-            </div>
+            )}
 
             <span className="gst-disclaimer">Exclusive of GST & shipping</span>
 
@@ -426,7 +437,7 @@ export function ProductDetail({
               <div className="product-secondary-actions">
                 <a
                   className="whatsapp-button"
-                  href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus)}
+                  href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess)}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -515,6 +526,7 @@ export function ProductDetail({
                   addToCart={addToCart}
                   toggleFavorite={toggleFavorite}
                   isFavorite={favoriteKeys.has(item.id)}
+                  priceAccess={priceAccess}
                 />
               ))}
             </div>
@@ -558,6 +570,7 @@ export function ProductDetail({
           addCartSelections(product, selections);
           setVariationDrawerOpen(false);
         }}
+        priceAccess={priceAccess}
       />
     </>
   );

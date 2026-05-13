@@ -15,10 +15,11 @@ import {
 import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney } from '../storefrontShared.jsx';
+import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
 
 const optionalTables = [
-  { key: 'enquiries', label: 'Enquiries' },
-  { key: 'orders', label: 'Orders' },
+  { key: 'inquiries', label: 'Inquiries' },
+  { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
   { key: 'follow_ups', label: 'Follow Ups' },
 ];
 
@@ -94,7 +95,7 @@ function MetricCard({ icon: Icon, label, value, hint }) {
   );
 }
 
-export function Admin({ user, openAuth }) {
+export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
   const [status, setStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
   const allowed = isAdminUser(user);
@@ -142,14 +143,45 @@ export function Admin({ user, openAuth }) {
     setStatus('ready');
   }
 
+  async function updateBuyerPriceAccess(profile, approvalStatus, priceGroup) {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const update = {
+      approval_status: approvalStatus,
+      price_group: priceGroup,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(update)
+      .eq('id', profile.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setAdminData((current) => ({
+      ...current,
+      profiles: current.profiles.map((row) => (
+        row.id === profile.id ? { ...row, ...update } : row
+      )),
+    }));
+
+    if (profile.id === user?.id && onProfileChange) {
+      onProfileChange({ ...(buyerProfile || profile), ...update });
+    }
+  }
+
   useEffect(() => {
     void loadAdminData();
   }, [allowed, user?.id]);
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
-  const orderRows = adminData.optional.orders || [];
-  const enquiryRows = adminData.optional.enquiries || [];
+  const orderRows = adminData.optional.saved_customer_orders || [];
+  const enquiryRows = adminData.optional.inquiries || [];
   const followUpRows = adminData.optional.follow_ups || [];
   const pendingProfiles = adminData.profiles.filter((profile) => profile.approval_status === 'pending');
   const resellerProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'reseller');
@@ -204,8 +236,8 @@ export function Admin({ user, openAuth }) {
         <MetricCard icon={Users} label="Users" value={adminData.profiles.length} hint={`${pendingProfiles.length} pending approval`} />
         <MetricCard icon={ShoppingBag} label="Cart Rows" value={adminData.cartItems.length} hint="Selected products/colors" />
         <MetricCard icon={Heart} label="Favourites" value={adminData.favorites.length} hint="Saved buying intent" />
-        <MetricCard icon={MessageSquareText} label="Enquiries" value={enquiryRows.length} hint={adminData.errors.enquiries ? 'Table not connected' : 'Supabase rows'} />
-        <MetricCard icon={PackageCheck} label="Orders" value={orderRows.length} hint={adminData.errors.orders ? 'Table not connected' : 'Supabase rows'} />
+        <MetricCard icon={MessageSquareText} label="Enquiries" value={enquiryRows.length} hint={adminData.errors.inquiries ? 'Table not connected' : 'Supabase rows'} />
+        <MetricCard icon={PackageCheck} label="Saved Orders" value={orderRows.length} hint={adminData.errors.saved_customer_orders ? 'Table not connected' : 'Supabase rows'} />
         <MetricCard icon={ClipboardList} label="Follow Ups" value={followUpRows.length} hint={adminData.errors.follow_ups ? 'Table not connected' : 'Supabase rows'} />
       </div>
 
@@ -246,11 +278,13 @@ export function Admin({ user, openAuth }) {
               <tr>
                 <th>Buyer</th>
                 <th>Type</th>
+                <th>Price Group</th>
                 <th>Behaviour</th>
                 <th>Approval</th>
                 <th>Cart</th>
                 <th>Favourites</th>
                 <th>Contact</th>
+                <th>CRM Action</th>
               </tr>
             </thead>
             <tbody>
@@ -265,6 +299,7 @@ export function Admin({ user, openAuth }) {
                       <span>{profile.email}</span>
                     </td>
                     <td>{profile.buyer_type || 'Not set'}</td>
+                    <td>{PRICE_GROUPS[profile.price_group] || 'Pending'}</td>
                     <td>{profile.buying_behavior || 'Not set'}</td>
                     <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
                     <td>{cartRows.length} row{cartRows.length === 1 ? '' : 's'}</td>
@@ -272,13 +307,30 @@ export function Admin({ user, openAuth }) {
                     <td>
                       <span>{profile.whatsapp || 'No WhatsApp'}</span>
                       <span>{profile.pincode ? `PIN ${profile.pincode}` : ''}</span>
+                      {isVaranasiPincode(profile.pincode) && <span>Varanasi approval required</span>}
+                    </td>
+                    <td>
+                      <div className="admin-action-stack">
+                        <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'approved', 'wholesale')}>
+                          Approve Wholesale
+                        </button>
+                        <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'approved', 'reseller')}>
+                          Approve Reseller
+                        </button>
+                        <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'pending', 'pending')}>
+                          Hold
+                        </button>
+                        <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'suspended', 'pending')}>
+                          Suspend
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
               {adminData.profiles.length === 0 && (
                 <tr>
-                  <td colSpan="7">No profiles found yet.</td>
+                  <td colSpan="9">No profiles found yet.</td>
                 </tr>
               )}
             </tbody>

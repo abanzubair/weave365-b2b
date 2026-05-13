@@ -1,0 +1,83 @@
+export const PRICE_GROUPS = {
+  wholesale: 'Wholesale Price',
+  reseller: 'Reseller Price',
+};
+
+const VARANASI_PINCODE_PREFIXES = ['221'];
+
+export function normalizeBuyerType(value) {
+  return value === 'reseller' ? 'reseller' : 'wholesale';
+}
+
+export function isVaranasiPincode(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return VARANASI_PINCODE_PREFIXES.some((prefix) => digits.startsWith(prefix));
+}
+
+export function applyAutoApprovalToBuyerProfile(profile) {
+  const buyerType = normalizeBuyerType(profile?.buyer_type);
+  const blockedByPincode = isVaranasiPincode(profile?.pincode);
+
+  return {
+    ...profile,
+    buyer_type: buyerType,
+    approval_status: blockedByPincode ? 'pending' : 'approved',
+    price_group: blockedByPincode ? 'pending' : buyerType,
+  };
+}
+
+export function getBuyerProfileFromUser(user) {
+  return user?.user_metadata?.buyer_profile || user?.buyer_profile || null;
+}
+
+export function getBuyerAccess(user, buyerProfile) {
+  if (!user) {
+    return {
+      isLoggedIn: false,
+      canViewPrices: false,
+      reason: 'logged_out',
+      message: 'Login to view wholesale/reseller price',
+      buyerType: '',
+      priceGroup: 'pending',
+      priceLabel: '',
+      approvalStatus: 'guest',
+    };
+  }
+
+  const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
+  const buyerType = normalizeBuyerType(profile.buyer_type);
+  const approvalStatus = profile.approval_status || 'pending';
+  const priceGroup = profile.price_group || (approvalStatus === 'approved' ? buyerType : 'pending');
+  const canViewPrices = approvalStatus === 'approved' && Boolean(PRICE_GROUPS[priceGroup]);
+
+  let message = 'Your buyer approval is pending';
+  if (approvalStatus === 'rejected') message = 'Your buyer account needs review';
+  if (approvalStatus === 'suspended') message = 'Price access is paused for this account';
+  if (canViewPrices) message = '';
+
+  return {
+    isLoggedIn: true,
+    canViewPrices,
+    reason: canViewPrices ? 'approved' : approvalStatus,
+    message,
+    buyerType,
+    priceGroup,
+    priceLabel: PRICE_GROUPS[priceGroup] || 'Price Pending',
+    approvalStatus,
+    blockedByVaranasiPincode: isVaranasiPincode(profile.pincode),
+  };
+}
+
+export function priceForBuyer(prices = {}, buyerAccess) {
+  if (buyerAccess && !buyerAccess.canViewPrices) return null;
+
+  if (buyerAccess?.priceGroup === 'reseller') {
+    return prices.single || prices.offer || prices.mrp || 0;
+  }
+
+  return prices.offer || prices.mrp || 0;
+}
+
+export function priceNoticeForAccess(buyerAccess) {
+  return buyerAccess?.message || 'Login to view wholesale/reseller price';
+}

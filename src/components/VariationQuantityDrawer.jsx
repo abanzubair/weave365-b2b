@@ -7,23 +7,25 @@ import {
   formatMoney,
   WhatsappIcon,
 } from '../storefrontShared.jsx';
+import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 
 function buildQuantityMap(options) {
   return options.reduce((map, option) => ({ ...map, [option.key]: 0 }), {});
 }
 
-function buildDrawerInquiryUrl(product, rows, subtotal) {
+function buildDrawerInquiryUrl(product, rows, subtotal, priceAccess) {
   const selectedRows = rows.filter((row) => row.quantity > 0);
+  const canViewPrices = priceAccess?.canViewPrices !== false;
   const lines = [
     `Hello ${storeConfig.name}, I want to inquire about these variations:`,
     '',
     product.title,
     '',
     ...selectedRows.map((row) => (
-      `${row.name} | Code: ${row.variant.code} | Qty: ${row.quantity} | Price: ${formatMoney(row.price)} / piece`
+      `${row.name} | Code: ${row.variant.code} | Qty: ${row.quantity}${canViewPrices && row.price != null ? ` | Price: ${formatMoney(row.price)} / piece` : ''}`
     )),
     '',
-    `Estimated subtotal: ${formatMoney(subtotal)}`,
+    canViewPrices && subtotal != null ? `Estimated subtotal: ${formatMoney(subtotal)}` : '',
   ].filter(Boolean);
 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
@@ -38,6 +40,7 @@ export function VariationQuantityDrawer({
   onClose,
   onSelectColor,
   onAddToCart,
+  priceAccess,
 }) {
   const rows = useMemo(() => {
     const source = colorOptions.length
@@ -60,7 +63,7 @@ export function VariationQuantityDrawer({
           name,
           image,
           variant,
-          price: customerPrice(variant?.prices || {}),
+          price: customerPrice(variant?.prices || {}, priceAccess),
         };
       })
       .filter((row) => {
@@ -68,7 +71,7 @@ export function VariationQuantityDrawer({
         seen.add(row.key);
         return true;
       });
-  }, [colorOptions, product.images, product.variants]);
+  }, [colorOptions, priceAccess, product.images, product.variants]);
 
   const [activeKey, setActiveKey] = useState(rows[0]?.key || '');
   const [quantities, setQuantities] = useState(() => buildQuantityMap(rows));
@@ -96,12 +99,16 @@ export function VariationQuantityDrawer({
   }, [onClose, open]);
 
   const selectedRow = rows.find((row) => row.key === activeKey) || rows[0];
-  const subtotal = rows.reduce((total, row) => total + row.price * (quantities[row.key] || 0), 0);
+  const canViewPrices = priceAccess?.canViewPrices !== false;
+  const subtotal = canViewPrices
+    ? rows.reduce((total, row) => total + (row.price || 0) * (quantities[row.key] || 0), 0)
+    : null;
   const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
   const selectedInquiryUrl = buildDrawerInquiryUrl(
     product,
     rows.map((row) => ({ ...row, quantity: quantities[row.key] || 0 })),
     subtotal,
+    priceAccess,
   );
   const selectedCartRows = useMemo(
     () => rows
@@ -185,7 +192,9 @@ export function VariationQuantityDrawer({
                     >
                       {row.name}
                     </button>
-                    <span className="variation-row-price">{formatMoney(row.price)}</span>
+                    <span className="variation-row-price">
+                      {row.price != null ? formatMoney(row.price) : priceNoticeForAccess(priceAccess)}
+                    </span>
                     <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
                       <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
                         <Minus size={16} />
@@ -205,7 +214,7 @@ export function VariationQuantityDrawer({
         <footer className="variation-drawer-foot">
           <div className="drawer-subtotal-row">
             <span>Subtotal</span>
-            <strong>{formatMoney(subtotal)}</strong>
+            <strong>{subtotal != null ? formatMoney(subtotal) : priceNoticeForAccess(priceAccess)}</strong>
           </div>
           <div className="drawer-action-row">
             <button

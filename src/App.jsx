@@ -16,7 +16,8 @@ import {
   persistFavorites,
   readLocal,
 } from './utils/cartHelpers.js';
-import { syncProfileFromUser } from './utils/profileHelpers.js';
+import { loadProfileForUser, syncProfileFromUser } from './utils/profileHelpers.js';
+import { getBuyerAccess, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
@@ -31,6 +32,7 @@ const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ defau
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
 const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
+const Account = lazy(() => import('./pages/Account.jsx').then((module) => ({ default: module.Account })));
 
 export default function App() {
 
@@ -49,6 +51,7 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [buyerProfile, setBuyerProfile] = useState(null);
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [pincode, setPincode] = useState('');
@@ -57,6 +60,7 @@ export default function App() {
   const [heroSlides, setHeroSlides] = useState([]);
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
   const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
+  const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
 
   useEffect(() => {
     let isActive = true;
@@ -97,27 +101,55 @@ export default function App() {
   useEffect(() => {
     if (!isSupabaseConfigured) {
       const localUser = localStorage.getItem('sareeva_user');
-      if (localUser) setUser(JSON.parse(localUser));
+      if (localUser) {
+        const parsedUser = JSON.parse(localUser);
+        setUser(parsedUser);
+        setBuyerProfile(parsedUser.user_metadata?.buyer_profile || parsedUser.buyer_profile || null);
+      }
       return;
     }
 
     supabase.auth.getSession().then(({ data }) => {
       const sessionUser = data.session?.user || null;
       setUser(sessionUser);
-      if (sessionUser) {
-        void syncProfileFromUser(sessionUser);
-      }
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const sessionUser = session?.user || null;
       setUser(sessionUser);
-      if (sessionUser) {
-        void syncProfileFromUser(sessionUser);
-      }
     });
 
     return () => data.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function hydrateProfile() {
+      if (!user) {
+        setBuyerProfile(null);
+        return;
+      }
+
+      if (isSupabaseConfigured) {
+        await syncProfileFromUser(user);
+      }
+
+      const { profile } = await loadProfileForUser(user);
+      if (isActive) setBuyerProfile(profile);
+    }
+
+    void hydrateProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!priceAccess.canViewPrices && priceRange !== 'All') {
+      setPriceRange('All');
+    }
+  }, [priceAccess.canViewPrices, priceRange]);
 
   useEffect(() => {
     if (!dropdownOpen) return undefined;
@@ -452,7 +484,7 @@ export default function App() {
               {visibleProducts.length > 0 ? (
                 <>
                   {visibleProducts.slice(0, 6).map((product) => {
-                    const price = customerPrice(product.variants?.[0]?.prices || {});
+                    const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
                     const image = product.images?.[0] || fallbackProductImage;
                     return (
                       <button
@@ -469,7 +501,7 @@ export default function App() {
                         />
                         <div>
                           <span>{product.name || product.title}</span>
-                          {price > 0 && <small>{formatMoney(price)}</small>}
+                          {price != null && price > 0 ? <small>{formatMoney(price)}</small> : <small>{priceNoticeForAccess(priceAccess)}</small>}
                         </div>
                       </button>
                     );
@@ -488,7 +520,7 @@ export default function App() {
           <Search size={22} />
         </button>
         <div className="header-actions">
-          <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
+          <button className="login-link" type="button" onClick={() => (user ? navigate('account') : setAuthOpen(true))}>
             <User size={18} />
             {user ? user.email || 'Account' : 'Login / Register'}
           </button>
@@ -509,6 +541,7 @@ export default function App() {
           navigate={navigate}
           setCategory={setCategory}
           user={user}
+          priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
           search={search}
           setSearch={setSearch}
@@ -533,6 +566,7 @@ export default function App() {
                 addCartSelections={addCartSelections}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
+                priceAccess={priceAccess}
               />
             } />
             <Route path="/catalog" element={
@@ -555,6 +589,7 @@ export default function App() {
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
+                priceAccess={priceAccess}
               />
             } />
             <Route path="/product/:id" element={
@@ -566,6 +601,7 @@ export default function App() {
                 addCartSelections={addCartSelections}
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
+                priceAccess={priceAccess}
                 pincode={pincode}
                 setPincode={setPincode}
                 codStatus={codStatus}
@@ -580,6 +616,20 @@ export default function App() {
                 openAuth={() => setAuthOpen(true)}
                 toggleFavorite={toggleFavorite}
                 addToCart={addToCart}
+                priceAccess={priceAccess}
+              />
+            } />
+            <Route path="/account" element={
+              <Account
+                user={user}
+                buyerProfile={buyerProfile}
+                priceAccess={priceAccess}
+                cartItems={cartProducts}
+                favoriteProducts={favoriteProducts}
+                navigate={navigate}
+                openAuth={() => setAuthOpen(true)}
+                updateQuantity={updateQuantity}
+                addToCart={addToCart}
               />
             } />
             <Route path="/bulk-inquiry" element={
@@ -588,6 +638,8 @@ export default function App() {
             <Route path="/admin" element={
               <Admin
                 user={user}
+                buyerProfile={buyerProfile}
+                onProfileChange={setBuyerProfile}
                 openAuth={() => setAuthOpen(true)}
               />
             } />
@@ -607,12 +659,15 @@ export default function App() {
         setPincode={setPincode}
         codStatus={codStatus}
         checkPincode={checkPincode}
+        priceAccess={priceAccess}
       />
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
         user={user}
         setUser={setUser}
+        buyerProfile={buyerProfile}
+        setBuyerProfile={setBuyerProfile}
       />
     </>
   );

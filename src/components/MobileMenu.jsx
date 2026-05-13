@@ -16,9 +16,10 @@ import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
 import { fallbackProductImage, formatMoney, customerPrice, CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
+import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useState } from 'react';
 
-export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, search, setSearch, visibleProducts }) {
+export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, search, setSearch, visibleProducts, priceAccess }) {
   const currentCurrency = useCurrency();
   const [localSearch, setLocalSearch] = useState(search || '');
   const navItems = [
@@ -71,7 +72,7 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, sea
               {visibleProducts.length > 0 ? (
                 <>
                   {visibleProducts.slice(0, 5).map((product) => {
-                    const price = customerPrice(product.variants?.[0]?.prices || {});
+                    const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
                     const image = product.images?.[0] || fallbackProductImage;
                     return (
                       <button
@@ -89,7 +90,7 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, sea
                         />
                         <div>
                           <span>{product.name || product.title}</span>
-                          {price > 0 && <small>{formatMoney(price)}</small>}
+                          {price != null && price > 0 ? <small>{formatMoney(price)}</small> : <small>{priceNoticeForAccess(priceAccess)}</small>}
                         </div>
                       </button>
                     );

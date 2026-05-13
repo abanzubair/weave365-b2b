@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import { ArrowRight, User, Heart, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck } from 'lucide-react';
-import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon } from '../storefrontShared.jsx';
+import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon, customerPrice } from '../storefrontShared.jsx';
+import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { storeConfig } from '../config.js';
@@ -35,6 +36,7 @@ export function Home({
   addToCart,
   toggleFavorite,
   favoriteKeys,
+  priceAccess,
 }) {
   const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 820px)').matches);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -321,8 +323,14 @@ export function Home({
                   <strong>{product.title}</strong>
                   <small>{variant.code}</small>
                   <div className="deal-price-row">
-                    <span>{formatMoney(variant.prices.offer)}</span>
-                    <del>{formatMoney(variant.prices.mrp)}</del>
+                    {priceAccess?.canViewPrices ? (
+                      <>
+                        <span>{formatMoney(customerPrice(variant.prices, priceAccess))}</span>
+                        <del>{formatMoney(variant.prices.mrp)}</del>
+                      </>
+                    ) : (
+                      <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>
+                    )}
                   </div>
                   <button className="deal-order-button" type="button" onClick={() => navigate('product', product.id)}>
                     <ShoppingBag size={16} /> Order Now
@@ -391,6 +399,7 @@ export function Home({
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}
                 isFavorite={favoriteKeys.has(product.id)}
+                priceAccess={priceAccess}
                 />
               ))}
             </div>
@@ -433,6 +442,7 @@ export function Home({
               addToCart={addToCart}
               toggleFavorite={toggleFavorite}
               isFavorite={favoriteKeys.has(product.id)}
+              priceAccess={priceAccess}
               />
             ))}
           </div>

@@ -1,10 +1,11 @@
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+import { applyAutoApprovalToBuyerProfile } from './buyerAccess.js';
 
 export function profileRowFromUser(user) {
   const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile;
   if (!user?.id || !buyerProfile) return null;
 
-  return {
+  return applyAutoApprovalToBuyerProfile({
     id: user.id,
     email: user.email || '',
     full_name: buyerProfile.full_name || '',
@@ -19,7 +20,7 @@ export function profileRowFromUser(user) {
     price_group: buyerProfile.price_group || buyerProfile.buyer_type || 'pending',
     approval_status: buyerProfile.approval_status || 'pending',
     updated_at: new Date().toISOString(),
-  };
+  });
 }
 
 export async function syncProfileFromUser(user) {
@@ -28,7 +29,48 @@ export async function syncProfileFromUser(user) {
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
 
+  const { data: existing, error: readError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (readError) return { error: readError };
+
+  if (!existing) {
+    return supabase
+      .from('profiles')
+      .insert(profileRow);
+  }
+
+  const {
+    id: _id,
+    approval_status: _approvalStatus,
+    price_group: _priceGroup,
+    role: _role,
+    created_at: _createdAt,
+    ...profileUpdate
+  } = profileRow;
+
   return supabase
     .from('profiles')
-    .upsert(profileRow, { onConflict: 'id' });
+    .update(profileUpdate)
+    .eq('id', user.id);
+}
+
+export async function loadProfileForUser(user) {
+  if (!user) return { profile: null, error: null };
+
+  const fallbackProfile = user.user_metadata?.buyer_profile || user.buyer_profile || null;
+  if (!isSupabaseConfigured) {
+    return { profile: fallbackProfile, error: null };
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  return { profile: data || fallbackProfile, error };
 }

@@ -1,6 +1,6 @@
 import { SectionTitle, ProductCard } from '../storefrontShared.jsx';
 
-export function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCart }) {
+export function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCart, priceAccess }) {
   if (!user) {
     return (
       <section className="section empty-page">
@@ -42,6 +42,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
             addToCart={addToCart}
             toggleFavorite={toggleFavorite}
             isFavorite
+            priceAccess={priceAccess}
           />
         ))}
       </div>

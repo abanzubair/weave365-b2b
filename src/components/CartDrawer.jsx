@@ -8,6 +8,7 @@ import {
   normalizePincodeInput,
   WhatsappIcon,
 } from '../storefrontShared.jsx';
+import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 
 export function CartDrawer({
   open,
@@ -19,14 +20,18 @@ export function CartDrawer({
   setPincode,
   codStatus,
   checkPincode,
+  priceAccess,
 }) {
+  const canViewPrices = priceAccess?.canViewPrices !== false;
   const total = useMemo(
-    () => items.reduce((sum, item) => sum + customerPrice(item.variant.prices) * item.quantity, 0),
-    [items],
+    () => canViewPrices
+      ? items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0)
+      : null,
+    [canViewPrices, items, priceAccess],
   );
   const whatsappUrl = useMemo(
-    () => buildWhatsappUrl(items, total, pincode, codStatus),
-    [codStatus, items, pincode, total],
+    () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess),
+    [codStatus, items, pincode, priceAccess, total],
   );
   const groupedItems = useMemo(() => {
     const groups = new Map();
@@ -104,7 +109,11 @@ export function CartDrawer({
                   </span>
                   <div className="cart-color-line-copy">
                     <strong>{item.selectedColorName || 'Selected color'}</strong>
-                    <span>{formatMoney(customerPrice(item.variant.prices))} / pc</span>
+                    <span>
+                      {canViewPrices
+                        ? `${formatMoney(customerPrice(item.variant.prices, priceAccess))} / pc`
+                        : priceNoticeForAccess(priceAccess)}
+                    </span>
                   </div>
                   <div className="qty-row">
                     <button onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
@@ -146,7 +155,7 @@ export function CartDrawer({
         <div className="drawer-foot">
           <div className="total-row">
             <span>Estimated Total</span>
-            <strong>{formatMoney(total)}</strong>
+            <strong>{total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}</strong>
           </div>
           <p className="shipping-note">
             Kindly share your order quantity and delivery pincode for shipping charges and delivery time.

@@ -26,6 +26,7 @@ import {
   BellRing,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
+import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
@@ -148,12 +149,14 @@ export const ProductCard = memo(function ProductCard({
   addToCart,
   toggleFavorite,
   isFavorite,
+  priceAccess,
 }) {
   useCurrency();
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
-  const basePrice = customerPrice(selectedVariant.prices);
-  const setPrice = basePrice * (product.totalColors || product.variants.length || 1);
+  const basePrice = customerPrice(selectedVariant.prices, priceAccess);
+  const canViewPrice = basePrice != null && basePrice > 0;
+  const setPrice = canViewPrice ? basePrice * (product.totalColors || product.variants.length || 1) : null;
   const colorCount = product.totalColors || 1;
   const soldCount = Math.floor(50 + (product.id?.charCodeAt?.(0) || 0) % 80) + '+';
 
@@ -199,8 +202,14 @@ export const ProductCard = memo(function ProductCard({
         <div className="card-info-grid">
           <div className="info-left">
             <label>PRICE</label>
-            <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
-            <small>{formatMoney(setPrice)} / set</small>
+            {canViewPrice ? (
+              <>
+                <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
+                <small>{formatMoney(setPrice)} / set</small>
+              </>
+            ) : (
+              <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
+            )}
           </div>
           <div className="info-right">
             <div className="info-item">
@@ -218,7 +227,7 @@ export const ProductCard = memo(function ProductCard({
 
         <div className="card-actions-new">
           <a
-            href={buildSingleProductWhatsappUrl(product, selectedVariant, 1)}
+            href={buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess)}
             target="_blank"
             rel="noreferrer"
             className="order-now-btn"
@@ -234,12 +243,14 @@ export const ProductCard = memo(function ProductCard({
   );
 });
 
-export function PriceLine({ prices }) {
-  const buyPrice = customerPrice(prices);
+export function PriceLine({ prices, priceAccess }) {
+  const buyPrice = customerPrice(prices, priceAccess);
 
   return (
     <p className="price-line">
-      {prices.offer ? (
+      {buyPrice == null ? (
+        <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
+      ) : prices.offer ? (
         <>
           <strong>{formatMoney(buyPrice)} <small className="price-unit">/piece</small></strong>
           {prices.mrp && (
@@ -295,21 +306,23 @@ export function formatWeight(weightInKg) {
   return `${Number(w.toFixed(2))} KG`;
 }
 
-export function customerPrice(prices) {
-  return prices.offer || prices.mrp || 0;
+export function customerPrice(prices, priceAccess) {
+  return priceForBuyer(prices, priceAccess);
 }
 
-export function buildWhatsappUrl(items, total, pincode, codStatus) {
+export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) {
+  const canViewPrices = priceAccess?.canViewPrices !== false;
   const lines = [
     `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
     '',
     ...items.map((item) => {
-      const price = customerPrice(item.variant.prices);
+      const price = customerPrice(item.variant.prices, priceAccess);
       const color = item.selectedColorName ? ` | Color: ${item.selectedColorName}` : '';
-      return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity} | Price: ${formatMoney(price)}`;
+      const priceText = canViewPrices && price != null ? ` | Price: ${formatMoney(price)}` : '';
+      return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity}${priceText}`;
     }),
     '',
-    `Estimated total: ${formatMoney(total)}`,
+    canViewPrices && total != null ? `Estimated total: ${formatMoney(total)}` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);
@@ -317,15 +330,16 @@ export function buildWhatsappUrl(items, total, pincode, codStatus) {
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
-export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus) {
-  const price = customerPrice(variant.prices);
+export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus, priceAccess) {
+  const price = customerPrice(variant.prices, priceAccess);
+  const canViewPrices = priceAccess?.canViewPrices !== false;
   const lines = [
     `Hello ${storeConfig.name}, I want to buy this catalog:`,
     '',
     `${product.title}`,
     `Code: ${variant.code}`,
     `Designs: ${quantity}`,
-    `Price: ${formatMoney(price)} / piece`,
+    canViewPrices && price != null ? `Price: ${formatMoney(price)} / piece` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);
