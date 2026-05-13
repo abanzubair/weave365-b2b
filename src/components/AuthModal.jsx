@@ -5,13 +5,21 @@ import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
 
 const buyerTypes = [
-  { value: 'wholesale', label: 'Wholeseller' },
-  { value: 'reseller', label: 'Reseller' },
+  { 
+    value: 'wholesale', 
+    label: 'Wholesalers', 
+    description: 'Retail Shops, Boutiques, Exporters, Online Stores.' 
+  },
+  { 
+    value: 'reseller', 
+    label: 'Reseller', 
+    description: 'Sell on WhatsApp, Instagram, Facebook.' 
+  },
 ];
 
 const buyingBehaviors = [
-  { value: 'instant', label: 'Instant Buying' },
-  { value: 'order_basis', label: 'Order Basis' },
+  { value: 'instant', label: 'Instant Buying', description: 'Ready to ship stock' },
+  { value: 'order_basis', label: 'Order Basis', description: 'Custom production' },
 ];
 
 const countryCodes = [
@@ -263,35 +271,37 @@ export function AuthModal({ open, onClose, user, setUser }) {
                     </div>
                   </div>
                   <div className="auth-field-grid">
-                    <label>
-                      Buyer Type
-                      <select
-                        value={profile.buyerType}
-                        onChange={(event) => updateProfile('buyerType', event.target.value)}
-                        required
-                      >
-                        {buyerTypes.map((item) => (
-                          <option key={item.value} value={item.value}>{item.label}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Buying Behaviour
-                      <select
-                        value={profile.buyingBehavior}
-                        onChange={(event) => updateProfile('buyingBehavior', event.target.value)}
-                        required
-                      >
-                        {buyingBehaviors.map((item) => (
-                          <option key={item.value} value={item.value}>{item.label}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <div className="auth-radio-group">
+                      <strong>Buyer Type</strong>
+                      {buyerTypes.map((item) => (
+                        <label key={item.value}>
+                          <input
+                            type="radio"
+                            name="buyerType"
+                            value={item.value}
+                            checked={profile.buyerType === item.value}
+                            onChange={(event) => updateProfile('buyerType', event.target.value)}
+                          />
+                          <span><strong>{item.label}</strong>: {item.description}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="auth-radio-group">
+                      <strong>Buying Behaviour</strong>
+                      {buyingBehaviors.map((item) => (
+                        <label key={item.value}>
+                          <input
+                            type="radio"
+                            name="buyingBehavior"
+                            value={item.value}
+                            checked={profile.buyingBehavior === item.value}
+                            onChange={(event) => updateProfile('buyingBehavior', event.target.value)}
+                          />
+                          <span><strong>{item.label}</strong>: {item.description}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <small className="buyer-type-note">
-                    Wholesale: Wholesalers, Retail Shops, Boutiques, Exporters, Online Stores.<br />
-                    Reseller: Sell on WhatsApp, Instagram, Facebook.
-                  </small>
                   <fieldset className="auth-category-fieldset">
                     <legend>Interested Categories</legend>
                     <div>

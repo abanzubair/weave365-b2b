@@ -4,6 +4,8 @@ import {
   Award,
   Bookmark,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Download,
   Heart,
   Layers,
@@ -232,6 +234,18 @@ export function ProductDetail({
       setVariantCode(matchingVariant.code);
     }
   }, [colorOptions, product.variants]);
+
+  const scrollProductRail = (rowId, direction) => {
+    const rail = document.getElementById(rowId);
+    if (!rail) return;
+
+    const card = rail.querySelector('.product-card');
+    const styles = window.getComputedStyle(rail);
+    const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+    const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
+
+    rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
+  };
 
   return (
     <>
@@ -477,22 +491,40 @@ export function ProductDetail({
           </section>
         </div> */}
 
-        <section className="you-may-like">
+        <section className="section you-may-like home-product-section">
           <div className="section-heading-row">
             <SectionTitle title="You May Also Like" align="left" />
           </div>
-          <div className="product-row scrollable-mobile">
-            {recommendationItems.slice(0, 10).map((item, index) => (
-              <ProductCard
-                key={`${item.id}-${index}`}
-                product={item}
-                variant={item.variants[0]}
-                navigate={navigate}
-                addToCart={addToCart}
-                toggleFavorite={toggleFavorite}
-                isFavorite={false}
-              />
-            ))}
+          <div className="scroll-wrapper">
+            <button 
+              className="scroll-arrow left" 
+              onClick={() => scrollProductRail('recommendations-row', -1)}
+              aria-label="Scroll left"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <div className="product-row scrollable-row" id="recommendations-row">
+              {recommendationItems.slice(0, 10).map((item, index) => (
+                <ProductCard
+                  key={`${item.id}-${index}`}
+                  product={item}
+                  variant={item.variants[0]}
+                  navigate={navigate}
+                  addToCart={addToCart}
+                  toggleFavorite={toggleFavorite}
+                  isFavorite={false}
+                />
+              ))}
+            </div>
+
+            <button 
+              className="scroll-arrow right" 
+              onClick={() => scrollProductRail('recommendations-row', 1)}
+              aria-label="Scroll right"
+            >
+              <ChevronRight size={24} />
+            </button>
           </div>
         </section>
       </section>

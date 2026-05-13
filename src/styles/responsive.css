@@ -1059,36 +1059,208 @@
   }
 }
 
-/* Product Detail Mobile Polish */
+/* ═══════════════════════════════════════════════════════════════
+   PRODUCT PAGE — Mobile Optimization (UI/UX Pro Max)
+   Touch targets ≥ 44px · Fluid grid scaling · Premium spacing
+   ═══════════════════════════════════════════════════════════════ */
 @media screen and (max-width: 820px) {
+  .product-view {
+    width: 100% !important;
+    padding: 16px var(--site-padding) 40px !important;
+  }
+
+  .product-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
   .product-media {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
+    width: 100%;
   }
   
+  .catalog-main-image {
+    order: 1;
+    width: 100% !important;
+    max-height: 60vh;
+    display: flex;
+    justify-content: center;
+    background: var(--surface-muted);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .catalog-main-image img {
+    max-height: 60vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
   .vertical-thumbs {
     order: 2;
     display: flex !important;
     flex-direction: row !important;
     overflow-x: auto;
     width: 100% !important;
-    padding: 12px 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 4px 0 8px !important;
     gap: 10px !important;
+    scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .vertical-thumbs::-webkit-scrollbar {
+    display: none;
   }
   
   .vertical-thumbs button {
-    flex: 0 0 76px !important;
-    height: 100px !important;
-    width: 76px !important;
+    flex: 0 0 68px !important;
+    width: 68px !important;
+    height: 90px !important;
+    aspect-ratio: 3/4 !important;
+    border-radius: 8px;
+    touch-action: manipulation;
   }
 
-  .catalog-main-image {
-    order: 1;
-    width: 100% !important;
+  .product-specs-card {
+    order: 3;
+    margin-top: 12px;
+    padding: 16px !important;
+    border-radius: 10px;
+  }
+
+  .specs-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px 12px !important;
   }
 
   .product-info-panel {
-    padding-top: 24px !important;
+    padding-top: 16px !important;
+    width: 100%;
+  }
+
+  .product-title-serif {
+    font-size: clamp(24px, 6.5vw, 30px) !important;
+    margin: 12px 0 6px !important;
+  }
+
+  .product-code-new {
+    font-size: 15px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .price-moq-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .price-value {
+    font-size: 28px !important;
+  }
+
+  .price-unit {
+    font-size: 24px !important;
+  }
+
+  .moq-badge {
+    font-size: 16px !important;
+    padding: 3px 10px;
+    background: var(--surface-soft);
+    border-radius: 6px;
+    margin-top: 4px;
+  }
+
+  .tiered-pricing-card {
+    max-width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  .tier-column {
+    padding: 10px 6px !important;
+  }
+
+  .tier-label {
+    font-size: 12px !important;
+  }
+
+  .tier-price {
+    font-size: 14px !important;
+  }
+
+  .tier-price .unit {
+    font-size: 11px !important;
+  }
+
+  .quick-facts {
+    gap: 12px !important;
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-variation-card {
+    margin: 16px 0 !important;
+    padding: 16px 0 0 !important;
+  }
+
+  .variation-card-head h2 {
+    font-size: 18px !important;
+  }
+
+  .color-swatch-row {
+    gap: 10px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .color-swatch-row button {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 8px !important;
+    touch-action: manipulation;
+  }
+
+  .catalog-table div {
+    padding: 10px 0 !important;
+    font-size: 14px !important;
+    flex-direction: column;
+    gap: 4px !important;
+  }
+
+  .description-text {
+    font-size: 14px !important;
+  }
+
+  .product-secondary-actions {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .product-secondary-actions > * {
+    min-height: 48px !important;
+    font-size: 13px !important;
+  }
+  
+  .product-trust-strip {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 18px 16px !important;
+    margin: 24px 0 !important;
+  }
+
+  .product-trust-strip div {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--line);
+    padding: 0 0 16px !important;
+  }
+
+  .product-trust-strip div:last-child {
+    border-bottom: 0;
+    padding-bottom: 0 !important;
   }
 }
