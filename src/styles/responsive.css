@@ -1262,7 +1262,7 @@
     margin: 24px 0 !important;
   }
 
-  .you-may-like {
+  .you-may-like .scroll-wrapper {
     margin-left: calc(var(--site-padding) * -1) !important;
     margin-right: calc(var(--site-padding) * -1) !important;
     width: auto !important;
