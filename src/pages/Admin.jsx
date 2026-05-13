@@ -20,6 +20,7 @@ import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
+  { key: 'follow_ups', label: 'Follow Ups' },
 ];
 
 const emptyAdminData = {
