@@ -290,3 +290,69 @@
   top: 12px;
   right: 12px;
 }
+
+.enquiry-popup-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 48px rgba(31, 20, 13, 0.15);
+  text-align: center;
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.enquiry-popup-modal h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.enquiry-popup-modal p {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.enquiry-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.whatsapp-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  background: #25D366;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.whatsapp-action-btn:hover {
+  background: #128C7E;
+  transform: translateY(-1px);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

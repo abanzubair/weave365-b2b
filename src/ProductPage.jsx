@@ -33,8 +33,10 @@ import {
   normalizePincodeInput,
   useCurrency,
   WhatsappIcon,
+  EnquiryPopup,
 } from './storefrontShared.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
+import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 
 export function ProductDetailWrapper(props) {
   const { id } = useParams();
@@ -69,6 +71,8 @@ export function ProductDetail({
   const [galleryHeight, setGalleryHeight] = useState(null);
   const [zoomImage, setZoomImage] = useState(null);
   const [variationDrawerOpen, setVariationDrawerOpen] = useState(false);
+  const [enquiryState, setEnquiryState] = useState('idle');
+  const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const mainImageRef = useRef(null);
 
   const totalColors = useMemo(
@@ -128,6 +132,40 @@ export function ProductDetail({
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
     [galleryHeight],
   );
+
+  async function handleEnquiryClick() {
+    if (enquiryState === 'sending') return;
+    setEnquiryState('sending');
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('inquiries').insert({
+          user_id: priceAccess?.userId || undefined,
+          email: priceAccess?.userEmail || undefined,
+          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+          phone: priceAccess?.buyerPhone || undefined,
+          pincode: priceAccess?.buyerPincode || undefined,
+          inquiry_type: 'product',
+          status: 'new',
+          product_group_key: String(product.id),
+          variant_code: variant.code,
+          message: `Enquiry for ${product.title}`,
+          items: [{
+            product_id: product.id,
+            product_title: product.title,
+            variant_code: variant.code,
+            quantity: totalColors,
+            priceGroup: priceAccess?.priceGroup || 'pending',
+          }],
+        });
+      } catch (err) {
+        console.error('Failed to log inquiry to Supabase:', err);
+      }
+    }
+
+    setEnquiryState('sent');
+    setEnquiryPopupOpen(true);
+  }
 
   const downloadImagesAsZip = useCallback(async () => {
     try {
@@ -435,14 +473,14 @@ export function ProductDetail({
 
             <div className="product-main-actions">
               <div className="product-secondary-actions">
-                <a
+                <button
+                  type="button"
                   className="whatsapp-button"
-                  href={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess)}
-                  target="_blank"
-                  rel="noreferrer"
+                  onClick={handleEnquiryClick}
+                  style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
                 >
-                  <WhatsappIcon size={20} /> Enquiry
-                </a>
+                  <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Enquiry Sent' : 'Enquiry'}
+                </button>
                 <button
                   className="catalog-add-button"
                   type="button"
@@ -540,6 +578,12 @@ export function ProductDetail({
             </button>
           </div>
         </section>
+
+        <EnquiryPopup
+          open={enquiryPopupOpen}
+          onClose={() => setEnquiryPopupOpen(false)}
+          whatsappUrl={buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess)}
+        />
       </section>
 
       <Newsletter />

@@ -24,9 +24,11 @@ import {
   Truck,
   ZoomIn,
   BellRing,
+  X,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
+import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
@@ -160,6 +162,44 @@ export const ProductCard = memo(function ProductCard({
   const colorCount = product.totalColors || 1;
   const soldCount = Math.floor(50 + (product.id?.charCodeAt?.(0) || 0) % 80) + '+';
 
+  const [enquiryState, setEnquiryState] = useState('idle');
+  const [popupOpen, setPopupOpen] = useState(false);
+  const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
+
+  async function handleEnquiryClick() {
+    if (enquiryState === 'sending') return;
+    setEnquiryState('sending');
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('inquiries').insert({
+          user_id: priceAccess?.userId || undefined,
+          email: priceAccess?.userEmail || undefined,
+          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+          phone: priceAccess?.buyerPhone || undefined,
+          pincode: priceAccess?.buyerPincode || undefined,
+          inquiry_type: 'product',
+          status: 'new',
+          product_group_key: String(product.id),
+          variant_code: selectedVariant.code,
+          message: `Enquiry for ${product.title}`,
+          items: [{
+            product_id: product.id,
+            product_title: product.title,
+            variant_code: selectedVariant.code,
+            quantity: 1,
+            priceGroup: priceAccess?.priceGroup || 'pending',
+          }],
+        });
+      } catch (err) {
+        console.error('Failed to log inquiry to Supabase:', err);
+      }
+    }
+
+    setEnquiryState('sent');
+    setPopupOpen(true);
+  }
+
   return (
     <article className="product-card">
       <div className="card-media">
@@ -226,19 +266,25 @@ export const ProductCard = memo(function ProductCard({
 
 
         <div className="card-actions-new">
-          <a
-            href={buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess)}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={handleEnquiryClick}
             className="order-now-btn"
+            style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
           >
-            <WhatsappIcon size={16} /> ENQUIRY
-          </a>
+            <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
+          </button>
           <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
             <ShoppingBag size={16} /> ADD TO BAG
           </button>
         </div>
       </div>
+
+      <EnquiryPopup
+        open={popupOpen}
+        onClose={() => setPopupOpen(false)}
+        whatsappUrl={whatsappUrl}
+      />
     </article>
   );
 });
@@ -349,4 +395,31 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
 
 export function normalizePincodeInput(value) {
   return String(value).replace(/\D/g, '').slice(0, 6);
+}
+
+export function EnquiryPopup({ open, onClose, whatsappUrl }) {
+  if (!open) return null;
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="enquiry-popup-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="icon-button modal-close" onClick={onClose} aria-label="Close popup">
+          <X size={18} />
+        </button>
+        <h3>Enquiry Sent Successfully</h3>
+        <p>for faster reply send us a whatsapp msg</p>
+        <div className="enquiry-popup-actions">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="whatsapp-action-btn"
+            onClick={onClose}
+          >
+            <WhatsappIcon size={18} /> Open WhatsApp Chat
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 }

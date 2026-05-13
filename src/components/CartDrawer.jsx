@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { X, ArrowRight, Plus } from 'lucide-react';
 import {
   customerPrice,
@@ -7,8 +7,10 @@ import {
   formatMoney,
   normalizePincodeInput,
   WhatsappIcon,
+  EnquiryPopup,
 } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
+import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 
 export function CartDrawer({
   open,
@@ -22,6 +24,8 @@ export function CartDrawer({
   checkPincode,
   priceAccess,
 }) {
+  const [enquiryState, setEnquiryState] = useState('idle');
+  const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const total = useMemo(
     () => canViewPrices
@@ -56,6 +60,39 @@ export function CartDrawer({
       totalQuantity: group.items.reduce((sum, item) => sum + item.quantity, 0),
     }));
   }, [items]);
+
+  async function handleEnquiryClick() {
+    if (enquiryState === 'sending' || items.length === 0) return;
+    setEnquiryState('sending');
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('inquiries').insert({
+          user_id: priceAccess?.userId || undefined,
+          email: priceAccess?.userEmail || undefined,
+          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+          phone: priceAccess?.buyerPhone || undefined,
+          pincode: pincode || priceAccess?.buyerPincode || undefined,
+          inquiry_type: 'cart',
+          status: 'new',
+          message: `Enquiry for ${items.length} items in cart`,
+          items: items.map(item => ({
+            product_id: item.productGroupKey,
+            product_title: item.product.title,
+            variant_code: item.variant.code,
+            color: item.selectedColorName,
+            quantity: item.quantity,
+            price: customerPrice(item.variant.prices, priceAccess),
+          })),
+        });
+      } catch (err) {
+        console.error('Failed to log inquiry to Supabase:', err);
+      }
+    }
+
+    setEnquiryState('sent');
+    setEnquiryPopupOpen(true);
+  }
 
   return (
     <div 
@@ -160,10 +197,20 @@ export function CartDrawer({
           <p className="shipping-note">
             Kindly share your order quantity and delivery pincode for shipping charges and delivery time.
           </p>
-          <a className={`primary-button ${items.length ? '' : 'disabled'}`} href={items.length ? whatsappUrl : undefined} target="_blank" rel="noreferrer">
-            <WhatsappIcon size={20} /> Submit Enquiry <ArrowRight size={18} />
-          </a>
+          <button 
+            type="button"
+            className={`primary-button ${items.length ? '' : 'disabled'}`} 
+            onClick={handleEnquiryClick}
+            style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
+          >
+            <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Enquiry Sent' : 'Submit Enquiry'} <ArrowRight size={18} />
+          </button>
         </div>
+        <EnquiryPopup
+          open={enquiryPopupOpen}
+          onClose={() => setEnquiryPopupOpen(false)}
+          whatsappUrl={whatsappUrl}
+        />
       </aside>
     </div>
   );

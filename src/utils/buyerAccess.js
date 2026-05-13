@@ -41,6 +41,11 @@ export function getBuyerAccess(user, buyerProfile) {
       priceGroup: 'pending',
       priceLabel: '',
       approvalStatus: 'guest',
+      userId: null,
+      userEmail: null,
+      buyerName: null,
+      buyerPhone: null,
+      buyerPincode: null,
     };
   }
 
@@ -65,6 +70,11 @@ export function getBuyerAccess(user, buyerProfile) {
     priceLabel: PRICE_GROUPS[priceGroup] || 'Price Pending',
     approvalStatus,
     blockedByVaranasiPincode: isVaranasiPincode(profile.pincode),
+    userId: user.id || null,
+    userEmail: user.email || null,
+    buyerName: profile.business_name || profile.full_name || null,
+    buyerPhone: profile.whatsapp || profile.whatsapp_number || null,
+    buyerPincode: profile.pincode || null,
   };
 }
 
