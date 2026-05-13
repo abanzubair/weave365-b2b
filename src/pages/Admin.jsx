@@ -20,7 +20,6 @@ import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
-  { key: 'follow_ups', label: 'Follow Ups' },
 ];
 
 const emptyAdminData = {
@@ -228,12 +227,41 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
     }));
   }
 
+  async function updateFollowUpStatus(followUpId, status) {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const { error } = await supabase
+      .from('follow_ups')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', followUpId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setAdminData((current) => ({
+      ...current,
+      optional: {
+        ...current.optional,
+        follow_ups: current.optional.follow_ups.map((row) =>
+          row.id === followUpId ? { ...row, status } : row
+        ),
+      },
+    }));
+  }
+
   useEffect(() => {
     void loadAdminData();
   }, [allowed, user?.id]);
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
+  const profileMap = useMemo(() => {
+    const map = new Map();
+    adminData.profiles.forEach(p => map.set(p.id, p));
+    return map;
+  }, [adminData.profiles]);
   const orderRows = adminData.optional.saved_customer_orders || [];
   const enquiryRows = adminData.optional.inquiries || [];
   const followUpRows = adminData.optional.follow_ups || [];
@@ -473,8 +501,85 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
         </div>
       </article>
 
+      <article className="admin-panel">
+        <div className="admin-panel-head">
+          <span><ClipboardList size={18} /> CRM Follow Ups</span>
+          <small>{followUpRows.length} active follow-up tasks</small>
+        </div>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Created</th>
+                <th>Buyer</th>
+                <th>Task / Notes</th>
+                <th>Status</th>
+                <th>CRM Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {followUpRows.map((follow) => {
+                const profile = profileMap.get(follow.buyer_id);
+                return (
+                  <tr key={follow.id}>
+                    <td>{monthKey(follow.created_at)}</td>
+                    <td>
+                      <strong>{profile?.business_name || profile?.full_name || 'Unknown Buyer'}</strong>
+                      <span>{profile?.email || 'No email'}</span>
+                    </td>
+                    <td>
+                      <strong>{follow.title}</strong>
+                      <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>{follow.notes}</p>
+                    </td>
+                    <td>
+                      <span className={`admin-status ${follow.status || 'open'}`}>
+                        {follow.status || 'open'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="admin-action-stack">
+                        {follow.status !== 'done' && (
+                          <button type="button" onClick={() => updateFollowUpStatus(follow.id, 'done')}>
+                            End Enquiry (Done)
+                          </button>
+                        )}
+                        {profile?.whatsapp && (
+                          <a 
+                            href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="admin-secondary-link"
+                            style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                          >
+                            WhatsApp Buyer
+                          </a>
+                        )}
+                        {profile?.whatsapp && (
+                          <a 
+                            href={`tel:${profile.whatsapp.replace(/\D/g, '')}`} 
+                            className="admin-secondary-link"
+                            style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                          >
+                            Call Buyer
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {followUpRows.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="admin-muted">No follow-ups found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
       <div className="admin-dashboard-grid">
-        {optionalTables.filter(t => t.key !== 'inquiries').map((table) => {
+        {optionalTables.filter(t => t.key !== 'inquiries' && t.key !== 'follow_ups').map((table) => {
           const rows = adminData.optional[table.key] || [];
           const error = adminData.errors[table.key];
 
