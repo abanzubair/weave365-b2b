@@ -510,11 +510,12 @@
   .newsletter-actions {
     flex-direction: column;
     gap: 14px;
-    align-items: stretch;
+    align-items: center;
   }
 
   .whatsapp-group-btn {
     width: 100%;
+    max-width: 340px;
     min-width: 0;
     white-space: normal;
     text-align: center;
@@ -534,6 +535,7 @@
 
   .newsletter form {
     width: 100%;
+    max-width: 340px;
     height: auto;
     grid-template-columns: 1fr;
     gap: 10px;
