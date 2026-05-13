@@ -156,13 +156,31 @@ Restart the dev server and confirm the app is using the latest React build. Late
 
 ## 9. Later private price-tab setup
 
-When the React UI is complete, create a private Google Sheet tab with:
+Create a private Google Sheet tab with:
 
 ```txt
 product_group_key | variant_code | wholesale_price | reseller_price
 ```
 
-Then add a Supabase Edge Function that:
+Recommended full header row:
+
+```txt
+product_group_key | variant_code | wholesale_price | reseller_price | wholesale_offer_price | reseller_offer_price | currency | active | updated_at | notes
+```
+
+Example:
+
+```txt
+101234 | 101234-RED | 850 | 950 | 799 | 899 | INR | TRUE | 2026-05-13 | Fast moving
+```
+
+The Edge Function is already scaffolded at:
+
+```txt
+supabase/functions/get-visible-prices/index.ts
+```
+
+It:
 
 1. Checks the logged-in user.
 2. Reads `profiles.approval_status`.
@@ -171,3 +189,93 @@ Then add a Supabase Edge Function that:
 5. Returns only the allowed visible price.
 
 Do not put the private price-tab URL directly in React.
+
+## 10. Connect the Google Sheet to Supabase
+
+### A. Create a Google Cloud service account
+
+1. Go to Google Cloud Console.
+2. Create or select a project.
+3. Enable `Google Sheets API`.
+4. Go to `IAM & Admin` -> `Service Accounts`.
+5. Create a service account.
+6. Create a JSON key for that service account.
+7. Open the JSON file and copy:
+   - `client_email`
+   - `private_key`
+
+Keep this JSON file private. Do not commit it to Git.
+
+### B. Share your private price sheet
+
+Open the Google Sheet that contains the `Prices` tab.
+
+Click `Share`, then share it with the service account email from `client_email`.
+
+Give it Viewer access only.
+
+### C. Get your sheet ID
+
+From a Google Sheet URL like:
+
+```txt
+https://docs.google.com/spreadsheets/d/THIS_IS_THE_SHEET_ID/edit
+```
+
+Copy only the middle ID.
+
+### D. Set Supabase Edge Function secrets
+
+In Supabase Dashboard:
+
+1. Go to `Edge Functions`.
+2. Open `Secrets` or `Environment variables`.
+3. Add these:
+
+```txt
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+GOOGLE_PRICE_SHEET_ID=your_google_sheet_id
+GOOGLE_PRICE_SHEET_RANGE=Prices!A:J
+```
+
+Supabase already provides:
+
+```txt
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+```
+
+If your project uses newer secret-key naming, add a `SUPABASE_SERVICE_ROLE_KEY` secret manually from your Project API settings. Never put this key in React `.env`.
+
+### E. Deploy the function
+
+The Supabase CLI is not installed globally in this workspace. Use `npx`:
+
+```bash
+npx supabase login
+npx supabase link --project-ref your-project-ref
+npx supabase functions deploy get-visible-prices
+```
+
+If you prefer the dashboard, create a function named `get-visible-prices` and paste the contents of:
+
+```txt
+supabase/functions/get-visible-prices/index.ts
+```
+
+### F. Test the connection
+
+1. Register/login with a non-Varanasi pincode.
+2. Make sure the profile row is `approval_status = approved`.
+3. Make sure `price_group` is `wholesale` or `reseller`.
+4. Refresh the website.
+5. Product prices should use the private Google Sheet values returned by the function.
+
+If the function fails, check Supabase function logs first. Common causes:
+
+- Google Sheets API is not enabled.
+- Sheet was not shared with the service account email.
+- `GOOGLE_PRIVATE_KEY` lost its `\n` line breaks.
+- `GOOGLE_PRICE_SHEET_ID` is the full URL instead of just the ID.
+- Header names in the sheet do not match the expected columns.

@@ -18,6 +18,7 @@ import {
 } from './utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser } from './utils/profileHelpers.js';
 import { getBuyerAccess, priceNoticeForAccess } from './utils/buyerAccess.js';
+import { applyVisiblePricesToProducts, buildVisiblePriceMap, loadVisiblePrices } from './services/priceService.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
@@ -38,6 +39,7 @@ export default function App() {
 
   useCurrency();
   const [products, setProducts] = useState([]);
+  const [visiblePriceRows, setVisiblePriceRows] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
   const routerNavigate = useNavigate();
@@ -61,6 +63,11 @@ export default function App() {
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
   const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
   const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
+  const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
+  const pricedProducts = useMemo(
+    () => applyVisiblePricesToProducts(products, visiblePriceMap),
+    [products, visiblePriceMap],
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -152,6 +159,34 @@ export default function App() {
   }, [priceAccess.canViewPrices, priceRange]);
 
   useEffect(() => {
+    let isActive = true;
+
+    async function hydrateVisiblePrices() {
+      if (!priceAccess.canViewPrices) {
+        setVisiblePriceRows([]);
+        return;
+      }
+
+      const { prices, error } = await loadVisiblePrices();
+      if (!isActive) return;
+
+      if (error) {
+        console.warn('Unable to load approved Google Sheet prices:', error.message || error);
+        setVisiblePriceRows([]);
+        return;
+      }
+
+      setVisiblePriceRows(prices);
+    }
+
+    void hydrateVisiblePrices();
+
+    return () => {
+      isActive = false;
+    };
+  }, [priceAccess.canViewPrices, priceAccess.priceGroup, user?.id]);
+
+  useEffect(() => {
     if (!dropdownOpen) return undefined;
 
     function handleClickOutside(event) {
@@ -223,27 +258,27 @@ export default function App() {
       return ['All', ...configOptions.priceRanges];
     }
     const ranges = new Set();
-    products.forEach(p => {
+    pricedProducts.forEach(p => {
       if (p.priceRange) ranges.add(p.priceRange);
     });
     return ['All', ...Array.from(ranges).sort()];
-  }, [products, configOptions.priceRanges]);
+  }, [pricedProducts, configOptions.priceRanges]);
 
   const fabrics = useMemo(() => {
     if (configOptions.fabrics.length > 0) {
       return ['All', ...configOptions.fabrics];
     }
     const set = new Set();
-    products.forEach(p => {
+    pricedProducts.forEach(p => {
       if (p.fabric) set.add(p.fabric.trim());
     });
     return ['All', ...Array.from(set).sort()];
-  }, [products, configOptions.fabrics]);
+  }, [pricedProducts, configOptions.fabrics]);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
   const visibleProducts = useMemo(() => {
-    return products.filter((product) => {
+    return pricedProducts.filter((product) => {
       const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
       const text = [
         product.title,
@@ -270,11 +305,11 @@ export default function App() {
         (product.fabric && product.fabric.trim() === fabric.trim());
       return matchesSearch && matchesCategory && matchesPrice && matchesFabric && !product.isArchived;
     });
-  }, [category, priceRange, fabric, products, searchTerm]);
+  }, [category, priceRange, fabric, pricedProducts, searchTerm]);
 
   const productsById = useMemo(
-    () => new Map(products.map((product) => [product.id, product])),
-    [products],
+    () => new Map(pricedProducts.map((product) => [product.id, product])),
+    [pricedProducts],
   );
 
   const favoriteKeySet = useMemo(
@@ -309,8 +344,8 @@ export default function App() {
   );
 
   const favoriteProducts = useMemo(
-    () => products.filter((product) => favoriteKeySet.has(product.id)),
-    [favoriteKeySet, products],
+    () => pricedProducts.filter((product) => favoriteKeySet.has(product.id)),
+    [favoriteKeySet, pricedProducts],
   );
 
   const addToCart = useCallback((product, variant, quantity = 1, colorSelection = {}) => {
@@ -554,7 +589,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={
               <Home
-                products={products}
+                products={pricedProducts}
                 status={status}
                 error={error}
                 heroSlides={heroSlides}
@@ -594,7 +629,7 @@ export default function App() {
             } />
             <Route path="/product/:id" element={
               <ProductDetailWrapper
-                products={products}
+                products={pricedProducts}
                 productsById={productsById}
                 navigate={navigate}
                 addToCart={addToCart}

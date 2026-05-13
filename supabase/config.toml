@@ -1,0 +1,4 @@
+project_id = "weave365"
+
+[functions.get-visible-prices]
+verify_jwt = true
