@@ -324,26 +324,144 @@
   /* Footer */
   .footer {
     grid-template-columns: 1fr;
-    padding: 40px var(--site-padding);
-    gap: 32px;
-    text-align: center;
+    padding: 36px var(--site-padding) 30px;
+    gap: 28px;
+    text-align: left;
+    align-items: start;
+  }
+
+  .footer > div {
+    min-width: 0;
+  }
+
+  .footer > div:first-child,
+  .footer > div:nth-child(5),
+  .footer-bottom {
+    grid-column: 1 / -1;
+  }
+
+  .footer-brand {
+    justify-content: flex-start;
+  }
+
+  .footer-logo {
+    height: 34px;
   }
 
   .footer h3 {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    font-size: 15px;
   }
 
-  .footer p, .footer a {
-    justify-content: center;
+  .footer p,
+  .footer a {
+    justify-content: flex-start;
     padding-right: 0;
+    text-align: left;
+  }
+
+  .footer p {
+    max-width: 330px;
+    margin: 14px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .footer a {
+    width: fit-content;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  .footer svg {
+    flex: 0 0 auto;
   }
 
   .footer-bottom {
-    text-align: center;
+    margin-top: 0;
+    padding-top: 18px;
+    text-align: left;
   }
 
   .footer-bottom p {
-    justify-content: center;
+    justify-content: flex-start;
+    max-width: none;
+    margin: 0;
+    font-size: 13px;
+  }
+
+  /* Newsletter */
+  .newsletter {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 30px var(--site-padding);
+    text-align: left;
+    overflow: hidden;
+  }
+
+  .newsletter > div {
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+  }
+
+  .newsletter svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .newsletter strong {
+    font-size: 20px;
+  }
+
+  .newsletter span {
+    min-width: 0;
+    font-size: 14px;
+  }
+
+  .newsletter-actions {
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .whatsapp-group-btn {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .divider-text {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+  }
+
+  .divider-text::before,
+  .divider-text::after {
+    width: auto;
+    height: 1px;
+  }
+
+  .newsletter form {
+    width: 100%;
+    height: auto;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .newsletter input {
+    height: 44px;
+    border-right: 1px solid var(--line);
+    border-radius: 4px;
+  }
+
+  .newsletter button {
+    min-height: 44px;
+    border-radius: 4px;
   }
 
   /* Product Rails */
