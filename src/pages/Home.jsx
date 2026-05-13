@@ -61,7 +61,7 @@ export function Home({
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
-    }, 5000); // 5 seconds interval
+    }, 8000); // 8 seconds interval
 
     return () => clearInterval(interval);
   }, [bannerSlides.length]);
@@ -205,9 +205,9 @@ export function Home({
         {/* Static Copy Overlay */}
         <div className="hero-copy-wrapper">
           <div className="hero-copy" key={currentSlide}>
-            <h1 style={{ color: activeHeroData?.headingColor || undefined }}>
-              {activeHeroData?.title ? (
-                (() => {
+            {activeHeroData?.title && (
+              <h1 style={{ color: activeHeroData.headingColor || undefined }}>
+                {(() => {
                   const lines = activeHeroData.title.split('|').map(l => l.trim()).filter(Boolean);
                   const totalLines = lines.length;
                   return lines.map((line, i) => {
@@ -229,35 +229,27 @@ export function Home({
                       </Fragment>
                     );
                   });
-                })()
-              ) : (
-                <>
-                  <span>Premium</span> Sarees.
-                  <br />
-                  Wholesale <strong>Prices.</strong>
-                </>
-              )}
-            </h1>
-            <p style={{ color: activeHeroData?.subheadingColor || undefined }}>
-              {activeHeroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}
-            </p>
+                })()}
+              </h1>
+            )}
 
-            <div className="hero-actions">
-              <button 
-                className="primary-button" 
-                style={{ backgroundColor: activeHeroData?.button1Color || undefined, borderColor: activeHeroData?.button1Color || undefined }}
-                onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
-              >
-                <WhatsappIcon size={18} /> {activeHeroData?.buttonText || 'Shop Collection'}
-              </button>
-              <button 
-                className="secondary-button" 
-                style={{ color: activeHeroData?.button2Color || undefined, borderColor: activeHeroData?.button2Color || undefined }}
-                onClick={openAuth}
-              >
-                Register Now
-              </button>
-            </div>
+            {activeHeroData?.subtitle && (
+              <p style={{ color: activeHeroData.subheadingColor || undefined }}>
+                {activeHeroData.subtitle}
+              </p>
+            )}
+
+            {activeHeroData?.buttonText && (
+              <div className="hero-actions">
+                <button 
+                  className="primary-button" 
+                  style={{ backgroundColor: activeHeroData?.button1Color || undefined, borderColor: activeHeroData?.button1Color || undefined }}
+                  onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
+                >
+                  <WhatsappIcon size={18} /> {activeHeroData.buttonText}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

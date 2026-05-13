@@ -2531,7 +2531,7 @@ button {
 .cart-drawer-shell {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 10001;
   background: rgba(31, 20, 13, 0);
   pointer-events: none;
   transition: background 0.3s ease;

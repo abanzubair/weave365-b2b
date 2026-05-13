@@ -707,35 +707,27 @@
     animation: fadeInOverlay 0.2s ease;
   }
 
-  /* --- Filter Bar: horizontal scroll with pill-style triggers --- */
+  /* --- Filter Bar: evenly spaced across entire mobile screen (100vw) --- */
   .catalog-filters-container {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
     padding-bottom: 4px;
-    margin: 0 calc(var(--site-padding) * -1);
-    padding-left: var(--site-padding);
-    padding-right: var(--site-padding);
-  }
-
-  .catalog-filters-container::-webkit-scrollbar {
-    display: none;
   }
 
   .filter-dropdown {
     min-width: 0;
-    flex: 0 0 auto;
+    width: 100%;
   }
 
   .filter-dropdown-trigger {
+    width: 100%;
     min-height: 36px;
-    padding: 4px 10px;
+    padding: 4px 6px;
     border-radius: 6px;
-    gap: 6px;
-    white-space: nowrap;
+    gap: 4px;
+    justify-content: space-between;
     touch-action: manipulation;
     border-color: var(--surface-accent);
     background: var(--surface-soft);
@@ -744,16 +736,23 @@
   .filter-label-wrap {
     flex-direction: row;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .filter-label-wrap label {
-    font-size: 10px;
+    font-size: 9px;
     margin-bottom: 0;
+    flex: 0 0 auto;
   }
 
   .filter-label-wrap span {
-    font-size: 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   .filter-dropdown-trigger svg {
