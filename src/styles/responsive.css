@@ -94,32 +94,55 @@
 
   /* Hero Section */
   .hero {
-    height: auto;
-    min-height: 75svh; /* Fill tall screens like 412x915 */
+    height: clamp(560px, 68svh, 640px);
+    min-height: 0;
     max-height: none;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    isolation: isolate;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 250, 244, 0.52) 50%, rgba(255, 250, 244, 0.93) 100%),
+      linear-gradient(90deg, rgba(255, 250, 244, 0.78) 0%, rgba(255, 250, 244, 0.28) 54%, rgba(255, 250, 244, 0.1) 100%);
+  }
+
+  .hero-slider-track {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  .hero-slide {
+    height: 100%;
   }
 
   .hero-copy {
-    padding: 40px var(--site-padding) 60px;
+    min-height: 100%;
+    padding: 34px var(--site-padding) 44px;
     text-align: center;
     align-items: center;
-    flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
   }
 
   .hero h1 {
-    font-size: clamp(32px, 8vw, 48px);
-    margin-bottom: 16px;
+    font-size: clamp(34px, 9.2vw, 44px);
+    line-height: 1.04;
+    margin-bottom: 14px;
   }
 
   .hero p {
-    font-size: 16px;
-    max-width: 100%;
-    margin-bottom: 24px;
+    max-width: 340px;
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 20px;
   }
 
   .hero-actions {
@@ -131,38 +154,50 @@
 
   .hero-actions button {
     width: 100%;
-    max-width: 280px;
+    max-width: 320px;
   }
 
   .hero-visual {
-    position: relative;
-    height: 400px;
-    min-height: auto;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .hero-visual img {
+    object-position: center;
   }
 
   /* Feature Strip */
   .feature-strip {
     width: calc(100% - 40px);
-    margin-top: -30px;
+    margin-top: -22px;
     grid-template-columns: repeat(2, 1fr);
-    padding: 20px;
-    gap: 20px;
+    padding: 14px;
+    gap: 12px;
   }
 
   .feature-strip div {
     border-right: 0;
     padding: 0;
-    text-align: center;
-    flex-direction: column;
-    gap: 8px;
+    text-align: left;
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .feature-strip svg {
+    width: 30px;
+    height: 30px;
   }
 
   .feature-strip strong {
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1.25;
   }
 
   .feature-strip span {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.35;
   }
 
   /* Deal Section */
@@ -276,7 +311,7 @@
 
   /* Section Headings */
   .section {
-    padding: 40px 0;
+    padding: 44px 0;
     width: calc(100% - 40px);
   }
 
@@ -313,19 +348,38 @@
 
   /* Product Rails */
   .scrollable-row > * {
-    flex: 0 0 180px !important; /* Slightly smaller cards to fit more on 412px width */
+    flex: 0 0 100% !important;
+    max-width: 100%;
   }
 
   .scroll-arrow {
-    display: none !important;
+    top: 42%;
+    width: 40px;
+    height: 40px;
+    display: flex !important;
+    border-color: rgba(183, 134, 70, 0.32);
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--brown-900);
+    box-shadow: 0 8px 20px rgba(31, 20, 13, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .scroll-arrow.left {
+    left: 8px;
+  }
+
+  .scroll-arrow.right {
+    right: 8px;
   }
 
   .scrollable-row {
-    padding-bottom: 20px !important;
-    gap: 12px !important;
-    padding-left: var(--site-padding) !important;
-    margin-left: calc(-1 * var(--site-padding)) !important;
-    width: calc(100% + 2 * var(--site-padding)) !important;
+    --rail-gap: 16px;
+    padding: 18px 0 24px !important;
+    gap: var(--rail-gap) !important;
+    margin: -18px 0 0 !important;
+    width: 100% !important;
+    scroll-padding-inline: 0;
   }
 }
 
@@ -366,11 +420,11 @@
 /* Specific optimization for tall screens (like 412x915) */
 @media screen and (max-width: 820px) and (min-height: 800px) {
   .hero {
-    min-height: 85svh;
+    height: clamp(580px, 66svh, 640px);
   }
   
   .section {
-    padding: 60px 0;
+    padding: 48px 0;
   }
 
   .product-view {
