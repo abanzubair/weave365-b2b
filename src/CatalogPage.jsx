@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
 
 export function Catalog({
@@ -15,6 +15,8 @@ export function Catalog({
   priceRanges,
   priceRange,
   setPriceRange,
+  search,
+  setSearch,
   navigate,
   addToCart,
   toggleFavorite,
@@ -27,11 +29,56 @@ export function Catalog({
     setOpenDropdown(openDropdown === name ? null : name);
   };
 
+  const hasActiveFilters =
+    category !== 'All' ||
+    fabric !== 'All' ||
+    priceRange !== 'All' ||
+    (search && search.trim() !== '');
+
+  const resetFilters = () => {
+    setCategory('All');
+    setFabric('All');
+    setPriceRange('All');
+    if (setSearch) setSearch('');
+    setVisibleCount(24);
+  };
+
   return (
     <section className="section catalog-page">
+      {openDropdown && (
+        <div className="filter-backdrop-overlay" onClick={() => setOpenDropdown(null)} />
+      )}
+
       <div className="catalog-toolbar">
-        <SectionTitle title="Wholesale Catalogue" align="left" />
-        
+        <div className="catalog-header-row">
+          <SectionTitle title="Wholesale Catalogue" align="left" />
+          {hasActiveFilters && (
+            <button className="reset-filters-btn" onClick={resetFilters}>
+              <RotateCcw size={14} /> Reset Filters
+            </button>
+          )}
+        </div>
+
+        {/* Premium Mobile Search Bar */}
+        {setSearch && (
+          <div className="catalog-search-wrapper">
+            <label className="catalog-search-input">
+              <Search size={16} />
+              <input
+                type="text"
+                value={search || ''}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search designs, fabrics, codes..."
+              />
+              {search && (
+                <button className="clear-search-btn" onClick={() => setSearch('')}>
+                  <X size={14} />
+                </button>
+              )}
+            </label>
+          </div>
+        )}
+
         <div className="catalog-filters-container">
           {/* Category Dropdown */}
           <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''}`}>

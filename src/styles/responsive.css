@@ -585,6 +585,401 @@
     width: 100% !important;
     scroll-padding-inline: 0;
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     CATALOG PAGE — Mobile Optimization (UI/UX Pro Max)
+     Touch targets ≥ 44px · 2-col grid · Scrollable filter bar
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* --- Catalog Page Container --- */
+  .catalog-page {
+    padding-top: 20px;
+    min-height: auto;
+  }
+
+  /* --- Toolbar: stack title above filters --- */
+  .catalog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .catalog-toolbar .section-title {
+    margin-bottom: 0;
+  }
+
+  .catalog-toolbar .section-title h2 {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+
+  /* --- Header Row & Reset Button --- */
+  .catalog-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .reset-filters-btn {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    color: var(--gold-dark);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    touch-action: manipulation;
+  }
+
+  /* --- Premium Search Bar --- */
+  .catalog-search-wrapper {
+    display: block;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .catalog-search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 12px;
+    background: var(--white);
+    border: 1.5px solid var(--surface-accent);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(128, 93, 49, 0.06);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .catalog-search-input:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 6px 20px rgba(128, 93, 49, 0.12);
+  }
+
+  .catalog-search-input svg {
+    color: var(--gold-mid);
+    flex: 0 0 auto;
+  }
+
+  .catalog-search-input input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .catalog-search-input input::placeholder {
+    color: var(--gold-soft);
+  }
+
+  .clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-soft);
+    color: var(--gold-dark);
+    touch-action: manipulation;
+  }
+
+  /* --- Filter Backdrop Overlay --- */
+  .filter-backdrop-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(31, 20, 13, 0.32);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: fadeInOverlay 0.2s ease;
+  }
+
+  /* --- Filter Bar: horizontal scroll with pill-style triggers --- */
+  .catalog-filters-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    margin: 0 calc(var(--site-padding) * -1);
+    padding-left: var(--site-padding);
+    padding-right: var(--site-padding);
+  }
+
+  .catalog-filters-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-dropdown {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .filter-dropdown-trigger {
+    min-height: 36px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    gap: 6px;
+    white-space: nowrap;
+    touch-action: manipulation;
+    border-color: var(--surface-accent);
+    background: var(--surface-soft);
+  }
+
+  .filter-label-wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .filter-label-wrap label {
+    font-size: 10px;
+    margin-bottom: 0;
+  }
+
+  .filter-label-wrap span {
+    font-size: 12px;
+  }
+
+  .filter-dropdown-trigger svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+  }
+
+  /* Dropdown menu → bottom-sheet style on mobile */
+  .filter-dropdown.open .filter-dropdown-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 40px rgba(31, 20, 13, 0.18);
+    padding: 12px 16px 28px;
+    z-index: 1001;
+    animation: sheetSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .filter-dropdown-menu button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    touch-action: manipulation;
+  }
+
+  /* Backdrop overlay for open filter sheet */
+  .filter-dropdown.open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 20, 13, 0.32);
+    z-index: 1000;
+    animation: fadeInOverlay 0.2s ease;
+  }
+
+  @keyframes sheetSlideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* --- Product Grid: 2 columns, tight gap --- */
+  .catalog-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  /* --- Product Card: compact mobile layout --- */
+  .product-card {
+    border-radius: 10px;
+  }
+
+  .product-card:hover {
+    transform: none; /* Disable hover lift on touch devices */
+    box-shadow: none;
+  }
+
+  .product-card:active {
+    transform: scale(0.985);
+    transition: transform 0.1s ease;
+  }
+
+  .image-button {
+    border-radius: 10px 10px 0 0;
+  }
+
+  /* Compact card copy for 2-col */
+  .product-card-copy {
+    padding: 10px 10px 12px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    min-height: 34px;
+    line-height: 1.25;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .card-product-code {
+    font-size: 10px;
+    margin-top: 2px;
+    margin-bottom: 0;
+  }
+
+  /* Info grid: stack on narrow cards */
+  .card-info-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .info-left {
+    border-right: 0;
+    padding-right: 0;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .info-left label {
+    font-size: 10px;
+  }
+
+  .info-left strong {
+    font-size: 15px;
+  }
+
+  .info-left strong span {
+    font-size: 11px;
+  }
+
+  .info-left small {
+    font-size: 11px;
+    width: 100%;
+  }
+
+  .info-right {
+    padding-left: 0;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .info-item {
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .info-item svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* --- Card Action Buttons: full-width stacked, 44px+ touch targets --- */
+  .card-actions-new {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .order-now-btn,
+  .add-to-bag-btn {
+    min-height: 38px;
+    height: auto;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+    gap: 4px;
+    border-radius: 7px;
+    touch-action: manipulation;
+  }
+
+  .order-now-btn svg,
+  .add-to-bag-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Save/bookmark button — larger touch target */
+  .save-btn-circle {
+    width: 36px;
+    height: 36px;
+    top: 8px;
+    right: 8px;
+  }
+
+  /* Status badges — slightly smaller for 2-col */
+  .card-status-badges {
+    top: 8px;
+    left: 8px;
+    gap: 4px;
+  }
+
+  .status-badge {
+    padding: 2px 6px;
+    font-size: 9px;
+  }
+
+  /* --- Load More Button: full-width, prominent --- */
+  .load-more-row {
+    padding: 28px 0;
+    margin-top: 12px;
+  }
+
+  .load-more-row .secondary-button {
+    width: 100%;
+    min-height: 48px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  /* --- Empty State --- */
+  .catalog-page .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    font-size: 14px;
+  }
+
+  /* --- Global touch optimization for catalog --- */
+  .catalog-page button,
+  .catalog-page a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* Very Narrow Screens (< 380px) */

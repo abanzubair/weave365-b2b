@@ -549,6 +549,8 @@ export default function App() {
                 priceRanges={priceRanges}
                 priceRange={priceRange}
                 setPriceRange={setPriceRange}
+                search={search}
+                setSearch={setSearch}
                 navigate={navigate}
                 addToCart={addToCart}
                 toggleFavorite={toggleFavorite}

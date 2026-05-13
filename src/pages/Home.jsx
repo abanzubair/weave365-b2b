@@ -204,7 +204,7 @@ export function Home({
       <section className="hero">
         {/* Static Copy Overlay */}
         <div className="hero-copy-wrapper">
-          <div className="hero-copy">
+          <div className="hero-copy" key={currentSlide}>
             <h1 style={{ color: activeHeroData?.headingColor || undefined }}>
               {activeHeroData?.title ? (
                 (() => {
