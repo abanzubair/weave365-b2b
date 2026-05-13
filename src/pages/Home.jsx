@@ -74,7 +74,7 @@ export function Home({
     return () => clearInterval(interval);
   }, []);
 
-  const fixedHeroData = bannerSlides[0] || null;
+  const activeHeroData = bannerSlides[currentSlide] || null;
 
   const bestsellers = useMemo(() => 
     products
@@ -155,7 +155,7 @@ export function Home({
   const categoryImages = useMemo(() => {
     const map = {};
     heroSlides.forEach(slide => {
-      if (slide.type !== 'banner') {
+      if (slide.type !== 'banner' && slide.type !== 'banner mobile') {
         map[slide.type] = slide.image;
       }
     });
@@ -187,10 +187,10 @@ export function Home({
         {/* Static Copy Overlay */}
         <div className="hero-copy-wrapper">
           <div className="hero-copy">
-            <h1>
-              {fixedHeroData?.title ? (
+            <h1 style={{ color: activeHeroData?.headingColor || undefined }}>
+              {activeHeroData?.title ? (
                 (() => {
-                  const lines = fixedHeroData.title.split('|').map(l => l.trim()).filter(Boolean);
+                  const lines = activeHeroData.title.split('|').map(l => l.trim()).filter(Boolean);
                   const totalLines = lines.length;
                   return lines.map((line, i) => {
                     const words = line.split(/\s+/);
@@ -202,7 +202,7 @@ export function Home({
                           const isLast = i === totalLines - 1 && j === totalWords - 1;
                           return (
                             <Fragment key={j}>
-                              {isFirst || isLast ? <span>{word}</span> : word}
+                              {isFirst || isLast ? <span style={{ color: 'inherit' }}>{word}</span> : word}
                               {j < totalWords - 1 ? ' ' : ''}
                             </Fragment>
                           );
@@ -220,13 +220,23 @@ export function Home({
                 </>
               )}
             </h1>
-            <p>{fixedHeroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}</p>
+            <p style={{ color: activeHeroData?.subheadingColor || undefined }}>
+              {activeHeroData?.subtitle || 'Your trusted partner for quality sarees in bulk at the best prices.'}
+            </p>
 
             <div className="hero-actions">
-              <button className="primary-button" onClick={() => fixedHeroData?.buttonLink ? (fixedHeroData.buttonLink.startsWith('http') ? window.open(fixedHeroData.buttonLink, '_blank') : navigate(fixedHeroData.buttonLink)) : navigate('catalog')}>
-                <WhatsappIcon size={18} /> {fixedHeroData?.buttonText || 'Shop Collection'}
+              <button 
+                className="primary-button" 
+                style={{ backgroundColor: activeHeroData?.button1Color || undefined, borderColor: activeHeroData?.button1Color || undefined }}
+                onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
+              >
+                <WhatsappIcon size={18} /> {activeHeroData?.buttonText || 'Shop Collection'}
               </button>
-              <button className="secondary-button" onClick={openAuth}>
+              <button 
+                className="secondary-button" 
+                style={{ color: activeHeroData?.button2Color || undefined, borderColor: activeHeroData?.button2Color || undefined }}
+                onClick={openAuth}
+              >
                 Register Now
               </button>
             </div>

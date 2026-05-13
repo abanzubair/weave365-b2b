@@ -456,6 +456,10 @@ export async function fetchHeroData() {
         buttonText: row['Button Text'] || '',
         buttonLink: row['Button Link'] || '',
         type: (row['Type'] || 'banner').toLowerCase(),
+        headingColor: row['Heading Color'] || '',
+        subheadingColor: row['Subheading Color'] || '',
+        button1Color: row['Button 1 Color'] || '',
+        button2Color: row['Button 2 Color'] || '',
       };
     }).filter(hero => hero.image || hero.video);
   } catch (error) {

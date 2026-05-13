@@ -130,9 +130,9 @@
     inset: 0;
     z-index: 2;
     pointer-events: none;
-    background:
+    /* background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 250, 244, 0.52) 50%, rgba(255, 250, 244, 0.93) 100%),
-      linear-gradient(90deg, rgba(255, 250, 244, 0.78) 0%, rgba(255, 250, 244, 0.28) 54%, rgba(255, 250, 244, 0.1) 100%);
+      linear-gradient(90deg, rgba(255, 250, 244, 0.78) 0%, rgba(255, 250, 244, 0.28) 54%, rgba(255, 250, 244, 0.1) 100%); */
   }
 
   .hero-slider-track {
