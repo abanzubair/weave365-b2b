@@ -53,6 +53,7 @@ export function ProductDetail({
   addCartSelections,
   toggleFavorite,
   isFavorite,
+  favoriteKeys,
   pincode,
   setPincode,
   codStatus,
@@ -513,7 +514,7 @@ export function ProductDetail({
                   navigate={navigate}
                   addToCart={addToCart}
                   toggleFavorite={toggleFavorite}
-                  isFavorite={false}
+                  isFavorite={favoriteKeys.has(item.id)}
                 />
               ))}
             </div>
