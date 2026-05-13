@@ -483,14 +483,15 @@
     grid-template-columns: 1fr;
     gap: 22px;
     padding: 30px var(--site-padding);
-    text-align: left;
+    text-align: center;
     overflow: hidden;
   }
 
   .newsletter > div {
     width: 100%;
     min-width: 0;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
   }
 
   .newsletter svg {
@@ -519,6 +520,11 @@
     min-width: 0;
     white-space: normal;
     text-align: center;
+  }
+
+  .whatsapp-group-btn svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .divider-text {
