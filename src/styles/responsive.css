@@ -55,11 +55,25 @@
   }
 
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--white);
     padding: 10px var(--site-padding);
     grid-template-columns: auto 1fr auto;
     gap: 8px;
     height: 64px;
     align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+
+  .site-header.scrolled {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(31, 20, 13, 0.08);
+    height: 60px; /* Slightly more compact when scrolled */
   }
 
   .brand-logo {
@@ -279,34 +293,80 @@
   /* Why Choose Us */
   .why-band {
     grid-template-columns: 1fr;
-    padding: 40px var(--site-padding);
-    text-align: center;
-    gap: 32px;
+    gap: 24px;
+    margin-top: -22px;
+    padding: 34px var(--site-padding) 38px;
+    text-align: left;
+    background:
+      linear-gradient(180deg, rgba(255, 250, 244, 0.98), rgba(248, 238, 230, 0.98)),
+      var(--surface);
   }
 
-  .why-band div:first-child {
+  .why-band > div:first-child {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .why-band p {
+    max-width: 360px;
     font-size: 14px;
-    margin-bottom: 20px;
+    line-height: 1.65;
+    margin: 14px 0 18px;
+  }
+
+  .why-band .primary-button {
+    width: min(100%, 180px);
   }
 
   .stats-panel {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     width: 100%;
     margin-left: 0;
-    gap: 16px;
+    gap: 10px;
   }
 
   .stats-panel div {
-    padding: 16px;
-    background: var(--white);
+    min-height: 76px;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "icon value"
+      "icon label";
+    justify-content: start;
+    align-items: center;
+    gap: 3px 14px;
+    aspect-ratio: auto;
+    padding: 14px;
+    border: 1px solid rgba(183, 134, 70, 0.16);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(128, 93, 49, 0.05);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 10px 24px rgba(128, 93, 49, 0.07);
+  }
+
+  .stats-panel svg {
+    grid-area: icon;
+    width: 46px;
+    height: 46px;
+    margin: 0;
+    padding: 10px;
+    border-radius: 50%;
+    background: var(--surface-soft);
+  }
+
+  .stats-panel strong {
+    grid-area: value;
+    font-size: 28px;
+    align-self: end;
+  }
+
+  .stats-panel span {
+    grid-area: label;
+    align-self: start;
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: left;
   }
 
   /* Section Headings */
