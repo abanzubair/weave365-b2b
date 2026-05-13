@@ -550,10 +550,10 @@
     border-radius: 4px;
   }
 
-  /* Product Rails */
+  /* Product Rails: 2 cards per screen on mobile */
   .scrollable-row > * {
-    flex: 0 0 100% !important;
-    max-width: 100%;
+    flex: 0 0 calc((100% - 8px) / 2) !important;
+    max-width: calc((100% - 8px) / 2);
   }
 
   .scroll-arrow {
@@ -578,7 +578,7 @@
   }
 
   .scrollable-row {
-    --rail-gap: 16px;
+    --rail-gap: 8px;
     padding: 18px 0 24px !important;
     gap: var(--rail-gap) !important;
     margin: -18px 0 0 !important;
