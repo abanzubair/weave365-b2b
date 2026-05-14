@@ -308,6 +308,21 @@ export function ProductDetail({
         <div className="product-hero-grid">
           <div className="product-media">
             <div className="vertical-thumbs" style={galleryStyle}>
+              {product.images.map((image, index) => (
+                <button
+                  key={image}
+                  className={selectedImage === image ? 'active' : ''}
+                  onClick={() => setSelectedImage(image)}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.title} view ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.target.style.opacity = '0'; }}
+                  />
+                </button>
+              ))}
               {product.video && (
                 <button
                   className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
@@ -327,21 +342,6 @@ export function ProductDetail({
                   </div>
                 </button>
               )}
-              {product.images.map((image, index) => (
-                <button
-                  key={image}
-                  className={selectedImage === image ? 'active' : ''}
-                  onClick={() => setSelectedImage(image)}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.title} view ${index + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => { e.target.style.opacity = '0'; }}
-                  />
-                </button>
-              ))}
             </div>
 
             <div className="catalog-main-image" ref={mainImageRef}>
