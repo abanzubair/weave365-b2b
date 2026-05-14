@@ -51,6 +51,9 @@ export function Footer({ navigate }) {
       </div>
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
+        <p className="developer-credit">
+          Designed and Developed by <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer">Aban Zubair</a>
+        </p>
       </div>
     </footer>
   );

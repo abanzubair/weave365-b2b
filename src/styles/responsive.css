@@ -468,6 +468,10 @@
   .footer-bottom {
     margin-top: 0;
     padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     text-align: left;
   }
 

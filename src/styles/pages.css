@@ -2909,7 +2909,7 @@ button {
   margin: 4px 0 8px;
 }
 
-.auth-radio-group > strong {
+.auth-radio-group>strong {
   font-size: 13px;
   color: var(--muted);
   font-weight: 800;

@@ -542,7 +542,7 @@ export function ProductDetail({
           </section>
         </div> */}
 
-        <section className="section you-may-like home-product-section">
+        <section className="you-may-like home-product-section">
           <div className="section-heading-row">
             <SectionTitle title="You May Also Like" align="left" />
           </div>

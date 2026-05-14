@@ -301,14 +301,36 @@
   border-top: 1px solid var(--line);
   padding-top: 16px;
   margin-top: 10px;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .footer-bottom p {
   justify-content: flex-start;
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.8;
   margin: 0;
+}
+
+.developer-credit {
+  font-weight: 500;
+}
+
+.developer-credit a {
+  display: inline !important;
+  color: var(--gold-dark) !important;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.developer-credit a:hover {
+  color: var(--gold) !important;
+  border-bottom-color: var(--gold);
 }
 
 
