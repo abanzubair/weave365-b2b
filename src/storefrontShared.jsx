@@ -1,4 +1,5 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   Award,
@@ -167,6 +168,7 @@ export const ProductCard = memo(function ProductCard({
   const [enquiryState, setEnquiryState] = useState('idle');
   const [popupOpen, setPopupOpen] = useState(false);
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
+  const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
 
   async function handleEnquiryClick() {
     if (enquiryState === 'sending') return;
@@ -270,7 +272,7 @@ export const ProductCard = memo(function ProductCard({
 
 
 
-        <div className="card-actions-new">
+        <div className={`card-actions-new ${canResellerShare ? 'has-reseller-share' : ''}`}>
           {priceAccess?.isLoggedIn === false ? (
             <button 
               className="order-now-btn guest-login-btn" 
@@ -294,6 +296,14 @@ export const ProductCard = memo(function ProductCard({
               <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
                 <ShoppingBag size={16} /> ADD TO BAG
               </button>
+              <ResellerWhatsappShare
+                product={product}
+                variant={selectedVariant}
+                quantity={colorCount}
+                priceAccess={priceAccess}
+                triggerClassName="order-now-btn reseller-share-trigger"
+                triggerLabel="WHATSAPP CUSTOMER"
+              />
             </>
           )}
         </div>
@@ -375,6 +385,262 @@ export function customerPrice(prices, priceAccess) {
   return priceForBuyer(prices, priceAccess);
 }
 
+function parsePositiveNumber(value) {
+  const parsed = Number(String(value || '').replace(/[^\d.]/g, ''));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+function calculateCustomerPrice(basePrice, mode, value) {
+  const amount = parsePositiveNumber(value);
+
+  if (mode === 'percentage') {
+    return Math.round(basePrice + (basePrice * amount / 100));
+  }
+
+  if (mode === 'final') {
+    return Math.max(basePrice, Math.round(amount || basePrice));
+  }
+
+  return Math.round(basePrice + amount);
+}
+
+function buildCustomerProductMessage({ product, variant, quantity, selectedColorName, customerPriceValue }) {
+  const length = product.length || product.sareeLength || product.raw?.Length || product.raw?.['Saree Length'] || '6.3m (incl. 85cm blouse)';
+  const lines = [
+    product?.title || 'Product details',
+    `Code: ${variant?.code || 'On request'}`,
+    `Price: ${formatMoney(customerPriceValue)} / piece`,
+    '',
+    '*Specification:*',
+    quantity > 1 ? `Colors: ${quantity}` : '',
+    product.fabric ? `Fabric: ${product.fabric}` : '',
+    product.work ? `Work: ${product.work}` : '',
+    product.pattern ? `Pattern: ${product.pattern}` : '',
+    product.weave ? `Weave: ${product.weave}` : '',
+    '',
+    product.purity ? `Purity: ${product.purity}` : '',
+    product.type ? `Type: ${product.type}` : '',
+    length ? `Length: ${length}` : '',
+    '',
+    '*Disclaimer:* Slight variations in color, fabric, and weaving are possible. Making a payment indicates your agreement to this. *Cover image is for reference only.*',
+    '',
+    'Reply here to order or ask any question.',
+  ].filter(Boolean);
+
+  return lines.join('\n');
+}
+
+function buildWhatsappShareUrl(message) {
+  return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+}
+
+function uniqueProductShareImages(product, variant, fallbackImage) {
+  const images = [
+    ...(product?.images || []),
+    ...(product?.colorOptions || []).map((option) => option.image),
+    ...(product?.variants || []).map((item) => item.image),
+    fallbackImage,
+    variant?.image,
+  ].filter(Boolean);
+
+  return Array.from(new Set(images)).filter((image) => image !== fallbackProductImage);
+}
+
+function shareImageProxyUrl(imageUrl) {
+  if (!imageUrl || imageUrl.startsWith('data:')) return imageUrl;
+  return `https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}`;
+}
+
+async function fileFromImageUrl(imageUrl, filename) {
+  const response = await fetch(shareImageProxyUrl(imageUrl));
+  if (!response.ok) throw new Error('Unable to prepare product image');
+
+  const blob = await response.blob();
+  const type = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+  const extension = type.includes('png') ? 'png' : type.includes('webp') ? 'webp' : 'jpg';
+
+  return new File([blob], `${filename}.${extension}`, { type });
+}
+
+function safeFileName(value) {
+  return String(value || 'product-image').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'product-image';
+}
+
+export function ResellerWhatsappShare({
+  product,
+  variant,
+  quantity = 1,
+  selectedColorName = '',
+  imageUrl = '',
+  priceAccess,
+  triggerClassName = 'secondary-action-btn',
+  triggerLabel = 'Customer WhatsApp',
+}) {
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState('percentage');
+  const [markupValue, setMarkupValue] = useState('20');
+  const [copyState, setCopyState] = useState('idle');
+  const [imageShareState, setImageShareState] = useState('idle');
+
+  const isApprovedReseller = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
+  const basePrice = customerPrice(variant?.prices, priceAccess);
+  const safeQuantity = Math.max(1, Number(quantity) || 1);
+  const shareImages = useMemo(
+    () => uniqueProductShareImages(product, variant, imageUrl),
+    [imageUrl, product, variant],
+  );
+  const customerPriceValue = useMemo(
+    () => calculateCustomerPrice(basePrice || 0, mode, markupValue),
+    [basePrice, mode, markupValue],
+  );
+  const message = useMemo(
+    () => buildCustomerProductMessage({
+      product,
+      variant,
+      quantity: safeQuantity,
+      selectedColorName,
+      customerPriceValue,
+    }),
+    [customerPriceValue, product, safeQuantity, selectedColorName, variant],
+  );
+  const whatsappUrl = useMemo(() => buildWhatsappShareUrl(message), [message]);
+
+  if (!isApprovedReseller || !basePrice || !variant) return null;
+
+  async function copyMessage() {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopyState('copied');
+      setTimeout(() => setCopyState('idle'), 1800);
+    } catch (error) {
+      setCopyState('failed');
+      setTimeout(() => setCopyState('idle'), 1800);
+    }
+  }
+
+  async function shareImageAndMessage() {
+    setImageShareState('preparing');
+
+    try {
+      const imageFiles = await Promise.all(
+        shareImages.map((shareImage, index) => (
+          fileFromImageUrl(shareImage, safeFileName(`${product.title}-${variant.code}-${index + 1}`))
+        )),
+      );
+      const sharePayload = {
+        title: product.title,
+        text: message,
+        files: imageFiles,
+      };
+
+      if (imageFiles.length && navigator.canShare?.({ files: imageFiles }) && navigator.share) {
+        await navigator.share(sharePayload);
+        setImageShareState('shared');
+        setTimeout(() => setImageShareState('idle'), 1800);
+        return;
+      }
+
+      setImageShareState('unsupported');
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      setTimeout(() => setImageShareState('idle'), 2600);
+    } catch (error) {
+      console.error('Unable to share product image:', error);
+      setImageShareState('failed');
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      setTimeout(() => setImageShareState('idle'), 2600);
+    }
+  }
+
+  const modal = open ? (
+    <div className="modal-backdrop" onClick={() => setOpen(false)}>
+      <div className="reseller-share-modal" onClick={(event) => event.stopPropagation()}>
+        <button className="icon-button modal-close" onClick={() => setOpen(false)} aria-label="Close reseller share">
+          <X size={18} />
+        </button>
+
+        <div className="reseller-share-head">
+          <span>Reseller WhatsApp Share</span>
+          <h3>{product.title}</h3>
+          <p>Creates a customer message without website links or supplier details.</p>
+        </div>
+
+        <div className="reseller-share-summary">
+          <div>
+            <span>Your price</span>
+            <strong>{formatMoney(basePrice)} / pc</strong>
+          </div>
+          <div>
+            <span>Customer price</span>
+            <strong>{formatMoney(customerPriceValue)} / pc</strong>
+          </div>
+          <div>
+            <span>Set total</span>
+            <strong>{formatMoney(customerPriceValue * safeQuantity)}</strong>
+          </div>
+        </div>
+
+        <div className="reseller-share-controls">
+          <label>
+            Markup type
+            <div className="reseller-markup-tabs">
+              <button type="button" className={mode === 'percentage' ? 'active' : ''} onClick={() => setMode('percentage')}>%</button>
+              <button type="button" className={mode === 'amount' ? 'active' : ''} onClick={() => setMode('amount')}>+ Amount</button>
+              <button type="button" className={mode === 'final' ? 'active' : ''} onClick={() => setMode('final')}>Final</button>
+            </div>
+          </label>
+
+          <label>
+            {mode === 'percentage' ? 'Markup percentage' : mode === 'final' ? 'Final customer price' : 'Markup amount'}
+            <input
+              type="number"
+              min="0"
+              step={mode === 'percentage' ? '1' : '10'}
+              value={markupValue}
+              onChange={(event) => setMarkupValue(event.target.value)}
+            />
+          </label>
+        </div>
+
+        <label className="reseller-message-preview">
+          WhatsApp message preview
+          <textarea readOnly rows={10} value={message} />
+        </label>
+
+        <div className="reseller-share-actions">
+          <button type="button" className="secondary-button" onClick={copyMessage}>
+            {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Message'}
+          </button>
+          <button type="button" className="primary-button" onClick={shareImageAndMessage} disabled={imageShareState === 'preparing'}>
+            {imageShareState === 'preparing'
+              ? 'Preparing Image...'
+              : imageShareState === 'shared'
+                ? 'Shared'
+                : imageShareState === 'unsupported'
+                  ? 'Text Opened'
+                  : imageShareState === 'failed'
+                    ? 'Text Opened'
+                    : 'Share Image + Text'}
+          </button>
+        </div>
+        {(imageShareState === 'unsupported' || imageShareState === 'failed') && (
+          <p className="reseller-share-footnote">
+            This browser could not attach the image automatically, so WhatsApp opened with the message text.
+          </p>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      <button type="button" className={triggerClassName} onClick={() => setOpen(true)}>
+        <Share2 size={18} /> {triggerLabel}
+      </button>
+      {modal && typeof document !== 'undefined' ? createPortal(modal, document.body) : modal}
+    </>
+  );
+}
+
 export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const lines = [
@@ -419,7 +685,7 @@ export function normalizePincodeInput(value) {
 export function EnquiryPopup({ open, onClose, whatsappUrl }) {
   if (!open) return null;
 
-  return (
+  const popup = (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="enquiry-popup-modal" onClick={(e) => e.stopPropagation()}>
         <button className="icon-button modal-close" onClick={onClose} aria-label="Close popup">
@@ -441,4 +707,6 @@ export function EnquiryPopup({ open, onClose, whatsappUrl }) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(popup, document.body) : popup;
 }

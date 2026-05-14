@@ -29,6 +29,7 @@ import {
   Newsletter,
   ProductTrustStrip,
   ProductCard,
+  ResellerWhatsappShare,
   SectionTitle,
   normalizePincodeInput,
   useCurrency,
@@ -541,9 +542,22 @@ export function ProductDetail({
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-                <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductImages)}>
-                  <Share2 size={18} /> Share
-                </button>
+                {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices ? (
+                  <ResellerWhatsappShare
+                    product={product}
+                    variant={variant}
+                    quantity={totalColors}
+                    selectedColorName={selectedColorName}
+                    imageUrl={selectedImage}
+                    priceAccess={priceAccess}
+                    triggerClassName="secondary-action-btn reseller-share-detail-btn"
+                    triggerLabel="Customer Share"
+                  />
+                ) : (
+                  <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductImages)}>
+                    <Share2 size={18} /> Share
+                  </button>
+                )}
               </div>
             </div>
             <p className="buyer-note">

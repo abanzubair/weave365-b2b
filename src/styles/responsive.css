@@ -1277,6 +1277,24 @@
     min-height: 48px !important;
     font-size: 13px !important;
   }
+
+  .reseller-share-modal {
+    padding: 22px 16px !important;
+  }
+
+  .reseller-share-summary,
+  .reseller-share-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  .reseller-share-actions {
+    flex-direction: column;
+  }
+
+  .reseller-share-actions .primary-button,
+  .reseller-share-actions .secondary-button {
+    width: 100%;
+  }
   
   .product-trust-strip {
     grid-template-columns: 1fr !important;
