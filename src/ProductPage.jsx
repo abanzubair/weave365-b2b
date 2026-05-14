@@ -461,7 +461,7 @@ export function ProductDetail({
                 <div className="variation-card-head">
                   <h2 id="product-variation-heading">Variations</h2>
                   <button type="button" onClick={() => setVariationDrawerOpen(true)}>
-                    Select now
+                    Select Color
                   </button>
                 </div>
                 <p className="selected-color-label">
