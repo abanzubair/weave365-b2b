@@ -292,7 +292,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             checked={profile.buyerType === item.value}
                             onChange={(event) => updateProfile('buyerType', event.target.value)}
                           />
-                          <span><strong>{item.label}</strong>: {item.description}</span>
+                          <span><strong>{item.label}</strong>, {item.description}</span>
                         </label>
                       ))}
                     </div>
@@ -307,7 +307,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             checked={profile.buyingBehavior === item.value}
                             onChange={(event) => updateProfile('buyingBehavior', event.target.value)}
                           />
-                          <span><strong>{item.label}</strong>: {item.description}</span>
+                          <span><strong>{item.label}</strong>, {item.description}</span>
                         </label>
                       ))}
                     </div>
