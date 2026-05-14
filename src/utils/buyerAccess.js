@@ -36,7 +36,7 @@ export function getBuyerAccess(user, buyerProfile) {
       isLoggedIn: false,
       canViewPrices: false,
       reason: 'logged_out',
-      message: 'Login to view wholesale/reseller price',
+      message: 'Login to view price',
       buyerType: '',
       priceGroup: 'pending',
       priceLabel: '',
@@ -89,5 +89,5 @@ export function priceForBuyer(prices = {}, buyerAccess) {
 }
 
 export function priceNoticeForAccess(buyerAccess) {
-  return buyerAccess?.message || 'Login to view wholesale/reseller price';
+  return buyerAccess?.message || 'Login to view price';
 }

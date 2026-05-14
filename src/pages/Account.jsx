@@ -28,6 +28,7 @@ export function Account({
   navigate,
   openAuth,
   updateQuantity,
+  onSignOut,
 }) {
   if (!user) {
     return (
@@ -58,9 +59,14 @@ export function Account({
           <h1>{buyerProfile?.business_name || buyerProfile?.full_name || user.email}</h1>
           <p>{user.email}</p>
         </div>
-        <button className="secondary-button" type="button" onClick={() => navigate('catalog')}>
-          Browse Catalogue
-        </button>
+        <div className="account-hero-actions" style={{ display: 'flex', gap: '12px' }}>
+          <button className="secondary-button" type="button" onClick={() => navigate('catalog')}>
+            Browse Catalogue
+          </button>
+          <button className="secondary-button logout-btn" type="button" onClick={onSignOut}>
+            Log Out
+          </button>
+        </div>
       </div>
 
       <div className="account-summary-grid">

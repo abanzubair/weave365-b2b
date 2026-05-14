@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl } from './config.js';
+import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
 const moneyColumns = {
   mrp: 'B2B',
@@ -9,9 +10,13 @@ const moneyColumns = {
 };
 
 export async function fetchConfigOptions() {
-  const response = await fetch(configCsvUrl, { cache: 'no-store' });
-  if (!response.ok) return { priceRanges: [], categories: [], fabrics: [] };
-  const text = await response.text();
+  if (!isSupabaseConfigured) return { priceRanges: [], categories: [], fabrics: [] };
+  
+  const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'config').single();
+  if (!data?.csv_data) return { priceRanges: [], categories: [], fabrics: [] };
+
+  void autoSyncIfNeeded(); // Background auto sync
+  const text = data.csv_data;
   const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
   
   const priceRanges = parsed.data
@@ -36,13 +41,17 @@ export async function fetchConfigOptions() {
 }
 
 export async function fetchProducts() {
-  const response = await fetch(csvUrl, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`Unable to load products (${response.status})`);
+  if (!isSupabaseConfigured) {
+    throw new Error("Data system not configured");
   }
 
-  const text = await response.text();
-  return parseProductCsv(text);
+  const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products').single();
+  if (!data?.csv_data) {
+    throw new Error("Product data not found in sync table");
+  }
+
+  void autoSyncIfNeeded(); // Background auto sync
+  return parseProductCsv(data.csv_data);
 }
 
 export function parseProductCsv(text) {
@@ -438,9 +447,12 @@ function unique(items) {
 }
 export async function fetchHeroData() {
   try {
-    const response = await fetch(heroCsvUrl, { cache: 'no-store' });
-    if (!response.ok) return [];
-    const text = await response.text();
+    if (!isSupabaseConfigured) return [];
+
+    const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'hero').single();
+    if (!data?.csv_data) return [];
+
+    const text = data.csv_data;
     const parsed = Papa.parse(text, {
       header: true,
       skipEmptyLines: true,
@@ -466,5 +478,65 @@ export async function fetchHeroData() {
   } catch (error) {
     console.error('Error fetching hero data:', error);
     return [];
+  }
+}
+
+let isSyncing = false;
+
+export async function autoSyncIfNeeded() {
+  if (!isSupabaseConfigured || isSyncing) return;
+  
+  try {
+    // Check last sync time
+    const { data } = await supabase.from('sheet_data').select('updated_at').eq('id', 'products').single();
+    
+    const lastSync = data?.updated_at ? new Date(data.updated_at) : new Date(0);
+    const now = new Date();
+    const diffMinutes = (now - lastSync) / (1000 * 60);
+
+    // Auto sync every 15 minutes
+    if (diffMinutes > 15) {
+      console.log('Auto-syncing sheets to Supabase...');
+      await syncSheetsToSupabase();
+    }
+  } catch (err) {
+    console.error('Auto-sync check failed:', err);
+  }
+}
+
+export async function syncSheetsToSupabase() {
+  if (!isSupabaseConfigured || isSyncing) return;
+  isSyncing = true;
+  
+  try {
+    const fetchText = async (url) => {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Fetch failed for ${url}`);
+      return res.text();
+    };
+
+    const [products, hero, config] = await Promise.all([
+      fetchText(csvUrl),
+      fetchText(heroCsvUrl),
+      fetchText(configCsvUrl)
+    ]);
+
+    const timestamp = new Date().toISOString();
+    
+    const updates = [
+      { id: 'products', csv_data: products, updated_at: timestamp },
+      { id: 'hero', csv_data: hero, updated_at: timestamp },
+      { id: 'config', csv_data: config, updated_at: timestamp }
+    ];
+
+    const { error } = await supabase.from('sheet_data').upsert(updates);
+    if (error) throw error;
+    
+    console.log('Successfully synced sheets to Supabase at', timestamp);
+  } catch (err) {
+    console.error('Manual sync failed:', err);
+    throw err;
+  } finally {
+    isSyncing = false;
   }
 }

@@ -16,6 +16,7 @@ import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney } from '../storefrontShared.jsx';
 import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
+import { syncSheetsToSupabase } from '../productData.js';
 
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
@@ -97,8 +98,22 @@ function MetricCard({ icon: Icon, label, value, hint }) {
 
 export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
   const [status, setStatus] = useState('idle');
+  const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
   const allowed = isAdminUser(user);
+
+  async function handleManualSync() {
+    if (!isSupabaseConfigured || !allowed || syncStatus === 'loading') return;
+    setSyncStatus('loading');
+    try {
+      await syncSheetsToSupabase();
+      alert('Successfully synced Google Sheets to Supabase!');
+    } catch (err) {
+      alert('Sync failed: ' + err.message);
+    } finally {
+      setSyncStatus('idle');
+    }
+  }
 
   async function loadAdminData() {
     if (!isSupabaseConfigured || !allowed) return;
@@ -311,7 +326,39 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
           <p>Monitor registered buyers, saved carts, favourites, enquiries, follow-ups, and order activity from Supabase.</p>
         </div>
         <button className="secondary-button" onClick={loadAdminData} disabled={status === 'loading'}>
-          <RefreshCw size={17} /> {status === 'loading' ? 'Refreshing...' : 'Refresh'}
+          <RefreshCw size={17} /> {status === 'loading' ? 'Refreshing...' : 'Refresh Dashboard'}
+        </button>
+      </div>
+
+      <div className="admin-sync-banner" style={{ 
+        background: 'var(--card-bg)', 
+        border: '1px solid var(--border)', 
+        padding: '16px', 
+        borderRadius: '12px', 
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '20px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ background: 'var(--primary-soft)', color: 'var(--primary)', padding: '10px', borderRadius: '10px' }}>
+            <RefreshCw size={20} className={syncStatus === 'loading' ? 'spin' : ''} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '15px' }}>Data Synchronization</h3>
+            <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+              Sheets are automatically synced every 15 minutes, but you can force an update here.
+            </p>
+          </div>
+        </div>
+        <button 
+          className="primary-button" 
+          onClick={handleManualSync} 
+          disabled={syncStatus === 'loading'}
+          style={{ padding: '8px 20px', fontSize: '14px' }}
+        >
+          {syncStatus === 'loading' ? 'Syncing...' : 'Sync Now'}
         </button>
       </div>
 

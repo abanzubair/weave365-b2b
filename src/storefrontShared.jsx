@@ -235,13 +235,10 @@ export const ProductCard = memo(function ProductCard({
         <h3 className="card-title" onClick={() => navigate('product', product.id)}>
           {product.title}
         </h3>
-        <div className="card-product-code">
-          Code: {selectedVariant.code}
-        </div>
 
         <div className="card-info-grid">
           <div className="info-left">
-            <label>PRICE</label>
+            {priceAccess?.isLoggedIn !== false && <label>PRICE</label>}
             {canViewPrice ? (
               <>
                 <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
@@ -251,16 +248,18 @@ export const ProductCard = memo(function ProductCard({
               <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
             )}
           </div>
-          <div className="info-right">
-            <div className="info-item">
-              <ShoppingBag size={15} /> MOQ 1 Set
-            </div>
-            {colorCount > 1 && (
+          {priceAccess?.isLoggedIn !== false && (
+            <div className="info-right">
               <div className="info-item">
-                <Palette size={15} /> {colorCount} Colors
+                <ShoppingBag size={15} /> MOQ 1 Set
               </div>
-            )}
-          </div>
+              {colorCount > 1 && (
+                <div className="info-item">
+                  <Palette size={15} /> {colorCount} Colors
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
 

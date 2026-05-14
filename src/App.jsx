@@ -414,6 +414,7 @@ export default function App() {
     });
   }, [user]);
 
+
   const addCartColor = useCallback((item, color) => {
     if (!color?.name) return;
     addCartSelections(item.product, [{
@@ -440,6 +441,16 @@ export default function App() {
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [routerNavigate]);
+
+  const handleSignOut = useCallback(async () => {
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    } else {
+      localStorage.removeItem('sareeva_user');
+      setUser(null);
+    }
+    navigate('home');
+  }, [navigate]);
 
   // return <ComingSoon />;
 
@@ -665,6 +676,7 @@ export default function App() {
                 openAuth={() => setAuthOpen(true)}
                 updateQuantity={updateQuantity}
                 addToCart={addToCart}
+                onSignOut={handleSignOut}
               />
             } />
             <Route path="/bulk-inquiry" element={
