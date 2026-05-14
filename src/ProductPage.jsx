@@ -528,10 +528,10 @@ export function ProductDetail({
                 >
                   <ShoppingBag size={20} /> Add to Bag
                 </button>
-                <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={isDownloading}>
+                <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={!priceAccess?.isLoggedIn || isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-                <button className="secondary-action-btn" type="button" onClick={shareProductImages}>
+                <button className="secondary-action-btn" type="button" onClick={shareProductImages} disabled={!priceAccess?.isLoggedIn}>
                   <Share2 size={18} /> Share
                 </button>
               </div>
