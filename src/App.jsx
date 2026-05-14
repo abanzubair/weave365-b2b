@@ -592,6 +592,9 @@ export default function App() {
           search={search}
           setSearch={setSearch}
           visibleProducts={visibleProducts}
+          setCartOpen={setCartOpen}
+          cartCount={cart.length}
+          favoritesCount={favorites.length}
         />
       )}
 

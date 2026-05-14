@@ -4185,6 +4185,64 @@ button {
   margin: 0;
 }
 
+@media (max-width: 900px) {
+  .bulk-inquiry-hero {
+    grid-template-columns: 1fr;
+    padding: 30px;
+    gap: 24px;
+  }
+
+  .bulk-inquiry-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .bulk-summary-panel {
+    position: static;
+    order: 2;
+  }
+
+  .bulk-inquiry-form {
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .bulk-inquiry-page {
+    padding: 24px 0 44px;
+  }
+
+  .bulk-inquiry-hero {
+    padding: 24px;
+    border-radius: 0;
+    margin-left: calc(var(--site-padding) * -1);
+    margin-right: calc(var(--site-padding) * -1);
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .bulk-inquiry-hero h1 {
+    font-size: 32px;
+  }
+
+  .bulk-inquiry-hero p {
+    font-size: 16px;
+  }
+
+  .bulk-field-grid.two-columns,
+  .bulk-field-grid.three-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-form-section {
+    padding: 24px;
+  }
+
+  .bulk-submit-row {
+    padding: 24px;
+  }
+}
+
 @keyframes fadeInBackdrop {
   from {
     opacity: 0;

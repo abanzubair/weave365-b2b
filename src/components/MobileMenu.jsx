@@ -11,6 +11,8 @@ import {
   User,
   X,
   MessageCircle,
+  Bookmark,
+  ShoppingBag,
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
@@ -19,29 +21,40 @@ import { fallbackProductImage, formatMoney, customerPrice, CURRENCIES, CurrencyM
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useState } from 'react';
 
-export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, search, setSearch, visibleProducts, priceAccess }) {
+export function MobileMenu({ 
+  onClose, 
+  navigate, 
+  setCategory, 
+  user, 
+  openAuth, 
+  search, 
+  setSearch, 
+  visibleProducts, 
+  priceAccess,
+  setCartOpen,
+  cartCount,
+  favoritesCount
+}) {
   const currentCurrency = useCurrency();
   const [localSearch, setLocalSearch] = useState(search || '');
   const navItems = [
-    { icon: <Layers size={20} />, label: 'Categories', action: () => navigate('catalog') },
-    {
-      icon: <BadgeCheck size={20} />,
-      label: 'Bestsellers',
-      action: () => {
-        setCategory('Bestsellers');
-        navigate('catalog');
-      },
-    },
-    {
-      icon: <Sparkles size={20} />,
-      label: 'New Arrivals',
-      action: () => {
-        setCategory('All');
-        navigate('catalog');
-      },
-    },
     { icon: <PackageCheck size={20} />, label: 'Bulk Order', action: () => navigate('bulk-inquiry') },
     { icon: <Store size={20} />, label: 'Catalogue', action: () => navigate('catalog') },
+    { 
+      icon: <Bookmark size={20} />, 
+      label: 'Saved Items', 
+      badge: favoritesCount,
+      action: () => navigate('favorites') 
+    },
+    { 
+      icon: <ShoppingBag size={20} />, 
+      label: 'My Cart', 
+      badge: cartCount,
+      action: () => {
+        onClose();
+        setCartOpen(true);
+      } 
+    },
   ];
 
   return (
@@ -111,10 +124,13 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, sea
           )}
         </div>
         <nav className="mobile-menu-nav">
-          {navItems.map(({ icon, label, action }) => (
+          {navItems.map(({ icon, label, action, badge }) => (
             <button key={label} onClick={action} className="mobile-menu-item">
               <span className="mobile-menu-icon">{icon}</span>
-              {label}
+              <span className="mobile-menu-label">
+                {label}
+                {badge > 0 && <span className="mobile-menu-badge">{badge}</span>}
+              </span>
               <ArrowRight size={16} className="mobile-menu-arrow" />
             </button>
           ))}

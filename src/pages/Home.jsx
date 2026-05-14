@@ -5,6 +5,7 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
+import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
 import '../styles/heroPremium.css';
 import { storeConfig } from '../config.js';
 
@@ -197,7 +198,13 @@ export function Home({
 
   return (
     <>
-      <section className="premium-hero" style={{ backgroundImage: `url(${newBanner1})` }}>
+      <section 
+        className="premium-hero" 
+        style={{ 
+          '--hero-bg': `url(${newBanner1})`,
+          '--hero-bg-mobile': `url(${newBanner1Mobile})`
+        }}
+      >
         <div className="premium-hero-overlay"></div>
         
         <div className="premium-hero-content">
@@ -256,18 +263,18 @@ export function Home({
           
           <div className="premium-hero-sidebar">
             <div className="premium-hero-collection-info">
-              <span>B2B<br />SAREE<br />COLLECTION<br />'24</span>
+              <span>B2B<br />SAREE<br />COLLECTION<br />'26</span>
             </div>
-            <div className="premium-hero-pagination">
+            {/* <div className="premium-hero-pagination">
               <span className="current-slide">01</span>
               <span className="divider">/</span>
               <span className="total-slides">03</span>
-            </div>
-            <div className="premium-hero-scroll">
-              <span>Scroll to Explore</span>
-              <ArrowDown size={20} strokeWidth={1.5} />
-            </div>
+            </div> */}
           </div>
+        </div>
+        <div className="premium-hero-scroll">
+          <span>Scroll to Explore</span>
+          <ArrowDown size={20} strokeWidth={1.5} />
         </div>
       </section>
 

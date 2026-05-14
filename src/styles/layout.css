@@ -395,6 +395,28 @@
   background: rgba(183, 134, 70, 0.1);
 }
 
+.mobile-menu-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.mobile-menu-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 8px;
+}
+
 .mobile-menu-icon {
   display: grid;
   place-items: center;
