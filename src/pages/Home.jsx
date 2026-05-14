@@ -462,7 +462,7 @@ export function Home({
       <section id="why" className="why-band">
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
-          <p>We provide premium quality sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
+          <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
           <button className="primary-button compact" onClick={() => navigate('catalog')}>
             Know More
           </button>

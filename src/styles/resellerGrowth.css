@@ -67,11 +67,11 @@
 
 .benefit-num {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 600;
-  color: var(--line);
+  color: #b78646;
   line-height: 1;
-  padding-top: 4px;
+  padding-top: 0px;
 }
 
 .benefit-item h4 {
@@ -122,9 +122,9 @@
 
 .editorial-image {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 3/4;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow: 0 30px 60px rgba(0,0,0,0.1);
 }
 

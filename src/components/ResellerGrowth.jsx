@@ -46,7 +46,7 @@ export function ResellerGrowth({ imageUrl }) {
 
             <a className="editorial-cta" href={whatsappStartUrl} target="_blank" rel="noreferrer">
               <WhatsappIcon size={20} />
-              <span>Partner with us on WhatsApp</span>
+              <span>Join Our Reseller Network</span>
               <ChevronRight size={18} />
             </a>
           </div>

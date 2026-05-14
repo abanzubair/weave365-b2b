@@ -869,7 +869,7 @@ button {
 }
 
 .text-button {
-  margin-top: 6px;
+  margin-top: 12px;
   border: 0;
   background: transparent;
   font-size: 14px;
@@ -2518,6 +2518,7 @@ button {
 .success,
 .warning,
 .form-message {
+  padding-left: 6px;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -2822,7 +2823,7 @@ button {
 
 .auth-modal {
   position: relative;
-  width: min(480px, 100%);
+  width: min(380px, 100%);
   max-height: min(92dvh, 760px);
   overflow: auto;
   padding: 32px;
