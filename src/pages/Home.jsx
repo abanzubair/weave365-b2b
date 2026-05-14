@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid } from 'lucide-react';
-import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon, customerPrice } from '../storefrontShared.jsx';
+import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
@@ -245,10 +245,14 @@ export function Home({
               <div className="hero-actions">
                 <button 
                   className="primary-button" 
-                  style={{ backgroundColor: activeHeroData?.button1Color || undefined, borderColor: activeHeroData?.button1Color || undefined }}
+                  style={{ 
+                    backgroundColor: 'transparent', 
+                    borderColor: activeHeroData?.button1Color || undefined,
+                    color: activeHeroData?.button1Color || undefined 
+                  }}
                   onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
                 >
-                  <WhatsappIcon size={18} /> {activeHeroData.buttonText}
+                  {activeHeroData.buttonText}
                 </button>
               </div>
             )}
