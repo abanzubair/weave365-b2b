@@ -566,10 +566,16 @@ export default function App() {
           <Search size={22} />
         </button>
         <div className="header-actions">
-          <button className="login-link" type="button" onClick={() => (user ? navigate('account') : setAuthOpen(true))}>
-            <User size={18} />
-            {user ? user.email || 'Account' : 'Login / Register'}
-          </button>
+          {user ? (
+            <button className="login-link" type="button" onClick={handleSignOut}>
+              Logout
+            </button>
+          ) : (
+            <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
+              <User size={18} />
+              Login / Register
+            </button>
+          )}
           <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
             <Bookmark size={22} />
             {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
