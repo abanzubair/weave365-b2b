@@ -470,7 +470,7 @@ export async function fetchHeroData() {
         type: (row['Type'] || 'banner').toLowerCase(),
         headingColor: row['Heading Color'] || '',
         subheadingColor: row['Subheading Color'] || '',
-        button1Color: row['Button 1 Color'] || '',
+        button1Color: row['Button 1 Color'] || row['Button Color'] || '',
         button2Color: row['Button 2 Color'] || '',
         headerColor: row['Header Color'] || '',
       };

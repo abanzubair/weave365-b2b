@@ -247,8 +247,8 @@ export function Home({
                   className="primary-button" 
                   style={{ 
                     backgroundColor: 'transparent', 
-                    borderColor: activeHeroData?.button1Color || undefined,
-                    color: activeHeroData?.button1Color || undefined 
+                    border: `2px solid ${activeHeroData?.button1Color || 'var(--gold)'}`,
+                    color: activeHeroData?.button1Color || 'var(--gold)' 
                   }}
                   onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
                 >
