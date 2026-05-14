@@ -248,7 +248,8 @@ export function Home({
                   style={{ 
                     backgroundColor: 'transparent', 
                     border: `1px solid ${activeHeroData?.button1Color || 'var(--gold)'}`,
-                    color: activeHeroData?.button1Color || 'var(--gold)' 
+                    color: activeHeroData?.button1Color || 'var(--gold)',
+                    fontWeight: 600
                   }}
                   onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
                 >
