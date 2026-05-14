@@ -62,6 +62,7 @@ export default function App() {
   const [heroSlides, setHeroSlides] = useState([]);
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
   const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
   const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
@@ -107,11 +108,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const updateScrolled = () => {
+      const scrollPos = window.scrollY || document.scrollingElement?.scrollTop || 0;
+      setScrolled(scrollPos > 20);
+      setPastHero(scrollPos > (window.innerHeight - 100));
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', updateScrolled, { passive: true });
+    updateScrolled();
+
+    return () => {
+      window.removeEventListener('scroll', updateScrolled);
+    };
   }, []);
 
   useEffect(() => {
@@ -208,34 +216,6 @@ export default function App() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [dropdownOpen]);
 
-  /* Mobile: transparent header → frosted on scroll */
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 820px)');
-
-    function update() {
-      const header = document.querySelector('.site-header');
-      if (!header) return;
-      if (!mq.matches) {
-        header.classList.remove('scrolled');
-        return;
-      }
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    mq.addEventListener('change', update);
-    update();
-
-    return () => {
-      window.removeEventListener('scroll', update);
-      mq.removeEventListener('change', update);
-    };
-  }, []);
-
   useEffect(() => {
     if (!user) {
       setCart([]);
@@ -308,7 +288,7 @@ export default function App() {
         (category === 'Bestsellers' && product.isTopSeller) ||
         product.fabric === category ||
         product.category === category;
-      const matchesPrice = priceRange === 'All' || 
+      const matchesPrice = priceRange === 'All' ||
         (product.priceRange && product.priceRange.trim() === priceRange.trim());
       const matchesFabric = fabric === 'All' ||
         (product.fabric && product.fabric.trim() === fabric.trim());
@@ -465,17 +445,16 @@ export default function App() {
 
   return (
     <>
-      {route !== 'home' && <TopBar />}
-      <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''}`}>
+      <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
         <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
           <Menu size={22} />
         </button>
-        <a 
-          href="/" 
-          className="brand" 
-          onClick={(e) => { 
-            e.preventDefault(); 
-            navigate('home'); 
+        <a
+          href="/"
+          className="brand"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('home');
           }}
         >
           <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
@@ -549,9 +528,9 @@ export default function App() {
                           setSearch('');
                         }}
                       >
-                        <img 
-                          src={image} 
-                          alt="" 
+                        <img
+                          src={image}
+                          alt=""
                           onError={(e) => { e.target.style.opacity = '0'; }}
                         />
                         <div>
