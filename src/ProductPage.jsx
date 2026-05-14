@@ -62,6 +62,7 @@ export function ProductDetail({
   setPincode,
   codStatus,
   checkPincode,
+  openAuth,
 }) {
   const initialColorName = product.colorOptions?.[0]?.name || product.variants[0]?.color || '';
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
@@ -565,6 +566,7 @@ export function ProductDetail({
                   toggleFavorite={toggleFavorite}
                   isFavorite={favoriteKeys.has(item.id)}
                   priceAccess={priceAccess}
+                  openAuth={openAuth}
                 />
               ))}
             </div>

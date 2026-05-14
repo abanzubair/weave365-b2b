@@ -22,6 +22,7 @@ import {
   Sparkles,
   Tag,
   Truck,
+  User,
   ZoomIn,
   BellRing,
   X,
@@ -152,6 +153,7 @@ export const ProductCard = memo(function ProductCard({
   toggleFavorite,
   isFavorite,
   priceAccess,
+  openAuth,
 }) {
   useCurrency();
   const selectedVariant = variant || product.variants[0];
@@ -265,17 +267,41 @@ export const ProductCard = memo(function ProductCard({
 
 
         <div className="card-actions-new">
-          <button
-            type="button"
-            onClick={handleEnquiryClick}
-            className="order-now-btn"
-            style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
-          >
-            <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
-          </button>
-          <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-            <ShoppingBag size={16} /> ADD TO BAG
-          </button>
+          {priceAccess?.isLoggedIn === false ? (
+            <button 
+              className="order-now-btn" 
+              style={{ 
+                gridColumn: 'span 2', 
+                width: 'fit-content', 
+                marginLeft: 'auto', 
+                padding: '0 24px',
+                background: 'transparent',
+                color: 'var(--gold-mid)',
+                border: '1.5px solid var(--gold-mid)',
+                boxShadow: 'none'
+              }} 
+              onClick={(e) => {
+                e.stopPropagation();
+                openAuth();
+              }}
+            >
+              <User size={16} /> LOGIN / REGISTER
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleEnquiryClick}
+                className="order-now-btn"
+                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
+              >
+                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
+              </button>
+              <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
+                <ShoppingBag size={16} /> ADD TO BAG
+              </button>
+            </>
+          )}
         </div>
       </div>
 

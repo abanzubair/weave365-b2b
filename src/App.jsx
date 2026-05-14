@@ -636,6 +636,7 @@ export default function App() {
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
                 priceAccess={priceAccess}
+                openAuth={() => setAuthOpen(true)}
               />
             } />
             <Route path="/product/:id" element={
@@ -648,6 +649,7 @@ export default function App() {
                 toggleFavorite={toggleFavorite}
                 favoriteKeys={favoriteKeySet}
                 priceAccess={priceAccess}
+                openAuth={() => setAuthOpen(true)}
                 pincode={pincode}
                 setPincode={setPincode}
                 codStatus={codStatus}

@@ -240,6 +240,7 @@ button {
     opacity: 0;
     transform: translateY(28px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -795,7 +796,7 @@ button {
   grid-template-columns: 1fr 1.45fr;
   gap: 36px;
   align-items: center;
-  padding: 44px max(48px, calc((100vw - 1280px) / 2));
+  padding: 64px max(48px, calc((100vw - 1280px) / 2));
   /* background: #f4eee9; */
   background: var(--surface);
   margin-top: -40px;
@@ -810,7 +811,7 @@ button {
 
 .stats-panel {
   display: grid;
-  grid-template-columns: repeat(5, 160px);
+  grid-template-columns: repeat(4, 170px);
   gap: 20px;
   width: fit-content;
   margin-left: auto;
@@ -825,7 +826,7 @@ button {
   justify-content: center;
   gap: 6px;
   aspect-ratio: 1 / 1;
-  padding: 12px;
+  padding: 20px;
   background: var(--white);
   border-radius: 10px;
   box-shadow: var(--shadow);
@@ -1153,6 +1154,7 @@ button {
   padding-top: 10px;
   margin-top: 10px;
 }
+
 .info-left {
   display: flex;
   flex-direction: column;
@@ -1179,6 +1181,11 @@ button {
   font-weight: 600;
   color: var(--brown-900);
   line-height: 1.2;
+}
+
+.info-left .price-locked-text {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .info-left strong span {
@@ -3485,6 +3492,7 @@ button {
   background: rgba(37, 119, 68, 0.12);
   color: #257744 !important;
 }
+
 .admin-status.done {
   background: rgba(37, 119, 68, 0.12);
   color: #257744 !important;

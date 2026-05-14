@@ -43,6 +43,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
             toggleFavorite={toggleFavorite}
             isFavorite
             priceAccess={priceAccess}
+            openAuth={openAuth}
           />
         ))}
       </div>

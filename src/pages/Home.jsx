@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Heart, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck } from 'lucide-react';
+import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid } from 'lucide-react';
 import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, WhatsappIcon, customerPrice } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
@@ -400,6 +400,7 @@ export function Home({
                 toggleFavorite={toggleFavorite}
                 isFavorite={favoriteKeys.has(product.id)}
                 priceAccess={priceAccess}
+                openAuth={openAuth}
                 />
               ))}
             </div>
@@ -443,6 +444,7 @@ export function Home({
               toggleFavorite={toggleFavorite}
               isFavorite={favoriteKeys.has(product.id)}
               priceAccess={priceAccess}
+              openAuth={openAuth}
               />
             ))}
           </div>
@@ -466,11 +468,10 @@ export function Home({
           </button>
         </div>
         <div className="stats-panel">
-          <Stat icon={<User />} value="1000+" label="Unique Designs" />
-          <Stat icon={<Heart />} value="500+" label="Active Buyers" />
+          <Stat icon={<LayoutGrid />} value="1000+" label="Unique Designs" />
+          <Stat icon={<Users />} value="500+" label="Active Buyers" />
           <Stat icon={<Award />} value="10+" label="Years of Trust" />
           <Stat icon={<ShieldCheck />} value="95%" label="Repeat Buyers" />
-          <Stat icon={<Truck />} value="28+" label="States Covered" />
         </div>
       </section>
 

@@ -22,6 +22,7 @@ export function Catalog({
   toggleFavorite,
   favoriteKeys,
   priceAccess,
+  openAuth,
 }) {
   const [visibleCount, setVisibleCount] = useState(24);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -217,6 +218,7 @@ export function Catalog({
             toggleFavorite={toggleFavorite}
             isFavorite={favoriteKeys.has(product.id)}
             priceAccess={priceAccess}
+            openAuth={openAuth}
           />
         ))}
       </div>
