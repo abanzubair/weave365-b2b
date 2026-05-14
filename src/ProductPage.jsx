@@ -74,7 +74,17 @@ export function ProductDetail({
   const [variationDrawerOpen, setVariationDrawerOpen] = useState(false);
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const mainImageRef = useRef(null);
+
+  const handleRestrictedAction = useCallback((actionName, actionFn) => {
+    if (!priceAccess?.isLoggedIn) {
+      setToastMessage(`Login to ${actionName.toLowerCase()}`);
+      setTimeout(() => setToastMessage(''), 3000);
+      return;
+    }
+    actionFn();
+  }, [priceAccess?.isLoggedIn]);
 
   const totalColors = useMemo(
     () => product.totalColors ?? (product.variants.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images.length, 4))),
@@ -528,10 +538,10 @@ export function ProductDetail({
                 >
                   <ShoppingBag size={20} /> Add to Bag
                 </button>
-                <button className="secondary-action-btn" type="button" onClick={downloadImagesAsZip} disabled={!priceAccess?.isLoggedIn || isDownloading}>
+                <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-                <button className="secondary-action-btn" type="button" onClick={shareProductImages} disabled={!priceAccess?.isLoggedIn}>
+                <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductImages)}>
                   <Share2 size={18} /> Share
                 </button>
               </div>
@@ -657,6 +667,11 @@ export function ProductDetail({
         }}
         priceAccess={priceAccess}
       />
+
+      <div className={`elegant-toast ${toastMessage ? 'show' : ''}`}>
+        <LockKeyhole size={16} />
+        {toastMessage}
+      </div>
     </>
   );
 }

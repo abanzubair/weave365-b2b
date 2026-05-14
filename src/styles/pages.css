@@ -1840,7 +1840,7 @@ button {
 .product-title-serif {
   font-family: var(--font-heading);
   font-size: clamp(32px, 3.5vw, 42px);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--brown-900);
   line-height: 1.2;
   margin: 16px 0 8px;
@@ -4152,4 +4152,32 @@ button {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 18px;
   }
+}
+
+/* Elegant Toast Notification */
+.elegant-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.elegant-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
