@@ -1148,12 +1148,22 @@ button {
   font-family: var(--font-ui);
 }
 
+.card-info-grid.is-guest {
+  grid-template-columns: 1fr;
+  padding-top: 10px;
+  margin-top: 10px;
+}
 .info-left {
   display: flex;
   flex-direction: column;
   gap: 1px;
   border-right: 1px solid var(--line);
   padding-right: 10px;
+}
+
+.is-guest .info-left {
+  border-right: none;
+  padding-right: 0;
 }
 
 .info-left label {
@@ -2975,7 +2985,7 @@ button {
 
 .price-locked-text {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 14px;
   line-height: 1.35;
 }
 

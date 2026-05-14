@@ -236,7 +236,7 @@ export const ProductCard = memo(function ProductCard({
           {product.title}
         </h3>
 
-        <div className="card-info-grid">
+        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''}`}>
           <div className="info-left">
             {priceAccess?.isLoggedIn !== false && <label>PRICE</label>}
             {canViewPrice ? (
