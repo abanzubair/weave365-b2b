@@ -1,69 +1,89 @@
-import { CheckCircle2, ClipboardList, PackageCheck } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Share2, Package, TrendingUp, ShieldCheck } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import { SectionTitle, WhatsappIcon } from '../storefrontShared.jsx';
+import { WhatsappIcon } from '../storefrontShared.jsx';
 
 export function ResellerGrowth({ imageUrl }) {
   const whatsappStartUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent('Hello Weave365, I want to start buying wholesale catalogues.')}`;
 
   return (
-    <section className="section reseller-growth-section" aria-labelledby="reseller-growth-heading">
-      <SectionTitle title="Built For Resellers" />
-      <div className="reseller-growth-grid">
-        <article className="reseller-growth-card reseller-growth-intro">
-          <div className="reseller-growth-copy">
-            <span className="reseller-growth-kicker">Wholesale Partner</span>
-            <h2 id="reseller-growth-heading">
-              <span>Built for resellers</span>
-              <span>Made for growth</span>
+    <section className="reseller-editorial-section" aria-labelledby="reseller-editorial-heading">
+      <div className="editorial-container">
+        <div className="editorial-layout">
+          <div className="editorial-main-content">
+            <span className="editorial-kicker">Wholesale Collaboration</span>
+            <h2 id="reseller-editorial-heading" className="editorial-title">
+              Crafting <span>Success</span><br />
+              Beyond the <span>Weave</span>.
             </h2>
-            <p className="reseller-growth-tagline">Fresh catalogues, ready for repeat buying</p>
-            <ul>
-              <li><CheckCircle2 size={18} /> Wholesale pricing for stronger margins</li>
-              <li><CheckCircle2 size={18} /> Ready inventory with fast dispatch</li>
-              <li><CheckCircle2 size={18} /> Quality your customers can trust</li>
-              <li><CheckCircle2 size={18} /> Support for boutiques, resellers and exporters</li>
-            </ul>
-            <a className="reseller-whatsapp-button" href={whatsappStartUrl} target="_blank" rel="noreferrer">
-              <WhatsappIcon size={19} /> Start Buying on WhatsApp
+            
+            <p className="editorial-lead">
+              A partnership built on heritage, quality, and mutual growth. We provide the finest catalogues, you bring them to the world.
+            </p>
+
+            <div className="editorial-benefits-list">
+              <div className="benefit-item">
+                <span className="benefit-num">01</span>
+                <div>
+                  <h4>Curated Collections</h4>
+                  <p>Handpicked sarees that resonate with global fashion trends.</p>
+                </div>
+              </div>
+              <div className="benefit-item">
+                <span className="benefit-num">02</span>
+                <div>
+                  <h4>Seamless Logistics</h4>
+                  <p>End-to-end support for shipping and quality assurance.</p>
+                </div>
+              </div>
+              <div className="benefit-item">
+                <span className="benefit-num">03</span>
+                <div>
+                  <h4>Growth Toolkit</h4>
+                  <p>Marketing assets and priority access to new arrivals.</p>
+                </div>
+              </div>
+            </div>
+
+            <a className="editorial-cta" href={whatsappStartUrl} target="_blank" rel="noreferrer">
+              <WhatsappIcon size={20} />
+              <span>Partner with us on WhatsApp</span>
+              <ChevronRight size={18} />
             </a>
           </div>
-          <div className="reseller-growth-image" aria-hidden="true">
-            <img
-              src={imageUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              onError={(e) => { e.target.style.opacity = '0'; }}
-            />
-          </div>
-        </article>
 
-        <article className="reseller-growth-card how-it-works-card">
-          <div className="how-it-works-head">
-            <span className="reseller-growth-kicker">Simple Ordering</span>
-            <h2>How It Works</h2>
-          </div>
-          <div className="how-it-works-steps">
-            <div className="how-step">
-              <span className="step-number">1</span>
-              <span className="step-icon"><ClipboardList size={31} /></span>
-              <strong>Browse Catalogue</strong>
-              <p>Explore products and shortlist styles for your market.</p>
-            </div>
-            <div className="how-step">
-              <span className="step-number">2</span>
-              <span className="step-icon whatsapp-step"><WhatsappIcon size={34} /></span>
-              <strong>Share on WhatsApp</strong>
-              <p>Send product codes, screenshots or your order list.</p>
-            </div>
-            <div className="how-step">
-              <span className="step-number">3</span>
-              <span className="step-icon"><PackageCheck size={32} /></span>
-              <strong>Confirm & Order</strong>
-              <p>Confirm price and quantity. We pack and dispatch.</p>
+          <div className="editorial-visual-stack">
+            <div className="main-image-wrapper">
+              <img src={imageUrl} alt="Premium Catalog" className="editorial-image" />
+              <div className="editorial-glass-card">
+                <ShieldCheck size={24} className="gold-icon" />
+                <strong>98% Retention</strong>
+                <span>Our resellers grow with us year after year.</span>
+              </div>
             </div>
           </div>
-        </article>
+        </div>
+
+        <div className="editorial-process-flow">
+          <div className="process-header">
+            <h3>The Path to Growth</h3>
+          </div>
+          <div className="process-items">
+            <div className="process-item">
+              <div className="process-icon"><Package size={24} /></div>
+              <span>Select Catalogue</span>
+            </div>
+            <div className="process-arrow"><ChevronRight size={16} /></div>
+            <div className="process-item">
+              <div className="process-icon"><Share2 size={24} /></div>
+              <span>Connect on WhatsApp</span>
+            </div>
+            <div className="process-arrow"><ChevronRight size={16} /></div>
+            <div className="process-item">
+              <div className="process-icon"><TrendingUp size={24} /></div>
+              <span>Scale Your Business</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
