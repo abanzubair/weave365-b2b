@@ -106,8 +106,12 @@ export function ProductDetail({
       });
   }, [product.colorOptions, product.variants]);
   const productStatusTags = useMemo(
-    () => (product.statusTags || []).filter((tag) => tag.key !== 'bestseller'),
-    [product.statusTags],
+    () => (product.statusTags || []).filter((tag) => {
+      if (tag.key === 'bestseller') return false;
+      if (!canViewPrice && tag.key === 'low-moq') return false;
+      return true;
+    }),
+    [product.statusTags, canViewPrice],
   );
   const related = useMemo(
     () => products.filter((item) => item.id !== product.id).slice(0, 5),
@@ -304,6 +308,25 @@ export function ProductDetail({
         <div className="product-hero-grid">
           <div className="product-media">
             <div className="vertical-thumbs" style={galleryStyle}>
+              {product.video && (
+                <button
+                  className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
+                  onClick={() => setSelectedImage(product.video)}
+                >
+                  <div className="video-thumb-container">
+                    <img
+                      src={`https://img.youtube.com/vi/${product.video.split('/').pop().split('?')[0]}/mqdefault.jpg`}
+                      alt="Product Video Thumbnail"
+                      loading="lazy"
+                    />
+                    <div className="play-overlay">
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              )}
               {product.images.map((image, index) => (
                 <button
                   key={image}
@@ -322,16 +345,30 @@ export function ProductDetail({
             </div>
 
             <div className="catalog-main-image" ref={mainImageRef}>
-              <img
-                src={selectedImage || product.images[0] || fallbackProductImage}
-                alt={product.title}
-                fetchPriority="high"
-                decoding="async"
-                onError={(e) => { e.target.style.opacity = '0'; }}
-              />
-              <button className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
-                <ZoomIn size={18} />
-              </button>
+              {selectedImage && (selectedImage.includes('youtube.com/embed') || selectedImage.includes('youtube-nocookie.com/embed')) ? (
+                <div className="video-container">
+                  <iframe
+                    src={`${selectedImage}${selectedImage.includes('?') ? '&' : '?'}autoplay=1&mute=1&rel=0&modestbranding=1`}
+                    title="Product Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              ) : (
+                <>
+                  <img
+                    src={selectedImage || product.images[0] || fallbackProductImage}
+                    alt={product.title}
+                    fetchPriority="high"
+                    decoding="async"
+                    onError={(e) => { e.target.style.opacity = '0'; }}
+                  />
+                  <button className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
+                    <ZoomIn size={18} />
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="product-specs-card">
@@ -382,10 +419,12 @@ export function ProductDetail({
                     <span className="price-unit">/pc</span>
                   </>
                 ) : (
-                  <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>
+                  <button className="guest-price-notice" onClick={openAuth}>
+                    <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
+                  </button>
                 )}
               </div>
-              <div className="moq-badge">MOQ 1 Set</div>
+              {canViewPrice && <div className="moq-badge">MOQ 1 Set</div>}
             </div>
 
             {canViewPrice && (

@@ -111,6 +111,11 @@ export function parseProductCsv(text) {
 
     const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
     const rawStatus = row.Tag || row.Status;
+    const video = (function() {
+      const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'product video') || 'Product Video';
+      return row[key] || '';
+    })();
+
     const product = {
       id: groupKey,
       groupKey,
@@ -135,6 +140,7 @@ export function parseProductCsv(text) {
       description: row.Description || wholesaleDescription(row),
       subtitle: row.Title || category,
       images: images,
+      video: formatYoutubeUrl(video),
       variants: [variant],
       colorOptions: colorEntries,
       weight: (function() {
@@ -418,6 +424,37 @@ function driveVideoUrl(link) {
   const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
   if (!idMatch) return value;
   return `https://drive.google.com/uc?export=download&id=${idMatch[1]}`;
+}
+
+function formatYoutubeUrl(link) {
+  const value = String(link || '').trim();
+  if (!value) return '';
+
+  // Extract ID from various formats:
+  // - https://www.youtube.com/watch?v=VIDEO_ID
+  // - https://youtu.be/VIDEO_ID
+  // - https://www.youtube.com/embed/VIDEO_ID
+  // - https://www.youtube.com/shorts/VIDEO_ID
+  
+  let videoId = '';
+
+  const watchMatch = value.match(/[?&]v=([^&]+)/);
+  const shortMatch = value.match(/youtu\.be\/([^?&/]+)/);
+  const embedMatch = value.match(/youtube\.com\/embed\/([^?&/]+)/);
+  const shortsMatch = value.match(/youtube\.com\/shorts\/([^?&/]+)/);
+
+  if (watchMatch) videoId = watchMatch[1];
+  else if (shortMatch) videoId = shortMatch[1];
+  else if (embedMatch) videoId = embedMatch[1];
+  else if (shortsMatch) videoId = shortsMatch[1];
+
+  if (videoId) {
+    // Clean up any trailing parameters from the ID
+    videoId = videoId.split(/[?&]/)[0];
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+
+  return value;
 }
 
 function parseStockInDate(row) {

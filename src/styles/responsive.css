@@ -963,6 +963,12 @@
     margin-top: 8px;
     padding-top: 0;
   }
+  
+  .guest-login-btn {
+    grid-column: span 1 !important;
+    margin: 0 auto !important;
+    width: fit-content !important;
+  }
 
   .order-now-btn,
   .add-to-bag-btn {

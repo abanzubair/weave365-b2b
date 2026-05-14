@@ -240,14 +240,18 @@ export const ProductCard = memo(function ProductCard({
 
         <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''}`}>
           <div className="info-left">
-            {priceAccess?.isLoggedIn !== false && <label>PRICE</label>}
-            {canViewPrice ? (
+            {priceAccess?.isLoggedIn !== false && (
               <>
-                <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
-                <small>{formatMoney(setPrice)} / set</small>
+                <label>PRICE</label>
+                {canViewPrice ? (
+                  <>
+                    <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
+                    <small>{formatMoney(setPrice)} / set</small>
+                  </>
+                ) : (
+                  <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
+                )}
               </>
-            ) : (
-              <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
             )}
           </div>
           {priceAccess?.isLoggedIn !== false && (
@@ -269,23 +273,13 @@ export const ProductCard = memo(function ProductCard({
         <div className="card-actions-new">
           {priceAccess?.isLoggedIn === false ? (
             <button 
-              className="order-now-btn" 
-              style={{ 
-                gridColumn: 'span 2', 
-                width: 'fit-content', 
-                marginLeft: 'auto', 
-                padding: '0 24px',
-                background: 'transparent',
-                color: 'var(--gold-mid)',
-                border: '1.5px solid var(--gold-mid)',
-                boxShadow: 'none'
-              }} 
+              className="order-now-btn guest-login-btn" 
               onClick={(e) => {
                 e.stopPropagation();
                 openAuth();
               }}
             >
-              <User size={16} /> LOGIN / REGISTER
+              <User size={16} /> LOGIN TO VIEW PRICE
             </button>
           ) : (
             <>
