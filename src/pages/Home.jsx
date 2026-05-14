@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid } from 'lucide-react';
+import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag } from 'lucide-react';
 import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
+import newBanner1 from '../../assets/newBanner1.png';
+import '../styles/heroPremium.css';
 import { storeConfig } from '../config.js';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
@@ -79,22 +81,14 @@ export function Home({
   const activeHeroData = bannerSlides[currentSlide] || null;
 
   useEffect(() => {
-    if (activeHeroData?.headerColor) {
-      document.documentElement.style.setProperty('--header-text-color', activeHeroData.headerColor);
-      if (activeHeroData.headerColor.toLowerCase() === 'white') {
-        document.documentElement.classList.add('header-over-dark');
-      } else {
-        document.documentElement.classList.remove('header-over-dark');
-      }
-    } else {
-      document.documentElement.style.removeProperty('--header-text-color');
-      document.documentElement.classList.remove('header-over-dark');
-    }
+    // Premium hero is always dark → force white header text
+    document.documentElement.style.setProperty('--header-text-color', 'white');
+    document.documentElement.classList.add('header-over-dark');
     return () => {
       document.documentElement.style.removeProperty('--header-text-color');
       document.documentElement.classList.remove('header-over-dark');
     };
-  }, [activeHeroData]);
+  }, []);
 
   const bestsellers = useMemo(() => 
     products
@@ -203,88 +197,79 @@ export function Home({
 
   return (
     <>
-      <section className="hero">
-        {/* Static Copy Overlay */}
-        <div className="hero-copy-wrapper">
-          <div className="hero-copy" key={currentSlide}>
-            {activeHeroData?.title && (
-              <h1 style={{ color: activeHeroData.headingColor || undefined }}>
-                {(() => {
-                  const lines = activeHeroData.title.split('|').map(l => l.trim()).filter(Boolean);
-                  const totalLines = lines.length;
-                  return lines.map((line, i) => {
-                    const words = line.split(/\s+/);
-                    const totalWords = words.length;
-                    return (
-                      <Fragment key={i}>
-                        {words.map((word, j) => {
-                          const isFirst = i === 0 && j === 0;
-                          const isLast = i === totalLines - 1 && j === totalWords - 1;
-                          return (
-                            <Fragment key={j}>
-                              {isFirst || isLast ? <span style={{ color: 'inherit' }}>{word}</span> : word}
-                              {j < totalWords - 1 ? ' ' : ''}
-                            </Fragment>
-                          );
-                        })}
-                        {i < totalLines - 1 && <br />}
-                      </Fragment>
-                    );
-                  });
-                })()}
-              </h1>
-            )}
-
-            {activeHeroData?.subtitle && (
-              <p style={{ color: activeHeroData.subheadingColor || undefined }}>
-                {activeHeroData.subtitle}
-              </p>
-            )}
-
-            {activeHeroData?.buttonText && (
-              <div className="hero-actions">
-                <button 
-                  className="primary-button" 
-                  style={{ '--hero-btn-color': activeHeroData?.button1Color || undefined }}
-                  onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
-                >
-                  {activeHeroData.buttonText}
-                </button>
+      <section className="premium-hero" style={{ backgroundImage: `url(${newBanner1})` }}>
+        <div className="premium-hero-overlay"></div>
+        
+        <div className="premium-hero-content">
+          <div className="premium-hero-main">
+            <h1 className="premium-hero-title">
+              <span className="title-slash">/</span> Timeless<br />
+              Weaves.<br />
+              Endless<br />
+              Possibilities.
+            </h1>
+            
+            <p className="premium-hero-subtitle">
+              Premium sarees for your business,<br />
+              crafted for every story.
+            </p>
+            
+            <div className="premium-hero-actions">
+              <button 
+                className="premium-btn-filled" 
+                onClick={() => navigate('catalog')}
+              >
+                Explore Collections
+              </button>
+              <button 
+                className="premium-btn-text" 
+                onClick={() => navigate('bulk-inquiry')}
+              >
+                Request Catalog <ArrowRight size={18} />
+              </button>
+            </div>
+            
+            <div className="premium-hero-features">
+              <div className="premium-feature">
+                <Grid size={24} strokeWidth={1.5} />
+                <div className="premium-feature-text">
+                  <strong>Premium Quality</strong>
+                  <span>Finest fabrics and<br />authentic craftsmanship.</span>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sliding Background Track */}
-        <div className="hero-slider-track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-          {(bannerSlides.length > 0 ? bannerSlides : [{}]).map((slide, index) => (
-            <div key={index} className="hero-slide">
-              <div className="hero-visual" aria-label="Featured saree">
-                {slide.video ? (
-                  <video 
-                    src={slide.video} 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <img 
-                    src={slide.image || fallbackHeroImage} 
-                    alt={slide.title || 'Premium saree collection'} 
-                    fetchPriority={index === 0 ? "high" : "low"} 
-                    decoding="async" 
-                    onError={(e) => { e.target.style.opacity = '0'; }}
-                  />
-                )}
+              <div className="premium-feature">
+                <Tag size={24} strokeWidth={1.5} />
+                <div className="premium-feature-text">
+                  <strong>Wholesale Prices</strong>
+                  <span>Competitive pricing<br />for your business.</span>
+                </div>
+              </div>
+              <div className="premium-feature">
+                <Truck size={24} strokeWidth={1.5} />
+                <div className="premium-feature-text">
+                  <strong>Reliable Supply</strong>
+                  <span>Timely delivery & bulk<br />order support.</span>
+                </div>
               </div>
             </div>
-          ))}
+          </div>
+          
+          <div className="premium-hero-sidebar">
+            <div className="premium-hero-collection-info">
+              <span>B2B<br />SAREE<br />COLLECTION<br />'24</span>
+            </div>
+            <div className="premium-hero-pagination">
+              <span className="current-slide">01</span>
+              <span className="divider">/</span>
+              <span className="total-slides">03</span>
+            </div>
+            <div className="premium-hero-scroll">
+              <span>Scroll to Explore</span>
+              <ArrowDown size={20} strokeWidth={1.5} />
+            </div>
+          </div>
         </div>
       </section>
-
-      <FeatureStrip />
 
       {dealProducts.length > 0 && (
         <section className="deal-section" aria-labelledby="deal-heading">
