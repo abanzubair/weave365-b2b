@@ -2831,6 +2831,11 @@ button {
   background: var(--white);
   box-shadow: var(--shadow);
   scrollbar-width: thin;
+  transition: width 0.3s ease;
+}
+
+.auth-modal.register-mode {
+  width: min(680px, 100%);
 }
 
 .auth-modal h2 {

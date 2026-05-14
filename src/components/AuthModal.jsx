@@ -180,7 +180,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
 
   return (
     <div className="modal-backdrop">
-      <section className="auth-modal">
+      <section className={`auth-modal ${mode}-mode`}>
         <button className="icon-button modal-close" onClick={onClose}>
           <X />
         </button>
