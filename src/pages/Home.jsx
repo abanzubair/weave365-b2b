@@ -245,12 +245,7 @@ export function Home({
               <div className="hero-actions">
                 <button 
                   className="primary-button" 
-                  style={{ 
-                    backgroundColor: 'transparent', 
-                    border: `1px solid ${activeHeroData?.button1Color || 'var(--gold)'}`,
-                    color: activeHeroData?.button1Color || 'var(--gold)',
-                    fontWeight: 600
-                  }}
+                  style={{ '--hero-btn-color': activeHeroData?.button1Color || undefined }}
                   onClick={() => activeHeroData?.buttonLink ? (activeHeroData.buttonLink.startsWith('http') ? window.open(activeHeroData.buttonLink, '_blank') : navigate(activeHeroData.buttonLink)) : navigate('catalog')}
                 >
                   {activeHeroData.buttonText}

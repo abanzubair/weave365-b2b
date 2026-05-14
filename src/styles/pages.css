@@ -302,6 +302,13 @@ button {
   color: #fff;
 }
 
+.hero-actions .primary-button {
+  background: transparent;
+  border: 1px solid var(--hero-btn-color, var(--gold));
+  color: var(--hero-btn-color, var(--gold));
+  font-weight: 600;
+}
+
 .secondary-button {
   border: 1px solid var(--gold-dark);
   background: transparent;
