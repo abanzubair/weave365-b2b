@@ -567,9 +567,15 @@ export default function App() {
         </button>
         <div className="header-actions">
           {user ? (
-            <button className="login-link" type="button" onClick={handleSignOut}>
-              Logout
-            </button>
+            <>
+              <button className="login-link" type="button" onClick={() => navigate('account')}>
+                <User size={18} />
+                Account
+              </button>
+              <button className="login-link" type="button" onClick={handleSignOut}>
+                Logout
+              </button>
+            </>
           ) : (
             <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
               <User size={18} />

@@ -120,7 +120,7 @@ export function MobileMenu({ onClose, navigate, setCategory, user, openAuth, sea
           ))}
         </nav>
         <div className="mobile-menu-divider" />
-        <button className="mobile-menu-item mobile-menu-account" onClick={openAuth}>
+        <button className="mobile-menu-item mobile-menu-account" onClick={() => user ? navigate('account') : openAuth()}>
           <span className="mobile-menu-icon"><User size={20} /></span>
           {user ? user.email || 'Account' : 'Login / Register'}
           <ArrowRight size={16} className="mobile-menu-arrow" />
