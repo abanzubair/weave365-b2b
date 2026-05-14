@@ -61,6 +61,7 @@ export default function App() {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [heroSlides, setHeroSlides] = useState([]);
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
+  const [scrolled, setScrolled] = useState(false);
   const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
   const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
   const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
@@ -103,6 +104,14 @@ export default function App() {
     return () => {
       isActive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -457,7 +466,7 @@ export default function App() {
   return (
     <>
       {route !== 'home' && <TopBar />}
-      <header className={`site-header ${route === 'home' ? 'home-header' : ''}`}>
+      <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''}`}>
         <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
           <Menu size={22} />
         </button>
