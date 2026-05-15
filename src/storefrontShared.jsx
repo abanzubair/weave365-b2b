@@ -329,8 +329,9 @@ export const ProductCard = memo(function ProductCard({
           <div className="card-options-sheet" onClick={e => e.stopPropagation()}>
             <div className="sheet-header">
               <div className="sheet-handle" />
+              <span className="sheet-title">Product Options</span>
               <button className="sheet-close" onClick={() => setShowOptions(false)}>
-                <X size={20} />
+                <X size={16} strokeWidth={2.5} />
               </button>
             </div>
             
