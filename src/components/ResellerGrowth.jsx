@@ -2,15 +2,17 @@ import { CheckCircle2, ChevronRight, Share2, Package, TrendingUp, ShieldCheck } 
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from '../storefrontShared.jsx';
 
+import { useNavigate } from 'react-router-dom';
+
 export function ResellerGrowth({ imageUrl }) {
-  const whatsappStartUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent('Hello Weave365, I want to start buying wholesale catalogues.')}`;
+  const navigate = useNavigate();
 
   return (
     <section className="reseller-editorial-section" aria-labelledby="reseller-editorial-heading">
       <div className="editorial-container">
         <div className="editorial-layout">
           <div className="editorial-main-content">
-            <span className="editorial-kicker">Wholesale Collaboration</span>
+            <span className="editorial-kicker">Reseller Collaboration</span>
             <h2 id="reseller-editorial-heading" className="editorial-title">
               Crafting <span>Success</span><br />
               Beyond the <span>Weave</span>.
@@ -44,11 +46,21 @@ export function ResellerGrowth({ imageUrl }) {
               </div>
             </div>
 
-            <a className="editorial-cta" href={whatsappStartUrl} target="_blank" rel="noreferrer">
-              <WhatsappIcon size={20} />
-              <span>Join Our Reseller Network</span>
-              <ChevronRight size={18} />
-            </a>
+            <button 
+              className="growth-cta" 
+              onClick={() => {
+                navigate('/reseller-growth');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <div className="growth-content">
+                <span className="growth-label">Grow with us</span>
+                <span className="growth-subtext">Start your wholesale journey today</span>
+              </div>
+              <div className="growth-action">
+                <ChevronRight size={28} className="arrow-icon" />
+              </div>
+            </button>
           </div>
 
           <div className="editorial-visual-stack">
@@ -72,12 +84,12 @@ export function ResellerGrowth({ imageUrl }) {
               <div className="process-icon"><Package size={24} /></div>
               <span>Select Catalogue</span>
             </div>
-            <div className="process-arrow"><ChevronRight size={16} /></div>
+            <div className="process-arrow"><ChevronRight size={24} /></div>
             <div className="process-item">
               <div className="process-icon"><Share2 size={24} /></div>
               <span>Connect on WhatsApp</span>
             </div>
-            <div className="process-arrow"><ChevronRight size={16} /></div>
+            <div className="process-arrow"><ChevronRight size={24} /></div>
             <div className="process-item">
               <div className="process-icon"><TrendingUp size={24} /></div>
               <span>Scale Your Business</span>

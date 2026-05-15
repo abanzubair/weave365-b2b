@@ -34,6 +34,7 @@ const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module
 const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
 const Account = lazy(() => import('./pages/Account.jsx').then((module) => ({ default: module.Account })));
+const ResellerGrowthPage = lazy(() => import('./pages/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
 
 export default function App() {
 
@@ -692,6 +693,11 @@ export default function App() {
                 user={user}
                 buyerProfile={buyerProfile}
                 onProfileChange={setBuyerProfile}
+                openAuth={() => setAuthOpen(true)}
+              />
+            } />
+            <Route path="/reseller-growth" element={
+              <ResellerGrowthPage
                 openAuth={() => setAuthOpen(true)}
               />
             } />

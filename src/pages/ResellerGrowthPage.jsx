@@ -1,0 +1,174 @@
+import { ArrowRight, BadgeCheck, Share2, PackagePlus, Users, Store, Zap, ShieldCheck } from 'lucide-react';
+
+import '../styles/resellerGrowthPage.css';
+
+export function ResellerGrowthPage({ openAuth }) {
+  return (
+    <div className="reseller-page-container">
+      {/* A. Hero Section */}
+      <section className="reseller-hero-section">
+        <div className="reseller-hero-content">
+          <span className="hero-kicker">Weave365 Reseller Program</span>
+          <h1 className="hero-title">Grow Your Business as a Certified Reseller</h1>
+          <p className="hero-description">
+            Set your own selling price, share premium catalogs with your network, and build your own customer base with zero inventory risk.
+          </p>
+          <div className="hero-actions">
+            <button className="gold-button" onClick={openAuth}>
+              Register as Reseller <ArrowRight size={18} />
+            </button>
+            <a href="#how-it-works" className="secondary-button">
+              Learn How It Works
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* B. Important Notice Section */}
+      <section className="reseller-notice-section">
+        <div className="notice-card">
+          <ShieldCheck size={28} className="notice-icon" />
+          <div className="notice-text">
+            <strong>Important Notice for Resellers</strong>
+            <p>
+              To become a certified reseller and unlock custom pricing, you must first register as a reseller. This feature will be enabled only after reseller registration and approval by our team.
+            </p>
+          </div>
+          <button className="notice-cta-button" onClick={openAuth}>
+            Register Now
+          </button>
+        </div>
+      </section>
+
+      {/* C. Step-by-step Instructions */}
+      <section id="how-it-works" className="reseller-steps-section">
+        <div className="section-header">
+          <h2>How It Works</h2>
+          <p>Your journey to a successful reselling business in 6 simple steps</p>
+        </div>
+        
+        <div className="steps-grid">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <div className="step-icon"><BadgeCheck size={24} /></div>
+            <h3>Register</h3>
+            <p>Sign up and register as a reseller on our platform.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <div className="step-icon"><ShieldCheck size={24} /></div>
+            <h3>Get Certified</h3>
+            <p>Our team will review and approve your reseller account.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">3</div>
+            <div className="step-icon"><Store size={24} /></div>
+            <h3>Browse Catalog</h3>
+            <p>Explore our premium, handpicked collections.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">4</div>
+            <div className="step-icon"><PackagePlus size={24} /></div>
+            <h3>Add Margin</h3>
+            <p>Set your own custom selling price and margin.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">5</div>
+            <div className="step-icon"><Share2 size={24} /></div>
+            <h3>Share Easily</h3>
+            <p>Share directly on WhatsApp, Instagram, and Facebook.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">6</div>
+            <div className="step-icon"><Zap size={24} /></div>
+            <h3>Grow Fast</h3>
+            <p>Receive orders from your customers and build trust.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* D. Feature Benefits Section */}
+      <section className="reseller-benefits-section">
+        <div className="benefits-container">
+          <div className="benefits-image-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1603969409447-ba8614ad10fe?auto=format&fit=crop&w=1600&q=80"
+              alt="Reseller Business" 
+              className="benefits-image"
+            />
+            <div className="benefits-glass-card">
+              <Users size={24} className="gold-icon" />
+              <strong>Empower Your Network</strong>
+              <span>Turn your social circle into your business.</span>
+            </div>
+          </div>
+          <div className="benefits-content">
+            <h2>Why Partner With Us?</h2>
+            <ul className="benefits-list">
+              <li>
+                <BadgeCheck className="benefit-list-icon" />
+                <div>
+                  <strong>Zero Inventory Risk</strong>
+                  <span>Sell without managing any stock or warehouse.</span>
+                </div>
+              </li>
+              <li>
+                <BadgeCheck className="benefit-list-icon" />
+                <div>
+                  <strong>Control Your Margins</strong>
+                  <span>You choose your margin and set your own prices.</span>
+                </div>
+              </li>
+              <li>
+                <BadgeCheck className="benefit-list-icon" />
+                <div>
+                  <strong>Seamless Sharing</strong>
+                  <span>Share products beautifully on social platforms.</span>
+                </div>
+              </li>
+              <li>
+                <BadgeCheck className="benefit-list-icon" />
+                <div>
+                  <strong>Start Immediately</strong>
+                  <span>Begin selling directly to your existing network.</span>
+                </div>
+              </li>
+              <li>
+                <BadgeCheck className="benefit-list-icon" />
+                <div>
+                  <strong>Build Trust</strong>
+                  <span>Deliver premium quality as a certified reseller.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* E. Social Sharing Explanation */}
+      <section className="reseller-social-section">
+        <div className="social-content">
+          <h2>Share Anywhere, Anytime</h2>
+          <p>
+            Our platform is built for modern resellers. Generate custom links with your margin and share product catalogs instantly with your customers across:
+          </p>
+          <div className="social-tags">
+            <span className="social-tag">WhatsApp</span>
+            <span className="social-tag">Instagram</span>
+            <span className="social-tag">Facebook</span>
+            <span className="social-tag">Telegram</span>
+          </div>
+        </div>
+      </section>
+
+      {/* F. Final CTA Section */}
+      <section className="reseller-final-cta">
+        <h2>Ready to build your business?</h2>
+        <p>Join our network of successful resellers today.</p>
+        <button className="gold-button large" onClick={openAuth}>
+          Register as Reseller
+        </button>
+      </section>
+    </div>
+  );
+}
