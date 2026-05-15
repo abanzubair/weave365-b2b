@@ -1,6 +1,6 @@
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
-import { Linkedin, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
+import { Linkedin, Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
 
 export function Footer({ navigate }) {
   return (
@@ -52,7 +52,14 @@ export function Footer({ navigate }) {
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
         <p className="developer-credit">
-          Designed and Developed by <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer">Aban Zubair</a>
+          Designed and Developed by <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer">Aban Zubair</a><span className="developer-socials">
+            <a href="https://linkedin.com/in/abanzubair" target="_blank" rel="noreferrer" title="LinkedIn">
+              <Linkedin size={14} />
+            </a>
+            <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer" title="GitHub">
+              <Github size={14} />
+            </a>
+          </span>
         </p>
       </div>
     </footer>

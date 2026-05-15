@@ -27,7 +27,7 @@ import {
   ZoomIn,
   BellRing,
   X,
-  MoreHorizontal,
+  Menu,
   ChevronRight,
   Zap,
 } from 'lucide-react';
@@ -336,7 +336,7 @@ export const ProductCard = memo(function ProductCard({
                 className="add-to-bag-btn options-trigger-btn" 
                 onClick={() => setShowOptions(true)}
               >
-                <MoreHorizontal size={16} /> OPTIONS
+                <Menu size={16} /> OPTIONS
               </button>
             </>
           ) : (

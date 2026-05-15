@@ -333,6 +333,38 @@
   border-bottom-color: var(--gold);
 }
 
+.developer-socials {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  transform: translateY(-1px);
+}
+
+.developer-socials a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  color: var(--muted) !important;
+  background: var(--surface-soft);
+  border-radius: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.developer-socials a:hover {
+  color: var(--gold-dark) !important;
+  background: var(--white);
+  border-color: rgba(183, 134, 70, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.1);
+}
+
+.developer-socials svg {
+  display: block;
+}
+
 
 
 /* ---- Mobile Menu: Slide-in Drawer ---- */
