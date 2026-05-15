@@ -273,7 +273,12 @@ export const ProductCard = memo(function ProductCard({
                     <small>{formatMoney(setPrice)} / set</small>
                   </>
                 ) : (
-                  <strong className="price-locked-text">{priceNoticeForAccess(priceAccess)}</strong>
+                  <div className="price-pending-notice">
+                    <div className="notice-text">
+                      <strong>{priceNoticeForAccess(priceAccess)}</strong>
+                      <span>Wholesale prices will be visible once approved</span>
+                    </div>
+                  </div>
                 )}
               </>
             )}
