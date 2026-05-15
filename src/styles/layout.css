@@ -409,6 +409,7 @@
   display: flex;
   flex-direction: column;
   padding: 8px 0;
+  gap: 0;
 }
 
 .mobile-menu-item {
@@ -416,7 +417,9 @@
   align-items: center;
   gap: 14px;
   min-height: 52px;
+  width: 100%;
   padding: 0 20px;
+  margin: 0;
   border: 0;
   background: transparent;
   font-size: 15px;
@@ -424,7 +427,9 @@
   color: var(--ink);
   text-align: left;
   transition: background 0.15s ease;
+  cursor: pointer;
 }
+
 
 .mobile-menu-item:hover,
 .mobile-menu-item:active {
@@ -469,69 +474,178 @@
   opacity: 0.5;
 }
 
-.mobile-menu-divider {
-  height: 1px;
-  margin: 4px 20px;
-  background: var(--line);
+.mobile-menu-bottom-section {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.mobile-menu-account {
-  padding: 4px 20px;
+.mobile-menu-divider {
+  height: 1px;
+  margin: 12px 0;
+  background: var(--line);
+  opacity: 0.8;
 }
+
+
+
+/* My Account Dropdown */
+.mobile-account-dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-menu-chevron {
+  margin-left: auto;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--muted);
+}
+
+.mobile-menu-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.mobile-account-items {
+  max-height: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow: hidden;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-account-dropdown.is-open .mobile-account-items {
+  max-height: 1000px; /* Sufficient for long lists */
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+.mobile-account-items-inner {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 16px 12px;
+}
+
+
+.mobile-account-subitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.mobile-account-subitem:hover {
+  background: var(--surface-soft);
+}
+
+.subitem-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  color: var(--gold-dark);
+}
+
+.subitem-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.mobile-menu-badge.mini {
+  padding: 2px 6px;
+  font-size: 9px;
+  margin-left: auto;
+}
+
 
 .mobile-menu-section {
   padding: 16px 20px;
 }
 
-.mobile-menu-section-title {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 12px;
+/* Currency Dropdown Redesign */
+.mobile-currency-dropdown {
+  padding-bottom: 0 !important;
 }
+
+
+.mobile-currency-expandable {
+  max-height: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-currency-dropdown.is-open .mobile-currency-expandable {
+  max-height: 400px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-currency-expandable-inner {
+  min-height: 0;
+  padding: 0 14px 24px;
+}
+
+
+
 
 .mobile-currency-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 4px;
 }
+
 
 .mobile-currency-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 6px 4px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--white);
-  color: var(--ink);
+  gap: 8px;
+  padding: 8px 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.mobile-currency-btn:active {
-  transform: scale(0.95);
+  transition: all 0.2s ease;
 }
 
 .mobile-currency-btn.active {
-  background: var(--surface-soft);
-  border-color: var(--gold);
   color: var(--gold-dark);
-  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.12);
+}
+
+.mobile-currency-btn.active img {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(183, 134, 70, 0.2);
+  border: 1.5px solid var(--gold);
 }
 
 .mobile-currency-btn img {
-  width: 14px;
+  width: 24px;
   height: auto;
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
 }
+
+
 
 .mobile-menu-footer {
   margin-top: auto;

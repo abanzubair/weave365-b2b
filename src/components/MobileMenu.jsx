@@ -13,7 +13,11 @@ import {
   MessageCircle,
   Bookmark,
   ShoppingBag,
+  ChevronDown,
+  LogOut,
+  Globe,
 } from 'lucide-react';
+
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 
@@ -26,6 +30,8 @@ export function MobileMenu({
   navigate, 
   setCategory, 
   user, 
+  isAdmin,
+  categories = [],
   openAuth, 
   search, 
   setSearch, 
@@ -33,21 +39,47 @@ export function MobileMenu({
   priceAccess,
   setCartOpen,
   cartCount,
-  favoritesCount
+  favoritesCount,
+  onSignOut
 }) {
   const currentCurrency = useCurrency();
   const [localSearch, setLocalSearch] = useState(search || '');
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+
+
   const navItems = [
-    { icon: <PackageCheck size={20} />, label: 'Bulk Order', action: () => navigate('bulk-inquiry') },
-    { icon: <Store size={20} />, label: 'Catalogue', action: () => navigate('catalog') },
     { 
-      icon: <Bookmark size={20} />, 
-      label: 'Saved Items', 
-      badge: favoritesCount,
-      action: () => navigate('favorites') 
+      icon: <Sparkles size={20} />, 
+      label: 'New Arrivals', 
+      action: () => { 
+        setCategory('New Arrivals'); 
+        navigate('catalog'); 
+      } 
     },
     { 
-      icon: <ShoppingBag size={20} />, 
+      icon: <Store size={20} />, 
+      label: 'Catalogue', 
+      action: () => navigate('catalog') 
+    },
+    { 
+      icon: <PackageCheck size={20} />, 
+      label: 'Bulk Order', 
+      action: () => navigate('bulk-inquiry') 
+    },
+    ...(isAdmin ? [
+      { 
+        icon: <BadgeCheck size={20} />, 
+        label: 'Admin', 
+        action: () => navigate('admin') 
+      }
+    ] : []),
+  ];
+
+  const accountItems = [
+    { 
+      icon: <ShoppingBag size={18} />, 
       label: 'My Cart', 
       badge: cartCount,
       action: () => {
@@ -55,6 +87,18 @@ export function MobileMenu({
         setCartOpen(true);
       } 
     },
+    { 
+      icon: <Bookmark size={18} />, 
+      label: 'Saved Items', 
+      badge: favoritesCount,
+      action: () => navigate('favorites') 
+    },
+    ...(user ? [
+      { icon: <User size={18} />, label: 'Account Details', action: () => navigate('account') },
+      { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
+    ] : [
+      { icon: <User size={18} />, label: 'Login / Register', action: () => openAuth() },
+    ]),
   ];
 
   return (
@@ -124,6 +168,35 @@ export function MobileMenu({
           )}
         </div>
         <nav className="mobile-menu-nav">
+          <div className={`mobile-account-dropdown ${categoriesOpen ? 'is-open' : ''}`}>
+            <button 
+              className="mobile-menu-item mobile-menu-account-trigger" 
+              onClick={() => setCategoriesOpen(!categoriesOpen)}
+            >
+              <span className="mobile-menu-icon"><Layers size={20} /></span>
+              <span className="mobile-menu-label">Categories</span>
+              <ChevronDown size={18} className={`mobile-menu-chevron ${categoriesOpen ? 'rotated' : ''}`} />
+            </button>
+            
+            <div className="mobile-account-items">
+              <div className="mobile-account-items-inner">
+                {categories.map((cat) => (
+                  <button 
+                    key={cat} 
+                    className="mobile-account-subitem" 
+                    onClick={() => {
+                      setCategory(cat);
+                      navigate('catalog');
+                    }}
+                  >
+                    <span className="subitem-label" style={{ paddingLeft: '8px' }}>
+                      {cat}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           {navItems.map(({ icon, label, action, badge }) => (
             <button key={label} onClick={action} className="mobile-menu-item">
               <span className="mobile-menu-icon">{icon}</span>
@@ -135,33 +208,71 @@ export function MobileMenu({
             </button>
           ))}
         </nav>
-        <div className="mobile-menu-divider" />
-        <button className="mobile-menu-item mobile-menu-account" onClick={() => user ? navigate('account') : openAuth()}>
-          <span className="mobile-menu-icon"><User size={20} /></span>
-          {user ? user.email || 'Account' : 'Login / Register'}
-          <ArrowRight size={16} className="mobile-menu-arrow" />
-        </button>
-        <div className="mobile-menu-section">
-          <h4 className="mobile-menu-section-title">Select Currency</h4>
-          <div className="mobile-currency-grid">
-            {CURRENCIES.map(c => (
-              <button 
-                key={c.code}
-                className={`mobile-currency-btn ${c.code === currentCurrency ? 'active' : ''}`}
-                onClick={() => {
-                  CurrencyManager.setCurrency(c.code);
-                }}
-              >
-                <img src={`https://flagcdn.com/w20/${c.flag}.png`} alt="" className="flag-img" />
-                <span>{c.code}</span>
-              </button>
-            ))}
+        <div className="mobile-menu-bottom-section">
+          <div className="mobile-menu-divider" />
+          
+          <div className={`mobile-account-dropdown ${accountOpen ? 'is-open' : ''}`}>
+            <button 
+              className="mobile-menu-item mobile-menu-account-trigger" 
+              onClick={() => setAccountOpen(!accountOpen)}
+            >
+              <span className="mobile-menu-icon"><User size={20} /></span>
+              <span className="mobile-menu-label">My Account</span>
+              <ChevronDown size={18} className={`mobile-menu-chevron ${accountOpen ? 'rotated' : ''}`} />
+            </button>
+            
+            <div className="mobile-account-items">
+              <div className="mobile-account-items-inner">
+                {accountItems.map((item, idx) => (
+                  <button key={idx} className="mobile-account-subitem" onClick={item.action}>
+                    <span className="subitem-icon">{item.icon}</span>
+                    <span className="subitem-label">
+                      {item.label}
+                      {item.badge > 0 && <span className="mobile-menu-badge mini">{item.badge}</span>}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`mobile-currency-dropdown ${currencyOpen ? 'is-open' : ''}`}>
+            <button 
+              className="mobile-menu-item mobile-currency-trigger" 
+              onClick={() => setCurrencyOpen(!currencyOpen)}
+            >
+              <span className="mobile-menu-icon"><Globe size={20} /></span>
+              <span className="mobile-menu-label">Select Currency</span>
+              <ChevronDown size={18} className={`mobile-menu-chevron ${currencyOpen ? 'rotated' : ''}`} />
+            </button>
+
+            
+            <div className="mobile-currency-expandable">
+              <div className="mobile-currency-expandable-inner">
+                <div className="mobile-currency-grid">
+                  {CURRENCIES.map(c => (
+                    <button 
+                      key={c.code}
+                      className={`mobile-currency-btn ${c.code === currentCurrency ? 'active' : ''}`}
+                      onClick={() => {
+                        CurrencyManager.setCurrency(c.code);
+                      }}
+                    >
+                      <img src={`https://flagcdn.com/w20/${c.flag}.png`} alt="" className="flag-img" />
+                      <span>{c.code}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mobile-menu-footer">
+            <span><Headphones size={16} /> {storeConfig.phone}</span>
+            <span><MessageCircle size={16} /> {storeConfig.email}</span>
           </div>
         </div>
-        <div className="mobile-menu-footer">
-          <span><Headphones size={16} /> {storeConfig.phone}</span>
-          <span><MessageCircle size={16} /> {storeConfig.email}</span>
-        </div>
+
       </aside>
     </>
   );

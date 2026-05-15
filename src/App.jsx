@@ -464,16 +464,15 @@ export default function App() {
       {!isSharedPage && (
         <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
           <button 
-            className={`hamburger-btn ${menuOpen ? 'active' : ''}`} 
+            className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
             type="button" 
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
-            <div className="hamburger-icon">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
+              <rect className="line line-top" x="4" y="8" width="16" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-bottom" x="8" y="14" width="12" height="1.5" rx="0.75" fill="currentColor" />
+            </svg>
           </button>
 
           <a
@@ -639,6 +638,8 @@ export default function App() {
           navigate={navigate}
           setCategory={setCategory}
           user={user}
+          isAdmin={isAdmin}
+          categories={categories}
           priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
           search={search}
@@ -647,7 +648,9 @@ export default function App() {
           setCartOpen={setCartOpen}
           cartCount={cart.length}
           favoritesCount={favorites.length}
+          onSignOut={handleSignOut}
         />
+
       )}
 
       <main>

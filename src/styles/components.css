@@ -39,35 +39,28 @@
   background: transparent !important;
 }
 
-.hamburger-icon {
-  width: 22px;
-  height: 14px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.hamburger-svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.hamburger-icon span {
-  display: block;
-  width: 100%;
-  height: 2px;
-  background-color: currentColor;
-  border-radius: 4px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.hamburger-svg .line {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
 }
 
-.hamburger-btn.active .hamburger-icon span:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
+/* 2-Bar Editorial Style (Closed) */
+.hamburger-btn.is-active .hamburger-svg .line-top {
+  transform: translateY(3px) rotate(45deg);
 }
 
-.hamburger-btn.active .hamburger-icon span:nth-child(2) {
-  opacity: 0;
+.hamburger-btn.is-active .hamburger-svg .line-bottom {
+  transform: translateY(-3px) translateX(-2px) rotate(-45deg) scaleX(1.333);
+}
+
+.hamburger-btn:hover .line-bottom {
   transform: translateX(-4px);
-}
-
-.hamburger-btn.active .hamburger-icon span:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
 }
 
 
