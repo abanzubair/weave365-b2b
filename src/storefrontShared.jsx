@@ -175,6 +175,30 @@ export const ProductCard = memo(function ProductCard({
   const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
   const [showShareModal, setShowShareModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 820px)');
+    const handler = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
+  // Auto-close on outside click for desktop
+  useEffect(() => {
+    if (!showOptions || isMobile) return;
+
+    const handleOutsideClick = (e) => {
+      // If the click is outside the product card
+      if (!e.target.closest('.product-card')) {
+        setShowOptions(false);
+      }
+    };
+
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, [showOptions, isMobile]);
 
   async function handleEnquiryClick() {
     if (enquiryState === 'sending') return;
@@ -324,87 +348,91 @@ export const ProductCard = memo(function ProductCard({
         </div>
       </div>
 
-      {showOptions && (
-        <div className="card-options-overlay" onClick={() => setShowOptions(false)}>
-          <div className="card-options-sheet" onClick={e => e.stopPropagation()}>
-            <div className="sheet-header">
-              <div className="sheet-handle" />
-              <span className="sheet-title">Product Options</span>
-              <button className="sheet-close" onClick={() => setShowOptions(false)}>
-                <X size={16} strokeWidth={2.5} />
-              </button>
-            </div>
-            
-            <div className="sheet-list">
-              <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
-                <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
-                <div className="item-copy">
-                  <strong>Buy via WhatsApp</strong>
-                  <span>Get assistance & place your order</span>
-                </div>
-                <ChevronRight size={18} className="item-chevron" />
-              </button>
+      {showOptions && (() => {
+        const content = (
+          <div className="card-options-overlay" onClick={() => setShowOptions(false)}>
+            <div className="card-options-sheet" onClick={e => e.stopPropagation()}>
+              <div className="sheet-header">
+                <div className="sheet-handle" />
+                <span className="sheet-title">Product Options</span>
+                <button className="sheet-close" onClick={() => setShowOptions(false)}>
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+              
+              <div className="sheet-list">
+                <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                  <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
+                  <div className="item-copy">
+                    <strong>Buy via WhatsApp</strong>
+                    <span>Get assistance & place your order</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
 
-              <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
-                <div className="item-icon zap"><Zap size={20} /></div>
-                <div className="item-copy">
-                  <strong>Order Now</strong>
-                  <span>Quick checkout via enquiry</span>
-                </div>
-                <ChevronRight size={18} className="item-chevron" />
-              </button>
+                <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                  <div className="item-icon zap"><Zap size={20} /></div>
+                  <div className="item-copy">
+                    <strong>Order Now</strong>
+                    <span>Quick checkout via enquiry</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
 
-              <button className="sheet-item" onClick={() => { setShowOptions(false); addToCart(product, selectedVariant, 1); }}>
-                <div className="item-icon bag"><ShoppingBag size={20} /></div>
-                <div className="item-copy">
-                  <strong>Add to Cart</strong>
-                  <span>Save and shop later</span>
-                </div>
-                <ChevronRight size={18} className="item-chevron" />
-              </button>
+                <button className="sheet-item" onClick={() => { setShowOptions(false); addToCart(product, selectedVariant, 1); }}>
+                  <div className="item-icon bag"><ShoppingBag size={20} /></div>
+                  <div className="item-copy">
+                    <strong>Add to Cart</strong>
+                    <span>Save and shop later</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
 
-              <button className="sheet-item" onClick={() => { setShowOptions(false); toggleFavorite(product); }}>
-                <div className="item-icon heart"><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></div>
-                <div className="item-copy">
-                  <strong>{isFavorite ? 'Remove from Favourite' : 'Add to Favourite'}</strong>
-                  <span>Save to your wishlist</span>
-                </div>
-                <ChevronRight size={18} className="item-chevron" />
-              </button>
+                <button className="sheet-item" onClick={() => { setShowOptions(false); toggleFavorite(product); }}>
+                  <div className="item-icon heart"><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></div>
+                  <div className="item-copy">
+                    <strong>{isFavorite ? 'Remove from Favourite' : 'Add to Favourite'}</strong>
+                    <span>Save to your wishlist</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
 
-              <div className="sheet-divider" />
+                <div className="sheet-divider" />
 
-              <ResellerWhatsappShare
-                product={product}
-                variant={selectedVariant}
-                quantity={colorCount}
-                priceAccess={priceAccess}
-                triggerClassName="sheet-item reseller-primary"
-                onClick={() => setShowOptions(false)}
-                triggerLabel={
-                  <>
-                    <div className="item-icon share"><Share2 size={20} /></div>
-                    <div className="item-copy">
-                      <strong>WhatsApp Customer</strong>
-                      <span>Share with your own markup</span>
-                    </div>
-                    <ChevronRight size={18} className="item-chevron" />
-                  </>
-                }
-              />
+                <ResellerWhatsappShare
+                  product={product}
+                  variant={selectedVariant}
+                  quantity={colorCount}
+                  priceAccess={priceAccess}
+                  triggerClassName="sheet-item reseller-primary"
+                  onClick={() => setShowOptions(false)}
+                  triggerLabel={
+                    <>
+                      <div className="item-icon share"><Share2 size={20} /></div>
+                      <div className="item-copy">
+                        <strong>WhatsApp Customer</strong>
+                        <span>Share with your own markup</span>
+                      </div>
+                      <ChevronRight size={18} className="item-chevron" />
+                    </>
+                  }
+                />
 
-              <button className="sheet-item" onClick={() => { setShowOptions(false); setShowShareModal(true); }}>
-                <div className="item-icon link"><Layers size={20} /></div>
-                <div className="item-copy">
-                  <strong>Catalog Link</strong>
-                  <span>Create white-label customer link</span>
-                </div>
-                <ChevronRight size={18} className="item-chevron" />
-              </button>
+                <button className="sheet-item" onClick={() => { setShowOptions(false); setShowShareModal(true); }}>
+                  <div className="item-icon link"><Layers size={20} /></div>
+                  <div className="item-copy">
+                    <strong>Catalog Link</strong>
+                    <span>Create white-label customer link</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+
+        return isMobile ? createPortal(content, document.body) : content;
+      })()}
 
 
 
