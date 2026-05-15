@@ -276,7 +276,7 @@ export const ProductCard = memo(function ProductCard({
                   <div className="price-pending-notice">
                     <div className="notice-text">
                       <strong>{priceNoticeForAccess(priceAccess)}</strong>
-                      <span>Wholesale prices will be visible once approved</span>
+                      <span>Prices will be visible once approved</span>
                     </div>
                   </div>
                 )}
