@@ -1,0 +1,370 @@
+/* ===================================================
+   Shared Catalog — White-label Public Page (Compact)
+   Trust & Authority style, editorial density
+   =================================================== */
+
+/* ---------- Wrapper ---------- */
+.sc-wrapper {
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: var(--font-modern-body, 'Work Sans', system-ui, sans-serif);
+  padding-bottom: 5rem;
+}
+
+/* ---------- Sticky Header ---------- */
+.sc-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1.25rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sc-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sc-logo {
+  height: 1.75rem;
+  width: auto;
+  border-radius: 0.375rem;
+}
+
+.sc-logo-fallback {
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--premium-navy, #0F172A);
+  color: white;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-hero-heading, serif);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.sc-brand-name {
+  font-family: var(--font-hero-heading, serif);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--premium-navy, #0F172A);
+}
+
+.sc-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  background: var(--premium-navy, #0F172A);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sc-contact-btn:hover {
+  background: #1e293b;
+}
+
+/* ---------- Title Bar ---------- */
+.sc-title-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 0.5rem;
+}
+
+.sc-title-bar h2 {
+  font-family: var(--font-hero-heading, serif);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  color: var(--premium-navy, #0F172A);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.sc-item-count {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ---------- Product Grid ---------- */
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .sc-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .sc-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ---------- Product Card ---------- */
+.sc-card {
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.sc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  border-color: #e2e8f0;
+}
+
+.sc-card-img {
+  aspect-ratio: 3/4;
+  position: relative;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.sc-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.sc-card:hover .sc-card-img img {
+  transform: scale(1.04);
+}
+
+.sc-card-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  padding: 0.1875rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  color: var(--premium-navy, #0F172A);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sc-card-body {
+  padding: 0.75rem;
+}
+
+.sc-card-body h3 {
+  font-family: var(--font-hero-heading, serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: var(--premium-navy, #0F172A);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sc-card-price {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--premium-navy, #0F172A);
+  margin-bottom: 0.5rem;
+}
+
+.sc-card-price small {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.sc-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f8fafc;
+}
+
+.sc-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.sc-card-meta svg {
+  color: #cbd5e1;
+}
+
+.sc-card-cta {
+  width: 100%;
+  padding: 0.4375rem;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 0.375rem;
+  color: var(--premium-navy, #0F172A);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sc-card-cta:hover {
+  background: #f1f5f9;
+}
+
+/* ---------- Floating WhatsApp Bar ---------- */
+.sc-float-bar {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+}
+
+.sc-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background: #25d366;
+  color: white;
+  border: none;
+  border-radius: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.25);
+  transition: background 0.2s ease, transform 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sc-whatsapp-btn:hover {
+  background: #20bd5a;
+  transform: scale(1.03);
+}
+
+/* ---------- Inquiry Form ---------- */
+.sc-inquiry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sc-inquiry-desc {
+  color: #64748b;
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.sc-close-link {
+  display: block;
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: var(--premium-navy, #0F172A);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Loading & Error ---------- */
+.sc-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: #f8fafc;
+}
+
+.sc-loading p {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sc-pulse-dot {
+  width: 2rem;
+  height: 2rem;
+  background: #e2e8f0;
+  border-radius: 50%;
+  animation: sc-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sc-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.92); }
+}
+
+.sc-error {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.sc-error h2 {
+  font-family: var(--font-hero-heading, serif);
+  font-size: 1.5rem;
+  color: var(--premium-navy, #0F172A);
+  margin: 0;
+}
+
+.sc-error p {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0;
+}
+
+.sc-empty {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}

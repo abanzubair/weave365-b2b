@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
+import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 import {
   buildSingleProductWhatsappUrl,
   customerPrice,
@@ -76,6 +77,7 @@ export function ProductDetail({
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
   const mainImageRef = useRef(null);
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
@@ -558,6 +560,15 @@ export function ProductDetail({
                     <Share2 size={18} /> Share
                   </button>
                 )}
+                {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices && (
+                  <button 
+                    className="secondary-action-btn reseller-link-detail-btn" 
+                    type="button" 
+                    onClick={() => setShowShareModal(true)}
+                  >
+                    <Share2 size={18} /> White-label Link
+                  </button>
+                )}
               </div>
             </div>
             <p className="buyer-note">
@@ -686,6 +697,15 @@ export function ProductDetail({
         <LockKeyhole size={16} />
         {toastMessage}
       </div>
+
+      {showShareModal && (
+        <ResellerShareModal 
+          product={product}
+          variant={variant}
+          user={{ id: priceAccess.userId }}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </>
   );
 }

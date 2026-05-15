@@ -1,6 +1,7 @@
 import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
+import { ResellerTools } from '../components/ResellerTools.jsx';
 
 function titleCase(value) {
   return String(value || 'pending')
@@ -134,6 +135,12 @@ export function Account({
           <p className="account-muted">Product, cart and bulk inquiry history will appear here after the inquiry table is connected.</p>
         </article>
       </div>
+
+      {priceAccess.resellerDashboardEnabled && (
+        <div className="account-reseller-section">
+          <ResellerTools user={user} buyerProfile={buyerProfile} />
+        </div>
+      )}
     </section>
   );
 }

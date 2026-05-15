@@ -189,6 +189,31 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
     }
   }
 
+  async function toggleResellerDashboard(profile, isEnabled) {
+    if (!isSupabaseConfigured || !allowed) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ reseller_dashboard_enabled: isEnabled, updated_at: new Date().toISOString() })
+      .eq('id', profile.id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setAdminData((current) => ({
+      ...current,
+      profiles: current.profiles.map((row) => (
+        row.id === profile.id ? { ...row, reseller_dashboard_enabled: isEnabled } : row
+      )),
+    }));
+
+    if (profile.id === user?.id && onProfileChange) {
+      onProfileChange({ ...(buyerProfile || profile), reseller_dashboard_enabled: isEnabled });
+    }
+  }
+
   async function updateInquiryStatus(inquiryId, status) {
     if (!isSupabaseConfigured || !allowed) return;
 
@@ -413,6 +438,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
                 <th>Approval</th>
                 <th>Cart</th>
                 <th>Favourites</th>
+                <th>Reseller Dashboard</th>
                 <th>Contact</th>
                 <th>CRM Action</th>
               </tr>
@@ -434,6 +460,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
                     <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
                     <td>{cartRows.length} row{cartRows.length === 1 ? '' : 's'}</td>
                     <td>{favoriteRows.length}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className={`admin-status ${profile.reseller_dashboard_enabled ? 'approved' : 'pending'}`}>
+                          {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                        <button 
+                          type="button" 
+                          onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
+                          style={{ fontSize: '10px', padding: '2px 6px' }}
+                        >
+                          {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
+                        </button>
+                      </div>
+                    </td>
                     <td>
                       <span>{profile.whatsapp || 'No WhatsApp'}</span>
                       <span>{profile.pincode ? `PIN ${profile.pincode}` : ''}</span>

@@ -35,6 +35,7 @@ const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) =
 const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
 const Account = lazy(() => import('./pages/Account.jsx').then((module) => ({ default: module.Account })));
 const ResellerGrowthPage = lazy(() => import('./pages/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
+const SharedCatalog = lazy(() => import('./pages/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
 
 export default function App() {
 
@@ -444,145 +445,149 @@ export default function App() {
 
   // return <ComingSoon />;
 
+  const isSharedPage = location.pathname.startsWith('/s/');
+
   return (
     <>
-      <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
-        <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
-          <Menu size={22} />
-        </button>
-        <a
-          href="/"
-          className="brand"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('home');
-          }}
-        >
-          <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
-        </a>
-        <nav className="main-nav">
-          {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
-            Home
-          </button> */}
-          <div className="nav-item-dropdown">
-            <button
-              className={dropdownOpen === 'categories' ? 'active' : ''}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
-              }}
-            >
-              Categories <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
+      {!isSharedPage && (
+        <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
+          <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
+            <Menu size={22} />
+          </button>
+          <a
+            href="/"
+            className="brand"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('home');
+            }}
+          >
+            <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
+          </a>
+          <nav className="main-nav">
+            {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
+              Home
+            </button> */}
+            <div className="nav-item-dropdown">
+              <button
+                className={dropdownOpen === 'categories' ? 'active' : ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
+                }}
+              >
+                Categories <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
+              </button>
+              {dropdownOpen === 'categories' && (
+                <div className="dropdown-menu">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setCategory(cat);
+                        navigate('catalog');
+                        setDropdownOpen(null);
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
+            <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
+            <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
+              Catalogue
             </button>
-            {dropdownOpen === 'categories' && (
-              <div className="dropdown-menu">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setCategory(cat);
-                      navigate('catalog');
-                      setDropdownOpen(null);
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
+            <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
+              Bulk Order
+            </button>
+            {isAdmin && (
+              <button className={route === 'admin' ? 'active' : ''} onClick={() => navigate('admin')}>
+                Admin
+              </button>
+            )}
+          </nav>
+          <div className="search-box-wrapper">
+            <label className="search-box">
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search products..."
+              />
+              <Search size={18} />
+            </label>
+            {search && route !== 'catalog' && (
+              <div className="search-suggestions">
+                {visibleProducts.length > 0 ? (
+                  <>
+                    {visibleProducts.slice(0, 6).map((product) => {
+                      const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
+                      const image = product.images?.[0] || fallbackProductImage;
+                      return (
+                        <button
+                          key={product.id}
+                          onClick={() => {
+                            navigate('product', product.id);
+                            setSearch('');
+                          }}
+                        >
+                          <img
+                            src={image}
+                            alt=""
+                            onError={(e) => { e.target.style.opacity = '0'; }}
+                          />
+                          <div>
+                            <span>{product.name || product.title}</span>
+                            {price != null && price > 0 ? <small>{formatMoney(price)}</small> : <small>{priceNoticeForAccess(priceAccess)}</small>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                    <button className="view-all-results" onClick={() => navigate('catalog')}>
+                      See all results for "{search}"
+                    </button>
+                  </>
+                ) : (
+                  <div className="no-results">No products found for "{search}"</div>
+                )}
               </div>
             )}
           </div>
-          <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
-          <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
-          <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
-            Catalogue
+          <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
+            <Search size={22} />
           </button>
-          <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
-            Bulk Order
-          </button>
-          {isAdmin && (
-            <button className={route === 'admin' ? 'active' : ''} onClick={() => navigate('admin')}>
-              Admin
-            </button>
-          )}
-        </nav>
-        <div className="search-box-wrapper">
-          <label className="search-box">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search products..."
-            />
-            <Search size={18} />
-          </label>
-          {search && route !== 'catalog' && (
-            <div className="search-suggestions">
-              {visibleProducts.length > 0 ? (
-                <>
-                  {visibleProducts.slice(0, 6).map((product) => {
-                    const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
-                    const image = product.images?.[0] || fallbackProductImage;
-                    return (
-                      <button
-                        key={product.id}
-                        onClick={() => {
-                          navigate('product', product.id);
-                          setSearch('');
-                        }}
-                      >
-                        <img
-                          src={image}
-                          alt=""
-                          onError={(e) => { e.target.style.opacity = '0'; }}
-                        />
-                        <div>
-                          <span>{product.name || product.title}</span>
-                          {price != null && price > 0 ? <small>{formatMoney(price)}</small> : <small>{priceNoticeForAccess(priceAccess)}</small>}
-                        </div>
-                      </button>
-                    );
-                  })}
-                  <button className="view-all-results" onClick={() => navigate('catalog')}>
-                    See all results for "{search}"
-                  </button>
-                </>
-              ) : (
-                <div className="no-results">No products found for "{search}"</div>
-              )}
-            </div>
-          )}
-        </div>
-        <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
-          <Search size={22} />
-        </button>
-        <div className="header-actions">
-          {user ? (
-            <>
-              <button className="login-link" type="button" onClick={() => navigate('account')}>
+          <div className="header-actions">
+            {user ? (
+              <>
+                <button className="login-link" type="button" onClick={() => navigate('account')}>
+                  <User size={18} />
+                  Account
+                </button>
+                <button className="login-link" type="button" onClick={handleSignOut}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
                 <User size={18} />
-                Account
+                Login / Register
               </button>
-              <button className="login-link" type="button" onClick={handleSignOut}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
-              <User size={18} />
-              Login / Register
+            )}
+            <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
+              <Bookmark size={22} />
+              {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
             </button>
-          )}
-          <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
-            <Bookmark size={22} />
-            {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
-          </button>
-          <button className="icon-button cart-button" type="button" onClick={() => setCartOpen(true)}>
-            <ShoppingBag size={22} />
-            {cart.length > 0 && <span className="badge">{cart.length}</span>}
-          </button>
-        </div>
-      </header>
+            <button className="icon-button cart-button" type="button" onClick={() => setCartOpen(true)}>
+              <ShoppingBag size={22} />
+              {cart.length > 0 && <span className="badge">{cart.length}</span>}
+            </button>
+          </div>
+        </header>
+      )}
 
-      {menuOpen && (
+      {menuOpen && !isSharedPage && (
         <MobileMenu
           onClose={() => setMenuOpen(false)}
           navigate={navigate}
@@ -701,24 +706,29 @@ export default function App() {
                 openAuth={() => setAuthOpen(true)}
               />
             } />
+            <Route path="/s/:slug" element={
+              <SharedCatalog products={pricedProducts} />
+            } />
           </Routes>
 
         </Suspense>
       </main>
 
-      <Footer navigate={navigate} />
-      <CartDrawer
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-        items={cartProducts}
-        updateQuantity={updateQuantity}
-        addCartColor={addCartColor}
-        pincode={pincode}
-        setPincode={setPincode}
-        codStatus={codStatus}
-        checkPincode={checkPincode}
-        priceAccess={priceAccess}
-      />
+      {!isSharedPage && <Footer navigate={navigate} />}
+      {!isSharedPage && (
+        <CartDrawer
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}
+          items={cartProducts}
+          updateQuantity={updateQuantity}
+          addCartColor={addCartColor}
+          pincode={pincode}
+          setPincode={setPincode}
+          codStatus={codStatus}
+          checkPincode={checkPincode}
+          priceAccess={priceAccess}
+        />
+      )}
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}

@@ -75,6 +75,7 @@ export function getBuyerAccess(user, buyerProfile) {
     buyerName: profile.business_name || profile.full_name || null,
     buyerPhone: profile.whatsapp || profile.whatsapp_number || null,
     buyerPincode: profile.pincode || null,
+    resellerDashboardEnabled: Boolean(profile.reseller_dashboard_enabled),
   };
 }
 

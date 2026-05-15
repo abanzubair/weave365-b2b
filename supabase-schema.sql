@@ -332,3 +332,151 @@ create policy "admin notes admin only"
 
 -- After your admin account has registered once, run this one line separately with your real email:
 -- update public.profiles set role = 'admin', approval_status = 'approved', price_group = 'wholesale' where lower(email) = lower('you@example.com');
+
+-------------------------------------------------------------------------------
+-- RESELLER WHITE-LABEL FEATURE
+-------------------------------------------------------------------------------
+
+-- 1. Reseller Storefronts (Identity & Branding)
+create table if not exists public.reseller_storefronts (
+  id uuid primary key default gen_random_uuid(),
+  reseller_id uuid not null unique references public.profiles(id) on delete cascade,
+  store_name text not null,
+  slug text not null unique,
+  logo_url text,
+  whatsapp text,
+  theme_settings jsonb default '{"primary_color": "#0F172A", "accent_color": "#0369A1"}'::jsonb,
+  custom_domain text unique,
+  is_active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 2. Reseller Shares (Links)
+create table if not exists public.reseller_shares (
+  id uuid primary key default gen_random_uuid(),
+  reseller_id uuid not null references public.profiles(id) on delete cascade,
+  public_token text not null unique,
+  title text,
+  default_markup_type text default 'percentage' check (default_markup_type in ('percentage', 'fixed_amount', 'exact_price')),
+  default_markup_value numeric default 0,
+  expires_at timestamptz,
+  is_active boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 3. Reseller Share Items (Products in a Link)
+create table if not exists public.reseller_share_items (
+  id uuid primary key default gen_random_uuid(),
+  share_id uuid not null references public.reseller_shares(id) on delete cascade,
+  product_group_key text not null,
+  variant_code text,
+  base_price_snapshot numeric,
+  markup_type text check (markup_type in ('percentage', 'fixed_amount', 'exact_price')),
+  markup_value numeric,
+  customer_price numeric not null,
+  custom_title text,
+  custom_description text,
+  created_at timestamptz default now()
+);
+
+-- 4. Reseller Customer Inquiries (Leads)
+create table if not exists public.reseller_customer_inquiries (
+  id uuid primary key default gen_random_uuid(),
+  reseller_id uuid not null references public.profiles(id) on delete cascade,
+  share_id uuid references public.reseller_shares(id) on delete set null,
+  customer_name text not null,
+  customer_phone text not null,
+  items jsonb default '[]'::jsonb,
+  customer_total numeric,
+  reseller_base_total numeric,
+  margin_total numeric,
+  status text default 'new',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Indices
+create index if not exists reseller_storefronts_slug_idx on public.reseller_storefronts (slug);
+create index if not exists reseller_shares_public_token_idx on public.reseller_shares (public_token);
+create index if not exists reseller_share_items_share_id_idx on public.reseller_share_items (share_id);
+create index if not exists reseller_customer_inquiries_reseller_id_idx on public.reseller_customer_inquiries (reseller_id);
+
+-- RLS
+alter table public.reseller_storefronts enable row level security;
+alter table public.reseller_shares enable row level security;
+alter table public.reseller_share_items enable row level security;
+alter table public.reseller_customer_inquiries enable row level security;
+
+-- Policies: Reseller Storefronts
+create policy "Public can view active storefronts"
+  on public.reseller_storefronts for select
+  using (is_active = true);
+
+create policy "Resellers can manage own storefront"
+  on public.reseller_storefronts for all
+  to authenticated
+  using (auth.uid() = reseller_id)
+  with check (auth.uid() = reseller_id);
+
+-- Policies: Reseller Shares
+create policy "Public can view active shares by token"
+  on public.reseller_shares for select
+  using (is_active = true);
+
+create policy "Resellers can manage own shares"
+  on public.reseller_shares for all
+  to authenticated
+  using (auth.uid() = reseller_id)
+  with check (auth.uid() = reseller_id);
+
+-- Policies: Reseller Share Items
+create policy "Public can view items of active shares"
+  on public.reseller_share_items for select
+  using (exists (
+    select 1 from public.reseller_shares
+    where id = reseller_share_items.share_id
+    and is_active = true
+  ));
+
+create policy "Resellers can manage own share items"
+  on public.reseller_share_items for all
+  to authenticated
+  using (exists (
+    select 1 from public.reseller_shares
+    where id = reseller_share_items.share_id
+    and reseller_id = auth.uid()
+  ))
+  with check (exists (
+    select 1 from public.reseller_shares
+    where id = reseller_share_items.share_id
+    and reseller_id = auth.uid()
+  ));
+
+-- Policies: Reseller Customer Inquiries
+create policy "Public can insert inquiries"
+  on public.reseller_customer_inquiries for insert
+  with check (true);
+
+create policy "Resellers can view own inquiries"
+  on public.reseller_customer_inquiries for select
+  to authenticated
+  using (auth.uid() = reseller_id);
+
+-- Updated At Triggers
+drop trigger if exists touch_reseller_storefronts_updated_at on public.reseller_storefronts;
+create trigger touch_reseller_storefronts_updated_at
+before update on public.reseller_storefronts
+for each row execute function public.touch_updated_at();
+
+drop trigger if exists touch_reseller_shares_updated_at on public.reseller_shares;
+create trigger touch_reseller_shares_updated_at
+before update on public.reseller_shares
+for each row execute function public.touch_updated_at();
+
+drop trigger if exists touch_reseller_customer_inquiries_updated_at on public.reseller_customer_inquiries;
+create trigger touch_reseller_customer_inquiries_updated_at
+before update on public.reseller_customer_inquiries
+for each row execute function public.touch_updated_at();
+alter table public.profiles add column if not exists reseller_dashboard_enabled boolean default false;

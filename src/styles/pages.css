@@ -1319,6 +1319,180 @@ button {
   color: var(--gold);
 }
 
+/* Card Options Sheet & Overlay — UI/UX Pro Max Redesign */
+.card-options-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.05); /* Very light dim */
+  z-index: 100;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  animation: optionsFadeIn 0.2s ease-out;
+}
+
+@keyframes optionsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card-options-sheet {
+  background: rgba(255, 255, 255, 0.98);
+  color: #2d241e;
+  border-radius: 16px 16px 0 0;
+  padding: 8px 0 0;
+  transform: translateY(0);
+  animation: optionsSlideUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  box-shadow: 0 -8px 32px rgba(183, 134, 70, 0.12);
+  max-height: 85%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(191, 146, 87, 0.1);
+}
+
+@keyframes optionsSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 4px;
+  position: relative;
+}
+
+.sheet-handle {
+  width: 32px;
+  height: 3px;
+  background: rgba(191, 146, 87, 0.2);
+  border-radius: 2px;
+  margin-top: 2px;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 4px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: transparent;
+  border: 0;
+  color: #948b85;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.sheet-close:hover {
+  background: rgba(191, 146, 87, 0.08);
+  color: #bf9257;
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px 14px;
+  overflow-y: auto;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: #2d241e;
+  text-align: left;
+  border-radius: 10px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.sheet-item:hover {
+  background: rgba(191, 146, 87, 0.06);
+}
+
+.sheet-item:active {
+  transform: scale(0.98);
+}
+
+.item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(191, 146, 87, 0.1);
+  color: #bf9257;
+  flex-shrink: 0;
+}
+
+.item-icon.whatsapp { background: rgba(37, 211, 102, 0.08); color: #25D366; }
+.item-icon.zap { background: rgba(255, 170, 0, 0.08); color: #FFAA00; }
+.item-icon.bag { background: rgba(191, 146, 87, 0.08); color: #bf9257; }
+.item-icon.heart { background: rgba(255, 59, 48, 0.08); color: #FF3B30; }
+.item-icon.share { background: rgba(7, 94, 84, 0.08); color: #075E54; }
+.item-icon.link { background: rgba(10, 132, 255, 0.08); color: #0A84FF; }
+
+.item-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+.item-copy strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d241e;
+  line-height: 1.2;
+}
+
+.item-copy span {
+  font-size: 10px;
+  color: #948b85;
+  font-weight: 500;
+}
+
+.item-chevron {
+  color: rgba(191, 146, 87, 0.3);
+}
+
+.sheet-divider {
+  height: 1px;
+  background: rgba(191, 146, 87, 0.1);
+  margin: 8px 10px;
+}
+
+.reseller-primary {
+  background: rgba(191, 146, 87, 0.03);
+}
+
+.reseller-primary:hover {
+  background: rgba(191, 146, 87, 0.08);
+}
+
+.options-trigger-btn {
+  background: rgba(191, 146, 87, 0.06) !important;
+  color: #bf9257 !important;
+  border: 1.5px solid rgba(191, 146, 87, 0.15) !important;
+}
+
+.options-trigger-btn:hover {
+  background: rgba(191, 146, 87, 0.12) !important;
+  border-color: #bf9257 !important;
+}
+
+
+
 .reseller-share-modal {
   position: relative;
   width: min(560px, calc(100vw - 28px));

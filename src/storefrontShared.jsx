@@ -27,10 +27,14 @@ import {
   ZoomIn,
   BellRing,
   X,
+  MoreHorizontal,
+  ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { storeConfig } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
+import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
@@ -169,6 +173,8 @@ export const ProductCard = memo(function ProductCard({
   const [popupOpen, setPopupOpen] = useState(false);
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
   const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
   async function handleEnquiryClick() {
     if (enquiryState === 'sending') return;
@@ -283,6 +289,23 @@ export const ProductCard = memo(function ProductCard({
             >
               <User size={16} /> LOGIN TO VIEW PRICE
             </button>
+          ) : canResellerShare ? (
+            <>
+              <button
+                type="button"
+                onClick={handleEnquiryClick}
+                className="order-now-btn"
+                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
+              >
+                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
+              </button>
+              <button 
+                className="add-to-bag-btn options-trigger-btn" 
+                onClick={() => setShowOptions(true)}
+              >
+                <MoreHorizontal size={16} /> OPTIONS
+              </button>
+            </>
           ) : (
             <>
               <button
@@ -296,24 +319,108 @@ export const ProductCard = memo(function ProductCard({
               <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
                 <ShoppingBag size={16} /> ADD TO BAG
               </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {showOptions && (
+        <div className="card-options-overlay" onClick={() => setShowOptions(false)}>
+          <div className="card-options-sheet" onClick={e => e.stopPropagation()}>
+            <div className="sheet-header">
+              <div className="sheet-handle" />
+              <button className="sheet-close" onClick={() => setShowOptions(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="sheet-list">
+              <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
+                <div className="item-copy">
+                  <strong>Buy via WhatsApp</strong>
+                  <span>Get assistance & place your order</span>
+                </div>
+                <ChevronRight size={18} className="item-chevron" />
+              </button>
+
+              <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                <div className="item-icon zap"><Zap size={20} /></div>
+                <div className="item-copy">
+                  <strong>Order Now</strong>
+                  <span>Quick checkout via enquiry</span>
+                </div>
+                <ChevronRight size={18} className="item-chevron" />
+              </button>
+
+              <button className="sheet-item" onClick={() => { setShowOptions(false); addToCart(product, selectedVariant, 1); }}>
+                <div className="item-icon bag"><ShoppingBag size={20} /></div>
+                <div className="item-copy">
+                  <strong>Add to Cart</strong>
+                  <span>Save and shop later</span>
+                </div>
+                <ChevronRight size={18} className="item-chevron" />
+              </button>
+
+              <button className="sheet-item" onClick={() => { setShowOptions(false); toggleFavorite(product); }}>
+                <div className="item-icon heart"><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></div>
+                <div className="item-copy">
+                  <strong>{isFavorite ? 'Remove from Favourite' : 'Add to Favourite'}</strong>
+                  <span>Save to your wishlist</span>
+                </div>
+                <ChevronRight size={18} className="item-chevron" />
+              </button>
+
+              <div className="sheet-divider" />
+
               <ResellerWhatsappShare
                 product={product}
                 variant={selectedVariant}
                 quantity={colorCount}
                 priceAccess={priceAccess}
-                triggerClassName="order-now-btn reseller-share-trigger"
-                triggerLabel="WHATSAPP CUSTOMER"
+                triggerClassName="sheet-item reseller-primary"
+                onClick={() => setShowOptions(false)}
+                triggerLabel={
+                  <>
+                    <div className="item-icon share"><Share2 size={20} /></div>
+                    <div className="item-copy">
+                      <strong>WhatsApp Customer</strong>
+                      <span>Share with your own markup</span>
+                    </div>
+                    <ChevronRight size={18} className="item-chevron" />
+                  </>
+                }
               />
-            </>
-          )}
+
+              <button className="sheet-item" onClick={() => { setShowOptions(false); setShowShareModal(true); }}>
+                <div className="item-icon link"><Layers size={20} /></div>
+                <div className="item-copy">
+                  <strong>Catalog Link</strong>
+                  <span>Create white-label customer link</span>
+                </div>
+                <ChevronRight size={18} className="item-chevron" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+
 
       <EnquiryPopup
         open={popupOpen}
         onClose={() => setPopupOpen(false)}
         whatsappUrl={whatsappUrl}
       />
+
+      {showShareModal && (
+        <ResellerShareModal 
+          product={product}
+          variant={selectedVariant}
+          user={{ id: priceAccess.userId }}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </article>
   );
 });
@@ -475,6 +582,7 @@ export function ResellerWhatsappShare({
   priceAccess,
   triggerClassName = 'secondary-action-btn',
   triggerLabel = 'Customer WhatsApp',
+  onClick,
 }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState('percentage');
@@ -633,8 +741,15 @@ export function ResellerWhatsappShare({
 
   return (
     <>
-      <button type="button" className={triggerClassName} onClick={() => setOpen(true)}>
-        <Share2 size={18} /> {triggerLabel}
+      <button 
+        type="button" 
+        className={triggerClassName} 
+        onClick={(e) => {
+          if (onClick) onClick(e);
+          setOpen(true);
+        }}
+      >
+        {triggerLabel}
       </button>
       {modal && typeof document !== 'undefined' ? createPortal(modal, document.body) : modal}
     </>
