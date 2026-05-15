@@ -1218,7 +1218,7 @@ button {
 .card-info-grid.is-guest,
 .card-info-grid.price-locked {
   grid-template-columns: 1fr;
-  padding-top: 0;
+  padding-top: 4px;
   margin-top: 10px;
 }
 
