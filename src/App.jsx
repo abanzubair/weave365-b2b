@@ -553,7 +553,7 @@ export default function App() {
               />
               <Search size={18} />
             </label>
-            {search && route !== 'catalog' && createPortal(
+            {search && route !== 'catalog' && !menuOpen && createPortal(
               <div 
                 className="search-suggestions"
                 style={{
