@@ -1250,16 +1250,16 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   height: 34px;
   border-radius: 6px;
   border: 0;
   background: #bf9257;
   color: #fff;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
@@ -1267,8 +1267,8 @@ button {
 
 .guest-login-btn {
   grid-column: span 2;
-  width: fit-content;
-  margin-left: auto;
+  width: 100%;
+  margin: 0;
   padding: 0 24px;
   background: transparent !important;
   color: var(--gold-mid) !important;
@@ -1295,16 +1295,16 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   height: 34px;
   border-radius: 6px;
   border: 1.5px solid var(--line);
   background: transparent;
   color: var(--ink);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   transition: all 0.2s;
   cursor: pointer;
 }
