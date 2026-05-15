@@ -234,6 +234,21 @@ export default function App() {
   }, [dropdownOpen]);
 
   useEffect(() => {
+    if (!search) return;
+
+    function handleClickOutside(event) {
+      const isOutsideBox = searchRef.current && !searchRef.current.contains(event.target);
+      const isOutsideSuggestions = !event.target.closest('.search-suggestions');
+      if (isOutsideBox && isOutsideSuggestions) {
+        setSearch('');
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [search]);
+
+  useEffect(() => {
     if (!user) {
       setCart([]);
       setFavorites([]);
