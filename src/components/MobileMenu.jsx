@@ -77,7 +77,6 @@ export function MobileMenu({
                 setSearch(e.target.value);
               }}
               placeholder="Search products..."
-              autoFocus
             />
           </label>
           {localSearch.trim() && (

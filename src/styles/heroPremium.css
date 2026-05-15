@@ -575,8 +575,9 @@
   filter: none !important;
 }
 
-.header-over-dark .site-header.home-header .main-nav button,
-.header-over-dark .site-header.home-header .main-nav a,
+.header-over-dark .site-header.home-header .main-nav > button,
+.header-over-dark .site-header.home-header .main-nav > a,
+.header-over-dark .site-header.home-header .main-nav > .nav-item-dropdown > button,
 .header-over-dark .site-header.home-header .login-link,
 .header-over-dark .site-header.home-header .icon-button,
 .header-over-dark .site-header.home-header .header-actions button {
@@ -584,8 +585,9 @@
   transition: color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.past-hero .main-nav button,
-.header-over-dark .site-header.home-header.past-hero .main-nav a,
+.header-over-dark .site-header.home-header.past-hero .main-nav > button,
+.header-over-dark .site-header.home-header.past-hero .main-nav > a,
+.header-over-dark .site-header.home-header.past-hero .main-nav > .nav-item-dropdown > button,
 .header-over-dark .site-header.home-header.past-hero .login-link,
 .header-over-dark .site-header.home-header.past-hero .icon-button,
 .header-over-dark .site-header.home-header.past-hero .header-actions button {

@@ -1,4 +1,5 @@
-import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
@@ -61,6 +62,17 @@ export default function App() {
   const [pincode, setPincode] = useState('');
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const categoriesRef = useRef(null);
+  const searchRef = useRef(null);
+  const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
+  const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
+  useEffect(() => {
+    if (search && searchRef.current && route !== 'catalog') {
+      const rect = searchRef.current.getBoundingClientRect();
+      setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
+    }
+  }, [search, route]);
+
   const [heroSlides, setHeroSlides] = useState([]);
   const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
   const [scrolled, setScrolled] = useState(false);
@@ -468,18 +480,31 @@ export default function App() {
             {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
               Home
             </button> */}
-            <div className="nav-item-dropdown">
+            <div className="nav-item-dropdown" ref={categoriesRef}>
               <button
                 className={dropdownOpen === 'categories' ? 'active' : ''}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (dropdownOpen !== 'categories' && categoriesRef.current) {
+                    const rect = categoriesRef.current.getBoundingClientRect();
+                    setCategoriesPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  }
                   setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
                 }}
               >
                 Categories <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
               </button>
-              {dropdownOpen === 'categories' && (
-                <div className="dropdown-menu">
+              {dropdownOpen === 'categories' && createPortal(
+                <div 
+                  className="dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: categoriesPos.top,
+                    left: categoriesPos.left,
+                    transform: 'translateX(-50%) translateY(12px)',
+                    zIndex: 10000
+                  }}
+                >
                   {categories.map((cat) => (
                     <button
                       key={cat}
@@ -492,7 +517,8 @@ export default function App() {
                       {cat}
                     </button>
                   ))}
-                </div>
+                </div>,
+                document.body
               )}
             </div>
             <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
@@ -509,7 +535,7 @@ export default function App() {
               </button>
             )}
           </nav>
-          <div className="search-box-wrapper">
+          <div className="search-box-wrapper" ref={searchRef}>
             <label className="search-box">
               <input
                 value={search}
@@ -518,8 +544,18 @@ export default function App() {
               />
               <Search size={18} />
             </label>
-            {search && route !== 'catalog' && (
-              <div className="search-suggestions">
+            {search && route !== 'catalog' && createPortal(
+              <div 
+                className="search-suggestions"
+                style={{
+                  position: 'fixed',
+                  top: searchPos.top,
+                  left: searchPos.left,
+                  width: searchPos.width,
+                  marginTop: '14px',
+                  zIndex: 10000
+                }}
+              >
                 {visibleProducts.length > 0 ? (
                   <>
                     {visibleProducts.slice(0, 6).map((product) => {
@@ -552,7 +588,8 @@ export default function App() {
                 ) : (
                   <div className="no-results">No products found for "{search}"</div>
                 )}
-              </div>
+              </div>,
+              document.body
             )}
           </div>
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>

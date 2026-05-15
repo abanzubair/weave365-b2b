@@ -22,28 +22,52 @@ button {
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  background: var(--white);
-  min-width: 180px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  padding: 10px 0;
+  transform: translateX(-50%) translateY(12px) translateZ(0);
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)),
+    rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(32px) saturate(250%);
+  -webkit-backdrop-filter: blur(32px) saturate(250%);
+  min-width: 210px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: 
+    0 24px 50px rgba(31, 20, 13, 0.15),
+    0 8px 16px rgba(31, 20, 13, 0.08),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.8);
+  padding: 10px;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  animation: dropdownFade 0.2s ease-out;
+  gap: 4px;
+  animation: liquidGlassFade 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: top center;
+  will-change: backdrop-filter, transform, opacity;
+  z-index: 10000;
+  pointer-events: auto;
 }
 
-@keyframes dropdownFade {
+/* Optional: Add a very subtle noise texture to the surface */
+.dropdown-menu::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes liquidGlassFade {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(0px);
+    transform: translateX(-50%) translateY(0px) scale(0.95) translateZ(0);
   }
 
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(8px);
+    transform: translateX(-50%) translateY(12px) scale(1) translateZ(0);
   }
 }
 
@@ -60,22 +84,25 @@ button {
 }
 
 .dropdown-menu button {
-  padding: 10px 20px;
+  padding: 11px 18px;
   width: 100%;
   text-align: left !important;
   background: transparent;
   border: 0 !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em;
   text-transform: capitalize !important;
   color: var(--ink) !important;
-  transition: background 0.2s, color 0.2s;
-  border-radius: 0 !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 10px !important;
 }
 
 .dropdown-menu button:hover {
-  background: var(--surface-soft) !important;
-  color: var(--gold) !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  color: var(--gold-dark) !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(31, 20, 13, 0.03);
 }
 
 .search-suggestions {
@@ -83,31 +110,54 @@ button {
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 14px 36px rgba(128, 93, 49, 0.12);
-  margin-top: 12px;
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)),
+    rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(32px) saturate(220%);
+  -webkit-backdrop-filter: blur(32px) saturate(220%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow: 
+    0 30px 60px rgba(31, 20, 13, 0.15),
+    0 10px 20px rgba(31, 20, 13, 0.05),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.8);
+  margin-top: 14px;
+  padding: 8px;
   overflow: hidden;
-  animation: searchFade 0.2s ease-out;
-  min-width: 300px;
+  animation: liquidGlassFade 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 340px;
+  will-change: backdrop-filter, transform, opacity;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+.search-suggestions::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .search-suggestions button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
   padding: 10px 14px;
   border: 0;
-  border-bottom: 1px solid #f9f9f9;
   background: transparent;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 12px;
 }
 
 .search-suggestions button:hover {
-  background: var(--surface-soft);
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateX(4px);
 }
 
 .search-suggestions img {
@@ -146,14 +196,21 @@ button {
 .search-suggestions .view-all-results {
   display: flex;
   justify-content: center;
-  padding: 12px;
+  padding: 14px;
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
+  color: var(--gold-dark);
+  background: rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.8px;
+  transition: all 0.3s ease;
+  border-radius: 0 0 10px 10px;
+}
+
+.search-suggestions .view-all-results:hover {
+  background: rgba(255, 255, 255, 0.5);
   color: var(--gold);
-  background: var(--surface-soft);
-  border-top: 1px solid var(--line);
-  letter-spacing: 0.5px;
 }
 
 .search-suggestions .no-results {
