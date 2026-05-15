@@ -262,11 +262,11 @@ export const ProductCard = memo(function ProductCard({
           {product.title}
         </h3>
 
-        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''}`}>
+        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''} ${!canViewPrice ? 'price-locked' : ''}`}>
           <div className="info-left">
             {priceAccess?.isLoggedIn !== false && (
               <>
-                <label>PRICE</label>
+                {canViewPrice && <label>PRICE</label>}
                 {canViewPrice ? (
                   <>
                     <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
@@ -278,7 +278,7 @@ export const ProductCard = memo(function ProductCard({
               </>
             )}
           </div>
-          {priceAccess?.isLoggedIn !== false && (
+          {priceAccess?.isLoggedIn !== false && canViewPrice && (
             <div className="info-right">
               <div className="info-item">
                 <ShoppingBag size={15} /> MOQ 1 Set

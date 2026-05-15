@@ -1215,7 +1215,8 @@ button {
   font-family: var(--font-ui);
 }
 
-.card-info-grid.is-guest {
+.card-info-grid.is-guest,
+.card-info-grid.price-locked {
   grid-template-columns: 1fr;
   padding-top: 10px;
   margin-top: 10px;
@@ -1229,7 +1230,8 @@ button {
   padding-right: 10px;
 }
 
-.is-guest .info-left {
+.is-guest .info-left,
+.price-locked .info-left {
   border-right: none;
   padding-right: 0;
 }
@@ -1253,6 +1255,10 @@ button {
   font-size: 14px;
   font-weight: 500;
   padding-left: 84px;
+}
+
+.price-locked .info-left .price-locked-text {
+  padding-left: 0;
 }
 
 .info-left strong span {

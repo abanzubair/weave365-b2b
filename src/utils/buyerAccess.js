@@ -55,7 +55,7 @@ export function getBuyerAccess(user, buyerProfile) {
   const priceGroup = profile.price_group || (approvalStatus === 'approved' ? buyerType : 'pending');
   const canViewPrices = approvalStatus === 'approved' && Boolean(PRICE_GROUPS[priceGroup]);
 
-  let message = 'Your buyer approval is pending';
+  let message = 'Your account approval is pending';
   if (approvalStatus === 'rejected') message = 'Your buyer account needs review';
   if (approvalStatus === 'suspended') message = 'Price access is paused for this account';
   if (canViewPrices) message = '';
