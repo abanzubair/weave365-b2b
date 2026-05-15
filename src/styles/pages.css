@@ -2034,6 +2034,59 @@ button {
   color: var(--muted);
 }
 
+/* --- Catalog header row: title + reset button side-by-side --- */
+.catalog-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* --- Reset Filters Button (desktop) --- */
+.reset-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 36px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gold-dark);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+}
+
+.reset-filters-btn:hover {
+  background: rgba(183, 134, 70, 0.08);
+  border-color: var(--gold-dark);
+  color: var(--gold-dark);
+  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.14);
+  transform: translateY(-1px);
+}
+
+.reset-filters-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+  background: rgba(183, 134, 70, 0.13);
+}
+
+.reset-filters-btn svg {
+  flex: 0 0 auto;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.reset-filters-btn:hover svg {
+  transform: rotate(-180deg);
+}
+
 .catalog-filters-container {
   display: flex;
   gap: 16px;

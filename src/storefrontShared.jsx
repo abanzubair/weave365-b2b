@@ -98,10 +98,10 @@ export function Newsletter() {
         </span>
       </div>
       <div className="newsletter-actions">
-        <a 
-          href={storeConfig.whatsappGroup || "https://chat.whatsapp.com/your-group-id"} 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href={storeConfig.whatsappGroup || "https://chat.whatsapp.com/your-group-id"}
+          target="_blank"
+          rel="noreferrer"
           className="whatsapp-group-btn"
         >
           <WhatsappIcon size={18} /> Join WhatsApp Group
@@ -301,8 +301,8 @@ export const ProductCard = memo(function ProductCard({
 
         <div className={`card-actions-new ${canResellerShare ? 'has-reseller-share' : ''}`}>
           {priceAccess?.isLoggedIn === false ? (
-            <button 
-              className="order-now-btn guest-login-btn" 
+            <button
+              className="order-now-btn guest-login-btn"
               onClick={(e) => {
                 e.stopPropagation();
                 openAuth();
@@ -320,8 +320,8 @@ export const ProductCard = memo(function ProductCard({
               >
                 <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
               </button>
-              <button 
-                className="add-to-bag-btn options-trigger-btn" 
+              <button
+                className="add-to-bag-btn options-trigger-btn"
                 onClick={() => setShowOptions(true)}
               >
                 <Menu size={16} /> OPTIONS
@@ -356,7 +356,7 @@ export const ProductCard = memo(function ProductCard({
                   <X size={16} strokeWidth={2.5} />
                 </button>
               </div>
-              
+
               <div className="sheet-list">
                 <button className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
                   <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
@@ -396,8 +396,8 @@ export const ProductCard = memo(function ProductCard({
 
                 <div className="sheet-divider" />
 
-                <button 
-                  className="sheet-item reseller-primary" 
+                <button
+                  className="sheet-item reseller-primary"
                   onClick={() => { handleClose(); setShowResellerWhatsapp(true); }}
                 >
                   <div className="item-icon share"><Share2 size={20} /></div>
@@ -433,7 +433,7 @@ export const ProductCard = memo(function ProductCard({
       />
 
       {showShareModal && (
-        <ResellerShareModal 
+        <ResellerShareModal
           product={product}
           variant={selectedVariant}
           user={{ id: priceAccess.userId }}
@@ -752,9 +752,9 @@ export function ResellerWhatsappShare({
   return (
     <>
       {showTrigger && (
-        <button 
-          type="button" 
-          className={triggerClassName} 
+        <button
+          type="button"
+          className={triggerClassName}
           onClick={(e) => {
             if (onClick) onClick(e);
             setInternalOpen(true);
