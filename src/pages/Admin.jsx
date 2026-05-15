@@ -475,9 +475,16 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
                       </div>
                     </td>
                     <td>
-                      <span>{profile.whatsapp || 'No WhatsApp'}</span>
-                      <span>{profile.pincode ? `PIN ${profile.pincode}` : ''}</span>
-                      {isVaranasiPincode(profile.pincode) && <span>Varanasi approval required</span>}
+                      <div className="admin-contact-info">
+                        <strong>{profile.whatsapp || 'No WhatsApp'}</strong>
+                        <span>
+                          {profile.pincode ? `PIN ${profile.pincode}` : ''}
+                          {isVaranasiPincode(profile.pincode) && ' Varanasi'}
+                        </span>
+                        {isVaranasiPincode(profile.pincode) && (
+                          <span className="admin-status-hint">approval required</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <div className="admin-action-stack">

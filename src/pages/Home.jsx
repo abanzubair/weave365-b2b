@@ -214,14 +214,16 @@ export function Home({
         <div className="premium-hero-content">
           <div className="premium-hero-main">
             <h1 className="premium-hero-title">
-              <span className="title-slash">/</span> Timeless<br />
+              {/* <span className="title-slash">/</span> Timeless<br />
               Weaves.<br />
               Endless<br />
-              Possibilities.
+              Possibilities. */}
+              Timeless Weaves<br />
+              Endless Possibilities
             </h1>
             
             <p className="premium-hero-subtitle">
-              Premium sarees for your business,<br />
+              Banarasi Sarees & Suits for your business,
               crafted for every story.
             </p>
             
