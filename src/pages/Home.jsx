@@ -8,6 +8,7 @@ import { VendorPartnership } from '../components/VendorPartnership.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
 import artisanImage from '../../assets/artisan_at_loom_premium.png';
+import resellerImage from '../../assets/reseller_premium_catalog_display.png';
 import '../styles/heroPremium.css';
 import { storeConfig } from '../config.js';
 
@@ -184,7 +185,7 @@ export function Home({
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
-  const resellerSectionImage = categoryImages.collaboration || categoryPreviewImages[0] || fallbackHeroImage;
+  const resellerSectionImage = resellerImage;
   const vendorSectionImage = artisanImage;
 
   const scrollProductRail = (rowId, direction) => {

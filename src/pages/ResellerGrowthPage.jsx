@@ -1,5 +1,5 @@
 import { ArrowRight, BadgeCheck, Share2, PackagePlus, Users, Store, Zap, ShieldCheck } from 'lucide-react';
-
+import resellerImage from '../../assets/reseller_premium_catalog_display.png';
 import '../styles/resellerGrowthPage.css';
 
 export function ResellerGrowthPage({ openAuth }) {
@@ -92,7 +92,7 @@ export function ResellerGrowthPage({ openAuth }) {
         <div className="benefits-container">
           <div className="benefits-image-wrapper">
             <img 
-              src="https://images.unsplash.com/photo-1603969409447-ba8614ad10fe?auto=format&fit=crop&w=1600&q=80"
+              src={resellerImage}
               alt="Reseller Business" 
               className="benefits-image"
             />
