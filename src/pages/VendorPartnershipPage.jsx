@@ -1,5 +1,6 @@
 import { ArrowRight, Handshake, Camera, ShieldCheck, BarChart3, Factory, Users, Package, Truck, IndianRupee, BadgeCheck, Heart, Globe, Headphones, MessageCircle } from 'lucide-react';
 import { storeConfig } from '../config.js';
+import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import '../styles/vendorPartnershipPage.css';
 
 export function VendorPartnershipPage() {
@@ -91,7 +92,7 @@ export function VendorPartnershipPage() {
         <div className="vendor-benefits-container">
           <div className="vendor-benefits-image-wrapper">
             <img
-              src="https://images.unsplash.com/photo-1590333746438-2995799993c1?auto=format&fit=crop&w=1600&q=80"
+              src={artisanImage}
               alt="Artisan at loom"
               className="vendor-benefits-image"
             />

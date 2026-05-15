@@ -7,6 +7,7 @@ import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { VendorPartnership } from '../components/VendorPartnership.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
+import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import '../styles/heroPremium.css';
 import { storeConfig } from '../config.js';
 
@@ -184,7 +185,7 @@ export function Home({
   }, [fallbackHeroImage, products]);
 
   const resellerSectionImage = categoryImages.collaboration || categoryPreviewImages[0] || fallbackHeroImage;
-  const vendorSectionImage = "https://images.unsplash.com/photo-1590333746438-2995799993c1?auto=format&fit=crop&w=1600&q=80";
+  const vendorSectionImage = artisanImage;
 
   const scrollProductRail = (rowId, direction) => {
     const rail = document.getElementById(rowId);
