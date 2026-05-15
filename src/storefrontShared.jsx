@@ -175,6 +175,7 @@ export const ProductCard = memo(function ProductCard({
   const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
   const [showShareModal, setShowShareModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -185,6 +186,14 @@ export const ProductCard = memo(function ProductCard({
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowOptions(false);
+      setIsClosing(false);
+    }, 250); // Match CSS animation duration
+  };
+
   // Auto-close on outside click for desktop
   useEffect(() => {
     if (!showOptions || isMobile) return;
@@ -192,7 +201,7 @@ export const ProductCard = memo(function ProductCard({
     const handleOutsideClick = (e) => {
       // If the click is outside the product card
       if (!e.target.closest('.product-card')) {
-        setShowOptions(false);
+        handleClose();
       }
     };
 
@@ -350,18 +359,18 @@ export const ProductCard = memo(function ProductCard({
 
       {showOptions && (() => {
         const content = (
-          <div className="card-options-overlay" onClick={() => setShowOptions(false)}>
-            <div className="card-options-sheet" onClick={e => e.stopPropagation()}>
+          <div className={`card-options-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
+            <div className={`card-options-sheet ${isClosing ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
               <div className="sheet-header">
                 <div className="sheet-handle" />
                 <span className="sheet-title">Product Options</span>
-                <button className="sheet-close" onClick={() => setShowOptions(false)}>
+                <button className="sheet-close" onClick={handleClose}>
                   <X size={16} strokeWidth={2.5} />
                 </button>
               </div>
               
               <div className="sheet-list">
-                <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                <button className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
                   <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
                   <div className="item-copy">
                     <strong>Buy via WhatsApp</strong>
@@ -370,7 +379,7 @@ export const ProductCard = memo(function ProductCard({
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button className="sheet-item" onClick={() => { setShowOptions(false); handleEnquiryClick(); }}>
+                <button className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
                   <div className="item-icon zap"><Zap size={20} /></div>
                   <div className="item-copy">
                     <strong>Order Now</strong>
@@ -379,7 +388,7 @@ export const ProductCard = memo(function ProductCard({
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button className="sheet-item" onClick={() => { setShowOptions(false); addToCart(product, selectedVariant, 1); }}>
+                <button className="sheet-item" onClick={() => { handleClose(); addToCart(product, selectedVariant, 1); }}>
                   <div className="item-icon bag"><ShoppingBag size={20} /></div>
                   <div className="item-copy">
                     <strong>Add to Cart</strong>
@@ -388,7 +397,7 @@ export const ProductCard = memo(function ProductCard({
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button className="sheet-item" onClick={() => { setShowOptions(false); toggleFavorite(product); }}>
+                <button className="sheet-item" onClick={() => { handleClose(); toggleFavorite(product); }}>
                   <div className="item-icon heart"><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></div>
                   <div className="item-copy">
                     <strong>{isFavorite ? 'Remove from Favourite' : 'Add to Favourite'}</strong>
@@ -405,7 +414,7 @@ export const ProductCard = memo(function ProductCard({
                   quantity={colorCount}
                   priceAccess={priceAccess}
                   triggerClassName="sheet-item reseller-primary"
-                  onClick={() => setShowOptions(false)}
+                  onClick={handleClose}
                   triggerLabel={
                     <>
                       <div className="item-icon share"><Share2 size={20} /></div>
@@ -418,7 +427,7 @@ export const ProductCard = memo(function ProductCard({
                   }
                 />
 
-                <button className="sheet-item" onClick={() => { setShowOptions(false); setShowShareModal(true); }}>
+                <button className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
                   <div className="item-icon link"><Layers size={20} /></div>
                   <div className="item-copy">
                     <strong>Catalog Link</strong>

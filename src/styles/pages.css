@@ -1599,6 +1599,25 @@ button {
   }
 }
 
+/* Exit Animations — UI/UX Pro Max */
+.card-options-overlay.closing {
+  animation: optionsFadeOut 0.25s ease-out forwards;
+}
+
+@keyframes optionsFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.card-options-sheet.closing {
+  animation: optionsSlideDown 0.25s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes optionsSlideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
 
 
 .reseller-share-modal {
