@@ -456,13 +456,12 @@
 .mobile-menu-icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--surface-soft), var(--surface-accent));
+  width: 24px;
+  height: 24px;
   color: var(--gold-dark);
   flex: 0 0 auto;
 }
+
 
 .mobile-menu-arrow {
   margin-left: auto;

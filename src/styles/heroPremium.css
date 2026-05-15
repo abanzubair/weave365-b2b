@@ -481,10 +481,12 @@
     height: 22px !important;
   }
 
-  .menu-button {
+  .menu-button,
+  .hamburger-btn {
     order: 3 !important;
     margin-left: 0 !important;
   }
+
 
   .mobile-search-button {
     display: none !important; /* Hide to match minimalist reference image */

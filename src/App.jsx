@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, Bookmark, Search, ShoppingBag, User, Menu } from 'lucide-react';
+import { ChevronDown, Bookmark, Search, ShoppingBag, User } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
@@ -463,9 +463,19 @@ export default function App() {
     <>
       {!isSharedPage && (
         <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
-          <button className="icon-button menu-button" type="button" onClick={() => setMenuOpen(true)}>
-            <Menu size={22} />
+          <button 
+            className={`hamburger-btn ${menuOpen ? 'active' : ''}`} 
+            type="button" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            <div className="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
           </button>
+
           <a
             href="/"
             className="brand"
@@ -521,7 +531,6 @@ export default function App() {
                 document.body
               )}
             </div>
-            <button className={category === 'Bestsellers' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('Bestsellers'); navigate('catalog'); }}>Bestsellers</button>
             <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
             <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
               Catalogue

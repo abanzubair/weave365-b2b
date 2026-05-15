@@ -67,6 +67,7 @@ export function MobileMenu({
             <X size={22} />
           </button>
         </div>
+
         <div className="mobile-menu-search">
           <label className="mobile-search-box">
             <Search size={18} />

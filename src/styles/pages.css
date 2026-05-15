@@ -226,9 +226,11 @@ button {
   font-weight: 700;
 }
 
-.menu-button {
+.menu-button,
+.hamburger-btn {
   display: none;
 }
+
 
 .hero {
   height: 67vh;
