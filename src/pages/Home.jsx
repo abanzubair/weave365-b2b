@@ -184,6 +184,7 @@ export function Home({
   }, [fallbackHeroImage, products]);
 
   const resellerSectionImage = categoryImages.collaboration || categoryPreviewImages[0] || fallbackHeroImage;
+  const vendorSectionImage = "https://images.unsplash.com/photo-1590333746438-2995799993c1?auto=format&fit=crop&w=1600&q=80";
 
   const scrollProductRail = (rowId, direction) => {
     const rail = document.getElementById(rowId);
@@ -470,7 +471,7 @@ export function Home({
 
       <ResellerGrowth imageUrl={resellerSectionImage} />
 
-      <VendorPartnership imageUrl={resellerSectionImage} />
+      <VendorPartnership imageUrl={vendorSectionImage} />
 
       {/* <BenefitStrip /> */}
 

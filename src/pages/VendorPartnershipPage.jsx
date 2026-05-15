@@ -91,7 +91,7 @@ export function VendorPartnershipPage() {
         <div className="vendor-benefits-container">
           <div className="vendor-benefits-image-wrapper">
             <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?auto=format&fit=crop&w=1600&q=80"
+              src="https://images.unsplash.com/photo-1590333746438-2995799993c1?auto=format&fit=crop&w=1600&q=80"
               alt="Artisan at loom"
               className="vendor-benefits-image"
             />
