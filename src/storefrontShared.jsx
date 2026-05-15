@@ -34,6 +34,25 @@ import {
 import { storeConfig } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
+import {
+  CURRENCIES,
+  CurrencyManager,
+  useCurrency,
+  formatMoney,
+  formatWeight,
+  customerPrice,
+  parsePositiveNumber
+} from './utils/priceUtils.js';
+
+export {
+  CURRENCIES,
+  CurrencyManager,
+  useCurrency,
+  formatMoney,
+  formatWeight,
+  customerPrice,
+  parsePositiveNumber
+};
 import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -44,44 +63,7 @@ export const WhatsappIcon = ({ size = 14, className = '' }) => (
   </svg>
 );
 
-export const CURRENCIES = [
-  { code: 'INR', label: '🇮🇳 India (IND)', locale: 'en-IN', flag: 'in' },
-  { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US', flag: 'us' },
-  { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB', flag: 'gb' },
-  { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE', flag: 'ae' },
-  { code: 'EUR', label: '🇪🇺 Euro (EUR)', locale: 'de-DE', flag: 'eu' },
-  { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG', flag: 'sg' },
-  { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY', flag: 'my' },
-];
-
-let currentCurrency = 'INR';
-let exchangeRates = { INR: 1 };
-const currencyListeners = new Set();
-
-export const CurrencyManager = {
-  get currency() { return currentCurrency; },
-  get rates() { return exchangeRates; },
-  setCurrency(c) {
-    currentCurrency = c;
-    currencyListeners.forEach(l => l());
-  },
-  setRates(r) {
-    exchangeRates = { ...r, INR: 1 };
-    currencyListeners.forEach(l => l());
-  },
-  subscribe(l) {
-    currencyListeners.add(l);
-    return () => currencyListeners.delete(l);
-  }
-};
-
-export function useCurrency() {
-  const [currency, setCurrencyState] = useState(CurrencyManager.currency);
-  useEffect(() => {
-    return CurrencyManager.subscribe(() => setCurrencyState(CurrencyManager.currency));
-  }, []);
-  return currency;
-}
+// Moved to ./utils/priceUtils.js
 
 const productTrustItems = [
   { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Secure shipping across India & overseas' },
@@ -174,6 +156,7 @@ export const ProductCard = memo(function ProductCard({
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
   const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -240,7 +223,7 @@ export const ProductCard = memo(function ProductCard({
     }
 
     setEnquiryState('sent');
-    setPopupOpen(true);
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -330,7 +313,7 @@ export const ProductCard = memo(function ProductCard({
                 className="order-now-btn"
                 style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
               >
-                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
+                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
               </button>
               <button 
                 className="add-to-bag-btn options-trigger-btn" 
@@ -347,7 +330,7 @@ export const ProductCard = memo(function ProductCard({
                 className="order-now-btn"
                 style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
               >
-                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'ENQUIRY SENT' : 'ENQUIRY'}
+                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
               </button>
               <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
                 <ShoppingBag size={16} /> ADD TO BAG
@@ -408,24 +391,17 @@ export const ProductCard = memo(function ProductCard({
 
                 <div className="sheet-divider" />
 
-                <ResellerWhatsappShare
-                  product={product}
-                  variant={selectedVariant}
-                  quantity={colorCount}
-                  priceAccess={priceAccess}
-                  triggerClassName="sheet-item reseller-primary"
-                  onClick={handleClose}
-                  triggerLabel={
-                    <>
-                      <div className="item-icon share"><Share2 size={20} /></div>
-                      <div className="item-copy">
-                        <strong>WhatsApp Customer</strong>
-                        <span>Share with your own markup</span>
-                      </div>
-                      <ChevronRight size={18} className="item-chevron" />
-                    </>
-                  }
-                />
+                <button 
+                  className="sheet-item reseller-primary" 
+                  onClick={() => { handleClose(); setShowResellerWhatsapp(true); }}
+                >
+                  <div className="item-icon share"><Share2 size={20} /></div>
+                  <div className="item-copy">
+                    <strong>WhatsApp Customer</strong>
+                    <span>Share with your own markup</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
 
                 <button className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
                   <div className="item-icon link"><Layers size={20} /></div>
@@ -456,7 +432,20 @@ export const ProductCard = memo(function ProductCard({
           product={product}
           variant={selectedVariant}
           user={{ id: priceAccess.userId }}
+          priceAccess={priceAccess}
           onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {canResellerShare && (
+        <ResellerWhatsappShare
+          product={product}
+          variant={selectedVariant}
+          quantity={colorCount}
+          priceAccess={priceAccess}
+          open={showResellerWhatsapp}
+          onClose={() => setShowResellerWhatsapp(false)}
+          showTrigger={false}
         />
       )}
     </article>
@@ -500,40 +489,7 @@ export function expandedProductCards(products) {
   });
 }
 
-export function formatMoney(value) {
-  if (value == null || Number.isNaN(value)) return 'On request';
 
-  const currencyCode = CurrencyManager.currency;
-  const rate = CurrencyManager.rates[currencyCode] || 1;
-  const convertedValue = value * rate;
-
-  const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-
-  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
-    style: 'currency',
-    currency: currencyCode,
-    maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
-  });
-
-  return formatter.format(convertedValue);
-}
-
-export function formatWeight(weightInKg) {
-  const w = Number(weightInKg) || 0;
-  if (w < 1 && w > 0) {
-    return `${Number((w * 1000).toFixed(2))} Grams`;
-  }
-  return `${Number(w.toFixed(2))} KG`;
-}
-
-export function customerPrice(prices, priceAccess) {
-  return priceForBuyer(prices, priceAccess);
-}
-
-function parsePositiveNumber(value) {
-  const parsed = Number(String(value || '').replace(/[^\d.]/g, ''));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-}
 
 function calculateCustomerPrice(basePrice, mode, value) {
   const amount = parsePositiveNumber(value);
@@ -621,8 +577,19 @@ export function ResellerWhatsappShare({
   triggerClassName = 'secondary-action-btn',
   triggerLabel = 'Customer WhatsApp',
   onClick,
+  open: controlledOpen,
+  onClose: controlledOnClose,
+  showTrigger = true,
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+
+  const handleClose = () => {
+    if (controlledOnClose) {
+      controlledOnClose();
+    }
+    setInternalOpen(false);
+  };
   const [mode, setMode] = useState('percentage');
   const [markupValue, setMarkupValue] = useState('20');
   const [copyState, setCopyState] = useState('idle');
@@ -698,9 +665,9 @@ export function ResellerWhatsappShare({
   }
 
   const modal = open ? (
-    <div className="modal-backdrop" onClick={() => setOpen(false)}>
+    <div className="modal-backdrop" onClick={handleClose}>
       <div className="reseller-share-modal" onClick={(event) => event.stopPropagation()}>
-        <button className="icon-button modal-close" onClick={() => setOpen(false)} aria-label="Close reseller share">
+        <button className="icon-button modal-close" onClick={handleClose} aria-label="Close reseller share">
           <X size={18} />
         </button>
 
@@ -779,16 +746,18 @@ export function ResellerWhatsappShare({
 
   return (
     <>
-      <button 
-        type="button" 
-        className={triggerClassName} 
-        onClick={(e) => {
-          if (onClick) onClick(e);
-          setOpen(true);
-        }}
-      >
-        {triggerLabel}
-      </button>
+      {showTrigger && (
+        <button 
+          type="button" 
+          className={triggerClassName} 
+          onClick={(e) => {
+            if (onClick) onClick(e);
+            setInternalOpen(true);
+          }}
+        >
+          {triggerLabel}
+        </button>
+      )}
       {modal && typeof document !== 'undefined' ? createPortal(modal, document.body) : modal}
     </>
   );
@@ -845,7 +814,6 @@ export function EnquiryPopup({ open, onClose, whatsappUrl }) {
           <X size={18} />
         </button>
         <h3>Enquiry Sent Successfully</h3>
-        <p>for faster reply send us a whatsapp msg</p>
         <div className="enquiry-popup-actions">
           <a
             href={whatsappUrl}

@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
-import { formatMoney } from '../storefrontShared';
+import { formatMoney, customerPrice } from '../utils/priceUtils';
 import '../styles/resellerTools.css';
 
 /**
  * Modal for resellers to add a product to their white-label catalog.
  * The shareable link always points to the reseller's storefront slug.
  */
-export function ResellerShareModal({ product, variant, user, onClose }) {
+export function ResellerShareModal({ product, variant, user, priceAccess, onClose }) {
   const [markupType, setMarkupType] = useState('percentage');
   const [markupValue, setMarkupValue] = useState(20);
   const [isCreating, setIsCreating] = useState(false);
@@ -32,10 +33,10 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
 
   const basePrice = useMemo(() => {
     const prices = variant?.prices || product?.variants?.[0]?.prices || {};
-    return prices.reseller || prices.wholesale || 0;
-  }, [product, variant]);
+    return customerPrice(prices, priceAccess) || prices.reseller || prices.wholesale || 0;
+  }, [product, variant, priceAccess]);
 
-  const customerPrice = useMemo(() => {
+  const calculatedCustomerPrice = useMemo(() => {
     if (markupType === 'percentage') return Math.round(basePrice * (1 + markupValue / 100));
     if (markupType === 'fixed_amount') return Math.round(basePrice + Number(markupValue));
     return Math.round(Number(markupValue));
@@ -53,7 +54,7 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
         productId: product.id,
         variantCode: variant?.code || product.variants?.[0]?.code,
         basePrice,
-        customerPrice,
+        customerPrice: calculatedCustomerPrice,
       });
       if (error) throw error;
       setDone(true);
@@ -71,7 +72,7 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
+  const modal = (
     <div className="reseller-modal-overlay" onClick={onClose}>
       <div className="reseller-modal" onClick={e => e.stopPropagation()}>
         
@@ -97,7 +98,7 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
                 </div>
                 <div className="reseller-price-box customer">
                   <span>Customer Price</span>
-                  <strong>{formatMoney(customerPrice)}</strong>
+                  <strong>{formatMoney(calculatedCustomerPrice)}</strong>
                 </div>
               </div>
 
@@ -105,7 +106,7 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
                 <label>Pricing Markup</label>
                 <div className="reseller-markup-selector">
                   <button onClick={() => setMarkupType('percentage')} className={`reseller-markup-btn ${markupType === 'percentage' ? 'active' : ''}`}>
-                    <Percent size={14} /> %
+                    <Percent size={14} /> Percentage
                   </button>
                   <button onClick={() => setMarkupType('fixed_amount')} className={`reseller-markup-btn ${markupType === 'fixed_amount' ? 'active' : ''}`}>
                     <IndianRupee size={14} /> Fixed
@@ -129,7 +130,7 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
               </div>
 
               <button onClick={handleAdd} disabled={isCreating} className="reseller-btn-primary" style={{ width: '100%' }}>
-                {isCreating ? 'Adding…' : `Add to My Catalog — ${formatMoney(customerPrice)}`}
+                {isCreating ? 'Adding…' : `Add to My Catalog — ${formatMoney(calculatedCustomerPrice)}`}
               </button>
             </>
           ) : (
@@ -172,4 +173,6 @@ export function ResellerShareModal({ product, variant, user, onClose }) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modal, document.body) : modal;
 }

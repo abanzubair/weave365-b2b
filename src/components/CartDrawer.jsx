@@ -91,7 +91,7 @@ export function CartDrawer({
     }
 
     setEnquiryState('sent');
-    setEnquiryPopupOpen(true);
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -203,7 +203,7 @@ export function CartDrawer({
             onClick={handleEnquiryClick}
             style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
           >
-            <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Enquiry Sent' : 'Submit Enquiry'} <ArrowRight size={18} />
+            <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Sent' : 'Submit Enquiry'} <ArrowRight size={18} />
           </button>
         </div>
         <EnquiryPopup

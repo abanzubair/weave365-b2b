@@ -182,7 +182,8 @@ export function ProductDetail({
     }
 
     setEnquiryState('sent');
-    setEnquiryPopupOpen(true);
+    const whatsappUrl = buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess);
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   const downloadImagesAsZip = useCallback(async () => {
@@ -532,7 +533,7 @@ export function ProductDetail({
                   onClick={handleEnquiryClick}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
                 >
-                  <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Enquiry Sent' : 'Enquiry'}
+                  <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Sent' : 'Enquiry'}
                 </button>
                 <button
                   className="catalog-add-button"
@@ -703,6 +704,7 @@ export function ProductDetail({
           product={product}
           variant={variant}
           user={{ id: priceAccess.userId }}
+          priceAccess={priceAccess}
           onClose={() => setShowShareModal(false)}
         />
       )}
