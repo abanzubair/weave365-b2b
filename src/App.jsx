@@ -36,6 +36,7 @@ const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) =
 const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
 const Account = lazy(() => import('./pages/Account.jsx').then((module) => ({ default: module.Account })));
 const ResellerGrowthPage = lazy(() => import('./pages/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
+const VendorPartnershipPage = lazy(() => import('./pages/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
 const SharedCatalog = lazy(() => import('./pages/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
 
 export default function App() {
@@ -754,6 +755,9 @@ export default function App() {
               <ResellerGrowthPage
                 openAuth={() => setAuthOpen(true)}
               />
+            } />
+            <Route path="/vendor-partnership" element={
+              <VendorPartnershipPage />
             } />
             <Route path="/s/:slug" element={
               <SharedCatalog products={pricedProducts} />

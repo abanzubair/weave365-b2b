@@ -4,6 +4,7 @@ import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expanded
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
+import { VendorPartnership } from '../components/VendorPartnership.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
 import '../styles/heroPremium.css';
@@ -468,6 +469,8 @@ export function Home({
       </section>
 
       <ResellerGrowth imageUrl={resellerSectionImage} />
+
+      <VendorPartnership imageUrl={resellerSectionImage} />
 
       {/* <BenefitStrip /> */}
 
