@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User } from 'lucide-react';
@@ -67,10 +67,12 @@ export default function App() {
   const searchRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (search && searchRef.current && route !== 'catalog') {
       const rect = searchRef.current.getBoundingClientRect();
       setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
+    } else if (!search) {
+      setSearchPos({ top: 0, left: 0, width: 0 });
     }
   }, [search, route]);
 
@@ -553,7 +555,7 @@ export default function App() {
               />
               <Search size={18} />
             </label>
-            {search && route !== 'catalog' && !menuOpen && createPortal(
+            {search && searchPos.width > 0 && route !== 'catalog' && !menuOpen && createPortal(
               <div 
                 className="search-suggestions"
                 style={{

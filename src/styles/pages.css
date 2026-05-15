@@ -124,7 +124,7 @@ button {
   margin-top: 14px;
   padding: 8px;
   overflow: hidden;
-  animation: liquidGlassFade 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: searchFade 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   min-width: 340px;
   will-change: backdrop-filter, transform, opacity;
   z-index: 10000;
