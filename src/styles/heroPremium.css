@@ -551,8 +551,8 @@
 }
 
 .header-over-dark .site-header.home-header.scrolled {
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 }
 
 .header-over-dark .site-header.home-header.past-hero {
