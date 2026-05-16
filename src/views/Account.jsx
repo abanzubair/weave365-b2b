@@ -121,26 +121,24 @@ export function Account({
           </div>
         </article>
 
-        <article className="account-panel">
-          <div className="account-panel-head">
-            <span><ClipboardList size={18} /> Saved for Customer Orders</span>
-          </div>
-          <p className="account-muted">This CRM section is ready for the Supabase table. Saved customer order notes will appear here.</p>
-        </article>
-
-        <article className="account-panel">
-          <div className="account-panel-head">
-            <span><History size={18} /> My Inquiry History</span>
-          </div>
-          <p className="account-muted">Product, cart and bulk inquiry history will appear here after the inquiry table is connected.</p>
-        </article>
       </div>
 
+
       {priceAccess.resellerDashboardEnabled && (
-        <div className="account-reseller-section">
-          <ResellerTools user={user} buyerProfile={buyerProfile} />
-        </div>
+        <article className="account-panel account-panel-highlight" style={{ marginTop: '2rem', border: '1px solid var(--primary-color)' }}>
+          <div className="account-panel-head">
+            <span><UserRound size={18} /> My Reseller Business Center</span>
+          </div>
+          <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
+            <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h3>
+            <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
+            <button className="primary-button" onClick={() => navigate('reseller-dashboard')}>
+              Open Business Center
+            </button>
+          </div>
+        </article>
       )}
     </section>
   );
 }
+

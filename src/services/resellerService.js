@@ -138,6 +138,34 @@ export const resellerService = {
   },
 
   /**
+   * Get all customer inquiries for a reseller
+   */
+  async getResellerInquiries(resellerId) {
+    const { data, error } = await supabase
+      .from('reseller_customer_inquiries')
+      .select('*')
+      .eq('reseller_id', resellerId)
+      .neq('status', 'archived')
+      .order('created_at', { ascending: false });
+    
+    if (error) console.error('Error fetching inquiries:', error);
+    return { data, error };
+  },
+
+  /**
+   * Delete an inquiry
+   */
+  async deleteInquiry(inquiryId) {
+    const { error } = await supabase
+      .from('reseller_customer_inquiries')
+      .update({ status: 'archived' })
+      .eq('id', inquiryId);
+    
+    if (error) console.error('Error deleting inquiry:', error);
+    return { error };
+  },
+
+  /**
    * Get all shares for a reseller (dashboard)
    */
   async getResellerShares(resellerId) {

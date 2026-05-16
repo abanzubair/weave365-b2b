@@ -40,7 +40,9 @@ const Admin = lazy(() => import('./views/Admin.jsx').then((module) => ({ default
 const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ default: module.Account })));
 const ResellerGrowthPage = lazy(() => import('./views/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
 const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
+const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then((module) => ({ default: module.ResellerDashboard })));
 const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
+
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
 
 
@@ -500,7 +502,7 @@ export default function App({ initialData = {} }) {
 
   // return <ComingSoon />;
 
-  const isSharedPage = route === 's';
+  const isSharedPage = route === 's' || route === 'reseller-dashboard';
   const routeContent = (() => {
     if (route === 'home') {
       return (
@@ -614,7 +616,18 @@ export default function App({ initialData = {} }) {
       );
     }
 
+    if (route === 'reseller-dashboard') {
+      return (
+        <ResellerDashboard
+          user={user}
+          buyerProfile={buyerProfile}
+          navigate={navigate}
+        />
+      );
+    }
+
     if (route === 'reseller-growth') {
+
       return <ResellerGrowthPage openAuth={() => setAuthOpen(true)} />;
     }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Link as LinkIcon, 
   Copy, 
@@ -9,7 +9,8 @@ import {
   Eye,
   Calendar,
   Save,
-  ExternalLink
+  ExternalLink,
+  Search
 } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 
@@ -17,9 +18,17 @@ export function ResellerTools({ user, buyerProfile }) {
   const [activeTab, setActiveTab] = useState('shares');
   const [shares, setShares] = useState([]);
   const [storefront, setStorefront] = useState(null);
+  const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState('');
+
+  // Catalog List State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [visibleCount, setVisibleCount] = useState(10);
+
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -29,12 +38,14 @@ export function ResellerTools({ user, buyerProfile }) {
     async function loadData() {
       setLoading(true);
       try {
-        const [sharesRes, storefrontRes] = await Promise.all([
+        const [sharesRes, storefrontRes, inquiriesRes] = await Promise.all([
           resellerService.getResellerShares(user.id),
-          resellerService.getStorefront(user.id)
+          resellerService.getStorefront(user.id),
+          resellerService.getResellerInquiries(user.id)
         ]);
         if (sharesRes.data) setShares(sharesRes.data);
         if (storefrontRes.data) setStorefront(storefrontRes.data);
+        if (inquiriesRes.data) setInquiries(inquiriesRes.data);
       } catch (err) {
         console.error('Error loading reseller data:', err);
       } finally {
@@ -53,6 +64,13 @@ export function ResellerTools({ user, buyerProfile }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDeleteInquiry = async (id) => {
+    const { error } = await resellerService.deleteInquiry(id);
+    if (!error) {
+      setInquiries(prev => prev.filter(inq => inq.id !== id));
+    }
+  };
+
   const handleDeactivate = async (shareId) => {
     const { error } = await resellerService.deactivateShare(shareId);
     if (!error) {
@@ -60,7 +78,38 @@ export function ResellerTools({ user, buyerProfile }) {
     }
   };
 
+  const processedShares = useMemo(() => {
+    let result = [...shares];
+
+    if (filterStatus === 'live') result = result.filter(s => s.is_active);
+    if (filterStatus === 'removed') result = result.filter(s => !s.is_active);
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(s => (s.title || 'Untitled Product').toLowerCase().includes(q));
+    }
+
+    result.sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.created_at) - new Date(a.created_at);
+      if (sortBy === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
+      if (sortBy === 'a-z') return (a.title || '').localeCompare(b.title || '');
+      return 0;
+    });
+
+    return result;
+  }, [shares, filterStatus, searchQuery, sortBy]);
+
+  const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 50) {
+      if (visibleCount < processedShares.length) {
+        setVisibleCount(prev => prev + 10);
+      }
+    }
+  };
+
   if (loading) return <p className="rt-loading">Loading reseller tools…</p>;
+
 
   return (
     <div className="rt-container">
@@ -110,41 +159,149 @@ export function ResellerTools({ user, buyerProfile }) {
             <p>No products in your catalog. Use <strong>Catalog Link</strong> on any product to add it.</p>
           </div>
         ) : (
-          <div className="rt-link-list">
-            {shares.map((share) => (
-              <div key={share.id} className={`rt-link-row ${!share.is_active ? 'rt-row-inactive' : ''}`}>
-                <div className="rt-link-info">
-                  <strong>{share.title || 'Untitled Product'}</strong>
-                  <span className="rt-link-meta">
-                    <Calendar size={11} />
-                    {new Date(share.created_at).toLocaleDateString()}
-                    <span className={`rt-badge ${share.is_active ? 'on' : 'off'}`}>
-                      {share.is_active ? 'Live' : 'Removed'}
-                    </span>
-                  </span>
-                </div>
-                <div className="rt-link-actions">
-                  {share.is_active && (
-                    <button onClick={() => handleDeactivate(share.id)} className="rt-icon-btn danger" title="Remove from catalog">
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
+          <div className="rt-shares-container">
+            <div className="rt-filters">
+              <div className="rt-filter-search">
+                <Search size={16} />
+                <input 
+                  type="text" 
+                  placeholder="Search products..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="rt-filter-input"
+                />
               </div>
-            ))}
+              <select 
+                value={filterStatus} 
+                onChange={e => setFilterStatus(e.target.value)}
+                className="rt-filter-select"
+              >
+                <option value="all">All Status</option>
+                <option value="live">Live</option>
+                <option value="removed">Removed</option>
+              </select>
+              <select 
+                value={sortBy} 
+                onChange={e => setSortBy(e.target.value)}
+                className="rt-filter-select"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="a-z">Name (A-Z)</option>
+              </select>
+            </div>
+
+            <div className="rt-link-list" onScroll={handleScroll} style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {processedShares.slice(0, visibleCount).map((share) => (
+                <div key={share.id} className={`rt-link-row ${!share.is_active ? 'rt-row-inactive' : ''}`}>
+                  <div className="rt-link-info">
+                    <strong>{share.title || 'Untitled Product'}</strong>
+                    <span className="rt-link-meta">
+                      <Calendar size={11} />
+                      {new Date(share.created_at).toLocaleDateString()}
+                      <span className={`rt-badge ${share.is_active ? 'on' : 'off'}`}>
+                        {share.is_active ? 'Live' : 'Removed'}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="rt-link-actions">
+                    {share.is_active && (
+                      <button onClick={() => handleDeactivate(share.id)} className="rt-icon-btn danger" title="Remove from catalog">
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {processedShares.length === 0 && (
+                <div className="rt-empty" style={{ padding: '2rem 0' }}>
+                   <p>No products match your filters.</p>
+                </div>
+              )}
+            </div>
+            
+            {visibleCount < processedShares.length && (
+              <div style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--reseller-muted)', fontSize: '0.85rem' }}>
+                Scroll for more...
+              </div>
+            )}
           </div>
         )
       )}
+
 
       {activeTab === 'storefront' && (
         <StorefrontSettings storefront={storefront} user={user} origin={origin} onUpdate={setStorefront} />
       )}
 
       {activeTab === 'inquiries' && (
-        <div className="rt-empty">
-          <MessageSquare size={20} />
-          <p>Customer leads from your catalog will appear here.</p>
-        </div>
+        inquiries.length === 0 ? (
+          <div className="rt-empty">
+            <MessageSquare size={20} />
+            <p>WhatsApp inquiries from your customers will appear here.</p>
+          </div>
+        ) : (
+          <div className="rt-link-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {inquiries.map((inq) => {
+              const productId = inq.items?.[0]?.product_id || inq.product_id;
+              const displayTitle = inq.items?.[0]?.product_title || inq.message || inq.customer_name || 'WhatsApp Enquiry';
+              
+              return (
+              <div key={inq.id} className="rt-link-row">
+                <div className="rt-link-info">
+                  <strong>{displayTitle}</strong>
+                  <span className="rt-link-meta">
+                    <Calendar size={11} />
+                    {new Date(inq.created_at).toLocaleString()}
+                    {inq.status && (
+                      <span className={`rt-badge ${inq.status === 'new' ? 'on' : 'off'}`}>
+                        {inq.status.toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="rt-link-actions" style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+                  <a 
+                    href={productId ? `/product/${productId}` : '#'} 
+                    target={productId ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                    className="rt-header-link" 
+                    style={{ 
+                      background: productId ? 'var(--reseller-primary)' : '#94a3b8', 
+                      borderColor: 'transparent', 
+                      color: 'white', 
+                      textDecoration: 'none',
+                      pointerEvents: productId ? 'auto' : 'none',
+                      opacity: productId ? 1 : 0.7
+                    }}
+                    title={productId ? "View Product on Weave 365" : "This was a general catalog inquiry or an older lead without a linked product"}
+                  >
+                    <ExternalLink size={14} /> {productId ? 'Product' : 'General'}
+                  </a>
+                  <a 
+                    href={inq.customer_phone ? `https://wa.me/${inq.customer_phone}` : `https://web.whatsapp.com/`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="rt-header-link"
+                    style={{ background: '#25D366', color: 'white', borderColor: 'transparent', textDecoration: 'none' }}
+                    title="Reply on WhatsApp"
+                  >
+                    <MessageSquare size={14} /> Reply
+                  </a>
+                  <button 
+                    onClick={() => handleDeleteInquiry(inq.id)} 
+                    className="rt-icon-btn danger" 
+                    title="Delete Lead"
+                    style={{ padding: '0.375rem 0.5rem', marginLeft: '0.25rem' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        )
       )}
     </div>
   );
