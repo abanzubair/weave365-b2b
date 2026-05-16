@@ -1980,7 +1980,7 @@ button {
   padding: 42px max(48px, calc((100vw - 1280px) / 2));
   background:
     linear-gradient(90deg, rgba(31, 20, 13, 0.72), rgba(128, 93, 49, 0.5)),
-    url('../../assets/long%20banner.png');
+    url('../../assets/long banner.png');
   background-size: cover;
   background-position: center;
   color: #fff;

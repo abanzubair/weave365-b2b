@@ -132,7 +132,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       if (setBuyerProfile) setBuyerProfile(demoProfile);
       setMessage(mode === 'register'
         ? 'Demo registration saved with buyer profile.'
-        : 'Demo login active. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
+        : 'Demo login active. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
       return;
     }
 

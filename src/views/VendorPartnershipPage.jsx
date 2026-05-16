@@ -1,7 +1,7 @@
 import { ArrowRight, Handshake, Camera, ShieldCheck, BarChart3, Factory, Users, Package, Truck, IndianRupee, BadgeCheck, Heart, Globe, Headphones, MessageCircle } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.png';
-import '../styles/vendorPartnershipPage.css';
+import { assetSrc } from '../utils/assetSrc.js';
 
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
@@ -92,7 +92,7 @@ export function VendorPartnershipPage() {
         <div className="vendor-benefits-container">
           <div className="vendor-benefits-image-wrapper">
             <img
-              src={artisanImage}
+              src={assetSrc(artisanImage)}
               alt="Artisan at loom"
               className="vendor-benefits-image"
             />

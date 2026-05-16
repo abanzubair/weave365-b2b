@@ -9,8 +9,8 @@ import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
 import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import resellerImage from '../../assets/reseller_premium_catalog_display.png';
-import '../styles/heroPremium.css';
 import { storeConfig } from '../config.js';
+import { assetSrc } from '../utils/assetSrc.js';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
@@ -44,7 +44,7 @@ export function Home({
   favoriteKeys,
   priceAccess,
 }) {
-  const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 820px)').matches);
+  const [isMobile, setIsMobile] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
@@ -52,6 +52,7 @@ export function Home({
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 820px)');
     const handler = (e) => setIsMobile(e.matches);
+    setIsMobile(mq.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
@@ -185,8 +186,8 @@ export function Home({
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
-  const resellerSectionImage = resellerImage;
-  const vendorSectionImage = artisanImage;
+  const resellerSectionImage = assetSrc(resellerImage);
+  const vendorSectionImage = assetSrc(artisanImage);
 
   const scrollProductRail = (rowId, direction) => {
     const rail = document.getElementById(rowId);
@@ -205,8 +206,8 @@ export function Home({
       <section 
         className="premium-hero" 
         style={{ 
-          '--hero-bg': `url(${newBanner1})`,
-          '--hero-bg-mobile': `url(${newBanner1Mobile})`
+          '--hero-bg': `url(${assetSrc(newBanner1)})`,
+          '--hero-bg-mobile': `url(${assetSrc(newBanner1Mobile)})`
         }}
       >
         <div className="premium-hero-overlay"></div>
@@ -473,9 +474,9 @@ export function Home({
         </div>
       </section>
 
-      <ResellerGrowth imageUrl={resellerSectionImage} />
+      <ResellerGrowth imageUrl={resellerSectionImage} navigate={navigate} />
 
-      <VendorPartnership imageUrl={vendorSectionImage} />
+      <VendorPartnership imageUrl={vendorSectionImage} navigate={navigate} />
 
       {/* <BenefitStrip /> */}
 

@@ -2,11 +2,7 @@ import { CheckCircle2, ChevronRight, Share2, Package, TrendingUp, ShieldCheck } 
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from '../storefrontShared.jsx';
 
-import { useNavigate } from 'react-router-dom';
-
-export function ResellerGrowth({ imageUrl }) {
-  const navigate = useNavigate();
-
+export function ResellerGrowth({ imageUrl, navigate }) {
   return (
     <section className="reseller-editorial-section" aria-labelledby="reseller-editorial-heading">
       <div className="editorial-container">
@@ -49,8 +45,7 @@ export function ResellerGrowth({ imageUrl }) {
             <button 
               className="growth-cta" 
               onClick={() => {
-                navigate('/reseller-growth');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate('reseller-growth');
               }}
             >
               <div className="growth-content">

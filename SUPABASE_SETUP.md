@@ -18,19 +18,19 @@ Products still come from Google Sheets. The public frontend can keep loading pub
 Your `.env` or `.env.local` needs:
 
 ```env
-VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-or-publishable-key
-VITE_ADMIN_EMAILS=your@email.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-or-publishable-key
+NEXT_PUBLIC_ADMIN_EMAILS=your@email.com
 
-VITE_STORE_NAME=Weave365
-VITE_STORE_SUBTITLE=WHOLESALE
-VITE_STORE_EMAIL=weave365@gmail.com
-VITE_STORE_PHONE=+91 99191 01369
-VITE_STORE_WHATSAPP=919919101369
-VITE_MIN_ORDER_VALUE=10000
+NEXT_PUBLIC_STORE_NAME=Weave365
+NEXT_PUBLIC_STORE_SUBTITLE=WHOLESALE
+NEXT_PUBLIC_STORE_EMAIL=weave365@gmail.com
+NEXT_PUBLIC_STORE_PHONE=+91 99191 01369
+NEXT_PUBLIC_STORE_WHATSAPP=919919101369
+NEXT_PUBLIC_MIN_ORDER_VALUE=10000
 ```
 
-After editing env values, restart the Vite dev server.
+After editing env values, restart the Next.js dev server.
 
 ## 2. Run the repair-safe SQL
 
@@ -60,7 +60,7 @@ It also enables Row Level Security and recreates the policies used by the React 
 
 1. Open the local site.
 2. Click `Login / Register`.
-3. Register with the same email you placed in `VITE_ADMIN_EMAILS`.
+3. Register with the same email you placed in `NEXT_PUBLIC_ADMIN_EMAILS`.
 4. If email confirmation is enabled, confirm the email from your inbox.
 5. Log in once so the app creates your row in `profiles`.
 
@@ -135,7 +135,7 @@ Use the latest [supabase-schema.sql](</D:/weave365 B2B react/supabase-schema.sql
 
 Check both:
 
-- `.env` has your email in `VITE_ADMIN_EMAILS`
+- `.env` has your email in `NEXT_PUBLIC_ADMIN_EMAILS`
 - `profiles.role` is set to `admin` for that same email
 
 ### User can log in but cart/favourites do not save

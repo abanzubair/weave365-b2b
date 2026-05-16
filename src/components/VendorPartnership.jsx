@@ -1,10 +1,7 @@
 import { ChevronRight, Factory, Handshake, BarChart3, Camera, Truck, IndianRupee } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import { useNavigate } from 'react-router-dom';
 
-export function VendorPartnership({ imageUrl }) {
-  const navigate = useNavigate();
-
+export function VendorPartnership({ imageUrl, navigate }) {
   return (
     <section className="vendor-editorial-section" aria-labelledby="vendor-editorial-heading">
       <div className="vendor-container">
@@ -60,8 +57,7 @@ export function VendorPartnership({ imageUrl }) {
             <button
               className="vendor-cta"
               onClick={() => {
-                navigate('/vendor-partnership');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate('vendor-partnership');
               }}
             >
               <div className="vendor-cta-content">

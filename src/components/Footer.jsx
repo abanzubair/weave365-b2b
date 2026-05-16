@@ -1,6 +1,7 @@
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { Linkedin, Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
+import { assetSrc } from '../utils/assetSrc.js';
 
 export function Footer({ navigate }) {
   return (
@@ -14,7 +15,7 @@ export function Footer({ navigate }) {
             navigate('home');
           }}
         >
-          <img src={brandLogo} alt={storeConfig.name} className="brand-logo footer-logo" />
+          <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" />
         </a>
         <p>Your trusted wholesale partner for premium quality sarees at unbeatable wholesale prices.</p>
       </div>

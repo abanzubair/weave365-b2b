@@ -17,7 +17,11 @@ export async function fetchConfigOptions() {
 
   void autoSyncIfNeeded(); // Background auto sync
   const text = data.csv_data;
-  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+  const parsed = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: normalizeCsvHeader,
+  });
   
   const priceRanges = parsed.data
     .map(row => row['Price Range'] || row['PriceRange'])
@@ -58,10 +62,7 @@ export function parseProductCsv(text) {
   const parsed = Papa.parse(text, {
     header: true,
     skipEmptyLines: false,
-    transformHeader: (header, index) => {
-      const trimmed = header.trim();
-      return trimmed || `__empty_${index}`;
-    },
+    transformHeader: normalizeCsvHeader,
   });
 
   if (parsed.errors.length) {
@@ -237,6 +238,11 @@ function normalizeRow(row) {
   return Object.fromEntries(
     Object.entries(row).map(([key, value]) => [key.trim(), String(value || '').trim()]),
   );
+}
+
+function normalizeCsvHeader(header, index) {
+  const trimmed = header.trim();
+  return trimmed || `__empty_${index}`;
 }
 
 function buildVariant(row, codeInfo, image, colorEntries = []) {
@@ -493,7 +499,7 @@ export async function fetchHeroData() {
     const parsed = Papa.parse(text, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.trim(),
+      transformHeader: normalizeCsvHeader,
     });
 
     return parsed.data.map((row) => {

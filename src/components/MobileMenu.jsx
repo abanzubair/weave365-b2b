@@ -23,6 +23,7 @@ import brandLogo from '../../assets/Weave365.svg';
 
 import { fallbackProductImage, formatMoney, customerPrice, CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
+import { assetSrc } from '../utils/assetSrc.js';
 import { useState } from 'react';
 
 export function MobileMenu({ 
@@ -106,7 +107,7 @@ export function MobileMenu({
       <div className="mobile-menu-backdrop" onClick={onClose} />
       <aside className="mobile-menu">
         <div className="mobile-menu-head">
-          <img src={brandLogo} alt={storeConfig.name} className="brand-logo" style={{ height: 36 }} />
+          <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo" style={{ height: 36 }} />
           <button className="icon-button" onClick={onClose} aria-label="Close menu">
             <X size={22} />
           </button>

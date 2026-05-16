@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import {
   Award,
   Bookmark,
@@ -41,8 +40,7 @@ import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 
 export function ProductDetailWrapper(props) {
-  const { id } = useParams();
-  const product = props.productsById?.get(id) || props.products[0] || null;
+  const product = props.productsById?.get(props.productId) || props.products[0] || null;
   const isFavorite = product ? props.favoriteKeys.has(product.id) : false;
 
   if (!product) return null;

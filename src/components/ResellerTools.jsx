@@ -12,7 +12,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
-import '../styles/resellerTools.css';
 
 export function ResellerTools({ user, buyerProfile }) {
   const [activeTab, setActiveTab] = useState('shares');
@@ -20,6 +19,11 @@ export function ResellerTools({ user, buyerProfile }) {
   const [storefront, setStorefront] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -40,7 +44,7 @@ export function ResellerTools({ user, buyerProfile }) {
     loadData();
   }, [user.id]);
 
-  const catalogLink = storefront?.slug ? `${window.location.origin}/s/${storefront.slug}` : null;
+  const catalogLink = storefront?.slug ? `${origin || ''}/s/${storefront.slug}` : null;
 
   const copyCatalogLink = () => {
     if (!catalogLink) return;
@@ -133,7 +137,7 @@ export function ResellerTools({ user, buyerProfile }) {
       )}
 
       {activeTab === 'storefront' && (
-        <StorefrontSettings storefront={storefront} user={user} onUpdate={setStorefront} />
+        <StorefrontSettings storefront={storefront} user={user} origin={origin} onUpdate={setStorefront} />
       )}
 
       {activeTab === 'inquiries' && (
@@ -146,7 +150,7 @@ export function ResellerTools({ user, buyerProfile }) {
   );
 }
 
-function StorefrontSettings({ storefront, user, onUpdate }) {
+function StorefrontSettings({ storefront, user, origin, onUpdate }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [formData, setFormData] = useState({
@@ -185,7 +189,7 @@ function StorefrontSettings({ storefront, user, onUpdate }) {
       <div className="rt-form-row">
         <label htmlFor="rt-slug">URL Slug</label>
         <div className="rt-slug-wrap">
-          <span className="rt-slug-prefix">{window.location.origin}/s/</span>
+          <span className="rt-slug-prefix">{origin || ''}/s/</span>
           <input id="rt-slug" type="text" required value={formData.slug} onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="my-store" />
         </div>
       </div>

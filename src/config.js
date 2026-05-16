@@ -27,15 +27,15 @@ export const serviceablePincodes = [
 ];
 
 export const storeConfig = {
-  name: import.meta.env.VITE_STORE_NAME || 'Weave365',
-  subtitle: import.meta.env.VITE_STORE_SUBTITLE || 'WHOLESALE',
-  email: import.meta.env.VITE_STORE_EMAIL || 'weave365@gmail.com',
-  phone: import.meta.env.VITE_STORE_PHONE || '9919101369',
-  whatsapp: import.meta.env.VITE_STORE_WHATSAPP || '9919101369',
-  minimumOrderValue: Number(import.meta.env.VITE_MIN_ORDER_VALUE || 10000),
+  name: process.env.NEXT_PUBLIC_STORE_NAME || 'Weave365',
+  subtitle: process.env.NEXT_PUBLIC_STORE_SUBTITLE || 'WHOLESALE',
+  email: process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com',
+  phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',
+  whatsapp: process.env.NEXT_PUBLIC_STORE_WHATSAPP || '9919101369',
+  minimumOrderValue: Number(process.env.NEXT_PUBLIC_MIN_ORDER_VALUE || 10000),
 };
 
-export const adminEmails = String(import.meta.env.VITE_ADMIN_EMAILS || '')
+export const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);

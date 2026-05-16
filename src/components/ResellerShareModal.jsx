@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
-import '../styles/resellerTools.css';
 
 /**
  * Modal for resellers to add a product to their white-label catalog.
@@ -17,6 +16,11 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
   const [storeSlug, setStoreSlug] = useState(null);
   const [copied, setCopied] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   // Load the reseller's storefront slug
   useEffect(() => {
@@ -42,7 +46,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
     return Math.round(Number(markupValue));
   }, [basePrice, markupType, markupValue]);
 
-  const shareLink = storeSlug ? `${window.location.origin}/s/${storeSlug}` : '';
+  const shareLink = storeSlug ? `${origin || ''}/s/${storeSlug}` : '';
 
   const handleAdd = async () => {
     setIsCreating(true);

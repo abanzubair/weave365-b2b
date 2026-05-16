@@ -2,15 +2,16 @@ import React from 'react';
 import { Lock, ScrollText, Award, Handshake } from 'lucide-react';
 import comingSoonBg from '../../assets/comingsoon.png';
 import brandLogo from '../../assets/Weave365.svg';
+import { assetSrc } from '../utils/assetSrc.js';
 
 export function ComingSoon() {
   return (
-    <div className="cs-wrapper" style={{ backgroundImage: `url(${comingSoonBg})` }}>
+    <div className="cs-wrapper" style={{ backgroundImage: `url(${assetSrc(comingSoonBg)})` }}>
       <div className="cs-layout">
         
         {/* Top Left */}
         <div className="cs-logo-area">
-          <img src={brandLogo} alt="Weave365" className="cs-brand" />
+          <img src={assetSrc(brandLogo)} alt="Weave365" className="cs-brand" />
         </div>
 
         {/* Top Right */}

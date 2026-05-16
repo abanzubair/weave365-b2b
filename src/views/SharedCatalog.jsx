@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
 import { 
   MessageSquare, 
   ChevronRight, 
@@ -11,17 +10,21 @@ import {
 } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 import { formatMoney, fallbackProductImage } from '../storefrontShared';
-import '../styles/sharedCatalog.css';
-import '../styles/resellerTools.css';
 
-export function SharedCatalog({ products }) {
-  const { slug } = useParams();
+export function SharedCatalog({ products, slug }) {
   const [storefront, setStorefront] = useState(null);
   const [catalogItems, setCatalogItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inquiryOpen, setInquiryOpen] = useState(false);
   const [inquirySent, setInquirySent] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '' });
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const catalogUrl = origin ? `${origin}/s/${slug}` : `/s/${slug}`;
 
   useEffect(() => {
     async function loadCatalog() {
@@ -68,7 +71,7 @@ export function SharedCatalog({ products }) {
       });
       setInquirySent(true);
       if (storefront?.whatsapp) {
-        const msg = `Hi ${storefront.store_name}, I'm interested in products from your catalog: ${window.location.origin}/s/${slug}`;
+        const msg = `Hi ${storefront.store_name}, I'm interested in products from your catalog: ${catalogUrl}`;
         window.open(`https://wa.me/${storefront.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
       }
     } catch (err) {
@@ -152,7 +155,7 @@ export function SharedCatalog({ products }) {
       {storefront.whatsapp && (
         <div className="sc-float-bar">
           <a 
-            href={`https://wa.me/${storefront.whatsapp}?text=${encodeURIComponent(`Hi, I'm interested in products from your catalog: ${window.location.origin}/s/${slug}`)}`}
+            href={`https://wa.me/${storefront.whatsapp}?text=${encodeURIComponent(`Hi, I'm interested in products from your catalog: ${catalogUrl}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="sc-whatsapp-btn"

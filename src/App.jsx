@@ -1,12 +1,15 @@
+'use client';
+
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
+import { assetSrc } from './utils/assetSrc.js';
 
 import {
   parseCartVariantCode,
@@ -26,29 +29,34 @@ import { Footer } from './components/Footer.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
-import { Home, homeCategoryNames } from './pages/Home.jsx';
-import { Favorites } from './pages/Favorites.jsx';
-import { ComingSoon } from './pages/ComingSoon.jsx';
+import { Home, homeCategoryNames } from './views/Home.jsx';
+import { Favorites } from './views/Favorites.jsx';
+import { ComingSoon } from './views/ComingSoon.jsx';
 
 const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
-const BulkInquiry = lazy(() => import('./pages/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
-const Admin = lazy(() => import('./pages/Admin.jsx').then((module) => ({ default: module.Admin })));
-const Account = lazy(() => import('./pages/Account.jsx').then((module) => ({ default: module.Account })));
-const ResellerGrowthPage = lazy(() => import('./pages/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
-const VendorPartnershipPage = lazy(() => import('./pages/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
-const SharedCatalog = lazy(() => import('./pages/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
+const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
+const Admin = lazy(() => import('./views/Admin.jsx').then((module) => ({ default: module.Admin })));
+const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ default: module.Account })));
+const ResellerGrowthPage = lazy(() => import('./views/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
+const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
+const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
 
-export default function App() {
+export default function App({ initialData = {} }) {
 
   useCurrency();
-  const [products, setProducts] = useState([]);
+  const router = useRouter();
+  const pathname = usePathname() || '/';
+  const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
+  const route = pathSegments[0] || 'home';
+  const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const sharedSlug = route === 's' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const hasInitialData = Boolean(initialData?.hydrated);
+  const brandLogoSrc = assetSrc(brandLogo);
+  const [products, setProducts] = useState(() => initialData.products || []);
   const [visiblePriceRows, setVisiblePriceRows] = useState([]);
-  const [status, setStatus] = useState('loading');
-  const [error, setError] = useState('');
-  const routerNavigate = useNavigate();
-  const location = useLocation();
-  const route = location.pathname === '/' ? 'home' : location.pathname.split('/')[1];
+  const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
+  const [error, setError] = useState(() => initialData.error || '');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [fabric, setFabric] = useState('All');
@@ -76,8 +84,10 @@ export default function App() {
     }
   }, [search, route]);
 
-  const [heroSlides, setHeroSlides] = useState([]);
-  const [configOptions, setConfigOptions] = useState({ priceRanges: [], categories: [], fabrics: [] });
+  const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
+  const [configOptions, setConfigOptions] = useState(() => (
+    initialData.configOptions || { priceRanges: [], categories: [], fabrics: [] }
+  ));
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
@@ -89,6 +99,8 @@ export default function App() {
   );
 
   useEffect(() => {
+    if (hasInitialData) return undefined;
+
     let isActive = true;
 
     fetchProducts()
@@ -122,7 +134,7 @@ export default function App() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [hasInitialData]);
 
   useEffect(() => {
     const updateScrolled = () => {
@@ -452,16 +464,18 @@ export default function App() {
   }, [pincode]);
 
   const navigate = useCallback((nextRoute, productId = null) => {
+    let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
-      routerNavigate(`/product/${productId}`);
+      href = `/product/${productId}`;
     } else if (nextRoute === 'home') {
-      routerNavigate('/');
-    } else {
-      routerNavigate(`/${nextRoute}`);
+      href = '/';
     }
+    router.push(href);
     setMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [routerNavigate]);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [router]);
 
   const handleSignOut = useCallback(async () => {
     if (isSupabaseConfigured) {
@@ -475,7 +489,130 @@ export default function App() {
 
   // return <ComingSoon />;
 
-  const isSharedPage = location.pathname.startsWith('/s/');
+  const isSharedPage = route === 's';
+  const routeContent = (() => {
+    if (route === 'home') {
+      return (
+        <Home
+          products={pricedProducts}
+          status={status}
+          error={error}
+          heroSlides={heroSlides}
+          fallbackHeroImage={fallbackProductImage}
+          navigate={navigate}
+          setCategory={setCategory}
+          openAuth={() => setAuthOpen(true)}
+          addToCart={addToCart}
+          addCartSelections={addCartSelections}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeySet}
+          priceAccess={priceAccess}
+        />
+      );
+    }
+
+    if (route === 'catalog') {
+      return (
+        <Catalog
+          products={visibleProducts}
+          status={status}
+          error={error}
+          categories={categories}
+          category={category}
+          setCategory={setCategory}
+          fabrics={fabrics}
+          fabric={fabric}
+          setFabric={setFabric}
+          priceRanges={priceRanges}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          search={search}
+          setSearch={setSearch}
+          navigate={navigate}
+          addToCart={addToCart}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeySet}
+          priceAccess={priceAccess}
+          openAuth={() => setAuthOpen(true)}
+        />
+      );
+    }
+
+    if (route === 'product') {
+      return (
+        <ProductDetailWrapper
+          productId={productId}
+          products={pricedProducts}
+          productsById={productsById}
+          navigate={navigate}
+          addToCart={addToCart}
+          addCartSelections={addCartSelections}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeySet}
+          priceAccess={priceAccess}
+          openAuth={() => setAuthOpen(true)}
+          pincode={pincode}
+          setPincode={setPincode}
+          codStatus={codStatus}
+          checkPincode={checkPincode}
+        />
+      );
+    }
+
+    if (route === 'favorites') {
+      return (
+        <Favorites
+          products={favoriteProducts}
+          user={user}
+          navigate={navigate}
+          openAuth={() => setAuthOpen(true)}
+          toggleFavorite={toggleFavorite}
+          addToCart={addToCart}
+          priceAccess={priceAccess}
+        />
+      );
+    }
+
+    if (route === 'account') {
+      return (
+        <Account
+          user={user}
+          buyerProfile={buyerProfile}
+          priceAccess={priceAccess}
+          cartItems={cartProducts}
+          favoriteProducts={favoriteProducts}
+          navigate={navigate}
+          openAuth={() => setAuthOpen(true)}
+          updateQuantity={updateQuantity}
+          addToCart={addToCart}
+          onSignOut={handleSignOut}
+        />
+      );
+    }
+
+    if (route === 'bulk-inquiry') return <BulkInquiry navigate={navigate} />;
+
+    if (route === 'admin') {
+      return (
+        <Admin
+          user={user}
+          buyerProfile={buyerProfile}
+          onProfileChange={setBuyerProfile}
+          openAuth={() => setAuthOpen(true)}
+        />
+      );
+    }
+
+    if (route === 'reseller-growth') {
+      return <ResellerGrowthPage openAuth={() => setAuthOpen(true)} />;
+    }
+
+    if (route === 'vendor-partnership') return <VendorPartnershipPage />;
+
+    if (route === 's') return <SharedCatalog products={pricedProducts} slug={sharedSlug} />;
+
+    return <ComingSoon />;
+  })();
 
   return (
     <>
@@ -501,7 +638,7 @@ export default function App() {
               navigate('home');
             }}
           >
-            <img src={brandLogo} alt={storeConfig.name} className="brand-logo" />
+            <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
           </a>
           <nav className="main-nav">
             {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
@@ -673,114 +810,7 @@ export default function App() {
 
       <main>
         <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route path="/" element={
-              <Home
-                products={pricedProducts}
-                status={status}
-                error={error}
-                heroSlides={heroSlides}
-                fallbackHeroImage={fallbackProductImage}
-                navigate={navigate}
-                setCategory={setCategory}
-                openAuth={() => setAuthOpen(true)}
-                addToCart={addToCart}
-                addCartSelections={addCartSelections}
-                toggleFavorite={toggleFavorite}
-                favoriteKeys={favoriteKeySet}
-                priceAccess={priceAccess}
-              />
-            } />
-            <Route path="/catalog" element={
-              <Catalog
-                products={visibleProducts}
-                status={status}
-                error={error}
-                categories={categories}
-                category={category}
-                setCategory={setCategory}
-                fabrics={fabrics}
-                fabric={fabric}
-                setFabric={setFabric}
-                priceRanges={priceRanges}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                search={search}
-                setSearch={setSearch}
-                navigate={navigate}
-                addToCart={addToCart}
-                toggleFavorite={toggleFavorite}
-                favoriteKeys={favoriteKeySet}
-                priceAccess={priceAccess}
-                openAuth={() => setAuthOpen(true)}
-              />
-            } />
-            <Route path="/product/:id" element={
-              <ProductDetailWrapper
-                products={pricedProducts}
-                productsById={productsById}
-                navigate={navigate}
-                addToCart={addToCart}
-                addCartSelections={addCartSelections}
-                toggleFavorite={toggleFavorite}
-                favoriteKeys={favoriteKeySet}
-                priceAccess={priceAccess}
-                openAuth={() => setAuthOpen(true)}
-                pincode={pincode}
-                setPincode={setPincode}
-                codStatus={codStatus}
-                checkPincode={checkPincode}
-              />
-            } />
-            <Route path="/favorites" element={
-              <Favorites
-                products={favoriteProducts}
-                user={user}
-                navigate={navigate}
-                openAuth={() => setAuthOpen(true)}
-                toggleFavorite={toggleFavorite}
-                addToCart={addToCart}
-                priceAccess={priceAccess}
-              />
-            } />
-            <Route path="/account" element={
-              <Account
-                user={user}
-                buyerProfile={buyerProfile}
-                priceAccess={priceAccess}
-                cartItems={cartProducts}
-                favoriteProducts={favoriteProducts}
-                navigate={navigate}
-                openAuth={() => setAuthOpen(true)}
-                updateQuantity={updateQuantity}
-                addToCart={addToCart}
-                onSignOut={handleSignOut}
-              />
-            } />
-            <Route path="/bulk-inquiry" element={
-              <BulkInquiry navigate={navigate} />
-            } />
-            <Route path="/admin" element={
-              <Admin
-                user={user}
-                buyerProfile={buyerProfile}
-                onProfileChange={setBuyerProfile}
-                openAuth={() => setAuthOpen(true)}
-              />
-            } />
-            <Route path="/reseller-growth" element={
-              <ResellerGrowthPage
-                openAuth={() => setAuthOpen(true)}
-              />
-            } />
-            <Route path="/vendor-partnership" element={
-              <VendorPartnershipPage />
-            } />
-            <Route path="/s/:slug" element={
-              <SharedCatalog products={pricedProducts} />
-            } />
-          </Routes>
-
+          {routeContent}
         </Suspense>
       </main>
 
