@@ -41,6 +41,8 @@ const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ def
 const ResellerGrowthPage = lazy(() => import('./views/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
 const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
 const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
+const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
+
 
 export default function App({ initialData = {} }) {
 
@@ -51,6 +53,9 @@ export default function App({ initialData = {} }) {
   const route = pathSegments[0] || 'home';
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
   const sharedSlug = route === 's' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const isSharedProduct = route === 's' && pathSegments[2] === 'p';
+  const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
+
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
   const [products, setProducts] = useState(() => initialData.products || []);
@@ -463,14 +468,20 @@ export default function App({ initialData = {} }) {
     setCodStatus(serviceable ? 'available' : 'unavailable');
   }, [pincode]);
 
-  const navigate = useCallback((nextRoute, productId = null) => {
+  const navigate = useCallback((nextRoute, productId = null, shopName = null) => {
     let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
       href = `/product/${productId}`;
+    } else if (nextRoute === 'shared-product') {
+      href = `/s/${shopName}/p/${productId}`;
+    } else if (nextRoute === 's') {
+      href = `/s/${shopName}`;
     } else if (nextRoute === 'home') {
       href = '/';
     }
+
     router.push(href);
+
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -609,7 +620,13 @@ export default function App({ initialData = {} }) {
 
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 
-    if (route === 's') return <SharedCatalog products={pricedProducts} slug={sharedSlug} />;
+    if (route === 's') {
+      if (isSharedProduct) {
+        return <SharedProductPage products={pricedProducts} slug={sharedSlug} productId={sharedProductId} navigate={navigate} />;
+      }
+      return <SharedCatalog products={pricedProducts} slug={sharedSlug} navigate={navigate} />;
+    }
+
 
     return <ComingSoon />;
   })();
