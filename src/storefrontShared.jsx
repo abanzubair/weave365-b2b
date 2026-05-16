@@ -514,26 +514,26 @@ function buildCustomerProductMessage({ product, variant, quantity, selectedColor
   const length = product.length || product.sareeLength || product.raw?.Length || product.raw?.['Saree Length'] || '6.3m (incl. 85cm blouse)';
   const lines = [
     product?.title || 'Product details',
+    '',
     `Code: ${variant?.code || 'On request'}`,
-    `Price: ${formatMoney(customerPriceValue)} / piece`,
+    `Price: ${formatMoney(customerPriceValue)} /pc`,
     '',
     '*Specification:*',
-    quantity > 1 ? `Colors: ${quantity}` : '',
-    product.fabric ? `Fabric: ${product.fabric}` : '',
-    product.work ? `Work: ${product.work}` : '',
-    product.pattern ? `Pattern: ${product.pattern}` : '',
-    product.weave ? `Weave: ${product.weave}` : '',
-    '',
-    product.purity ? `Purity: ${product.purity}` : '',
-    product.type ? `Type: ${product.type}` : '',
-    length ? `Length: ${length}` : '',
+    `Colors: ${product.totalColors || quantity || 1}`,
+    product.fabric ? `Fabric: ${product.fabric}` : null,
+    product.work ? `Work: ${product.work}` : null,
+    product.pattern ? `Pattern: ${product.pattern}` : null,
+    product.weave ? `Weave: ${product.weave}` : null,
+    product.purity ? `Purity: ${product.purity}` : null,
+    product.type ? `Type: ${product.type}` : null,
+    `Length: ${length}`,
     '',
     '*Disclaimer:* Slight variations in color, fabric, and weaving are possible. Making a payment indicates your agreement to this. *Cover image is for reference only.*',
     '',
     'Reply here to order or ask any question.',
-  ].filter(Boolean);
+  ];
 
-  return lines.join('\n');
+  return lines.filter((line) => line !== null).join('\n');
 }
 
 function buildWhatsappShareUrl(message) {
@@ -549,10 +549,10 @@ function uniqueProductShareImages(product, variant, fallbackImage) {
     ...(product?.variants || []).map((item) => item.image),
   ].filter(Boolean);
 
-  // Return unique images. Limit to 15 to prevent Web Share API / App limits (e.g. WhatsApp) from rejecting the payload.
+  // Return unique images. Limit to 10 to prevent Web Share API / App limits (e.g. WhatsApp) from rejecting the payload.
   return Array.from(new Set(images))
     .filter((image) => image !== fallbackProductImage)
-    .slice(0, 15);
+    .slice(0, 10);
 }
 
 function shareImageProxyUrl(imageUrl) {
@@ -797,7 +797,12 @@ export function ResellerWhatsappShare({
           <button 
             type="button" 
             className="primary-button share-btn" 
-            style={{ flex: 1.5, background: isPreparingImages ? '#6b7280' : 'var(--primary-color)' }}
+            style={{ 
+              flex: 1.5, 
+              background: isPreparingImages ? '#6b7280' : 'var(--reseller-primary, #1C1917)',
+              color: 'white',
+              border: 'none'
+            }}
             onClick={shareImageAndMessage} 
             disabled={imageShareState === 'preparing' || (isPreparingImages && preparedFiles.length === 0)}
           >
