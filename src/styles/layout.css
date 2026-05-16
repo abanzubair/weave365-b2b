@@ -166,8 +166,11 @@
 
 .site-header.scrolled {
   background: rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) saturate(1.8);
   border-bottom: 1px solid var(--line);
 }
 
@@ -381,8 +384,11 @@
   inset: 0;
   z-index: 9998 !important;
   background: rgba(31, 20, 13, 0.25);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) saturate(1.8);
   animation: fadeInBackdrop 0.25s ease;
 }
 
@@ -396,8 +402,11 @@
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transform: translateZ(0);
+  -webkit-backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) saturate(1.8);
   box-shadow: 8px 0 40px rgba(31, 20, 13, 0.15);
   animation: slideInMenu 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow-y: auto;
