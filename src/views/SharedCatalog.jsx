@@ -25,6 +25,9 @@ export function SharedCatalog({ products, slug, navigate }) {
   const [inquirySent, setInquirySent] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '' });
   const [origin, setOrigin] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedFabric, setSelectedFabric] = useState('All');
+  const [selectedPrice, setSelectedPrice] = useState('All');
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -51,7 +54,7 @@ export function SharedCatalog({ products, slug, navigate }) {
   }, [slug]);
 
   // Match share items to local product data for images/details
-  const displayItems = useMemo(() => {
+  const allItems = useMemo(() => {
     if (!catalogItems.length || !products?.length) return [];
     return catalogItems.map(item => {
       const product = products.find(p => p.id === item.product_group_key);
@@ -60,6 +63,28 @@ export function SharedCatalog({ products, slug, navigate }) {
       return { ...item, product, variant, displayPrice: item.customer_price };
     }).filter(Boolean);
   }, [catalogItems, products]);
+
+  const fabrics = useMemo(() => {
+    const set = new Set();
+    allItems.forEach(item => {
+      if (item.product.fabric) set.add(item.product.fabric);
+    });
+    return Array.from(set).sort();
+  }, [allItems]);
+
+  const displayItems = useMemo(() => {
+    return allItems.filter(item => {
+      const matchesCategory = selectedCategory === 'All' || item.product.category === selectedCategory;
+      const matchesFabric = selectedFabric === 'All' || item.product.fabric === selectedFabric;
+      
+      let matchesPrice = true;
+      if (selectedPrice === 'Under 2000') matchesPrice = item.displayPrice < 2000;
+      else if (selectedPrice === '2000-5000') matchesPrice = item.displayPrice >= 2000 && item.displayPrice <= 5000;
+      else if (selectedPrice === 'Above 5000') matchesPrice = item.displayPrice > 5000;
+
+      return matchesCategory && matchesFabric && matchesPrice;
+    });
+  }, [allItems, selectedCategory, selectedFabric, selectedPrice]);
 
   const handleSubmitInquiry = async (e) => {
     e.preventDefault();
@@ -210,7 +235,11 @@ export function SharedCatalog({ products, slug, navigate }) {
               {categories.map((cat, idx) => {
                 const catItem = displayItems.find(item => item.product.category === cat);
                 return (
-                  <div key={cat} className="sc-cat-card">
+                  <div 
+                    key={cat} 
+                    className={`sc-cat-card ${selectedCategory === cat ? 'active' : ''}`}
+                    onClick={() => setSelectedCategory(selectedCategory === cat ? 'All' : cat)}
+                  >
                     <img src={catItem?.variant?.image || catItem?.product?.images[0]} alt={cat} />
                     <div className="sc-cat-overlay">
                       <h3>{cat}</h3>
@@ -224,9 +253,37 @@ export function SharedCatalog({ products, slug, navigate }) {
 
         {/* Catalog Grid */}
         <section id="catalog-grid" className="sc-catalog-section">
-          <div className="sc-section-header">
-            <h2>Our Catalog</h2>
-            <span className="sc-item-count">{displayItems.length} curated item{displayItems.length !== 1 ? 's' : ''}</span>
+          <div className="sc-catalog-toolbar">
+            <div className="sc-toolbar-left">
+              <h2>{selectedCategory === 'All' ? 'Our Catalog' : selectedCategory}</h2>
+            </div>
+            <div className="sc-toolbar-right">
+              <div className="sc-filters">
+                <div className="sc-filter-group">
+                  <label>Category</label>
+                  <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                    <option value="All">All Categories</option>
+                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
+                <div className="sc-filter-group">
+                  <label>Fabric</label>
+                  <select value={selectedFabric} onChange={(e) => setSelectedFabric(e.target.value)}>
+                    <option value="All">All Fabrics</option>
+                    {fabrics.map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div className="sc-filter-group">
+                  <label>Price</label>
+                  <select value={selectedPrice} onChange={(e) => setSelectedPrice(e.target.value)}>
+                    <option value="All">All Prices</option>
+                    <option value="Under 2000">Under ₹2,000</option>
+                    <option value="2000-5000">₹2,000 - ₹5,000</option>
+                    <option value="Above 5000">Above ₹5,000</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
 
           {displayItems.length === 0 ? (
@@ -252,11 +309,15 @@ export function SharedCatalog({ products, slug, navigate }) {
                   </div>
                   <div className="sc-card-body">
                     <h3>{item.product.title}</h3>
+                    <div className="sc-card-color-badge">{item.product.totalColors || 1} Colors Available</div>
                     <div className="sc-card-price">{formatMoney(item.displayPrice)}</div>
                     
-                    <div className="sc-card-meta">
-                      <span><Layers size={12} /> {item.product.totalColors || 1}</span>
-                      <span><Palette size={12} /> {item.product.work || 'Designer'}</span>
+                    <div className="sc-card-footer" style={{ marginTop: '0.125rem' }}>
+                      <button className="sc-card-cta">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                        </svg> Enquire
+                      </button>
                     </div>
                   </div>
 
