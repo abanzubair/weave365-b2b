@@ -164,7 +164,11 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         }
       }
 
-      setMessage(mode === 'login' ? 'Logged in successfully.' : 'Registration saved. Check your email if confirmation is required.');
+      if (mode === 'login') {
+        onClose();
+      } else {
+        setMessage('Registration saved. Check your email if confirmation is required.');
+      }
     }
   }
 
@@ -188,7 +192,8 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           <>
             <h2>Your Account</h2>
             <p>{user.email || 'Demo account'}</p>
-            {userProfile.buyer_type && (
+            {/* Welcome Card Disabled per user request */}
+            {false && userProfile.buyer_type && (
               <div className="account-profile-card">
                 <span>{userProfile.price_group === 'reseller' ? 'Reseller Price' : 'Wholesale Price'}</span>
                 <strong>{userProfile.business_name || userProfile.full_name}</strong>

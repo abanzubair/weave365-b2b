@@ -542,19 +542,24 @@ function buildWhatsappShareUrl(message) {
 
 function uniqueProductShareImages(product, variant, fallbackImage) {
   const images = [
+    variant?.image,
+    fallbackImage,
     ...(product?.images || []),
     ...(product?.colorOptions || []).map((option) => option.image),
     ...(product?.variants || []).map((item) => item.image),
-    fallbackImage,
-    variant?.image,
   ].filter(Boolean);
 
-  return Array.from(new Set(images)).filter((image) => image !== fallbackProductImage);
+  // Return unique images. Limit to 15 to prevent Web Share API / App limits (e.g. WhatsApp) from rejecting the payload.
+  return Array.from(new Set(images))
+    .filter((image) => image !== fallbackProductImage)
+    .slice(0, 15);
 }
 
 function shareImageProxyUrl(imageUrl) {
   if (!imageUrl || imageUrl.startsWith('data:')) return imageUrl;
-  return `https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}`;
+  // Further optimize images: 600px width, 60% quality. 
+  // Smaller files are MUCH more likely to be accepted by the Web Share API and mobile OSs.
+  return `https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}&w=600&q=60&output=jpg`;
 }
 
 async function fileFromImageUrl(imageUrl, filename) {
@@ -599,6 +604,10 @@ export function ResellerWhatsappShare({
   const [markupValue, setMarkupValue] = useState('20');
   const [copyState, setCopyState] = useState('idle');
   const [imageShareState, setImageShareState] = useState('idle');
+  const [preparedFiles, setPreparedFiles] = useState([]);
+  const [isPreparingImages, setIsPreparingImages] = useState(false);
+
+
 
   const isApprovedReseller = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
   const basePrice = customerPrice(variant?.prices, priceAccess);
@@ -623,6 +632,35 @@ export function ResellerWhatsappShare({
   );
   const whatsappUrl = useMemo(() => buildWhatsappShareUrl(message), [message]);
 
+  useEffect(() => {
+    let isActive = true;
+    if (open && isApprovedReseller && shareImages.length > 0) {
+      setIsPreparingImages(true);
+      setPreparedFiles([]);
+      
+      void Promise.allSettled(
+        shareImages.map((img, i) =>
+          fileFromImageUrl(img, safeFileName(`${product.title}-${variant.code}-${i + 1}`)),
+        ),
+      ).then((results) => {
+        if (isActive) {
+          const successfulFiles = results
+            .filter((r) => r.status === 'fulfilled')
+            .map((r) => r.value);
+          setPreparedFiles(successfulFiles);
+          setIsPreparingImages(false);
+        }
+      }).catch((err) => {
+        console.warn('Failed to pre-load share images:', err);
+        if (isActive) setIsPreparingImages(false);
+      });
+    } else {
+      setPreparedFiles([]);
+      setIsPreparingImages(false);
+    }
+    return () => { isActive = false; };
+  }, [open, shareImages, isApprovedReseller, product.title, variant.code]);
+
   if (!isApprovedReseller || !basePrice || !variant) return null;
 
   async function copyMessage() {
@@ -637,32 +675,60 @@ export function ResellerWhatsappShare({
   }
 
   async function shareImageAndMessage() {
+    if (imageShareState === 'preparing') return;
+    
+    if (preparedFiles.length === 0) {
+      setImageShareState('unsupported');
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      setTimeout(() => setImageShareState('idle'), 2600);
+      return;
+    }
+
     setImageShareState('preparing');
 
     try {
-      const imageFiles = await Promise.all(
-        shareImages.map((shareImage, index) => (
-          fileFromImageUrl(shareImage, safeFileName(`${product.title}-${variant.code}-${index + 1}`))
-        )),
-      );
-      const sharePayload = {
+      const basePayload = {
         title: product.title,
         text: message,
-        files: imageFiles,
       };
 
-      if (imageFiles.length && navigator.canShare?.({ files: imageFiles }) && navigator.share) {
-        await navigator.share(sharePayload);
+      // 1. Try sharing all prepared images (up to 15)
+      let currentFiles = preparedFiles;
+      if (navigator.canShare && navigator.canShare({ ...basePayload, files: currentFiles }) && navigator.share) {
+        await navigator.share({ ...basePayload, files: currentFiles });
         setImageShareState('shared');
         setTimeout(() => setImageShareState('idle'), 1800);
         return;
       }
 
+      // 2. Fallback: Try sharing just the first 3 images
+      if (currentFiles.length > 3) {
+        currentFiles = currentFiles.slice(0, 3);
+        if (navigator.canShare({ ...basePayload, files: currentFiles })) {
+          await navigator.share({ ...basePayload, files: currentFiles });
+          setImageShareState('shared');
+          setTimeout(() => setImageShareState('idle'), 1800);
+          return;
+        }
+      }
+
+      // 3. Last resort fallback: Try sharing just the PRIMARY image (the one the user is looking at)
+      if (currentFiles.length > 1) {
+        currentFiles = currentFiles.slice(0, 1);
+        if (navigator.canShare({ ...basePayload, files: currentFiles })) {
+          await navigator.share({ ...basePayload, files: currentFiles });
+          setImageShareState('shared');
+          setTimeout(() => setImageShareState('idle'), 1800);
+          return;
+        }
+      }
+
+      // 4. Final fallback for browsers that don't support file sharing at all
       setImageShareState('unsupported');
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       setTimeout(() => setImageShareState('idle'), 2600);
     } catch (error) {
-      console.error('Unable to share product image:', error);
+      console.error('Web Share API error:', error);
       setImageShareState('failed');
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       setTimeout(() => setImageShareState('idle'), 2600);
@@ -724,22 +790,28 @@ export function ResellerWhatsappShare({
           <textarea readOnly rows={10} value={message} />
         </label>
 
-        <div className="reseller-share-actions">
-          <button type="button" className="secondary-button" onClick={copyMessage}>
+        <div className="reseller-share-actions" style={{ display: 'flex', gap: '12px', marginTop: '1.5rem' }}>
+          <button type="button" className="secondary-button" style={{ flex: 1 }} onClick={copyMessage}>
             {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Message'}
           </button>
-          <button type="button" className="primary-button" onClick={shareImageAndMessage} disabled={imageShareState === 'preparing'}>
-            {imageShareState === 'preparing'
-              ? 'Preparing Image...'
-              : imageShareState === 'shared'
-                ? 'Shared'
-                : imageShareState === 'unsupported'
-                  ? 'Text Opened'
-                  : imageShareState === 'failed'
-                    ? 'Text Opened'
-                    : 'Share Image + Text'}
+          <button 
+            type="button" 
+            className="primary-button share-btn" 
+            style={{ flex: 1.5, background: isPreparingImages ? '#6b7280' : 'var(--primary-color)' }}
+            onClick={shareImageAndMessage} 
+            disabled={imageShareState === 'preparing' || (isPreparingImages && preparedFiles.length === 0)}
+          >
+            {imageShareState === 'shared' ? 'Shared!' : 
+             imageShareState === 'preparing' ? 'Sharing...' : 
+             isPreparingImages ? `Preparing (${preparedFiles.length}/${shareImages.length})` :
+             'Share Image + Text'}
           </button>
         </div>
+        {isPreparingImages && (
+          <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', textAlign: 'center' }}>
+            Fetching {shareImages.length} images for high-quality sharing...
+          </p>
+        )}
         {(imageShareState === 'unsupported' || imageShareState === 'failed') && (
           <p className="reseller-share-footnote">
             This browser could not attach the image automatically, so WhatsApp opened with the message text.
