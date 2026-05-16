@@ -158,7 +158,9 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
     slug: storefront?.slug || '',
     whatsapp: storefront?.whatsapp || '',
     logo_url: storefront?.logo_url || '',
+    theme_color: storefront?.theme_color || 'theme-classic-luxury',
   });
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,6 +203,30 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
         <label htmlFor="rt-logo">Logo URL</label>
         <input id="rt-logo" type="text" value={formData.logo_url} onChange={e => update('logo_url', e.target.value)} placeholder="https://..." />
       </div>
+      
+      <div className="rt-form-row">
+        <label>Store Theme</label>
+        <div className="rt-theme-grid">
+          {[
+            { id: 'theme-classic-luxury', label: 'Classic Luxury', colors: ['#1C1917', '#CA8A04'] },
+            { id: 'theme-midnight-royal', label: 'Midnight Royal', colors: ['#1E3A8A', '#CA8A04'] },
+            { id: 'theme-rose-silk', label: 'Rose Silk', colors: ['#7F1D1D', '#E11D48'] },
+            { id: 'theme-emerald-weave', label: 'Emerald Weave', colors: ['#064E3B', '#059669'] },
+          ].map(t => (
+            <div 
+              key={t.id} 
+              className={`rt-theme-card ${formData.theme_color === t.id ? 'selected' : ''}`}
+              onClick={() => update('theme_color', t.id)}
+            >
+              <div className="rt-theme-preview" style={{ background: t.colors[0] }}>
+                <div className="rt-theme-accent" style={{ background: t.colors[1] }} />
+              </div>
+              <span>{t.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <button type="submit" disabled={saving} className={`rt-save-btn ${saved ? 'saved' : ''}`}>
         {saved ? <><Check size={14} /> Saved</> : saving ? 'Saving…' : <><Save size={14} /> Save Settings</>}
       </button>

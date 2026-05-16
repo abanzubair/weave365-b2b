@@ -111,8 +111,9 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
   const whatsappMsg = `Hi ${storefront.store_name}, I'm interested in "${productData.title}" from your catalog. Product link: ${window.location.href}`;
 
   return (
-    <div className="reseller-storefront">
+    <div className={`reseller-storefront ${storefront.theme_color || 'theme-classic-luxury'}`}>
       <header className="sc-header">
+
         <div className="sc-brand" onClick={() => navigate('s', null, slug)} style={{ cursor: 'pointer' }}>
           {storefront.logo_url ? (
             <img src={storefront.logo_url} alt={storefront.store_name} className="sc-logo" />

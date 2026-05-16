@@ -23,9 +23,10 @@ export const resellerService = {
   async updateStorefront(resellerId, updates) {
     const { data, error } = await supabase
       .from('reseller_storefronts')
-      .upsert({ reseller_id: resellerId, ...updates })
+      .upsert({ reseller_id: resellerId, ...updates }, { onConflict: 'reseller_id' })
       .select()
       .single();
+
     
     return { data, error };
   },

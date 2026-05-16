@@ -123,8 +123,9 @@ export function SharedCatalog({ products, slug, navigate }) {
   );
 
   return (
-    <div className="reseller-storefront">
+    <div className={`reseller-storefront ${storefront.theme_color || 'theme-classic-luxury'}`}>
       <header className={`sc-header ${scrolled ? 'scrolled' : ''}`}>
+
         <div className="sc-brand" onClick={() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }} style={{ cursor: 'pointer' }}>
