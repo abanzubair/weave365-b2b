@@ -69,7 +69,16 @@ export function Footer({ navigate }) {
         <a href={`mailto:${storeConfig.email}`}><Mail size={16} /> {storeConfig.email}</a>
         <a href="#working-hours"><Clock size={16} /> Mon - Sat (10AM - 6PM)</a>
         <a href="#collaboration" className="footer-link"><Handshake size={16} /> Collaboration</a>
-        <a href="#onboarding" className="footer-link"><UserPlus size={16} /> Weaver Onboarding</a>
+        <a
+          href="/vendor-partnership"
+          className="footer-link"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('vendor-partnership');
+          }}
+        >
+          <UserPlus size={16} /> Weaver Onboarding
+        </a>
       </div>
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
+import { storeConfig } from '../config.js';
 
 /**
  * Modal for resellers to add a product to their white-label catalog.
@@ -86,7 +87,37 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
         </div>
 
         <div className="reseller-modal-content">
-          {needsSetup ? (
+          {!priceAccess?.resellerDashboardEnabled ? (
+            <div className="reseller-success-box" style={{ background: '#fef2f2', borderColor: '#fca5a5' }}>
+              <h3 style={{ color: '#991b1b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                White-label Website Disabled
+              </h3>
+              <p style={{ color: '#b91c1c', margin: '0.5rem 0 1rem 0', fontSize: '0.875rem', lineHeight: '1.4' }}>
+                Your white-label website is currently disabled. To enable it and start sharing, please contact us.
+              </p>
+              <a
+                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi, my reseller white-label website is disabled. Please help me enable it.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="reseller-btn-whatsapp"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  background: '#128C7E',
+                  color: '#fff',
+                  padding: '0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  textAlign: 'center'
+                }}
+              >
+                Contact Us via WhatsApp
+              </a>
+            </div>
+          ) : needsSetup ? (
             <div className="reseller-success-box" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
               <h3 style={{ color: '#92400e' }}>Set Up Your Store First</h3>
               <p style={{ color: '#a16207' }}>

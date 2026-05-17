@@ -161,6 +161,19 @@ export const ProductCard = memo(function ProductCard({
   const [isClosing, setIsClosing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const filteredStatusTags = useMemo(() => {
+    return (product.statusTags || []).filter((tag) => {
+      if (tag.key === 'bestseller') return false;
+      if (!canViewPrice && tag.key === 'low-moq') return false;
+      if (tag.key === 'low-moq' && priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) return false;
+      return true;
+    });
+  }, [product.statusTags, canViewPrice, priceAccess]);
+
+  const showMoqBadge = !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices);
+  const showColorBadge = colorCount > 1;
+  const showRightInfo = showMoqBadge || showColorBadge;
+
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
     const handler = (e) => setIsMobile(e.matches);
@@ -237,9 +250,9 @@ export const ProductCard = memo(function ProductCard({
             decoding="async"
             onError={(e) => { e.target.style.opacity = '0'; }}
           />
-          {product.statusTags && product.statusTags.length > 0 && (
+          {filteredStatusTags && filteredStatusTags.length > 0 && (
             <div className="card-status-badges">
-              {product.statusTags.map((tag) => (
+              {filteredStatusTags.map((tag) => (
                 <span key={tag.key} className={`status-badge tag-${tag.key}`}>
                   {tag.label}
                 </span>
@@ -262,15 +275,17 @@ export const ProductCard = memo(function ProductCard({
           {product.title}
         </h3>
 
-        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''} ${!canViewPrice ? 'price-locked' : ''}`}>
+        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''} ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
           <div className="info-left">
             {priceAccess?.isLoggedIn !== false && (
               <>
-                {canViewPrice && <label>PRICE</label>}
+                {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && <label>PRICE</label>}
                 {canViewPrice ? (
                   <>
-                    <strong>{formatMoney(basePrice)} <span>/ pc</span></strong>
-                    <small>{formatMoney(setPrice)} / set</small>
+                    <strong>{formatMoney(basePrice)} <span>/pc</span></strong>
+                    {!(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && (
+                      <small>{formatMoney(setPrice)} /set</small>
+                    )}
                   </>
                 ) : (
                   <div className="price-pending-notice">
@@ -283,12 +298,14 @@ export const ProductCard = memo(function ProductCard({
               </>
             )}
           </div>
-          {priceAccess?.isLoggedIn !== false && canViewPrice && (
+          {priceAccess?.isLoggedIn !== false && canViewPrice && showRightInfo && (
             <div className="info-right">
-              <div className="info-item">
-                <ShoppingBag size={15} /> MOQ 1 Set
-              </div>
-              {colorCount > 1 && (
+              {showMoqBadge && (
+                <div className="info-item">
+                  <ShoppingBag size={15} /> MOQ 1 Set
+                </div>
+              )}
+              {showColorBadge && (
                 <div className="info-item">
                   <Palette size={15} /> {colorCount} Colors
                 </div>
@@ -299,7 +316,7 @@ export const ProductCard = memo(function ProductCard({
 
 
 
-        <div className={`card-actions-new ${canResellerShare ? 'has-reseller-share' : ''}`}>
+        <div className={`card-actions-new ${priceAccess?.isLoggedIn !== false ? 'has-reseller-share' : ''}`}>
           {priceAccess?.isLoggedIn === false ? (
             <button
               className="order-now-btn guest-login-btn"
@@ -310,7 +327,7 @@ export const ProductCard = memo(function ProductCard({
             >
               <User size={16} /> LOGIN TO VIEW PRICE
             </button>
-          ) : canResellerShare ? (
+          ) : (
             <>
               <button
                 type="button"
@@ -325,20 +342,6 @@ export const ProductCard = memo(function ProductCard({
                 onClick={() => setShowOptions(true)}
               >
                 <Menu size={16} /> OPTIONS
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={handleEnquiryClick}
-                className="order-now-btn"
-                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
-              >
-                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
-              </button>
-              <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-                <ShoppingBag size={16} /> ADD TO ORDER LIST
               </button>
             </>
           )}
@@ -394,28 +397,34 @@ export const ProductCard = memo(function ProductCard({
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <div className="sheet-divider" />
+                {priceAccess?.canViewPrices && (
+                  <>
+                    <div className="sheet-divider" />
 
-                <button
-                  className="sheet-item reseller-primary"
-                  onClick={() => { handleClose(); setShowResellerWhatsapp(true); }}
-                >
-                  <div className="item-icon share"><Share2 size={20} /></div>
-                  <div className="item-copy">
-                    <strong>WhatsApp Customer</strong>
-                    <span>Share with your own markup</span>
-                  </div>
-                  <ChevronRight size={18} className="item-chevron" />
-                </button>
+                    <button
+                      className="sheet-item reseller-primary"
+                      onClick={() => { handleClose(); setShowResellerWhatsapp(true); }}
+                    >
+                      <div className="item-icon share"><Share2 size={20} /></div>
+                      <div className="item-copy">
+                        <strong>WhatsApp Customer</strong>
+                        <span>Share with your own markup</span>
+                      </div>
+                      <ChevronRight size={18} className="item-chevron" />
+                    </button>
 
-                <button className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
-                  <div className="item-icon link"><Layers size={20} /></div>
-                  <div className="item-copy">
-                    <strong>Catalog Link</strong>
-                    <span>Create white-label customer link</span>
-                  </div>
-                  <ChevronRight size={18} className="item-chevron" />
-                </button>
+                    {canResellerShare && (
+                      <button className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
+                        <div className="item-icon link"><Layers size={20} /></div>
+                        <div className="item-copy">
+                          <strong>Catalog Link</strong>
+                          <span>Create white-label customer link</span>
+                        </div>
+                        <ChevronRight size={18} className="item-chevron" />
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -442,7 +451,7 @@ export const ProductCard = memo(function ProductCard({
         />
       )}
 
-      {canResellerShare && (
+      {priceAccess?.canViewPrices && (
         <ResellerWhatsappShare
           product={product}
           variant={selectedVariant}

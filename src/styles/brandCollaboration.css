@@ -1,0 +1,466 @@
+/* ==================================================
+   BRAND COLLABORATION — Custom Redesigned Styles
+   Premium Light-Satin + Cream + Gold & Olive Accents
+   ================================================== */
+
+.brand-collab-section {
+  padding: 100px 0;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--cream) 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(183, 134, 70, 0.08);
+  border-bottom: 1px solid rgba(183, 134, 70, 0.08);
+}
+
+/* Subtle, elegant handloom warp weave background effect */
+.brand-collab-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(117, 111, 79, 0.01) 40px,
+      rgba(117, 111, 79, 0.01) 41px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.brand-collab-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 var(--site-padding);
+  position: relative;
+  z-index: 2;
+}
+
+/* Centered Editorial Header */
+.brand-collab-header {
+  text-align: center;
+  margin-bottom: 64px;
+  position: relative;
+}
+
+.brand-kicker {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--olive);
+  margin-bottom: 16px;
+}
+
+.brand-title {
+  font-family: var(--font-heading);
+  font-size: clamp(38px, 4.5vw, 56px);
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 24px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+.brand-title span {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--gold-dark);
+}
+
+.brand-header-line {
+  width: 60px;
+  height: 1.5px;
+  background: var(--gold-soft);
+  margin: 0 auto;
+}
+
+/* Asymmetric Grid Layout */
+.brand-collab-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* Left Column: Overlapping Dual-Image Collage */
+.brand-collab-visual-stack {
+  position: relative;
+}
+
+.collage-container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 520px;
+  margin: 0 auto;
+}
+
+/* Main Image Layer (Designer Workspace) */
+.main-image-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 82%;
+  z-index: 2;
+}
+
+.collage-main-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px rgba(36, 25, 18, 0.05);
+  border: 1px solid var(--line);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Overlapping Weaver Detail Image Layer */
+.detail-image-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  z-index: 4;
+}
+
+.collage-detail-image {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 15px 35px rgba(36, 25, 18, 0.1);
+  border: 4px solid var(--paper);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Collage Hover Interaction */
+.collage-container:hover .collage-main-image {
+  transform: translateY(-6px);
+  box-shadow: 0 35px 60px rgba(36, 25, 18, 0.08);
+}
+
+.collage-container:hover .collage-detail-image {
+  transform: translateY(-8px) rotate(-1deg);
+  box-shadow: 0 25px 45px rgba(36, 25, 18, 0.15);
+}
+
+/* Premium Floating Glassmorphism Badge */
+.collage-glass-badge {
+  position: absolute;
+  bottom: 50px;
+  right: -20px;
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 
+    0 15px 30px rgba(117, 111, 79, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  max-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 5;
+  animation: brandGlassFloat 6s ease-in-out infinite;
+}
+
+.collage-glass-badge strong {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.1;
+  font-weight: 600;
+  display: block;
+}
+
+.collage-glass-badge span {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.gold-text-accent {
+  color: var(--gold-dark);
+}
+
+/* Right Column: Copy & Pillars */
+.brand-collab-main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.brand-lead {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 40px;
+  margin-top: 0;
+}
+
+/* Minimalist Pillars Row (Stacked with Thin Borders) */
+.brand-pillars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 48px;
+  width: 100%;
+}
+
+.brand-pillar-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  transition: all 0.3s ease;
+}
+
+.brand-pillar-item:hover {
+  transform: translateX(4px);
+}
+
+.pillar-num {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--olive);
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.brand-pillar-item h4 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.brand-pillar-item p {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Premium Light-Satin CTA Button */
+.brand-editorial-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 28px;
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 15px rgba(117, 111, 79, 0.04);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: none;
+}
+
+.cta-label {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.cta-arrow-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--olive);
+  display: grid;
+  place-items: center;
+  transition: all 0.4s ease;
+}
+
+.brand-editorial-cta:hover {
+  border-color: var(--olive);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(117, 111, 79, 0.1);
+}
+
+.brand-editorial-cta:hover .cta-arrow-circle {
+  background: var(--olive);
+  color: var(--white);
+  transform: scale(1.05) translateX(2px);
+}
+
+/* Bottom Credentials Strip */
+.brand-collab-strip {
+  margin-top: 80px;
+  padding: 24px 32px;
+  background: var(--surface-soft);
+  border: 1px solid rgba(183, 134, 70, 0.05);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+}
+
+.strip-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.olive-text-accent {
+  color: var(--olive);
+}
+
+.strip-item span {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.strip-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--line);
+}
+
+/* Animations */
+@keyframes brandGlassFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-pulse-slow {
+  animation: pulseBadgeGlow 4s ease-in-out infinite;
+}
+
+@keyframes pulseBadgeGlow {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Responsive Styling */
+@media (max-width: 1024px) {
+  .brand-collab-layout {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+  .brand-collab-visual-stack {
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .collage-container {
+    height: 460px;
+  }
+  .brand-collab-main-content {
+    max-width: 600px;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+  }
+  .brand-lead {
+    text-align: center;
+  }
+  .brand-pillars-list {
+    text-align: left;
+  }
+  .brand-collab-strip {
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px;
+  }
+  .strip-separator {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-collab-section {
+    padding: 60px 0;
+  }
+  .brand-collab-header {
+    margin-bottom: 40px;
+  }
+  .brand-title {
+    font-size: 34px;
+  }
+  .collage-container {
+    height: 380px;
+    max-width: 360px;
+  }
+  .collage-glass-badge {
+    bottom: 30px;
+    right: -10px;
+    padding: 12px 16px;
+  }
+  .collage-glass-badge strong {
+    font-size: 15px;
+  }
+  .brand-lead {
+    font-size: 15px;
+    margin-bottom: 30px;
+  }
+  .brand-pillar-item {
+    gap: 16px;
+    padding-top: 20px;
+  }
+  .pillar-num {
+    font-size: 22px;
+  }
+  .brand-pillar-item h4 {
+    font-size: 18px;
+  }
+  .brand-editorial-cta {
+    width: 100%;
+    max-width: 320px;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-title {
+    font-size: 30px;
+  }
+  .collage-container {
+    height: 320px;
+    max-width: 300px;
+  }
+  .collage-glass-badge {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-pillar-item,
+  .brand-editorial-cta,
+  .cta-arrow-circle,
+  .collage-main-image,
+  .collage-detail-image {
+    transition: none !important;
+  }
+  .brand-pillar-item:hover,
+  .brand-editorial-cta:hover {
+    transform: none !important;
+  }
+  .collage-glass-badge {
+    animation: none !important;
+  }
+  .animate-pulse-slow {
+    animation: none !important;
+  }
+}

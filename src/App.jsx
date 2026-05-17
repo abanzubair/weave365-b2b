@@ -399,6 +399,9 @@ export default function App({ initialData = {} }) {
     [favoriteKeySet, pricedProducts],
   );
 
+  const cartCount = cartProducts.length;
+  const favoritesCount = favoriteProducts.length;
+
   const addToCart = useCallback((product, variant, quantity = 1, colorSelection = {}) => {
     if (!user) {
       setAuthOpen(true);
@@ -798,14 +801,14 @@ export default function App({ initialData = {} }) {
             )}
           </div>
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
-            <Search size={22} />
+            <Search size={20} />
           </button>
           <div className="header-actions">
             {user ? (
               <>
                 <button className="login-link" type="button" onClick={() => navigate('account')}>
                   <User size={18} />
-                  Account
+                  {buyerProfile?.full_name || 'Account'}
                 </button>
                 <button className="login-link" type="button" onClick={handleSignOut}>
                   Logout
@@ -819,11 +822,11 @@ export default function App({ initialData = {} }) {
             )}
             <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
               <Bookmark size={22} />
-              {favorites.length > 0 && <span className="badge">{favorites.length}</span>}
+              {favoriteProducts.length > 0 && <span className="badge">{favoriteProducts.length}</span>}
             </button>
             <button className="icon-button cart-button" type="button" onClick={() => setCartOpen(true)}>
               <ShoppingBag size={22} />
-              {cart.length > 0 && <span className="badge">{cart.length}</span>}
+              {cartProducts.length > 0 && <span className="badge">{cartProducts.length}</span>}
             </button>
           </div>
         </header>
@@ -843,8 +846,8 @@ export default function App({ initialData = {} }) {
           setSearch={setSearch}
           visibleProducts={visibleProducts}
           setCartOpen={setCartOpen}
-          cartCount={cart.length}
-          favoritesCount={favorites.length}
+          cartCount={cartCount}
+          favoritesCount={favoritesCount}
           onSignOut={handleSignOut}
         />
 

@@ -676,6 +676,7 @@
     white-space: normal;
     text-align: center;
     height: 48px;
+    font-size: 13px;
   }
 
   .whatsapp-group-btn svg {
@@ -714,7 +715,7 @@
   .newsletter input {
     height: 48px;
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
-    border-radius: 30px !important;
+    border-radius: 8px !important;
     text-align: center;
     padding: 0 24px;
     background: var(--white);
@@ -723,9 +724,10 @@
 
   .newsletter button {
     min-height: 48px;
-    border-radius: 30px !important;
+    border-radius: 8px !important;
     width: 100%;
     box-shadow: none;
+    font-size: 13px;
   }
 
   /* Product Rails: exactly 2 cards per screen on mobile (no peeking) */

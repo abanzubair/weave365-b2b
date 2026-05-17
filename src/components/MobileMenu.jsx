@@ -269,8 +269,22 @@ export function MobileMenu({
           </div>
 
           <div className="mobile-menu-footer">
-            <span><Headphones size={16} /> {storeConfig.phone}</span>
-            <span><MessageCircle size={16} /> {storeConfig.email}</span>
+            <a href={storeConfig.phone.startsWith('+') ? `tel:${storeConfig.phone}` : `tel:+91${storeConfig.phone}`}>
+              <Headphones size={16} />
+              <span>
+                {storeConfig.phone === '9919101369' 
+                  ? '+91 9919 101369' 
+                  : (storeConfig.phone.length === 10 && !storeConfig.phone.startsWith('+')
+                      ? `+91 ${storeConfig.phone.slice(0, 4)} ${storeConfig.phone.slice(4)}`
+                      : storeConfig.phone
+                    )
+                }
+              </span>
+            </a>
+            <a href={`mailto:${storeConfig.email}`}>
+              <MessageCircle size={16} />
+              <span>{storeConfig.email}</span>
+            </a>
           </div>
         </div>
 

@@ -122,9 +122,10 @@ export function ProductDetail({
     () => (product.statusTags || []).filter((tag) => {
       if (tag.key === 'bestseller') return false;
       if (!canViewPrice && tag.key === 'low-moq') return false;
+      if (tag.key === 'low-moq' && priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) return false;
       return true;
     }),
-    [product.statusTags, canViewPrice],
+    [product.statusTags, canViewPrice, priceAccess],
   );
   const related = useMemo(() => {
     const others = products.filter((item) => item.id !== product.id);
@@ -459,10 +460,10 @@ export function ProductDetail({
                   </button>
                 )}
               </div>
-              {canViewPrice && <div className="moq-badge">MOQ 1 Set</div>}
+              {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && <div className="moq-badge">MOQ 1 Set</div>}
             </div>
 
-            {canViewPrice && (
+            {canViewPrice && priceAccess?.priceGroup !== 'reseller' && (
               <div className="tiered-pricing-card">
                 <div className="tier-column">
                   <div className="tier-label">1 - 4 Set</div>
@@ -479,7 +480,13 @@ export function ProductDetail({
               </div>
             )}
 
-            <span className="gst-disclaimer">Exclusive of GST & shipping</span>
+            {priceAccess?.priceGroup === 'reseller' ? (
+              <span className="gst-disclaimer">
+                Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
+              </span>
+            ) : (
+              <span className="gst-disclaimer">Excluding GST & shipping</span>
+            )}
 
 
             <div className="quick-facts">

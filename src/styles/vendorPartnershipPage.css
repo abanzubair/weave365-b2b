@@ -5,6 +5,7 @@
 
 /* ---- A. Hero ---- */
 .vendor-page-container {
+  padding-bottom: 0 !important;
   overflow-x: hidden;
 }
 

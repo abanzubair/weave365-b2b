@@ -1,7 +1,7 @@
 import { ChevronRight, Factory, Handshake, BarChart3, Camera, Truck, IndianRupee } from 'lucide-react';
 import { storeConfig } from '../config.js';
 
-export function VendorPartnership({ imageUrl, navigate }) {
+export function VendorPartnership({ imageUrl, navigate, onCta }) {
   return (
     <section className="vendor-editorial-section" aria-labelledby="vendor-editorial-heading">
       <div className="vendor-container">
@@ -56,9 +56,7 @@ export function VendorPartnership({ imageUrl, navigate }) {
 
             <button
               className="vendor-cta"
-              onClick={() => {
-                navigate('vendor-partnership');
-              }}
+              onClick={onCta || (() => navigate('vendor-partnership'))}
             >
               <div className="vendor-cta-content">
                 <span className="vendor-cta-label">List Your Products</span>

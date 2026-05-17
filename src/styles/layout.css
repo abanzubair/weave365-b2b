@@ -151,7 +151,7 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 1000;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   gap: clamp(12px, 1.5vw, 22px);
@@ -668,21 +668,31 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 20px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 13px;
 }
 
-.mobile-menu-footer span {
+.mobile-menu-footer a {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mobile-menu-footer a:hover,
+.mobile-menu-footer a:active {
+  color: var(--gold-dark);
 }
 
 .mobile-menu-footer svg {
   color: var(--gold);
+  flex-shrink: 0;
 }
 
 /* ---- Mobile Menu: Search ---- */

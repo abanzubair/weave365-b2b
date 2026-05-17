@@ -4,11 +4,12 @@ import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expanded
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
-import { VendorPartnership } from '../components/VendorPartnership.jsx';
+import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
-import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import resellerImage from '../../assets/reseller_premium_catalog_display.png';
+import brandCollabImage from '../../assets/brand_collaboration.png';
+import weaverImage from '../../assets/artisan_at_loom_premium.png';
 import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 
@@ -187,7 +188,8 @@ export function Home({
   }, [fallbackHeroImage, products]);
 
   const resellerSectionImage = assetSrc(resellerImage);
-  const vendorSectionImage = assetSrc(artisanImage);
+  const brandCollabSectionImage = assetSrc(brandCollabImage);
+  const weaverSectionImage = assetSrc(weaverImage);
 
   const scrollProductRail = (rowId, direction) => {
     const rail = document.getElementById(rowId);
@@ -476,7 +478,7 @@ export function Home({
 
       <ResellerGrowth imageUrl={resellerSectionImage} navigate={navigate} />
 
-      <VendorPartnership imageUrl={vendorSectionImage} navigate={navigate} />
+      <BrandCollaboration imageUrl={brandCollabSectionImage} weaverImageUrl={weaverSectionImage} navigate={navigate} />
 
       {/* <BenefitStrip /> */}
 

@@ -1357,13 +1357,15 @@ button {
   border: 0;
   background: #bf9257;
   color: #fff;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
+  white-space: nowrap;
+  padding: 0 6px;
 }
 
 .guest-login-btn {
@@ -1402,12 +1404,14 @@ button {
   border: 1.5px solid var(--line);
   background: transparent;
   color: var(--ink);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   transition: all 0.2s;
   cursor: pointer;
+  white-space: nowrap;
+  padding: 0 6px;
 }
 
 .add-to-bag-btn:hover {
@@ -2689,11 +2693,27 @@ button {
 }
 
 .gst-disclaimer {
-  display: block;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--muted);
   margin-bottom: 28px;
+}
+
+.free-shipping-highlight {
+  color: #128C7E;
+  font-weight: 700;
+  background: rgba(18, 140, 126, 0.08);
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
 }
 
 .main-price-display .gst-note {
