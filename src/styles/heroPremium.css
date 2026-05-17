@@ -1344,8 +1344,8 @@
     position: relative !important;
     top: auto !important;
     right: auto !important;
-    width: 72px;
-    height: 72px;
+    width: 100px;
+    height: 100px;
     margin-top: 0;
     margin-right: 0;
     flex-shrink: 0;
