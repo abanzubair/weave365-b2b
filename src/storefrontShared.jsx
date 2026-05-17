@@ -837,7 +837,7 @@ export function ResellerWhatsappShare({
             setInternalOpen(true);
           }}
         >
-          {triggerLabel}
+          <Share2 size={18} /> {triggerLabel}
         </button>
       )}
       {modal && typeof document !== 'undefined' ? createPortal(modal, document.body) : modal}

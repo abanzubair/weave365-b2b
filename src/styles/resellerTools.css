@@ -500,8 +500,7 @@
 }
 
 /* ---------- Product Page Buttons ---------- */
-.reseller-link-trigger,
-.reseller-link-detail-btn {
+.reseller-link-trigger {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -512,15 +511,42 @@
   transition: all 0.2s ease !important;
 }
 
-.reseller-link-trigger:hover,
-.reseller-link-detail-btn:hover {
+.reseller-link-trigger:hover {
   background: #025a8b !important;
   box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
 }
 
-.reseller-link-trigger svg,
-.reseller-link-detail-btn svg {
+.reseller-link-trigger svg {
   color: white !important;
+}
+
+.reseller-link-detail-btn {
+  grid-column: 1 / -1; /* Span both columns for perfect balance */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--brown-800) 0%, var(--ink) 100%) !important;
+  color: var(--cream) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(36, 25, 18, 0.15) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.reseller-link-detail-btn:hover {
+  background: linear-gradient(135deg, var(--brown-900) 0%, #170f0b 100%) !important;
+  color: var(--white) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(36, 25, 18, 0.25) !important;
+}
+
+.reseller-link-detail-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(36, 25, 18, 0.2) !important;
+}
+
+.reseller-link-detail-btn svg {
+  color: var(--cream) !important;
 }
 
 /* ---------- Modal (kept from original, tightened) ---------- */

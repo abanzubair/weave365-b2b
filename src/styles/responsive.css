@@ -1400,6 +1400,11 @@
     width: 100%;
   }
 
+  .info-fav {
+    top: 16px !important;
+    right: 0 !important;
+  }
+
   .product-title-serif {
     font-size: clamp(24px, 6.5vw, 30px) !important;
     margin: 12px 0 6px !important;

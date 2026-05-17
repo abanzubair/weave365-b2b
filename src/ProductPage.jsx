@@ -405,19 +405,20 @@ export function ProductDetail({
           </div>
 
           <aside className="product-info-panel">
-            <div className="panel-topline">
-              <div className="panel-status-tags">
-
-                {productStatusTags.map((tag) => (
-                  <span key={tag.key} className={`status-badge tag-${tag.key}`}>
-                    {tag.label}
-                  </span>
-                ))}
+            {productStatusTags.length > 0 && (
+              <div className="panel-topline">
+                <div className="panel-status-tags">
+                  {productStatusTags.map((tag) => (
+                    <span key={tag.key} className={`status-badge tag-${tag.key}`}>
+                      {tag.label}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save for later">
-                <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
-              </button>
-            </div>
+            )}
+            <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save for later">
+              <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
+            </button>
             <h1 className="product-title-serif">{product.title}</h1>
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
