@@ -87,9 +87,14 @@ export function TrustedPartnerRegistrationPage() {
     const cleanMobile = form.mobile.trim();
 
     // 1. Check locally (immediate check)
+    // 1. Check locally (immediate check)
     try {
       const existing = JSON.parse(localStorage.getItem('weave365_vendor_applications') || '[]');
-      const isDuplicate = existing.some((app) => app.mobile.trim() === cleanMobile);
+      const isDuplicate = existing.some((app) => {
+        const cleanExisting = app.mobile.trim().replace(/\D/g, '').slice(-10);
+        const cleanInput = cleanMobile.replace(/\D/g, '').slice(-10);
+        return cleanExisting === cleanInput && cleanInput.length === 10;
+      });
       if (isDuplicate) {
         setFormError('An application has already been submitted with this mobile number.');
         setIsSubmitting(false);
@@ -109,8 +114,9 @@ export function TrustedPartnerRegistrationPage() {
           const rows = csvText.split('\n').map(row => row.split(','));
           const isGlobalDuplicate = rows.some(columns => {
             if (columns.length > 2) {
-              const cleanNumber = columns[2].replace(/["'\s]/g, '');
-              return cleanNumber === cleanMobile;
+              const cleanExisting = columns[2].replace(/\D/g, '').slice(-10);
+              const cleanInput = cleanMobile.replace(/\D/g, '').slice(-10);
+              return cleanExisting === cleanInput && cleanInput.length === 10;
             }
             return false;
           });
