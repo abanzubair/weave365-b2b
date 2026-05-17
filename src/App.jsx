@@ -82,6 +82,7 @@ export default function App({ initialData = {} }) {
   const searchRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
+  const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
     if (search && searchRef.current && route !== 'catalog') {
       const rect = searchRef.current.getBoundingClientRect();
@@ -514,6 +515,23 @@ export default function App({ initialData = {} }) {
     navigate('home');
   }, [navigate]);
 
+  const scrollToSection = useCallback((sectionId) => {
+    if (route !== 'home') {
+      navigate('home');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 400);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [route, navigate]);
+
   // return <ComingSoon />;
 
   const isSharedPage = route === 's' || route === 'reseller-dashboard';
@@ -684,11 +702,25 @@ export default function App({ initialData = {} }) {
             }}
           >
             <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
+            <div className="brand-divider"></div>
+            <div className="brand-subtitle">
+              <span>B2B SAREE PLATFORM</span>
+              <span>FOR BRANDS & BUYERS</span>
+            </div>
           </a>
           <nav className="main-nav">
-            {/* <button className={route === 'home' ? 'active' : ''} onClick={() => navigate('home')}>
-              Home
-            </button> */}
+            <button 
+              className={route === 'home' && window.location.hash === '#brand-collab' ? 'active' : ''} 
+              onClick={() => scrollToSection('brand-collab')}
+            >
+              Brands
+            </button>
+            <button 
+              className={route === 'catalog' ? 'active' : ''} 
+              onClick={() => navigate('catalog')}
+            >
+              Collections
+            </button>
             <div className="nav-item-dropdown" ref={categoriesRef}>
               <button
                 className={dropdownOpen === 'categories' ? 'active' : ''}
@@ -730,105 +762,137 @@ export default function App({ initialData = {} }) {
                 document.body
               )}
             </div>
-            <button className={category === 'New Arrivals' && route === 'catalog' ? 'active' : ''} onClick={() => { setCategory('New Arrivals'); navigate('catalog'); }}>New Arrivals</button>
-            <button className={route === 'catalog' ? 'active' : ''} onClick={() => navigate('catalog')}>
-              Catalogue
+            <button 
+              className={route === 'home' && window.location.hash === '#why' ? 'active' : ''} 
+              onClick={() => scrollToSection('why')}
+            >
+              About Us
             </button>
-            <button className={route === 'bulk-inquiry' ? 'active' : ''} onClick={() => navigate('bulk-inquiry')}>
-              Bulk Order
-            </button>
-            {isAdmin && (
-              <button className={route === 'admin' ? 'active' : ''} onClick={() => navigate('admin')}>
-                Admin
-              </button>
-            )}
           </nav>
-          <div className="search-box-wrapper" ref={searchRef}>
-            <label className="search-box">
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search products..."
-              />
-              <Search size={18} />
-            </label>
-            {search && searchPos.width > 0 && route !== 'catalog' && !menuOpen && createPortal(
-              <div 
-                className="search-suggestions"
-                style={{
-                  position: 'fixed',
-                  top: searchPos.top,
-                  left: searchPos.left,
-                  width: searchPos.width,
-                  marginTop: '14px',
-                  zIndex: 10000
-                }}
-              >
-                {visibleProducts.length > 0 ? (
-                  <>
-                    {visibleProducts.slice(0, 6).map((product) => {
-                      const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
-                      const image = product.images?.[0] || fallbackProductImage;
-                      return (
-                        <button
-                          key={product.id}
-                          onClick={() => {
-                            navigate('product', product.id);
-                            setSearch('');
-                          }}
-                        >
-                          <img
-                            src={image}
-                            alt=""
-                            onError={(e) => { e.target.style.opacity = '0'; }}
-                          />
-                          <div>
-                            <span>{product.name || product.title}</span>
-                            {price != null && price > 0 ? <small>{formatMoney(price)}</small> : <small>{priceNoticeForAccess(priceAccess)}</small>}
-                          </div>
-                        </button>
-                      );
-                    })}
-                    <button className="view-all-results" onClick={() => navigate('catalog')}>
-                      See all results for "{search}"
-                    </button>
-                  </>
-                ) : (
-                  <div className="no-results">No products found for "{search}"</div>
-                )}
-              </div>,
-              document.body
-            )}
-          </div>
+
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
             <Search size={20} />
           </button>
-          <div className="header-actions">
+
+          <div className="header-actions-premium">
+            <button 
+              className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
+              type="button" 
+              onClick={() => setSearchActive(!searchActive)}
+              aria-label="Search"
+            >
+              <Search size={18} strokeWidth={1.5} />
+            </button>
+            
+            <div className="premium-divider"></div>
+            
             {user ? (
-              <>
-                <button className="login-link" type="button" onClick={() => navigate('account')}>
-                  <User size={18} />
-                  {buyerProfile?.full_name || 'Account'}
+              <div className="premium-auth-group">
+                <button className="premium-auth-link" type="button" onClick={() => navigate('account')}>
+                  {buyerProfile?.full_name ? String(buyerProfile.full_name).toUpperCase() : 'MY ACCOUNT'}
                 </button>
-                <button className="login-link" type="button" onClick={handleSignOut}>
-                  Logout
+                <span className="premium-auth-slash">/</span>
+                <button className="premium-auth-link" type="button" onClick={handleSignOut}>
+                  LOGOUT
                 </button>
-              </>
+              </div>
             ) : (
-              <button className="login-link" type="button" onClick={() => setAuthOpen(true)}>
-                <User size={18} />
-                Login / Register
+              <button className="premium-auth-link" type="button" onClick={() => setAuthOpen(true)}>
+                SIGN IN / REGISTER
               </button>
             )}
-            <button className="icon-button favorite-button" type="button" onClick={() => navigate('favorites')}>
-              <Bookmark size={22} />
-              {favoriteProducts.length > 0 && <span className="badge">{favoriteProducts.length}</span>}
+            
+            <div className="premium-divider"></div>
+
+            <button 
+              className="premium-icon-btn favorite-btn" 
+              type="button" 
+              onClick={() => navigate('favorites')}
+              aria-label="Favorites"
+            >
+              <Bookmark size={18} strokeWidth={1.5} />
+              {favoriteProducts.length > 0 && <span className="premium-badge">{favoriteProducts.length}</span>}
             </button>
-            <button className="icon-button cart-button" type="button" onClick={() => setCartOpen(true)}>
-              <ShoppingBag size={22} />
-              {cartProducts.length > 0 && <span className="badge">{cartProducts.length}</span>}
+            
+            <button 
+              className="premium-icon-btn cart-btn" 
+              type="button" 
+              onClick={() => setCartOpen(true)}
+              aria-label="Cart"
+            >
+              <ShoppingBag size={18} strokeWidth={1.5} />
+              {cartProducts.length > 0 && <span className="premium-badge">{cartProducts.length}</span>}
             </button>
           </div>
+
+          {searchActive && (
+            <div className="premium-search-bar animate-slide-down">
+              <div className="premium-search-inner">
+                <Search size={18} strokeWidth={1.5} className="search-icon" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search our premium collections..."
+                  autoFocus
+                  className="premium-search-input"
+                />
+                <button 
+                  className="search-close-btn" 
+                  onClick={() => {
+                    setSearchActive(false);
+                    setSearch('');
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              {search && (
+                <div className="premium-search-suggestions">
+                  {visibleProducts.length > 0 ? (
+                    <>
+                      {visibleProducts.slice(0, 5).map((product) => {
+                        const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
+                        const image = product.images?.[0] || fallbackProductImage;
+                        return (
+                          <button
+                            key={product.id}
+                            className="premium-suggestion-item"
+                            onClick={() => {
+                              navigate('product', product.id);
+                              setSearch('');
+                              setSearchActive(false);
+                            }}
+                          >
+                            <img src={image} alt="" />
+                            <div className="suggestion-info">
+                              <span className="suggestion-title">{product.name || product.title}</span>
+                              <span className="suggestion-price">
+                                {price != null && price > 0 ? formatMoney(price) : priceNoticeForAccess(priceAccess)}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                      <button 
+                        className="premium-view-all" 
+                        onClick={() => {
+                          navigate('catalog');
+                          setSearchActive(false);
+                        }}
+                      >
+                        See all results for "{search}"
+                      </button>
+                    </>
+                  ) : (
+                    <div className="premium-search-no-results">
+                      No premium products found for "{search}"
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </header>
       )}
 

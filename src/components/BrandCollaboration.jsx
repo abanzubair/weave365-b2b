@@ -2,7 +2,7 @@ import { ChevronRight, Sparkles, ShieldCheck, Heart } from 'lucide-react';
 
 export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
   return (
-    <section className="brand-collab-section" aria-labelledby="brand-collab-heading">
+    <section id="brand-collab" className="brand-collab-section" aria-labelledby="brand-collab-heading">
       <div className="brand-collab-container">
         
         {/* Centered Editorial Header */}

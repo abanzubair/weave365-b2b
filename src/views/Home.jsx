@@ -87,13 +87,20 @@ export function Home({
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNewHero(true);
-      document.documentElement.classList.add('new-hero-active');
-    }, 4000);
+    const interval = setInterval(() => {
+      setShowNewHero((prev) => {
+        const next = !prev;
+        if (next) {
+          document.documentElement.classList.add('new-hero-active');
+        } else {
+          document.documentElement.classList.remove('new-hero-active');
+        }
+        return next;
+      });
+    }, 8000); // Toggle slides every 8 seconds to match banner slideshows
 
     return () => {
-      clearTimeout(timer);
+      clearInterval(interval);
       document.documentElement.classList.remove('new-hero-active');
     };
   }, []);
