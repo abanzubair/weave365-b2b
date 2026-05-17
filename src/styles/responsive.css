@@ -161,7 +161,6 @@
   .header-actions-premium .premium-search-trigger {
     display: flex !important;
     padding: 6px !important;
-    color: var(--ink) !important;
   }
 
   .header-actions-premium .favorite-btn,
