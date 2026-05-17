@@ -28,6 +28,7 @@ const initialForm = {
   bulkOrders: '',
   dispatchCapabilities: [],
   gstAvailable: '',
+  gstNumber: '',
   experience: '',
   notes: '',
   agreement: false,
@@ -182,7 +183,7 @@ export function TrustedPartnerRegistrationPage() {
         <img src={heroImage} alt="Weaver preparing textile products for Weave365" />
         <div className="trusted-registration-hero-content">
           <h1 id="trusted-registration-heading">Trusted Partner Registration</h1>
-          <p>Share your craft, capacity, and product details for manual review by the Weave365 team.</p>
+          <p>Share your craft, capacity, and product details for manual review by the Weave 365 team.</p>
         </div>
       </section>
 
@@ -402,12 +403,33 @@ export function TrustedPartnerRegistrationPage() {
                   <div className="vendor-form-grid">
                     <label>
                       GST Available? *
-                      <select value={form.gstAvailable} onChange={(event) => updateField('gstAvailable', event.target.value)} required>
+                      <select value={form.gstAvailable} onChange={(event) => {
+                        const val = event.target.value;
+                        updateField('gstAvailable', val);
+                        if (val !== 'Yes') {
+                          updateField('gstNumber', '');
+                        }
+                      }} required>
                         <option value="">Select one</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                       </select>
                     </label>
+
+                    {form.gstAvailable === 'Yes' && (
+                      <label>
+                        GST Number *
+                        <input
+                          type="text"
+                          value={form.gstNumber || ''}
+                          onChange={(event) => updateField('gstNumber', event.target.value.toUpperCase().slice(0, 15))}
+                          placeholder="15-digit GSTIN"
+                          pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                          title="Enter a valid 15-character GSTIN format (e.g. 09AAAAA1111A1Z1)"
+                          required
+                        />
+                      </label>
+                    )}
                     <label>
                       Business Experience *
                       <select value={form.experience} onChange={(event) => updateField('experience', event.target.value)} required>
