@@ -578,7 +578,7 @@
 }
 
 .header-over-dark .site-header.home-header {
-  position: absolute !important;
+  position: fixed !important;
   width: 100%;
   top: 0;
   left: 0;
