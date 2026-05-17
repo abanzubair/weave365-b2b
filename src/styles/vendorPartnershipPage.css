@@ -1196,9 +1196,6 @@
   .vendor-chip-option {
     flex-basis: 100%;
   }
-  .vendor-form-heading {
-    flex-direction: column;
-  }
   .vendor-steps-grid {
     grid-template-columns: 1fr;
   }
