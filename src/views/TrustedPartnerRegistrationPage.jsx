@@ -173,9 +173,6 @@ export function TrustedPartnerRegistrationPage() {
                 <CheckCircle2 size={42} />
                 <h2>Thank you for applying.</h2>
                 <p>Our team will review your details and contact you shortly.</p>
-                <button type="button" className="vendor-secondary-action" onClick={() => setSubmitted(false)}>
-                  Submit another application
-                </button>
               </div>
             ) : (
               <form className="vendor-registration-form" onSubmit={handleSubmit}>
