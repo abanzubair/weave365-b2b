@@ -252,9 +252,9 @@
   gap: 10px;
   height: 48px;
   padding: 0 26px;
-  background: var(--white);
-  color: var(--ink);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #556037; /* Elegant Deep Olive Green */
+  color: var(--white) !important;
+  border: 0;
   border-radius: 30px; /* Pill */
   text-decoration: none;
   font-family: var(--font-ui);
@@ -264,31 +264,30 @@
   letter-spacing: 0.08em;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 15px rgba(85, 96, 55, 0.15);
 }
 
 .whatsapp-group-btn svg {
   width: 20px;
   height: 20px;
-  color: #25D366; /* Vibrant WhatsApp Green on icon */
+  color: var(--white); /* White icon matches the premium solid look */
   stroke-width: 0;
   padding: 0;
   background: transparent;
   border: none;
   box-shadow: none;
-  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .whatsapp-group-btn:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--white);
+  background: #3e4728; /* Luxurious Darker Olive on hover */
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(62, 71, 40, 0.25);
+  color: var(--white) !important;
 }
 
 .whatsapp-group-btn:hover svg {
-  color: var(--white); /* Icon turns white on hover! */
+  transform: scale(1.08);
 }
 
 .newsletter input {

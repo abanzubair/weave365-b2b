@@ -2296,7 +2296,7 @@ button {
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  padding: 2px 2px 2px 0;
+  padding: 2px;
   scrollbar-gutter: stable;
   scrollbar-width: none;
 }
