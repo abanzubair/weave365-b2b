@@ -580,7 +580,7 @@ export function ProductDetail({
 
         <ProductTrustStrip />
 
-        {/* <div className="product-highlight-grid">
+        <div className="product-highlight-grid">
           <section>
             <div className="highlight-heading">
               <span className="highlight-icon"><Star size={20} /></span>
@@ -614,7 +614,7 @@ export function ProductDetail({
               <li><Award size={18} /> Small Gatherings</li>
             </ul>
           </section>
-        </div> */}
+        </div>
 
         <section className="you-may-like home-product-section">
           <div className="section-heading-row">

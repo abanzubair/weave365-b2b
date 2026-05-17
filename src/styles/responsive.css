@@ -1431,10 +1431,14 @@
   }
 
   .moq-badge {
-    font-size: 16px !important;
-    padding: 3px 10px;
-    background: var(--surface-soft);
-    border-radius: 6px;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    padding: 6px 14px !important;
+    background: rgba(183, 134, 70, 0.08) !important;
+    border: 1px solid rgba(183, 134, 70, 0.15) !important;
+    border-radius: 20px !important;
     margin-top: 4px;
   }
 
@@ -1444,7 +1448,13 @@
   }
 
   .tier-column {
-    padding: 10px 6px !important;
+    padding: 14px 8px !important;
+  }
+
+  .tier-column:last-child::before {
+    top: 2px !important;
+    font-size: 7px !important;
+    padding: 1px 4px !important;
   }
 
   .tier-label {
@@ -1452,19 +1462,25 @@
   }
 
   .tier-price {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
   .tier-price .unit {
-    font-size: 11px !important;
+    font-size: 10px !important;
   }
 
   .quick-facts {
     gap: 12px !important;
-    font-size: 14px !important;
-    margin-bottom: 20px !important;
-    flex-direction: column;
-    align-items: flex-start;
+    font-size: 13px !important;
+    margin-bottom: 24px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .quick-facts span {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px 16px !important;
   }
 
   .product-variation-card {
@@ -1484,12 +1500,21 @@
   .color-swatch-row button {
     width: 52px !important;
     height: 52px !important;
-    border-radius: 8px !important;
+    border-radius: 50% !important; /* Elegant luxury circles on mobile! */
     touch-action: manipulation;
   }
 
+  .color-swatch-row img {
+    border-radius: 50% !important;
+  }
+
+  .color-swatch-row button.active {
+    border-color: var(--gold-dark) !important;
+    box-shadow: 0 0 0 3px rgba(183, 134, 70, 0.25) !important;
+  }
+
   .catalog-table div {
-    padding: 10px 0 !important;
+    padding: 14px 4px !important;
     font-size: 14px !important;
     flex-direction: column;
     gap: 4px !important;
@@ -1497,6 +1522,7 @@
 
   .description-text {
     font-size: 14px !important;
+    margin-top: 4px !important;
   }
 
   .product-secondary-actions {
@@ -1549,5 +1575,21 @@
   .product-trust-strip div:last-child {
     border-bottom: 0;
     padding-bottom: 0 !important;
+  }
+
+  .product-highlight-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    margin: 48px 0 !important;
+  }
+
+  .product-highlight-grid section {
+    padding: 28px 24px !important;
+    min-height: auto !important;
+  }
+
+  .highlight-image {
+    height: 280px !important;
+    order: -1 !important; /* Put the beautiful fabric closeup image at the top of stack */
   }
 }
