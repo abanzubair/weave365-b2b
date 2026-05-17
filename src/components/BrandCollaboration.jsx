@@ -80,7 +80,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
             {/* Premium Editorial CTA */}
             <button 
               className="brand-editorial-cta" 
-              onClick={() => navigate('bulk-inquiry')}
+              onClick={() => navigate('vendor-partnership')}
               aria-label="Apply for brand showcase"
             >
               <div className="brand-cta-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
