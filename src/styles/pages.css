@@ -3120,7 +3120,7 @@ button {
 }
 
 .product-highlight-showcase:hover .showcase-image-col img {
-  transform: scale(1.04);
+  transform: scale(1.015);
 }
 
 .showcase-image-badge {
