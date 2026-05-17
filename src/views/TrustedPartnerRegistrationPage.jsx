@@ -137,6 +137,7 @@ export function TrustedPartnerRegistrationPage() {
       ...form,
       mobile: form.mobile.replace(/\s/g, ''),
       aadhaar: form.aadhaar.replace(/\s/g, ''),
+      gstNumber: form.gstNumber ? form.gstNumber.replace(/\s/g, '') : '',
       submittedAt: new Date().toISOString(),
       status: 'pending_manual_review',
     };
@@ -422,10 +423,30 @@ export function TrustedPartnerRegistrationPage() {
                         <input
                           type="text"
                           value={form.gstNumber || ''}
-                          onChange={(event) => updateField('gstNumber', event.target.value.toUpperCase().slice(0, 15))}
-                          placeholder="15-digit GSTIN"
-                          pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
-                          title="Enter a valid 15-character GSTIN format (e.g. 09AAAAA1111A1Z1)"
+                          onChange={(event) => {
+                            const raw = event.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 15);
+                            let formatted = '';
+                            if (raw.length > 0) {
+                              formatted += raw.slice(0, 2);
+                            }
+                            if (raw.length > 2) {
+                              formatted += ' ' + raw.slice(2, 12);
+                            }
+                            if (raw.length > 12) {
+                              formatted += ' ' + raw.slice(12, 13);
+                            }
+                            if (raw.length > 13) {
+                              formatted += ' ' + raw.slice(13, 14);
+                            }
+                            if (raw.length > 14) {
+                              formatted += ' ' + raw.slice(14, 15);
+                            }
+                            updateField('gstNumber', formatted);
+                          }}
+                          placeholder="22 AAAAA0000A 1 Z 5"
+                          inputMode="text"
+                          pattern="^[0-9]{2}\s[A-Z]{5}[0-9]{4}[A-Z]{1}\s[A-Z0-9]{1}\sZ\s[A-Z0-9]{1}$"
+                          title="Enter a 15-character GSTIN in the format: XX XXXXXXXXXX X X X (e.g. 22 AAAAA0000A 1 Z 5)"
                           required
                         />
                       </label>
