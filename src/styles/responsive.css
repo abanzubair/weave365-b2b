@@ -728,14 +728,34 @@
     box-shadow: none;
   }
 
-  /* Product Rails: 2.25 cards per screen on mobile to create perfect "card peek" scroll cue */
+  /* Product Rails: exactly 2 cards per screen on mobile (no peeking) */
   .scrollable-row>* {
-    flex: 0 0 calc((100% - 16px) / 2.25) !important;
-    max-width: calc((100% - 16px) / 2.25) !important;
+    flex: 0 0 calc((100% - 8px) / 2) !important;
+    max-width: calc((100% - 8px) / 2) !important;
   }
 
+  /* Premium floating arrows positioned safely inside screen edges to prevent X-axis overflow */
   .scroll-arrow {
-    display: none !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    border-color: rgba(183, 134, 70, 0.25) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: var(--brown-900) !important;
+    box-shadow: 0 4px 12px rgba(31, 20, 13, 0.12) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 10 !important;
+  }
+
+  .scroll-arrow.left {
+    left: 8px !important;
+  }
+
+  .scroll-arrow.right {
+    right: 8px !important;
   }
 
   .scrollable-row {
