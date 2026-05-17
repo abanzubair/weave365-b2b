@@ -13,7 +13,7 @@
 
 .editorial-layout {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: 80px;
   align-items: center;
 }
@@ -318,7 +318,7 @@
 
 /* Responsive Overhaul (Bespoke B2B Mobile UI/UX Refinements) */
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .editorial-layout {
     grid-template-columns: 1fr;
     gap: 64px;
