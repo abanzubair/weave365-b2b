@@ -5135,3 +5135,107 @@ button {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* --- UI/UX Pro Max Showcase Responsiveness --- */
+@media screen and (max-width: 1024px) {
+  .product-highlight-showcase {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 24px;
+    margin: 40px auto;
+    border-radius: 20px;
+  }
+
+  .showcase-image-col {
+    height: 240px;
+    min-height: auto;
+    order: -1; /* Display closeup portrait photo at the very top of details block */
+    border-radius: 14px;
+  }
+
+  .showcase-image-badge {
+    top: 16px;
+    left: 16px;
+    padding: 6px 12px;
+    font-size: 8px;
+  }
+
+  .showcase-header {
+    margin-bottom: 24px;
+  }
+
+  .showcase-subtitle {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .showcase-header h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .showcase-description {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .showcase-highlights-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .highlight-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .card-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .card-body h3 {
+    font-size: 17px;
+    margin-bottom: 4px;
+  }
+
+  .card-body p {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .showcase-divider {
+    margin-bottom: 20px;
+  }
+
+  .showcase-perfect-section h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .perfect-badges-row {
+    gap: 8px;
+  }
+
+  .perfect-badge {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .showcase-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .product-highlight-showcase {
+    padding: 24px 16px;
+    gap: 24px;
+  }
+
+  .showcase-header h2 {
+    font-size: 24px;
+  }
+}
