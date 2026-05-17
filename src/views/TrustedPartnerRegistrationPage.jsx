@@ -133,8 +133,19 @@ export function TrustedPartnerRegistrationPage() {
       }
     }
 
+    const capitalizeWords = (str) => {
+      if (!str) return '';
+      return str
+        .trim()
+        .split(/\s+/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    };
+
     const application = {
       ...form,
+      fullName: capitalizeWords(form.fullName),
+      city: capitalizeWords(form.city),
       mobile: form.mobile.replace(/\s/g, ''),
       aadhaar: form.aadhaar.replace(/\s/g, ''),
       gstNumber: form.gstNumber ? form.gstNumber.replace(/\s/g, '') : '',
