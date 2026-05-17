@@ -3,7 +3,7 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Bookmark, Search, ShoppingBag, User } from 'lucide-react';
+import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
@@ -826,71 +826,142 @@ export default function App({ initialData = {} }) {
           </div>
 
           {searchActive && (
-            <div className="premium-search-bar animate-slide-down">
-              <div className="premium-search-inner">
-                <Search size={18} strokeWidth={1.5} className="search-icon" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search our premium collections..."
-                  autoFocus
-                  className="premium-search-input"
-                />
-                <button 
-                  className="search-close-btn" 
-                  onClick={() => {
-                    setSearchActive(false);
-                    setSearch('');
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-              {search && (
-                <div className="premium-search-suggestions">
-                  {visibleProducts.length > 0 ? (
-                    <>
-                      {visibleProducts.slice(0, 5).map((product) => {
-                        const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
-                        const image = product.images?.[0] || fallbackProductImage;
-                        return (
-                          <button
-                            key={product.id}
-                            className="premium-suggestion-item"
-                            onClick={() => {
-                              navigate('product', product.id);
-                              setSearch('');
-                              setSearchActive(false);
-                            }}
-                          >
-                            <img src={image} alt="" />
-                            <div className="suggestion-info">
-                              <span className="suggestion-title">{product.name || product.title}</span>
-                              <span className="suggestion-price">
-                                {price != null && price > 0 ? formatMoney(price) : priceNoticeForAccess(priceAccess)}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                      <button 
-                        className="premium-view-all" 
-                        onClick={() => {
-                          navigate('catalog');
-                          setSearchActive(false);
-                        }}
-                      >
-                        See all results for "{search}"
+            <div className="premium-search-overlay animate-fade-in" onClick={() => { setSearchActive(false); setSearch(''); }}>
+              <div className="premium-search-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="premium-search-inner-wrapper">
+                  <div className="premium-search-field-container">
+                    <Search size={22} strokeWidth={1.5} className="search-icon-premium" />
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="What are you looking for?"
+                      autoFocus
+                      className="premium-search-input-field"
+                    />
+                    {search && (
+                      <button className="search-clear-btn" onClick={() => setSearch('')}>
+                        Clear
                       </button>
-                    </>
-                  ) : (
-                    <div className="premium-search-no-results">
-                      No premium products found for "{search}"
-                    </div>
-                  )}
+                    )}
+                    <button 
+                      className="search-modal-close-btn" 
+                      onClick={() => {
+                        setSearchActive(false);
+                        setSearch('');
+                      }}
+                    >
+                      <span className="close-text">Close</span> <span className="close-x">✕</span>
+                    </button>
+                  </div>
+                  
+                  <div className="premium-search-content-grid">
+                    {!search ? (
+                      <div className="search-preset-suggestions animate-fade-in">
+                        <div className="preset-group">
+                          <h3>Trending Saree Fabrics</h3>
+                          <div className="preset-tags">
+                            {['Banarasi', 'Katan Silk', 'Organza', 'Linen', 'Tussar', 'Georgette'].map((tag) => (
+                              <button
+                                key={tag}
+                                className="preset-tag-btn"
+                                onClick={() => setSearch(tag)}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="preset-group">
+                          <h3>Quick Links</h3>
+                          <ul className="quick-access-list">
+                            <li>
+                              <button onClick={() => { navigate('catalog'); setSearchActive(false); }}>
+                                <span>Browse All Collections</span>
+                                <ArrowRight size={14} />
+                              </button>
+                            </li>
+                            <li>
+                              <button onClick={() => { navigate('reseller-growth'); setSearchActive(false); }}>
+                                <span>Reseller Partnership Program</span>
+                                <ArrowRight size={14} />
+                              </button>
+                            </li>
+                            <li>
+                              <button onClick={() => { scrollToSection('brand-collab'); setSearchActive(false); }}>
+                                <span>Collaborating Brands</span>
+                                <ArrowRight size={14} />
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="premium-search-results-panel">
+                        <div className="results-header">
+                          <span className="results-title">Collections Found</span>
+                          <span className="results-count">{visibleProducts.length} premium products</span>
+                        </div>
+                        
+                        {visibleProducts.length > 0 ? (
+                          <div className="results-split-layout">
+                            <div className="results-products-grid">
+                              {visibleProducts.slice(0, 6).map((product) => {
+                                const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
+                                const image = product.images?.[0] || fallbackProductImage;
+                                return (
+                                  <div 
+                                    key={product.id}
+                                    className="premium-search-result-card animate-scale-up"
+                                    onClick={() => {
+                                      navigate('product', product.id);
+                                      setSearch('');
+                                      setSearchActive(false);
+                                    }}
+                                  >
+                                    <div className="result-img-wrapper">
+                                      <img src={image} alt={product.title} />
+                                      {product.fabric && <span className="result-fabric-badge">{product.fabric}</span>}
+                                    </div>
+                                    <div className="result-card-info">
+                                      <h4 className="result-product-title">{product.name || product.title}</h4>
+                                      <span className="result-product-price">
+                                        {price != null && price > 0 ? formatMoney(price) : priceNoticeForAccess(priceAccess)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            {visibleProducts.length > 6 && (
+                              <button 
+                                className="premium-search-view-all-btn" 
+                                onClick={() => {
+                                  navigate('catalog');
+                                  setSearchActive(false);
+                                }}
+                              >
+                                View all {visibleProducts.length} premium products
+                                <ArrowRight size={16} />
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="premium-search-no-results-state">
+                            <div className="no-results-icon">🔍</div>
+                            <h3>No match found</h3>
+                            <p>We couldn't find any premium products for "{search}".</p>
+                            <button className="reset-search-btn" onClick={() => setSearch('')}>
+                              Try another query
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </header>
