@@ -40,6 +40,7 @@ const Admin = lazy(() => import('./views/Admin.jsx').then((module) => ({ default
 const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ default: module.Account })));
 const ResellerGrowthPage = lazy(() => import('./views/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
 const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
+const TrustedPartnerRegistrationPage = lazy(() => import('./views/TrustedPartnerRegistrationPage.jsx').then((module) => ({ default: module.TrustedPartnerRegistrationPage })));
 const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then((module) => ({ default: module.ResellerDashboard })));
 const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
 
@@ -57,6 +58,7 @@ export default function App({ initialData = {} }) {
   const sharedSlug = route === 's' ? decodeURIComponent(pathSegments[1] || '') : null;
   const isSharedProduct = route === 's' && pathSegments[2] === 'p';
   const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
+  const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
 
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
@@ -339,6 +341,7 @@ export default function App({ initialData = {} }) {
         product.occasion,
         product.category,
         product.groupKey,
+        product.partner,
         variantCodes,
       ]
         .filter(Boolean)
@@ -493,6 +496,8 @@ export default function App({ initialData = {} }) {
       href = `/s/${shopName}/p/${productId}`;
     } else if (nextRoute === 's') {
       href = `/s/${shopName}`;
+    } else if (nextRoute === 'partner') {
+      href = `/partner/${encodeURIComponent(productId)}`;
     } else if (nextRoute === 'home') {
       href = '/';
     }
@@ -556,10 +561,15 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'catalog') {
+    if (route === 'catalog' || route === 'partner') {
+      const partnerFilteredProducts = route === 'partner'
+        ? visibleProducts.filter(p => p.partner && p.partner.toLowerCase().trim() === partnerName?.toLowerCase().trim())
+        : visibleProducts;
+
       return (
         <Catalog
-          products={visibleProducts}
+          title={route === 'partner' ? `${partnerName}'s Collection` : 'Wholesale Catalogue'}
+          products={partnerFilteredProducts}
           status={status}
           error={error}
           categories={categories}
@@ -664,6 +674,8 @@ export default function App({ initialData = {} }) {
     }
 
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
+
+    if (route === 'Trusted-Partner-Registration') return <TrustedPartnerRegistrationPage />;
 
     if (route === 's') {
       if (isSharedProduct) {

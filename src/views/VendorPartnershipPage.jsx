@@ -1,8 +1,10 @@
-import { Factory, Package, Users, Heart, MessageCircle } from 'lucide-react';
+import { ClipboardCheck, Factory, Heart, MessageCircle, Package, Users } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import { assetSrc } from '../utils/assetSrc.js';
 import { VendorPartnership } from '../components/VendorPartnership.jsx';
+
+const registrationPath = '/Trusted-Partner-Registration';
 
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
@@ -10,16 +12,18 @@ export function VendorPartnershipPage() {
   )}`;
   const vendorSectionImage = assetSrc(artisanImage);
 
+  const openRegistrationPage = () => {
+    window.location.href = registrationPath;
+  };
+
   return (
     <div className="vendor-page-container" style={{ paddingBottom: '60px' }}>
-      {/* 1. Supply Partnership Editorial Component (Hero + Benefits + Process) */}
       <VendorPartnership
         imageUrl={vendorSectionImage}
         navigate={() => {}}
-        onCta={() => window.open(whatsappLink, '_blank', 'noopener,noreferrer')}
+        onCta={openRegistrationPage}
       />
 
-      {/* 2. What We Accept — Categories */}
       <section className="vendor-categories-section">
         <div className="vendor-section-header">
           <h2>What We Accept</h2>
@@ -31,11 +35,10 @@ export function VendorPartnershipPage() {
           ))}
         </div>
         <p className="vendor-categories-note">
-          Have a product category not listed above? Reach out — we're always expanding.
+          Have a product category not listed above? Reach out - we&apos;re always expanding.
         </p>
       </section>
 
-      {/* 3. Social Proof — Stats Strip */}
       <section className="vendor-stats-section">
         <div className="vendor-stats-grid">
           <div className="vendor-stat">
@@ -61,12 +64,15 @@ export function VendorPartnershipPage() {
         </div>
       </section>
 
-      {/* 4. Final CTA */}
       <section className="vendor-final-cta">
         <h2>Ready to Showcase Your Craft?</h2>
         <p>Join our growing network of artisans and manufacturers. Zero risk, maximum reach.</p>
         <div className="vendor-final-actions">
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="vendor-btn-whatsapp-large">
+          <button type="button" className="vendor-btn-whatsapp-large" onClick={openRegistrationPage}>
+            <ClipboardCheck size={20} />
+            Apply as Trusted Partner
+          </button>
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="vendor-btn-whatsapp-large vendor-btn-outline-large">
             <MessageCircle size={20} />
             WhatsApp Us Now
           </a>

@@ -17,7 +17,7 @@ function routeFromSlug(slug = []) {
   return {
     route,
     productId: route === 'product' ? decodeURIComponent(value) : '',
-    sharedSlug: route === 's' ? decodeURIComponent(value) : '',
+    sharedSlug: (route === 's' || route === 'partner') ? decodeURIComponent(value) : '',
   };
 }
 
@@ -102,6 +102,14 @@ function metadataForRoute(route, product, sharedSlug) {
       title: 'Shared Catalogue',
       description: 'A shared Weave365 reseller catalogue.',
       alternates: { canonical: sharedSlug ? `/s/${encodeURIComponent(sharedSlug)}` : '/s' },
+    };
+  }
+
+  if (route === 'partner') {
+    return {
+      title: `${sharedSlug}'s Collection | ${storeConfig.name}`,
+      description: `Browse the exclusive saree collection by our trusted partner ${sharedSlug} on Weave365.`,
+      alternates: { canonical: sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner' },
     };
   }
 

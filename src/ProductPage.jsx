@@ -447,6 +447,22 @@ export function ProductDetail({
               Code: <strong>{variant.code}</strong>
             </div>
 
+            {product.partner && (
+              <div 
+                className="trusted-partner-card-v2"
+                onClick={() => navigate('partner', product.partner)}
+                title={`View all products by ${product.partner}`}
+              >
+                <div className="partner-card-accent-bar" />
+                <Award size={18} className="partner-award-icon" />
+                <div className="partner-card-info">
+                  <span className="partner-label-v2">Trusted Partner</span>
+                  <span className="partner-dot">•</span>
+                  <span className="partner-name-v2">{product.partner}</span>
+                </div>
+              </div>
+            )}
+
             <div className="price-moq-row">
               <div className="main-price-wrap">
                 {canViewPrice ? (
@@ -619,7 +635,7 @@ export function ProductDetail({
               onError={(e) => { e.target.style.opacity = '0'; }}
             />
             <div className="showcase-image-badge">
-              <Sparkles size={14} /> Premium Quality
+              <Sparkles size={14} /> {product.subCategory || 'Premium Quality'}
             </div>
           </div>
 

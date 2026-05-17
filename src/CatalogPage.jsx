@@ -3,6 +3,7 @@ import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
 
 export function Catalog({
+  title,
   products,
   status,
   error,
@@ -95,7 +96,7 @@ export function Catalog({
 
       <div className="catalog-toolbar">
         <div className="catalog-header-row">
-          <SectionTitle title="Wholesale Catalogue" align="left" />
+          <SectionTitle title={title || "Wholesale Catalogue"} align="left" />
           {hasActiveFilters && (
             <button className="reset-filters-btn" onClick={resetFilters}>
               <RotateCcw size={14} /> Reset Filters

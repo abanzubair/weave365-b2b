@@ -126,6 +126,7 @@ export function parseProductCsv(text) {
       designCode: codeInfo.design,
       category,
       subCategory: row['Sub Category'],
+      partner: row.Partner || row.partner || '',
       style: row.Style,
       occasion: row.Occasion,
       fabric: row.Fabric,
