@@ -1,34 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageCircle, Minus, Plus, ShoppingBag, X } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
   customerPrice,
   fallbackProductImage,
   formatMoney,
-  WhatsappIcon,
 } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 
 function buildQuantityMap(options) {
   return options.reduce((map, option) => ({ ...map, [option.key]: 0 }), {});
-}
-
-function buildDrawerInquiryUrl(product, rows, subtotal, priceAccess) {
-  const selectedRows = rows.filter((row) => row.quantity > 0);
-  const canViewPrices = priceAccess?.canViewPrices !== false;
-  const lines = [
-    `Hello ${storeConfig.name}, I want to inquire about these variations:`,
-    '',
-    product.title,
-    '',
-    ...selectedRows.map((row) => (
-      `${row.name} | Code: ${row.variant.code} | Qty: ${row.quantity}${canViewPrices && row.price != null ? ` | Price: ${formatMoney(row.price)} / piece` : ''}`
-    )),
-    '',
-    canViewPrices && subtotal != null ? `Estimated subtotal: ${formatMoney(subtotal)}` : '',
-  ].filter(Boolean);
-
-  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
 export function VariationQuantityDrawer({
@@ -104,12 +85,6 @@ export function VariationQuantityDrawer({
     ? rows.reduce((total, row) => total + (row.price || 0) * (quantities[row.key] || 0), 0)
     : null;
   const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
-  const selectedInquiryUrl = buildDrawerInquiryUrl(
-    product,
-    rows.map((row) => ({ ...row, quantity: quantities[row.key] || 0 })),
-    subtotal,
-    priceAccess,
-  );
   const selectedCartRows = useMemo(
     () => rows
       .map((row) => ({
@@ -121,7 +96,6 @@ export function VariationQuantityDrawer({
       .filter((row) => row.quantity > 0),
     [quantities, rows],
   );
-  const chatUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(`Hello ${storeConfig.name}, I need help choosing ${product.title}.`)}`;
 
   const setQuantity = useCallback((key, nextQuantity) => {
     setQuantities((current) => ({
@@ -225,18 +199,6 @@ export function VariationQuantityDrawer({
             >
               <ShoppingBag size={18} /> Add to order list
             </button>
-            <a
-              className={`drawer-send-btn ${totalQuantity ? '' : 'disabled'}`}
-              href={totalQuantity ? selectedInquiryUrl : undefined}
-              target="_blank"
-              rel="noreferrer"
-              aria-disabled={!totalQuantity}
-            >
-              <WhatsappIcon size={18} /> Send inquiry
-            </a>
-            <a className="drawer-chat-btn" href={chatUrl} target="_blank" rel="noreferrer">
-              <MessageCircle size={18} /> Chat now
-            </a>
           </div>
         </footer>
       </aside>
