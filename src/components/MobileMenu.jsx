@@ -81,7 +81,7 @@ export function MobileMenu({
   const accountItems = [
     { 
       icon: <ShoppingBag size={18} />, 
-      label: 'My Cart', 
+      label: 'My Order List', 
       badge: cartCount,
       action: () => {
         onClose();

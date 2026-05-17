@@ -223,7 +223,7 @@ export function VariationQuantityDrawer({
               disabled={!totalQuantity}
               onClick={() => onAddToCart(selectedCartRows)}
             >
-              <ShoppingBag size={18} /> Add to cart
+              <ShoppingBag size={18} /> Add to order list
             </button>
             <a
               className={`drawer-send-btn ${totalQuantity ? '' : 'disabled'}`}

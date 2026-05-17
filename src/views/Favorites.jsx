@@ -28,7 +28,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
         <SectionTitle title="Favourite Items" align="left" />
         {products.length > 0 && (
           <button className="secondary-button add-all-btn" onClick={addAllToCart}>
-            Add All to Cart
+            Add All to Order List
           </button>
         )}
       </div>

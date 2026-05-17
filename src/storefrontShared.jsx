@@ -338,7 +338,7 @@ export const ProductCard = memo(function ProductCard({
                 <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
               </button>
               <button className="add-to-bag-btn" onClick={() => addToCart(product, selectedVariant, 1)}>
-                <ShoppingBag size={16} /> ADD TO BAG
+                <ShoppingBag size={16} /> ADD TO ORDER LIST
               </button>
             </>
           )}
@@ -379,7 +379,7 @@ export const ProductCard = memo(function ProductCard({
                 <button className="sheet-item" onClick={() => { handleClose(); addToCart(product, selectedVariant, 1); }}>
                   <div className="item-icon bag"><ShoppingBag size={20} /></div>
                   <div className="item-copy">
-                    <strong>Add to Cart</strong>
+                    <strong>Add to Order List</strong>
                     <span>Save and shop later</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />

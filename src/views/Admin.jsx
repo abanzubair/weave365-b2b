@@ -347,8 +347,8 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
       <div className="admin-hero">
         <div>
           <span>Admin Dashboard</span>
-          <h1>Buyer pipeline, orders, carts and growth signals.</h1>
-          <p>Monitor registered buyers, saved carts, favourites, enquiries, follow-ups, and order activity from Supabase.</p>
+          <h1>Buyer pipeline, orders, order lists and growth signals.</h1>
+          <p>Monitor registered buyers, saved order lists, favourites, enquiries, follow-ups, and order activity from Supabase.</p>
         </div>
         <button className="secondary-button" onClick={loadAdminData} disabled={status === 'loading'}>
           <RefreshCw size={17} /> {status === 'loading' ? 'Refreshing...' : 'Refresh Dashboard'}
@@ -389,7 +389,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
 
       <div className="admin-metrics-grid">
         <MetricCard icon={Users} label="Users" value={adminData.profiles.length} hint={`${pendingProfiles.length} pending approval`} />
-        <MetricCard icon={ShoppingBag} label="Cart Rows" value={adminData.cartItems.length} hint="Selected products/colors" />
+        <MetricCard icon={ShoppingBag} label="Order List Rows" value={adminData.cartItems.length} hint="Selected products/colors" />
         <MetricCard icon={Heart} label="Favourites" value={adminData.favorites.length} hint="Saved buying intent" />
         <MetricCard icon={MessageSquareText} label="Enquiries" value={enquiryRows.length} hint={adminData.errors.inquiries ? 'Table not connected' : 'Supabase rows'} />
         <MetricCard icon={PackageCheck} label="Saved Orders" value={orderRows.length} hint={adminData.errors.saved_customer_orders ? 'Table not connected' : 'Supabase rows'} />
@@ -424,7 +424,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
 
       <article className="admin-panel">
         <div className="admin-panel-head">
-          <span><Users size={18} /> Users, Carts & Favourites</span>
+          <span><Users size={18} /> Users, Order Lists & Favourites</span>
           <small>{adminData.profiles.length} registered profile rows</small>
         </div>
         <div className="admin-table-wrap">
@@ -436,7 +436,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
                 <th>Price Group</th>
                 <th>Behaviour</th>
                 <th>Approval</th>
-                <th>Cart</th>
+                <th>Order List</th>
                 <th>Favourites</th>
                 <th>Reseller Dashboard</th>
                 <th>Contact</th>
@@ -517,7 +517,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
 
       <article className="admin-panel">
         <div className="admin-panel-head">
-          <span><MessageSquareText size={18} /> Product & Cart Inquiries</span>
+          <span><MessageSquareText size={18} /> Product & Order List Inquiries</span>
           <small>{enquiryRows.length} total inquiries logged</small>
         </div>
         <div className="admin-table-wrap">

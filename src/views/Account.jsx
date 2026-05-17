@@ -36,7 +36,7 @@ export function Account({
       <section className="section empty-page">
         <LockKeyhole size={34} />
         <h1>Login to open your account area</h1>
-        <p>Your cart, favourites, inquiries and price group stay linked to your buyer account.</p>
+        <p>Your order list, favourites, inquiries and price group stay linked to your buyer account.</p>
         <button className="primary-button" type="button" onClick={openAuth}>Login / Register</button>
       </section>
     );
@@ -73,14 +73,14 @@ export function Account({
       <div className="account-summary-grid">
         <AccountSummaryCard icon={UserRound} label="My Buyer Type" value={titleCase(priceAccess.buyerType)} hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} />
         <AccountSummaryCard icon={LockKeyhole} label="My Approved Price Group" value={priceAccess.canViewPrices ? priceAccess.priceLabel : 'Pending'} hint={approvalHint} />
-        <AccountSummaryCard icon={ShoppingBag} label="My Cart" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
+        <AccountSummaryCard icon={ShoppingBag} label="My Order List" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />
       </div>
 
       <div className="account-dashboard-grid">
         <article className="account-panel">
           <div className="account-panel-head">
-            <span><ShoppingBag size={18} /> My Cart</span>
+            <span><ShoppingBag size={18} /> My Order List</span>
             <button type="button" onClick={() => navigate('catalog')}>Add items</button>
           </div>
           <div className="account-list">
@@ -98,7 +98,7 @@ export function Account({
                 </div>
               </div>
             ))}
-            {cartItems.length === 0 && <p className="empty-state">Your cart is empty.</p>}
+            {cartItems.length === 0 && <p className="empty-state">Your order list is empty.</p>}
           </div>
         </article>
 

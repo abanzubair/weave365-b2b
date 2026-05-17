@@ -106,13 +106,13 @@ export function CartDrawer({
         style={{ overscrollBehavior: 'contain' }}
       >
         <div className="drawer-head">
-          <h2>Your Cart</h2>
+          <h2>Your Order List</h2>
           <button className="icon-button" onClick={onClose}>
             <X />
           </button>
         </div>
         <div className="drawer-body">
-          {items.length === 0 && <p className="empty-state">Your cart is empty.</p>}
+          {items.length === 0 && <p className="empty-state">Your order list is empty.</p>}
         {groupedItems.map((group) => (
           <article className="cart-product-card" key={group.key}>
             <div className="cart-product-head">
