@@ -59,7 +59,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
           </div>
 
           <div className="editorial-visual-stack">
-            <div className="main-image-wrapper">
+            <div className="reseller-image-wrapper">
               <img src={imageUrl} alt="Premium Catalog" className="editorial-image" />
               <div className="editorial-glass-card">
                 <ShieldCheck size={24} className="gold-icon" />
