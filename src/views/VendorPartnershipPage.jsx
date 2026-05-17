@@ -8,7 +8,7 @@ const registrationPath = '/Trusted-Partner-Registration';
 
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
-    'Hi, I am interested in listing my products on Weave365. I would like to discuss the vendor partnership program.'
+    'Hi, I am interested in listing my products on Weave 365. I would like to discuss the vendor partnership program.'
   )}`;
   const vendorSectionImage = assetSrc(artisanImage);
 

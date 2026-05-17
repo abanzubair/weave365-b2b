@@ -51,7 +51,7 @@ function metadataForRoute(route, product, sharedSlug) {
   if (route === 'catalog') {
     return {
       title: 'Wholesale Catalogue',
-      description: 'Browse the live Weave365 wholesale Banarasi saree catalogue.',
+      description: 'Browse the live Weave 365 wholesale Banarasi saree catalogue.',
       alternates: { canonical: '/catalog' },
     };
   }
@@ -84,7 +84,7 @@ function metadataForRoute(route, product, sharedSlug) {
   if (route === 'reseller-growth') {
     return {
       title: 'Reseller Program',
-      description: 'Grow your textile business with Weave365 reseller tools and white-label catalogues.',
+      description: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues.',
       alternates: { canonical: '/reseller-growth' },
     };
   }
@@ -98,7 +98,7 @@ function metadataForRoute(route, product, sharedSlug) {
       description: descText,
       alternates: { canonical: '/Trusted-Partner-Registration' },
       openGraph: {
-        title: `${titleText} | ${storeConfig.name}`,
+        title: 'Trusted Partner Registration | Weave 365',
         description: descText,
         type: 'website',
         url: `${siteUrl}/Trusted-Partner-Registration`,
@@ -113,7 +113,7 @@ function metadataForRoute(route, product, sharedSlug) {
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${titleText} | ${storeConfig.name}`,
+        title: 'Trusted Partner Registration | Weave 365',
         description: descText,
         images: [imageUrl],
       },
@@ -123,7 +123,7 @@ function metadataForRoute(route, product, sharedSlug) {
   if (route === 'vendor-partnership') {
     return {
       title: 'Vendor Partnership',
-      description: 'List your products with Weave365 and reach active wholesale saree buyers.',
+      description: 'List your products with Weave 365 and reach active wholesale saree buyers.',
       alternates: { canonical: '/vendor-partnership' },
     };
   }
@@ -131,7 +131,7 @@ function metadataForRoute(route, product, sharedSlug) {
   if (route === 's') {
     return {
       title: 'Shared Catalogue',
-      description: 'A shared Weave365 reseller catalogue.',
+      description: 'A shared Weave 365 reseller catalogue.',
       alternates: { canonical: sharedSlug ? `/s/${encodeURIComponent(sharedSlug)}` : '/s' },
     };
   }
@@ -139,7 +139,7 @@ function metadataForRoute(route, product, sharedSlug) {
   if (route === 'partner') {
     return {
       title: `${sharedSlug}'s Collection | ${storeConfig.name}`,
-      description: `Browse the exclusive saree collection by our trusted partner ${sharedSlug} on Weave365.`,
+      description: `Browse the exclusive saree collection by our trusted partner ${sharedSlug} on Weave 365.`,
       alternates: { canonical: sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner' },
     };
   }

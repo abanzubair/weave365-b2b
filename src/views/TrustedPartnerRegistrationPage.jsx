@@ -192,7 +192,7 @@ export function TrustedPartnerRegistrationPage() {
   return (
     <div className="trusted-registration-page">
       <section className="trusted-registration-hero" aria-labelledby="trusted-registration-heading">
-        <img src={heroImage} alt="Weaver preparing textile products for Weave365" />
+        <img src={heroImage} alt="Weaver preparing textile products for Weave 365" />
         <div className="trusted-registration-hero-content">
           <h1 id="trusted-registration-heading">Trusted Partner Registration</h1>
           <p>Share your craft, capacity, and product details for manual review by the Weave 365 team.</p>
@@ -207,7 +207,7 @@ export function TrustedPartnerRegistrationPage() {
               <h1>Verification & Onboarding</h1>
             </div>
             <p>
-              Apply to list your products on Weave365. Every supplier is verified before products
+              Apply to list your products on Weave 365. Every supplier is verified before products
               go live, so buyers get consistent quality and partners get a serious marketplace.
             </p>
 

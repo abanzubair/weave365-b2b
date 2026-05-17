@@ -8,7 +8,7 @@ export function ResellerGrowthPage({ openAuth }) {
       {/* A. Hero Section */}
       <section className="reseller-hero-section">
         <div className="reseller-hero-content">
-          <span className="hero-kicker">Weave365 Reseller Program</span>
+          <span className="hero-kicker">Weave 365 Reseller Program</span>
           <h1 className="hero-title">Grow Your Business as a Certified Reseller</h1>
           <p className="hero-description">
             Set your own selling price, share premium catalogs with your network, and build your own customer base with zero inventory risk.

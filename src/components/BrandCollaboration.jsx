@@ -9,7 +9,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
         <div className="brand-collab-header">
           <span className="brand-kicker">Curated Marketplace Collaboration</span>
           <h2 id="brand-collab-heading" className="brand-title">
-            Your <span>Label</span>, Featured on <span>Weave365</span>.
+            Your <span>Label</span>, Featured on <span>Weave 365</span>.
           </h2>
           <div className="brand-header-line"></div>
         </div>
@@ -36,7 +36,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
                 <Sparkles size={20} className="gold-text-accent animate-pulse-slow" />
                 <div>
                   <strong>Co-Branded Trust</strong>
-                  <span>"In Collab with Weave365"</span>
+                  <span>"In Collab with Weave 365"</span>
                 </div>
               </div>
 
@@ -46,7 +46,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
           {/* Right Column: Editorial Pillars & CTA */}
           <div className="brand-collab-main-content">
             <p className="brand-lead">
-              Sell your independent collections under your own brand name directly on Weave365. Reach our vetted wholesale buyer network with the added credibility of our official heritage quality certification tag.
+              Sell your independent collections under your own brand name directly on Weave 365. Reach our vetted wholesale buyer network with the added credibility of our official heritage quality certification tag.
             </p>
 
             <div className="brand-pillars-list">
@@ -63,7 +63,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
                 <span className="pillar-num">02</span>
                 <div className="pillar-info">
                   <h4>Co-Branded Heritage Seal</h4>
-                  <p>Gain instant buyer trust. Every product listed features an official "In Collaboration with Weave365" tag, certifying authentic handloom quality.</p>
+                  <p>Gain instant buyer trust. Every product listed features an official "In Collaboration with Weave 365" tag, certifying authentic handloom quality.</p>
                 </div>
               </div>
 

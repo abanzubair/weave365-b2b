@@ -11,7 +11,7 @@ export function ComingSoon() {
         
         {/* Top Left */}
         <div className="cs-logo-area">
-          <img src={assetSrc(brandLogo)} alt="Weave365" className="cs-brand" />
+          <img src={assetSrc(brandLogo)} alt="Weave 365" className="cs-brand" />
         </div>
 
         {/* Top Right */}

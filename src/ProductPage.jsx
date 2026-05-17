@@ -644,7 +644,7 @@ export function ProductDetail({
               <span className="showcase-subtitle">Craftsmanship & Style</span>
               <h2>Product Highlights</h2>
               <p className="showcase-description">
-                Every Weave365 creation is crafted with meticulous attention to detail, utilizing heritage techniques combined with contemporary comfort and premium design.
+                Every Weave 365 creation is crafted with meticulous attention to detail, utilizing heritage techniques combined with contemporary comfort and premium design.
               </p>
             </div>
 

@@ -27,7 +27,7 @@ export const serviceablePincodes = [
 ];
 
 export const storeConfig = {
-  name: process.env.NEXT_PUBLIC_STORE_NAME || 'Weave365',
+  name: process.env.NEXT_PUBLIC_STORE_NAME || 'Weave 365',
   subtitle: process.env.NEXT_PUBLIC_STORE_SUBTITLE || 'WHOLESALE',
   email: process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com',
   phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',
