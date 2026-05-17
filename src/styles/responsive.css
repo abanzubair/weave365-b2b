@@ -1342,6 +1342,8 @@
   .catalog-main-image {
     order: 1;
     width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
     aspect-ratio: 3 / 4;
     display: flex;
     justify-content: center;

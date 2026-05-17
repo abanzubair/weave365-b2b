@@ -2415,8 +2415,10 @@ button {
 .catalog-main-image {
   position: relative;
   width: 100%;
-  max-width: 100%;
   aspect-ratio: 3 / 4;
+  max-height: min(760px, calc(100vh - 190px));
+  max-width: min(100%, calc(min(760px, calc(100vh - 190px)) * 0.75));
+  margin: 0 auto;
   overflow: hidden;
   border-radius: 12px;
   background: var(--surface-muted);
