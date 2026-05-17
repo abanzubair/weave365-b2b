@@ -134,6 +134,7 @@ export function TrustedPartnerRegistrationPage() {
 
     const application = {
       ...form,
+      mobile: form.mobile.replace(/\s/g, ''),
       aadhaar: form.aadhaar.replace(/\s/g, ''),
       submittedAt: new Date().toISOString(),
       status: 'pending_manual_review',
@@ -252,8 +253,18 @@ export function TrustedPartnerRegistrationPage() {
                       <input
                         type="tel"
                         value={form.mobile}
-                        onChange={(event) => updateField('mobile', event.target.value)}
-                        placeholder="WhatsApp enabled number"
+                        onChange={(event) => {
+                          const raw = event.target.value.replace(/\D/g, '').slice(0, 10);
+                          if (raw.length > 5) {
+                            updateField('mobile', `${raw.slice(0, 5)} ${raw.slice(5)}`);
+                          } else {
+                            updateField('mobile', raw);
+                          }
+                        }}
+                        placeholder="99191 01369"
+                        inputMode="numeric"
+                        pattern="\d{5}\s\d{5}"
+                        title="Enter a 10 digit mobile number in the format XXXXX XXXXX"
                         required
                       />
                     </label>
