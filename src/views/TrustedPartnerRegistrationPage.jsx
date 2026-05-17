@@ -203,9 +203,7 @@ export function TrustedPartnerRegistrationPage() {
         <div className="vendor-onboarding-shell">
           <aside className="vendor-onboarding-aside" aria-label="Trusted partner approval process">
             <div className="vendor-aside-header">
-              <div className="vendor-aside-icon">
-                <ShieldCheck size={30} />
-              </div>
+              <ShieldCheck className="vendor-aside-icon" size={32} />
               <h1>Verification & Onboarding</h1>
             </div>
             <p>
@@ -378,7 +376,7 @@ export function TrustedPartnerRegistrationPage() {
                   </div>
                   <div className="vendor-chip-group" role="group" aria-label="Product Category">
                     <span>Product Category *</span>
-                    <div>
+                    <div className="vendor-grid-2-col">
                       {productCategories.map((category) => (
                         <label className="vendor-chip-option" key={category}>
                           <input

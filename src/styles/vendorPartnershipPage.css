@@ -551,15 +551,9 @@
 }
 
 .vendor-aside-icon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
   color: var(--olive);
-  background: var(--surface-soft);
-  border: 1px solid rgba(117, 111, 79, 0.18);
-  border-radius: 8px;
-  margin-bottom: clamp(16px, 2.4vh, 24px);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .vendor-onboarding-aside h1 {
@@ -1228,4 +1222,20 @@
   .vendor-benefits-glass-card {
     animation: none;
   }
+}
+
+.vendor-grid-2-col {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+  width: 100%;
+}
+
+.vendor-grid-2-col .vendor-chip-option {
+  display: inline-flex !important;
+  flex: none !important;
+  flex-basis: auto !important;
+  width: auto !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
 }
