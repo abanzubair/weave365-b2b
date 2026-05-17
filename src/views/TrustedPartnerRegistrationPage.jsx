@@ -261,7 +261,7 @@ export function TrustedPartnerRegistrationPage() {
                             updateField('mobile', raw);
                           }
                         }}
-                        placeholder="99191 01369"
+                        placeholder="12345 67890"
                         inputMode="numeric"
                         pattern="\d{5}\s\d{5}"
                         title="Enter a 10 digit mobile number in the format XXXXX XXXXX"
@@ -304,7 +304,7 @@ export function TrustedPartnerRegistrationPage() {
                         type="text"
                         value={form.city}
                         onChange={(event) => updateField('city', event.target.value)}
-                        placeholder="Varanasi, Mau, Mubarakpur, Surat"
+                        placeholder="Varanasi, Lohta, Kotwa, Ramnagar, etc."
                         required
                       />
                     </label>
@@ -341,8 +341,10 @@ export function TrustedPartnerRegistrationPage() {
                       <input
                         type="text"
                         value={form.monthlyCapacity}
-                        onChange={(event) => updateField('monthlyCapacity', event.target.value)}
-                        placeholder="Example: 200 sarees / month"
+                        onChange={(event) => updateField('monthlyCapacity', event.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 200"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         required
                       />
                     </label>
