@@ -279,7 +279,7 @@
 
 /* ---- Process Flow ---- */
 .vendor-process-flow {
-  margin-top: 120px;
+  margin-top: 70px;
   padding-top: 60px;
   border-top: 1px solid var(--line);
   display: flex;
@@ -378,15 +378,79 @@
     font-size: 40px;
   }
   .vendor-process-items {
+    display: flex;
+    flex-direction: row; /* Horizontal layout on mobile! */
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    gap: 4px;
+    padding: 0;
+  }
+
+  .vendor-process-item {
+    display: flex;
     flex-direction: column;
-    gap: 40px;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+    position: relative;
+    cursor: default;
   }
+
+  .vendor-process-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(117, 111, 79, 0.05); /* Soft olive tint */
+    border: 1px solid rgba(117, 111, 79, 0.1);
+    display: grid;
+    place-items: center;
+    color: var(--olive);
+    flex-shrink: 0;
+    box-shadow: none;
+    transition: transform 0.3s ease;
+  }
+
+  .vendor-process-item:hover .vendor-process-icon {
+    transform: scale(1.05) translateY(0);
+    background: rgba(117, 111, 79, 0.05);
+    color: var(--olive);
+  }
+
+  .vendor-process-item span {
+    font-family: var(--font-body);
+    font-size: 11px; /* Crisp small size */
+    font-weight: 700;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.35;
+    text-align: center;
+  }
+
   .vendor-process-arrow {
-    transform: rotate(90deg);
+    display: flex !important; /* Show horizontal arrows on mobile! */
+    align-items: center;
+    justify-content: center;
+    height: 46px; /* Match icon height for perfect vertical centering */
+    color: var(--olive);
+    opacity: 0.35;
+    flex-shrink: 0;
+    transform: none !important; /* Keep horizontal */
   }
+
+  .vendor-process-arrow svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5px;
+  }
+
   .vendor-cta {
     max-width: 100%;
   }
+
   .vendor-cta-label {
     font-size: 26px;
   }

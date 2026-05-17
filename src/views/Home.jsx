@@ -342,7 +342,7 @@ export function Home({
       )}
 
       <section className="section category-section">
-        <SectionTitle title="Shop By Category" />
+        <SectionTitle title="Shop By Category" align="left" />
         <div className="category-grid">
           {homeCategoryNames.map((name, index) => (
             <button

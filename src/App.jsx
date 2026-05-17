@@ -8,7 +8,7 @@ import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
-import { fallbackProductImage, formatMoney, customerPrice, useCurrency } from './storefrontShared.jsx';
+import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager } from './storefrontShared.jsx';
 import { assetSrc } from './utils/assetSrc.js';
 
 import {
@@ -156,6 +156,17 @@ export default function App({ initialData = {} }) {
     return () => {
       window.removeEventListener('scroll', updateScrolled);
     };
+  }, []);
+
+  useEffect(() => {
+    fetch('https://api.exchangerate-api.com/v4/latest/INR')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          CurrencyManager.setRates(data.rates);
+        }
+      })
+      .catch(err => console.error('Failed to fetch exchange rates', err));
   }, []);
 
   useEffect(() => {
@@ -655,8 +666,9 @@ export default function App({ initialData = {} }) {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
-              <rect className="line line-top" x="4" y="8" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-bottom" x="8" y="14" width="12" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-bottom" x="9" y="16" width="11" height="1.5" rx="0.75" fill="currentColor" />
             </svg>
           </button>
 

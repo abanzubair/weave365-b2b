@@ -1,7 +1,28 @@
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
-import { Linkedin, Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
+import { Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
+
+function LinkedInIcon({ size = 16, className = "" }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      width={size} 
+      height={size} 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+    >
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+}
 
 export function Footer({ navigate }) {
   return (
@@ -37,7 +58,7 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Social Links</h3>
-        <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><Linkedin size={16} /> LinkedIn</a>
+        <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><LinkedInIcon size={16} /> LinkedIn</a>
         <a href="https://www.instagram.com/weaves365.wholesale" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>
         <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer"><Facebook size={16} /> Facebook</a>
         <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer"><Youtube size={16} /> YouTube</a>
@@ -53,9 +74,11 @@ export function Footer({ navigate }) {
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
         <p className="developer-credit">
-          Designed and Developed by <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer">Aban Zubair</a><span className="developer-socials">
+          <span className="developer-label">Designed and Developed by</span>
+          <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer" className="developer-name">Aban Zubair</a>
+          <span className="developer-socials">
             <a href="https://linkedin.com/in/abanzubair" target="_blank" rel="noreferrer" title="LinkedIn">
-              <Linkedin size={14} />
+              <LinkedInIcon size={14} />
             </a>
             <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer" title="GitHub">
               <Github size={14} />

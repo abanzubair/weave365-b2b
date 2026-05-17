@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef } from 'react';
 import { Award, BadgeIndianRupee, HeartHandshake, PackagePlus, Tag, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 
 const featureStripItems = [
@@ -47,10 +48,69 @@ export function BenefitStrip() {
 }
 
 export function Stat({ icon, value, label }) {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef(null);
+  const hasAnimated = useRef(false);
+
+  // Parse target number and suffix (e.g. "1000+" -> 1000 and "+", "95%" -> 95 and "%")
+  const match = String(value).match(/^(\d+)(.*)$/);
+  const target = match ? parseInt(match[1], 10) : 0;
+  const suffix = match ? match[2] : '';
+
+  useEffect(() => {
+    if (!match) {
+      setCount(value);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          
+          let start = 0;
+          const duration = 1600; // Smooth 1.6s animation
+          const startTime = performance.now();
+
+          const animate = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            // Smooth easeOutQuad
+            const easeProgress = progress * (2 - progress);
+            const current = Math.floor(easeProgress * target);
+            
+            setCount(current);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              setCount(target);
+            }
+          };
+
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = elementRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [target, value, match]);
+
   return (
-    <div>
+    <div ref={elementRef}>
       {icon}
-      <strong>{value}</strong>
+      <strong>
+        {match ? `${count}${suffix}` : value}
+      </strong>
       <span>{label}</span>
     </div>
   );

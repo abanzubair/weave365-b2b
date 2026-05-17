@@ -500,8 +500,9 @@
   .header-actions {
     order: 2 !important;
     gap: 16px !important;
-    margin-left: auto !important;
-    margin-right: 0px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: none !important; /* It is empty anyway, hide it to prevent flex layout issues */
   }
 
   .login-link,
@@ -515,9 +516,22 @@
     margin-left: 0 !important;
   }
 
+  .hamburger-btn .hamburger-svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
 
   .mobile-search-button {
-    display: none !important; /* Hide to match minimalist reference image */
+    display: inline-grid !important;
+    order: 2 !important;
+    margin-left: auto !important;
+    margin-right: 0px !important;
+  }
+
+  .mobile-search-button svg {
+    width: 20px;
+    height: 20px;
   }
 
   /* Desktop-only nav and search box should remain hidden on mobile */
