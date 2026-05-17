@@ -407,7 +407,7 @@ export function TrustedPartnerRegistrationPage() {
                   </div>
                   <div className="vendor-chip-group" role="group" aria-label="Dispatch Capability">
                     <span>Dispatch Capability *</span>
-                    <div>
+                    <div className="vendor-grid-2-col">
                       {dispatchCapabilities.map((capability) => (
                         <label className="vendor-chip-option" key={capability}>
                           <input
