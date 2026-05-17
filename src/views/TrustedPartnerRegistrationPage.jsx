@@ -134,6 +134,7 @@ export function TrustedPartnerRegistrationPage() {
 
     const application = {
       ...form,
+      aadhaar: form.aadhaar.replace(/\s/g, ''),
       submittedAt: new Date().toISOString(),
       status: 'pending_manual_review',
     };
@@ -271,11 +272,18 @@ export function TrustedPartnerRegistrationPage() {
                       <input
                         type="text"
                         value={form.aadhaar}
-                        onChange={(event) => updateField('aadhaar', event.target.value.replace(/\D/g, '').slice(0, 12))}
-                        placeholder="12 digit Aadhaar number"
+                        onChange={(event) => {
+                          const raw = event.target.value.replace(/\D/g, '').slice(0, 12);
+                          const parts = [];
+                          for (let i = 0; i < raw.length; i += 4) {
+                            parts.push(raw.substring(i, i + 4));
+                          }
+                          updateField('aadhaar', parts.join(' '));
+                        }}
+                        placeholder="1234 5678 9012"
                         inputMode="numeric"
-                        pattern="[0-9]{12}"
-                        title="Enter a 12 digit Aadhaar number"
+                        pattern="\d{4}\s\d{4}\s\d{4}"
+                        title="Enter a 12 digit Aadhaar number in the format XXXX XXXX XXXX"
                         required
                       />
                     </label>
