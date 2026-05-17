@@ -751,11 +751,11 @@
   }
 
   .scroll-arrow.left {
-    left: 8px !important;
+    left: 24px !important;
   }
 
   .scroll-arrow.right {
-    right: 8px !important;
+    right: 24px !important;
   }
 
   .scrollable-row {
