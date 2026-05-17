@@ -2575,8 +2575,8 @@ button {
   font-size: 38px;
   font-weight: 700;
   color: var(--brown-900);
-  font-family: var(--font-heading);
-  letter-spacing: -0.01em;
+  font-family: var(--font-body);
+  letter-spacing: -0.02em;
 }
 
 .price-unit {
@@ -2587,15 +2587,16 @@ button {
 }
 
 .moq-badge {
-  color: var(--gold-dark);
-  font-size: 11px;
+  color: var(--white);
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 6px 14px;
-  background: rgba(183, 134, 70, 0.08);
-  border: 1px solid rgba(183, 134, 70, 0.15);
+  letter-spacing: 0.08em;
+  padding: 8px 18px;
+  background: var(--gold-dark);
+  border: 1px solid var(--gold-dark);
   border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.15);
 }
 
 .tiered-pricing-card {
