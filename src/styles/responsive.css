@@ -751,11 +751,11 @@
   }
 
   .scroll-arrow.left {
-    left: 24px !important;
+    left: 4px !important;
   }
 
   .scroll-arrow.right {
-    right: 24px !important;
+    right: 4px !important;
   }
 
   .scrollable-row {
@@ -1568,7 +1568,7 @@
   }
 
   .you-may-like {
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   .you-may-like .scroll-wrapper {
