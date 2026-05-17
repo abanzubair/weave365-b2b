@@ -1570,6 +1570,12 @@
     width: auto !important;
   }
 
+  .you-may-like .scrollable-row {
+    padding-left: var(--site-padding) !important;
+    padding-right: var(--site-padding) !important;
+    scroll-padding-inline-start: var(--site-padding) !important;
+  }
+
   .product-trust-strip div {
     border-right: 0 !important;
     border-bottom: 1px solid var(--line);
