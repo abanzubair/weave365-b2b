@@ -566,7 +566,7 @@
 
 .vendor-onboarding-aside p {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.55;
   color: var(--muted);
   margin: 0;
@@ -597,13 +597,13 @@
   border-radius: 50%;
   color: var(--olive);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .vendor-approval-step strong {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--ink);
 }
 
@@ -619,7 +619,7 @@
 }
 
 .vendor-quality-note p {
-  font-size: 12.5px;
+  font-size: 15px;
   line-height: 1.48;
 }
 
@@ -657,7 +657,7 @@
   margin: 0;
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .vendor-form-section {
@@ -695,7 +695,7 @@
   display: grid;
   gap: 8px;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--ink);
 }
@@ -711,7 +711,7 @@
   background: rgba(255, 255, 255, 0.74);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -833,7 +833,7 @@
 .vendor-upload-box em {
   max-width: 420px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   font-style: normal;
   font-weight: 600;
 }
@@ -853,7 +853,7 @@
   background: rgba(139, 47, 47, 0.08);
   border: 1px solid rgba(139, 47, 47, 0.18);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
