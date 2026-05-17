@@ -8,7 +8,7 @@ import {
 import artisanImage from '../../assets/artisan_at_loom_premium.png';
 import { assetSrc } from '../utils/assetSrc.js';
 
-const businessTypes = ['Weaver', 'Manufacturer', 'Trader', 'Job Worker', 'Supplier'];
+const businessTypes = ['Weaver', 'Master Weaver', 'Manufacturer', 'Trader', 'Job Worker', 'Supplier'];
 const productCategories = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 const productionCapacities = ['Small Scale', 'Medium Scale', 'Large Scale'];
 const experienceRanges = ['0-2 Years', '3-5 Years', '5-10 Years', '10+ Years'];
