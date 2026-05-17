@@ -126,10 +126,30 @@ export function ProductDetail({
     }),
     [product.statusTags, canViewPrice],
   );
-  const related = useMemo(
-    () => products.filter((item) => item.id !== product.id).slice(0, 5),
-    [product.id, products],
-  );
+  const related = useMemo(() => {
+    const others = products.filter((item) => item.id !== product.id);
+    const productPattern = product.pattern?.trim().toLowerCase();
+    const productFabric = product.fabric?.trim().toLowerCase();
+
+    // Tier 1: both pattern AND fabric match
+    const bothMatch = others.filter((item) => {
+      const samePattern = productPattern && item.pattern?.trim().toLowerCase() === productPattern;
+      const sameFabric = productFabric && item.fabric?.trim().toLowerCase() === productFabric;
+      return samePattern && sameFabric;
+    });
+    if (bothMatch.length >= 3) return bothMatch.slice(0, 5);
+
+    // Tier 2: either pattern OR fabric match
+    const eitherMatch = others.filter((item) => {
+      const samePattern = productPattern && item.pattern?.trim().toLowerCase() === productPattern;
+      const sameFabric = productFabric && item.fabric?.trim().toLowerCase() === productFabric;
+      return samePattern || sameFabric;
+    });
+    if (eitherMatch.length >= 3) return eitherMatch.slice(0, 5);
+
+    // Tier 3: fallback — any other products
+    return others.slice(0, 5);
+  }, [product.id, product.pattern, product.fabric, products]);
   const recommendationItems = useMemo(
     () =>
       related.length

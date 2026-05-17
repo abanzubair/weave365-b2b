@@ -2822,7 +2822,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  overflow-x: auto;
+  /* overflow-x: auto; */
   padding: 4px 4px 16px;
   scrollbar-width: thin;
   scrollbar-color: var(--gold-soft) transparent;

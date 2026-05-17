@@ -83,10 +83,12 @@ export function priceForBuyer(prices = {}, buyerAccess) {
   if (buyerAccess && !buyerAccess.canViewPrices) return null;
 
   if (buyerAccess?.priceGroup === 'reseller') {
-    return prices.single || prices.offer || prices.mrp || 0;
+    // Reseller pricing → B2R column, fallback to B2B if B2R is missing
+    return prices.b2r || prices.mrp || 0;
   }
 
-  return prices.offer || prices.mrp || 0;
+  // Wholesale pricing → B2B column
+  return prices.mrp || prices.offer || 0;
 }
 
 export function priceNoticeForAccess(buyerAccess) {

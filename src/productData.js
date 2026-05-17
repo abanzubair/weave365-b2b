@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
 const moneyColumns = {
   mrp: 'B2B',
+  b2r: 'B2R',
   single: 'D2C/Export',
   cod: 'COD',
   offer: 'Offer',
@@ -254,6 +255,7 @@ function buildVariant(row, codeInfo, image, colorEntries = []) {
     image,
     prices: {
       mrp: parsePrice(row[moneyColumns.mrp]),
+      b2r: parsePrice(row[moneyColumns.b2r]),
       single: parsePrice(row[moneyColumns.single]),
       cod: parsePrice(row[moneyColumns.cod]),
       offer: parsePrice(row[moneyColumns.offer]),
