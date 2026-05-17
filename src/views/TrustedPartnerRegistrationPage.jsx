@@ -81,7 +81,50 @@ export function TrustedPartnerRegistrationPage() {
     }
 
     setIsSubmitting(true);
+    setFormError('');
     setSubmitError('');
+
+    const cleanMobile = form.mobile.trim();
+
+    // 1. Check locally (immediate check)
+    try {
+      const existing = JSON.parse(localStorage.getItem('weave365_vendor_applications') || '[]');
+      const isDuplicate = existing.some((app) => app.mobile.trim() === cleanMobile);
+      if (isDuplicate) {
+        setFormError('An application has already been submitted with this mobile number.');
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (error) {
+      console.warn('Unable to verify duplicate application locally', error);
+    }
+
+    // 2. Check globally via CSV if configured
+    const csvUrl = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_CSV_URL;
+    if (csvUrl) {
+      try {
+        const response = await fetch(csvUrl);
+        if (response.ok) {
+          const csvText = await response.text();
+          const rows = csvText.split('\n').map(row => row.split(','));
+          const isGlobalDuplicate = rows.some(columns => {
+            if (columns.length > 2) {
+              const cleanNumber = columns[2].replace(/["'\s]/g, '');
+              return cleanNumber === cleanMobile;
+            }
+            return false;
+          });
+
+          if (isGlobalDuplicate) {
+            setFormError('An application has already been submitted with this mobile number.');
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Unable to verify duplicate application globally', err);
+      }
+    }
 
     const application = {
       ...form,
