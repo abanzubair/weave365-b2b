@@ -89,6 +89,37 @@ function metadataForRoute(route, product, sharedSlug) {
     };
   }
 
+  if (route === 'Trusted-Partner-Registration') {
+    const imageUrl = `${siteUrl}/artisan_at_loom_premium.png`;
+    const titleText = 'Trusted Partner Registration';
+    const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team.';
+    return {
+      title: titleText,
+      description: descText,
+      alternates: { canonical: '/Trusted-Partner-Registration' },
+      openGraph: {
+        title: `${titleText} | ${storeConfig.name}`,
+        description: descText,
+        type: 'website',
+        url: `${siteUrl}/Trusted-Partner-Registration`,
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: titleText,
+          }
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${titleText} | ${storeConfig.name}`,
+        description: descText,
+        images: [imageUrl],
+      },
+    };
+  }
+
   if (route === 'vendor-partnership') {
     return {
       title: 'Vendor Partnership',
