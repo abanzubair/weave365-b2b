@@ -290,11 +290,7 @@
   transition: all 0.3s ease;
 }
 
-.process-item:hover .process-icon {
-  background: var(--gold);
-  color: var(--white);
-  transform: translateY(-4px);
-}
+
 
 .process-item span {
   font-family: var(--font-body);
