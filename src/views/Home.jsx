@@ -7,6 +7,7 @@ import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import newBanner1 from '../../assets/newBanner1.png';
 import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
+import newBanner2 from '../../assets/newBanner2.png';
 import resellerImage from '../../assets/reseller_premium_catalog_display.png';
 import brandCollabImage from '../../assets/brand_collaboration.png';
 import weaverImage from '../../assets/artisan_at_loom_premium.png';
@@ -49,6 +50,7 @@ export function Home({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
+  const [showNewHero, setShowNewHero] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 820px)');
@@ -82,6 +84,18 @@ export function Home({
     }, 1000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNewHero(true);
+      document.documentElement.classList.add('new-hero-active');
+    }, 4000);
+
+    return () => {
+      clearTimeout(timer);
+      document.documentElement.classList.remove('new-hero-active');
+    };
   }, []);
 
   const activeHeroData = bannerSlides[currentSlide] || null;
@@ -205,85 +219,192 @@ export function Home({
 
   return (
     <>
-      <section 
-        className="premium-hero" 
-        style={{ 
-          '--hero-bg': `url(${assetSrc(newBanner1)})`,
-          '--hero-bg-mobile': `url(${assetSrc(newBanner1Mobile)})`
-        }}
-      >
-        <div className="premium-hero-overlay"></div>
-        
-        <div className="premium-hero-content">
-          <div className="premium-hero-main">
-            <h1 className="premium-hero-title">
-              {/* <span className="title-slash">/</span> Timeless<br />
-              Weaves.<br />
-              Endless<br />
-              Possibilities. */}
-              Timeless Weaves<br />
-              Endless Possibilities
-            </h1>
+      <section className="hero-transition-container">
+        {/* Original Slide */}
+        <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
+          <section 
+            className="premium-hero" 
+            style={{ 
+              '--hero-bg': `url(${assetSrc(newBanner1)})`,
+              '--hero-bg-mobile': `url(${assetSrc(newBanner1Mobile)})`
+            }}
+          >
+            <div className="premium-hero-overlay"></div>
             
-            <p className="premium-hero-subtitle">
-              Banarasi Sarees & Suits for your business,
-              crafted for every story.
-            </p>
-            
-            <div className="premium-hero-actions">
-              <button 
-                className="premium-btn-filled" 
-                onClick={() => navigate('catalog')}
-              >
-                Explore Collections
-              </button>
-              <button 
-                className="premium-btn-text" 
-                onClick={() => navigate('bulk-inquiry')}
-              >
-                Request Catalog <ArrowRight size={18} />
-              </button>
-            </div>
-            
-            <div className="premium-hero-features">
-              <div className="premium-feature">
-                <Grid size={24} strokeWidth={1.5} />
-                <div className="premium-feature-text">
-                  <strong>Premium Quality</strong>
-                  <span>Finest fabrics and<br />authentic craftsmanship.</span>
+            <div className="premium-hero-content">
+              <div className="premium-hero-main">
+                <h1 className="premium-hero-title">
+                  {/* <span className="title-slash">/</span> Timeless<br />
+                  Weaves.<br />
+                  Endless<br />
+                  Possibilities. */}
+                  Timeless Weaves<br />
+                  Endless Possibilities
+                </h1>
+                
+                <p className="premium-hero-subtitle">
+                  Banarasi Sarees & Suits for your business,
+                  crafted for every story.
+                </p>
+                
+                <div className="premium-hero-actions">
+                  <button 
+                    className="premium-btn-filled" 
+                    onClick={() => navigate('catalog')}
+                  >
+                    Explore Collections
+                  </button>
+                  <button 
+                    className="premium-btn-text" 
+                    onClick={() => navigate('bulk-inquiry')}
+                  >
+                    Request Catalog <ArrowRight size={18} />
+                  </button>
+                </div>
+                
+                <div className="premium-hero-features">
+                  <div className="premium-feature">
+                    <Grid size={24} strokeWidth={1.5} />
+                    <div className="premium-feature-text">
+                      <strong>Premium Quality</strong>
+                      <span>Finest fabrics and<br />authentic craftsmanship.</span>
+                    </div>
+                  </div>
+                  <div className="premium-feature">
+                    <Tag size={24} strokeWidth={1.5} />
+                    <div className="premium-feature-text">
+                      <strong>Wholesale Prices</strong>
+                      <span>Competitive pricing<br />for your business.</span>
+                    </div>
+                  </div>
+                  <div className="premium-feature">
+                    <Truck size={24} strokeWidth={1.5} />
+                    <div className="premium-feature-text">
+                      <strong>Reliable Supply</strong>
+                      <span>Timely delivery & bulk<br />order support.</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="premium-feature">
-                <Tag size={24} strokeWidth={1.5} />
-                <div className="premium-feature-text">
-                  <strong>Wholesale Prices</strong>
-                  <span>Competitive pricing<br />for your business.</span>
+              
+              <div className="premium-hero-sidebar">
+                <div className="premium-hero-collection-info">
+                  <span>B2B<br />SAREE<br />COLLECTION<br />'26</span>
                 </div>
-              </div>
-              <div className="premium-feature">
-                <Truck size={24} strokeWidth={1.5} />
-                <div className="premium-feature-text">
-                  <strong>Reliable Supply</strong>
-                  <span>Timely delivery & bulk<br />order support.</span>
-                </div>
+                {/* <div className="premium-hero-pagination">
+                  <span className="current-slide">01</span>
+                  <span className="divider">/</span>
+                  <span className="total-slides">03</span>
+                </div> */}
               </div>
             </div>
-          </div>
-          
-          <div className="premium-hero-sidebar">
-            <div className="premium-hero-collection-info">
-              <span>B2B<br />SAREE<br />COLLECTION<br />'26</span>
+            <div className="premium-hero-scroll">
+              <span>Scroll to Explore</span>
+              <ArrowDown size={20} strokeWidth={1.5} />
             </div>
-            {/* <div className="premium-hero-pagination">
-              <span className="current-slide">01</span>
-              <span className="divider">/</span>
-              <span className="total-slides">03</span>
-            </div> */}
-          </div>
+          </section>
         </div>
-        <div className="premium-hero-scroll">
-          <span>Scroll to Explore</span>
-          <ArrowDown size={20} strokeWidth={1.5} />
+
+        {/* New Editorial Brand Collaboration Hero Slide */}
+        <div className={`hero-slide-pane pane-second ${showNewHero ? 'active' : ''}`}>
+          <section className="collab-hero-section">
+            {/* Left Column: Image and side tagline */}
+            <div className="collab-hero-left">
+              <div className="collab-hero-photo-wrap">
+                <img 
+                  src={assetSrc(newBanner2)} 
+                  alt="Brand Collaboration Banner" 
+                  className="collab-hero-photo"
+                />
+                <div className="collab-hero-photo-overlay"></div>
+              </div>
+              
+              <div className="collab-vertical-text">
+                CURATE. COLLABORATE. GROW TOGETHER.
+              </div>
+              
+              <div className="collab-vertical-badge">
+                <span className="badge-kicker">BRAND</span>
+                <span className="badge-title">COLLABORATION</span>
+                <span className="badge-line"></span>
+              </div>
+              
+              <div className="collab-slide-pagination">
+                <span className="slide-num">01</span>
+                <span className="slide-separator">—</span>
+                <span className="slide-total">03</span>
+              </div>
+            </div>
+
+            {/* Right Column: Content segment */}
+            <div className="collab-hero-right">
+              <div className="collab-right-content">
+                <span className="collab-kicker">COLLABORATE WITH US</span>
+                
+                <div className="collab-title-seal-row">
+                  <h1 className="collab-title">
+                    <span className="collab-title-line-1">Together</span><br />
+                    <span className="collab-title-line-2">in Every</span><br />
+                    <span className="collab-title-line-3">Weave</span>
+                  </h1>
+
+                  {/* Elegant rotating gold seal */}
+                  <div className="rotating-seal-container">
+                    <div className="rotating-seal-wrapper">
+                      <svg viewBox="0 0 100 100" className="rotating-seal-svg">
+                        <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="sealCirclePath" fill="none" />
+                        <text fill="#c69e6a" fontSize="6.2" fontFamily="var(--font-hero-body)" letterSpacing="2.5" fontWeight="600">
+                          <textPath href="#sealCirclePath" startOffset="0%">
+                            BUILD YOUR BRAND • EXPAND YOUR REACH • 
+                          </textPath>
+                        </text>
+                      </svg>
+                    </div>
+                    {/* Symmetrical flower icon at the center sits outside wrapper to remain static */}
+                    <div className="seal-center-emblem">
+                      <svg viewBox="0 0 50 50" className="seal-center-svg">
+                        <g transform="translate(25,25) scale(0.7)" stroke="#c69e6a" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="-3" y="-3" width="6" height="6" transform="rotate(45)" fill="#c69e6a" opacity="0.8" />
+                          <path d="M 0,-6 C 2,-11 5,-14 0,-20 C -5,-14 -2,-11 0,-6 Z" />
+                          <path d="M 0,6 C 2,12 5,14 0,20 C -5,14 -2,12 0,6 Z" />
+                          <path d="M -6,0 C -11,2 -14,5 -20,0 C -14,-5 -11,-2 -6,0 Z" />
+                          <path d="M 6,0 C 11,2 14,5 22,0 C 14,-5 11,-2 6,0 Z" />
+                          <line x1="-5" y1="-5" x2="-9" y2="-9" />
+                          <line x1="5" y1="-5" x2="9" y2="-9" />
+                          <line x1="-5" y1="5" x2="-9" y2="9" />
+                          <line x1="5" y1="5" x2="9" y2="9" />
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="collab-subtitle">
+                  Join hands with India's trusted B2B saree platform and showcase your collections to a growing network of buyers.
+                </p>
+
+                <div className="collab-bottom-row">
+                  <button 
+                    className="collab-cta-btn"
+                    onClick={() => navigate('bulk-inquiry')}
+                  >
+                    <span className="cta-btn-text">BECOME A BRAND PARTNER</span>
+                    <ArrowRight size={20} strokeWidth={1.5} />
+                    <span className="cta-btn-line"></span>
+                  </button>
+
+                  <div className="collab-partners-box">
+                    <span className="partners-title">FEATURED PARTNERS</span>
+                    <div className="partners-list">
+                      <span className="partner-name">HOUSE OF PALLU</span>
+                      <span className="partner-name">VEVORA</span>
+                      <span className="partner-more">+12 MORE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
 
