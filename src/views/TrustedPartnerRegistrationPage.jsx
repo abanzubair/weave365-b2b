@@ -256,7 +256,14 @@ export function TrustedPartnerRegistrationPage() {
                       <input
                         type="text"
                         value={form.fullName}
-                        onChange={(event) => updateField('fullName', event.target.value)}
+                        onChange={(event) => {
+                          const val = event.target.value;
+                          const capitalized = val
+                            .split(' ')
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                          updateField('fullName', capitalized);
+                        }}
                         placeholder="Enter full name"
                         required
                       />
@@ -316,7 +323,14 @@ export function TrustedPartnerRegistrationPage() {
                       <input
                         type="text"
                         value={form.city}
-                        onChange={(event) => updateField('city', event.target.value)}
+                        onChange={(event) => {
+                          const val = event.target.value;
+                          const capitalized = val
+                            .split(' ')
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                          updateField('city', capitalized);
+                        }}
                         placeholder="Varanasi, Lohta, Kotwa, Ramnagar, etc."
                         required
                       />
