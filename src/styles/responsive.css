@@ -728,10 +728,10 @@
     box-shadow: none;
   }
 
-  /* Product Rails: 2 cards per screen on mobile */
+  /* Product Rails: 2.25 cards per screen on mobile to create perfect "card peek" scroll cue */
   .scrollable-row>* {
-    flex: 0 0 calc((100% - 8px) / 2) !important;
-    max-width: calc((100% - 8px) / 2);
+    flex: 0 0 calc((100% - 16px) / 2.25) !important;
+    max-width: calc((100% - 16px) / 2.25) !important;
   }
 
   .scroll-arrow {
