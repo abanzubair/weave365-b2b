@@ -710,7 +710,7 @@ export default function App({ initialData = {} }) {
           </a>
           <nav className="main-nav">
             <button 
-              className={route === 'home' && window.location.hash === '#brand-collab' ? 'active' : ''} 
+              className={route === 'home' && typeof window !== 'undefined' && window.location.hash === '#brand-collab' ? 'active' : ''} 
               onClick={() => scrollToSection('brand-collab')}
             >
               Brands
@@ -763,7 +763,7 @@ export default function App({ initialData = {} }) {
               )}
             </div>
             <button 
-              className={route === 'home' && window.location.hash === '#why' ? 'active' : ''} 
+              className={route === 'home' && typeof window !== 'undefined' && window.location.hash === '#why' ? 'active' : ''} 
               onClick={() => scrollToSection('why')}
             >
               About Us
