@@ -1581,19 +1581,30 @@
     padding-bottom: 0 !important;
   }
 
-  .product-highlight-grid {
+  .product-highlight-showcase {
     grid-template-columns: 1fr !important;
-    gap: 24px !important;
-    margin: 48px 0 !important;
-  }
-
-  .product-highlight-grid section {
+    gap: 36px !important;
     padding: 28px 24px !important;
-    min-height: auto !important;
+    margin: 48px 0 !important;
+    border-radius: 16px !important;
   }
 
-  .highlight-image {
-    height: 280px !important;
+  .showcase-image-col {
+    height: 300px !important;
+    min-height: 300px !important;
     order: -1 !important; /* Put the beautiful fabric closeup image at the top of stack */
+  }
+
+  .showcase-highlights-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .showcase-header h2 {
+    font-size: 26px !important;
+  }
+
+  .highlight-card {
+    padding: 16px !important;
   }
 }

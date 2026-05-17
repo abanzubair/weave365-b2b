@@ -6,12 +6,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Gift,
   Heart,
   Layers,
   LockKeyhole,
   PackageCheck,
   Share2,
   ShoppingBag,
+  Sparkles,
   Star,
   ZoomIn,
   X,
@@ -580,20 +582,8 @@ export function ProductDetail({
 
         <ProductTrustStrip />
 
-        <div className="product-highlight-grid">
-          <section>
-            <div className="highlight-heading">
-              <span className="highlight-icon"><Star size={20} /></span>
-              <h2>Product Highlights</h2>
-            </div>
-            <ul className="highlight-list">
-              <li><CheckCircle2 size={18} /> Premium {product.fabric || 'saree'} with {product.work || 'designer'} work</li>
-              <li><CheckCircle2 size={18} /> Smooth texture and lightweight feel</li>
-              <li><CheckCircle2 size={18} /> Elegant border with intricate detailing</li>
-              <li><CheckCircle2 size={18} /> Comes with unstitched blouse piece</li>
-            </ul>
-          </section>
-          <div className="highlight-image">
+        <div className="product-highlight-showcase">
+          <div className="showcase-image-col">
             <img
               src={product.images[1] || product.images[0] || fallbackProductImage}
               alt={`${product.title} fabric close-up`}
@@ -601,19 +591,63 @@ export function ProductDetail({
               decoding="async"
               onError={(e) => { e.target.style.opacity = '0'; }}
             />
-          </div>
-          <section>
-            <div className="highlight-heading">
-              <span className="highlight-icon"><Heart size={20} /></span>
-              <h2>Perfect For</h2>
+            <div className="showcase-image-badge">
+              <Sparkles size={14} /> Premium Quality
             </div>
-            <ul className="perfect-list">
-              <li><PackageCheck size={18} /> Casual Wear</li>
-              <li><Heart size={18} /> Daily Wear</li>
-              <li><ShoppingBag size={18} /> Office Wear</li>
-              <li><Award size={18} /> Small Gatherings</li>
-            </ul>
-          </section>
+          </div>
+
+          <div className="showcase-content-col">
+            <div className="showcase-header">
+              <span className="showcase-subtitle">Craftsmanship & Style</span>
+              <h2>Product Highlights</h2>
+              <p className="showcase-description">
+                Every Weave365 creation is crafted with meticulous attention to detail, utilizing heritage techniques combined with contemporary comfort and premium design.
+              </p>
+            </div>
+
+            <div className="showcase-highlights-grid">
+              <div className="highlight-card">
+                <span className="card-icon"><Star size={18} /></span>
+                <div className="card-body">
+                  <h3>Heritage Fabric</h3>
+                  <p>Premium {product.fabric || 'saree'} with {product.work || 'designer'} work</p>
+                </div>
+              </div>
+              <div className="highlight-card">
+                <span className="card-icon"><CheckCircle2 size={18} /></span>
+                <div className="card-body">
+                  <h3>Lightweight Feel</h3>
+                  <p>Smooth texture and lightweight comfortable feel all day</p>
+                </div>
+              </div>
+              <div className="highlight-card">
+                <span className="card-icon"><Sparkles size={18} /></span>
+                <div className="card-body">
+                  <h3>Intricate Detailing</h3>
+                  <p>Elegant border with sophisticated and precise detail work</p>
+                </div>
+              </div>
+              <div className="highlight-card">
+                <span className="card-icon"><Gift size={18} /></span>
+                <div className="card-body">
+                  <h3>Complete Set</h3>
+                  <p>Comes with matching unstitched designer blouse piece</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="showcase-divider" />
+
+            <div className="showcase-perfect-section">
+              <h3>Perfect For</h3>
+              <div className="perfect-badges-row">
+                <span className="perfect-badge"><PackageCheck size={14} /> Casual Wear</span>
+                <span className="perfect-badge"><Heart size={14} /> Daily Wear</span>
+                <span className="perfect-badge"><ShoppingBag size={14} /> Office Wear</span>
+                <span className="perfect-badge"><Award size={14} /> Small Gatherings</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <section className="you-may-like home-product-section">
