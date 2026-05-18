@@ -99,7 +99,7 @@ export function Newsletter() {
       </div>
       <div className="newsletter-actions">
         <a
-          href={storeConfig.whatsappGroup || "https://chat.whatsapp.com/your-group-id"}
+          href={storeConfig.whatsappGroup || `https://wa.me/91${storeConfig.whatsapp}?text=Hi%20I%20want%20to%20join%20the%20updates%20group`}
           target="_blank"
           rel="noreferrer"
           className="whatsapp-group-btn"
