@@ -3,6 +3,7 @@ import { Sparkles, ShoppingBag, RotateCcw, ArrowRight, ShieldCheck, Check, Heart
 import { ProductCard, StateMessage, formatMoney, customerPrice, fallbackProductImage } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import weaverImage from '../../assets/artisan_at_loom_premium.png';
+import brandLogo from '../../assets/logo.png';
 import { assetSrc } from '../utils/assetSrc.js';
 
 export function NewArrivalsPage({
@@ -93,15 +94,13 @@ export function NewArrivalsPage({
         
         {/* 🏆 Editorial Hero Banner */}
         <div className="arrivals-hero-banner animate-fade-in">
-          {/* Geometric Loom Motif */}
-          <svg viewBox="0 0 100 100" className="hero-geometric-motif">
-            <circle cx="50" cy="50" r="45" stroke="#c69e6a" strokeWidth="0.5" fill="none" opacity="0.3" />
-            <circle cx="50" cy="50" r="35" stroke="#c69e6a" strokeWidth="0.5" fill="none" opacity="0.5" />
-            <polygon points="50,5 95,50 50,95 5,50" stroke="#c69e6a" strokeWidth="0.5" fill="none" opacity="0.2" />
-            <polygon points="50,15 85,50 50,85 15,50" stroke="#c69e6a" strokeWidth="0.5" fill="none" opacity="0.4" />
-            <line x1="50" y1="5" x2="50" y2="95" stroke="#c69e6a" strokeWidth="0.5" opacity="0.3" />
-            <line x1="5" y1="50" x2="95" y2="50" stroke="#c69e6a" strokeWidth="0.5" opacity="0.3" />
-          </svg>
+          {/* Branded Logo Background */}
+          <img 
+            src={assetSrc(brandLogo)} 
+            alt="Weave365 Logo" 
+            className="hero-geometric-motif" 
+            style={{ objectFit: 'contain' }}
+          />
 
           <div className="arrivals-hero-content">
             <span className="arrivals-hero-kicker">
