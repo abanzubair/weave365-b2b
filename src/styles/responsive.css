@@ -95,13 +95,13 @@
   }
 
   .brand-logo {
-    height: 24px !important;
+    height: 32px !important;
     width: auto !important;
     transition: filter 0.3s ease;
   }
 
   .brand-divider {
-    height: 16px !important;
+    height: 22px !important;
     background: var(--line) !important;
     opacity: 0.25 !important;
     margin: 0 !important;
