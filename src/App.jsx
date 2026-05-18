@@ -747,11 +747,6 @@ export default function App({ initialData = {} }) {
             }}
           >
             <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
-            <div className="brand-divider"></div>
-            <div className="brand-subtitle">
-              <span>B2B SAREE PLATFORM</span>
-              <span>FOR BRANDS & BUYERS</span>
-            </div>
           </a>
           <nav className="main-nav">
             <button 
