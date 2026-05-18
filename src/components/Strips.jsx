@@ -48,27 +48,27 @@ export function BenefitStrip() {
 }
 
 export function Stat({ icon, value, label }) {
-  const [count, setCount] = useState(0);
-  const elementRef = useRef(null);
-  const hasAnimated = useRef(false);
-
   // Parse target number and suffix (e.g. "1000+" -> 1000 and "+", "95%" -> 95 and "%")
   const match = String(value).match(/^(\d+)(.*)$/);
   const target = match ? parseInt(match[1], 10) : 0;
   const suffix = match ? match[2] : '';
 
+  const [count, setCount] = useState(target);
+  const [isClient, setIsClient] = useState(false);
+  const elementRef = useRef(null);
+  const hasAnimated = useRef(false);
+
   useEffect(() => {
-    if (!match) {
-      setCount(value);
-      return undefined;
-    }
+    if (!match) return;
+
+    setIsClient(true);
+    setCount(0); // Reset for client-side animation
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
           
-          let start = 0;
           const duration = 1600; // Smooth 1.6s animation
           const startTime = performance.now();
 
@@ -103,13 +103,13 @@ export function Stat({ icon, value, label }) {
         observer.unobserve(currentRef);
       }
     };
-  }, [target, value, match]);
+  }, [target, match]);
 
   return (
     <div ref={elementRef}>
       {icon}
       <strong>
-        {match ? `${count}${suffix}` : value}
+        {match ? `${isClient ? count : target}${suffix}` : value}
       </strong>
       <span>{label}</span>
     </div>
