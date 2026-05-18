@@ -151,8 +151,6 @@ function metadataForRoute(route, product, sharedSlug) {
   }
 
   return {
-    title: { absolute: storeConfig.name },
-    description: 'Wholesale saree storefront with live product catalogue, saved cart, favourites, and WhatsApp ordering.',
     alternates: { canonical: siteUrl },
   };
 }
