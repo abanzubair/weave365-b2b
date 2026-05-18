@@ -137,9 +137,15 @@ function metadataForRoute(route, product, sharedSlug) {
   }
 
   if (route === 'partner') {
+    const prettyPartnerName = sharedSlug
+      ? sharedSlug
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : '';
     return {
-      title: `${sharedSlug}'s Collection | ${storeConfig.name}`,
-      description: `Browse the exclusive saree collection by our trusted partner ${sharedSlug} on Weave 365.`,
+      title: `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
+      description: `Browse the exclusive saree collection by our trusted partner ${prettyPartnerName} on Weave 365.`,
       alternates: { canonical: sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner' },
     };
   }

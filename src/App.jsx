@@ -47,6 +47,11 @@ const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((modul
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
 
 
+const slugifyPartner = (name) => {
+  if (!name) return '';
+  return name.toLowerCase().trim().replace(/\s+/g, '-');
+};
+
 export default function App({ initialData = {} }) {
 
   useCurrency();
@@ -497,7 +502,7 @@ export default function App({ initialData = {} }) {
     } else if (nextRoute === 's') {
       href = `/s/${shopName}`;
     } else if (nextRoute === 'partner') {
-      href = `/partner/${encodeURIComponent(productId)}`;
+      href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
     } else if (nextRoute === 'home') {
       href = '/';
     }
@@ -563,12 +568,12 @@ export default function App({ initialData = {} }) {
 
     if (route === 'catalog' || route === 'partner') {
       const partnerFilteredProducts = route === 'partner'
-        ? visibleProducts.filter(p => p.partner && p.partner.toLowerCase().trim() === partnerName?.toLowerCase().trim())
+        ? visibleProducts.filter(p => p.partner && slugifyPartner(p.partner) === partnerName)
         : visibleProducts;
 
       return (
         <Catalog
-          title={route === 'partner' ? `${partnerName}'s Collection` : 'Wholesale Catalogue'}
+          title={route === 'partner' ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` : 'Wholesale Catalogue'}
           products={partnerFilteredProducts}
           status={status}
           error={error}
