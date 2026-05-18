@@ -156,7 +156,7 @@
   grid-template-columns: auto 1fr auto;
   gap: clamp(16px, 2.5vw, 36px);
   align-items: center;
-  padding: 20px var(--site-padding);
+  padding: 15px var(--site-padding);
   background: transparent;
   border-bottom: 1px solid transparent;
   backdrop-filter: none;
@@ -186,7 +186,7 @@
 }
 
 .brand-logo {
-  height: 48px; /* Prominent premium logo height on desktop */
+  height: 38px; /* Prominent premium logo height on desktop */
   width: auto;
   object-fit: contain;
   transition: filter 0.3s ease;

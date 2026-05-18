@@ -104,7 +104,7 @@ export function Newsletter() {
           rel="noreferrer"
           className="whatsapp-group-btn"
         >
-          <WhatsappIcon size={18} /> Join WhatsApp Group
+          <WhatsappIcon size={18} /> Get New Arrival Updates
         </a>
         <span className="divider-text">OR</span>
         <form onSubmit={(event) => event.preventDefault()}>
