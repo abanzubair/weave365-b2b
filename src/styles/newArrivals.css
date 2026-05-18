@@ -84,7 +84,7 @@
   transform: translateY(-50%) scale(1.1);
   width: 400px;
   height: 400px;
-  opacity: 0.08;
+  opacity: 0.04; /* Delicate, thin watermark line weight */
   pointer-events: none;
   transition: transform 1.5s cubic-bezier(0.1, 0.8, 0.2, 1);
 }

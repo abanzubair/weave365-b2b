@@ -3,7 +3,7 @@ import { Sparkles, ShoppingBag, RotateCcw, ArrowRight, ShieldCheck, Check, Heart
 import { ProductCard, StateMessage, formatMoney, customerPrice, fallbackProductImage } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import weaverImage from '../../assets/artisan_at_loom_premium.png';
-import brandLogo from '../../assets/logo.png';
+import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 
 export function NewArrivalsPage({
