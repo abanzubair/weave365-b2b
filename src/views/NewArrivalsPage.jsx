@@ -127,24 +127,30 @@ export function NewArrivalsPage({
                 <span className="artisan-kicker">Heritage Craftsmanship</span>
                 <h3 className="artisan-title">The Artisan Weaving Circle</h3>
                 <p className="artisan-desc">
-                  Every product marked as a New Arrival is handloomed by master weavers in Varanasi using pure organic silk threads. A single saree represents over 80 hours of meticulous weft and warp interlocking, creating a masterpiece designed to last generations.
+                  Our New Arrivals showcase a curated collection of premium textiles from Varanasi and heritage weaving hubs. Each piece represents outstanding craftsmanship—ranging from traditional handlooms to modern power looms—crafted with carefully selected premium fibers, distinct zari specifications, and custom thread purities designed to fit the diverse needs of luxury reseller boutiques.
                 </p>
                 <div className="artisan-specs-table">
                   <div className="spec-row">
+                    <span className="spec-name">Spotlight Release</span>
+                    <span className="spec-value">{featuredProduct?.name || featuredProduct?.title || "Curated Weave"}</span>
+                  </div>
+                  <div className="spec-row">
                     <span className="spec-name">Technique</span>
-                    <span className="spec-value">Kadhwa & Cutwork Handloom</span>
+                    <span className="spec-value">
+                      {featuredProduct?.work || featuredProduct?.weave || "Product-coordinated Craft / Weave"}
+                    </span>
                   </div>
                   <div className="spec-row">
-                    <span className="spec-name">Thread Purity</span>
-                    <span className="spec-value">100% Certified Mulberry Silk</span>
+                    <span className="spec-name">Thread & Fabric</span>
+                    <span className="spec-value">
+                      {featuredProduct?.purity && featuredProduct?.fabric
+                        ? `${featuredProduct.purity} ${featuredProduct.fabric}`
+                        : (featuredProduct?.fabric || "Product-coordinated fibers")}
+                    </span>
                   </div>
                   <div className="spec-row">
-                    <span className="spec-name">Zari Specifications</span>
-                    <span className="spec-value">Tested Fine Metallic Zari Cord</span>
-                  </div>
-                  <div className="spec-row">
-                    <span className="spec-name">Origin Registry</span>
-                    <span className="spec-value">Varanasi Craft Cluster, India</span>
+                    <span className="spec-name">Loom Code</span>
+                    <span className="spec-value">{featuredProduct?.id || "N/A"}</span>
                   </div>
                 </div>
               </div>
