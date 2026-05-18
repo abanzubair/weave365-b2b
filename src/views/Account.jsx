@@ -86,7 +86,7 @@ export function Account({
           <div className="account-list">
             {cartItems.slice(0, 5).map((item) => (
               <div className="account-list-row" key={item.variantCode}>
-                <img src={item.selectedColorImage || item.product.images[0] || fallbackProductImage} alt="" />
+                <img src={item.selectedColorImage || item.product.images[0] || fallbackProductImage} alt={`${item.product.title} – ${item.selectedColorName || item.variant.code}`} loading="lazy" />
                 <span>
                   <strong>{item.product.title}</strong>
                   <small>{item.selectedColorName || item.variant.code}</small>
@@ -110,7 +110,7 @@ export function Account({
           <div className="account-list">
             {favoriteProducts.slice(0, 5).map((product) => (
               <button className="account-list-row as-button" type="button" key={product.id} onClick={() => navigate('product', product.id)}>
-                <img src={product.images[0] || fallbackProductImage} alt="" />
+                <img src={product.images[0] || fallbackProductImage} alt={product.title} loading="lazy" />
                 <span>
                   <strong>{product.title}</strong>
                   <small>{product.variants[0]?.code}</small>

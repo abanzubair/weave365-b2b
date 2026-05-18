@@ -139,6 +139,8 @@ export function parseProductCsv(text) {
       statusTags: parseStatusTags(rawStatus),
       stockInDate: parseStockInDate(row),
       title: productTitle(row, category),
+      metaTitle: row['Meta Title'] || '',
+      metaDescription: row['Meta Description'] || '',
       summary: row.Summary || wholesaleSummary(row),
       description: row.Description || wholesaleDescription(row),
       subtitle: row.Title || category,
@@ -420,6 +422,16 @@ function dedupeStatusTags(items) {
 function driveImageUrl(link) {
   const value = String(link || '').trim();
   if (!value) return '';
+
+  // Cloudinary URLs — auto-inject f_auto,q_auto optimization if missing
+  if (value.includes('res.cloudinary.com')) {
+    if (value.includes('f_auto') || value.includes('q_auto')) return value;
+    // Insert transformations after /upload/ (e.g. .../upload/f_auto,q_auto/folder/image.jpg)
+    return value.replace('/upload/', '/upload/f_auto,q_auto/');
+  }
+
+  // Supabase Storage URLs — pass through directly
+  if (value.includes('supabase.co/storage')) return value;
 
   const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
   if (!idMatch) return value;

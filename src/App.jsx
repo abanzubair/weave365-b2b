@@ -963,7 +963,7 @@ export default function App({ initialData = {} }) {
                                 }}
                               >
                                 <div className="result-img-wrapper">
-                                  <img src={image} alt={product.title} />
+                                  <img src={image} alt={product.title} loading="lazy" />
                                   {product.fabric && <span className="result-fabric-badge">{product.fabric}</span>}
                                 </div>
                                 <div className="result-card-info">

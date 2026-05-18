@@ -139,7 +139,7 @@ export function CartDrawer({
                   <span className="cart-selected-swatch">
                     <img
                       src={item.selectedColorImage || fallbackProductImage}
-                      alt=""
+                      alt={item.selectedColorName || 'Color swatch'}
                       loading="lazy"
                       decoding="async"
                     />
@@ -176,7 +176,7 @@ export function CartDrawer({
                     >
                       <img
                         src={color.image || fallbackProductImage}
-                        alt=""
+                        alt={color.name || 'Color option'}
                         loading="lazy"
                         decoding="async"
                       />

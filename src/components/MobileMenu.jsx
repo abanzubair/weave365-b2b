@@ -143,7 +143,8 @@ export function MobileMenu({
                       >
                         <img
                           src={image}
-                          alt=""
+                          alt={product.title}
+                          loading="lazy"
                           onError={(e) => { e.target.style.opacity = '0'; }}
                         />
                         <div>

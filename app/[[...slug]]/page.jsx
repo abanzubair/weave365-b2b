@@ -58,8 +58,8 @@ function metadataForRoute(route, product, sharedSlug) {
 
   if (route === 'product' && product) {
     const image = product.images?.[0];
-    const title = product.title || `${storeConfig.name} Product`;
-    const description = product.summary || product.description || `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
+    const title = product.metaTitle || product.title || `${storeConfig.name} Product`;
+    const description = product.metaDescription || product.summary || product.description || `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
 
     return {
       title,

@@ -17,11 +17,20 @@ export const metadata = {
     title: storeConfig.name,
     description: siteDescription,
     url: siteUrl,
+    images: [
+      {
+        url: '/logo.png',
+        width: 800,
+        height: 800,
+        alt: storeConfig.name,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: storeConfig.name,
     description: siteDescription,
+    images: ['/logo.png'],
   },
   icons: {
     icon: '/logo.png',
