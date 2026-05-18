@@ -63,6 +63,30 @@ export function NewArrivalsPage({
   const featuredProduct = filteredNewArrivals[0] || null;
   const remainingArrivals = filteredNewArrivals.slice(1);
 
+  const artisanCardInfo = useMemo(() => {
+    if (!featuredProduct) return null;
+    const textToTest = `${featuredProduct.work || ''} ${featuredProduct.fabric || ''} ${featuredProduct.purity || ''} ${featuredProduct.title || ''} ${featuredProduct.category || ''}`.toLowerCase();
+    const isHandloom = textToTest.includes('handloom') || textToTest.includes('katan') || textToTest.includes('pure') || textToTest.includes('mulberry') || textToTest.includes('silk mark');
+
+    if (isHandloom) {
+      return {
+        kicker: "Heritage Craftsmanship",
+        title: "The Artisan Weaving Circle",
+        seal: "Loom Spotlight",
+        desc: "Our New Arrivals showcase a curated collection of premium textiles from Varanasi and heritage weaving hubs. Each piece represents outstanding craftsmanship ranging from traditional handlooms to modern power looms crafted with carefully selected premium fibers, distinct zari specifications, and custom thread purities designed to fit the diverse needs of luxury reseller boutiques.",
+        image: assetSrc(weaverImage)
+      };
+    } else {
+      return {
+        kicker: "Modern Curation",
+        title: "Designer Style Showcase",
+        seal: "Collection Spotlight",
+        desc: "This premium release showcases contemporary designs and high-demand commercial weaves. Combining designer styling with highly durable modern fabrics, these pieces offer incredible color vibrancy, high structural integrity, and exceptional value for bulk boutique orders.",
+        image: featuredProduct.images?.[0] || fallbackProductImage
+      };
+    }
+  }, [featuredProduct]);
+
   return (
     <div className="new-arrivals-page">
       <div className="container">
@@ -113,21 +137,21 @@ export function NewArrivalsPage({
             <div className="artisan-card-layout">
               <div className="artisan-image-wrapper">
                 <img 
-                  src={assetSrc(weaverImage)} 
-                  alt="Artisan at handloom loom" 
+                  src={artisanCardInfo?.image} 
+                  alt="Spotlight product release" 
                   onError={(e) => { e.target.style.opacity = '0'; }}
                 />
                 <div className="artisan-seal-floating">
                   <span className="artisan-glow-dot"></span>
-                  Loom Spotlight
+                  {artisanCardInfo?.seal}
                 </div>
               </div>
               
               <div className="artisan-details-content">
-                <span className="artisan-kicker">Heritage Craftsmanship</span>
-                <h3 className="artisan-title">The Artisan Weaving Circle</h3>
+                <span className="artisan-kicker">{artisanCardInfo?.kicker}</span>
+                <h3 className="artisan-title">{artisanCardInfo?.title}</h3>
                 <p className="artisan-desc">
-                  Our New Arrivals showcase a curated collection of premium textiles from Varanasi and heritage weaving hubs. Each piece represents outstanding craftsmanship—ranging from traditional handlooms to modern power looms—crafted with carefully selected premium fibers, distinct zari specifications, and custom thread purities designed to fit the diverse needs of luxury reseller boutiques.
+                  {artisanCardInfo?.desc}
                 </p>
                 <div className="artisan-specs-table">
                   <div className="spec-row">
