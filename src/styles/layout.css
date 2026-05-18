@@ -186,7 +186,7 @@
 }
 
 .brand-logo {
-  height: 32px;
+  height: 48px; /* Prominent premium logo height on desktop */
   width: auto;
   object-fit: contain;
   transition: filter 0.3s ease;
