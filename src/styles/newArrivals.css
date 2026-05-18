@@ -1,0 +1,810 @@
+/* UI/UX PRO MAX Luxury New Arrivals Stylesheet */
+
+:root {
+  --color-gold-light: #f3e9dc;
+  --color-gold-med: #c69e6a;
+  --color-gold-dark: #8c6b3e;
+  --color-charcoal-lux: #12110f;
+  --color-cream-lux: #fbfaf7;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(198, 158, 106, 0.15);
+}
+
+.new-arrivals-page {
+  padding-top: 50px;
+  padding-bottom: 100px;
+  background-color: var(--color-cream-lux);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background floating light spots */
+.new-arrivals-page::before {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(198, 158, 106, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.new-arrivals-page::after {
+  content: "";
+  position: absolute;
+  bottom: 20%;
+  right: -10%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(198, 158, 106, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.new-arrivals-page .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* 🏆 Premium Hero Banner (Editorial Dark-Gold Glamour) */
+.arrivals-hero-banner {
+  position: relative;
+  background: linear-gradient(145deg, #090908 0%, #161513 100%);
+  border: 1px solid rgba(198, 158, 106, 0.25);
+  border-radius: 20px;
+  padding: 90px 80px;
+  margin-bottom: 70px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(18, 17, 15, 0.4);
+}
+
+.arrivals-hero-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 80% 20%, rgba(198, 158, 106, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(140, 107, 62, 0.08) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Geometric Rotating Gold Motif Background */
+.hero-geometric-motif {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%) scale(1.1);
+  width: 400px;
+  height: 400px;
+  opacity: 0.08;
+  pointer-events: none;
+  transition: transform 1.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.arrivals-hero-banner:hover .hero-geometric-motif {
+  transform: translateY(-50%) scale(1.2) rotate(15deg);
+}
+
+.arrivals-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 650px;
+}
+
+.arrivals-hero-kicker {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  color: var(--color-gold-med);
+  text-transform: uppercase;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  padding: 6px 16px;
+  border-radius: 30px;
+  background: rgba(198, 158, 106, 0.05);
+  box-shadow: 0 4px 15px rgba(198, 158, 106, 0.05);
+}
+
+.arrivals-hero-title {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 4rem;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #ffffff;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.arrivals-hero-title span {
+  background: linear-gradient(to right, var(--color-gold-light) 0%, var(--color-gold-med) 50%, var(--color-gold-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-style: italic;
+}
+
+.arrivals-hero-description {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 1.15rem;
+  line-height: 1.75;
+  color: #bfbdb8;
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.arrivals-hero-stats {
+  display: flex;
+  gap: 50px;
+  border-top: 1px solid rgba(198, 158, 106, 0.18);
+  padding-top: 30px;
+}
+
+.arrivals-stat-item {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.arrivals-stat-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -25px;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background-color: rgba(198, 158, 106, 0.2);
+}
+
+.arrivals-stat-value {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.arrivals-stat-label {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: #9d9a93;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* 🧶 Weft & Warp Artisan Feature Card */
+.artisan-showcase-section {
+  margin-bottom: 70px;
+}
+
+.glass-lux-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 
+    0 15px 35px rgba(18, 17, 15, 0.03),
+    0 1px 3px rgba(0, 0, 0, 0.01);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s;
+}
+
+.glass-lux-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 25px 50px rgba(198, 158, 106, 0.08),
+    0 1px 4px rgba(198, 158, 106, 0.02);
+}
+
+.artisan-card-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.artisan-image-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-premium);
+  aspect-ratio: 16/10;
+}
+
+.artisan-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s;
+}
+
+.glass-lux-card:hover .artisan-image-wrapper img {
+  transform: scale(1.05);
+}
+
+.artisan-seal-floating {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(18, 17, 15, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(198, 158, 106, 0.4);
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-gold-light);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.artisan-glow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-gold-med);
+  box-shadow: 0 0 8px var(--color-gold-med);
+  animation: beaconPulse 1.8s infinite;
+}
+
+@keyframes beaconPulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.artisan-details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.artisan-kicker {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.8rem;
+  color: var(--color-gold-med);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  margin-bottom: 12px;
+}
+
+.artisan-title {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 2.2rem;
+  color: var(--color-charcoal-lux);
+  margin: 0 0 16px 0;
+  font-weight: 500;
+}
+
+.artisan-desc {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #555;
+  margin-bottom: 24px;
+}
+
+.artisan-specs-table {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 20px;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.92rem;
+}
+
+.spec-name {
+  color: #777;
+  font-weight: 400;
+}
+
+.spec-value {
+  color: var(--color-charcoal-lux);
+  font-weight: 600;
+}
+
+/* 🛣️ "From Loom to Boutique" Visual Journey */
+.heritage-journey-section {
+  margin-bottom: 80px;
+  background: var(--color-charcoal-lux);
+  border-radius: 20px;
+  padding: 60px 50px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.heritage-journey-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 90% 90%, rgba(198, 158, 106, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.journey-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.journey-header .section-title-wrap {
+  text-align: center;
+}
+
+.journey-header h2 {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 2.2rem;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.journey-header p {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 1rem;
+  color: #9d9a93;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.journey-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  position: relative;
+}
+
+.journey-steps-grid::before {
+  content: "";
+  position: absolute;
+  top: 30px;
+  left: 10%;
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(198, 158, 106, 0.4) 15%, rgba(198, 158, 106, 0.4) 85%, transparent);
+  z-index: 1;
+}
+
+.journey-step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.journey-step-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #1e1d1b;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold-med);
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.journey-step-card:hover .journey-step-circle {
+  background: var(--color-gold-med);
+  color: #1e1d1b;
+  border-color: var(--color-gold-med);
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(198, 158, 106, 0.35);
+}
+
+.journey-step-title {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.journey-step-desc {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #9d9a93;
+}
+
+/* 🏷️ Filter Section (Minimalist & Elevated Chips) */
+.arrivals-filter-section {
+  margin-bottom: 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.arrivals-filter-title {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 1.85rem;
+  color: var(--color-charcoal-lux);
+  font-weight: 500;
+  margin: 0;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.arrivals-filter-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: var(--color-gold-med);
+}
+
+.arrivals-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.arrivals-chip {
+  background-color: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.15);
+  border-radius: 40px;
+  padding: 12px 28px;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.92rem;
+  color: var(--color-charcoal-lux);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
+}
+
+.arrivals-chip:hover {
+  border-color: var(--color-gold-med);
+  color: var(--color-gold-med);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(198, 158, 106, 0.1);
+}
+
+.arrivals-chip.active {
+  background-color: var(--color-charcoal-lux);
+  border-color: var(--color-charcoal-lux);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(18, 17, 15, 0.2);
+}
+
+/* Product Count Bar */
+.arrivals-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.92rem;
+  color: #6c6a65;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding-bottom: 20px;
+}
+
+.arrivals-count-highlight {
+  font-weight: 600;
+  color: var(--color-charcoal-lux);
+}
+
+/* 🖼️ Grid Configurations (Asymmetrical & Featured Card Layout) */
+.arrivals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 36px;
+  animation: slideUpFade 0.75s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+/* 🌟 Asymmetrical Featured Hero Product Card */
+.arrivals-grid .featured-hero-product-card {
+  grid-column: span 2;
+  background: var(--color-charcoal-lux);
+  color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-premium);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: stretch;
+  min-height: 480px;
+}
+
+.featured-hero-product-card .image-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.featured-hero-product-card .image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s;
+}
+
+.featured-hero-product-card:hover .image-wrapper img {
+  transform: scale(1.05);
+}
+
+.featured-card-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--color-gold-med);
+  color: var(--color-charcoal-lux);
+  padding: 6px 12px;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.featured-card-body {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-card-subtitle {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.8rem;
+  color: var(--color-gold-med);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.featured-card-title {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 2rem;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.25;
+  margin: 0 0 16px 0;
+}
+
+.featured-card-description {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.92rem;
+  color: #bfbdb8;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-weight: 300;
+}
+
+.featured-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-top: 1px solid rgba(198, 158, 106, 0.15);
+  padding-top: 16px;
+}
+
+.featured-detail-item {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.88rem;
+}
+
+.featured-detail-item .label {
+  color: #8e8d88;
+}
+
+.featured-detail-item .value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.featured-card-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(198, 158, 106, 0.15);
+  padding-top: 20px;
+  margin-bottom: 12px;
+}
+
+.featured-card-price {
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-card-price .price-label {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.72rem;
+  color: #8e8d88;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.featured-card-price .price-value {
+  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-size: 1.6rem;
+  color: var(--color-gold-light);
+  font-weight: 600;
+}
+
+.featured-card-price .price-locked {
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.85rem;
+  color: var(--color-gold-med);
+  font-weight: 500;
+}
+
+.featured-card-btn {
+  background: var(--color-gold-med);
+  color: var(--color-charcoal-lux);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(198, 158, 106, 0.2);
+}
+
+.featured-card-btn:hover {
+  background: #ffffff;
+  color: var(--color-charcoal-lux);
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Grid and Cards overrides */
+@media (max-width: 1300px) {
+  .arrivals-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .artisan-card-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .journey-steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+  .journey-steps-grid::before {
+    display: none;
+  }
+  .arrivals-grid .featured-hero-product-card {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 900px) {
+  .arrivals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .arrivals-grid .featured-hero-product-card {
+    grid-column: span 2;
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .featured-hero-product-card .image-wrapper {
+    height: 300px;
+  }
+  .arrivals-hero-banner {
+    padding: 60px 40px;
+    margin-bottom: 50px;
+  }
+  .arrivals-hero-title {
+    font-size: 3rem;
+  }
+  .hero-geometric-motif {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .new-arrivals-page {
+    padding-top: 25px;
+  }
+  .arrivals-grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+  .arrivals-grid .featured-hero-product-card {
+    grid-column: span 1;
+  }
+  .arrivals-hero-banner {
+    padding: 40px 24px;
+    margin-bottom: 40px;
+  }
+  .arrivals-hero-title {
+    font-size: 2.4rem;
+  }
+  .arrivals-hero-description {
+    font-size: 1rem;
+    line-height: 1.65;
+    margin-bottom: 28px;
+  }
+  .arrivals-hero-stats {
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 24px;
+  }
+  .arrivals-stat-item:not(:last-child)::after {
+    display: none;
+  }
+  .heritage-journey-section {
+    padding: 40px 24px;
+  }
+  .journey-steps-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .artisan-showcase-section {
+    margin-bottom: 40px;
+  }
+  .glass-lux-card {
+    padding: 24px;
+  }
+  .artisan-title {
+    font-size: 1.8rem;
+  }
+}

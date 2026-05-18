@@ -9,12 +9,12 @@ const buyerTypes = [
   { 
     value: 'wholesale', 
     label: 'Wholesalers', 
-    description: 'Retail Shops, Boutiques, Exporters, Online Stores.' 
+    description: 'Retail Shops, Boutiques, Exporters, Online Stores. (MOQ: 1 set)' 
   },
   { 
     value: 'reseller', 
     label: 'Reseller', 
-    description: 'Sell on WhatsApp, Instagram, Facebook.' 
+    description: 'Sell on WhatsApp, Instagram, Facebook. (MOQ: 1 Pc)' 
   },
 ];
 

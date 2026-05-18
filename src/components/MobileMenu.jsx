@@ -55,8 +55,8 @@ export function MobileMenu({
       icon: <Sparkles size={20} />, 
       label: 'New Arrivals', 
       action: () => { 
-        setCategory('New Arrivals'); 
-        navigate('catalog'); 
+        navigate('new-arrivals'); 
+        onClose();
       } 
     },
     { 

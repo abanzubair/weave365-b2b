@@ -45,6 +45,7 @@ const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').the
 const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
 
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
+const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then((module) => ({ default: module.NewArrivalsPage })));
 
 
 const slugifyPartner = (name) => {
@@ -689,6 +690,22 @@ export default function App({ initialData = {} }) {
       return <ResellerGrowthPage openAuth={() => setAuthOpen(true)} />;
     }
 
+    if (route === 'new-arrivals') {
+      return (
+        <NewArrivalsPage
+          products={pricedProducts}
+          status={status}
+          error={error}
+          navigate={navigate}
+          addToCart={addToCart}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeySet}
+          priceAccess={priceAccess}
+          openAuth={() => setAuthOpen(true)}
+        />
+      );
+    }
+
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 
     if (route === 'Trusted-Partner-Registration') return <TrustedPartnerRegistrationPage />;
@@ -738,10 +755,10 @@ export default function App({ initialData = {} }) {
           </a>
           <nav className="main-nav">
             <button 
-              className={route === 'home' && typeof window !== 'undefined' && window.location.hash === '#brand-collab' ? 'active' : ''} 
-              onClick={() => scrollToSection('brand-collab')}
+              className={route === 'new-arrivals' ? 'active' : ''} 
+              onClick={() => navigate('new-arrivals')}
             >
-              Brands
+              New Arrivals
             </button>
             <button 
               className={route === 'catalog' ? 'active' : ''} 

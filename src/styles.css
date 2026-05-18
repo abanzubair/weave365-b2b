@@ -13,6 +13,7 @@
 @import './styles/vendorPartnership.css';
 @import './styles/vendorPartnershipPage.css';
 @import './styles/variationQuantityDrawer.css';
+@import './styles/newArrivals.css';
 
 .search-lock {
   overflow: hidden !important;
