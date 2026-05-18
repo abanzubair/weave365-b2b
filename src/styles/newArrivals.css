@@ -79,12 +79,12 @@
 /* Geometric Rotating Gold Motif Background */
 .hero-geometric-motif {
   position: absolute;
-  right: 40px;
+  right: 120px; /* Shifted to the left for better visual balance */
   top: 50%;
   transform: translateY(-50%) scale(1.1);
   width: 400px;
   height: 400px;
-  opacity: 0.04; /* Delicate, thin watermark line weight */
+  opacity: 0.05; /* Balanced delicate thin line art weight */
   pointer-events: none;
   transition: transform 1.5s cubic-bezier(0.1, 0.8, 0.2, 1);
 }
