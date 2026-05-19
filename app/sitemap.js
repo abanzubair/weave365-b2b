@@ -31,6 +31,18 @@ export default async function sitemap() {
       priority: 0.6,
     },
     {
+      url: `${siteUrl}/sourcing-partners`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/white-label-brands`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/vendor-partnership`,
       lastModified: new Date(),
       changeFrequency: 'monthly',

@@ -148,6 +148,22 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
+  if (route === 'sourcing-partners') {
+    return buildMeta(
+      'Sourcing Partners for Banarasi Sarees & Suits | Weave 365',
+      'Become a Banarasi saree and suit sourcing partner with Weave 365. Coordinate weavers, MOQ, wholesale pricing, catalog support, quality checks, stock updates, and dispatch.',
+      '/sourcing-partners'
+    );
+  }
+
+  if (route === 'white-label-brands') {
+    return buildMeta(
+      'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
+      'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
+      '/white-label-brands'
+    );
+  }
+
   if (route === 'Trusted-Partner-Registration') {
     const imageUrl = `${siteUrl}/artisan_at_loom_premium.png`;
     const titleText = 'Trusted Partner Registration | Weave 365';

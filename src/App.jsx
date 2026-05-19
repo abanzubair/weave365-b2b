@@ -48,6 +48,7 @@ const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((modul
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then((module) => ({ default: module.NewArrivalsPage })));
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
+const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then((module) => ({ default: module.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ default: module.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
 
@@ -94,10 +95,10 @@ export default function App({ initialData = {} }) {
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const categoriesRef = useRef(null);
-  const sourcingRef = useRef(null);
+  const partnerNavRef = useRef(null);
   const searchRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
-  const [sourcingPos, setSourcingPos] = useState({ top: 0, left: 0 });
+  const [partnerNavPos, setPartnerNavPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
@@ -819,6 +820,10 @@ export default function App({ initialData = {} }) {
       );
     }
 
+    if (route === 'sourcing-partners' || route === 'white-label-brands') {
+      return <PartnerProgramPage type={route} navigate={navigate} />;
+    }
+
     if (seoLandingPages[route]) {
       return (
         <SeoLandingPage
@@ -898,39 +903,34 @@ export default function App({ initialData = {} }) {
             >
               Collections
             </button>
-            <div className="nav-item-dropdown" ref={sourcingRef}>
+            <div className="nav-item-dropdown" ref={partnerNavRef}>
               <button
-                className={dropdownOpen === 'sourcing' ? 'active' : ''}
+                className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label-brands' ? 'active' : ''}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (dropdownOpen !== 'sourcing' && sourcingRef.current) {
-                    const rect = sourcingRef.current.getBoundingClientRect();
-                    setSourcingPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  if (dropdownOpen !== 'partner' && partnerNavRef.current) {
+                    const rect = partnerNavRef.current.getBoundingClientRect();
+                    setPartnerNavPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
                   }
-                  setDropdownOpen(dropdownOpen === 'sourcing' ? null : 'sourcing');
+                  setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
                 }}
               >
-                B2B Sourcing <ChevronDown size={14} className={dropdownOpen === 'sourcing' ? 'rotate' : ''} />
+                Partner <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
               </button>
-              {dropdownOpen === 'sourcing' && createPortal(
+              {dropdownOpen === 'partner' && createPortal(
                 <div 
                   className="dropdown-menu"
                   style={{
                     position: 'fixed',
-                    top: sourcingPos.top,
-                    left: sourcingPos.left,
+                    top: partnerNavPos.top,
+                    left: partnerNavPos.left,
                     transform: 'translateX(-50%) translateY(12px)',
                     zIndex: 10000
                   }}
                 >
                   {[
-                    { name: 'Banarasi Sarees', slug: 'wholesale-banarasi-sarees' },
-                    { name: 'Katan Silk Sarees', slug: 'katan-silk-sarees' },
-                    { name: 'Organza Sarees', slug: 'organza-banarasi-sarees' },
-                    { name: 'Bridal Sarees', slug: 'bridal-banarasi-sarees' },
-                    { name: 'Meenakari Sarees', slug: 'meenakari-sarees' },
-                    { name: 'Soft Silk Sarees', slug: 'soft-silk-sarees' },
-                    { name: 'Wholesale Supplier', slug: 'wholesale-saree-supplier-india' },
+                    { name: 'Sourcing Partners', slug: 'sourcing-partners' },
+                    { name: 'White Label Brands', slug: 'white-label-brands' },
                   ].map((item) => (
                     <button
                       key={item.slug}

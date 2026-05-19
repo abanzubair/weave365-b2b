@@ -49,7 +49,7 @@ export function MobileMenu({
   const [accountOpen, setAccountOpen] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [sourcingOpen, setSourcingOpen] = useState(false);
+  const [partnerOpen, setPartnerOpen] = useState(false);
 
 
   const navItems = [
@@ -211,26 +211,21 @@ export function MobileMenu({
             </div>
           </div>
 
-          <div className={`mobile-account-dropdown ${sourcingOpen ? 'is-open' : ''}`}>
+          <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
             <button 
               className="mobile-menu-item mobile-menu-account-trigger" 
-              onClick={() => setSourcingOpen(!sourcingOpen)}
+              onClick={() => setPartnerOpen(!partnerOpen)}
             >
               <span className="mobile-menu-icon"><Layers size={20} /></span>
-              <span className="mobile-menu-label">B2B Sourcing</span>
-              <ChevronDown size={18} className={`mobile-menu-chevron ${sourcingOpen ? 'rotated' : ''}`} />
+              <span className="mobile-menu-label">Partner</span>
+              <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
             </button>
             
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 {[
-                  { name: 'Banarasi Sarees', slug: 'wholesale-banarasi-sarees' },
-                  { name: 'Katan Silk Sarees', slug: 'katan-silk-sarees' },
-                  { name: 'Organza Sarees', slug: 'organza-banarasi-sarees' },
-                  { name: 'Bridal Sarees', slug: 'bridal-banarasi-sarees' },
-                  { name: 'Meenakari Sarees', slug: 'meenakari-sarees' },
-                  { name: 'Soft Silk Sarees', slug: 'soft-silk-sarees' },
-                  { name: 'Wholesale Supplier', slug: 'wholesale-saree-supplier-india' },
+                  { name: 'Sourcing Partners', slug: 'sourcing-partners' },
+                  { name: 'White Label Brands', slug: 'white-label-brands' },
                 ].map((item) => (
                   <button 
                     key={item.slug} 
