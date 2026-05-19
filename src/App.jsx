@@ -298,6 +298,35 @@ export default function App({ initialData = {} }) {
     };
   }, [searchActive]);
 
+  const categories = useMemo(() => {
+    if (configOptions.categories.length > 0) {
+      return ['All', ...configOptions.categories];
+    }
+    return ['All', ...homeCategoryNames];
+  }, [configOptions.categories]);
+
+  const priceRanges = useMemo(() => {
+    if (configOptions.priceRanges.length > 0) {
+      return ['All', ...configOptions.priceRanges];
+    }
+    const ranges = new Set();
+    pricedProducts.forEach(p => {
+      if (p.priceRange) ranges.add(p.priceRange);
+    });
+    return ['All', ...Array.from(ranges).sort()];
+  }, [pricedProducts, configOptions.priceRanges]);
+
+  const fabrics = useMemo(() => {
+    if (configOptions.fabrics.length > 0) {
+      return ['All', ...configOptions.fabrics];
+    }
+    const set = new Set();
+    pricedProducts.forEach(p => {
+      if (p.fabric) set.add(p.fabric.trim());
+    });
+    return ['All', ...Array.from(set).sort()];
+  }, [pricedProducts, configOptions.fabrics]);
+
   // Sync URL query params to filter states (e.g. ?category=dupatta)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -387,35 +416,6 @@ export default function App({ initialData = {} }) {
     setCart(readLocal(`cart_${user.id}`));
     setFavorites(readLocal(`favorites_${user.id}`));
   }, [user]);
-
-  const categories = useMemo(() => {
-    if (configOptions.categories.length > 0) {
-      return ['All', ...configOptions.categories];
-    }
-    return ['All', ...homeCategoryNames];
-  }, [configOptions.categories]);
-
-  const priceRanges = useMemo(() => {
-    if (configOptions.priceRanges.length > 0) {
-      return ['All', ...configOptions.priceRanges];
-    }
-    const ranges = new Set();
-    pricedProducts.forEach(p => {
-      if (p.priceRange) ranges.add(p.priceRange);
-    });
-    return ['All', ...Array.from(ranges).sort()];
-  }, [pricedProducts, configOptions.priceRanges]);
-
-  const fabrics = useMemo(() => {
-    if (configOptions.fabrics.length > 0) {
-      return ['All', ...configOptions.fabrics];
-    }
-    const set = new Set();
-    pricedProducts.forEach(p => {
-      if (p.fabric) set.add(p.fabric.trim());
-    });
-    return ['All', ...Array.from(set).sort()];
-  }, [pricedProducts, configOptions.fabrics]);
 
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
