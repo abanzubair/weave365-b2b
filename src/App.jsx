@@ -993,12 +993,6 @@ export default function App({ initialData = {} }) {
             >
               About Us
             </button>
-            <button 
-              className={route === 'blog' ? 'active' : ''} 
-              onClick={() => navigate('blog')}
-            >
-              B2B Blog
-            </button>
           </nav>
 
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>

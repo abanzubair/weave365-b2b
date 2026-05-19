@@ -51,7 +51,6 @@ export function MobileMenu({
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [partnerOpen, setPartnerOpen] = useState(false);
 
-
   const navItems = [
     { 
       icon: <Sparkles size={20} />, 
@@ -70,14 +69,6 @@ export function MobileMenu({
       icon: <PackageCheck size={20} />, 
       label: 'Bulk Order', 
       action: () => navigate('bulk-inquiry') 
-    },
-    { 
-      icon: <BookOpen size={20} />, 
-      label: 'B2B Blog', 
-      action: () => {
-        navigate('blog');
-        onClose();
-      }
     },
     ...(isAdmin ? [
       { 

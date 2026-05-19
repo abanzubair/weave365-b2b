@@ -1,5 +1,6 @@
-import { fetchProducts } from '../src/productData.js';
+import { fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
 import { seoLandingPages } from '../src/data/seoLandingPages.js';
+import { blogPosts } from '../src/data/blogPosts.js';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
 
@@ -60,6 +61,12 @@ export default async function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.5,
     },
+    {
+      url: `${siteUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
   ];
 
   // Dynamic landing pages from SEO repository
@@ -102,5 +109,51 @@ export default async function sitemap() {
     console.error('Sitemap: Failed to fetch products:', error.message);
   }
 
-  return [...staticPages, ...seoLandingSitemaps, ...productPages, ...partnerPages];
+  // Dynamic blog post pages
+  let blogPostPages = [];
+  try {
+    const dbPosts = await fetchSupabaseBlogPosts();
+    const slugMap = new Map();
+
+    // 1. Add hardcoded blog posts
+    blogPosts.forEach((post) => {
+      let parsedDate = new Date(post.date);
+      if (isNaN(parsedDate.getTime())) {
+        parsedDate = new Date();
+      }
+      slugMap.set(post.slug, {
+        slug: post.slug,
+        date: parsedDate,
+      });
+    });
+
+    // 2. Add Supabase blog posts
+    dbPosts.forEach((post) => {
+      let parsedDate = post.createdAt ? new Date(post.createdAt) : (post.date ? new Date(post.date) : new Date());
+      if (isNaN(parsedDate.getTime())) {
+        parsedDate = new Date();
+      }
+      slugMap.set(post.slug, {
+        slug: post.slug,
+        date: parsedDate,
+      });
+    });
+
+    blogPostPages = Array.from(slugMap.values()).map((post) => ({
+      url: `${siteUrl}/blog/${encodeURIComponent(post.slug)}`,
+      lastModified: post.date,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.error('Sitemap: Failed to fetch blog posts for sitemap:', error.message);
+  }
+
+  return [
+    ...staticPages,
+    ...seoLandingSitemaps,
+    ...productPages,
+    ...partnerPages,
+    ...blogPostPages,
+  ];
 }

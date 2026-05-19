@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Award, BadgeIndianRupee, HeartHandshake, PackagePlus, Tag, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 
 const featureStripItems = [
@@ -49,9 +49,14 @@ export function BenefitStrip() {
 
 export function Stat({ icon, value, label }) {
   // Parse target number and suffix (e.g. "1000+" -> 1000 and "+", "95%" -> 95 and "%")
-  const match = String(value).match(/^(\d+)(.*)$/);
-  const target = match ? parseInt(match[1], 10) : 0;
-  const suffix = match ? match[2] : '';
+  const { target, suffix, hasMatch } = useMemo(() => {
+    const match = String(value).match(/^(\d+)(.*)$/);
+    return {
+      target: match ? parseInt(match[1], 10) : 0,
+      suffix: match ? match[2] : '',
+      hasMatch: !!match,
+    };
+  }, [value]);
 
   const [count, setCount] = useState(target);
   const [isClient, setIsClient] = useState(false);
@@ -59,7 +64,7 @@ export function Stat({ icon, value, label }) {
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!match) return;
+    if (!hasMatch) return;
 
     setIsClient(true);
     setCount(0); // Reset for client-side animation
@@ -103,13 +108,13 @@ export function Stat({ icon, value, label }) {
         observer.unobserve(currentRef);
       }
     };
-  }, [target, match]);
+  }, [target, hasMatch]);
 
   return (
     <div ref={elementRef}>
       {icon}
       <strong>
-        {match ? `${isClient ? count : target}${suffix}` : value}
+        {hasMatch ? `${isClient ? count : target}${suffix}` : value}
       </strong>
       <span>{label}</span>
     </div>
