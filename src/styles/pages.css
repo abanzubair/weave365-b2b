@@ -5911,17 +5911,95 @@ button {
 
 @media (max-width: 820px) {
   .product-exploration-section {
-    margin-top: 48px;
-    padding: 48px 24px;
-    border-radius: 12px;
-  }
-  
-  .exploration-grid {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    margin-top: 40px !important;
+    padding: 32px 20px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(180deg, rgba(255, 254, 252, 0.95) 0%, rgba(252, 248, 242, 0.98) 100%) !important;
+    border: 1px solid rgba(183, 134, 70, 0.12) !important;
+    box-shadow: 0 12px 36px rgba(128, 93, 49, 0.05) !important;
   }
   
   .exploration-header {
-    margin-bottom: 32px;
+    text-align: left !important;
+    margin-bottom: 28px !important;
+  }
+
+  .exploration-header .subtitle {
+    font-size: 10px !important;
+    letter-spacing: 0.12em !important;
+    margin-bottom: 8px !important;
+  }
+
+  .exploration-header h2 {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--brown-900) !important;
+  }
+
+  .exploration-header p {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: var(--muted) !important;
+    margin: 6px 0 0 0 !important;
+  }
+
+  .exploration-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+
+  .exploration-column {
+    gap: 16px !important;
+  }
+
+  .exploration-column h3 {
+    font-size: 12px !important;
+    letter-spacing: 0.08em !important;
+    color: var(--brown-900) !important;
+    border-bottom: 1px solid rgba(183, 134, 70, 0.15) !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .exploration-tags-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .exploration-pill {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    background: var(--white) !important;
+    border: 1px solid rgba(183, 134, 70, 0.14) !important;
+    box-shadow: 0 2px 6px rgba(128, 93, 49, 0.02) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .exploration-pill:active {
+    transform: scale(0.97) !important;
+    background: rgba(183, 134, 70, 0.05) !important;
+    border-color: var(--gold-dark) !important;
+  }
+
+  .exploration-pill .pill-arrow {
+    color: var(--gold) !important;
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .exploration-pill.current-active {
+    background: rgba(183, 134, 70, 0.08) !important;
+    border-color: var(--gold) !important;
+    color: var(--gold-dark) !important;
   }
 }
