@@ -691,7 +691,7 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className="global-sourcing-card">
+            <div className="global-sourcing-card desktop-sourcing-only">
               <div className="card-header">
                 <Globe className="globe-icon-gold" size={20} />
                 <h3>Global B2B Sourcing</h3>
@@ -909,6 +909,21 @@ export function ProductDetail({
             <p className="buyer-note">
               <LockKeyhole size={16} /> Only registered buyers can download and share
             </p>
+
+            <div className="global-sourcing-card mobile-sourcing-only">
+              <div className="card-header">
+                <Globe className="globe-icon-gold" size={20} />
+                <h3>Global B2B Sourcing</h3>
+              </div>
+              <p>
+                Source premium bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a certified wholesale supplier providing insured international shipping to the USA, UK, UAE, Canada, and Australia. Fast WhatsApp ordering is available for global B2B orders.
+              </p>
+              <div className="card-footer-badges">
+                <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
+                <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
+                <span>✓ {isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`}</span>
+              </div>
+            </div>
           </aside>
         </div>
 

@@ -5519,6 +5519,10 @@ button {
   box-shadow: 0 8px 24px rgba(36, 25, 18, 0.03);
 }
 
+.mobile-sourcing-only {
+  display: none !important;
+}
+
 .global-sourcing-card .card-header {
   display: flex;
   align-items: center;

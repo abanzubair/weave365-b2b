@@ -1665,6 +1665,14 @@
     margin-top: 24px !important;
   }
 
+  .desktop-sourcing-only {
+    display: none !important;
+  }
+
+  .mobile-sourcing-only {
+    display: block !important;
+  }
+
   .global-sourcing-card p {
     font-size: 12.5px !important;
     line-height: 1.55 !important;
