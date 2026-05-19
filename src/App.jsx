@@ -298,6 +298,77 @@ export default function App({ initialData = {} }) {
     };
   }, [searchActive]);
 
+  // Sync URL query params to filter states (e.g. ?category=dupatta)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (route !== 'catalog') return;
+
+    const params = new URLSearchParams(window.location.search);
+
+    const catParam = params.get('category');
+    if (catParam) {
+      const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+      if (matched && matched !== category) {
+        setCategory(matched);
+      } else if (!matched && catParam.toLowerCase() === 'all' && category !== 'All') {
+        setCategory('All');
+      }
+    } else if (category !== 'All' && !params.has('category')) {
+      setCategory('All');
+    }
+
+    const fabricParam = params.get('fabric');
+    if (fabricParam) {
+      const matched = fabrics.find(f => f.toLowerCase() === fabricParam.toLowerCase());
+      if (matched && matched !== fabric) {
+        setFabric(matched);
+      } else if (!matched && fabricParam.toLowerCase() === 'all' && fabric !== 'All') {
+        setFabric('All');
+      }
+    } else if (fabric !== 'All' && !params.has('fabric')) {
+      setFabric('All');
+    }
+  }, [pathname, route, categories, fabrics]);
+
+  // Sync filter states back to URL query params
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (route !== 'catalog') return;
+
+    const params = new URLSearchParams(window.location.search);
+    let changed = false;
+
+    if (category && category !== 'All') {
+      if (params.get('category') !== category.toLowerCase()) {
+        params.set('category', category.toLowerCase());
+        changed = true;
+      }
+    } else {
+      if (params.has('category')) {
+        params.delete('category');
+        changed = true;
+      }
+    }
+
+    if (fabric && fabric !== 'All') {
+      if (params.get('fabric') !== fabric.toLowerCase()) {
+        params.set('fabric', fabric.toLowerCase());
+        changed = true;
+      }
+    } else {
+      if (params.has('fabric')) {
+        params.delete('fabric');
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      const newSearch = params.toString();
+      const newPath = `/catalog${newSearch ? '?' + newSearch : ''}`;
+      window.history.replaceState(null, '', newPath);
+    }
+  }, [category, fabric, route]);
+
   useEffect(() => {
     if (!user) {
       setCart([]);
