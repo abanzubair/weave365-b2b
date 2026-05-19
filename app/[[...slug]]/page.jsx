@@ -48,12 +48,39 @@ async function getInitialData() {
 }
 
 function metadataForRoute(route, product, sharedSlug) {
-  if (route === 'catalog') {
+  const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
+    const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
+    const defaultImage = `${siteUrl}/logo.png`; // Fallback image if needed
+    const finalImageUrl = imageUrl || defaultImage;
+
     return {
-      title: 'Wholesale Catalogue',
-      description: 'Browse the live Weave 365 wholesale Banarasi saree catalogue.',
-      alternates: { canonical: '/catalog' },
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        title,
+        description,
+        type: extraOg.type || 'website',
+        url,
+        siteName: storeConfig.name,
+        images: [{ url: finalImageUrl, alt: title, width: 1200, height: 630 }],
+        ...extraOg,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [finalImageUrl],
+      },
     };
+  };
+
+  if (route === 'catalog') {
+    return buildMeta(
+      'Wholesale Catalogue | Weave 365',
+      'Browse the live Weave 365 wholesale Banarasi saree catalogue. Premium quality sarees for retailers and boutiques.',
+      '/catalog'
+    );
   }
 
   if (route === 'product' && product) {
@@ -61,79 +88,54 @@ function metadataForRoute(route, product, sharedSlug) {
     const title = product.metaTitle || product.title || `${storeConfig.name} Product`;
     const description = product.metaDescription || product.summary || product.description || `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
 
-    return {
-      title,
-      description,
-      alternates: { canonical: `/product/${encodeURIComponent(product.id)}` },
-      openGraph: {
-        title,
-        description,
-        type: 'website',
-        url: `/product/${encodeURIComponent(product.id)}`,
-        images: image ? [{ url: image, alt: title }] : undefined,
-      },
-      twitter: {
-        card: image ? 'summary_large_image' : 'summary',
-        title,
-        description,
-        images: image ? [image] : undefined,
-      },
-    };
+    return buildMeta(title, description, `/product/${encodeURIComponent(product.id)}`, image);
   }
 
   if (route === 'reseller-growth') {
-    return {
-      title: 'Reseller Program',
-      description: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues.',
-      alternates: { canonical: '/reseller-growth' },
-    };
+    return buildMeta(
+      'Reseller Program | Weave 365',
+      'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
+      '/reseller-growth'
+    );
+  }
+
+  if (route === 'bulk-inquiry') {
+    return buildMeta(
+      'Banarasi Saree Wholesale Bulk Inquiry & Sourcing | Weave 365',
+      'Submit a bulk inquiry for premium Banarasi sarees and suits. We curate custom catalogs for boutiques, retailers, and exporters with flexible MOQ.',
+      '/bulk-inquiry'
+    );
+  }
+
+  if (route === 'new-arrivals') {
+    return buildMeta(
+      'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
+      'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
+      '/new-arrivals'
+    );
   }
 
   if (route === 'Trusted-Partner-Registration') {
     const imageUrl = `${siteUrl}/artisan_at_loom_premium.png`;
-    const titleText = 'Trusted Partner Registration';
-    const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team.';
-    return {
-      title: titleText,
-      description: descText,
-      alternates: { canonical: '/Trusted-Partner-Registration' },
-      openGraph: {
-        title: 'Trusted Partner Registration | Weave 365',
-        description: descText,
-        type: 'website',
-        url: `${siteUrl}/Trusted-Partner-Registration`,
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: titleText,
-          }
-        ],
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: 'Trusted Partner Registration | Weave 365',
-        description: descText,
-        images: [imageUrl],
-      },
-    };
+    const titleText = 'Trusted Partner Registration | Weave 365';
+    const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.';
+    return buildMeta(titleText, descText, '/Trusted-Partner-Registration', imageUrl);
   }
 
   if (route === 'vendor-partnership') {
-    return {
-      title: 'Vendor Partnership',
-      description: 'List your products with Weave 365 and reach active wholesale saree buyers.',
-      alternates: { canonical: '/vendor-partnership' },
-    };
+    return buildMeta(
+      'Vendor Partnership | Weave 365',
+      'List your products with Weave 365 and reach active wholesale saree buyers across India.',
+      '/vendor-partnership'
+    );
   }
 
   if (route === 's') {
-    return {
-      title: 'Shared Catalogue',
-      description: 'A shared Weave 365 reseller catalogue.',
-      alternates: { canonical: sharedSlug ? `/s/${encodeURIComponent(sharedSlug)}` : '/s' },
-    };
+    return buildMeta(
+      'Shared Catalogue | Weave 365',
+      'A shared Weave 365 reseller catalogue featuring premium wholesale Banarasi sarees.',
+      sharedSlug ? `/s/${encodeURIComponent(sharedSlug)}` : '/s'
+    );
   }
 
   if (route === 'partner') {
@@ -143,11 +145,11 @@ function metadataForRoute(route, product, sharedSlug) {
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ')
       : '';
-    return {
-      title: `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
-      description: `Browse the exclusive saree collection by our trusted partner ${prettyPartnerName} on Weave 365.`,
-      alternates: { canonical: sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner' },
-    };
+    return buildMeta(
+      `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
+      `Browse the exclusive saree collection by our trusted partner ${prettyPartnerName} on Weave 365.`,
+      sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner'
+    );
   }
 
   return {

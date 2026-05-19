@@ -22,21 +22,21 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               <div className="benefit-item">
                 <span className="benefit-num">01</span>
                 <div>
-                  <h4>Curated Collections</h4>
+                  <h3>Curated Collections</h3>
                   <p>Handpicked sarees that resonate with global fashion trends.</p>
                 </div>
               </div>
               <div className="benefit-item">
                 <span className="benefit-num">02</span>
                 <div>
-                  <h4>Seamless Logistics</h4>
+                  <h3>Seamless Logistics</h3>
                   <p>End-to-end support for shipping and quality assurance.</p>
                 </div>
               </div>
               <div className="benefit-item">
                 <span className="benefit-num">03</span>
                 <div>
-                  <h4>Growth Toolkit</h4>
+                  <h3>Growth Toolkit</h3>
                   <p>Marketing assets and priority access to new arrivals.</p>
                 </div>
               </div>

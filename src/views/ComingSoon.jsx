@@ -41,29 +41,29 @@ export function ComingSoon() {
           <div className="cs-features-grid">
             <div className="cs-feature-item">
               <Lock strokeWidth={1} size={28} />
-              <h4>WHOLESALE ONLY</h4>
+              <h3>WHOLESALE ONLY</h3>
               <p>For registered<br/>businesses</p>
             </div>
             <div className="cs-feature-item">
               <ScrollText strokeWidth={1} size={28} />
-              <h4>PREMIUM QUALITY</h4>
+              <h3>PREMIUM QUALITY</h3>
               <p>Handpicked sarees.<br/>Trusted quality.</p>
             </div>
             <div className="cs-feature-item">
               <Award strokeWidth={1} size={28} />
-              <h4>WIDE RANGE</h4>
+              <h3>WIDE RANGE</h3>
               <p>Latest designs.<br/>Endless varieties.</p>
             </div>
             <div className="cs-feature-item">
               <Handshake strokeWidth={1} size={28} />
-              <h4>BUILT FOR RETAILERS</h4>
+              <h3>BUILT FOR RETAILERS</h3>
               <p>Smart deals for<br/>smart businesses.</p>
             </div>
           </div>
           
           <div className="cs-stay-tuned-row">
             <div className="cs-line-long"></div>
-            <h3>STAY TUNED</h3>
+            <h2>STAY TUNED</h2>
             <div className="cs-line-long"></div>
           </div>
           <div className="cs-footer-text">

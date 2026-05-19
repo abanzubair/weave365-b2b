@@ -87,6 +87,7 @@ export function Catalog({
 
   return (
     <section className="section catalog-page">
+      <h1 className="sr-only">{title || "Banarasi Sarees and Suits Wholesale Catalogue"}</h1>
       {openDropdown && (
         <div 
           className={`filter-backdrop-overlay ${isClosing ? 'closing' : ''}`} 

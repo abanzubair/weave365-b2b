@@ -130,7 +130,7 @@ export function Account({
             <span><UserRound size={18} /> My Reseller Business Center</span>
           </div>
           <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
-            <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h3>
+            <h2 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h2>
             <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
             <button className="primary-button" onClick={() => navigate('reseller-dashboard')}>
               Open Business Center

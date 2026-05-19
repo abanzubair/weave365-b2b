@@ -195,28 +195,28 @@ export function SharedCatalog({ products, slug, navigate }) {
         <div className="sc-trust-item">
           <div className="sc-trust-icon"><Truck size={20} /></div>
           <div className="sc-trust-text">
-            <h4>Fast Delivery</h4>
+            <h3>Fast Delivery</h3>
             <p>Pan India Shipping</p>
           </div>
         </div>
         <div className="sc-trust-item">
           <div className="sc-trust-icon"><ShieldCheck size={20} /></div>
           <div className="sc-trust-text">
-            <h4>Quality Assured</h4>
+            <h3>Quality Assured</h3>
             <p>Hand-picked Designs</p>
           </div>
         </div>
         <div className="sc-trust-item">
           <div className="sc-trust-icon"><Palette size={20} /></div>
           <div className="sc-trust-text">
-            <h4>Exclusive Art</h4>
+            <h3>Exclusive Art</h3>
             <p>Direct from Weavers</p>
           </div>
         </div>
         <div className="sc-trust-item">
           <div className="sc-trust-icon"><Users size={20} /></div>
           <div className="sc-trust-text">
-            <h4>Happy Customers</h4>
+            <h3>Happy Customers</h3>
             <p>5000+ Reviews</p>
           </div>
         </div>

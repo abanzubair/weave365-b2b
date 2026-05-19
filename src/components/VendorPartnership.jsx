@@ -21,10 +21,10 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
           {/* Content side — right */}
           <div className="vendor-main-content">
             <span className="vendor-kicker">Supply Partnership</span>
-            <h2 id="vendor-editorial-heading" className="vendor-title">
+            <h1 id="vendor-editorial-heading" className="vendor-title">
               Your <span>Craft</span>,<br />
               Our <span>Platform</span>.
-            </h2>
+            </h1>
 
             <p className="vendor-lead">
               We connect India's finest artisans and manufacturers with a thriving wholesale buyer network. Zero listing fees. Zero hassle. Maximum reach.
@@ -34,21 +34,21 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
               <div className="vendor-benefit-item">
                 <span className="vendor-benefit-num">01</span>
                 <div>
-                  <h4>Instant Market Access</h4>
+                  <h2>Instant Market Access</h2>
                   <p>Reach 500+ active wholesale buyers from day one.</p>
                 </div>
               </div>
               <div className="vendor-benefit-item">
                 <span className="vendor-benefit-num">02</span>
                 <div>
-                  <h4>Zero Cost Listing</h4>
+                  <h2>Zero Cost Listing</h2>
                   <p>No upfront fees. We earn only when you earn.</p>
                 </div>
               </div>
               <div className="vendor-benefit-item">
                 <span className="vendor-benefit-num">03</span>
                 <div>
-                  <h4>Hassle-Free Listing</h4>
+                  <h2>Hassle-Free Listing</h2>
                   <p>Send your product photos — we list, market, and sell for you.</p>
                 </div>
               </div>
@@ -72,7 +72,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
         {/* Process flow */}
         <div className="vendor-process-flow">
           <div className="vendor-process-header">
-            <h3>The Path to Partnership</h3>
+            <h2>The Path to Partnership</h2>
           </div>
           <div className="vendor-process-items">
             <div className="vendor-process-item">

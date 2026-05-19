@@ -71,10 +71,9 @@ export function BulkInquiry({ navigate }) {
       <div className="bulk-inquiry-hero">
         <div>
           <span className="pill">Wholesale Bulk Inquiry</span>
-          <h1>Tell us what you need. We will curate the right catalog for you.</h1>
+          <h1>Banarasi Saree Wholesale Bulk Inquiry & Sourcing</h1>
           <p>
-            Share your quantity, budget, fabric preference, and delivery timeline. Our team will reply with suitable
-            options on WhatsApp.
+            Tell us what you need, and we will curate the right catalog for you. Share your quantity, budget, fabric preference, and delivery timeline. Our team will reply with suitable options on WhatsApp.
           </p>
           <div className="bulk-hero-actions">
             <a className="primary-button" href={`https://wa.me/${storeConfig.whatsapp}`} target="_blank" rel="noreferrer">

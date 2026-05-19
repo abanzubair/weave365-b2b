@@ -166,6 +166,7 @@ export function NewArrivalsPage({
 
   return (
     <section className="section catalog-page">
+      <h1 className="sr-only">Latest Banarasi Sarees and Suits - New Arrivals</h1>
       {openDropdown && (
         <div 
           className={`filter-backdrop-overlay ${isClosing ? 'closing' : ''}`} 

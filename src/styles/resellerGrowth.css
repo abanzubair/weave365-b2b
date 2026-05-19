@@ -74,7 +74,7 @@
   padding-top: 0px;
 }
 
-.benefit-item h4 {
+.benefit-item h3 {
   font-family: var(--font-heading);
   font-size: 22px;
   margin: 0 0 8px;
@@ -418,7 +418,7 @@
     padding-top: 2px;
   }
   
-  .benefit-item h4 {
+  .benefit-item h3 {
     font-size: 19px;
   }
   
@@ -605,7 +605,7 @@
     font-size: 20px;
   }
   
-  .benefit-item h4 {
+  .benefit-item h3 {
     font-size: 17px;
   }
   

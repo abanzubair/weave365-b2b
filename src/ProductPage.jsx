@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Download,
   Gift,
   Heart,
@@ -78,6 +79,8 @@ export function ProductDetail({
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
   const mainImageRef = useRef(null);
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
@@ -167,6 +170,93 @@ export function ProductDetail({
     ],
     [variant, displayPrice, totalColors, catalogWeight, product.fabric, product.description],
   );
+
+  const productSchema = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.title,
+    "image": product.images || [],
+    "description": product.description || `Elegant handwoven Banarasi saree styled in ${product.fabric || 'pure silk'}. Sourced directly from Varanasi.`,
+    "sku": product.id || variant.code,
+    "mpn": variant.code,
+    "brand": {
+      "@type": "Brand",
+      "name": "Weave 365"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "INR",
+      "lowPrice": displayPrice || 2500,
+      "highPrice": (displayPrice ? displayPrice * 1.5 : 8500),
+      "offerCount": totalColors || 1,
+      "availability": "https://schema.org/InStock",
+      "url": `https://www.weave365.in/product/${product.id}`
+    }
+  }), [product, variant, displayPrice, totalColors]);
+
+  const breadcrumbSchema = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.weave365.in/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Catalogs",
+        "item": "https://www.weave365.in/catalog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": product.title,
+        "item": `https://www.weave365.in/product/${product.id}`
+      }
+    ]
+  }), [product]);
+
+  const faqSchema = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Minimum Order Quantity (MOQ) for wholesale?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are these Banarasi sarees authentically sourced?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, all Weave 365 sarees and suits are crafted directly in Varanasi by expert weavers. We use premium pure katan silk, organza, and georgette with authentic gold and silver zari work, preserving the heritage weaving tradition."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you support resellers, boutiques, and dropshipping?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely! We support boutiques, resellers, and global export partners. Registered resellers get access to our white-labeled marketing toolkit, live catalog links, and dedicated support for direct boutique dispatch."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is international shipping available for wholesale orders?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, we ship worldwide to over 50 countries, including the USA, UK, Canada, UAE, and Australia. We handle complete B2B customs documentation and provide competitive air and sea freight rates."
+        }
+      }
+    ]
+  }), []);
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
     [galleryHeight],
@@ -693,6 +783,53 @@ export function ProductDetail({
           </div>
         </div>
 
+        <section className="product-faq-section">
+          <div className="faq-header">
+            <span className="subtitle">B2B Sourcing Support</span>
+            <h2>Frequently Asked Questions</h2>
+          </div>
+          <div className="faq-accordion">
+            {[
+              {
+                question: "What is the Minimum Order Quantity (MOQ) for wholesale?",
+                answer: "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
+              },
+              {
+                question: "Are these Banarasi sarees authentically sourced?",
+                answer: "Yes, all Weave 365 sarees and suits are crafted directly in Varanasi by expert weavers. We use premium pure katan silk, organza, and georgette with authentic gold and silver zari work, preserving the heritage weaving tradition."
+              },
+              {
+                question: "Do you support resellers, boutiques, and dropshipping?",
+                answer: "Absolutely! We support boutiques, resellers, and global export partners. Registered resellers get access to our white-labeled marketing toolkit, live catalog links, and dedicated support for direct boutique dispatch."
+              },
+              {
+                question: "Is international shipping available for wholesale orders?",
+                answer: "Yes, we ship worldwide to over 50 countries, including the USA, UK, Canada, UAE, and Australia. We handle complete B2B customs documentation and provide competitive air and sea freight rates."
+              }
+            ].map((item, index) => (
+              <div 
+                key={index} 
+                className={`faq-item ${openFaqIndex === index ? 'active' : ''}`}
+              >
+                <button 
+                  type="button" 
+                  className="faq-trigger" 
+                  onClick={() => toggleFaq(index)}
+                  aria-expanded={openFaqIndex === index}
+                >
+                  <h3 className="faq-question">{item.question}</h3>
+                  <span className="faq-icon-wrapper">
+                    <ChevronDown size={18} />
+                  </span>
+                </button>
+                <div className="faq-content">
+                  <p className="faq-answer">{item.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="you-may-like home-product-section">
           <div className="section-heading-row">
             <SectionTitle title="You May Also Like" align="left" />
@@ -784,6 +921,10 @@ export function ProductDetail({
           onClose={() => setShowShareModal(false)}
         />
       )}
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
     </>
   );
 }

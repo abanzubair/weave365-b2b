@@ -556,7 +556,7 @@
   vertical-align: middle;
 }
 
-.vendor-onboarding-aside h1 {
+.vendor-onboarding-aside h2 {
   font-family: var(--font-heading);
   font-size: clamp(24px, 2.6vw, 32px);
   line-height: 1.1;

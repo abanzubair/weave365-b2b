@@ -24,6 +24,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
 
   return (
     <section className="section catalog-page">
+      <h1 className="sr-only">Your Saved Banarasi Sarees and Suits</h1>
       <div className="favorites-header">
         <SectionTitle title="Favourite Items" align="left" />
         {products.length > 0 && (

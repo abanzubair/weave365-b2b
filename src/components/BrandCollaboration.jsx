@@ -54,7 +54,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
               <div className="brand-pillar-item">
                 <span className="pillar-num">01</span>
                 <div className="pillar-info">
-                  <h4>Curated Brand Space</h4>
+                  <h3>Curated Brand Space</h3>
                   <p>List and market your premium collections under your own brand name. Retain 100% pricing control, brand identity, and customer relationships.</p>
                 </div>
               </div>
@@ -62,7 +62,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
               <div className="brand-pillar-item">
                 <span className="pillar-num">02</span>
                 <div className="pillar-info">
-                  <h4>Co-Branded Heritage Seal</h4>
+                  <h3>Co-Branded Heritage Seal</h3>
                   <p>Gain instant buyer trust. Every product listed features an official "In Collaboration with Weave 365" tag, certifying authentic handloom quality.</p>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
               <div className="brand-pillar-item">
                 <span className="pillar-num">03</span>
                 <div className="pillar-info">
-                  <h4>Immediate B2B Distribution</h4>
+                  <h3>Immediate B2B Distribution</h3>
                   <p>Place your label in front of our verified network of 500+ active retail chains, premium boutiques, and global buyers from day one.</p>
                 </div>
               </div>

@@ -371,7 +371,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth }) {
             <RefreshCw size={20} className={syncStatus === 'loading' ? 'spin' : ''} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '15px' }}>Data Synchronization</h3>
+            <h2 style={{ margin: 0, fontSize: '15px' }}>Data Synchronization</h2>
             <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--muted)' }}>
               Sheets are automatically synced every 15 minutes, but you can force an update here.
             </p>

@@ -5,9 +5,9 @@ import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
 
 export const metadata = {
-  title: "Weave 365 – Wholesale Banarasi Sarees | B2B Saree Supplier Online",
+  title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
   description:
-    "Buy premium Banarasi silk sarees at wholesale prices. Weave 365 is India's trusted B2B saree platform for resellers, boutiques & retailers. Browse live catalogue & order via WhatsApp.",
+    "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
   keywords: [
     "wholesale banarasi sarees",
     "B2B saree supplier",
@@ -22,9 +22,9 @@ export const metadata = {
     canonical: siteUrl,
   },
   openGraph: {
-    title: "Weave 365 – Wholesale Banarasi Sarees | B2B Saree Supplier",
+    title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
     description:
-      "India's trusted B2B Banarasi saree platform. Premium quality, wholesale prices, bulk order support. Browse our live catalogue today.",
+      "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
     url: siteUrl,
     siteName: "Weave 365",
     images: [
@@ -32,7 +32,7 @@ export const metadata = {
         url: "/logo.png",
         width: 800,
         height: 800,
-        alt: "Weave 365 – Wholesale Banarasi Sarees",
+        alt: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
       },
     ],
     type: "website",
@@ -40,9 +40,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Weave 365 – Wholesale Banarasi Sarees",
+    title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
     description:
-      "India's trusted B2B Banarasi saree platform. Premium quality, wholesale prices, bulk order support.",
+      "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
     images: ["/logo.png"],
   },
   robots: {

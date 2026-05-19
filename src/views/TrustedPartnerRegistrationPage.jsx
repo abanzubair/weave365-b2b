@@ -204,7 +204,7 @@ export function TrustedPartnerRegistrationPage() {
           <aside className="vendor-onboarding-aside" aria-label="Trusted partner approval process">
             <div className="vendor-aside-header">
               <ShieldCheck className="vendor-aside-icon" size={32} />
-              <h1>Verification & Onboarding</h1>
+              <h2>Verification & Onboarding</h2>
             </div>
             <p>
               Apply to list your products on Weave 365. Every supplier is verified before products

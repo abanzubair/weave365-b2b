@@ -164,7 +164,7 @@
   color: var(--gold-pale);
 }
 
-.cs-feature-item h4 {
+.cs-feature-item h3 {
   font-size: 16px;
   letter-spacing: 1px;
   margin: 0 0 10px 0;
@@ -194,7 +194,7 @@
   opacity: 0.3;
 }
 
-.cs-stay-tuned-row h3 {
+.cs-stay-tuned-row h2 {
   font-family: 'Cormorant Garamond', var(--font-heading), serif;
   font-size: 16px;
   letter-spacing: 6px;

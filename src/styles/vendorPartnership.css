@@ -172,7 +172,7 @@
   line-height: 1;
 }
 
-.vendor-benefit-item h4 {
+.vendor-benefit-item h2 {
   font-family: var(--font-heading);
   font-size: 22px;
   margin: 0 0 8px;
@@ -288,7 +288,7 @@
   gap: 40px;
 }
 
-.vendor-process-header h3 {
+.vendor-process-header h2 {
   font-family: var(--font-heading);
   font-size: 32px;
   color: var(--ink);

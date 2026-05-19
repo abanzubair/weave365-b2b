@@ -238,7 +238,7 @@
   padding-top: 2px;
 }
 
-.brand-pillar-item h4 {
+.brand-pillar-item h3 {
   font-family: var(--font-heading);
   font-size: 20px;
   margin: 0 0 6px;
@@ -482,7 +482,7 @@
     color: var(--olive);
   }
   
-  .brand-pillar-item h4 {
+  .brand-pillar-item h3 {
     font-size: 19px;
   }
   
@@ -556,7 +556,7 @@
     font-size: 20px;
   }
   
-  .brand-pillar-item h4 {
+  .brand-pillar-item h3 {
     font-size: 17px;
   }
   
