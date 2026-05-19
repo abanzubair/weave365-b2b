@@ -46,6 +46,9 @@ const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((modul
 
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then((module) => ({ default: module.NewArrivalsPage })));
+const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
+
+import { seoLandingPages } from './data/seoLandingPages.js';
 
 
 const slugifyPartner = (name) => {
@@ -87,8 +90,10 @@ export default function App({ initialData = {} }) {
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const categoriesRef = useRef(null);
+  const sourcingRef = useRef(null);
   const searchRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
+  const [sourcingPos, setSourcingPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
@@ -777,6 +782,23 @@ export default function App({ initialData = {} }) {
       );
     }
 
+    if (seoLandingPages[route]) {
+      return (
+        <SeoLandingPage
+          slug={route}
+          products={pricedProducts}
+          status={status}
+          error={error}
+          navigate={navigate}
+          addToCart={addToCart}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeySet}
+          priceAccess={priceAccess}
+          openAuth={() => setAuthOpen(true)}
+        />
+      );
+    }
+
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 
     if (route === 'Trusted-Partner-Registration') return <TrustedPartnerRegistrationPage />;
@@ -832,6 +854,54 @@ export default function App({ initialData = {} }) {
             >
               Collections
             </button>
+            <div className="nav-item-dropdown" ref={sourcingRef}>
+              <button
+                className={dropdownOpen === 'sourcing' ? 'active' : ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (dropdownOpen !== 'sourcing' && sourcingRef.current) {
+                    const rect = sourcingRef.current.getBoundingClientRect();
+                    setSourcingPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  }
+                  setDropdownOpen(dropdownOpen === 'sourcing' ? null : 'sourcing');
+                }}
+              >
+                B2B Sourcing <ChevronDown size={14} className={dropdownOpen === 'sourcing' ? 'rotate' : ''} />
+              </button>
+              {dropdownOpen === 'sourcing' && createPortal(
+                <div 
+                  className="dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: sourcingPos.top,
+                    left: sourcingPos.left,
+                    transform: 'translateX(-50%) translateY(12px)',
+                    zIndex: 10000
+                  }}
+                >
+                  {[
+                    { name: 'Banarasi Sarees', slug: 'wholesale-banarasi-sarees' },
+                    { name: 'Katan Silk Sarees', slug: 'katan-silk-sarees' },
+                    { name: 'Organza Sarees', slug: 'organza-banarasi-sarees' },
+                    { name: 'Bridal Sarees', slug: 'bridal-banarasi-sarees' },
+                    { name: 'Meenakari Sarees', slug: 'meenakari-sarees' },
+                    { name: 'Soft Silk Sarees', slug: 'soft-silk-sarees' },
+                    { name: 'Wholesale Supplier', slug: 'wholesale-saree-supplier-india' },
+                  ].map((item) => (
+                    <button
+                      key={item.slug}
+                      onClick={() => {
+                        navigate(item.slug);
+                        setDropdownOpen(null);
+                      }}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )}
+            </div>
             <div className="nav-item-dropdown" ref={categoriesRef}>
               <button
                 className={dropdownOpen === 'categories' ? 'active' : ''}

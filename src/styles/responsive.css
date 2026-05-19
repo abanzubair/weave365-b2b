@@ -1479,6 +1479,13 @@
     margin-bottom: 16px !important;
   }
 
+  .product-short-desc-premium {
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+    padding: 12px 16px !important;
+    margin-bottom: 20px !important;
+  }
+
   .price-moq-row {
     flex-direction: column;
     align-items: flex-start !important;
@@ -1653,4 +1660,54 @@
     padding-bottom: 0 !important;
   }
 
+  .global-sourcing-card {
+    padding: 16px !important;
+    margin-top: 24px !important;
+  }
+
+  .global-sourcing-card p {
+    font-size: 12.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  .global-sourcing-card .card-footer-badges {
+    gap: 8px 12px !important;
+  }
+
+}
+
+/* --- Responsive Layout for Long Description Accordions Grid --- */
+@media (max-width: 991px) {
+  .long-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 36px !important;
+  }
+
+  .editorial-sticky-card {
+    position: relative !important;
+    top: 0 !important;
+    padding: 28px 24px !important;
+  }
+
+  .product-long-details-section {
+    margin: 44px 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .accordion-header {
+    padding: 16px 4px !important;
+  }
+
+  .header-label-wrap {
+    gap: 12px !important;
+  }
+
+  .accordion-row-title {
+    font-size: 12px !important;
+  }
+
+  .accordion-content-inner {
+    padding: 0 8px 20px 30px !important;
+  }
 }

@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Download,
   Gift,
+  Globe,
   Heart,
   Layers,
   LockKeyhole,
@@ -80,6 +81,7 @@ export function ProductDetail({
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [activeAccordion, setActiveAccordion] = useState(null);
   const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
   const mainImageRef = useRef(null);
 
@@ -104,6 +106,73 @@ export function ProductDetail({
   );
   const displayPrice = useMemo(() => customerPrice(variant.prices, priceAccess), [priceAccess, variant.prices]);
   const canViewPrice = displayPrice != null && displayPrice > 0;
+
+  const pcSetVal = useMemo(() => String(product.raw?.['Pc / Set'] || '').trim().toLowerCase(), [product.raw]);
+  const isSoldAsPc = useMemo(() => pcSetVal === 'pc', [pcSetVal]);
+  const isSoldAsBoth = useMemo(() => pcSetVal === 'pc, set' || pcSetVal === 'set, pc', [pcSetVal]);
+  const isSoldAsSet = useMemo(() => pcSetVal === 'set', [pcSetVal]);
+
+  const moqUnit = isSoldAsPc ? 'Piece' : 'Set';
+  const moqUnitShort = isSoldAsPc ? 'pc' : 'Set';
+  const moqUnitPlural = isSoldAsPc ? 'Pieces' : 'Sets';
+  const moqMultiplier = isSoldAsPc ? 1 : totalColors;
+
+  const longDescriptionSections = useMemo(() => {
+    const isSaree = String(product.category || '').toLowerCase() === 'saree';
+    
+    return [
+      {
+        id: 'fabric',
+        label: 'Fabric Details',
+        content: `Crafted from premium ${product.fabric || 'silk'} (${product.purity || 'Faux'} purity grade) chosen for its luxurious texture, durability, and classic weight.`
+      },
+      {
+        id: 'weave',
+        label: 'Weaving Technique',
+        content: `Meticulously woven using the traditional ${product.weave || 'weaving'} process in Varanasi. This time-honored technique ensures optimal structural integrity and design definition.`
+      },
+      {
+        id: 'zari',
+        label: 'Zari Details',
+        content: `Adorned with intricate ${product.work || 'zari'} motifs in a beautiful ${product.pattern || 'designer'} pattern, offering a classic metallic luster and premium feel.`
+      },
+      {
+        id: 'blouse',
+        label: 'Blouse Information',
+        content: isSaree 
+          ? 'Includes a matching uncut blouse piece (total saree length 6.3m including blouse).'
+          : 'Includes matching salwar/bottom and dupatta cut piece fabric set matching the design motif.'
+      },
+      {
+        id: 'occasion',
+        label: 'Occasion Suitability',
+        content: `Ideally suited for ${product.occasion || 'weddings, festivals,'} and formal ceremonies, aligning with traditional and contemporary ${product.style || 'timeless'} design aesthetics.`
+      },
+      {
+        id: 'wholesale',
+        label: 'Wholesale & B2B Options',
+        content: `Weave 365 offers complete boutique support, certified artisan direct pricing, global customs documentation, and seamless bulk ordering services.`
+      },
+      {
+        id: 'moq',
+        label: 'Minimum Order Quantity',
+        content: isSoldAsBoth 
+          ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.' 
+          : `This product has a low minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`
+      },
+      {
+        id: 'care',
+        label: 'Care Instructions',
+        content: `Dry clean only is highly recommended to preserve the metallic luster of the zari motifs, structural density of the fabric, and original color vibrance.`
+      },
+      {
+        id: 'shipping',
+        label: 'Shipping & Delivery',
+        content: 'Expedited worldwide air cargo shipping. Direct customs clearances and documentation are handled by our export division, providing fast delivery timelines to our global buyers in the USA, UK, UAE, Canada, and Europe.'
+      }
+    ];
+  }, [product, totalColors, isSoldAsBoth, moqUnit]);
+
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
 
@@ -170,6 +239,112 @@ export function ProductDetail({
     ],
     [variant, displayPrice, totalColors, catalogWeight, product.fabric, product.description],
   );
+
+  const explorationData = useMemo(() => {
+    const currentFabric = (product.fabric || '').trim();
+    const currentCategory = (product.category || 'Saree').trim();
+
+    // 1. Gather all unique fabrics & categories from all loaded products
+    const allFabrics = new Set();
+    const allCategories = new Set();
+    
+    products.forEach(p => {
+      if (p.fabric) allFabrics.add(p.fabric.trim());
+      if (p.category) allCategories.add(p.category.trim());
+    });
+
+    // 2. Generate related collections
+    const collectionsList = [];
+    
+    // Add current category collections
+    if (currentFabric) {
+      collectionsList.push({
+        label: `${currentFabric} ${currentCategory}s`,
+        url: `catalog?category=${encodeURIComponent(currentCategory)}&fabric=${encodeURIComponent(currentFabric)}`
+      });
+    }
+
+    // Add some premium standard SEO collections
+    if (currentCategory === 'Saree') {
+      collectionsList.push(
+        { label: 'Bridal Banarasi Sarees', url: 'catalog?category=Saree&fabric=Katan Silk' },
+        { label: 'Organza Banarasi Sarees', url: 'catalog?category=Saree&fabric=Organza' },
+        { label: 'Meenakari Silk Sarees', url: 'catalog?category=Saree&fabric=Katan Silk' },
+        { label: 'Soft Silk Sarees', url: 'catalog?category=Saree&fabric=Soft Silk' },
+        { label: 'Katan Silk Sarees', url: 'catalog?category=Saree&fabric=Katan Silk' }
+      );
+    } else if (currentCategory === 'Suit') {
+      collectionsList.push(
+        { label: 'Banarasi Suits', url: 'catalog?category=Suit' },
+        { label: 'Katan Silk Suits', url: 'catalog?category=Suit&fabric=Katan Silk' },
+        { label: 'Organza Banarasi Suits', url: 'catalog?category=Suit&fabric=Organza' },
+        { label: 'Georgette Suits', url: 'catalog?category=Suit&fabric=Georgette' }
+      );
+    } else {
+      collectionsList.push(
+        { label: 'Banarasi Dupattas', url: 'catalog?category=Dupatta' },
+        { label: 'Katan Silk Collection', url: 'catalog?fabric=Katan Silk' },
+        { label: 'Organza Collections', url: 'catalog?fabric=Organza' }
+      );
+    }
+
+    // Filter out duplicate labels
+    const uniqueCollections = [];
+    const seenLabels = new Set();
+    
+    collectionsList.forEach(item => {
+      if (!seenLabels.has(item.label.toLowerCase())) {
+        seenLabels.add(item.label.toLowerCase());
+        uniqueCollections.push(item);
+      }
+    });
+
+    // 3. Similar fabrics
+    const fabricList = [];
+    const mainFabrics = ['Katan Silk', 'Organza', 'Georgette', 'Chiniya Silk', 'Tissue Silk', 'Soft Silk'];
+    const seenFabrics = new Set();
+    
+    // Add current fabric first
+    if (currentFabric) {
+      fabricList.push({
+        label: `${currentFabric}`,
+        url: `catalog?fabric=${encodeURIComponent(currentFabric)}`,
+        isCurrent: true
+      });
+      seenFabrics.add(currentFabric.toLowerCase());
+    }
+
+    // Add other premium fabrics
+    mainFabrics.forEach(fab => {
+      if (fab !== currentFabric && allFabrics.has(fab) && !seenFabrics.has(fab.toLowerCase())) {
+        fabricList.push({
+          label: fab,
+          url: `catalog?fabric=${encodeURIComponent(fab)}`,
+          isCurrent: false
+        });
+        seenFabrics.add(fab.toLowerCase());
+      }
+    });
+
+    // Fallback to whatever fabrics exist in data if none of mainFabrics match
+    if (fabricList.length < 3) {
+      Array.from(allFabrics).forEach(fab => {
+        if (fab !== currentFabric && !seenFabrics.has(fab.toLowerCase()) && fabricList.length < 5) {
+          fabricList.push({
+            label: fab,
+            url: `catalog?fabric=${encodeURIComponent(fab)}`,
+            isCurrent: false
+          });
+          seenFabrics.add(fab.toLowerCase());
+        }
+      });
+    }
+
+    return {
+      collections: uniqueCollections.slice(0, 5),
+      fabrics: fabricList.slice(0, 5)
+    };
+  }, [product, products]);
 
   const productSchema = useMemo(() => ({
     "@context": "https://schema.org",
@@ -283,7 +458,7 @@ export function ProductDetail({
             product_id: product.id,
             product_title: product.title,
             variant_code: variant.code,
-            quantity: totalColors,
+            quantity: moqMultiplier,
             priceGroup: priceAccess?.priceGroup || 'pending',
           }],
         });
@@ -293,7 +468,7 @@ export function ProductDetail({
     }
 
     setEnquiryState('sent');
-    const whatsappUrl = buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess);
+    const whatsappUrl = buildSingleProductWhatsappUrl(product, variant, moqMultiplier, pincode, codStatus, priceAccess);
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
@@ -515,6 +690,21 @@ export function ProductDetail({
                 ))}
               </div>
             </div>
+
+            <div className="global-sourcing-card">
+              <div className="card-header">
+                <Globe className="globe-icon-gold" size={20} />
+                <h3>Global B2B Sourcing</h3>
+              </div>
+              <p>
+                Source premium bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a certified wholesale supplier providing insured international shipping to the USA, UK, UAE, Canada, and Australia. Fast WhatsApp ordering is available for global B2B orders.
+              </p>
+              <div className="card-footer-badges">
+                <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
+                <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
+                <span>✓ {isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`}</span>
+              </div>
+            </div>
           </div>
 
           <aside className="product-info-panel">
@@ -536,6 +726,12 @@ export function ProductDetail({
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
+
+            {(product.metaDescription || product.summary) && (
+              <p className="product-short-desc-premium">
+                {product.metaDescription || product.summary}
+              </p>
+            )}
 
             {product.partner && (
               <div 
@@ -566,22 +762,26 @@ export function ProductDetail({
                   </button>
                 )}
               </div>
-              {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && <div className="moq-badge">MOQ 1 Set</div>}
+              {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && (
+                <div className="moq-badge">
+                  {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                </div>
+              )}
             </div>
 
             {canViewPrice && priceAccess?.priceGroup !== 'reseller' && (
               <div className="tiered-pricing-card">
                 <div className="tier-column">
-                  <div className="tier-label">1 - 4 Set</div>
-                  <div className="tier-price">{formatMoney(displayPrice * totalColors)} <span className="unit">/Set</span></div>
+                  <div className="tier-label">1 - 4 {isSoldAsBoth ? 'Set' : moqUnit}</div>
+                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier)} <span className="unit">/{moqUnitShort}</span></div>
                 </div>
                 <div className="tier-column">
-                  <div className="tier-label">5 - 9 Set</div>
-                  <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.98)} <span className="unit">/Set</span></div>
+                  <div className="tier-label">5 - 9 {isSoldAsBoth ? 'Set' : moqUnit}</div>
+                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier * 0.98)} <span className="unit">/{moqUnitShort}</span></div>
                 </div>
                 <div className="tier-column">
-                  <div className="tier-label">10+ Set</div>
-                  <div className="tier-price">{formatMoney(displayPrice * totalColors * 0.95)} <span className="unit">/Set</span></div>
+                  <div className="tier-label">10+ {isSoldAsBoth ? 'Set' : moqUnit}</div>
+                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier * 0.95)} <span className="unit">/{moqUnitShort}</span></div>
                 </div>
               </div>
             )}
@@ -715,6 +915,62 @@ export function ProductDetail({
 
         <ProductTrustStrip />
 
+        {/* Dynamic Long Description Accordions Grid */}
+        <section className="product-long-details-section">
+          <div className="long-details-grid">
+            <div className="editorial-col">
+              <div className="editorial-sticky-card">
+                <span className="editorial-tag">Heritage & Sourcing</span>
+                <h2 className="editorial-title">Direct from Varanasi Looms</h2>
+                <p className="editorial-copy">
+                  {product.description || `Enhance your boutique collections with our curated Banarasi products. Direct loom-to-store transparency ensures fair prices for artisans and pristine material quality for global buyers.`}
+                </p>
+                <div className="editorial-divider" />
+                <div className="editorial-support">
+                  <strong>Need custom weave?</strong>
+                  <p>Our sourcing team can assist with fabric selection, dye matching, and export documentation.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="accordions-col">
+              <h3 className="accordions-section-title">Product Specifications</h3>
+              {longDescriptionSections.map((sec, index) => {
+                const isOpen = activeAccordion === sec.id;
+                return (
+                  <div key={sec.id} className={`accordion-row ${isOpen ? 'open' : ''}`}>
+                    <button
+                      className="accordion-header"
+                      onClick={() => setActiveAccordion(isOpen ? null : sec.id)}
+                      aria-expanded={isOpen}
+                    >
+                      <span className="header-label-wrap">
+                        <span className="accordion-number">0{index + 1}</span>
+                        {sec.id === 'fabric' && <Layers size={16} className="accordion-icon" />}
+                        {sec.id === 'weave' && <Sparkles size={16} className="accordion-icon" />}
+                        {sec.id === 'zari' && <Award size={16} className="accordion-icon" />}
+                        {sec.id === 'blouse' && <Gift size={16} className="accordion-icon" />}
+                        {sec.id === 'occasion' && <Star size={16} className="accordion-icon" />}
+                        {sec.id === 'wholesale' && <ShoppingBag size={16} className="accordion-icon" />}
+                        {sec.id === 'moq' && <PackageCheck size={16} className="accordion-icon" />}
+                        {sec.id === 'care' && <CheckCircle2 size={16} className="accordion-icon" />}
+                        {sec.id === 'shipping' && <Globe size={16} className="accordion-icon" />}
+                        <span className="accordion-row-title">{sec.label}</span>
+                      </span>
+                      <ChevronDown size={18} className="chevron-icon" />
+                    </button>
+                    <div className="accordion-content">
+                      <div className="accordion-content-inner">
+                        <p>{sec.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
         <div className="product-highlight-showcase">
           <div className="showcase-image-col">
             <img
@@ -782,6 +1038,50 @@ export function ProductDetail({
             </div>
           </div>
         </div>
+
+        {/* Related Collections & Fabrics Exploration Network */}
+        <section className="product-exploration-section">
+          <div className="exploration-header">
+            <span className="subtitle">Sourcing Network</span>
+            <h2>Explore Related Collections & Fabrics</h2>
+            <p>Direct loom-to-store sourcing pathways. Explore sister catalogs and similar weave structures.</p>
+          </div>
+          <div className="exploration-grid">
+            <div className="exploration-column">
+              <h3>Related Collections</h3>
+              <div className="exploration-tags-row">
+                {explorationData.collections.map((col) => (
+                  <button
+                    key={col.label}
+                    type="button"
+                    className="exploration-pill"
+                    onClick={() => navigate(col.url)}
+                  >
+                    <span>{col.label}</span>
+                    <ChevronRight size={14} className="pill-arrow" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="exploration-column">
+              <h3>Similar Fabrics</h3>
+              <div className="exploration-tags-row">
+                {explorationData.fabrics.map((fab) => (
+                  <button
+                    key={fab.label}
+                    type="button"
+                    className={`exploration-pill ${fab.isCurrent ? 'current-active' : ''}`}
+                    onClick={() => navigate(fab.url)}
+                  >
+                    <span>{fab.label}</span>
+                    <ChevronRight size={14} className="pill-arrow" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section className="product-faq-section">
           <div className="faq-header">

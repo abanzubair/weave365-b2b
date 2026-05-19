@@ -14,6 +14,7 @@
 @import './styles/vendorPartnershipPage.css';
 @import './styles/variationQuantityDrawer.css';
 @import './styles/newArrivals.css';
+@import './styles/seoLandingPages.css';
 
 .search-lock {
   overflow: hidden !important;

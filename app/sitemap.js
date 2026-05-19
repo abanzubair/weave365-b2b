@@ -1,4 +1,5 @@
 import { fetchProducts } from '../src/productData.js';
+import { seoLandingPages } from '../src/data/seoLandingPages.js';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
 
@@ -49,6 +50,14 @@ export default async function sitemap() {
     },
   ];
 
+  // Dynamic landing pages from SEO repository
+  const seoLandingSitemaps = Object.keys(seoLandingPages).map((slug) => ({
+    url: `${siteUrl}/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.85,
+  }));
+
   // Dynamic pages from product data
   let productPages = [];
   let partnerPages = [];
@@ -81,5 +90,5 @@ export default async function sitemap() {
     console.error('Sitemap: Failed to fetch products:', error.message);
   }
 
-  return [...staticPages, ...productPages, ...partnerPages];
+  return [...staticPages, ...seoLandingSitemaps, ...productPages, ...partnerPages];
 }

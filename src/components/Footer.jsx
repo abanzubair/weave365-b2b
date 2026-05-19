@@ -72,6 +72,16 @@ export function Footer({ navigate }) {
         <a href="#terms">Terms & Conditions</a>
       </div>
       <div>
+        <h3>B2B Sourcing</h3>
+        <a href="/wholesale-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('wholesale-banarasi-sarees'); }}>Banarasi Sarees</a>
+        <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }}>Katan Silk Sarees</a>
+        <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }}>Organza Sarees</a>
+        <a href="/bridal-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('bridal-banarasi-sarees'); }}>Bridal Sarees</a>
+        <a href="/meenakari-sarees" onClick={(e) => { e.preventDefault(); navigate('meenakari-sarees'); }}>Meenakari Sarees</a>
+        <a href="/soft-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('soft-silk-sarees'); }}>Soft Silk Sarees</a>
+        <a href="/wholesale-saree-supplier-india" onClick={(e) => { e.preventDefault(); navigate('wholesale-saree-supplier-india'); }}>Wholesale Supplier</a>
+      </div>
+      <div>
         <h3>Social Links</h3>
         <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><LinkedInIcon size={16} /> LinkedIn</a>
         <a href="https://www.instagram.com/weaves365.wholesale" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>

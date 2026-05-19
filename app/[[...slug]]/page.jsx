@@ -1,6 +1,7 @@
 import App from '../../src/App.jsx';
 import { storeConfig } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts } from '../../src/productData.js';
+import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -74,6 +75,16 @@ function metadataForRoute(route, product, sharedSlug) {
       },
     };
   };
+
+  // Intercept new custom premium SEO landing pages
+  if (seoLandingPages[route]) {
+    const pageData = seoLandingPages[route];
+    return buildMeta(
+      pageData.metaTitle,
+      pageData.metaDescription,
+      `/${pageData.slug}`
+    );
+  }
 
   if (route === 'catalog') {
     return buildMeta(
