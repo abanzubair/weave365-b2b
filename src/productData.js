@@ -598,3 +598,71 @@ export async function syncSheetsToSupabase() {
     isSyncing = false;
   }
 }
+
+export async function fetchSupabaseBlogPosts() {
+  if (!isSupabaseConfigured) return [];
+  try {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.warn('Unable to select from blog_posts:', error.message);
+      return [];
+    }
+    return (data || []).map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      metaTitle: row.meta_title,
+      metaDescription: row.meta_description,
+      category: row.category,
+      tag: row.tag,
+      date: row.date,
+      readTime: row.read_time,
+      author: row.author,
+      image: row.image,
+      intro: row.intro,
+      content: row.content,
+      faqs: row.faqs || [],
+      createdAt: row.created_at,
+    }));
+  } catch (err) {
+    console.error('Error fetching Supabase blog posts:', err);
+    return [];
+  }
+}
+
+export async function saveSupabaseBlogPost(post) {
+  if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
+  
+  const row = {
+    slug: post.slug,
+    title: post.title,
+    meta_title: post.metaTitle,
+    meta_description: post.metaDescription,
+    category: post.category,
+    tag: post.tag,
+    date: post.date,
+    read_time: post.readTime,
+    author: post.author,
+    image: post.image,
+    intro: post.intro,
+    content: post.content,
+    faqs: post.faqs || [],
+    created_at: post.createdAt || new Date().toISOString(),
+  };
+
+  if (post.id) {
+    row.id = post.id;
+  }
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .upsert(row)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}

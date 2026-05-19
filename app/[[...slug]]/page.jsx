@@ -2,6 +2,7 @@ import App from '../../src/App.jsx';
 import { storeConfig } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
+import { blogPosts } from '../../src/data/blogPosts.js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,6 +20,7 @@ function routeFromSlug(slug = []) {
     route,
     productId: route === 'product' ? decodeURIComponent(value) : '',
     sharedSlug: (route === 's' || route === 'partner') ? decodeURIComponent(value) : '',
+    blogPostSlug: route === 'blog' ? decodeURIComponent(value) : '',
   };
 }
 
@@ -48,7 +50,7 @@ async function getInitialData() {
   });
 }
 
-function metadataForRoute(route, product, sharedSlug) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.png`; // Fallback image if needed
@@ -75,6 +77,26 @@ function metadataForRoute(route, product, sharedSlug) {
       },
     };
   };
+
+  // Dynamic Blog Routing Metadata
+  if (route === 'blog') {
+    if (blogPostSlug) {
+      const post = blogPosts.find((p) => p.slug === blogPostSlug);
+      if (post) {
+        return buildMeta(
+          post.metaTitle,
+          post.metaDescription,
+          `/blog/${encodeURIComponent(blogPostSlug)}`,
+          post.image
+        );
+      }
+    }
+    return buildMeta(
+      'Wholesale Banarasi Saree Sourcing & Reselling Blog | Weave 365',
+      'Expert business guides, boutique scaling strategies, saree reselling tips, and fabric guides for wholesale Banarasi sarees and suits direct from Varanasi weavers.',
+      '/blog'
+    );
+  }
 
   // Intercept new custom premium SEO landing pages
   if (seoLandingPages[route]) {
@@ -170,7 +192,7 @@ function metadataForRoute(route, product, sharedSlug) {
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
-  const { route, productId, sharedSlug } = routeFromSlug(resolvedParams?.slug);
+  const { route, productId, sharedSlug, blogPostSlug } = routeFromSlug(resolvedParams?.slug);
   let product = null;
 
   if (route === 'product' && productId) {
@@ -178,7 +200,7 @@ export async function generateMetadata({ params }) {
     product = data.products.find((item) => item.id === productId);
   }
 
-  return metadataForRoute(route, product, sharedSlug);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug);
 }
 
 export default async function CatchAllPage() {

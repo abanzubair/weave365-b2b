@@ -16,6 +16,7 @@ import {
   ChevronDown,
   LogOut,
   Globe,
+  BookOpen,
 } from 'lucide-react';
 
 import { storeConfig } from '../config.js';
@@ -69,6 +70,14 @@ export function MobileMenu({
       icon: <PackageCheck size={20} />, 
       label: 'Bulk Order', 
       action: () => navigate('bulk-inquiry') 
+    },
+    { 
+      icon: <BookOpen size={20} />, 
+      label: 'B2B Blog', 
+      action: () => {
+        navigate('blog');
+        onClose();
+      }
     },
     ...(isAdmin ? [
       { 

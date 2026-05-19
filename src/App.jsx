@@ -4,7 +4,8 @@ import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffe
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight } from 'lucide-react';
-import { fetchProducts, fetchHeroData, fetchConfigOptions } from './productData.js';
+import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
+import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
@@ -47,6 +48,8 @@ const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((modul
 const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then((module) => ({ default: module.NewArrivalsPage })));
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
+const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ default: module.BlogList })));
+const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
@@ -68,6 +71,7 @@ export default function App({ initialData = {} }) {
   const isSharedProduct = route === 's' && pathSegments[2] === 'p';
   const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const blogPostSlug = route === 'blog' ? decodeURIComponent(pathSegments[1] || '') : null;
 
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
@@ -106,6 +110,7 @@ export default function App({ initialData = {} }) {
   }, [search, route]);
 
   const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
+  const [blogs, setBlogs] = useState(() => blogPosts);
   const [configOptions, setConfigOptions] = useState(() => (
     initialData.configOptions || { priceRanges: [], categories: [], fabrics: [] }
   ));
@@ -149,6 +154,25 @@ export default function App({ initialData = {} }) {
       .then((opts) => {
         if (!isActive) return;
         setConfigOptions(opts);
+      })
+      .catch(console.error);
+
+    fetchSupabaseBlogPosts()
+      .then((dbPosts) => {
+        if (!isActive) return;
+        setBlogs(() => {
+          const slugMap = new Map();
+          blogPosts.forEach((post) => slugMap.set(post.slug, post));
+          if (dbPosts && dbPosts.length > 0) {
+            dbPosts.forEach((post) => slugMap.set(post.slug, post));
+          }
+          const allPosts = Array.from(slugMap.values());
+          if (typeof window !== 'undefined') {
+            const deletedSlugs = JSON.parse(localStorage.getItem('deleted_blog_slugs') || '[]');
+            return allPosts.filter(b => !deletedSlugs.includes(b.slug));
+          }
+          return allPosts;
+        });
       })
       .catch(console.error);
 
@@ -204,6 +228,15 @@ export default function App({ initialData = {} }) {
     });
 
     return () => data.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const deletedSlugs = JSON.parse(localStorage.getItem('deleted_blog_slugs') || '[]');
+      if (deletedSlugs.length > 0) {
+        setBlogs((prev) => prev.filter(b => !deletedSlugs.includes(b.slug)));
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -591,6 +624,8 @@ export default function App({ initialData = {} }) {
       href = `/s/${shopName}`;
     } else if (nextRoute === 'partner') {
       href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
+    } else if (nextRoute === 'blog' && productId) {
+      href = `/blog/${productId}`;
     } else if (nextRoute === 'home') {
       href = '/';
     }
@@ -747,6 +782,8 @@ export default function App({ initialData = {} }) {
           buyerProfile={buyerProfile}
           onProfileChange={setBuyerProfile}
           openAuth={() => setAuthOpen(true)}
+          blogs={blogs}
+          setBlogs={setBlogs}
         />
       );
     }
@@ -810,6 +847,13 @@ export default function App({ initialData = {} }) {
       return <SharedCatalog products={pricedProducts} slug={sharedSlug} navigate={navigate} />;
     }
 
+
+    if (route === 'blog') {
+      if (blogPostSlug) {
+        return <BlogPost postSlug={blogPostSlug} navigate={navigate} blogs={blogs} />;
+      }
+      return <BlogList navigate={navigate} blogs={blogs} />;
+    }
 
     return <ComingSoon />;
   })();
@@ -948,6 +992,12 @@ export default function App({ initialData = {} }) {
               onClick={() => scrollToSection('why')}
             >
               About Us
+            </button>
+            <button 
+              className={route === 'blog' ? 'active' : ''} 
+              onClick={() => navigate('blog')}
+            >
+              B2B Blog
             </button>
           </nav>
 

@@ -13,6 +13,8 @@ import brandCollabImage from '../../assets/brand_collaboration.png';
 import weaverImage from '../../assets/artisan_at_loom_premium.png';
 import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
+import { blogPosts } from '../data/blogPosts.js';
+import { Calendar, Clock } from 'lucide-react';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
@@ -637,6 +639,59 @@ export function Home({
         </ul>
       </section> */}
       
+      {/* Weave 365 Insights Section */}
+      <section className="home-blog-section">
+        <div className="home-blog-header">
+          <div className="home-blog-header-left">
+            <span>Corporate Intelligence & Craft Heritage</span>
+            <h2>Insights from Varanasi Looms</h2>
+          </div>
+          <div className="home-blog-header-right">
+            <button 
+              className="blog-filter-btn active"
+              onClick={() => navigate('blog')}
+              style={{ padding: '0.75rem 2rem' }}
+            >
+              Read All Insights
+            </button>
+          </div>
+        </div>
+
+        <div className="home-blog-grid">
+          {blogPosts.slice(0, 3).map((post) => (
+            <article 
+              key={post.slug} 
+              className="blog-card"
+              onClick={() => navigate('blog', post.slug)}
+            >
+              <div className="card-img-wrapper" style={{ height: '200px' }}>
+                <img src={post.image} alt={post.title} loading="lazy" />
+                <span className="card-category-badge">{post.category}</span>
+              </div>
+              <div className="card-info-pane">
+                <div className="post-meta-strip">
+                  <span className="post-meta-item">
+                    <Calendar size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.date}
+                  </span>
+                  <span className="meta-divider"></span>
+                  <span className="post-meta-item">
+                    <Clock size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.readTime}
+                  </span>
+                </div>
+                <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
+                <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
+                <button 
+                  className="read-more-link"
+                  style={{ marginTop: 'auto', fontSize: '0.8rem' }}
+                >
+                  Read Guide <ArrowRight size={14} />
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="seo-compact-section">
         <div className="seo-compact-container">
           <div className="seo-compact-left">
