@@ -1,12 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "weave365",
+  "main": ".open-next/worker.js",
   "compatibility_date": "2026-05-20",
-  // Trigger automatic Cloudflare build on latest commit
-  "observability": {
-    "enabled": true
-  },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
 }
