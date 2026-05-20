@@ -29,3 +29,7 @@ CLAUDE.md
 
 skills/
 .agents/
+
+# OpenNext & Wrangler
+.open-next/
+.wrangler/

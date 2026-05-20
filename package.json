@@ -7,7 +7,9 @@
     "dev": "next dev -H 127.0.0.1 --webpack",
     "build": "next build",
     "start": "next start -H 127.0.0.1",
-    "pages:build": "npx @cloudflare/next-on-pages"
+    "pages:build": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "preview": "opennextjs-cloudflare build && wrangler dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
@@ -20,6 +22,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16"
+    "@opennextjs/cloudflare": "^1.19.11",
+    "esbuild": "^0.25.0",
+    "wrangler": "^4.93.0"
   }
 }
