@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "next dev -H 127.0.0.1 --webpack",
     "build": "next build",
+    "cloudflare:build": "opennextjs-cloudflare build",
     "start": "next start -H 127.0.0.1",
-    "pages:build": "opennextjs-cloudflare build",
     "deploy": "opennextjs-cloudflare build && wrangler deploy",
     "preview": "opennextjs-cloudflare build && wrangler dev"
   },
