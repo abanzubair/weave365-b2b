@@ -59,6 +59,7 @@ const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').t
 const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ default: module.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
 const AboutPage = lazy(() => import('./views/AboutPage.jsx').then((module) => ({ default: module.AboutPage })));
+const EarlyAccessPage = lazy(() => import('./views/EarlyAccessPage.jsx').then((module) => ({ default: module.EarlyAccessPage })));
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
@@ -850,6 +851,8 @@ export default function App({ initialData = {} }) {
     }
 
     if (route === 'about') return <AboutPage navigate={navigate} />;
+
+    if (route === 'early-access') return <EarlyAccessPage navigate={navigate} />;
 
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 

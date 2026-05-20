@@ -4,10 +4,21 @@
  * Prompts boutique owners and resellers to join active broadcast lists for instant new arrival alerts.
  */
 import { BellRing } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 export function Newsletter() {
+  const router = useRouter();
+
+  const handleWhatsappClick = (event) => {
+    event.preventDefault();
+    router.push('/early-access');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="newsletter">
       <div>
@@ -19,9 +30,8 @@ export function Newsletter() {
       </div>
       <div className="newsletter-actions">
         <a
-          href={storeConfig.whatsappGroup || `https://wa.me/91${storeConfig.whatsapp}?text=Hi%20I%20want%20to%20join%20the%20updates%20group`}
-          target="_blank"
-          rel="noreferrer"
+          href="/early-access"
+          onClick={handleWhatsappClick}
           className="whatsapp-group-btn"
         >
           <WhatsappIcon size={18} /> Get New Arrival Updates

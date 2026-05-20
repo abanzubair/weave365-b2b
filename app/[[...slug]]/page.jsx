@@ -140,6 +140,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
+  if (route === 'early-access') {
+    return buildMeta(
+      'Request Early Access | Weave 365 Wholesale Banarasi Sarees',
+      'Get early access to our wholesale Banarasi saree new arrivals. Verified boutique owners, retailers, and resellers can join our premium updates.',
+      '/early-access'
+    );
+  }
+
   if (route === 'reseller-growth') {
     return buildMeta(
       'Reseller Program | Weave 365',
