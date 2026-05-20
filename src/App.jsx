@@ -51,6 +51,7 @@ const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then((module) => ({ default: module.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ default: module.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
+const AboutPage = lazy(() => import('./views/AboutPage.jsx').then((module) => ({ default: module.AboutPage })));
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
@@ -841,6 +842,8 @@ export default function App({ initialData = {} }) {
       );
     }
 
+    if (route === 'about') return <AboutPage navigate={navigate} />;
+
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 
     if (route === 'Trusted-Partner-Registration') return <TrustedPartnerRegistrationPage />;
@@ -866,7 +869,7 @@ export default function App({ initialData = {} }) {
   return (
     <>
       {!isSharedPage && (
-        <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
+        <header className={`site-header ${route === 'home' || route === 'about' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
           <button 
             className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
             type="button" 
@@ -988,8 +991,8 @@ export default function App({ initialData = {} }) {
               )}
             </div>
             <button 
-              className={route === 'home' && typeof window !== 'undefined' && window.location.hash === '#why' ? 'active' : ''} 
-              onClick={() => scrollToSection('why')}
+              className={route === 'about' ? 'active' : ''} 
+              onClick={() => navigate('about')}
             >
               About Us
             </button>

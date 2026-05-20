@@ -124,6 +124,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     return buildMeta(title, description, `/product/${encodeURIComponent(product.id)}`, image);
   }
 
+  if (route === 'about') {
+    return buildMeta(
+      'About Weave365 | Premium B2B Banarasi Saree Wholesaler India',
+      'Discover Weave365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
+      '/about'
+    );
+  }
+
   if (route === 'reseller-growth') {
     return buildMeta(
       'Reseller Program | Weave 365',

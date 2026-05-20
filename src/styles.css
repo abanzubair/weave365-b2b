@@ -17,6 +17,7 @@
 @import './styles/seoLandingPages.css';
 @import './styles/partnerProgram.css';
 @import './styles/blog.css';
+@import './styles/about.css';
 
 .search-lock {
   overflow: hidden !important;

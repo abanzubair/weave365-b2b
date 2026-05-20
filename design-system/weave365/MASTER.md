@@ -7,8 +7,8 @@
 ---
 
 **Project:** Weave365
-**Generated:** 2026-05-15 18:32:49
-**Category:** B2B Service
+**Generated:** 2026-05-20 15:39:21
+**Category:** Luxury/Premium Brand
 
 ---
 
@@ -28,14 +28,14 @@
 
 ### Typography
 
-- **Heading Font:** Playfair Display SC
-- **Body Font:** Karla
-- **Mood:** restaurant, menu, culinary, elegant, foodie, hospitality
-- **Google Fonts:** [Playfair Display SC + Karla](https://fonts.google.com/share?selection.family=Karla:wght@300;400;500;600;700|Playfair+Display+SC:wght@400;700)
+- **Heading Font:** Playfair Display
+- **Body Font:** Inter
+- **Mood:** elegant, luxury, sophisticated, timeless, premium, editorial
+- **Google Fonts:** [Playfair Display + Inter](https://fonts.google.com/share?selection.family=Inter:wght@300;400;500;600;700|Playfair+Display:wght@400;500;600;700)
 
 **CSS Import:**
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Karla:wght@300;400;500;600;700&family=Playfair+Display+SC:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 ```
 
 ### Spacing Variables
@@ -153,29 +153,28 @@
 
 ## Style Guidelines
 
-**Style:** Trust & Authority
+**Style:** Liquid Glass
 
-**Keywords:** Certificates/badges displayed, expert credentials, case studies with metrics, before/after comparisons, industry recognition, security badges
+**Keywords:** Flowing glass, morphing, smooth transitions, fluid effects, translucent, animated blur, iridescent, chromatic aberration
 
-**Best For:** Healthcare/medical landing pages, financial services, enterprise software, premium/luxury products, legal services
+**Best For:** Premium SaaS, high-end e-commerce, creative platforms, branding experiences, luxury portfolios
 
-**Key Effects:** Badge hover effects, metric pulse animations, certificate carousel, smooth stat reveal
+**Key Effects:** Morphing elements (SVG/CSS), fluid animations (400-600ms curves), dynamic blur (backdrop-filter), color transitions
 
 ### Page Pattern
 
-**Pattern Name:** Minimal Single Column
+**Pattern Name:** App Store Style Landing
 
-- **Conversion Strategy:** Single CTA focus. Large typography. Lots of whitespace. No nav clutter. Mobile-first.
-- **CTA Placement:** Center, large CTA button
-- **Section Order:** 1. Hero headline, 2. Short description, 3. Benefit bullets (3 max), 4. CTA, 5. Footer
+- **Conversion Strategy:** Show real screenshots. Include ratings (4.5+ stars). QR code for mobile. Platform-specific CTAs.
+- **CTA Placement:** Download buttons prominent (App Store + Play Store) throughout
+- **Section Order:** 1. Hero with device mockup, 2. Screenshots carousel, 3. Features with icons, 4. Reviews/ratings, 5. Download CTAs
 
 ---
 
 ## Anti-Patterns (Do NOT Use)
 
-- ❌ Playful design
-- ❌ Hidden credentials
-- ❌ AI purple/pink gradients
+- ❌ Cheap visuals
+- ❌ Fast animations
 
 ### Additional Forbidden Patterns
 

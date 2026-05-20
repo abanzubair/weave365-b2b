@@ -44,11 +44,6 @@ Focus on:
 
 ---
 
-**important**
-#do not proceede to next task untill the current task is 100% completed
-
----
-
 # PRIORITY TASK ORDER
 
 ## PHASE 1 — TECHNICAL SEO
@@ -67,20 +62,19 @@ Every page MUST contain:
 ## HOMEPAGE SEO
 
 ### TITLE
-Banarasi Sarees and Suits for Wholesale & Export | Weave 365
+Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave365
 
 ### META DESCRIPTION
-Banarasi sarees and suits for wholesalers, boutiques, retailers, dropshipping sellers and global reseller partners. Flexible MOQ worldwide.
+Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.
 
 ### PRIMARY H1
-Wholesale Banarasi Sarees & Suits for Retailers and Resellers
+Wholesale Banarasi Sarees for Retailers & Resellers
 
 ### SECONDARY HEADINGS
-H2: Trusted B2B Supplier of Banarasi Sarees and Suits
-H2: Explore Wholesale Banarasi Saree & Suit Collections
-H2: Why Retailers and Resellers Choose Weave 365
-H2: Banarasi Sarees and Suits Direct from Varanasi
-H2: Flexible MOQ for Wholesale, Export and Dropshipping
+H2: Trusted B2B Banarasi Saree Supplier
+H2: Explore Wholesale Saree Collections
+H2: Why Retailers Choose Weave365
+H2: Banarasi Sarees Direct from Varanasi
 
 ---
 
