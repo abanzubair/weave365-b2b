@@ -9,8 +9,10 @@
   background: linear-gradient(135deg, #fbf6ee 0%, #faf2e8 50%, #fbf6ee 100%);
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px 20px 80px 20px; /* offset header height nicely */
+  align-items: start;
+  padding: 60px 20px 80px 20px;
+  /* offset header height nicely */
+  margin-top: 30px;
   font-family: var(--font-body), sans-serif;
 }
 
@@ -20,7 +22,7 @@
   position: relative;
 }
 
-.early-access-form-card, 
+.early-access-form-card,
 .early-access-success-card {
   background: var(--paper, #ffffff);
   border: 1px solid rgba(234, 219, 200, 0.6);
@@ -342,7 +344,8 @@
 
 /* Agreement container styling */
 .agreement-wrapper {
-  background-color: #f7f3ed; /* Very subtle warm highlights container */
+  background-color: #f7f3ed;
+  /* Very subtle warm highlights container */
   border-radius: 10px;
   padding: 16px 20px;
   margin-top: 8px;
@@ -377,11 +380,11 @@
   margin-top: 2px;
 }
 
-.agreement-checkbox-container:hover input ~ .checkmark-box {
+.agreement-checkbox-container:hover input~.checkmark-box {
   border-color: var(--gold, #b78646);
 }
 
-.agreement-checkbox-container input:checked ~ .checkmark-box {
+.agreement-checkbox-container input:checked~.checkmark-box {
   background-color: var(--gold, #b78646);
   border-color: var(--gold, #b78646);
 }
@@ -399,7 +402,7 @@
   transform: rotate(45deg);
 }
 
-.agreement-checkbox-container input:checked ~ .checkmark-box::after {
+.agreement-checkbox-container input:checked~.checkmark-box::after {
   display: block;
 }
 
@@ -534,6 +537,7 @@
     transform: scale(0.92);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -550,6 +554,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -566,8 +571,9 @@
 
   .early-access-form-card {
     padding: 32px 24px;
+    margin-top: 30px;
   }
-  
+
   .form-row-2col {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -575,15 +581,16 @@
 }
 
 @media (max-width: 500px) {
+
   .buyer-type-grid,
   .buying-preference-flex {
     grid-template-columns: 1fr;
   }
-  
+
   .early-access-header h1 {
     font-size: 1.85rem;
   }
-  
+
   .early-access-success-card h2 {
     font-size: 1.85rem;
   }
