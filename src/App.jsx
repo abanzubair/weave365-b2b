@@ -193,7 +193,7 @@ export default function App({ initialData = {} }) {
     const updateScrolled = () => {
       const scrollPos = window.scrollY || document.scrollingElement?.scrollTop || 0;
       setScrolled(scrollPos > 20);
-      setPastHero(scrollPos > (window.innerHeight - 100));
+      setPastHero(scrollPos > 0 && scrollPos > (window.innerHeight - 100));
     };
 
     window.addEventListener('scroll', updateScrolled, { passive: true });
