@@ -66,7 +66,6 @@ export function Footer({ navigate }) {
         <a href="#contact">Contact Us</a>
         <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }}>Catalogue</a>
         <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }}>Bulk Order</a>
-        <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('blog'); }}>B2B Wholesale Blog</a>
         <a href="/favorites" onClick={(e) => { e.preventDefault(); navigate('favorites'); }}>My Favorites</a>
       </div>
       <div>
@@ -78,14 +77,11 @@ export function Footer({ navigate }) {
         <a href="#terms">Terms & Conditions</a>
       </div>
       <div>
-        <h3>B2B Sourcing</h3>
-        <a href="/wholesale-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('wholesale-banarasi-sarees'); }}>Banarasi Sarees</a>
-        <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }}>Katan Silk Sarees</a>
-        <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }}>Organza Sarees</a>
-        <a href="/bridal-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('bridal-banarasi-sarees'); }}>Bridal Sarees</a>
-        <a href="/meenakari-sarees" onClick={(e) => { e.preventDefault(); navigate('meenakari-sarees'); }}>Meenakari Sarees</a>
-        <a href="/soft-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('soft-silk-sarees'); }}>Soft Silk Sarees</a>
-        <a href="/wholesale-saree-supplier-india" onClick={(e) => { e.preventDefault(); navigate('wholesale-saree-supplier-india'); }}>Wholesale Supplier</a>
+        <h3>Journal</h3>
+        <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => { e.preventDefault(); navigate('blog', 'how-to-start-saree-reselling-business'); }}>Saree Reselling Guide</a>
+        <a href="/blog/difference-katan-silk-and-organza-saree" onClick={(e) => { e.preventDefault(); navigate('blog', 'difference-katan-silk-and-organza-saree'); }}>Katan Silk vs. Organza</a>
+        <a href="/blog/wholesale-saree-buying-guide-boutiques" onClick={(e) => { e.preventDefault(); navigate('blog', 'wholesale-saree-buying-guide-boutiques'); }}>Wholesale Saree Buying</a>
+        <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('blog'); }}>All Journal Articles</a>
       </div>
       <div>
         <h3>Social Links</h3>

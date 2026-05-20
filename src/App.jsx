@@ -105,9 +105,11 @@ export default function App({ initialData = {} }) {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const categoriesRef = useRef(null);
   const partnerNavRef = useRef(null);
+  const profileRef = useRef(null);
   const searchRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
   const [partnerNavPos, setPartnerNavPos] = useState({ top: 0, left: 0 });
+  const [profilePos, setProfilePos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
@@ -908,14 +910,55 @@ export default function App({ initialData = {} }) {
               className={route === 'new-arrivals' ? 'active' : ''} 
               onClick={() => navigate('new-arrivals')}
             >
-              New Arrivals
+              NEW ARRIVALS
             </button>
             <button 
               className={route === 'catalog' ? 'active' : ''} 
               onClick={() => navigate('catalog')}
             >
-              Collections
+              COLLECTIONS
             </button>
+            <div className="nav-item-dropdown" ref={categoriesRef}>
+              <button
+                className={dropdownOpen === 'categories' ? 'active' : ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (dropdownOpen !== 'categories' && categoriesRef.current) {
+                    const rect = categoriesRef.current.getBoundingClientRect();
+                    setCategoriesPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  }
+                  setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
+                }}
+              >
+                CATEGORIES <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
+              </button>
+              {dropdownOpen === 'categories' && createPortal(
+                <div 
+                  className="dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: categoriesPos.top,
+                    left: categoriesPos.left,
+                    transform: 'translateX(-50%) translateY(12px)',
+                    zIndex: 10000
+                  }}
+                >
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setCategory(cat);
+                        navigate('catalog');
+                        setDropdownOpen(null);
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )}
+            </div>
             <div className="nav-item-dropdown" ref={partnerNavRef}>
               <button
                 className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label-brands' ? 'active' : ''}
@@ -928,7 +971,7 @@ export default function App({ initialData = {} }) {
                   setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
                 }}
               >
-                Partner <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
+                PARTNERS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
               </button>
               {dropdownOpen === 'partner' && createPortal(
                 <div 
@@ -959,52 +1002,16 @@ export default function App({ initialData = {} }) {
                 document.body
               )}
             </div>
-            <div className="nav-item-dropdown" ref={categoriesRef}>
-              <button
-                className={dropdownOpen === 'categories' ? 'active' : ''}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dropdownOpen !== 'categories' && categoriesRef.current) {
-                    const rect = categoriesRef.current.getBoundingClientRect();
-                    setCategoriesPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
-                  }
-                  setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
-                }}
-              >
-                Categories <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
-              </button>
-              {dropdownOpen === 'categories' && createPortal(
-                <div 
-                  className="dropdown-menu"
-                  style={{
-                    position: 'fixed',
-                    top: categoriesPos.top,
-                    left: categoriesPos.left,
-                    transform: 'translateX(-50%) translateY(12px)',
-                    zIndex: 10000
-                  }}
-                >
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setCategory(cat);
-                        navigate('catalog');
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>,
-                document.body
-              )}
-            </div>
             <button 
               className={route === 'about' ? 'active' : ''} 
               onClick={() => navigate('about')}
             >
-              About Us
+              ABOUT
+            </button>
+            <button 
+              onClick={() => scrollToSection('contact')}
+            >
+              CONTACT
             </button>
           </nav>
 
@@ -1022,25 +1029,71 @@ export default function App({ initialData = {} }) {
               <Search size={18} strokeWidth={1.5} />
             </button>
             
-            <div className="premium-divider"></div>
-            
-            {user ? (
-              <div className="premium-auth-group">
-                <button className="premium-auth-link" type="button" onClick={() => navigate('account')}>
-                  {buyerProfile?.full_name ? String(buyerProfile.full_name).toUpperCase() : 'MY ACCOUNT'}
-                </button>
-                <span className="premium-auth-slash">/</span>
-                <button className="premium-auth-link" type="button" onClick={handleSignOut}>
-                  LOGOUT
-                </button>
-              </div>
-            ) : (
-              <button className="premium-auth-link" type="button" onClick={() => setAuthOpen(true)}>
-                SIGN IN / REGISTER
+            <div className="nav-item-dropdown" ref={profileRef}>
+              <button 
+                className={`premium-icon-btn profile-trigger ${dropdownOpen === 'profile' ? 'active' : ''}`}
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (dropdownOpen !== 'profile' && profileRef.current) {
+                    const rect = profileRef.current.getBoundingClientRect();
+                    setProfilePos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  }
+                  setDropdownOpen(dropdownOpen === 'profile' ? null : 'profile');
+                }}
+                aria-label="Profile"
+              >
+                <User size={18} strokeWidth={1.5} />
               </button>
-            )}
-            
-            <div className="premium-divider"></div>
+              {dropdownOpen === 'profile' && createPortal(
+                <div 
+                  className="dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: profilePos.top,
+                    left: profilePos.left,
+                    transform: 'translateX(-50%) translateY(12px)',
+                    zIndex: 10000
+                  }}
+                >
+                  {user ? (
+                    <>
+                      {buyerProfile?.full_name && (
+                        <div className="profile-dropdown-greeting">
+                          Hello, {buyerProfile.full_name.split(' ')[0]}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          navigate('account');
+                          setDropdownOpen(null);
+                        }}
+                      >
+                        My Account
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleSignOut();
+                          setDropdownOpen(null);
+                        }}
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setAuthOpen(true);
+                        setDropdownOpen(null);
+                      }}
+                    >
+                      Sign In / Register
+                    </button>
+                  )}
+                </div>,
+                document.body
+              )}
+            </div>
 
             <button 
               className="premium-icon-btn favorite-btn" 

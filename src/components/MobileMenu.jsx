@@ -23,6 +23,7 @@ import {
   LogOut,
   Globe,
   BookOpen,
+  Info,
 } from 'lucide-react';
 
 import { storeConfig } from '../config.js';
@@ -68,19 +69,57 @@ export function MobileMenu({
     },
     { 
       icon: <Store size={20} />, 
-      label: 'Catalogue', 
-      action: () => navigate('catalog') 
+      label: 'Collections', 
+      action: () => {
+        navigate('catalog');
+        onClose();
+      } 
     },
     { 
       icon: <PackageCheck size={20} />, 
       label: 'Bulk Order', 
-      action: () => navigate('bulk-inquiry') 
+      action: () => {
+        navigate('bulk-inquiry');
+        onClose();
+      } 
+    },
+    { 
+      icon: <BookOpen size={20} />, 
+      label: 'Journal', 
+      action: () => {
+        navigate('blog');
+        onClose();
+      } 
+    },
+    { 
+      icon: <Info size={20} />, 
+      label: 'About Us', 
+      action: () => {
+        navigate('about');
+        onClose();
+      } 
+    },
+    { 
+      icon: <Headphones size={20} />, 
+      label: 'Contact Us', 
+      action: () => {
+        onClose();
+        setTimeout(() => {
+          const el = document.getElementById('contact');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      } 
     },
     ...(isAdmin ? [
       { 
         icon: <BadgeCheck size={20} />, 
         label: 'Admin', 
-        action: () => navigate('admin') 
+        action: () => {
+          navigate('admin');
+          onClose();
+        } 
       }
     ] : []),
   ];
@@ -214,7 +253,7 @@ export function MobileMenu({
               onClick={() => setPartnerOpen(!partnerOpen)}
             >
               <span className="mobile-menu-icon"><Layers size={20} /></span>
-              <span className="mobile-menu-label">Partner</span>
+              <span className="mobile-menu-label">Partners</span>
               <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
             </button>
             

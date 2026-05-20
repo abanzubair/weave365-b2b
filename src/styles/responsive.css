@@ -163,6 +163,7 @@
     display: none !important;
   }
 
+  .header-actions-premium .nav-item-dropdown,
   .header-actions-premium .premium-auth-group,
   .header-actions-premium .premium-auth-link,
   .header-actions-premium .premium-auth-slash,

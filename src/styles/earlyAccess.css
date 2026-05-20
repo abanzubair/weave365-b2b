@@ -9,10 +9,8 @@
   background: linear-gradient(135deg, #fbf6ee 0%, #faf2e8 50%, #fbf6ee 100%);
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: center;
   padding: 60px 20px 80px 20px;
-  /* offset header height nicely */
-  margin-top: 30px;
   font-family: var(--font-body), sans-serif;
 }
 
@@ -588,7 +586,7 @@
   }
 
   .early-access-header h1 {
-    font-size: 1.85rem;
+    font-size: 1.5rem;
   }
 
   .early-access-success-card h2 {
