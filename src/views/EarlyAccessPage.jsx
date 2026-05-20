@@ -115,24 +115,6 @@ export function EarlyAccessPage({ navigate }) {
 
     const cleanWhatsapp = form.whatsappNumber.replace(/\s/g, '');
 
-    // 1. Verify duplicates locally
-    try {
-      const existing = JSON.parse(localStorage.getItem('weave365_early_access_submissions') || '[]');
-      const isDuplicate = existing.some((sub) => {
-        const cleanExisting = sub.whatsappNumber.replace(/\D/g, '').slice(-10);
-        const cleanInput = cleanWhatsapp.replace(/\D/g, '').slice(-10);
-        return cleanExisting === cleanInput && cleanInput.length === 10;
-      });
-
-      if (isDuplicate) {
-        setFormError('You have already requested early access with this WhatsApp number.');
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (err) {
-      console.warn('Unable to verify local duplicate status', err);
-    }
-
     const capitalize = (str) => {
       if (!str) return '';
       return str.trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -151,14 +133,6 @@ export function EarlyAccessPage({ navigate }) {
       status: 'pending_review'
     };
 
-    // Save locally to prevent double clicks/spam
-    try {
-      const existing = JSON.parse(localStorage.getItem('weave365_early_access_submissions') || '[]');
-      localStorage.setItem('weave365_early_access_submissions', JSON.stringify([submissionData, ...existing]));
-    } catch (err) {
-      console.warn('Failed to store submission state locally', err);
-    }
-
     const handleSuccess = () => {
       setSubmitted(true);
       setForm(initialForm);
@@ -168,10 +142,13 @@ export function EarlyAccessPage({ navigate }) {
     };
 
     // Google Sheets integration POST
-    const endpoint = process.env.NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL || process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL;
+    const endpoint = process.env.NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL;
+    console.log('[EarlyAccess] Submitting to endpoint:', endpoint);
+    console.log('[EarlyAccess] Payload:', JSON.stringify(submissionData));
+
     if (endpoint) {
       try {
-        await fetch(endpoint, {
+        const res = await fetch(endpoint, {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -179,15 +156,17 @@ export function EarlyAccessPage({ navigate }) {
           },
           body: JSON.stringify(submissionData)
         });
+        console.log('[EarlyAccess] Response status:', res.status, 'type:', res.type);
         handleSuccess();
       } catch (err) {
-        console.error('Error submitting form to sheet webhook:', err);
+        console.error('[EarlyAccess] Fetch error:', err);
         setSubmitError('Unable to connect to registration servers. Please check your network and try again.');
       } finally {
         setIsSubmitting(false);
       }
     } else {
-      // Local demo fallback if env variable not present
+      console.warn('[EarlyAccess] No endpoint configured. NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL is missing.');
+      // Still show success so form doesn't get stuck
       handleSuccess();
       setIsSubmitting(false);
     }
