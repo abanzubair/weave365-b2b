@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Check } from 'lucide-react';
 
 /**
- * A luxury Slide-to-Verify interactive Captcha component.
- * Self-contained, premium aesthetic, fully responsive, and mobile-friendly.
+ * A bespoke, high-end Slide-to-Verify interactive Captcha component.
+ * Tailored to match the warm luxury branding of Weave365.
  */
 export default function SliderCaptcha({ onVerify, isReset }) {
   const [sliderPosition, setSliderPosition] = useState(0);
@@ -13,7 +13,7 @@ export default function SliderCaptcha({ onVerify, isReset }) {
   const handleRef = useRef(null);
   const startXRef = useRef(0);
 
-  // Reset slider if requested from parent
+  // Reset slider state
   useEffect(() => {
     if (isReset) {
       setSliderPosition(0);
@@ -22,7 +22,7 @@ export default function SliderCaptcha({ onVerify, isReset }) {
     }
   }, [isReset, onVerify]);
 
-  // Touch and Mouse handlers
+  // Event handlers for dragging
   const handleStart = (clientX) => {
     if (isVerified) return;
     setIsDragging(true);
@@ -34,15 +34,14 @@ export default function SliderCaptcha({ onVerify, isReset }) {
 
     const containerWidth = containerRef.current.clientWidth;
     const handleWidth = handleRef.current.clientWidth;
-    const maxDelta = containerWidth - handleWidth - 6; // Accounts for border/padding
+    const maxDelta = containerWidth - handleWidth - 6; // Padding/border spacing
 
     let newPosition = clientX - startXRef.current;
     newPosition = Math.max(0, Math.min(newPosition, maxDelta));
 
     setSliderPosition(newPosition);
 
-    // If slider reaches the end (within 4 pixels), verify successfully
-    if (newPosition >= maxDelta - 4) {
+    if (newPosition >= maxDelta - 3) {
       setIsDragging(false);
       setIsVerified(true);
       setSliderPosition(maxDelta);
@@ -54,7 +53,6 @@ export default function SliderCaptcha({ onVerify, isReset }) {
     if (!isDragging) return;
     setIsDragging(false);
     
-    // Reset back to start if not fully verified
     if (!isVerified) {
       setSliderPosition(0);
       if (onVerify) onVerify(false);
@@ -79,7 +77,7 @@ export default function SliderCaptcha({ onVerify, isReset }) {
     };
   }, [isDragging, isVerified, sliderPosition]);
 
-  // Touch Listeners (Mobile)
+  // Touch Listeners (Mobile compatibility)
   const onTouchStart = (e) => {
     if (e.touches && e.touches[0]) {
       handleStart(e.touches[0].clientX);
@@ -96,22 +94,30 @@ export default function SliderCaptcha({ onVerify, isReset }) {
 
   return (
     <div className="slider-captcha-wrapper">
+      {/* Informative Security Context Message */}
+      <div className="slider-captcha-header">
+        <ShieldCheck className="security-shield-icon" size={16} />
+        <span className="security-text">
+          Verification required to secure exclusive B2B wholesale pricing.
+        </span>
+      </div>
+
       <div 
         ref={containerRef}
         className={`slider-captcha-container ${isVerified ? 'verified' : ''} ${isDragging ? 'dragging' : ''}`}
       >
-        {/* Fill background color as handle is dragged */}
+        {/* Progress Fill Indicator */}
         <div 
           className="slider-captcha-fill"
-          style={{ width: `${sliderPosition + 24}px` }}
+          style={{ width: `${sliderPosition + 22}px` }}
         />
 
-        {/* Dynamic text hint with shimmering glow */}
+        {/* Shimmer Hint Text */}
         <span className="slider-captcha-text">
-          {isVerified ? 'Verification Successful' : 'Slide to verify you are human'}
+          {isVerified ? 'Verification Complete' : 'Slide to Verify'}
         </span>
 
-        {/* Grab-handle button */}
+        {/* Interactive Luxury Handle */}
         <div
           ref={handleRef}
           className="slider-captcha-handle"
@@ -120,11 +126,12 @@ export default function SliderCaptcha({ onVerify, isReset }) {
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
+          aria-label="Verification slider handle"
         >
           {isVerified ? (
-            <Check size={18} className="verified-icon" />
+            <Check size={16} className="verified-icon" />
           ) : (
-            <ArrowRight size={18} className="arrow-icon" />
+            <ArrowRight size={16} className="arrow-icon" />
           )}
         </div>
       </div>
@@ -132,36 +139,60 @@ export default function SliderCaptcha({ onVerify, isReset }) {
       <style jsx>{`
         .slider-captcha-wrapper {
           width: 100%;
-          margin: 1.5rem 0;
+          margin: 1.5rem 0 2rem 0;
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .slider-captcha-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 10px;
+          color: var(--muted);
+          animation: fade-in 0.5s ease;
+        }
+
+        .security-shield-icon {
+          color: var(--gold);
+        }
+
+        .security-text {
+          font-family: var(--font-body);
+          font-size: 0.8rem;
+          font-weight: 500;
+          letter-spacing: 0.2px;
+          text-align: center;
+          opacity: 0.85;
         }
 
         .slider-captcha-container {
           position: relative;
           width: 100%;
-          max-width: 420px;
-          height: 48px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 24px;
+          max-width: 440px;
+          height: 52px;
+          background: var(--cream);
+          border: 1px solid var(--surface-accent);
+          border-radius: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           user-select: none;
-          backdrop-filter: blur(8px);
-          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: inset 0 2px 4px rgba(36, 25, 18, 0.03);
+          transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
 
         .slider-captcha-container.dragging {
-          border-color: rgba(212, 175, 55, 0.3); /* Premium gold touch border */
+          border-color: var(--gold-light);
+          box-shadow: 0 0 10px rgba(183, 134, 70, 0.08);
         }
 
         .slider-captcha-container.verified {
           border-color: rgba(76, 175, 80, 0.4);
-          background: rgba(76, 175, 80, 0.05);
-          box-shadow: 0 0 15px rgba(76, 175, 80, 0.1);
+          background: rgba(76, 175, 80, 0.04);
+          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.06);
         }
 
         .slider-captcha-fill {
@@ -169,29 +200,30 @@ export default function SliderCaptcha({ onVerify, isReset }) {
           left: 0;
           top: 0;
           height: 100%;
-          background: linear-gradient(90deg, rgba(212, 175, 55, 0.02) 0%, rgba(212, 175, 55, 0.12) 100%);
-          border-radius: 24px 0 0 24px;
+          background: linear-gradient(90deg, rgba(183, 134, 70, 0.02) 0%, rgba(183, 134, 70, 0.15) 100%);
+          border-radius: 26px 0 0 26px;
           pointer-events: none;
         }
 
         .slider-captcha-container.verified .slider-captcha-fill {
-          background: linear-gradient(90deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.15) 100%);
+          background: linear-gradient(90deg, rgba(76, 175, 80, 0.02) 0%, rgba(76, 175, 80, 0.12) 100%);
           width: 100% !important;
-          border-radius: 24px;
+          border-radius: 26px;
         }
 
         .slider-captcha-text {
+          font-family: var(--font-body);
           font-size: 0.85rem;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.6);
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          color: var(--ink);
           pointer-events: none;
           z-index: 2;
-          letter-spacing: 0.5px;
-          transition: color 0.3s ease;
         }
 
         .slider-captcha-container:not(.verified) .slider-captcha-text {
-          background: linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.5) 100%);
+          background: linear-gradient(90deg, var(--muted) 0%, var(--gold) 50%, var(--muted) 100%);
           background-size: 200% 100%;
           animation: shimmer-text 2.5s infinite linear;
           -webkit-background-clip: text;
@@ -199,25 +231,31 @@ export default function SliderCaptcha({ onVerify, isReset }) {
         }
 
         .slider-captcha-container.verified .slider-captcha-text {
-          color: #81c784;
-          font-weight: 600;
+          color: #2e7d32;
+          letter-spacing: 2px;
+          animation: success-pulse 0.3s ease-out;
         }
 
         .slider-captcha-handle {
           position: absolute;
-          left: 3px;
-          width: 42px;
-          height: 42px;
-          background: linear-gradient(135deg, #e5c060 0%, #b89333 100%); /* Elegant gold handle */
+          left: 4px;
+          width: 44px;
+          height: 44px;
+          background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-mid) 100%);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #121212;
+          color: var(--paper);
           cursor: grab;
           z-index: 3;
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-          transition: transform 0.1s ease, background 0.3s ease;
+          box-shadow: 0 3px 8px rgba(36, 25, 18, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+          transition: transform 0.1s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .slider-captcha-handle:hover {
+          background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+          box-shadow: 0 4px 12px rgba(36, 25, 18, 0.22);
         }
 
         .slider-captcha-handle:active {
@@ -226,9 +264,9 @@ export default function SliderCaptcha({ onVerify, isReset }) {
 
         .slider-captcha-container.verified .slider-captcha-handle {
           background: linear-gradient(135deg, #81c784 0%, #4caf50 100%);
-          color: #ffffff;
+          color: var(--paper);
           cursor: default;
-          box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
+          box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2);
         }
 
         .arrow-icon {
@@ -236,13 +274,12 @@ export default function SliderCaptcha({ onVerify, isReset }) {
         }
 
         .verified-icon {
-          transform: scale(1.1);
-          animation: scale-up 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          animation: scale-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
         @keyframes shimmer-text {
-          0% { background-position: -100% 0; }
-          100% { background-position: 100% 0; }
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
         }
 
         @keyframes nudge-right {
@@ -253,6 +290,12 @@ export default function SliderCaptcha({ onVerify, isReset }) {
         @keyframes scale-up {
           0% { transform: scale(0.5); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes success-pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
         }
       `}</style>
     </div>
