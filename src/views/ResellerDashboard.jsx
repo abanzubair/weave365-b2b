@@ -1,3 +1,17 @@
+/**
+ * @file ResellerDashboard.jsx
+ * @description The backend reseller business center control view. Integrates white-label storefront settings
+ * such as custom domain slugs, logo images, color themes (e.g. Classic Luxury), and customer-facing portal
+ * customizations. Embeds the main ResellerTools configuration component while maintaining a clean,
+ * unbranded container layout for professional reseller operations.
+ * 
+ * @module views/ResellerDashboard
+ * @param {Object} props
+ * @param {Object} props.user - Active authenticated Supabase user session
+ * @param {Object} props.buyerProfile - Active buyer profile metadata including reseller authorizations
+ * @param {Function} props.navigate - Internal client router handler
+ */
+
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 

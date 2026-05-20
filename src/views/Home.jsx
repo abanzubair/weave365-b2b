@@ -1,6 +1,16 @@
+/**
+ * Home View
+ * Purpose: Serves as Weave365's homepage, combining high-end luxury storytelling banners,
+ * live handloom collection highlights, reseller program onboarding, daily deal counters,
+ * and search engine optimized text content (Varanasi direct weaver heritage).
+ */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin } from 'lucide-react';
-import { fallbackProductImage, SectionTitle, StateMessage, ProductCard, expandedProductCards, Newsletter, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { fallbackProductImage, expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { SectionTitle } from '../components/SectionTitle.jsx';
+import { StateMessage } from '../components/StateMessage.jsx';
+import { ProductCard } from '../components/ProductCard.jsx';
+import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
@@ -119,6 +129,58 @@ export function Home({
     };
   }, []);
 
+  // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection for Home page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const originalTitle = document.title;
+    document.title = 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365';
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
+    const newDesc = 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.';
+    
+    if (metaDesc) {
+      metaDesc.setAttribute('content', newDesc);
+    } else {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      metaDesc.content = newDesc;
+      document.head.appendChild(metaDesc);
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
+    const newCanonical = 'https://www.weave365.in';
+
+    if (canonicalLink) {
+      canonicalLink.setAttribute('href', newCanonical);
+    } else {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      canonicalLink.href = newCanonical;
+      document.head.appendChild(canonicalLink);
+    }
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDesc) {
+        if (originalDesc) {
+          metaDesc.setAttribute('content', originalDesc);
+        } else {
+          metaDesc.remove();
+        }
+      }
+      if (canonicalLink) {
+        if (originalCanonical) {
+          canonicalLink.setAttribute('href', originalCanonical);
+        } else {
+          canonicalLink.remove();
+        }
+      }
+    };
+  }, []);
+
   const bestsellers = useMemo(() => 
     products
       .filter((p) => p.isTopSeller)
@@ -229,7 +291,7 @@ export function Home({
   return (
     <>
       <section className="hero-transition-container">
-        <h1 className="sr-only">Wholesale Banarasi Sarees & Suits for Retailers and Resellers</h1>
+        <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
         {/* Original Slide */}
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
           <section 
@@ -696,31 +758,31 @@ export function Home({
         <div className="seo-compact-container">
           <div className="seo-compact-left">
             <span className="seo-compact-kicker">TRUSTED PARTNERSHIP</span>
-            <h2>Trusted B2B Supplier of Banarasi Sarees and Suits</h2>
+            <h2>Trusted B2B Banarasi Saree Supplier</h2>
             <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our B2B portal is designed specifically to supply wholesale Banarasi sarees and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
           </div>
-
+ 
           <div className="seo-compact-right">
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
                 <Gem size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Explore Wholesale Banarasi Saree & Suit Collections</h2>
+                <h2>Explore Wholesale Saree Collections</h2>
               </div>
               <p>Discover our extensive <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }} className="seo-inline-link">live catalogue</a> featuring Pure Katan Silk, Organza, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
             </div>
-
+ 
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
                 <Award size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Why Retailers and Resellers Choose Weave 365</h2>
+                <h2>Why Retailers Choose Weave 365</h2>
               </div>
               <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern B2B commerce.</p>
             </div>
-
+ 
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
                 <MapPin size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Banarasi Sarees and Suits Direct from Varanasi</h2>
+                <h2>Banarasi Sarees Direct from Varanasi</h2>
               </div>
               <p>By partnering directly with <a href="/vendor-partnership" onClick={(e) => { e.preventDefault(); navigate('vendor-partnership'); }} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
             </div>

@@ -1,3 +1,8 @@
+/**
+ * Footer Component
+ * Purpose: Renders standard B2B navigation links, corporate social anchors,
+ * primary support details (phone, email, hours), and direct SEO landing page index maps.
+ */
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';

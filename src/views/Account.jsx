@@ -1,3 +1,22 @@
+/**
+ * @file Account.jsx
+ * @description The user account area view for boutique owners and resellers. Aggregates and displays
+ * buyer profile details, approved B2B pricing groups, active bulk order lists, saved favorites,
+ * and entry points to the personalized Reseller Business Center (white-label storefront tools).
+ * 
+ * @module views/Account
+ * @param {Object} props
+ * @param {Object} props.user - Current user object from Supabase authentication
+ * @param {Object} props.buyerProfile - Buyer profile data including business name, pincode, etc.
+ * @param {Object} props.priceAccess - Evaluated price permissions, buyer groups, and approval states
+ * @param {Array} props.cartItems - Items currently in the draft order list
+ * @param {Array} props.favoriteProducts - Bookmarked products list
+ * @param {Function} props.navigate - Application route/navigation handler
+ * @param {Function} props.openAuth - Trigger callback to display login/registration modal
+ * @param {Function} props.updateQuantity - Callback to adjust the quantity of items in the draft order list
+ * @param {Function} props.onSignOut - Callback to end the user session
+ */
+
 import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';

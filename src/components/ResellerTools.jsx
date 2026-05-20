@@ -1,3 +1,8 @@
+/**
+ * ResellerTools Component
+ * Purpose: Handles the back-office dashboard for registered boutique resellers.
+ * Manages product listings, pricing markups, live customer leads, and storefront settings (custom logos/slugs/themes).
+ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Link as LinkIcon, 

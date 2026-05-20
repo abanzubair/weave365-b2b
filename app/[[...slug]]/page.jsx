@@ -78,6 +78,15 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     };
   };
 
+  // Dynamic Homepage Routing Metadata
+  if (route === 'home') {
+    return buildMeta(
+      'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+      'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
+      '/'
+    );
+  }
+
   // Dynamic Blog Routing Metadata
   if (route === 'blog') {
     if (blogPostSlug) {
@@ -126,8 +135,8 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
 
   if (route === 'about') {
     return buildMeta(
-      'About Weave365 | Premium B2B Banarasi Saree Wholesaler India',
-      'Discover Weave365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
+      'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',
+      'Discover Weave 365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
       '/about'
     );
   }

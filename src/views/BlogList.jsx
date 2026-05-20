@@ -1,3 +1,15 @@
+/**
+ * @file BlogList.jsx
+ * @description The main B2B insights and articles page index for Weave365. Showcases a premium
+ * editorial journal layout with filterable categories, a prominent featured hero article,
+ * and a grid of secondary educational, reseller, and commercial B2B guides designed to build topical authority.
+ * 
+ * @module views/BlogList
+ * @param {Object} props
+ * @param {Function} props.navigate - Callback function to transition between application pages/routes
+ * @param {Array} props.blogs - Dynamic collection of blog posts loaded from both static datasets and Supabase CMS
+ */
+
 import { useState, useMemo } from 'react';
 import { ArrowRight, Calendar, Clock, User, Filter } from 'lucide-react';
 

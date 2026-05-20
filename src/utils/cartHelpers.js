@@ -1,3 +1,13 @@
+/**
+ * @file cartHelpers.js
+ * @description B2B cart and favorites state persistence and encoding utilities. Coordinates
+ * local draft order lists and favorites lists, serializing compound color selection markers into
+ * unique composite database-compatible variant keys. Synchronizes state seamlessly between browser
+ * localStorage fallbacks and Supabase DB tables.
+ * 
+ * @module utils/cartHelpers
+ */
+
 import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
 
 const colorKeyMarker = '::color=';

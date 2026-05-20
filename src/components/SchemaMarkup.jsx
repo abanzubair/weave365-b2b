@@ -48,6 +48,7 @@ export default function SchemaMarkup() {
         "@id": "https://www.weave365.in/#website",
         url: "https://www.weave365.in",
         name: "Weave 365",
+        alternateName: ["Weave365", "Weave 365 B2B", "Weave365 B2B"],
         publisher: {
           "@id": "https://www.weave365.in/#organization",
         },

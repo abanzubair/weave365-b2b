@@ -1,6 +1,13 @@
-import { useState, useMemo } from 'react';
+/**
+ * SeoLandingPage View
+ * Purpose: Renders search-optimized B2B landing pages for specific Banarasi saree collections (e.g. organza, katan silk).
+ * Leverages crawlable breadcrumb & FAQ JSON-LD schemas, structured header hierarchies, direct weaver narratives,
+ * and high-end aesthetic designs to drive B2B traffic and boutique reseller conversions.
+ */
+import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, Award } from 'lucide-react';
-import { ProductCard, StateMessage } from '../storefrontShared.jsx';
+import { ProductCard } from '../components/ProductCard.jsx';
+import { StateMessage } from '../components/StateMessage.jsx';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 
 export default function SeoLandingPage({
@@ -79,6 +86,62 @@ export default function SeoLandingPage({
     if (currentSlug === 'soft-silk-sarees') return 'SOFT';
     if (currentSlug === 'wholesale-saree-supplier-india') return 'INDIA';
     return 'SOURCE';
+  }, [pageData]);
+
+  // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection
+  useEffect(() => {
+    if (!pageData || typeof window === 'undefined') return;
+
+    // Update document title tag
+    const originalTitle = document.title;
+    document.title = pageData.metaTitle || `${pageData.h1} | Weave 365`;
+
+    // Update meta description tag
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
+    const newDesc = pageData.metaDescription || pageData.introText || '';
+    
+    if (metaDesc) {
+      metaDesc.setAttribute('content', newDesc);
+    } else {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      metaDesc.content = newDesc;
+      document.head.appendChild(metaDesc);
+    }
+
+    // Update or create Canonical Link tag
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
+    const newCanonical = `https://www.weave365.in/${pageData.slug}`;
+
+    if (canonicalLink) {
+      canonicalLink.setAttribute('href', newCanonical);
+    } else {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      canonicalLink.href = newCanonical;
+      document.head.appendChild(canonicalLink);
+    }
+
+    // Clean up to avoid leaking custom metadata to other pages on routing
+    return () => {
+      document.title = originalTitle;
+      if (metaDesc) {
+        if (originalDesc) {
+          metaDesc.setAttribute('content', originalDesc);
+        } else {
+          metaDesc.remove();
+        }
+      }
+      if (canonicalLink) {
+        if (originalCanonical) {
+          canonicalLink.setAttribute('href', originalCanonical);
+        } else {
+          canonicalLink.remove();
+        }
+      }
+    };
   }, [pageData]);
 
   if (!pageData) {

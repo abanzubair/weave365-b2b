@@ -1,3 +1,13 @@
+/**
+ * @file TrustedPartnerRegistrationPage.jsx
+ * @description Manual onboarding application form for supply-side B2B partners (weavers, master weavers,
+ * manufacturers, and traders). Collects business types, production capacities, product categories, GST parameters,
+ * and experience metrics. Includes local double-submission validation via localStorage and global duplicate verification
+ * before pushing clean registration objects to Google Sheets APIs.
+ * 
+ * @module views/TrustedPartnerRegistrationPage
+ */
+
 import { useState } from 'react';
 import {
   BadgeCheck,

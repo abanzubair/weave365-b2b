@@ -1,3 +1,9 @@
+/**
+ * AuthModal Component
+ * Purpose: Provides a premium modal portal handling standard B2B user authentication (login/register).
+ * Captures granular corporate profiles (business name, mobile country codes, WhatsApp numbers,
+ * buyer roles, buying behaviors, and fabric categories) and integrates with Supabase authentication.
+ */
 import { useState } from 'react';
 import { X, LogOut } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';

@@ -1,3 +1,13 @@
+/**
+ * @file ComingSoon.jsx
+ * @description A premium placeholder and fallback view for routes/features currently under construction.
+ * Displays a luxury, dark-themed brand aesthetic with high-fidelity visual layout features, including brand
+ * alignment indicators, 404 indicators, B2B product benefit highlights (MOQ, premium Varanasi curation),
+ * and custom responsiveness matching the overall premium B2B branding.
+ * 
+ * @module views/ComingSoon
+ */
+
 import React from 'react';
 import { Lock, ScrollText, Award, Handshake } from 'lucide-react';
 import comingSoonBg from '../../assets/comingsoon.png';

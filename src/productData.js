@@ -1,3 +1,13 @@
+/**
+ * @file productData.js
+ * @description Core B2B Product and Catalog Data Service.
+ * Orchestrates CSV ingestion from Google Sheets config, parsing and normalizing product codes,
+ * variants, status tags, stock-in dates, and images, and manages background auto-synchronization
+ * to the Supabase database.
+ * 
+ * @module productData
+ */
+
 import Papa from 'papaparse';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';

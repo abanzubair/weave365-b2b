@@ -1,3 +1,12 @@
+/**
+ * @file resellerService.js
+ * @description White-label B2B Reseller and Storefront Database Operations.
+ * Manages Supabase CRUD operations for reseller storefront branding, custom pricing markup
+ * strategies, catalog item synchronization, customer inquiry ingestion, and reseller dashboard reporting.
+ * 
+ * @module services/resellerService
+ */
+
 import { supabase } from '../supabaseClient';
 
 /**

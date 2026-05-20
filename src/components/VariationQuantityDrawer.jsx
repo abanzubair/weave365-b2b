@@ -1,3 +1,8 @@
+/**
+ * VariationQuantityDrawer Component
+ * Purpose: A slide-up mobile sheet / desktop side-drawer that lets buyers compile B2B orders.
+ * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { storeConfig } from '../config.js';

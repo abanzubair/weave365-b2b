@@ -1,4 +1,8 @@
-import { StateMessage } from '../storefrontShared.jsx';
+/**
+ * RouteFallback Component
+ * Purpose: A clean, animated fallback indicator used by React Suspense during lazy route transitions.
+ */
+import { StateMessage } from './StateMessage.jsx';
 
 export function RouteFallback() {
   return (

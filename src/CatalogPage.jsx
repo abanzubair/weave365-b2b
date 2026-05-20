@@ -1,6 +1,13 @@
+/**
+ * Catalog Component
+ * Purpose: Handles the bulk B2B catalog view, featuring advanced sidebar filters (category, fabric, price ranges),
+ * instantaneous text search, custom responsive product grids, and quick order list compilation.
+ */
 import { useState, useEffect } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
-import { ProductCard, SectionTitle, StateMessage } from './storefrontShared.jsx';
+import { ProductCard } from './components/ProductCard.jsx';
+import { SectionTitle } from './components/SectionTitle.jsx';
+import { StateMessage } from './components/StateMessage.jsx';
 
 export function Catalog({
   title,

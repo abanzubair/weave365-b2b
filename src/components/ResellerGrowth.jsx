@@ -1,6 +1,5 @@
 import { CheckCircle2, ChevronRight, Share2, Package, TrendingUp, ShieldCheck } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import { WhatsappIcon } from '../storefrontShared.jsx';
 
 export function ResellerGrowth({ imageUrl, navigate }) {
   return (

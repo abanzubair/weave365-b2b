@@ -1,4 +1,10 @@
-import { SectionTitle, ProductCard } from '../storefrontShared.jsx';
+/**
+ * Favorites View
+ * Purpose: Displays the boutique owner's saved/favourited saree designs.
+ * Restricts access to logged-in users and provides single-click "Add All to Order List" for quick bulk checkouts.
+ */
+import { SectionTitle } from '../components/SectionTitle.jsx';
+import { ProductCard } from '../components/ProductCard.jsx';
 
 export function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCart, priceAccess }) {
   if (!user) {

@@ -1,6 +1,28 @@
+/**
+ * @file NewArrivalsPage.jsx
+ * @description Dedicated catalog view displaying recently stocked Banarasi sarees and suits.
+ * Leverages stateful filter dropdowns (category, fabric, pricing range) and fuzzy search logic to narrow
+ * results. Dynamically cascades down to the most recent items sorted by stock entry date if no explicitly
+ * flagged "new arrivals" are available, ensuring fresh collection presentations for retail buyers.
+ * 
+ * @module views/NewArrivalsPage
+ * @param {Object} props
+ * @param {Array} props.products - Full B2B catalog list from local DB and Google Sheets
+ * @param {string} props.status - Loading/ready state of the active catalog query
+ * @param {Object} props.error - Active query/sync errors if any
+ * @param {Function} props.navigate - Internal client router handler
+ * @param {Function} props.addToCart - Callback to push bulk pieces to the draft order list
+ * @param {Function} props.toggleFavorite - Callback to bookmark/unbookmark items
+ * @param {Set} props.favoriteKeys - Unique set of currently bookmarked product IDs
+ * @param {Object} props.priceAccess - Active buyer type and price visibility clearances
+ * @param {Function} props.openAuth - Trigger callback to display login/registration modal
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
-import { ProductCard, SectionTitle, StateMessage } from '../storefrontShared.jsx';
+import { ProductCard } from '../components/ProductCard.jsx';
+import { SectionTitle } from '../components/SectionTitle.jsx';
+import { StateMessage } from '../components/StateMessage.jsx';
 
 export function NewArrivalsPage({
   products = [],

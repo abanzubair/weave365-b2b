@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * App Component (Core Entrypoint & Orchestrator)
+ * Purpose: Manages Weave365's master client state, authentication sessions, order lists (carts),
+ * catalog caching, currency states, and client-side page navigation routing.
+ * Houses universal shell items like the top alert bars, navigation headers, sidebar drawers, and the footer.
+ */
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';

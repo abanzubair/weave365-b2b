@@ -1,3 +1,12 @@
+/**
+ * @file priceService.js
+ * @description B2B Price and Inventory Services. Connects to custom Supabase database functions
+ * to dynamically fetch and apply role-specific pricing adjustments and custom variant rates
+ * to catalog items, preserving clean caching tiers and reseller markups.
+ * 
+ * @module services/priceService
+ */
+
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 
 export async function loadVisiblePrices() {

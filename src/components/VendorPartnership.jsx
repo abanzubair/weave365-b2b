@@ -1,3 +1,8 @@
+/**
+ * VendorPartnership Component
+ * Purpose: Renders editorial sections detailing supply onboarding and weaver partner program values.
+ * Guides Varanasi craft weavers and manufacturers on how to catalog and list their products on the platform.
+ */
 import { ChevronRight, Factory, Handshake, BarChart3, Camera, Truck, IndianRupee } from 'lucide-react';
 import { storeConfig } from '../config.js';
 

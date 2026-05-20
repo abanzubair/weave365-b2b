@@ -1,3 +1,9 @@
+/**
+ * AboutPage View
+ * Purpose: Renders Weave 365's brand heritage narrative, direct weaver mission,
+ * zero-defect quality protocol check, worldwide shipping logistics, and trust signals (GST/registration parameters).
+ * Supports search indexing using embedded crawlable FAQ & Organization schemas.
+ */
 import React, { useState } from 'react';
 import { 
   Award, 
@@ -36,12 +42,12 @@ export function AboutPage({ navigate }) {
       answer: "Our B2B model is designed for absolute flexibility. For retail boutiques, online resellers, and new business test orders, we offer an exceptionally low MOQ of just 5 sarees across our entire catalog (you can mix-and-match categories). For custom bespoke weaving or white-label volume manufacturing, the MOQ starts at 15 pieces per design."
     },
     {
-      question: "How does Weave365 verify the authenticity of pure silk and zari sarees?",
+      question: "How does Weave 365 verify the authenticity of pure silk and zari sarees?",
       answer: "Every saree under our premium label is accompanied by a Silk Mark Authority of India certification option, guaranteeing 100% natural Mulberry silk yarn. Furthermore, our zari work undergoes rigid chemical and density analysis (micro-melt testing) to assure authentic silver-plated copper or gold plating, eliminating low-grade metallic threads."
     },
     {
       question: "Do you support white-label branding and custom packaging for boutique owners?",
-      answer: "Yes, we are the backend supply force for some of the largest ethnic boutiques globally. Under our premium White Label Brand Program, we can customize brand woven labels, high-density metallic card hangtags, luxury hand-made cardboard packaging boxes, and moisture-proof silk storage bags. All goods are dispatched from our white-labeled warehouse, keeping Weave365 completely anonymous."
+      answer: "Yes, we are the backend supply force for some of the largest ethnic boutiques globally. Under our premium White Label Brand Program, we can customize brand woven labels, high-density metallic card hangtags, luxury hand-made cardboard packaging boxes, and moisture-proof silk storage bags. All goods are dispatched from our white-labeled warehouse, keeping Weave 365 completely anonymous."
     },
     {
       question: "What are your shipping timelines, transit cargo charges, and insurance coverages?",
@@ -58,7 +64,7 @@ export function AboutPage({ navigate }) {
   };
 
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
-    'Hi Weave365 B2B Desk, I would like to learn more about wholesale sourcing, pricing groups, and boutique reseller onboarding.'
+    'Hi Weave 365 B2B Desk, I would like to learn more about wholesale sourcing, pricing groups, and boutique reseller onboarding.'
   )}`;
 
   // JSON-LD structured data for Google Search crawling
@@ -78,7 +84,7 @@ export function AboutPage({ navigate }) {
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Weave365",
+    "name": "Weave 365",
     "description": "Premium B2B Banarasi saree wholesaler and manufacturer directly partnering with Varanasi master weavers.",
     "telephone": storeConfig.phone,
     "email": storeConfig.email,
@@ -157,7 +163,7 @@ export function AboutPage({ navigate }) {
           <span>Direct from the Looms of Varanasi</span>
         </h1>
         <p className="about-hero-description">
-          Weave365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and resellers, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
+          Weave 365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and resellers, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
         </p>
         <div>
           <a 
@@ -180,13 +186,13 @@ export function AboutPage({ navigate }) {
               For generations, the city of Varanasi (Banaras) has held a sacred place in global textile history. The magical coordination of silk threads, metallic zari, and handwoven card-grids produces sarees that are not merely garments, but pieces of living art. 
             </p>
             <p className="about-story-text">
-              However, modern industrial imitation and convoluted agent chains began to dilute this heritage. Weave365 was founded to challenge this decline. By setting up direct collection centers and fair-compensation frameworks in heartlands like Lallapura and Madanpura, we bypass intermediary channels. 
+              However, modern industrial imitation and convoluted agent chains began to dilute this heritage. Weave 365 was founded to challenge this decline. By setting up direct collection centers and fair-compensation frameworks in heartlands like Lallapura and Madanpura, we bypass intermediary channels. 
             </p>
             <p className="about-story-text">
               Every curve of our gold zari, every thread of our pure organza, katan silk, and designer tissue is handpicked, guaranteeing that your customers experience the true majestic grandeur that defined ancient Indian royalty.
             </p>
             <div className="about-story-quote">
-              "Weave365 isn't just a supplier. We are structural gatekeepers of premium Banarasi craftsmanship, engineered with high-performing wholesale systems for the modern boutique."
+              "Weave 365 isn't just a supplier. We are structural gatekeepers of premium Banarasi craftsmanship, engineered with high-performing wholesale systems for the modern boutique."
             </div>
           </div>
           
@@ -280,7 +286,7 @@ export function AboutPage({ navigate }) {
             <div className="about-artisan-banner-left">
               <h2>Supporting a Vibrant Network of 200+ Master Weavers</h2>
               <p>
-                At the heart of Weave365 are the highly-skilled hands that spin, dye, and weave. Every purchase directly drives ethical wages, sustainable raw material sourcing, and healthcare support back to local weavers in the Varanasi cluster. We secure their craft for subsequent generations while guaranteeing reliable production capacities for your boutique's peak seasons.
+                At the heart of Weave 365 are the highly-skilled hands that spin, dye, and weave. Every purchase directly drives ethical wages, sustainable raw material sourcing, and healthcare support back to local weavers in the Varanasi cluster. We secure their craft for subsequent generations while guaranteeing reliable production capacities for your boutique's peak seasons.
               </p>
               <div className="about-artisan-stats">
                 <div className="about-artisan-stat-item">
@@ -305,7 +311,7 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 5. THE WEAVE365 QUALITY VERIFICATION PROCESS */}
+      {/* 5. THE WEAVE 365 QUALITY VERIFICATION PROCESS */}
       <section className="about-quality-section">
         <div className="about-quality-container">
           <div className="about-center-header">
@@ -524,7 +530,7 @@ export function AboutPage({ navigate }) {
             <div className="about-testimonial-card">
               <div className="about-stars">★★★★★</div>
               <p className="about-test-quote">
-                "Sourcing directly from Varanasi master weavers has completely transformed our boutique's profit margins. Weave365's extremely low MOQ of 5 sarees allowed us to test their premium Katan Silk and Organza. Our clients are mesmerized by the authenticity and standard quality certifications."
+                "Sourcing directly from Varanasi master weavers has completely transformed our boutique's profit margins. Weave 365's extremely low MOQ of 5 sarees allowed us to test their premium Katan Silk and Organza. Our clients are mesmerized by the authenticity and standard quality certifications."
               </p>
               <div className="about-test-buyer">
                 <strong>Aisha Rahman</strong>
@@ -535,7 +541,7 @@ export function AboutPage({ navigate }) {
             <div className="about-testimonial-card">
               <div className="about-stars">★★★★★</div>
               <p className="about-test-quote">
-                "Weave365 is the ultimate backend supplier for international B2B saree wholesale. The triple-layer moisture packaging is impeccable, and the DHL air cargo arrives in Houston in exactly 5 days. Our premium boutique collection has a 100% customer return rate."
+                "Weave 365 is the ultimate backend supplier for international B2B saree wholesale. The triple-layer moisture packaging is impeccable, and the DHL air cargo arrives in Houston in exactly 5 days. Our premium boutique collection has a 100% customer return rate."
               </p>
               <div className="about-test-buyer">
                 <strong>Devika Sen</strong>

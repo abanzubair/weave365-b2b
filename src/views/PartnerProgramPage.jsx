@@ -1,3 +1,16 @@
+/**
+ * @file PartnerProgramPage.jsx
+ * @description Editorial landing view representing Weave365's two primary partnership models:
+ * "Sourcing Partners" (loom-to-market coordinators managing Varanasi supply, MOQ slabs, quality checks) and
+ * "White Label Brands" (market-to-customer boutique private labels using our backend supply ecosystem).
+ * Integrates JSON-LD Breadcrumb, Service, and FAQ rich schemas dynamically based on selected partnership type.
+ * 
+ * @module views/PartnerProgramPage
+ * @param {Object} props
+ * @param {string} [props.type='sourcing-partners'] - The partnership channel to display ('sourcing-partners' or 'white-label-brands')
+ * @param {Function} props.navigate - Client router transition callback
+ */
+
 import {
   ArrowRight,
   BadgeCheck,

@@ -1,6 +1,12 @@
+/**
+ * TopBar Component
+ * Purpose: Renders the site's top informational banner, reinforcing key B2B value propositions
+ * (Wholesale Only, Bulk Pricing, PAN India & Export shipping) and housing the currency/exchange-rate selector.
+ */
 import { useEffect, useState, useRef } from 'react';
 import { Award, PackageCheck, Truck, ChevronDown } from 'lucide-react';
-import { CURRENCIES, CurrencyManager, useCurrency, WhatsappIcon } from '../storefrontShared.jsx';
+import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
+import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { storeConfig } from '../config.js';
 
 const topBarItems = [

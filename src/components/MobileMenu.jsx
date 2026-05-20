@@ -1,3 +1,9 @@
+/**
+ * MobileMenu Component
+ * Purpose: Renders the full-screen slide-over B2B drawer navigation for mobile devices.
+ * Integrates immediate category pathways, bookmarks/favorites, login profiles,
+ * and quick-connect WhatsApp support triggers.
+ */
 import {
   ArrowRight,
   BadgeCheck,

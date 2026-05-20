@@ -1,3 +1,9 @@
+/**
+ * CartDrawer Component
+ * Purpose: Renders the slide-out B2B order drawer (cart).
+ * Enables real-time order list compilations, quantity adjustments, catalog color selection,
+ * PAN India delivery pincode check status, and dynamic WhatsApp checkouts.
+ */
 import { useMemo, useState } from 'react';
 import { X, ArrowRight, Plus } from 'lucide-react';
 import {
@@ -6,9 +12,9 @@ import {
   fallbackProductImage,
   formatMoney,
   normalizePincodeInput,
-  WhatsappIcon,
-  EnquiryPopup,
 } from '../storefrontShared.jsx';
+import { WhatsappIcon } from './WhatsappIcon.jsx';
+import { EnquiryPopup } from './EnquiryPopup.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 

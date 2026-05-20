@@ -1,3 +1,12 @@
+/**
+ * @file config.js
+ * @description Core B2B Store and Spreadsheet Synchronization Configuration.
+ * Defines Google Sheets CSV endpoints for real-time inventory updates, product taxonomies,
+ * local service delivery constraints, fallback contact parameters, and administrative privileges.
+ * 
+ * @module config
+ */
+
 export const csvUrl =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
 

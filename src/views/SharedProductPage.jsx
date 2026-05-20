@@ -1,3 +1,18 @@
+/**
+ * @file SharedProductPage.jsx
+ * @description Single product detail view for customer-facing white-label reseller storefronts.
+ * Displays matching fabric details, work descriptions, and custom color thumbnail swatches for selected items,
+ * showing the reseller's custom marked-up retail pricing. Features customer inquiry forms that log requests and
+ * coordinate direct WhatsApp redirects.
+ * 
+ * @module views/SharedProductPage
+ * @param {Object} props
+ * @param {Array} props.products - Full catalog list used for matching local details (images, fabrics)
+ * @param {string} props.slug - The unique white-label reseller boutique URL slug
+ * @param {string} props.productId - Selected catalog product group key/ID to render
+ * @param {Function} props.navigate - Client router transition callback
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ArrowLeft, 

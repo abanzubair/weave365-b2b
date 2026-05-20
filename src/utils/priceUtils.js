@@ -1,3 +1,8 @@
+/**
+ * Price & Currency Utilities
+ * Purpose: Handles international multi-currency state management (INR, USD, GBP, AED, EUR, etc.),
+ * dynamic currency conversion fetching, and premium B2B locale-specific money & weight formatting.
+ */
 import { useState, useEffect } from 'react';
 import { priceForBuyer } from './buyerAccess.js';
 

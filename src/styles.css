@@ -18,6 +18,13 @@
 @import './styles/partnerProgram.css';
 @import './styles/blog.css';
 @import './styles/about.css';
+@import './styles/productCard.css';
+@import './styles/resellerWhatsappShare.css';
+@import './styles/enquiryPopup.css';
+@import './styles/newsletter.css';
+@import './styles/productTrustStrip.css';
+@import './styles/sectionTitle.css';
+
 
 .search-lock {
   overflow: hidden !important;

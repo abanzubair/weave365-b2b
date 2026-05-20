@@ -1,3 +1,13 @@
+/**
+ * @file profileHelpers.js
+ * @description B2B user profile normalization and synchronization utilities. Translates
+ * authenticated Supabase user metadata configurations into structured buyer database schemas.
+ * Orchestrates backend profile synchronization, preserving administrator approvals and B2B pricing tier classifications
+ * while updating retail contact parameters and wholesale buyer interests.
+ * 
+ * @module utils/profileHelpers
+ */
+
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAutoApprovalToBuyerProfile } from './buyerAccess.js';
 

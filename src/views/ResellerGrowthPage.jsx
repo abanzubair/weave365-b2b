@@ -1,6 +1,18 @@
+/**
+ * @file ResellerGrowthPage.jsx
+ * @description Educational program and marketing view introducing the certified B2B Reseller Program.
+ * Outlines the 6-step registration, certification, margin configuration, and social sharing roadmap.
+ * Displays premium feature benefit grids, zero-inventory risk explanations, and registration calls-to-action
+ * designed to onboard new home resellers and boutique owners.
+ * 
+ * @module views/ResellerGrowthPage
+ * @param {Object} props
+ * @param {Function} props.openAuth - Trigger callback to display the B2B registration/authentication modal
+ */
+
 import { ArrowRight, BadgeCheck, Share2, PackagePlus, Users, Store, Zap, ShieldCheck } from 'lucide-react';
-import resellerImage from '../../assets/reseller_premium_catalog_display.png';
 import { assetSrc } from '../utils/assetSrc.js';
+import resellerImage from '../../assets/reseller_premium_catalog_display.png';
 
 export function ResellerGrowthPage({ openAuth }) {
   return (

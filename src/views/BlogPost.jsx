@@ -1,3 +1,17 @@
+/**
+ * @file BlogPost.jsx
+ * @description The granular single blog article post view. Dynamically extracts article slugs,
+ * updates browser titles and meta descriptions for on-page SEO targeting, and injects Google JSON-LD
+ * rich metadata scripts (BlogPosting + FAQPage schemas). Translates simple markdown body structures into
+ * beautiful, premium styled layouts with tables, blockquotes, related articles, and share options.
+ * 
+ * @module views/BlogPost
+ * @param {Object} props
+ * @param {string} props.postSlug - URL slug identifier matching a published blog post
+ * @param {Function} props.navigate - Application route transition callback
+ * @param {Array} props.blogs - Dynamic collection of blog posts loaded from both static data and Supabase CMS
+ */
+
 import { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, User, Share2, MessageSquare, Heart, ArrowRight, Bookmark } from 'lucide-react';
 

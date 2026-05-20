@@ -1,3 +1,13 @@
+/**
+ * @file VendorPartnershipPage.jsx
+ * @description The main vendor partnership program landing view. Embeds the editorial VendorPartnership
+ * component, showcases partner satisfaction/reach metrics, and displays listable product categories. Coordinates
+ * direct-apply routing to the manual partner registration portal and provides direct WhatsApp communication
+ * channels for Varanasi master weavers and suppliers.
+ * 
+ * @module views/VendorPartnershipPage
+ */
+
 import { ClipboardCheck, Factory, Heart, MessageCircle, Package, Users } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.png';

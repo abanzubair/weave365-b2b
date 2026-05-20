@@ -1,3 +1,20 @@
+/**
+ * @file Admin.jsx
+ * @description Back-office administration and pipeline management dashboard. Integrates real-time
+ * B2B client profiles, order lists, and favorited collections directly from Supabase, alongside manual Google
+ * Sheets data synchronization triggers. Controls user pricing tier authorizations (wholesale vs reseller),
+ * white-label dashboard permissions, and embeds a premium editorial blog manager for publishing SEO articles with FAQ schemas.
+ * 
+ * @module views/Admin
+ * @param {Object} props
+ * @param {Object} props.user - Active authenticated Supabase user session
+ * @param {Object} props.buyerProfile - Buyer profile attributes for the logged-in administrator
+ * @param {Function} props.onProfileChange - Callback triggered when the active administrator's profile updates
+ * @param {Function} props.openAuth - Trigger to open the authentication modal for credentials verification
+ * @param {Array} props.blogs - Collection of currently active B2B blog articles
+ * @param {Function} props.setBlogs - State setter to sync and update the parent blogs catalog after CRUD operations
+ */
+
 import { useEffect, useMemo, useState } from 'react';
 import {
   BarChart3,

@@ -1,3 +1,9 @@
+/**
+ * ProductPage View / ProductDetailWrapper
+ * Purpose: Displays comprehensive details for individual catalog designs (sarees, suits, dupattas).
+ * Integrates image zoom preview grids, interactive color swatches, dynamic wholesale pricing tiers,
+ * volume-based B2B order calculators, shipping/FAQ accordions, and WhatsApp inquiry triggers.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Award,
@@ -30,16 +36,16 @@ import {
   fallbackProductImage,
   formatMoney,
   formatWeight,
-  Newsletter,
-  ProductTrustStrip,
-  ProductCard,
-  ResellerWhatsappShare,
-  SectionTitle,
   normalizePincodeInput,
   useCurrency,
-  WhatsappIcon,
-  EnquiryPopup,
 } from './storefrontShared.jsx';
+import { Newsletter } from './components/Newsletter.jsx';
+import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
+import { ProductCard } from './components/ProductCard.jsx';
+import { ResellerWhatsappShare } from './components/ResellerWhatsappShare.jsx';
+import { SectionTitle } from './components/SectionTitle.jsx';
+import { WhatsappIcon } from './components/WhatsappIcon.jsx';
+import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 
@@ -84,6 +90,59 @@ export function ProductDetail({
   const [activeAccordion, setActiveAccordion] = useState(null);
   const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
   const mainImageRef = useRef(null);
+
+  // Dynamic Tab Title, Meta Description & Canonical Link SEO injection for Product Detail page
+  useEffect(() => {
+    if (!product || typeof window === 'undefined') return;
+
+    const originalTitle = document.title;
+    const metaTitle = product.metaTitle || product.title || `${storeConfig.name} Product`;
+    const metaDescription = product.metaDescription || product.summary || product.description || `View ${metaTitle} in the ${storeConfig.name} wholesale catalogue.`;
+
+    document.title = metaTitle;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
+    if (metaDesc) {
+      metaDesc.setAttribute('content', metaDescription);
+    } else {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      metaDesc.content = metaDescription;
+      document.head.appendChild(metaDesc);
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
+    const newCanonical = `https://www.weave365.in/product/${encodeURIComponent(product.id)}`;
+
+    if (canonicalLink) {
+      canonicalLink.setAttribute('href', newCanonical);
+    } else {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      canonicalLink.href = newCanonical;
+      document.head.appendChild(canonicalLink);
+    }
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDesc) {
+        if (originalDesc) {
+          metaDesc.setAttribute('content', originalDesc);
+        } else {
+          metaDesc.remove();
+        }
+      }
+      if (canonicalLink) {
+        if (originalCanonical) {
+          canonicalLink.setAttribute('href', originalCanonical);
+        } else {
+          canonicalLink.remove();
+        }
+      }
+    };
+  }, [product]);
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
     if (!priceAccess?.isLoggedIn) {
@@ -619,6 +678,8 @@ export function ProductDetail({
                     alt={`${product.title} view ${index + 1}`}
                     loading="lazy"
                     decoding="async"
+                    width={64}
+                    height={85}
                     onError={(e) => { e.target.style.opacity = '0'; }}
                   />
                 </button>
@@ -633,6 +694,8 @@ export function ProductDetail({
                       src={`https://img.youtube.com/vi/${product.video.split('/').pop().split('?')[0]}/mqdefault.jpg`}
                       alt="Product Video Thumbnail"
                       loading="lazy"
+                      width={64}
+                      height={85}
                     />
                     <div className="play-overlay">
                       <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
@@ -662,6 +725,8 @@ export function ProductDetail({
                     alt={product.title}
                     fetchPriority="high"
                     decoding="async"
+                    width={600}
+                    height={800}
                     onError={(e) => { e.target.style.opacity = '0'; }}
                   />
                   <button className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
@@ -833,6 +898,8 @@ export function ProductDetail({
                           alt={optionName}
                           loading="lazy"
                           decoding="async"
+                          width={40}
+                          height={40}
                           onError={(e) => { e.target.style.opacity = '0'; }}
                         />
                       </button>
@@ -993,6 +1060,8 @@ export function ProductDetail({
               alt={`${product.title} fabric close-up`}
               loading="lazy"
               decoding="async"
+              width={500}
+              height={600}
               onError={(e) => { e.target.style.opacity = '0'; }}
             />
             <div className="showcase-image-badge">

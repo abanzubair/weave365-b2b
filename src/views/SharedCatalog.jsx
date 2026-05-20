@@ -1,3 +1,17 @@
+/**
+ * @file SharedCatalog.jsx
+ * @description The customer-facing white-label storefront view shared by resellers.
+ * Dynamically resolves the specific reseller storefront profile and marked-up catalog items by custom URL slug,
+ * applying the reseller's custom theme (e.g. Classic Luxury, Soft Silk). Enables retail customers to browse collections,
+ * filter by category/fabric/pricing, and submit purchase inquiries directly to the reseller via database logs and WhatsApp.
+ * 
+ * @module views/SharedCatalog
+ * @param {Object} props
+ * @param {Array} props.products - Full catalog list used for matching local details (images, fabrics)
+ * @param {string} props.slug - The unique white-label reseller boutique URL slug
+ * @param {Function} props.navigate - Client router transition callback
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   MessageSquare, 
