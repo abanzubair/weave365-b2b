@@ -559,8 +559,11 @@
   animation: fadeIn 0.4s ease both;
 }
 
-/* Responsive configurations */
 @media (max-width: 768px) {
+  .early-access-container {
+    margin-top: -30px;
+  }
+
   .early-access-form-card {
     padding: 32px 24px;
   }
