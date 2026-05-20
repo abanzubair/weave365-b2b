@@ -122,12 +122,12 @@ export function EarlyAccessPage({ navigate }) {
       return;
     }
     if (!form.agreement) {
-      showToast('Please confirm you are a genuine buyer or reseller to proceed.');
+      showToast('Please confirm you are a genuine buyer or reseller by checking the box.');
       return;
     }
 
     if (!isVerified) {
-      setFormError('Please slide the verification bar to confirm you are a genuine visitor.');
+      showToast('Please slide the verification bar to confirm you are a genuine visitor.');
       return;
     }
 
@@ -402,7 +402,6 @@ export function EarlyAccessPage({ navigate }) {
                     checked={form.agreement}
                     onChange={(e) => updateField('agreement', e.target.checked)}
                     disabled={isSubmitting}
-                    required
                   />
                   <span className="checkmark-box" />
                   <span className="agreement-text">
