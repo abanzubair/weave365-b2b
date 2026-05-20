@@ -141,33 +141,26 @@ export function EarlyAccessPage({ navigate }) {
       }
     };
 
-    // Google Sheets integration POST
-    const endpoint = process.env.NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL;
-    console.log('[EarlyAccess] Submitting to endpoint:', endpoint);
-    console.log('[EarlyAccess] Payload:', JSON.stringify(submissionData));
+    // Submit via server-side API route (avoids CORS/redirect issues with Google Apps Script)
+    try {
+      const res = await fetch('/api/early-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
 
-    if (endpoint) {
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(submissionData)
-        });
-        console.log('[EarlyAccess] Response status:', res.status, 'type:', res.type);
+      const data = await res.json();
+      console.log('[EarlyAccess] API response:', data);
+
+      if (data.status === 'error') {
+        setSubmitError(data.error || 'Submission failed. Please try again.');
+      } else {
         handleSuccess();
-      } catch (err) {
-        console.error('[EarlyAccess] Fetch error:', err);
-        setSubmitError('Unable to connect to registration servers. Please check your network and try again.');
-      } finally {
-        setIsSubmitting(false);
       }
-    } else {
-      console.warn('[EarlyAccess] No endpoint configured. NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL is missing.');
-      // Still show success so form doesn't get stuck
-      handleSuccess();
+    } catch (err) {
+      console.error('[EarlyAccess] Fetch error:', err);
+      setSubmitError('Unable to connect to registration servers. Please check your network and try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
