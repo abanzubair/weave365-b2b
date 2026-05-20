@@ -22,7 +22,7 @@ import {
   Loader2,
   CheckCircle2
 } from 'lucide-react';
-import ReCAPTCHA from '../components/ReCAPTCHA';
+import SliderCaptcha from '../components/SliderCaptcha';
 
 const buyerTypes = [
   { id: 'wholesaler', label: 'Wholesaler', icon: Building2 },
@@ -62,7 +62,8 @@ export function EarlyAccessPage({ navigate }) {
   const [formError, setFormError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [resetSlider, setResetSlider] = useState(false);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -111,9 +112,8 @@ export function EarlyAccessPage({ navigate }) {
       return;
     }
 
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (siteKey && !captchaToken) {
-      setFormError('Please complete the CAPTCHA verification.');
+    if (!isVerified) {
+      setFormError('Please slide the verification bar to confirm you are a genuine visitor.');
       return;
     }
 
@@ -139,13 +139,16 @@ export function EarlyAccessPage({ navigate }) {
       pincode: form.pincode,
       storeLink: form.storeLink.trim() || 'None provided',
       status: 'pending_review',
-      captchaToken: captchaToken || ''
+      sliderVerified: true
     };
 
     const handleSuccess = () => {
       setSubmitted(true);
       setForm(initialForm);
-      setCaptchaToken(null);
+      setIsVerified(false);
+      setResetSlider(true);
+      // Turn off reset trigger after state propagates
+      setTimeout(() => setResetSlider(false), 100);
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -164,21 +167,18 @@ export function EarlyAccessPage({ navigate }) {
 
       if (data.status === 'error') {
         setSubmitError(data.error || 'Submission failed. Please try again.');
-        // Reset captcha on failure so they can try again
-        setCaptchaToken(null);
-        if (window.grecaptcha) {
-          try { window.grecaptcha.reset(); } catch (e) {}
-        }
+        setIsVerified(false);
+        setResetSlider(true);
+        setTimeout(() => setResetSlider(false), 100);
       } else {
         handleSuccess();
       }
     } catch (err) {
       console.error('[EarlyAccess] Fetch error:', err);
       setSubmitError('Unable to connect to registration servers. Please check your network and try again.');
-      setCaptchaToken(null);
-      if (window.grecaptcha) {
-        try { window.grecaptcha.reset(); } catch (e) {}
-      }
+      setIsVerified(false);
+      setResetSlider(true);
+      setTimeout(() => setResetSlider(false), 100);
     } finally {
       setIsSubmitting(false);
     }
@@ -379,12 +379,10 @@ export function EarlyAccessPage({ navigate }) {
                 </label>
               </div>
 
-              {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
-                <ReCAPTCHA
-                  siteKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-                  onChange={setCaptchaToken}
-                />
-              )}
+              <SliderCaptcha 
+                onVerify={setIsVerified}
+                isReset={resetSlider}
+              />
 
               {formError && <div className="form-error-msg">{formError}</div>}
               {submitError && <div className="form-error-msg">{submitError}</div>}
