@@ -1,0 +1,141 @@
+/**
+ * @file internalLinkNetwork.css
+ * @description Stylesheet for the B2B Sourcing & Heritage Directory.
+ * Aligns with the Weave365 premium brand design system.
+ */
+
+.internal-link-network {
+  padding: 5rem var(--site-padding) 2.5rem;
+  background: var(--surface-soft);
+  border-top: 1px solid var(--surface-strong);
+}
+
+.directory-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.directory-header {
+  margin-bottom: 3.5rem;
+  text-align: center;
+}
+
+.directory-kicker {
+  font-family: var(--font-hero-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.directory-title {
+  font-family: var(--font-hero-heading);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--gold-dark);
+  margin: 0 0 1.25rem;
+}
+
+.directory-divider {
+  width: 60px;
+  height: 2px;
+  background: var(--gold);
+  margin: 0 auto;
+  opacity: 0.6;
+}
+
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3rem 2rem;
+}
+
+.directory-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.col-icon {
+  color: var(--gold);
+}
+
+.directory-col h3 {
+  font-family: var(--font-hero-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gold-dark);
+  margin: 0;
+}
+
+.directory-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.directory-col li {
+  margin: 0;
+}
+
+.directory-col a {
+  font-family: var(--font-hero-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+}
+
+.directory-col a:hover {
+  color: var(--gold);
+  transform: translateX(4px);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 991px) {
+  .directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem 2rem;
+  }
+  .internal-link-network {
+    padding: 4rem var(--site-padding) 2rem;
+  }
+  .directory-title {
+    font-size: 1.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .directory-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .directory-header {
+    text-align: left;
+    margin-bottom: 2.5rem;
+  }
+  .directory-divider {
+    margin: 0;
+  }
+  .internal-link-network {
+    padding: 3.5rem var(--site-padding) 2rem;
+  }
+}

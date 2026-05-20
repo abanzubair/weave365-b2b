@@ -33,6 +33,7 @@ import { applyVisiblePricesToProducts, buildVisiblePriceMap, loadVisiblePrices }
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
+import { InternalLinkNetwork } from './components/InternalLinkNetwork.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
@@ -1229,6 +1230,7 @@ export default function App({ initialData = {} }) {
         </Suspense>
       </main>
 
+      {!isSharedPage && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
       {!isSharedPage && <Footer navigate={navigate} />}
       {!isSharedPage && (
         <CartDrawer

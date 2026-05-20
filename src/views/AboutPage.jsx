@@ -163,7 +163,7 @@ export function AboutPage({ navigate }) {
           <span>Direct from the Looms of Varanasi</span>
         </h1>
         <p className="about-hero-description">
-          Weave 365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and resellers, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
+          Weave 365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and <a href="/reseller-growth" onClick={(e) => { e.preventDefault(); navigate('reseller-growth'); }} className="seo-inline-link">resellers</a>, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
         </p>
         <div>
           <a 
@@ -189,7 +189,7 @@ export function AboutPage({ navigate }) {
               However, modern industrial imitation and convoluted agent chains began to dilute this heritage. Weave 365 was founded to challenge this decline. By setting up direct collection centers and fair-compensation frameworks in heartlands like Lallapura and Madanpura, we bypass intermediary channels. 
             </p>
             <p className="about-story-text">
-              Every curve of our gold zari, every thread of our pure organza, katan silk, and designer tissue is handpicked, guaranteeing that your customers experience the true majestic grandeur that defined ancient Indian royalty.
+              Every curve of our gold zari, every thread of our pure <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }} className="seo-inline-link">organza</a>, <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }} className="seo-inline-link">katan silk</a>, and designer tissue is handpicked, guaranteeing that your customers experience the true majestic grandeur that defined ancient Indian royalty. Compare these fabrics in our expert <a href="/blog/difference-katan-silk-and-organza-saree" onClick={(e) => { e.preventDefault(); navigate('blog', 'difference-katan-silk-and-organza-saree'); }} className="seo-inline-link">fabric guide</a>.
             </p>
             <div className="about-story-quote">
               "Weave 365 isn't just a supplier. We are structural gatekeepers of premium Banarasi craftsmanship, engineered with high-performing wholesale systems for the modern boutique."
