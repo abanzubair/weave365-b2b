@@ -5,7 +5,7 @@
  * Form submits data to a Google Sheets API endpoint for team review.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Building2, 
   Store, 
@@ -64,6 +64,20 @@ export function EarlyAccessPage({ navigate }) {
   const [submitted, setSubmitted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [resetSlider, setResetSlider] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '' });
+  const toastTimerRef = useRef(null);
+
+  const showToast = (message) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ visible: true, message });
+    toastTimerRef.current = setTimeout(() => {
+      setToast({ visible: false, message: '' });
+    }, 3500);
+  };
+
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -108,7 +122,7 @@ export function EarlyAccessPage({ navigate }) {
       return;
     }
     if (!form.agreement) {
-      setFormError('Please accept the buyer terms agreement checkbox.');
+      showToast('Please confirm you are a genuine buyer or reseller to proceed.');
       return;
     }
 
@@ -186,6 +200,24 @@ export function EarlyAccessPage({ navigate }) {
 
   return (
     <div className="early-access-page-wrapper">
+
+      {/* Floating Toast Notification */}
+      <div
+        className={`ea-toast-popup ${toast.visible ? 'ea-toast-visible' : ''}`}
+        role="alert"
+        aria-live="assertive"
+      >
+        <span className="ea-toast-icon">⚠️</span>
+        <span className="ea-toast-message">{toast.message}</span>
+        <button
+          className="ea-toast-close"
+          onClick={() => setToast({ visible: false, message: '' })}
+          aria-label="Dismiss"
+        >
+          ×
+        </button>
+      </div>
+
       <div className="early-access-container">
         
         {submitted ? (
