@@ -3,11 +3,12 @@
  * Purpose: Handles the bulk B2B catalog view, featuring advanced sidebar filters (category, fabric, price ranges),
  * instantaneous text search, custom responsive product grids, and quick order list compilation.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';
+import Breadcrumb from './components/Breadcrumb.jsx';
 
 export function Catalog({
   title,
@@ -35,6 +36,44 @@ export function Catalog({
   const [visibleCount, setVisibleCount] = useState(24);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
+
+  // Google JSON-LD BreadcrumbList Schema injection
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const schemaItems = [
+      { name: 'Home', url: '/' },
+      { name: title || 'Wholesale Saree Catalogue', url: '/shop' }
+    ];
+    if (category && category !== 'All') {
+      schemaItems.push({ name: category, url: `/shop` });
+    }
+    if (fabric && fabric !== 'All') {
+      schemaItems.push({ name: fabric, url: `/shop` });
+    }
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": schemaItems.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": `${window.location.origin}${item.url}`
+      }))
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'catalog-breadcrumb-ld-json';
+    script.text = JSON.stringify(breadcrumbSchema);
+    document.head.appendChild(script);
+
+    return () => {
+      const oldScript = document.getElementById('catalog-breadcrumb-ld-json');
+      if (oldScript) oldScript.remove();
+    };
+  }, [title, category, fabric]);
 
   const closeWithAnimation = () => {
     if (isClosing) return;
@@ -92,8 +131,19 @@ export function Catalog({
     setVisibleCount(24);
   };
 
+  const breadcrumbItems = useMemo(() => {
+    return [
+      { name: 'Home', url: '/', route: 'home' },
+      { name: title || 'Wholesale Saree Catalogue', url: '/shop', route: 'shop' },
+      ...(category && category !== 'All' ? [{ name: category }] : []),
+      ...(fabric && fabric !== 'All' ? [{ name: fabric }] : [])
+    ];
+  }, [title, category, fabric]);
+
   return (
     <section className="section catalog-page">
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
+
       <h1 className="sr-only">{title || "Banarasi Sarees and Suits Wholesale Catalogue"}</h1>
       {openDropdown && (
         <div 

@@ -48,6 +48,7 @@ import { WhatsappIcon } from './components/WhatsappIcon.jsx';
 import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
+import Breadcrumb from './components/Breadcrumb.jsx';
 
 export function ProductDetailWrapper(props) {
   const product = props.productsById?.get(props.productId) || props.products[0] || null;
@@ -653,16 +654,17 @@ export function ProductDetail({
     rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
   };
 
+  const breadcrumbItems = [
+    { name: 'Home', url: '/', route: 'home' },
+    { name: 'Catalogs', url: '/catalog', route: 'catalog' },
+    ...(product.category ? [{ name: product.category, url: '/catalog', route: 'catalog' }] : []),
+    { name: product.title }
+  ];
+
   return (
     <>
       <section className="product-view">
-        <nav className="breadcrumb" aria-label="Breadcrumb">
-          <button onClick={() => navigate('home')}>Home</button>
-          <span>/</span>
-          <button onClick={() => navigate('catalog')}>Catalogs</button>
-          <span>/</span>
-          <strong>{product.title}</strong>
-        </nav>
+        <Breadcrumb items={breadcrumbItems} navigate={navigate} />
 
         <div className="product-hero-grid">
           <div className="product-media">

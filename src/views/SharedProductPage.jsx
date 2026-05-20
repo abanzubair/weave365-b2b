@@ -29,6 +29,7 @@ import {
 import { resellerService } from '../services/resellerService';
 import { formatMoney, fallbackProductImage } from '../storefrontShared';
 import '../styles/resellerStorefront.css';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function SharedProductPage({ products, slug, productId, navigate }) {
   const [storefront, setStorefront] = useState(null);
@@ -143,6 +144,13 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
       </header>
 
       <main className="sp-container">
+        <Breadcrumb 
+          items={[
+            { name: storefront?.store_name || 'Catalog', onClick: () => navigate('s', null, slug) },
+            ...(productData.category ? [{ name: productData.category, onClick: () => navigate('s', null, slug) }] : []),
+            { name: productData.title }
+          ]} 
+        />
         <button onClick={() => navigate('s', null, slug)} className="sp-back-btn">
           <ArrowLeft size={16} /> Back to Catalog
         </button>

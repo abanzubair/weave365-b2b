@@ -9,6 +9,7 @@ import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, Award } fr
 import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { seoLandingPages } from '../data/seoLandingPages.js';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export default function SeoLandingPage({
   slug,
@@ -211,24 +212,18 @@ export default function SeoLandingPage({
     }
   };
 
+  const breadcrumbItems = [
+    { name: 'Home', url: '/', route: 'home' },
+    { name: pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') }
+  ];
+
   return (
     <article className="seo-landing-page">
-      {/* Schema Markup Injection (100% crawlable on SSR) */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-
-      {/* Sleek Breadcrumbs Element */}
-      <nav className="seo-breadcrumbs" aria-label="Breadcrumb">
-        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
-        <ChevronRight size={12} className="chevron" />
-        <span className="current">{pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
-      </nav>
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
 
       {/* Premium UI/UX Pro Max Hero Header */}
       <header className="seo-landing-hero">

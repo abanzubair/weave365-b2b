@@ -12,6 +12,7 @@
 
 import { useState, useMemo } from 'react';
 import { ArrowRight, Calendar, Clock, User, Filter } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function BlogList({ navigate, blogs = [] }) {
   const [activeCategory, setActiveCategory] = useState('All');
@@ -42,8 +43,14 @@ export function BlogList({ navigate, blogs = [] }) {
     return filteredPosts.slice(1);
   }, [filteredPosts, activeCategory]);
 
+  const breadcrumbItems = [
+    { name: 'Home', url: '/', route: 'home' },
+    { name: 'Insights & Blogs' }
+  ];
+
   return (
     <div className="blog-list-container">
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
       <header className="blog-list-header">
         <span className="blog-list-kicker">Weave 365 Insights</span>
         <h1>The Saree Wholesaler's Business & Fabric Journal</h1>

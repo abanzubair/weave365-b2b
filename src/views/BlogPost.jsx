@@ -14,6 +14,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, User, Share2, MessageSquare, Heart, ArrowRight, Bookmark } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
@@ -69,7 +70,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     };
   }, [post]);
 
-  // Google JSON-LD Structural Rich Schema (Article + FAQ Page) injection
+  // Google JSON-LD Structural Rich Schema (Article + FAQ Page + BreadcrumbList) injection
   useEffect(() => {
     if (!post || typeof window === 'undefined') return;
 
@@ -130,12 +131,39 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       document.head.appendChild(faqScript);
     }
 
+    // 3. BreadcrumbList Schema
+    const breadcrumbListItems = [
+      { name: 'Home', url: '/' },
+      { name: 'Insights & Blogs', url: '/blog' },
+      ...(post.category ? [{ name: post.category, url: '/blog' }] : []),
+      { name: post.title, url: `/blog/${post.slug}` }
+    ];
+
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": breadcrumbListItems.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": `${window.location.origin}${item.url}`
+      }))
+    };
+
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.id = 'blog-breadcrumb-ld-json';
+    breadcrumbScript.text = JSON.stringify(breadcrumbSchema);
+    document.head.appendChild(breadcrumbScript);
+
     // Clean up injected rich scripts to prevent duplicates or crawler confusion
     return () => {
       const oldArticleScript = document.getElementById('blog-article-ld-json');
       if (oldArticleScript) oldArticleScript.remove();
       const oldFaqScript = document.getElementById('blog-faq-ld-json');
       if (oldFaqScript) oldFaqScript.remove();
+      const oldBreadcrumbScript = document.getElementById('blog-breadcrumb-ld-json');
+      if (oldBreadcrumbScript) oldBreadcrumbScript.remove();
     };
   }, [post]);
 
@@ -322,8 +350,20 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     );
   }
 
+  const breadcrumbItems = useMemo(() => {
+    if (!post) return [];
+    return [
+      { name: 'Home', url: '/', route: 'home' },
+      { name: 'Insights & Blogs', url: '/blog', route: 'blog' },
+      ...(post.category ? [{ name: post.category, url: '/blog', route: 'blog' }] : []),
+      { name: post.title }
+    ];
+  }, [post]);
+
   return (
     <div className="blog-post-page">
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
+
       {/* Floating Back Anchor */}
       <button 
         className="floating-back-btn"

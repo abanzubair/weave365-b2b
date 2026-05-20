@@ -30,6 +30,7 @@ import {
 import { resellerService } from '../services/resellerService';
 import { formatMoney, fallbackProductImage } from '../storefrontShared';
 import '../styles/resellerStorefront.css';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function SharedCatalog({ products, slug, navigate }) {
   const [storefront, setStorefront] = useState(null);
@@ -238,6 +239,16 @@ export function SharedCatalog({ products, slug, navigate }) {
       </section>
 
       <div className="sc-container">
+        <Breadcrumb 
+          items={[
+            { 
+              name: storefront?.store_name || 'Catalog', 
+              onClick: (selectedCategory !== 'All' || selectedFabric !== 'All') ? () => { setSelectedCategory('All'); setSelectedFabric('All'); setSelectedPrice('All'); } : undefined 
+            },
+            ...(selectedCategory !== 'All' ? [{ name: selectedCategory }] : []),
+            ...(selectedFabric !== 'All' ? [{ name: selectedFabric }] : [])
+          ]} 
+        />
         {/* Shop by Category */}
         {categories.length > 0 && (
           <section className="sc-categories-section">
