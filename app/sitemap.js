@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 
 import { fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
 import { seoLandingPages } from '../src/data/seoLandingPages.js';
