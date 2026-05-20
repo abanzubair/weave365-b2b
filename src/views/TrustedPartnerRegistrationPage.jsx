@@ -15,7 +15,7 @@ import {
   ClipboardCheck,
   ShieldCheck,
 } from 'lucide-react';
-import artisanImage from '../../assets/artisan_at_loom_premium.png';
+import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
 
 const businessTypes = ['Weaver', 'Master Weaver', 'Manufacturer', 'Trader', 'Job Worker', 'Supplier'];
@@ -202,7 +202,7 @@ export function TrustedPartnerRegistrationPage() {
   return (
     <div className="trusted-registration-page">
       <section className="trusted-registration-hero" aria-labelledby="trusted-registration-heading">
-        <img src={heroImage} alt="Weaver preparing textile products for Weave 365" />
+        <img src={heroImage} alt="Weaver preparing textile products for Weave 365" width={1920} height={400} loading="lazy" decoding="async" />
         <div className="trusted-registration-hero-content">
           <h1 id="trusted-registration-heading">Trusted Partner Registration</h1>
           <p>Share your craft, capacity, and product details for manual review by the Weave 365 team.</p>

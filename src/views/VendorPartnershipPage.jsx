@@ -10,7 +10,7 @@
 
 import { ClipboardCheck, Factory, Heart, MessageCircle, Package, Users } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import artisanImage from '../../assets/artisan_at_loom_premium.png';
+import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
 import { VendorPartnership } from '../components/VendorPartnership.jsx';
 

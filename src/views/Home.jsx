@@ -15,12 +15,12 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
-import newBanner1 from '../../assets/newBanner1.png';
-import newBanner1Mobile from '../../assets/newBanner1Mobile.png';
-import newBanner2 from '../../assets/newBanner2.png';
-import resellerImage from '../../assets/reseller_premium_catalog_display.png';
-import brandCollabImage from '../../assets/brand_collaboration.png';
-import weaverImage from '../../assets/artisan_at_loom_premium.png';
+import newBanner1 from '../../assets/newBanner1.webp';
+import newBanner1Mobile from '../../assets/newBanner1Mobile.webp';
+import newBanner2 from '../../assets/newBanner2.webp';
+import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
+import brandCollabImage from '../../assets/brand_collaboration.webp';
+import weaverImage from '../../assets/artisan_at_loom_premium.webp';
 import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -294,13 +294,19 @@ export function Home({
         <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
         {/* Original Slide */}
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
-          <section 
-            className="premium-hero" 
-            style={{ 
-              '--hero-bg': `url(https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png)`,
-              '--hero-bg-mobile': `url(${assetSrc(newBanner1Mobile)})`
-            }}
-          >
+          <section className="premium-hero">
+            <picture className="premium-hero-bg-picture">
+              <source media="(max-width: 820px)" srcSet={assetSrc(newBanner1Mobile)} />
+              <img
+                src="https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png"
+                alt="Wholesale Banarasi Sarees and Suits Weave 365"
+                className="premium-hero-bg-img"
+                fetchPriority="high"
+                decoding="async"
+                width={1920}
+                height={1080}
+              />
+            </picture>
             <div className="premium-hero-overlay"></div>
             
             <div className="premium-hero-content">
@@ -387,6 +393,10 @@ export function Home({
                   src={assetSrc(newBanner2)} 
                   alt="Brand Collaboration Banner" 
                   className="collab-hero-photo"
+                  width={960}
+                  height={1080}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="collab-hero-photo-overlay"></div>
               </div>
@@ -509,6 +519,8 @@ export function Home({
                     alt={product.title}
                     loading="lazy"
                     decoding="async"
+                    width={360}
+                    height={480}
                     onError={(e) => { e.target.style.opacity = '0'; }}
                   />
                   <span>{discountPercent}% Off</span>
@@ -553,6 +565,8 @@ export function Home({
                 alt={name}
                 loading="lazy"
                 decoding="async"
+                width={300}
+                height={300}
                 onError={(e) => { e.target.style.opacity = '0'; }}
               />
               <span>{name}</span>
@@ -727,7 +741,7 @@ export function Home({
               onClick={() => navigate('blog', post.slug)}
             >
               <div className="card-img-wrapper" style={{ height: '200px' }}>
-                <img src={post.image} alt={post.title} loading="lazy" />
+                <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
                 <span className="card-category-badge">{post.category}</span>
               </div>
               <div className="card-info-pane">

@@ -22,10 +22,10 @@ import {
   MapPin
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import artisanImage from '../../assets/artisan_at_loom_premium.png';
-import resellerDisplayImage from '../../assets/reseller_premium_catalog_display.png';
-import warehouseImage from '../../assets/varanasi_b2b_warehouse.png';
-import luxuryPackagingImage from '../../assets/saree_luxury_packaging.png';
+import artisanImage from '../../assets/artisan_at_loom_premium.webp';
+import resellerDisplayImage from '../../assets/reseller_premium_catalog_display.webp';
+import warehouseImage from '../../assets/varanasi_b2b_warehouse.webp';
+import luxuryPackagingImage from '../../assets/saree_luxury_packaging.webp';
 import { assetSrc } from '../utils/assetSrc.js';
 
 export function AboutPage({ navigate }) {
@@ -202,6 +202,10 @@ export function AboutPage({ navigate }) {
                 src={resellerSectionImage} 
                 alt="Premium Banarasi Saree Collections Display" 
                 className="about-story-image"
+                width={600}
+                height={400}
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div className="about-heritage-floating-badge">
@@ -304,6 +308,10 @@ export function AboutPage({ navigate }) {
                 src={artisanSectionImage} 
                 alt="Master Artisan weaving a premium gold zari Banarasi silk saree" 
                 className="about-artisan-banner-image"
+                width={600}
+                height={400}
+                loading="lazy"
+                decoding="async"
               />
               <div className="about-artisan-banner-overlay"></div>
             </div>
@@ -413,6 +421,9 @@ export function AboutPage({ navigate }) {
                   alt="Varanasi Sourcing & Quality Vaults Warehouse" 
                   className="about-ops-image"
                   loading="lazy"
+                  decoding="async"
+                  width={600}
+                  height={400}
                 />
                 <div className="about-ops-overlay"></div>
               </div>
@@ -431,6 +442,9 @@ export function AboutPage({ navigate }) {
                   alt="Triple-Layer Anti-Oxidant Moisture Packaging" 
                   className="about-ops-image"
                   loading="lazy"
+                  decoding="async"
+                  width={600}
+                  height={400}
                 />
                 <div className="about-ops-overlay"></div>
               </div>

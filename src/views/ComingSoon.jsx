@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { Lock, ScrollText, Award, Handshake } from 'lucide-react';
-import comingSoonBg from '../../assets/comingsoon.png';
+import comingSoonBg from '../../assets/comingsoon.webp';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 

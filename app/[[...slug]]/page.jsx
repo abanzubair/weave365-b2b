@@ -53,7 +53,7 @@ async function getInitialData() {
 function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
-    const defaultImage = `${siteUrl}/logo.png`; // Fallback image if needed
+    const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
     const finalImageUrl = imageUrl || defaultImage;
 
     return {
@@ -182,7 +182,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   }
 
   if (route === 'Trusted-Partner-Registration') {
-    const imageUrl = `${siteUrl}/artisan_at_loom_premium.png`;
+    const imageUrl = `${siteUrl}/artisan_at_loom_premium.webp`;
     const titleText = 'Trusted Partner Registration | Weave 365';
     const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.';
     return buildMeta(titleText, descText, '/Trusted-Partner-Registration', imageUrl);

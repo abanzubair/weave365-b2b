@@ -131,7 +131,7 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
 
         <div className="sc-brand" onClick={() => navigate('s', null, slug)} style={{ cursor: 'pointer' }}>
           {storefront.logo_url ? (
-            <img src={storefront.logo_url} alt={storefront.store_name} className="sc-logo" />
+            <img src={storefront.logo_url} alt={storefront.store_name} className="sc-logo" width={150} height={50} loading="lazy" decoding="async" />
           ) : (
             <div className="sc-logo-fallback">{storefront.store_name?.[0] || 'S'}</div>
           )}
@@ -153,6 +153,9 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
               <img 
                 src={activeImage || fallbackProductImage} 
                 alt={productData.title} 
+                width={600}
+                height={800}
+                decoding="async"
               />
             </div>
             
@@ -164,7 +167,7 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
                     className={`sp-thumb-btn ${activeImage === opt.image ? 'active' : ''}`}
                     onClick={() => setActiveImage(opt.image)}
                   >
-                    <img src={opt.image} alt={opt.name} />
+                    <img src={opt.image} alt={opt.name} width={80} height={100} loading="lazy" decoding="async" />
                     <span className="sp-thumb-label">{opt.name}</span>
                   </button>
                 ))}

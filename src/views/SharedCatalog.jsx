@@ -132,7 +132,7 @@ export function SharedCatalog({ products, slug, navigate }) {
     return Array.from(cats).slice(0, 4);
   }, [displayItems]);
 
-  const heroImage = "/boutique-hero.png";
+  const heroImage = "/boutique-hero.webp";
 
 
   const [scrolled, setScrolled] = useState(false);
@@ -171,7 +171,7 @@ export function SharedCatalog({ products, slug, navigate }) {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }} style={{ cursor: 'pointer' }}>
           {storefront.logo_url ? (
-            <img src={storefront.logo_url} alt={storefront.store_name} className="sc-logo" />
+            <img src={storefront.logo_url} alt={storefront.store_name} className="sc-logo" width={150} height={50} loading="lazy" decoding="async" />
           ) : (
             <div className="sc-logo-fallback">{storefront.store_name?.[0] || 'S'}</div>
           )}
@@ -186,7 +186,7 @@ export function SharedCatalog({ products, slug, navigate }) {
       {/* Hero Section */}
       <section className="sc-hero">
         <div className="sc-hero-bg">
-          <img src={heroImage} alt="Hero" />
+          <img src={heroImage} alt="Hero" width={1920} height={400} loading="lazy" decoding="async" />
           <div className="sc-hero-overlay" />
         </div>
         <div className="sc-hero-content">
@@ -254,7 +254,7 @@ export function SharedCatalog({ products, slug, navigate }) {
                     className={`sc-cat-card ${selectedCategory === cat ? 'active' : ''}`}
                     onClick={() => setSelectedCategory(selectedCategory === cat ? 'All' : cat)}
                   >
-                    <img src={catItem?.variant?.image || catItem?.product?.images[0]} alt={cat} />
+                    <img src={catItem?.variant?.image || catItem?.product?.images[0]} alt={cat} width={300} height={300} loading="lazy" decoding="async" />
                     <div className="sc-cat-overlay">
                       <h3>{cat}</h3>
                     </div>
@@ -317,6 +317,9 @@ export function SharedCatalog({ products, slug, navigate }) {
                       src={item.variant?.image || item.product?.images[0] || fallbackProductImage} 
                       alt={item.product?.title}
                       loading="lazy"
+                      decoding="async"
+                      width={360}
+                      height={480}
                     />
                     <div className="sc-card-overlay" />
 

@@ -9,7 +9,7 @@ export default function SchemaMarkup() {
         url: "https://www.weave365.in",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.weave365.in/logo.png",
+          url: "https://www.weave365.in/logo.webp",
           width: 800,
           height: 800,
         },
@@ -67,7 +67,7 @@ export default function SchemaMarkup() {
         "@id": "https://www.weave365.in/#store",
         name: "Weave 365 Wholesale",
         url: "https://www.weave365.in",
-        image: "https://www.weave365.in/logo.png",
+        image: "https://www.weave365.in/logo.webp",
         description:
           "Wholesale Banarasi sarees, suits, lehengas and ethnic fabrics for B2B buyers, resellers and boutiques across India.",
         priceRange: "₹₹",

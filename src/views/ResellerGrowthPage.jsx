@@ -12,7 +12,7 @@
 
 import { ArrowRight, BadgeCheck, Share2, PackagePlus, Users, Store, Zap, ShieldCheck } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
-import resellerImage from '../../assets/reseller_premium_catalog_display.png';
+import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
 
 export function ResellerGrowthPage({ openAuth }) {
   return (
@@ -107,6 +107,10 @@ export function ResellerGrowthPage({ openAuth }) {
               src={assetSrc(resellerImage)}
               alt="Reseller Business" 
               className="benefits-image"
+              width={600}
+              height={400}
+              loading="lazy"
+              decoding="async"
             />
             <div className="benefits-glass-card">
               <Users size={24} className="gold-icon" />
