@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "weave365",
   "compatibility_date": "2026-05-20",
+  // Trigger automatic Cloudflare build on latest commit
   "observability": {
     "enabled": true
   },
