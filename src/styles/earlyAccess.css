@@ -10,7 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 20px 80px 20px; /* offset header height nicely */
+  padding: 20px 20px 80px 20px; /* offset header height nicely */
   font-family: var(--font-body), sans-serif;
 }
 
