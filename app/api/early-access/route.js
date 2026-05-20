@@ -7,6 +7,31 @@
 export async function POST(request) {
   try {
     const body = await request.json();
+    const { captchaToken, ...submissionData } = body;
+
+    // Verify Google reCAPTCHA if secret key is present in environment
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecret) {
+      if (!captchaToken) {
+        return Response.json(
+          { status: 'error', error: 'CAPTCHA verification is required.' },
+          { status: 400 }
+        );
+      }
+
+      const verifyRes = await fetch(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${captchaToken}`,
+        { method: 'POST' }
+      );
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        return Response.json(
+          { status: 'error', error: 'CAPTCHA verification failed. Please try again.' },
+          { status: 400 }
+        );
+      }
+    }
 
     const endpoint = process.env.NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL;
 
@@ -20,7 +45,7 @@ export async function POST(request) {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(submissionData),
       redirect: 'follow',
     });
 

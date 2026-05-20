@@ -22,6 +22,7 @@ import {
   Loader2,
   CheckCircle2
 } from 'lucide-react';
+import ReCAPTCHA from '../components/ReCAPTCHA';
 
 const buyerTypes = [
   { id: 'wholesaler', label: 'Wholesaler', icon: Building2 },
@@ -61,6 +62,7 @@ export function EarlyAccessPage({ navigate }) {
   const [formError, setFormError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -109,6 +111,12 @@ export function EarlyAccessPage({ navigate }) {
       return;
     }
 
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (siteKey && !captchaToken) {
+      setFormError('Please complete the CAPTCHA verification.');
+      return;
+    }
+
     setIsSubmitting(true);
     setFormError('');
     setSubmitError('');
@@ -130,12 +138,14 @@ export function EarlyAccessPage({ navigate }) {
       city: capitalize(form.city),
       pincode: form.pincode,
       storeLink: form.storeLink.trim() || 'None provided',
-      status: 'pending_review'
+      status: 'pending_review',
+      captchaToken: captchaToken || ''
     };
 
     const handleSuccess = () => {
       setSubmitted(true);
       setForm(initialForm);
+      setCaptchaToken(null);
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -154,12 +164,21 @@ export function EarlyAccessPage({ navigate }) {
 
       if (data.status === 'error') {
         setSubmitError(data.error || 'Submission failed. Please try again.');
+        // Reset captcha on failure so they can try again
+        setCaptchaToken(null);
+        if (window.grecaptcha) {
+          try { window.grecaptcha.reset(); } catch (e) {}
+        }
       } else {
         handleSuccess();
       }
     } catch (err) {
       console.error('[EarlyAccess] Fetch error:', err);
       setSubmitError('Unable to connect to registration servers. Please check your network and try again.');
+      setCaptchaToken(null);
+      if (window.grecaptcha) {
+        try { window.grecaptcha.reset(); } catch (e) {}
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -359,6 +378,13 @@ export function EarlyAccessPage({ navigate }) {
                   </span>
                 </label>
               </div>
+
+              {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                <ReCAPTCHA
+                  siteKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                  onChange={setCaptchaToken}
+                />
+              )}
 
               {formError && <div className="form-error-msg">{formError}</div>}
               {submitError && <div className="form-error-msg">{submitError}</div>}
