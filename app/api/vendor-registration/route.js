@@ -46,3 +46,43 @@ export async function POST(request) {
     );
   }
 }
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const gid = searchParams.get('gid') || '1133055182';
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+
+    if (!sheetId) {
+      return Response.json(
+        { status: 'error', error: 'Spreadsheet ID is not configured in backend environment variables.' },
+        { status: 500 }
+      );
+    }
+
+    const csvUrl = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv&_t=${Date.now()}`;
+    const res = await fetch(csvUrl);
+
+    if (!res.ok) {
+      return Response.json(
+        { status: 'error', error: `Failed to fetch sheets data from Google. Status: ${res.status}` },
+        { status: res.status }
+      );
+    }
+
+    const csvText = await res.text();
+    return new Response(csvText, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store, max-age=0'
+      }
+    });
+  } catch (err) {
+    console.error('[vendor-registration API GET] Error:', err);
+    return Response.json(
+      { status: 'error', error: err.message || 'Server proxy encountered a runtime crash.' },
+      { status: 500 }
+    );
+  }
+}
+

@@ -137,12 +137,10 @@ export function TrustedPartnerRegistrationPage() {
     }
   }, []);
 
-  // Utility to dynamically reconstruct spreadsheet URLs on the client-side,
-  // bypassing Cloudflare Pages build ampersand parsing truncation constraints.
+  // Utility to route published spreadsheet CSV requests through our server-side proxy
+  // to completely bypass browser CORS preflight blocks.
   const getSheetCsvUrl = (gid) => {
-    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || '';
-    if (!sheetId) return '';
-    return `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
+    return `/api/vendor-registration?gid=${gid}`;
   };
 
   // Robust, RFC 4180 quote-aware CSV text parser to avoid column shifting
