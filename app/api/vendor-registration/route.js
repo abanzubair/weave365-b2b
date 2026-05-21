@@ -53,7 +53,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const gid = searchParams.get('gid') || '1133055182';
-    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || '2PACX-1vSsRlN_ZBgHYr_giD2jjt8_gAXrCYntE2Nal8_HBXyNIGvfuRSQP3WXilKaR7azZzB4cK8er2V9rRF0';
 
     if (!sheetId) {
       return Response.json(
