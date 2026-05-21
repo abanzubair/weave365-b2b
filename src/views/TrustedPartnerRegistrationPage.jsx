@@ -294,14 +294,19 @@ export function TrustedPartnerRegistrationPage() {
     
     setReviewSubmitting(true);
 
-    const cleanWhatsapp = reviewForm.whatsapp.trim().replace(/\s/g, '');
+    const cleanWhatsapp = reviewForm.whatsapp.trim().replace(/\D/g, '');
+    if (cleanWhatsapp.length !== 10) {
+      setReviewError('Please enter a valid 10-digit WhatsApp number.');
+      setReviewSubmitting(false);
+      return;
+    }
     
     // Local duplicate check
     try {
       const existingReviews = JSON.parse(localStorage.getItem('weave365_local_reviews') || '[]');
       const isDuplicate = existingReviews.some((rev) => {
         const cleanExisting = rev.whatsapp.trim().replace(/\D/g, '').slice(-10);
-        const cleanInput = cleanWhatsapp.replace(/\D/g, '').slice(-10);
+        const cleanInput = cleanWhatsapp.slice(-10);
         return cleanExisting === cleanInput && cleanInput.length === 10;
       });
       
@@ -818,11 +823,13 @@ export function TrustedPartnerRegistrationPage() {
                           type="tel"
                           value={reviewForm.whatsapp}
                           onChange={(e) => {
-                            const raw = e.target.value.replace(/[^\d+]/g, '');
+                            const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
                             setReviewForm((prev) => ({ ...prev, whatsapp: raw }));
                           }}
-                          placeholder="+91 9876543210"
-                          title="Enter your complete WhatsApp number starting with +91 or + country code"
+                          placeholder="9876543210"
+                          pattern="[0-9]{10}"
+                          inputMode="numeric"
+                          title="Enter a 10-digit WhatsApp number"
                           required
                         />
                       </label>
