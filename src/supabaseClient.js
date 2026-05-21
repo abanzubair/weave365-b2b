@@ -7,10 +7,14 @@
  * @module supabaseClient
  */
 
+if (typeof globalThis !== 'undefined' && !globalThis.process) {
+  globalThis.process = { env: {} };
+}
+
 import { createClient } from '@supabase/supabase-js';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const url = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined;
+const anonKey = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined;
 
 export const isSupabaseConfigured = Boolean(url && anonKey);
 export const supabase = isSupabaseConfigured ? createClient(url, anonKey) : null;
