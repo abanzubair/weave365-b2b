@@ -285,10 +285,10 @@ export function TrustedPartnerRegistrationPage() {
       return;
     }
     
-    // Check if at least 1 image is uploaded
+    // Check if all 4 images are uploaded
     const uploadedImagesCount = reviewForm.images.filter(Boolean).length;
-    if (uploadedImagesCount === 0) {
-      setReviewError('Please upload at least 1 sample product image (maximum 4).');
+    if (uploadedImagesCount < 4) {
+      setReviewError('Please upload exactly 4 sample product photos (one for each slot) before submitting.');
       return;
     }
     
@@ -903,8 +903,8 @@ export function TrustedPartnerRegistrationPage() {
                   </fieldset>
 
                   <fieldset className="vendor-form-section">
-                    <legend>Sample Product Photos</legend>
-                    <p className="upload-subtitle">Upload 1 to 4 clear sample photos of your sarees/textiles. E.g., cover, details, back, borders.</p>
+                    <legend>Sample Product Photos *</legend>
+                    <p className="upload-subtitle">Upload exactly 4 clear sample photos of your sarees/textiles (e.g., cover, details, back, borders) to submit for review.</p>
                     
                     {/* Responsive Upload Grid */}
                     <div className="review-images-grid">
@@ -954,6 +954,7 @@ export function TrustedPartnerRegistrationPage() {
                         <h4>Photo Upload Requirements</h4>
                       </div>
                       <ul>
+                        <li>All <strong>4 image slots</strong> must be uploaded to submit the application</li>
                         <li>Strict maximum file size: <strong>1MB</strong> per image</li>
                         <li>Format: JPEG, PNG or WebP accepted</li>
                         <li>Ensure photos are shot in bright natural light showing weaves clearly</li>
