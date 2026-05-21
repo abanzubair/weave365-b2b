@@ -8,6 +8,11 @@
  * @module views/TrustedPartnerRegistrationPage
  */
 
+// Polyfill process in browser environments to prevent edge runtime / webpack ReferenceError crashes
+if (typeof window !== 'undefined' && !window.process) {
+  window.process = { env: {} };
+}
+
 import { useState, useEffect } from 'react';
 import {
   BadgeCheck,

@@ -10,6 +10,24 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://kvnwribvwaqgpvpmvqwr.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2bndyaWJ2d2FxZ3B2cG12cXdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzcwNzQsImV4cCI6MjA5MzExMzA3NH0.gOxwGzICPQARkunsFj-Zj4FfrmfyVY7k-Rd2C89sU0I",
+    "NEXT_PUBLIC_STORE_NAME": "Weave 365",
+    "NEXT_PUBLIC_STORE_SUBTITLE": "WHOLESALE",
+    "NEXT_PUBLIC_STORE_EMAIL": "weave365@gmail.com",
+    "NEXT_PUBLIC_STORE_PHONE": "9919101369",
+    "NEXT_PUBLIC_STORE_WHATSAPP": "919919101369",
+    "NEXT_PUBLIC_ADMIN_EMAILS": "abanzubair@gmail.com",
+    "NEXT_PUBLIC_SITE_URL": "https://www.weave365.in",
+    "NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL": "https://script.google.com/macros/s/AKfycbw6REB4Cubycd5yLRAwgmjQ2QBIzi7-fJljf-u6ATjrDRr5H_hAzy2xqdvtl6xxy8yC/exec",
+    "NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_CSV_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsRlN_ZBgHYr_giD2jjt8_gAXrCYntE2Nal8_HBXyNIGvfuRSQP3WXilKaR7azZzB4cK8er2V9rRF0/pub?gid=0&single=true&output=csv",
+    "NEXT_PUBLIC_PRODUCT_REVIEWS_CSV_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsRlN_ZBgHYr_giD2jjt8_gAXrCYntE2Nal8_HBXyNIGvfuRSQP3WXilKaR7azZzB4cK8er2V9rRF0/pub?gid=1133055182&single=true&output=csv",
+    "NEXT_PUBLIC_SHEET_ID": "2PACX-1vSsRlN_ZBgHYr_giD2jjt8_gAXrCYntE2Nal8_HBXyNIGvfuRSQP3WXilKaR7azZzB4cK8er2V9rRF0",
+    "NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID": "0",
+    "NEXT_PUBLIC_PRODUCT_REVIEWS_GID": "1133055182",
+    "NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL": "https://script.google.com/macros/s/AKfycbzPbBioT9T_jzOTHbvMRUSmh4_uY1OZpLgc4iv6iCgNBzDFyD4j7jDLkwCB_JWHskA5/exec"
+  },
   "observability": {
     "enabled": true
   }
