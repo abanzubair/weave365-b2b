@@ -226,7 +226,12 @@ export function TrustedPartnerRegistrationPage() {
     setCheckingStatus(true);
     setStatusMessage('');
 
-    const csvUrl = process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_CSV_URL;
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+    const reviewsGid = process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_GID || '1133055182';
+    const csvUrl = sheetId
+      ? `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${reviewsGid}&single=true&output=csv`
+      : process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_CSV_URL;
+
     if (!csvUrl) {
       setStatusMessage('Approval check is only available in production mode once CSV is configured.');
       setCheckingStatus(false);
@@ -439,7 +444,12 @@ export function TrustedPartnerRegistrationPage() {
       console.warn('Unable to verify duplicate application locally', error);
     }
 
-    const csvUrl = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_CSV_URL;
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID;
+    const vendorGid = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID || '0';
+    const csvUrl = sheetId
+      ? `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${vendorGid}&single=true&output=csv`
+      : process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_CSV_URL;
+
     if (csvUrl) {
       try {
         const response = await fetch(csvUrl);
