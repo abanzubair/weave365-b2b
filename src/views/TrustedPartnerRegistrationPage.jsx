@@ -145,6 +145,52 @@ export function TrustedPartnerRegistrationPage() {
     return `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
   };
 
+  // Robust, RFC 4180 quote-aware CSV text parser to avoid column shifting
+  const parseCsvText = (csvText) => {
+    if (!csvText) return [];
+    const rows = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < csvText.length; i++) {
+      const char = csvText[i];
+      const nextChar = csvText[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          currentCell += '"';
+          i++; // Skip the escaped quote
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+      } else if ((char === '\r' || char === '\n') && !inQuotes) {
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+        if (currentRow.length > 0 || rows.length === 0) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        if (char === '\r' && nextChar === '\n') {
+          i++; // Skip the LF of CRLF
+        }
+      } else {
+        currentCell += char;
+      }
+    }
+    
+    if (currentCell !== '' || currentRow.length > 0) {
+      currentRow.push(currentCell.trim());
+      rows.push(currentRow);
+    }
+    
+    return rows;
+  };
+
+
   // Convert File object to Base64 String
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -275,10 +321,10 @@ export function TrustedPartnerRegistrationPage() {
     const csvUrl = getSheetCsvUrl(reviewsGid);
     if (csvUrl) {
       try {
-        const response = await fetch(csvUrl);
+        const response = await fetch(`${csvUrl}&_t=${Date.now()}`);
         if (response.ok) {
           const csvText = await response.text();
-          const rows = csvText.split('\n').map(row => row.split(','));
+          const rows = parseCsvText(csvText);
           const isGlobalDuplicate = rows.some(columns => {
             if (columns.length > 2) {
               const cleanExisting = columns[2].replace(/\D/g, '').slice(-10);
@@ -385,15 +431,13 @@ export function TrustedPartnerRegistrationPage() {
         throw new Error('Spreadsheet config is missing.');
       }
 
-      const response = await fetch(csvUrl);
+      const response = await fetch(`${csvUrl}&_t=${Date.now()}`);
       if (!response.ok) {
         throw new Error('Sheets lookup failed.');
       }
 
       const csvText = await response.text();
-      const rows = csvText.split('\n').map(row => 
-        row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
-      );
+      const rows = parseCsvText(csvText);
 
       let foundRow = null;
       for (let i = 1; i < rows.length; i++) {
@@ -543,10 +587,10 @@ export function TrustedPartnerRegistrationPage() {
     const csvUrl = getSheetCsvUrl(registrationGid);
     if (csvUrl) {
       try {
-        const response = await fetch(csvUrl);
+        const response = await fetch(`${csvUrl}&_t=${Date.now()}`);
         if (response.ok) {
           const csvText = await response.text();
-          const rows = csvText.split('\n').map(row => row.split(','));
+          const rows = parseCsvText(csvText);
           const isGlobalDuplicate = rows.some(columns => {
             if (columns.length > 2) {
               const cleanExisting = columns[2].replace(/\D/g, '').slice(-10);
