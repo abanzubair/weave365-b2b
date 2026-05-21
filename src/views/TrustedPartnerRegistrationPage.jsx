@@ -198,6 +198,27 @@ export function TrustedPartnerRegistrationPage() {
     }
   };
 
+  // Handle click on slot to trigger hidden file selector
+  const handleSlotClick = (index) => {
+    if (fileInputsRef.current[index]) {
+      fileInputsRef.current[index].click();
+    }
+  };
+
+  // Handle Drag Over event
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  // Handle Drop event
+  const handleDrop = async (e, index) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      await handleImageChange(file, index);
+    }
+  };
+
   // Tab 1 toggles
   const toggleReviewCategory = (categoryName) => {
     setReviewForm((prev) => {
