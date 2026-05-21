@@ -338,29 +338,27 @@ export function TrustedPartnerRegistrationPage() {
       console.warn('Failed to commit local review record:', err);
     }
 
-    // Ironclad CORS-safe post strategy
-    const endpoint = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL : '';
-    if (endpoint) {
-      try {
-        await fetch(endpoint, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'text/plain' // SAFELISTED: Completely skips CORS preflight OPTIONS check blocks
-          },
-          body: JSON.stringify(payload)
-        });
-        
+    // Submit review payload to Google Sheets via server-side proxy
+    try {
+      const response = await fetch('/api/vendor-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const resData = await response.json();
+      
+      if (response.ok && resData.status === 'success') {
         setReviewSubmitted(true);
-      } catch (err) {
-        console.error('Failed to post reviews payload to sheet endpoint:', err);
-        setReviewError('Failed to upload review application to Google Sheets. Check connection.');
-      } finally {
-        setReviewSubmitting(false);
+      } else {
+        setReviewError(resData.error || 'Failed to submit product reviews. Please verify sheet configurations.');
       }
-    } else {
-      // Mock success if no sheet url
-      setReviewSubmitted(true);
+    } catch (err) {
+      console.error('Failed to post reviews payload:', err);
+      setReviewError('Failed to upload review application. Check your connection or contact support.');
+    } finally {
       setReviewSubmitting(false);
     }
   };
@@ -599,30 +597,28 @@ export function TrustedPartnerRegistrationPage() {
       console.warn('Unable to save vendor application locally', error);
     }
 
-    // Google Sheets integration via Apps Script Web App
-    const endpoint = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL : '';
-    if (endpoint) {
-      try {
-        await fetch(endpoint, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'text/plain',
-          },
-          body: JSON.stringify(application),
-        });
+    // Submit registration payload to Google Sheets via server-side proxy
+    try {
+      const response = await fetch('/api/vendor-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(application),
+      });
+      
+      const resData = await response.json();
+      
+      if (response.ok && resData.status === 'success') {
         setSubmitted(true);
         setForm(initialForm);
-      } catch (error) {
-        console.error('Error submitting application:', error);
-        setSubmitError('Failed to send application to Google Sheets. Please check your internet connection.');
-      } finally {
-        setIsSubmitting(false);
+      } else {
+        setSubmitError(resData.error || 'Failed to submit registration. Please verify sheet configurations.');
       }
-    } else {
-      // Local fallback success if no sheet API endpoint is set up yet
-      setSubmitted(true);
-      setForm(initialForm);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      setSubmitError('Failed to send application. Please check your internet connection and try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
