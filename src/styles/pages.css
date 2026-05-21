@@ -3113,7 +3113,22 @@ button {
 }
 
 .auth-phone-pincode-grid {
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 1.25fr 1fr;
+}
+
+.auth-modal .auth-phone-field > div.auth-city-pincode-inputs {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 10px;
+}
+
+.auth-city-pincode-note {
+  display: block;
+  color: #8C7B70;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-top: 2px;
 }
 
 .auth-phone-field {
@@ -5022,3 +5037,113 @@ button {
     color: var(--gold-dark) !important;
   }
 }
+
+/* Custom Segment Select Dropdown styles */
+.custom-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0 12px;
+  background: var(--white);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-select-trigger:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(183, 134, 70, 0.15);
+}
+
+.custom-select-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.custom-select-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.custom-select-chevron.open {
+  transform: rotate(180deg);
+}
+
+.custom-select-overlay {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 280px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.custom-select-group-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 10px 12px 6px;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.custom-select-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.custom-select-option:hover {
+  background: rgba(183, 134, 70, 0.08);
+  color: var(--ink);
+}
+
+.custom-select-option.selected {
+  background: rgba(183, 134, 70, 0.15);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.custom-select-option svg,
+.custom-select-value svg {
+  transition: transform 0.2s ease;
+}
+
+.custom-select-option svg:hover,
+.custom-select-value svg:hover {
+  transform: scale(1.15);
+}
+

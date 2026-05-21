@@ -13,12 +13,14 @@ create table if not exists public.profiles (
   whatsapp_number text,
   business_name text,
   buyer_type text default 'wholesale',
+  buyer_subtype text,
   buying_behavior text default 'instant',
   pincode text,
   interested_categories jsonb default '[]'::jsonb,
   price_group text default 'pending',
   approval_status text default 'pending',
   role text default 'customer',
+  city text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -30,7 +32,9 @@ alter table public.profiles add column if not exists whatsapp_country_code text;
 alter table public.profiles add column if not exists whatsapp_number text;
 alter table public.profiles add column if not exists business_name text;
 alter table public.profiles add column if not exists buyer_type text default 'wholesale';
+alter table public.profiles add column if not exists buyer_subtype text;
 alter table public.profiles add column if not exists buying_behavior text default 'instant';
+alter table public.profiles add column if not exists city text;
 alter table public.profiles add column if not exists pincode text;
 alter table public.profiles add column if not exists interested_categories jsonb default '[]'::jsonb;
 alter table public.profiles add column if not exists price_group text default 'pending';

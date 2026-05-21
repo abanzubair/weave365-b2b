@@ -1073,6 +1073,14 @@ export default function App({ initialData = {} }) {
                       </button>
                       <button
                         onClick={() => {
+                          navigate('favorites');
+                          setDropdownOpen(null);
+                        }}
+                      >
+                        Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
+                      </button>
+                      <button
+                        onClick={() => {
                           handleSignOut();
                           setDropdownOpen(null);
                         }}
@@ -1094,16 +1102,6 @@ export default function App({ initialData = {} }) {
                 document.body
               )}
             </div>
-
-            <button 
-              className="premium-icon-btn favorite-btn" 
-              type="button" 
-              onClick={() => navigate('favorites')}
-              aria-label="Favorites"
-            >
-              <Bookmark size={18} strokeWidth={1.5} />
-              {favoriteProducts.length > 0 && <span className="premium-badge">{favoriteProducts.length}</span>}
-            </button>
             
             <button 
               className="premium-icon-btn cart-btn" 

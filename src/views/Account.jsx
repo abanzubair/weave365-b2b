@@ -90,7 +90,12 @@ export function Account({
       </div>
 
       <div className="account-summary-grid">
-        <AccountSummaryCard icon={UserRound} label="My Buyer Type" value={titleCase(priceAccess.buyerType)} hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} />
+        <AccountSummaryCard 
+          icon={UserRound} 
+          label="My Buyer Type" 
+          value={buyerProfile?.buyer_subtype ? titleCase(buyerProfile.buyer_subtype) : titleCase(priceAccess.buyerType)} 
+          hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} 
+        />
         <AccountSummaryCard icon={LockKeyhole} label="My Approved Price Group" value={priceAccess.canViewPrices ? priceAccess.priceLabel : 'Pending'} hint={approvalHint} />
         <AccountSummaryCard icon={ShoppingBag} label="My Order List" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />

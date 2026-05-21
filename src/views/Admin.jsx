@@ -769,7 +769,18 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           <strong>{profile.business_name || profile.full_name || 'Unnamed buyer'}</strong>
                           <span>{profile.email}</span>
                         </td>
-                        <td>{profile.buyer_type || 'Not set'}</td>
+                        <td>
+                          {profile.buyer_subtype ? (
+                            <span style={{ display: 'block' }}>
+                              <span style={{ textTransform: 'capitalize' }}>{profile.buyer_type}</span>
+                              <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '2px', fontStyle: 'italic' }}>
+                                {profile.buyer_subtype}
+                              </small>
+                            </span>
+                          ) : (
+                            profile.buyer_type || 'Not set'
+                          )}
+                        </td>
                         <td>{PRICE_GROUPS[profile.price_group] || 'Pending'}</td>
                         <td>{profile.buying_behavior || 'Not set'}</td>
                         <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
