@@ -397,7 +397,7 @@ export function TrustedPartnerRegistrationPage() {
           method: 'POST',
           mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain',
           },
           body: JSON.stringify(application),
         });
@@ -516,7 +516,7 @@ export function TrustedPartnerRegistrationPage() {
           method: 'POST',
           mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain',
           },
           body: JSON.stringify(application),
         });
@@ -633,6 +633,31 @@ export function TrustedPartnerRegistrationPage() {
                             {statusMessage}
                           </p>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReviewSubmitted(false);
+                            try {
+                              localStorage.removeItem('weave365_product_reviews');
+                              localStorage.removeItem('weave365_review_approved');
+                            } catch (e) {
+                              console.warn(e);
+                            }
+                            setIsApproved(false);
+                            setStatusMessage('');
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--muted)',
+                            textDecoration: 'underline',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            marginTop: '8px'
+                          }}
+                        >
+                          Clear cache & test again ↺
+                        </button>
                       </>
                     ) : (
                       <button 
