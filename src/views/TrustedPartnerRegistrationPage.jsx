@@ -140,7 +140,7 @@ export function TrustedPartnerRegistrationPage() {
   // Utility to dynamically reconstruct spreadsheet URLs on the client-side,
   // bypassing Cloudflare Pages build ampersand parsing truncation constraints.
   const getSheetCsvUrl = (gid) => {
-    const sheetId = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SHEET_ID : '';
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || '';
     if (!sheetId) return '';
     return `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
   };
@@ -317,7 +317,7 @@ export function TrustedPartnerRegistrationPage() {
     }
 
     // Global duplicate checks via parsed CSV GID URL
-    const reviewsGid = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_GID : '1133055182';
+    const reviewsGid = process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_GID || '1133055182';
     const csvUrl = getSheetCsvUrl(reviewsGid);
     if (csvUrl) {
       try {
@@ -424,7 +424,7 @@ export function TrustedPartnerRegistrationPage() {
     setIsVerifyingUnlock(true);
     
     try {
-      const reviewsGid = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_GID : '1133055182';
+      const reviewsGid = process.env.NEXT_PUBLIC_PRODUCT_REVIEWS_GID || '1133055182';
       const csvUrl = getSheetCsvUrl(reviewsGid);
       
       if (!csvUrl) {
@@ -582,8 +582,8 @@ export function TrustedPartnerRegistrationPage() {
     }
 
     // 2. Check globally via parsed CSV
-    const sheetId = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SHEET_ID : '';
-    const registrationGid = typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID : '0';
+    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || '';
+    const registrationGid = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID || '0';
     const csvUrl = getSheetCsvUrl(registrationGid);
     if (csvUrl) {
       try {
