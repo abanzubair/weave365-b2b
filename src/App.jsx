@@ -94,6 +94,7 @@ export default function App({ initialData = {} }) {
   const [fabric, setFabric] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [authOpen, setAuthOpen] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState('login');
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -234,9 +235,13 @@ export default function App({ initialData = {} }) {
       const sessionUser = data.session?.user || null;
       setUser(sessionUser);
     });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       const sessionUser = session?.user || null;
       setUser(sessionUser);
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthInitialMode('reset-password');
+        setAuthOpen(true);
+      }
     });
 
     return () => data.subscription.unsubscribe();
@@ -1302,11 +1307,12 @@ export default function App({ initialData = {} }) {
       )}
       <AuthModal
         open={authOpen}
-        onClose={() => setAuthOpen(false)}
+        onClose={() => { setAuthOpen(false); setAuthInitialMode('login'); }}
         user={user}
         setUser={setUser}
         buyerProfile={buyerProfile}
         setBuyerProfile={setBuyerProfile}
+        initialMode={authInitialMode}
       />
     </>
   );

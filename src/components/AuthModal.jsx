@@ -5,7 +5,7 @@
  * buyer roles, buying behaviors, and fabric categories) and integrates with Supabase authentication.
  */
 import { useState, useEffect } from 'react';
-import { X, LogOut } from 'lucide-react';
+import { X, LogOut, ArrowLeft } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
@@ -243,10 +243,11 @@ function BuyingBehaviorDropdown({ value, onChange }) {
   );
 }
 
-export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyerProfile }) {
-  const [mode, setMode] = useState('login');
+export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyerProfile, initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [profile, setProfile] = useState({
     fullName: '',
     countryCode: '+91',
@@ -260,6 +261,13 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     interestedCategories: [],
   });
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode);
+      setMessage('');
+    }
+  }, [open, initialMode]);
 
   if (!open) return null;
 
@@ -300,9 +308,79 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     });
   }
 
+  async function handleForgotPassword(event) {
+    event.preventDefault();
+    setMessage('');
+
+    if (!email.trim()) {
+      setMessage('Please enter your email address.');
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      setMessage('demo-reset-sent');
+      return;
+    }
+
+    const redirectUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/`
+      : 'http://localhost:3000/';
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage('reset-link-sent');
+    }
+  }
+
+  async function handleResetPassword(event) {
+    event.preventDefault();
+    setMessage('');
+
+    if (!newPassword || newPassword.length < 6) {
+      setMessage('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      setMessage('Password updated successfully (demo mode).');
+      setTimeout(() => {
+        setMode('login');
+        setNewPassword('');
+        setMessage('');
+      }, 1500);
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage('Password updated successfully! Redirecting to login...');
+      setTimeout(() => {
+        setMode('login');
+        setNewPassword('');
+        setMessage('');
+      }, 1800);
+    }
+  }
+
   async function submit(event) {
     event.preventDefault();
     setMessage('');
+
+    if (mode === 'forgot-password') {
+      return handleForgotPassword(event);
+    }
+
+    if (mode === 'reset-password') {
+      return handleResetPassword(event);
+    }
 
     if (mode === 'register') {
       const cleanName = toTitleCaseName(profile.fullName);
@@ -417,149 +495,239 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           </>
         ) : (
           <>
-            <h2>{mode === 'login' ? 'Login' : 'Register'}</h2>
-            <form onSubmit={submit}>
-              {mode === 'register' && (
-                <>
-                  <div className="auth-field-grid">
-                    <label>
-                      Full Name
-                      <input
-                        value={profile.fullName}
-                        onChange={(event) => updateProfile('fullName', event.target.value)}
-                        onBlur={(event) => updateProfile('fullName', toTitleCaseName(event.target.value))}
-                        autoComplete="name"
-                        required
-                      />
-                    </label>
-                    <label>
-                      Business Name
-                      <input
-                        value={profile.businessName}
-                        onChange={(event) => updateProfile('businessName', event.target.value)}
-                        autoComplete="organization"
-                        required
-                      />
-                    </label>
+            {mode === 'forgot-password' ? (
+              <>
+                <button
+                  className="text-button"
+                  onClick={() => { setMode('login'); setMessage(''); }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '4px', fontSize: '13px', color: 'var(--muted)' }}
+                >
+                  <ArrowLeft size={14} /> Back to Login
+                </button>
+                <h2>Reset Password</h2>
+                <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5, margin: '0 0 6px' }}>
+                  Enter the email address associated with your account and we'll send you a link to reset your password.
+                </p>
+                <form onSubmit={submit}>
+                  <label>
+                    Email
+                    <input
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </label>
+                  <button className="primary-button" type="submit">
+                    Send Reset Link
+                  </button>
+                </form>
+                {message === 'reset-link-sent' && (
+                  <div className="auth-success-card">
+                    <strong>✓ Reset link sent</strong>
+                    <p>Check your email inbox (and spam folder) for a password reset link. Click it to set a new password.</p>
                   </div>
-                    <div className="auth-phone-field">
-                      <div className="auth-field-label-row">
-                        <span>City & Pincode *</span>
-                      </div>
-                      <div className="auth-city-pincode-inputs">
-                        <input
-                          value={profile.city}
-                          onChange={(event) => updateProfile('city', event.target.value)}
-                          placeholder="City name"
-                          autoComplete="address-level2"
-                          required
-                        />
-                        <input
-                          value={profile.pincode}
-                          onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
-                          inputMode="numeric"
-                          autoComplete="postal-code"
-                          placeholder="Pincode"
-                          required
-                        />
-                      </div>
-                      <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
-                    </div>
-                    <div className="auth-phone-field">
-                      <div className="auth-field-label-row">
-                        <span>WhatsApp Number</span>
-                        <small>Format: {profile.countryCode} xxxxxxxxxx</small>
-                      </div>
-                      <div>
-                        <select
-                          value={profile.countryCode}
-                          onChange={(event) => updateProfile('countryCode', event.target.value)}
-                          aria-label="Country code"
-                          required
-                        >
-                          {countryCodes.map((item) => (
-                            <option key={item.value} value={item.value}>{item.label}</option>
-                          ))}
-                        </select>
-                        <input
-                          value={profile.whatsapp}
-                          onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
-                          inputMode="numeric"
-                          autoComplete="tel-national"
-                          placeholder="xxxxxxxxxx"
-                          pattern="[0-9]{10}"
-                          required
-                        />
-                      </div>
-                    </div>
-                  <div className="auth-field-grid">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type / Segment</span>
-                      <B2BSegmentDropdown
-                        value={profile.buyerSubtype || 'Wholesalers'}
-                        onChange={(opt) => {
-                          setProfile(current => ({
-                            ...current,
-                            buyerType: opt.type,
-                            buyerSubtype: opt.value
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
-                      <BuyingBehaviorDropdown
-                        value={profile.buyingBehavior}
-                        onChange={(value) => updateProfile('buyingBehavior', value)}
-                      />
-                    </div>
+                )}
+                {message === 'demo-reset-sent' && (
+                  <div className="auth-success-card">
+                    <strong>✓ Demo mode — email simulated</strong>
+                    <p>Supabase is not connected. Click below to simulate clicking the reset link from your email.</p>
+                    <button
+                      className="secondary-button"
+                      style={{ marginTop: '8px' }}
+                      onClick={() => { setMode('reset-password'); setMessage(''); }}
+                    >
+                      Simulate Email Click →
+                    </button>
                   </div>
-                  <fieldset className="auth-category-fieldset">
-                    <legend>Interested Categories</legend>
-                    <div>
-                      {categoryOptions.map((category) => (
-                        <label key={category}>
+                )}
+                {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && (
+                  <p className="form-message">{message}</p>
+                )}
+              </>
+            ) : mode === 'reset-password' ? (
+              <>
+                <h2>New Password</h2>
+                <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5, margin: '0 0 6px' }}>
+                  Choose a strong new password for your account.
+                </p>
+                <form onSubmit={submit}>
+                  <label>
+                    New Password
+                    <input
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      type="password"
+                      autoComplete="new-password"
+                      minLength="6"
+                      placeholder="Minimum 6 characters"
+                      required
+                    />
+                  </label>
+                  <button className="primary-button" type="submit">
+                    Update Password
+                  </button>
+                </form>
+                {message && <p className="form-message">{message}</p>}
+              </>
+            ) : (
+              <>
+                <h2>{mode === 'login' ? 'Login' : 'Register'}</h2>
+                <form onSubmit={submit}>
+                  {mode === 'register' && (
+                    <>
+                      <div className="auth-field-grid">
+                        <label>
+                          Full Name
                           <input
-                            type="checkbox"
-                            checked={profile.interestedCategories.includes(category)}
-                            onChange={() => toggleCategory(category)}
+                            value={profile.fullName}
+                            onChange={(event) => updateProfile('fullName', event.target.value)}
+                            onBlur={(event) => updateProfile('fullName', toTitleCaseName(event.target.value))}
+                            autoComplete="name"
+                            required
                           />
-                          <span>{category}</span>
                         </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                </>
-              )}
-              <label>
-                Email
-                <input
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  type="email"
-                  autoComplete="email"
-                  required
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  type="password"
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  minLength="6"
-                  required
-                />
-              </label>
-              <button className="primary-button" type="submit">
-                {mode === 'login' ? 'Login' : 'Create Account'}
-              </button>
-            </form>
-            <button className="text-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
-              {mode === 'login' ? 'Create a new account' : 'Already registered? Login'}
-            </button>
-            {message && <p className="form-message">{message}</p>}
+                        <label>
+                          Business Name
+                          <input
+                            value={profile.businessName}
+                            onChange={(event) => updateProfile('businessName', event.target.value)}
+                            autoComplete="organization"
+                            required
+                          />
+                        </label>
+                      </div>
+                        <div className="auth-phone-field">
+                          <div className="auth-field-label-row">
+                            <span>City & Pincode *</span>
+                          </div>
+                          <div className="auth-city-pincode-inputs">
+                            <input
+                              value={profile.city}
+                              onChange={(event) => updateProfile('city', event.target.value)}
+                              placeholder="City name"
+                              autoComplete="address-level2"
+                              required
+                            />
+                            <input
+                              value={profile.pincode}
+                              onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
+                              inputMode="numeric"
+                              autoComplete="postal-code"
+                              placeholder="Pincode"
+                              required
+                            />
+                          </div>
+                          <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
+                        </div>
+                        <div className="auth-phone-field">
+                          <div className="auth-field-label-row">
+                            <span>WhatsApp Number</span>
+                            <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                          </div>
+                          <div>
+                            <select
+                              value={profile.countryCode}
+                              onChange={(event) => updateProfile('countryCode', event.target.value)}
+                              aria-label="Country code"
+                              required
+                            >
+                              {countryCodes.map((item) => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                              ))}
+                            </select>
+                            <input
+                              value={profile.whatsapp}
+                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
+                              inputMode="numeric"
+                              autoComplete="tel-national"
+                              placeholder="xxxxxxxxxx"
+                              pattern="[0-9]{10}"
+                              required
+                            />
+                          </div>
+                        </div>
+                      <div className="auth-field-grid">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type / Segment</span>
+                          <B2BSegmentDropdown
+                            value={profile.buyerSubtype || 'Wholesalers'}
+                            onChange={(opt) => {
+                              setProfile(current => ({
+                                ...current,
+                                buyerType: opt.type,
+                                buyerSubtype: opt.value
+                              }));
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
+                          <BuyingBehaviorDropdown
+                            value={profile.buyingBehavior}
+                            onChange={(value) => updateProfile('buyingBehavior', value)}
+                          />
+                        </div>
+                      </div>
+                      <fieldset className="auth-category-fieldset">
+                        <legend>Interested Categories</legend>
+                        <div>
+                          {categoryOptions.map((category) => (
+                            <label key={category}>
+                              <input
+                                type="checkbox"
+                                checked={profile.interestedCategories.includes(category)}
+                                onChange={() => toggleCategory(category)}
+                              />
+                              <span>{category}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
+                  <label>
+                    Email
+                    <input
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      type="email"
+                      autoComplete="email"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Password
+                    <input
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      type="password"
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                      minLength="6"
+                      required
+                    />
+                  </label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      className="text-button auth-forgot-link"
+                      onClick={() => { setMode('forgot-password'); setMessage(''); }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                  <button className="primary-button" type="submit">
+                    {mode === 'login' ? 'Login' : 'Create Account'}
+                  </button>
+                </form>
+                <button className="text-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
+                  {mode === 'login' ? 'Create a new account' : 'Already registered? Login'}
+                </button>
+                {message && <p className="form-message">{message}</p>}
+              </>
+            )}
           </>
         )}
       </section>

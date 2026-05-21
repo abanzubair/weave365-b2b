@@ -3105,6 +3105,46 @@ button {
   gap: 16px;
 }
 
+.auth-forgot-link {
+  margin-top: -8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  color: var(--ink);
+}
+
+.auth-success-card {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(183, 134, 70, 0.22);
+  border-radius: 8px;
+  background: rgba(183, 134, 70, 0.06);
+}
+
+.auth-success-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #257744;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.auth-success-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .auth-field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
