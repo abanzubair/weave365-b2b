@@ -9,7 +9,7 @@ export const runtime = 'edge';
 export async function POST(request) {
   try {
     const submissionData = await request.json();
-    const endpoint = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL;
+    const endpoint = process.env.VENDOR_REGISTRATION_SHEET_URL;
 
     if (!endpoint) {
       return Response.json(

@@ -23,8 +23,8 @@
     "NEXT_PUBLIC_STORE_WHATSAPP": "919919101369",
     "NEXT_PUBLIC_ADMIN_EMAILS": "abanzubair@gmail.com",
     "NEXT_PUBLIC_SITE_URL": "https://www.weave365.in",
-    "NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_URL": "https://script.google.com/macros/s/AKfycbxXpljPCl1cXBvYvsD38POehEUElOUyistOsJtireq-OYUb8n7S0qRWPoZvPuV4zlE5/exec",
-    "NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL": "https://script.google.com/macros/s/AKfycbzPbBioT9T_jzOTHbvMRUSmh4_uY1OZpLgc4iv6iCgNBzDFyD4j7jDLkwCB_JWHskA5/exec",
+    "VENDOR_REGISTRATION_SHEET_URL": "https://script.google.com/macros/s/AKfycbxXpljPCl1cXBvYvsD38POehEUElOUyistOsJtireq-OYUb8n7S0qRWPoZvPuV4zlE5/exec",
+    "EARLY_ACCESS_SHEET_URL": "https://script.google.com/macros/s/AKfycbzPbBioT9T_jzOTHbvMRUSmh4_uY1OZpLgc4iv6iCgNBzDFyD4j7jDLkwCB_JWHskA5/exec",
     "NEXT_PUBLIC_SHEET_ID": "2PACX-1vSsRlN_ZBgHYr_giD2jjt8_gAXrCYntE2Nal8_HBXyNIGvfuRSQP3WXilKaR7azZzB4cK8er2V9rRF0",
     "NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID": "0",
     "NEXT_PUBLIC_PRODUCT_REVIEWS_GID": "1133055182"

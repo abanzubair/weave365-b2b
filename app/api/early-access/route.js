@@ -11,7 +11,7 @@ export async function POST(request) {
     const body = await request.json();
     const { sliderVerified, ...submissionData } = body;
 
-    const endpoint = process.env.NEXT_PUBLIC_EARLY_ACCESS_SHEET_URL;
+    const endpoint = process.env.EARLY_ACCESS_SHEET_URL;
 
     if (!endpoint) {
       return Response.json(

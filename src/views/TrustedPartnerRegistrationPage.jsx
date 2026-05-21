@@ -585,7 +585,6 @@ export function TrustedPartnerRegistrationPage() {
     }
 
     // 2. Check globally via parsed CSV
-    const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || '';
     const registrationGid = process.env.NEXT_PUBLIC_VENDOR_REGISTRATION_SHEET_GID || '0';
     const csvUrl = getSheetCsvUrl(registrationGid);
     if (csvUrl) {
