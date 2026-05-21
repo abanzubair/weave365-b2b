@@ -58,9 +58,9 @@
 }
 
 .seo-compact-left {
-  position: sticky;
+  position: static;
   top: 75px;
-  margin-top: -2rem;
+  margin-top: -2.5rem;
 }
 
 .seo-compact-kicker {

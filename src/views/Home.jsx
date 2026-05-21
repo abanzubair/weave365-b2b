@@ -734,7 +734,7 @@ export function Home({
         </div>
 
         <div className="home-blog-grid">
-          {blogPosts.slice(0, 3).map((post) => (
+          {blogPosts.slice(0, 4).map((post) => (
             <article 
               key={post.slug} 
               className="blog-card"
