@@ -803,6 +803,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         <td>
                           <div className="admin-contact-info">
                             <strong>{profile.whatsapp || 'No WhatsApp'}</strong>
+                            {profile.city && (
+                              <span style={{ textTransform: 'capitalize' }}>
+                                {profile.city}
+                              </span>
+                            )}
                             <span>
                               {profile.pincode ? `PIN ${profile.pincode}` : ''}
                               {isVaranasiPincode(profile.pincode) && ' Varanasi'}
