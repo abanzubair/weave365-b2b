@@ -4,6 +4,8 @@
  * browser CORS and 302 redirect issues.
  */
 
+export const runtime = 'edge';
+
 export async function POST(request) {
   try {
     const body = await request.json();

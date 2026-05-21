@@ -4,6 +4,8 @@
  * browser CORS and opaque response silent failure issues.
  */
 
+export const runtime = 'edge';
+
 export async function POST(request) {
   try {
     const submissionData = await request.json();
