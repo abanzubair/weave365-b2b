@@ -433,6 +433,11 @@ function driveImageUrl(link) {
   const value = String(link || '').trim();
   if (!value) return '';
 
+  // Cloudflare R2 URLs — pass through directly
+  if (value.includes('images.weave365.in') || value.includes('r2.cloudflarestorage.com')) {
+    return value;
+  }
+
   // Cloudinary URLs — auto-inject f_auto,q_auto optimization if missing
   if (value.includes('res.cloudinary.com')) {
     if (value.includes('f_auto') || value.includes('q_auto')) return value;
