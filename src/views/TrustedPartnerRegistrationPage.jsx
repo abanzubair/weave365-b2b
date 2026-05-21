@@ -461,7 +461,7 @@ export function TrustedPartnerRegistrationPage() {
       }
 
       if (!foundRow) {
-        setUnlockError('No product review submission was found matching this WhatsApp number. Please submit Tab 1 first.');
+        setUnlockMessage("⏳ If you recently submitted Tab 1, your review is currently PENDING approval (please allow a few minutes for the sheet to sync). If you haven't submitted Tab 1 yet, please submit your products for review first.");
         setIsVerifyingUnlock(false);
         return;
       }
@@ -513,10 +513,10 @@ export function TrustedPartnerRegistrationPage() {
         if (localMatch) {
           setUnlockMessage('⏳ Locally recorded review found! Review status is currently: PENDING review approval.');
         } else {
-          setUnlockError('Unable to connect to registration lookup systems. Ensure connection is online.');
+          setUnlockMessage('⏳ If you recently submitted Tab 1, your review is currently PENDING approval. Please allow a few minutes for the database to sync or check your connection.');
         }
       } catch (e) {
-        setUnlockError('Failed to run verification lookup sequence. Check connection.');
+        setUnlockMessage('⏳ If you recently submitted Tab 1, your review is currently PENDING approval. Please check your connection and try again.');
       }
     } finally {
       setIsVerifyingUnlock(false);
@@ -772,13 +772,15 @@ export function TrustedPartnerRegistrationPage() {
                     Go to Advanced Profile Status Check
                   </button>
 
-                  <button
-                    type="button"
-                    className="clear-test-cache-link"
-                    onClick={handleClearCache}
-                  >
-                    Clear cache & test again ↺
-                  </button>
+                  {process.env.NODE_ENV === 'development' && (
+                    <button
+                      type="button"
+                      className="clear-test-cache-link"
+                      onClick={handleClearCache}
+                    >
+                      Clear cache & test again ↺
+                    </button>
+                  )}
                 </div>
               ) : (
                 <form className="vendor-registration-form" onSubmit={handleReviewSubmit}>
@@ -1026,14 +1028,16 @@ export function TrustedPartnerRegistrationPage() {
                       {unlockError && <p className="status-msg error">{unlockError}</p>}
                     </form>
 
-                    <button
-                      type="button"
-                      className="clear-test-cache-link"
-                      onClick={handleClearCache}
-                      style={{ marginTop: '24px' }}
-                    >
-                      Clear cache & test again ↺
-                    </button>
+                    {process.env.NODE_ENV === 'development' && (
+                      <button
+                        type="button"
+                        className="clear-test-cache-link"
+                        onClick={handleClearCache}
+                        style={{ marginTop: '24px' }}
+                      >
+                        Clear cache & test again ↺
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -1043,13 +1047,15 @@ export function TrustedPartnerRegistrationPage() {
                     <h2>Thank you for applying.</h2>
                     <p>Our team has received your advanced verification profile and will finalize your supplier listing shortly.</p>
                     
-                    <button
-                      type="button"
-                      className="clear-test-cache-link"
-                      onClick={handleClearCache}
-                    >
-                      Clear cache & test again ↺
-                    </button>
+                    {process.env.NODE_ENV === 'development' && (
+                      <button
+                        type="button"
+                        className="clear-test-cache-link"
+                        onClick={handleClearCache}
+                      >
+                        Clear cache & test again ↺
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <form className="vendor-registration-form" onSubmit={handleOriginalSubmit}>
@@ -1326,14 +1332,16 @@ export function TrustedPartnerRegistrationPage() {
                       {isSubmitting ? 'Submitting Application...' : 'Apply as Trusted Partner'}
                     </button>
                     
-                    <button
-                      type="button"
-                      className="clear-test-cache-link"
-                      onClick={handleClearCache}
-                      style={{ marginTop: '16px', background: 'none', border: 'none', color: 'var(--muted)', textDecoration: 'underline', cursor: 'pointer' }}
-                    >
-                      Clear cache & test again ↺
-                    </button>
+                    {process.env.NODE_ENV === 'development' && (
+                      <button
+                        type="button"
+                        className="clear-test-cache-link"
+                        onClick={handleClearCache}
+                        style={{ marginTop: '16px', background: 'none', border: 'none', color: 'var(--muted)', textDecoration: 'underline', cursor: 'pointer' }}
+                      >
+                        Clear cache & test again ↺
+                      </button>
+                    )}
                   </form>
                 )
               )
