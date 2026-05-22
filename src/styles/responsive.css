@@ -1229,17 +1229,23 @@
   }
 
   .moq-badge {
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
-    padding: 6px 14px !important;
-    background: var(--gold-dark) !important;
-    border: 1px solid var(--gold-dark) !important;
-    color: var(--white) !important;
-    border-radius: 20px !important;
-    margin-top: 4px;
-    box-shadow: 0 4px 10px rgba(183, 134, 70, 0.12) !important;
+    letter-spacing: 0.12em !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold-dark) !important;
+    border-radius: 0 !important;
+    margin-top: 6px !important;
+    box-shadow: none !important;
+    font-family: var(--font-modern-heading) !important;
+    display: inline-flex !important;
+  }
+
+  .moq-badge::before {
+    display: none !important;
   }
 
   .tiered-pricing-card {

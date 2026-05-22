@@ -98,6 +98,7 @@ export function Home({
     return () => clearInterval(interval);
   }, []);
 
+  /*
   useEffect(() => {
     const interval = setInterval(() => {
       setShowNewHero((prev) => {
@@ -116,6 +117,7 @@ export function Home({
       document.documentElement.classList.remove('new-hero-active');
     };
   }, []);
+  */
 
   const activeHeroData = bannerSlides[currentSlide] || null;
 
@@ -134,12 +136,12 @@ export function Home({
     if (typeof window === 'undefined') return;
 
     const originalTitle = document.title;
-    document.title = 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365';
+    document.title = 'Banarasi Sarees and Suits for Wholesale & Export | Weave 365';
 
     let metaDesc = document.querySelector('meta[name="description"]');
     const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
-    const newDesc = 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.';
-    
+    const newDesc = 'Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.';
+
     if (metaDesc) {
       metaDesc.setAttribute('content', newDesc);
     } else {
@@ -181,7 +183,7 @@ export function Home({
     };
   }, []);
 
-  const bestsellers = useMemo(() => 
+  const bestsellers = useMemo(() =>
     products
       .filter((p) => p.isTopSeller)
       .slice(0, 8)
@@ -189,7 +191,7 @@ export function Home({
         product: p,
         image: p.images[0] || fallbackHeroImage,
         variant: p.variants[0]
-      })), 
+      })),
     [products, fallbackHeroImage]
   );
 
@@ -308,7 +310,7 @@ export function Home({
               />
             </picture>
             <div className="premium-hero-overlay"></div>
-            
+
             <div className="premium-hero-content">
               <div className="premium-hero-main">
                 <div className="premium-hero-title" aria-level="2" role="heading">
@@ -319,27 +321,27 @@ export function Home({
                   Timeless Weaves<br />
                   Endless Possibilities
                 </div>
-                
+
                 <p className="premium-hero-subtitle">
                   Banarasi Sarees & Suits for your business,
                   crafted for every story.
                 </p>
-                
+
                 <div className="premium-hero-actions">
-                  <button 
-                    className="premium-btn-filled" 
+                  <button
+                    className="premium-btn-filled"
                     onClick={() => navigate('catalog')}
                   >
                     Explore Collections
                   </button>
-                  <button 
-                    className="premium-btn-text" 
+                  <button
+                    className="premium-btn-text"
                     onClick={() => navigate('bulk-inquiry')}
                   >
                     Request Catalog <ArrowRight size={18} />
                   </button>
                 </div>
-                
+
                 <div className="premium-hero-features">
                   <div className="premium-feature">
                     <Grid size={24} strokeWidth={1.5} />
@@ -364,7 +366,7 @@ export function Home({
                   </div>
                 </div>
               </div>
-              
+
               <div className="premium-hero-sidebar">
                 <div className="premium-hero-collection-info">
                   <span>B2B<br />SAREE<br />COLLECTION<br />'26</span>
@@ -383,15 +385,15 @@ export function Home({
           </section>
         </div>
 
-        {/* New Editorial Brand Collaboration Hero Slide */}
+        {/* New Editorial Brand Collaboration Hero Slide (Disabled)
         <div className={`hero-slide-pane pane-second ${showNewHero ? 'active' : ''}`}>
           <section className="collab-hero-section">
-            {/* Left Column: Image and side tagline */}
+            {/* Left Column: Image and side tagline * /}
             <div className="collab-hero-left">
               <div className="collab-hero-photo-wrap">
-                <img 
-                  src={assetSrc(newBanner2)} 
-                  alt="Brand Collaboration Banner" 
+                <img
+                  src={assetSrc(newBanner2)}
+                  alt="Brand Collaboration Banner"
                   className="collab-hero-photo"
                   width={960}
                   height={1080}
@@ -400,17 +402,17 @@ export function Home({
                 />
                 <div className="collab-hero-photo-overlay"></div>
               </div>
-              
+
               <div className="collab-vertical-text">
                 CURATE. COLLABORATE. GROW TOGETHER.
               </div>
-              
+
               <div className="collab-vertical-badge">
                 <span className="badge-kicker">BRAND</span>
                 <span className="badge-title">COLLABORATION</span>
                 <span className="badge-line"></span>
               </div>
-              
+
               <div className="collab-slide-pagination">
                 <span className="slide-num">01</span>
                 <span className="slide-separator">—</span>
@@ -418,11 +420,11 @@ export function Home({
               </div>
             </div>
 
-            {/* Right Column: Content segment */}
+            {/* Right Column: Content segment * /}
             <div className="collab-hero-right">
               <div className="collab-right-content">
                 <span className="collab-kicker">COLLABORATE WITH US</span>
-                
+
                 <div className="collab-title-seal-row">
                   <div className="collab-title" aria-level="2" role="heading">
                     <span className="collab-title-line-1">Together</span><br />
@@ -430,19 +432,19 @@ export function Home({
                     <span className="collab-title-line-3">Weave</span>
                   </div>
 
-                  {/* Elegant rotating gold seal */}
+                  {/* Elegant rotating gold seal * /}
                   <div className="rotating-seal-container">
                     <div className="rotating-seal-wrapper">
                       <svg viewBox="0 0 100 100" className="rotating-seal-svg">
                         <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="sealCirclePath" fill="none" />
                         <text fill="#c69e6a" fontSize="6.2" fontFamily="var(--font-hero-body)" letterSpacing="2.5" fontWeight="600">
                           <textPath href="#sealCirclePath" startOffset="0%">
-                            BUILD YOUR BRAND • EXPAND YOUR REACH • 
+                            BUILD YOUR BRAND • EXPAND YOUR REACH •
                           </textPath>
                         </text>
                       </svg>
                     </div>
-                    {/* Symmetrical flower icon at the center sits outside wrapper to remain static */}
+                    {/* Symmetrical flower icon at the center sits outside wrapper to remain static * /}
                     <div className="seal-center-emblem">
                       <svg viewBox="0 0 50 50" className="seal-center-svg">
                         <g transform="translate(25,25) scale(0.7)" stroke="#c69e6a" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -466,7 +468,7 @@ export function Home({
                 </p>
 
                 <div className="collab-bottom-row">
-                  <button 
+                  <button
                     className="collab-cta-btn"
                     onClick={() => navigate('bulk-inquiry')}
                   >
@@ -488,6 +490,7 @@ export function Home({
             </div>
           </section>
         </div>
+        */}
       </section>
 
       {dealProducts.length > 0 && (
@@ -589,8 +592,8 @@ export function Home({
           </div>
           <StateMessage status={status} error={error} />
           <div className="scroll-wrapper">
-            <button 
-              className="scroll-arrow left" 
+            <button
+              className="scroll-arrow left"
               onClick={() => scrollProductRail('bestsellers-row', -1)}
               aria-label="Scroll left"
             >
@@ -600,21 +603,21 @@ export function Home({
             <div className="product-row scrollable-row" id="bestsellers-row">
               {bestsellers.map(({ product, image, variant }, index) => (
                 <ProductCard
-                key={`${product.id}-${index}`}
-                product={{ ...product, images: [image, ...product.images] }}
-                variant={variant}
-                navigate={navigate}
-                addToCart={addToCart}
-                toggleFavorite={toggleFavorite}
-                isFavorite={favoriteKeys.has(product.id)}
-                priceAccess={priceAccess}
-                openAuth={openAuth}
+                  key={`${product.id}-${index}`}
+                  product={{ ...product, images: [image, ...product.images] }}
+                  variant={variant}
+                  navigate={navigate}
+                  addToCart={addToCart}
+                  toggleFavorite={toggleFavorite}
+                  isFavorite={favoriteKeys.has(product.id)}
+                  priceAccess={priceAccess}
+                  openAuth={openAuth}
                 />
               ))}
             </div>
 
-            <button 
-              className="scroll-arrow right" 
+            <button
+              className="scroll-arrow right"
               onClick={() => scrollProductRail('bestsellers-row', 1)}
               aria-label="Scroll right"
             >
@@ -633,8 +636,8 @@ export function Home({
         </div>
         <StateMessage status={status} error={error} />
         <div className="scroll-wrapper">
-          <button 
-            className="scroll-arrow left" 
+          <button
+            className="scroll-arrow left"
             onClick={() => scrollProductRail('new-arrivals-row', -1)}
             aria-label="Scroll left"
           >
@@ -644,21 +647,21 @@ export function Home({
           <div className="product-row scrollable-row" id="new-arrivals-row">
             {arrivals.map(({ product, image, variant }, index) => (
               <ProductCard
-              key={`${product.id}-${index}`}
-              product={{ ...product, images: [image, ...product.images] }}
-              variant={variant}
-              navigate={navigate}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              isFavorite={favoriteKeys.has(product.id)}
-              priceAccess={priceAccess}
-              openAuth={openAuth}
+                key={`${product.id}-${index}`}
+                product={{ ...product, images: [image, ...product.images] }}
+                variant={variant}
+                navigate={navigate}
+                addToCart={addToCart}
+                toggleFavorite={toggleFavorite}
+                isFavorite={favoriteKeys.has(product.id)}
+                priceAccess={priceAccess}
+                openAuth={openAuth}
               />
             ))}
           </div>
 
-          <button 
-            className="scroll-arrow right" 
+          <button
+            className="scroll-arrow right"
             onClick={() => scrollProductRail('new-arrivals-row', 1)}
             aria-label="Scroll right"
           >
@@ -714,7 +717,7 @@ export function Home({
           </li>
         </ul>
       </section> */}
-      
+
       {/* Weave 365 Insights Section */}
       <section className="home-blog-section">
         <div className="home-blog-header">
@@ -723,7 +726,7 @@ export function Home({
             <h2>Insights from Varanasi Looms</h2>
           </div>
           <div className="home-blog-header-right">
-            <button 
+            <button
               className="blog-filter-btn active"
               onClick={() => navigate('blog')}
               style={{ padding: '0.75rem 2rem' }}
@@ -735,8 +738,8 @@ export function Home({
 
         <div className="home-blog-grid">
           {blogPosts.slice(0, 4).map((post) => (
-            <article 
-              key={post.slug} 
+            <article
+              key={post.slug}
               className="blog-card"
               onClick={() => navigate('blog', post.slug)}
             >
@@ -756,7 +759,7 @@ export function Home({
                 </div>
                 <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
                 <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
-                <button 
+                <button
                   className="read-more-link"
                   style={{ marginTop: 'auto', fontSize: '0.8rem' }}
                 >
@@ -775,7 +778,7 @@ export function Home({
             <h2>Trusted B2B Banarasi Saree Supplier</h2>
             <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our B2B portal is designed specifically to supply <a href="/wholesale-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('wholesale-banarasi-sarees'); }} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
           </div>
- 
+
           <div className="seo-compact-right">
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
@@ -784,7 +787,7 @@ export function Home({
               </div>
               <p>Discover our extensive <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
             </div>
- 
+
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
                 <Award size={30} strokeWidth={1.5} className="seo-card-icon" />
@@ -792,7 +795,7 @@ export function Home({
               </div>
               <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern B2B commerce.</p>
             </div>
- 
+
             <div className="seo-compact-card">
               <div className="seo-card-title-row">
                 <MapPin size={30} strokeWidth={1.5} className="seo-card-icon" />

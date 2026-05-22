@@ -194,6 +194,11 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
 
             <div className="sp-description">
               {productData.description || `Exquisite ${productData.fabric} ${productData.category} featuring beautiful ${productData.work} work. Perfect for ${productData.occasion} and special celebrations.`}
+              {String(productData.category || '').toLowerCase() === 'saree' && (
+                <div className="saree-length-display" style={{ marginTop: '12px', fontWeight: '600', color: 'var(--reseller-primary)' }}>
+                  Saree Length: 6.3m (including 85cm Blouse)
+                </div>
+              )}
             </div>
 
             <div className="sp-specs">

@@ -58,7 +58,7 @@ export function getBuyerAccess(user, buyerProfile) {
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
   const buyerType = normalizeBuyerType(profile.buyer_type);
-  const approvalStatus = profile.approval_status || 'approved';
+  const approvalStatus = profile.approval_status || 'pending';
   
   // Geotargeting block check for Varanasi pincodes
   const blockedByPincode = isVaranasiPincode(profile.pincode);
@@ -66,7 +66,22 @@ export function getBuyerAccess(user, buyerProfile) {
   // If explicitly suspended, rejected, or a pending Varanasi competitor
   const isRestricted = approvalStatus === 'suspended' || approvalStatus === 'rejected' || (blockedByPincode && approvalStatus === 'pending');
   
-  const priceGroup = isRestricted ? 'guest' : buyerType;
+  // To view wholesale or reseller prices, the buyer's account must be fully approved by the admin and not restricted.
+  // Otherwise, they default to guest (D2C) pricing.
+  const isApproved = approvalStatus === 'approved';
+  
+  let priceGroup = 'guest';
+  if (isApproved && !isRestricted) {
+    const profilePriceGroup = profile.price_group || profile.buyer_type;
+    if (profilePriceGroup === 'reseller') {
+      priceGroup = 'reseller';
+    } else if (profilePriceGroup === 'wholesale') {
+      priceGroup = 'wholesale';
+    } else {
+      priceGroup = buyerType;
+    }
+  }
+  
   const canViewPrices = true;
 
   let message = '';
@@ -77,7 +92,7 @@ export function getBuyerAccess(user, buyerProfile) {
   return {
     isLoggedIn: true,
     canViewPrices,
-    reason: isRestricted ? approvalStatus : 'approved',
+    reason: isRestricted ? approvalStatus : (isApproved ? 'approved' : approvalStatus),
     message,
     buyerType,
     priceGroup,
@@ -97,7 +112,7 @@ export function priceForBuyer(prices = {}, buyerAccess) {
   if (!buyerAccess || !buyerAccess.canViewPrices) return null;
 
   if (buyerAccess.priceGroup === 'guest') {
-    return prices.single || prices.mrp || 0;
+    return prices.single || 0;
   }
 
   if (buyerAccess.priceGroup === 'reseller') {

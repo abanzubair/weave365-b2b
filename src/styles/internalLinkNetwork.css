@@ -6,7 +6,7 @@
 
 .internal-link-network {
   padding: 5rem var(--site-padding) 2.5rem;
-  background: var(--surface-soft);
+  background: var(--paper);
   border-top: 1px solid var(--surface-strong);
 }
 

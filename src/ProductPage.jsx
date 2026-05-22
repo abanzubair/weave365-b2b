@@ -825,9 +825,21 @@ export function ProductDetail({
                         {priceAccess.priceLabel}
                       </span>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
                       <span className="price-value">{formatMoney(displayPrice)}</span>
                       <span className="price-unit">/pc</span>
+                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && (
+                        <>
+                          <span className="price-pipe"></span>
+                          <span className="price-value" style={{ fontSize: '28px', color: 'var(--muted)', fontWeight: '600' }}>{formatMoney(displayPrice * totalColors)}</span>
+                          <span className="price-unit" style={{ fontSize: '16px' }}>/Set ({totalColors} pcs)</span>
+                        </>
+                      )}
+                      {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
+                        <div className="moq-badge">
+                          {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -836,11 +848,6 @@ export function ProductDetail({
                   </button>
                 )}
               </div>
-              {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
-                <div className="moq-badge">
-                  {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
-                </div>
-              )}
             </div>
 
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
@@ -860,7 +867,7 @@ export function ProductDetail({
               </div>
             )}
 
-            {priceAccess?.priceGroup === 'reseller' ? (
+            {priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest' ? (
               <span className="gst-disclaimer">
                 Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
               </span>
@@ -924,6 +931,11 @@ export function ProductDetail({
                   {label !== 'Description' && <span>{label}</span>}
                   <strong className={label === 'Description' ? 'description-text' : ''}>
                     {value || 'On request'}
+                    {label === 'Description' && String(product.category || '').toLowerCase() === 'saree' && (
+                      <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--ink)' }}>
+                        Saree Length: 6.3m (including 85cm Blouse)
+                      </span>
+                    )}
                   </strong>
                 </div>
               ))}
@@ -1015,6 +1027,11 @@ export function ProductDetail({
                 <h2 className="editorial-title">Direct from Varanasi Looms</h2>
                 <p className="editorial-copy">
                   {product.description || `Enhance your boutique collections with our curated Banarasi products. Direct loom-to-store transparency ensures fair prices for artisans and pristine material quality for global buyers.`}
+                  {String(product.category || '').toLowerCase() === 'saree' && (
+                    <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--brown-900)' }}>
+                      Saree Length: 6.3m (including 85cm Blouse)
+                    </span>
+                  )}
                 </p>
                 <div className="editorial-divider" />
                 <div className="editorial-support">
