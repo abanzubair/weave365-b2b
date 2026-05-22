@@ -819,24 +819,31 @@ export function ProductDetail({
             <div className="price-moq-row">
               <div className="main-price-wrap">
                 {canViewPrice ? (
-                  <>
-                    <span className="price-value">{formatMoney(displayPrice)}</span>
-                    <span className="price-unit">/pc</span>
-                  </>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {priceAccess?.priceLabel && (
+                      <span className="price-label-badge" style={{ fontSize: '11px', textTransform: 'uppercase', color: '#b8924a', letterSpacing: '1.2px', fontWeight: '700' }}>
+                        {priceAccess.priceLabel}
+                      </span>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span className="price-value">{formatMoney(displayPrice)}</span>
+                      <span className="price-unit">/pc</span>
+                    </div>
+                  </div>
                 ) : (
                   <button className="guest-price-notice" onClick={openAuth}>
                     <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
                   </button>
                 )}
               </div>
-              {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && (
+              {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
                 <div className="moq-badge">
                   {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
                 </div>
               )}
             </div>
 
-            {canViewPrice && priceAccess?.priceGroup !== 'reseller' && (
+            {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
               <div className="tiered-pricing-card">
                 <div className="tier-column">
                   <div className="tier-label">1 - 4 {isSoldAsBoth ? 'Set' : moqUnit}</div>

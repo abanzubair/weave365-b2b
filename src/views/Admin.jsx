@@ -127,7 +127,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
-  const allowed = isAdminUser(user);
+  const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
   // Tab control
   const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'blogs'

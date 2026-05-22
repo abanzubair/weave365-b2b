@@ -7,6 +7,7 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  Award,
   Bookmark,
   ChevronRight,
   Heart,
@@ -84,9 +85,9 @@ export const ProductCard = memo(function ProductCard({
     });
   }, [product.statusTags, canViewPrice, priceAccess]);
 
-  const showMoqBadge = !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices);
+  const showMoqBadge = priceAccess?.priceGroup === 'wholesale';
   const showColorBadge = colorCount > 1;
-  const showRightInfo = showMoqBadge || showColorBadge;
+  const showRightInfo = showMoqBadge || showColorBadge || !!product.purity;
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -191,30 +192,26 @@ export const ProductCard = memo(function ProductCard({
           {product.title}
         </h3>
 
-        <div className={`card-info-grid ${priceAccess?.isLoggedIn === false ? 'is-guest' : ''} ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
+        <div className={`card-info-grid ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
           <div className="info-left">
-            {priceAccess?.isLoggedIn !== false && (
+            {canViewPrice ? (
               <>
-                {canViewPrice && !(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && <label>PRICE</label>}
-                {canViewPrice ? (
-                  <>
-                    <strong>{formatMoney(basePrice)} <span>/pc</span></strong>
-                    {!(priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) && (
-                      <small>{formatMoney(setPrice)} /set</small>
-                    )}
-                  </>
-                ) : (
-                  <div className="price-pending-notice">
-                    <div className="notice-text">
-                      <strong>{priceNoticeForAccess(priceAccess)}</strong>
-                      <span>Prices will be visible once approved</span>
-                    </div>
-                  </div>
+                {priceAccess?.priceGroup !== 'reseller' && <label>{priceAccess?.priceLabel || 'PRICE'}</label>}
+                <strong>{formatMoney(basePrice)} {priceAccess?.priceGroup === 'wholesale' && <span>/pc</span>}</strong>
+                {priceAccess?.priceGroup === 'wholesale' && (
+                  <small>{formatMoney(setPrice)} /set</small>
                 )}
               </>
+            ) : (
+              <div className="price-pending-notice">
+                <div className="notice-text">
+                  <strong>{priceNoticeForAccess(priceAccess)}</strong>
+                  <span>Prices will be visible once approved</span>
+                </div>
+              </div>
             )}
           </div>
-          {priceAccess?.isLoggedIn !== false && canViewPrice && showRightInfo && (
+          {canViewPrice && showRightInfo && (
             <div className="info-right">
               {showMoqBadge && (
                 <div className="info-item">
@@ -226,21 +223,36 @@ export const ProductCard = memo(function ProductCard({
                   <Palette size={15} /> {colorCount} Colors
                 </div>
               )}
+              {product.purity && (
+                <div className="info-item">
+                  <Award size={15} /> {product.purity}
+                </div>
+              )}
             </div>
           )}
         </div>
 
         <div className={`card-actions-new ${priceAccess?.isLoggedIn !== false ? 'has-reseller-share' : ''}`}>
           {priceAccess?.isLoggedIn === false ? (
-            <button
-              className="order-now-btn guest-login-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                openAuth();
-              }}
-            >
-              <User size={16} /> LOGIN TO VIEW PRICE
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleEnquiryClick}
+                className="order-now-btn"
+                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
+              >
+                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
+              </button>
+              <button
+                className="add-to-bag-btn options-trigger-btn b2b-price-trigger-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openAuth();
+                }}
+              >
+                <Zap size={16} /> B2B PRICE
+              </button>
+            </>
           ) : (
             <>
               <button

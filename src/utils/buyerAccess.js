@@ -7,6 +7,7 @@
 export const PRICE_GROUPS = {
   wholesale: 'Wholesale Price',
   reseller: 'Reseller Price',
+  guest: 'D2C Price',
 };
 
 const VARANASI_PINCODE_PREFIXES = ['221'];
@@ -40,12 +41,12 @@ export function getBuyerAccess(user, buyerProfile) {
   if (!user) {
     return {
       isLoggedIn: false,
-      canViewPrices: false,
+      canViewPrices: true,
       reason: 'logged_out',
-      message: 'Login to view price',
+      message: '',
       buyerType: '',
-      priceGroup: 'pending',
-      priceLabel: '',
+      priceGroup: 'guest',
+      priceLabel: 'D2C Price',
       approvalStatus: 'guest',
       userId: null,
       userEmail: null,
@@ -57,25 +58,32 @@ export function getBuyerAccess(user, buyerProfile) {
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
   const buyerType = normalizeBuyerType(profile.buyer_type);
-  const approvalStatus = profile.approval_status || 'pending';
-  const priceGroup = profile.price_group || (approvalStatus === 'approved' ? buyerType : 'pending');
-  const canViewPrices = approvalStatus === 'approved' && Boolean(PRICE_GROUPS[priceGroup]);
+  const approvalStatus = profile.approval_status || 'approved';
+  
+  // Geotargeting block check for Varanasi pincodes
+  const blockedByPincode = isVaranasiPincode(profile.pincode);
+  
+  // If explicitly suspended, rejected, or a pending Varanasi competitor
+  const isRestricted = approvalStatus === 'suspended' || approvalStatus === 'rejected' || (blockedByPincode && approvalStatus === 'pending');
+  
+  const priceGroup = isRestricted ? 'guest' : buyerType;
+  const canViewPrices = true;
 
-  let message = 'Your account approval is pending';
-  if (approvalStatus === 'rejected') message = 'Your buyer account needs review';
-  if (approvalStatus === 'suspended') message = 'Price access is paused for this account';
-  if (canViewPrices) message = '';
+  let message = '';
+  if (approvalStatus === 'rejected') message = 'Your buyer account needs review. Showing D2C prices.';
+  if (approvalStatus === 'suspended') message = 'Price access is paused. Showing D2C prices.';
+  if (blockedByPincode && approvalStatus === 'pending') message = 'Your B2B account approval is pending. Showing D2C prices.';
 
   return {
     isLoggedIn: true,
     canViewPrices,
-    reason: canViewPrices ? 'approved' : approvalStatus,
+    reason: isRestricted ? approvalStatus : 'approved',
     message,
     buyerType,
     priceGroup,
-    priceLabel: PRICE_GROUPS[priceGroup] || 'Price Pending',
+    priceLabel: PRICE_GROUPS[priceGroup] || 'D2C Price',
     approvalStatus,
-    blockedByVaranasiPincode: isVaranasiPincode(profile.pincode),
+    blockedByVaranasiPincode: blockedByPincode,
     userId: user.id || null,
     userEmail: user.email || null,
     buyerName: profile.business_name || profile.full_name || null,
@@ -86,9 +94,13 @@ export function getBuyerAccess(user, buyerProfile) {
 }
 
 export function priceForBuyer(prices = {}, buyerAccess) {
-  if (buyerAccess && !buyerAccess.canViewPrices) return null;
+  if (!buyerAccess || !buyerAccess.canViewPrices) return null;
 
-  if (buyerAccess?.priceGroup === 'reseller') {
+  if (buyerAccess.priceGroup === 'guest') {
+    return prices.single || prices.mrp || 0;
+  }
+
+  if (buyerAccess.priceGroup === 'reseller') {
     // Reseller pricing → B2R column, fallback to B2B if B2R is missing
     return prices.b2r || prices.mrp || 0;
   }

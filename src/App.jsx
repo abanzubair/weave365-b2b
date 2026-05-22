@@ -129,7 +129,10 @@ export default function App({ initialData = {} }) {
   ));
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
-  const isAdmin = Boolean(user?.email && adminEmails.includes(String(user.email).toLowerCase()));
+  const isAdmin = Boolean(
+    (user?.email && adminEmails.includes(String(user.email).toLowerCase())) ||
+    buyerProfile?.role === 'admin'
+  );
   const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
   const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
   const pricedProducts = useMemo(
@@ -1076,6 +1079,16 @@ export default function App({ initialData = {} }) {
                       >
                         My Account
                       </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            navigate('admin');
+                            setDropdownOpen(null);
+                          }}
+                        >
+                          Admin Panel
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           navigate('favorites');
