@@ -2266,9 +2266,7 @@ button {
   transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.product-highlight-showcase:hover .showcase-image-col img {
-  transform: scale(1.015);
-}
+
 
 .showcase-image-badge {
   position: absolute;
@@ -2349,11 +2347,7 @@ button {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.highlight-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(183, 134, 70, 0.15);
-  box-shadow: 0 10px 25px rgba(183, 134, 70, 0.06);
-}
+
 
 .card-icon {
   width: 36px;
@@ -2368,12 +2362,7 @@ button {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.highlight-card:hover .card-icon {
-  background: var(--gold-dark);
-  color: var(--white);
-  border-color: var(--gold-dark);
-  transform: scale(1.08) rotate(8deg);
-}
+
 
 .card-body h3 {
   margin: 0 0 6px;
@@ -2430,12 +2419,7 @@ button {
   box-shadow: 0 2px 6px rgba(183, 134, 70, 0.02);
 }
 
-.perfect-badge:hover {
-  background: rgba(183, 134, 70, 0.08);
-  border-color: var(--gold-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.08);
-}
+
 
 .perfect-badge svg {
   color: var(--gold-dark);

@@ -1071,7 +1071,13 @@ export function ProductDetail({
               decoding="async"
               width={500}
               height={600}
-              onError={(e) => { e.target.style.opacity = '0'; }}
+              onError={(e) => {
+                if (product.images[1] && e.target.src !== product.images[0]) {
+                  e.target.src = product.images[0];
+                } else {
+                  e.target.style.opacity = '0';
+                }
+              }}
             />
             <div className="showcase-image-badge">
               <Sparkles size={14} /> {product.subCategory || 'Premium Quality'}

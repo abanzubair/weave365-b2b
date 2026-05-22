@@ -450,7 +450,7 @@ function driveImageUrl(link) {
 
   const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
   if (!idMatch) return value;
-  return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
+  return `https://wsrv.nl/?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`)}`;
 }
 
 function driveVideoUrl(link) {
