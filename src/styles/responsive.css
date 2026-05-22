@@ -1301,6 +1301,9 @@
   .color-swatch-row {
     gap: 10px !important;
     padding-bottom: 12px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   .color-swatch-row button {

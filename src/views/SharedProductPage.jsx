@@ -255,6 +255,12 @@ export function SharedProductPage({ products, slug, productId, navigate }) {
                   <span>Quality Assured by {storefront.store_name}</span>
                </div>
             </div>
+
+            <div className="reseller-disclaimer-box">
+              <p>
+                <span className="reseller-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
+              </p>
+            </div>
           </div>
         </div>
       </main>

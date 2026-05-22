@@ -1089,3 +1089,27 @@
   justify-content: center;
   margin: 0 auto 1.5rem;
 }
+
+/* Reseller Storefront Disclaimer Box Styles */
+.reseller-disclaimer-box {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--reseller-bg);
+  border: 1px solid var(--reseller-border);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.reseller-disclaimer-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--reseller-text);
+}
+
+.reseller-disclaimer-label {
+  font-weight: 700;
+  color: var(--reseller-primary);
+  margin-right: 4px;
+}
+

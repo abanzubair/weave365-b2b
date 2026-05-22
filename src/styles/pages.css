@@ -1990,7 +1990,7 @@ button {
 }
 
 .product-variation-card {
-  margin: 28px 0;
+  margin: 20px 0;
   padding: 24px 0 4px;
   border-top: 1px solid var(--line);
 }
@@ -2045,10 +2045,16 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  /* overflow-x: auto; */
-  padding: 4px 4px 16px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold-soft) transparent;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.color-swatch-row::-webkit-scrollbar {
+  display: none;
 }
 
 .color-swatch-row button {
@@ -4596,7 +4602,7 @@ button {
 /* --- UI/UX Pro Max Global B2B Sourcing Card --- */
 .global-sourcing-card {
   grid-column: 1 / -1;
-  margin-top: 32px;
+  margin-top: 10px;
   padding: 20px;
   background: rgba(251, 246, 238, 0.6);
   backdrop-filter: blur(8px);
@@ -5199,4 +5205,32 @@ button {
 .custom-select-value svg:hover {
   transform: scale(1.15);
 }
+
+/* Product Disclaimer Box styles */
+.product-disclaimer-box {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding: 14px 18px;
+  background: rgba(183, 134, 70, 0.03);
+  border: 1px solid rgba(183, 134, 70, 0.12);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.product-disclaimer-box p {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.product-disclaimer-label {
+  font-weight: 700;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+
 

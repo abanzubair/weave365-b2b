@@ -179,7 +179,7 @@ export function ProductDetail({
 
   const longDescriptionSections = useMemo(() => {
     const isSaree = String(product.category || '').toLowerCase() === 'saree';
-    
+
     return [
       {
         id: 'fabric',
@@ -199,7 +199,7 @@ export function ProductDetail({
       {
         id: 'blouse',
         label: 'Blouse Information',
-        content: isSaree 
+        content: isSaree
           ? 'Includes a matching uncut blouse piece (total saree length 6.3m including blouse).'
           : 'Includes matching salwar/bottom and dupatta cut piece fabric set matching the design motif.'
       },
@@ -216,8 +216,8 @@ export function ProductDetail({
       {
         id: 'moq',
         label: 'Minimum Order Quantity',
-        content: isSoldAsBoth 
-          ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.' 
+        content: isSoldAsBoth
+          ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.'
           : `This product has a low minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`
       },
       {
@@ -307,7 +307,7 @@ export function ProductDetail({
     // 1. Gather all unique fabrics & categories from all loaded products
     const allFabrics = new Set();
     const allCategories = new Set();
-    
+
     products.forEach(p => {
       if (p.fabric) allFabrics.add(p.fabric.trim());
       if (p.category) allCategories.add(p.category.trim());
@@ -315,7 +315,7 @@ export function ProductDetail({
 
     // 2. Generate related collections
     const collectionsList = [];
-    
+
     // Add current category collections
     if (currentFabric) {
       collectionsList.push({
@@ -351,7 +351,7 @@ export function ProductDetail({
     // Filter out duplicate labels
     const uniqueCollections = [];
     const seenLabels = new Set();
-    
+
     collectionsList.forEach(item => {
       if (!seenLabels.has(item.label.toLowerCase())) {
         seenLabels.add(item.label.toLowerCase());
@@ -363,7 +363,7 @@ export function ProductDetail({
     const fabricList = [];
     const mainFabrics = ['Katan Silk', 'Organza', 'Georgette', 'Chiniya Silk', 'Tissue Silk', 'Soft Silk'];
     const seenFabrics = new Set();
-    
+
     // Add current fabric first
     if (currentFabric) {
       fabricList.push({
@@ -758,13 +758,19 @@ export function ProductDetail({
               </div>
             </div>
 
+            <div className="product-disclaimer-box">
+              <p>
+                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
+              </p>
+            </div>
+
             <div className="global-sourcing-card desktop-sourcing-only">
               <div className="card-header">
                 <Globe className="globe-icon-gold" size={20} />
                 <h3>Global B2B Sourcing</h3>
               </div>
               <p>
-                Source premium bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a certified wholesale supplier providing insured international shipping to the USA, UK, UAE, Canada, and Australia. Fast WhatsApp ordering is available for global B2B orders.
+                Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper. Fast WhatsApp ordering is available for India and global B2B orders.
               </p>
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
@@ -801,7 +807,7 @@ export function ProductDetail({
             )}
 
             {product.partner && (
-              <div 
+              <div
                 className="trusted-partner-card-v2"
                 onClick={() => navigate('partner', product.partner)}
                 title={`View all products by ${product.partner}`}
@@ -872,7 +878,19 @@ export function ProductDetail({
                 Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
               </span>
             ) : (
-              <span className="gst-disclaimer">Excluding GST & shipping</span>
+              <>
+                <span className="gst-disclaimer" style={{ marginBottom: '10px' }}>Excluding GST & shipping</span>
+                <p className="b2b-shipping-note" style={{ 
+                  margin: '0 0 24px 0', 
+                  fontSize: '15px', 
+                  lineHeight: '1.6', 
+                  color: 'var(--muted)', 
+                  fontFamily: 'var(--font-ui)', 
+                  fontWeight: '500'
+                }}>
+                  For accurate shipping charges and delivery timelines, kindly WhatsApp us your order quantity along with your city and pin code. We will get back to you promptly.
+                </p>
+              </>
             )}
 
 
@@ -984,9 +1002,9 @@ export function ProductDetail({
                   </button>
                 )}
                 {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices && (
-                  <button 
-                    className="secondary-action-btn reseller-link-detail-btn" 
-                    type="button" 
+                  <button
+                    className="secondary-action-btn reseller-link-detail-btn"
+                    type="button"
                     onClick={() => setShowShareModal(true)}
                   >
                     <Share2 size={18} /> White-label Link
@@ -1004,7 +1022,7 @@ export function ProductDetail({
                 <h3>Global B2B Sourcing</h3>
               </div>
               <p>
-                Source premium bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a certified wholesale supplier providing insured international shipping to the USA, UK, UAE, Canada, and Australia. Fast WhatsApp ordering is available for global B2B orders.
+                Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper. Fast WhatsApp ordering is available for India and global B2B orders.
               </p>
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
@@ -1223,13 +1241,13 @@ export function ProductDetail({
                 answer: "Yes, we ship worldwide to over 50 countries, including the USA, UK, Canada, UAE, and Australia. We handle complete B2B customs documentation and provide competitive air and sea freight rates."
               }
             ].map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`faq-item ${openFaqIndex === index ? 'active' : ''}`}
               >
-                <button 
-                  type="button" 
-                  className="faq-trigger" 
+                <button
+                  type="button"
+                  className="faq-trigger"
                   onClick={() => toggleFaq(index)}
                   aria-expanded={openFaqIndex === index}
                 >
@@ -1251,8 +1269,8 @@ export function ProductDetail({
             <SectionTitle title="You May Also Like" align="left" />
           </div>
           <div className="scroll-wrapper">
-            <button 
-              className="scroll-arrow left" 
+            <button
+              className="scroll-arrow left"
               onClick={() => scrollProductRail('recommendations-row', -1)}
               aria-label="Scroll left"
             >
@@ -1275,8 +1293,8 @@ export function ProductDetail({
               ))}
             </div>
 
-            <button 
-              className="scroll-arrow right" 
+            <button
+              className="scroll-arrow right"
               onClick={() => scrollProductRail('recommendations-row', 1)}
               aria-label="Scroll right"
             >
@@ -1299,11 +1317,11 @@ export function ProductDetail({
           <button className="icon-button modal-close" onClick={() => setZoomImage(null)} style={{ background: 'white', zIndex: 10 }}>
             <X />
           </button>
-          <img 
-            src={zoomImage} 
-            alt="Zoomed view" 
-            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} 
-            onClick={(e) => e.stopPropagation()} 
+          <img
+            src={zoomImage}
+            alt="Zoomed view"
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
@@ -1329,7 +1347,7 @@ export function ProductDetail({
       </div>
 
       {showShareModal && (
-        <ResellerShareModal 
+        <ResellerShareModal
           product={product}
           variant={variant}
           user={{ id: priceAccess.userId }}
