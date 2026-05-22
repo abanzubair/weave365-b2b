@@ -318,7 +318,7 @@
   opacity: 0.75;
   margin-bottom: 1.5rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1134,7 +1134,7 @@
 
   .related-posts-section .card-info-pane p {
     font-size: 0.8rem !important;
-    -webkit-line-clamp: 2;
+    line-clamp: 2;
     margin-bottom: 1rem;
     line-height: 1.45;
   }
@@ -1250,7 +1250,7 @@
 
   .home-blog-grid .card-info-pane p {
     font-size: 0.8rem !important;
-    -webkit-line-clamp: 2;
+    line-clamp: 2;
     margin-bottom: 1rem;
     line-height: 1.45;
   }

@@ -298,7 +298,7 @@ export function Home({
             <picture className="premium-hero-bg-picture">
               <source media="(max-width: 820px)" srcSet={assetSrc(newBanner1Mobile)} />
               <img
-                src="https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png"
+                src={assetSrc(newBanner1)}
                 alt="Wholesale Banarasi Sarees and Suits Weave 365"
                 className="premium-hero-bg-img"
                 fetchPriority="high"
