@@ -14,15 +14,19 @@ export async function loadVisiblePrices() {
     return { prices: [], error: null };
   }
 
-  const { data, error } = await supabase.functions.invoke('get-visible-prices', {
-    body: {},
-  });
+  try {
+    const { data, error } = await supabase.functions.invoke('get-visible-prices', {
+      body: {},
+    });
 
-  if (error) {
-    return { prices: [], error };
+    if (error) {
+      return { prices: [], error };
+    }
+
+    return { prices: data?.prices || [], error: null };
+  } catch (err) {
+    return { prices: [], error: err };
   }
-
-  return { prices: data?.prices || [], error: null };
 }
 
 export function buildVisiblePriceMap(priceRows = []) {

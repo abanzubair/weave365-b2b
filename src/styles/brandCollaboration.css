@@ -322,6 +322,7 @@
   display: grid;
   place-items: center;
   transition: all 0.4s ease;
+  flex-shrink: 0;
 }
 
 .brand-editorial-cta:hover {
@@ -553,15 +554,15 @@
   }
   
   .pillar-num {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .brand-pillar-item h3 {
-    font-size: 17px;
+    font-size: 20px;
   }
   
   .brand-pillar-item p {
-    font-size: 13.5px;
+    font-size: 15px;
     line-height: 1.48;
   }
   
@@ -575,7 +576,7 @@
   }
   
   .cta-subtext {
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
   
   .cta-arrow-circle {

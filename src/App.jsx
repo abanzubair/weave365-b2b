@@ -293,7 +293,7 @@ export default function App({ initialData = {} }) {
     let isActive = true;
 
     async function hydrateVisiblePrices() {
-      if (!priceAccess.canViewPrices) {
+      if (!priceAccess.canViewPrices || priceAccess.priceGroup === 'guest') {
         setVisiblePriceRows([]);
         return;
       }

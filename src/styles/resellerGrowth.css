@@ -581,7 +581,7 @@
   }
   
   .editorial-title {
-    font-size: 28px;
+    font-size: 34px;
     line-height: 1.25;
   }
   
@@ -602,15 +602,15 @@
   }
   
   .benefit-num {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .benefit-item h3 {
-    font-size: 17px;
+    font-size: 20px;
   }
   
   .benefit-item p {
-    font-size: 13.5px;
+    font-size: 15px;
     line-height: 1.48;
   }
   
@@ -620,11 +620,11 @@
   }
   
   .growth-label {
-    font-size: 18px;
+    font-size: 24px;
   }
   
   .growth-subtext {
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
   
   .growth-action {

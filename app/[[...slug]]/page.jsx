@@ -54,7 +54,24 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
-    const finalImageUrl = imageUrl || defaultImage;
+    let finalImageUrl = imageUrl || defaultImage;
+
+    // Ensure image URL is absolute
+    if (finalImageUrl && finalImageUrl.startsWith('/')) {
+      finalImageUrl = `${siteUrl}${finalImageUrl}`;
+    }
+
+    // Handle image proxying and optimization for metadata:
+    if (finalImageUrl && finalImageUrl !== defaultImage) {
+      if (finalImageUrl.includes('images.weave365.in') || finalImageUrl.includes('r2.cloudflarestorage.com')) {
+        // 🚀 Cloudflare R2 images: serve directly through our native edge-bound API endpoint on our main domain
+        // This completely bypasses Cloudflare WAF/Bot Fight Mode for WhatsApp crawler bots with zero egress cost
+        finalImageUrl = `${siteUrl}/api/image?url=${encodeURIComponent(finalImageUrl)}`;
+      } else if (finalImageUrl.includes('drive.google.com')) {
+        // ⚙️ Google Drive images: proxy via wsrv.nl to format, compress, and circumvent Google Drive scraper blocks
+        finalImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(finalImageUrl)}&w=800&q=80`;
+      }
+    }
 
     return {
       title,

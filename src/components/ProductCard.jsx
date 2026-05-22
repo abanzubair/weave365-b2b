@@ -50,6 +50,7 @@ export const ProductCard = memo(function ProductCard({
   const image = product.images[0] || fallbackProductImage;
   const basePrice = customerPrice(selectedVariant.prices, priceAccess);
   const canViewPrice = basePrice != null && basePrice > 0;
+  const isPriceLocked = !canViewPrice;
   const setPrice = canViewPrice ? basePrice * (product.totalColors || product.variants.length || 1) : null;
   const colorCount = product.totalColors || 1;
 
@@ -87,7 +88,8 @@ export const ProductCard = memo(function ProductCard({
 
   const showMoqBadge = priceAccess?.priceGroup === 'wholesale';
   const showColorBadge = colorCount > 1;
-  const showRightInfo = showMoqBadge || showColorBadge || !!product.purity;
+  const showPurityBadge = !!product.purity && priceAccess?.isLoggedIn !== false;
+  const showRightInfo = showMoqBadge || showColorBadge || showPurityBadge;
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -192,11 +194,13 @@ export const ProductCard = memo(function ProductCard({
           {product.title}
         </h3>
 
-        <div className={`card-info-grid ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
+        <div className={`card-info-grid ${(isPriceLocked || !showRightInfo) ? 'price-locked' : ''}`}>
           <div className="info-left">
-            {canViewPrice ? (
+            {!isPriceLocked ? (
               <>
-                {priceAccess?.priceGroup !== 'reseller' && <label>{priceAccess?.priceLabel || 'PRICE'}</label>}
+                {priceAccess?.priceGroup !== 'reseller' && priceAccess?.isLoggedIn !== false && (
+                  <label>{priceAccess?.priceLabel || 'PRICE'}</label>
+                )}
                 <strong>{formatMoney(basePrice)} {priceAccess?.priceGroup === 'wholesale' && <span>/pc</span>}</strong>
                 {priceAccess?.priceGroup === 'wholesale' && (
                   <small>{formatMoney(setPrice)} /set</small>
@@ -223,7 +227,7 @@ export const ProductCard = memo(function ProductCard({
                   <Palette size={15} /> {colorCount} Colors
                 </div>
               )}
-              {product.purity && (
+              {showPurityBadge && (
                 <div className="info-item">
                   <Award size={15} /> {product.purity}
                 </div>
