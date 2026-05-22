@@ -33,3 +33,6 @@ skills/
 # OpenNext & Wrangler
 .open-next/
 .wrangler/
+
+# Scratch & Debug folders
+scratch/
