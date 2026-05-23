@@ -180,7 +180,7 @@ export function ResellerGrowthPage({ openAuth }) {
       {/* F. Final CTA Section */}
       <section className="reseller-final-cta">
         <h2>Ready to build your business?</h2>
-        <p>Join our network of successful B2B partners today.</p>
+        <p>Join our network of successful partners today.</p>
         <button className="gold-button large" onClick={openAuth}>
           Register as Partner
         </button>
