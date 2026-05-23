@@ -1699,7 +1699,8 @@
     gap: 4px;
   }
   .review-images-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
   .status-input-group {
     flex-direction: column;
