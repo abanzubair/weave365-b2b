@@ -2184,17 +2184,17 @@
     grid-template-columns: 1fr;
   }
   .step3-categories-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
   .step3-category-card {
-    padding: 10px 4px !important;
-    gap: 6px !important;
-    font-size: 12px !important;
-    flex-direction: column !important;
-    justify-content: center !important;
+    padding: 12px 14px !important;
+    gap: 10px !important;
+    font-size: 14px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
     align-items: center !important;
-    text-align: center !important;
+    text-align: left !important;
   }
 }
 
