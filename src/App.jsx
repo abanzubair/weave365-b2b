@@ -818,7 +818,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'reseller-growth') {
+    if (route === 'wholesale-partner-program') {
 
       return <ResellerGrowthPage openAuth={() => setAuthOpen(true)} />;
     }
@@ -1192,8 +1192,8 @@ export default function App({ initialData = {} }) {
                           </button>
                         </li>
                         <li>
-                          <button onClick={() => { navigate('reseller-growth'); setSearchActive(false); }}>
-                            <span>Reseller Partnership Program</span>
+                          <button onClick={() => { navigate('wholesale-partner-program'); setSearchActive(false); }}>
+                            <span>Wholesale & Reseller Partner Program</span>
                             <ArrowRight size={14} />
                           </button>
                         </li>

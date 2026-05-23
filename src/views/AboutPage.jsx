@@ -163,7 +163,7 @@ export function AboutPage({ navigate }) {
           <span>Direct from the Looms of Varanasi</span>
         </h1>
         <p className="about-hero-description">
-          Weave 365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and <a href="/reseller-growth" onClick={(e) => { e.preventDefault(); navigate('reseller-growth'); }} className="seo-inline-link">resellers</a>, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
+          Weave 365 is India’s premier premium B2B Banarasi saree wholesaler. By connecting 200+ local master artisans directly to worldwide retail boutiques and <a href="/wholesale-partner-program" onClick={(e) => { e.preventDefault(); navigate('wholesale-partner-program'); }} className="seo-inline-link">resellers</a>, we deliver authentic luxury with scalable logistics, zero middle-party markups, and structural quality verification.
         </p>
         <div>
           <a 

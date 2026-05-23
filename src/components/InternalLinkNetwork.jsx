@@ -35,7 +35,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
   ];
 
   const services = [
-    { label: 'Reseller Growth Program', path: '/reseller-growth', route: 'reseller-growth' },
+    { label: 'Wholesale & Reseller Partner Program', path: '/wholesale-partner-program', route: 'wholesale-partner-program' },
     { label: 'Weaver Partnership Program', path: '/vendor-partnership', route: 'vendor-partnership' },
     { label: 'Bulk Sourcing & Custom Catalog', path: '/bulk-inquiry', route: 'bulk-inquiry' },
     { label: 'Varanasi Brand Story & Heritage', path: '/about', route: 'about' },

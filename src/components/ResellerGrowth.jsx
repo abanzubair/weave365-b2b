@@ -44,7 +44,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
             <button 
               className="growth-cta" 
               onClick={() => {
-                navigate('reseller-growth');
+                navigate('wholesale-partner-program');
               }}
             >
               <div className="growth-content">

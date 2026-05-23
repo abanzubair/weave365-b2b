@@ -166,11 +166,11 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
-  if (route === 'reseller-growth') {
+  if (route === 'wholesale-partner-program') {
     return buildMeta(
-      'Reseller Program | Weave 365',
+      'Wholesale & Reseller Partner Program | Weave 365',
       'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
-      '/reseller-growth'
+      '/wholesale-partner-program'
     );
   }
 
