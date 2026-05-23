@@ -1254,75 +1254,120 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       </div>
 
       {/* Luxury Tabs Bar */}
-      <div className="admin-tabs" style={{ 
-        display: 'flex', 
-        gap: '24px', 
-        borderBottom: '1px solid var(--border)', 
-        marginBottom: '32px',
-        paddingBottom: '2px'
+      <div className="admin-tabs-bar" style={{ 
+        display: 'inline-flex', 
+        gap: '6px', 
+        background: 'var(--surface-soft, #f7f5f0)', 
+        border: '1px solid rgba(183, 134, 70, 0.15)',
+        borderRadius: '14px',
+        padding: '6px',
+        marginBottom: '36px',
+        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)'
       }}>
         <button 
           type="button"
           onClick={() => setActiveTab('pipeline')}
           style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'pipeline' ? '2px solid var(--primary)' : '2px solid transparent',
+            background: activeTab === 'pipeline' ? '#ffffff' : 'transparent',
             color: activeTab === 'pipeline' ? 'var(--primary)' : 'var(--muted)',
-            fontFamily: 'var(--font-hero-heading, serif)',
-            fontSize: '16px',
-            fontWeight: 600,
-            padding: '12px 8px',
+            border: 'none',
+            borderRadius: '10px',
+            fontFamily: 'var(--font-body, sans-serif)',
+            fontSize: '14px',
+            fontWeight: activeTab === 'pipeline' ? 700 : 600,
+            padding: '12px 24px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            transition: 'all 0.3s ease'
+            boxShadow: activeTab === 'pipeline' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
+            transform: activeTab === 'pipeline' ? 'scale(1.02)' : 'scale(1)',
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          onMouseOver={(e) => {
+            if (activeTab !== 'pipeline') {
+              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
+              e.currentTarget.style.color = 'var(--primary)';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (activeTab !== 'pipeline') {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--muted)';
+            }
           }}
         >
-          <Users size={18} /> Buyer Pipeline & Growth
+          <Users size={18} style={{ strokeWidth: activeTab === 'pipeline' ? 2.5 : 2 }} /> Buyer Pipeline & Growth
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('blogs')}
           style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'blogs' ? '2px solid var(--primary)' : '2px solid transparent',
+            background: activeTab === 'blogs' ? '#ffffff' : 'transparent',
             color: activeTab === 'blogs' ? 'var(--primary)' : 'var(--muted)',
-            fontFamily: 'var(--font-hero-heading, serif)',
-            fontSize: '16px',
-            fontWeight: 600,
-            padding: '12px 8px',
+            border: 'none',
+            borderRadius: '10px',
+            fontFamily: 'var(--font-body, sans-serif)',
+            fontSize: '14px',
+            fontWeight: activeTab === 'blogs' ? 700 : 600,
+            padding: '12px 24px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            transition: 'all 0.3s ease'
+            boxShadow: activeTab === 'blogs' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
+            transform: activeTab === 'blogs' ? 'scale(1.02)' : 'scale(1)',
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          onMouseOver={(e) => {
+            if (activeTab !== 'blogs') {
+              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
+              e.currentTarget.style.color = 'var(--primary)';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (activeTab !== 'blogs') {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--muted)';
+            }
           }}
         >
-          <FileText size={18} /> B2B Editorial Blog Manager
+          <FileText size={18} style={{ strokeWidth: activeTab === 'blogs' ? 2.5 : 2 }} /> B2B Editorial Blog Manager
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('partners')}
           style={{
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'partners' ? '2px solid var(--primary)' : '2px solid transparent',
+            background: activeTab === 'partners' ? '#ffffff' : 'transparent',
             color: activeTab === 'partners' ? 'var(--primary)' : 'var(--muted)',
-            fontFamily: 'var(--font-hero-heading, serif)',
-            fontSize: '16px',
-            fontWeight: 600,
-            padding: '12px 8px',
+            border: 'none',
+            borderRadius: '10px',
+            fontFamily: 'var(--font-body, sans-serif)',
+            fontSize: '14px',
+            fontWeight: activeTab === 'partners' ? 700 : 600,
+            padding: '12px 24px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            transition: 'all 0.3s ease'
+            boxShadow: activeTab === 'partners' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
+            transform: activeTab === 'partners' ? 'scale(1.02)' : 'scale(1)',
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          onMouseOver={(e) => {
+            if (activeTab !== 'partners') {
+              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
+              e.currentTarget.style.color = 'var(--primary)';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (activeTab !== 'partners') {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--muted)';
+            }
           }}
         >
-          <Award size={18} /> B2B Partner Applications
+          <Award size={18} style={{ strokeWidth: activeTab === 'partners' ? 2.5 : 2 }} /> B2B Partner Applications
         </button>
       </div>
 
