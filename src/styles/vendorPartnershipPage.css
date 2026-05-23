@@ -1763,6 +1763,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .onboarding-section-header i {
@@ -2190,9 +2191,9 @@
     box-sizing: border-box !important;
   }
   .step3-category-card {
-    padding: 12px 10px !important;
-    gap: 8px !important;
-    font-size: 13px !important;
+    padding: 10px 8px !important;
+    gap: 6px !important;
+    font-size: 12px !important;
     flex-direction: row !important;
     justify-content: flex-start !important;
     align-items: center !important;
@@ -2202,6 +2203,15 @@
     overflow: hidden !important;
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
+  }
+  .step3-category-card i {
+    font-size: 14px !important;
+  }
+  .step3-category-card input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-height: unset !important;
+    flex-shrink: 0 !important;
   }
 }
 
