@@ -553,6 +553,145 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
   };
 
+  const handleExportCSV = () => {
+    const isReviews = partnerSubTab === 'reviews';
+    const data = isReviews ? filteredReviews : filteredOnboardings;
+    if (!data || data.length === 0) {
+      alert('No records available to export.');
+      return;
+    }
+
+    let headers = [];
+    let rows = [];
+
+    if (isReviews) {
+      headers = [
+        'Date Submitted',
+        'Applicant Name',
+        'WhatsApp Number',
+        'City',
+        'Pincode',
+        'Categories',
+        'Price Range',
+        'Status',
+        'Sample Image 1',
+        'Sample Image 2',
+        'Sample Image 3',
+        'Sample Image 4'
+      ];
+      rows = data.map(rev => {
+        const ws = String(rev.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        const st = localStatuses[ws] || rev.status || 'pending';
+        return [
+          rev.created_at || '',
+          rev.full_name || '',
+          rev.whatsapp_number || '',
+          rev.city || '',
+          rev.pincode || '',
+          rev.categories || '',
+          rev.price_range || '',
+          st,
+          rev.image1 || '',
+          rev.image2 || '',
+          rev.image3 || '',
+          rev.image4 || ''
+        ];
+      });
+    } else {
+      headers = [
+        'Date Submitted',
+        'Proprietor Name',
+        'Business Legal Name',
+        'Business Type',
+        'WhatsApp Number',
+        'Alternate Contact',
+        'Email Address',
+        'GST Number',
+        'PAN Number',
+        'Business Address',
+        'City',
+        'Pincode',
+        'Years in Business',
+        'Fabric Specialisations',
+        'Monthly Capacity',
+        'Dispatch Timeline',
+        'Preferred Courier',
+        'Dispatch Address Same',
+        'Dispatch Address Different',
+        'Bank Account Holder',
+        'Bank Name',
+        'Bank Account Number',
+        'Bank IFSC',
+        'UPI ID',
+        'ID Proof URL',
+        'Cancelled Cheque URL',
+        'Status'
+      ];
+      rows = data.map(onb => {
+        const ws = String(onb.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        const st = localStatuses[ws] || onb.status || 'submitted';
+        return [
+          onb.created_at || '',
+          onb.full_name || '',
+          onb.business_name || '',
+          onb.business_type || '',
+          onb.whatsapp_number || '',
+          onb.alternate_contact || '',
+          onb.email || '',
+          onb.gst_number || '',
+          onb.pan_number || '',
+          onb.business_address || '',
+          onb.city || '',
+          onb.pincode || '',
+          onb.years_in_business || '',
+          onb.fabric_specialisation || '',
+          onb.monthly_capacity || '',
+          onb.dispatch_timeline || '',
+          onb.preferred_courier || '',
+          onb.dispatch_address_same || '',
+          onb.dispatch_address_different || '',
+          onb.bank_account_holder || '',
+          onb.bank_name || '',
+          onb.bank_account_number || '',
+          onb.bank_ifsc || '',
+          onb.upi_id || '',
+          onb.id_proof_url || '',
+          onb.cancelled_cheque_url || '',
+          st
+        ];
+      });
+    }
+
+    const escapeCSV = (val) => {
+      const str = String(val === null || val === undefined ? '' : val);
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map(row => row.map(escapeCSV).join(','))
+    ].join('\r\n');
+
+    try {
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `Weave365_B2B_Vendor_${isReviews ? 'Reviews' : 'Onboardings'}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export CSV file:', err);
+      alert('Failed to generate export file. Check console logs for details.');
+    }
+  };
+
   // Blog editor form states
   const [editingPost, setEditingPost] = useState(null);
   const [formTitle, setFormTitle] = useState('');
@@ -2383,41 +2522,69 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
               </button>
             </div>
 
-            {/* Quick Search Input */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', width: '320px' }}>
-              <input
-                type="text"
-                placeholder="Search name, phone, city, fabric..."
-                value={partnerSearchQuery}
-                onChange={(e) => setPartnerSearchQuery(e.target.value)}
+            {/* Quick Search & Export Container */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={handleExportCSV}
                 style={{
-                  width: '100%',
-                  padding: '8px 12px 8px 36px',
-                  border: '1px solid var(--border)',
+                  background: '#16a34a',
+                  border: 'none',
+                  color: '#fff',
                   borderRadius: '8px',
-                  fontSize: '13px'
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: 'var(--font-body)',
+                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.15)',
+                  transition: 'all 0.2s'
                 }}
-              />
-              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>🔍</span>
-              {partnerSearchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setPartnerSearchQuery('')}
+                onMouseOver={(e) => e.currentTarget.style.background = '#15803d'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#16a34a'}
+              >
+                Export Excel 📥
+              </button>
+
+              {/* Quick Search Input */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', width: '320px' }}>
+                <input
+                  type="text"
+                  placeholder="Search name, phone, city, fabric..."
+                  value={partnerSearchQuery}
+                  onChange={(e) => setPartnerSearchQuery(e.target.value)}
                   style={{
-                    position: 'absolute',
-                    right: '10px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '14px',
-                    color: 'var(--muted)',
-                    cursor: 'pointer'
+                    width: '100%',
+                    padding: '8px 12px 8px 36px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    fontSize: '13px'
                   }}
-                >
-                  ×
-                </button>
-              )}
+                />
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>🔍</span>
+                {partnerSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPartnerSearchQuery('')}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '14px',
+                      color: 'var(--muted)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
