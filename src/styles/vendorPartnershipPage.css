@@ -2179,10 +2179,22 @@
   line-height: 1.6;
 }
 
-/* Responsive adjustment for columns */
 @media (max-width: 600px) {
-  .onboarding-signature-grid, .step3-grid-2col, .step3-categories-grid, .step3-upload-grid {
+  .onboarding-signature-grid, .step3-grid-2col, .step3-upload-grid {
     grid-template-columns: 1fr;
+  }
+  .step3-categories-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  .step3-category-card {
+    padding: 10px 4px !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
   }
 }
 
