@@ -26,6 +26,7 @@ import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import resellerDisplayImage from '../../assets/reseller_premium_catalog_display.webp';
 import warehouseImage from '../../assets/varanasi_b2b_warehouse.webp';
 import luxuryPackagingImage from '../../assets/saree_luxury_packaging.webp';
+import founderImage from '../../assets/founder_portrait.png';
 import { assetSrc } from '../utils/assetSrc.js';
 
 export function AboutPage({ navigate }) {
@@ -35,6 +36,7 @@ export function AboutPage({ navigate }) {
   const resellerSectionImage = assetSrc(resellerDisplayImage);
   const warehouseSectionImage = assetSrc(warehouseImage);
   const packagingSectionImage = assetSrc(luxuryPackagingImage);
+  const founderSectionImage = assetSrc(founderImage);
 
   const faqs = [
     {
@@ -234,6 +236,57 @@ export function AboutPage({ navigate }) {
           <div className="about-stat-strip-card">
             <h3>200+</h3>
             <p>Varanasi Master Looms Partnered</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 2c. ABOUT FOUNDER SECTION */}
+      <section className="about-founder-section">
+        <div className="about-founder-container">
+          <div className="about-founder-grid">
+            <div className="about-founder-left">
+              <div className="about-founder-image-wrapper">
+                <img 
+                  src={founderSectionImage} 
+                  alt="Zubair Ahmad, Founder & Creative Director of Weave 365" 
+                  className="about-founder-image"
+                  width={600}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="about-founder-experience-badge">
+                  <strong>10+</strong>
+                  <span>Years of Textile Innovation</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="about-founder-right">
+              <span className="about-kicker">Visionary Leadership</span>
+              <h2>Preserving the Handloom Soul, Empowering Global Commerce</h2>
+              <p className="about-founder-lead">
+                "Weave 365 was born in the narrow lanes of Varanasi, where the rhythmic clacking of handlooms has echoed for centuries. Our mission is to honor this legacy while equipping modern retail entrepreneurs with a highly-scalable, transparent supply chain."
+              </p>
+              <div className="about-founder-story">
+                <p>
+                  As a third-generation textile visionary, our founder, <strong>Zubair Ahmad</strong>, witnessed the struggles of Varanasi's local weavers first-hand. While local weavers created incomparable masterpieces, outdated agent structures left them disconnected from global demand and poorly compensated.
+                </p>
+                <p>
+                  Determined to redefine the Banarasi trade, Zubair founded Weave 365. By merging authentic handloom curation with a robust direct-to-retailer B2B model, he eliminated middle-party inefficiencies and established strict, laboratory-tested quality checks.
+                </p>
+                <p>
+                  Today, under Zubair's guidance, Weave 365 serves as the reliable supply backbone for over 500+ boutiques globally, proving that traditional craftsmanship and modern digital systems can thrive together.
+                </p>
+              </div>
+
+              <div className="about-founder-signature-block">
+                <div className="about-founder-info">
+                  <span className="about-founder-name">Zubair Ahmad</span>
+                  <span className="about-founder-title">Founder & Creative Director, Weave 365</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

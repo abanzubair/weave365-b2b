@@ -33,7 +33,7 @@ export function Catalog({
   priceAccess,
   openAuth,
 }) {
-  const [visibleCount, setVisibleCount] = useState(24);
+  const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -128,7 +128,7 @@ export function Catalog({
     setFabric('All');
     setPriceRange('All');
     if (setSearch) setSearch('');
-    setVisibleCount(24);
+    setVisibleCount(25);
   };
 
   const breadcrumbItems = useMemo(() => {
@@ -199,7 +199,7 @@ export function Catalog({
                   className={category === name ? 'active' : ''}
                   onClick={() => {
                     setCategory(name);
-                    setVisibleCount(24);
+                    setVisibleCount(25);
                     closeWithAnimation();
                   }}
                 >
@@ -225,7 +225,7 @@ export function Catalog({
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
                       setPriceRange(range);
-                      setVisibleCount(24);
+                      setVisibleCount(25);
                       closeWithAnimation();
                     }}
                   >
@@ -252,7 +252,7 @@ export function Catalog({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
-                    setVisibleCount(24);
+                    setVisibleCount(25);
                     closeWithAnimation();
                   }}
                 >
@@ -284,7 +284,7 @@ export function Catalog({
       
       {products.length > visibleCount && (
         <div className="load-more-row">
-          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 24)}>
+          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
             Show more products
           </button>
         </div>

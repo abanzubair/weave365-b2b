@@ -35,7 +35,7 @@ export function NewArrivalsPage({
   priceAccess,
   openAuth,
 }) {
-  const [visibleCount, setVisibleCount] = useState(24);
+  const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -183,7 +183,7 @@ export function NewArrivalsPage({
     setFabric('All');
     setPriceRange('All');
     setSearch('');
-    setVisibleCount(24);
+    setVisibleCount(25);
   };
 
   return (
@@ -241,7 +241,7 @@ export function NewArrivalsPage({
                   className={category === name ? 'active' : ''}
                   onClick={() => {
                     setCategory(name);
-                    setVisibleCount(24);
+                    setVisibleCount(25);
                     closeWithAnimation();
                   }}
                 >
@@ -267,7 +267,7 @@ export function NewArrivalsPage({
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
                       setPriceRange(range);
-                      setVisibleCount(24);
+                      setVisibleCount(25);
                       closeWithAnimation();
                     }}
                   >
@@ -294,7 +294,7 @@ export function NewArrivalsPage({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
-                    setVisibleCount(24);
+                    setVisibleCount(25);
                     closeWithAnimation();
                   }}
                 >
@@ -326,7 +326,7 @@ export function NewArrivalsPage({
       
       {filteredProducts.length > visibleCount && (
         <div className="load-more-row">
-          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 24)}>
+          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
             Show more new arrivals
           </button>
         </div>
