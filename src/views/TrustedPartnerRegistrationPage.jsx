@@ -311,6 +311,9 @@ export function TrustedPartnerRegistrationPage() {
   // Tab 1 Submissions
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setReviewError('');
     
     if (reviewForm.categories.length === 0) {
@@ -522,6 +525,9 @@ export function TrustedPartnerRegistrationPage() {
 
   const handlePaymentTermsSubmit = (e) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setPaymentError('');
     const { a1, a2, a3, a4, a5, b1, b2, b3, b4, b5, c1, c2, c3, d1, d2, d3, agreeAll, vendorName, date } = paymentAgreement;
 
@@ -819,6 +825,9 @@ export function TrustedPartnerRegistrationPage() {
   const handleExecuteAgreementDownload = async () => {
     if (!pendingAgreementDocHtml || !pendingWhatsapp) return;
 
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setPaymentSubmitting(true);
     setPaymentError('');
 
@@ -918,6 +927,9 @@ export function TrustedPartnerRegistrationPage() {
 
   const handleOnboardingSubmit = async (e) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setOnboardingError('');
 
     if (onboardingForm.productCategories.length === 0) {
