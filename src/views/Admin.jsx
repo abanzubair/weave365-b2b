@@ -233,10 +233,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
   }, [activeTab, allowed]);
 
-  // Load active onboarding's signed agreement on demand
+  // Load active candidate's signed agreement on demand (Step 1 Review or Step 3 Onboarding)
   useEffect(() => {
-    if (selectedOnboarding) {
-      const cleanWhatsapp = String(selectedOnboarding.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+    const candidate = selectedOnboarding || selectedReview;
+    if (candidate) {
+      const cleanWhatsapp = String(candidate.whatsapp_number || '').replace(/\D/g, '').slice(-10);
       void fetch(`/api/vendor-registration?whatsapp=${cleanWhatsapp}`)
         .then(res => res.json())
         .then(resData => {
@@ -250,7 +251,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     } else {
       setActiveAgreement(null);
     }
-  }, [selectedOnboarding]);
+  }, [selectedOnboarding, selectedReview]);
 
   const handleCopy = (text, fieldName) => {
     if (!text) return;
@@ -2294,6 +2295,29 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         </span>
                       </div>
                     </div>
+
+                    {activeAgreement && activeAgreement.document_url && (
+                      <div style={{ background: '#fffcf5', border: '1px solid rgba(183,134,70,0.3)', borderRadius: '10px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ background: 'var(--primary-soft)', color: 'var(--primary)', padding: '8px', borderRadius: '8px', display: 'grid', placeItems: 'center' }}>
+                            <FileText size={20} />
+                          </div>
+                          <div>
+                            <strong style={{ fontSize: '13px', display: 'block', color: 'var(--ink)' }}>Signed Merchant Agreement</strong>
+                            <small style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Electronic copy generated at signature timestamp</small>
+                          </div>
+                        </div>
+                        <a 
+                          href={activeAgreement.document_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="secondary-button"
+                          style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--primary)', border: 'none', color: '#fff', textDecoration: 'none', borderRadius: '6px' }}
+                        >
+                          View Signed Copy 📄
+                        </a>
+                      </div>
+                    )}
 
                     {/* Product Samples Images */}
                     <div>
