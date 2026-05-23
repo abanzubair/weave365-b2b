@@ -145,8 +145,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [partnerSubTab, setPartnerSubTab] = useState('reviews'); // 'reviews' | 'onboardings'
   const [copyFeedback, setCopyFeedback] = useState({});
   const [partnerSearchQuery, setPartnerSearchQuery] = useState('');
+  const [partnerSortField, setPartnerSortField] = useState('date'); // 'date' | 'name' | 'city' | 'status' | 'business'
+  const [partnerSortOrder, setPartnerSortOrder] = useState('desc'); // 'asc' | 'desc'
   const [updatingWhatsapp, setUpdatingWhatsapp] = useState(null);
   const [localStatuses, setLocalStatuses] = useState({}); // { whatsapp: 'approved' | 'rejected' | 'flagged' }
+
+  // Reset sort key when switching sub-tabs to prevent invalid fields
+  useEffect(() => {
+    if (partnerSubTab === 'reviews' && partnerSortField === 'business') {
+      setPartnerSortField('date');
+    }
+  }, [partnerSubTab, partnerSortField]);
 
   async function updateDatabaseApplicationStatus(action, whatsapp, statusVal) {
     const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(-10);
@@ -974,7 +983,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const monthlyUsers = buildMonthlySeries(adminData.profiles);
 
   const filteredReviews = useMemo(() => {
-    return partnerApps.reviews.filter(rev => {
+    const filtered = partnerApps.reviews.filter(rev => {
       if (!rev) return false;
       const query = partnerSearchQuery.toLowerCase().trim();
       if (!query) return true;
@@ -989,10 +998,33 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         String(rev.status || '').toLowerCase().includes(query)
       );
     });
-  }, [partnerApps.reviews, partnerSearchQuery]);
+
+    return [...filtered].sort((a, b) => {
+      let valA, valB;
+      if (partnerSortField === 'name') {
+        valA = String(a.full_name || '').toLowerCase();
+        valB = String(b.full_name || '').toLowerCase();
+      } else if (partnerSortField === 'city') {
+        valA = String(a.city || '').toLowerCase();
+        valB = String(b.city || '').toLowerCase();
+      } else if (partnerSortField === 'status') {
+        const wsA = String(a.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        const wsB = String(b.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        valA = String(localStatuses[wsA] || a.status || 'pending').toLowerCase();
+        valB = String(localStatuses[wsB] || b.status || 'pending').toLowerCase();
+      } else {
+        valA = new Date(a.created_at || 0).getTime();
+        valB = new Date(b.created_at || 0).getTime();
+      }
+
+      if (valA < valB) return partnerSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return partnerSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [partnerApps.reviews, partnerSearchQuery, partnerSortField, partnerSortOrder, localStatuses]);
 
   const filteredOnboardings = useMemo(() => {
-    return partnerApps.onboardings.filter(onb => {
+    const filtered = partnerApps.onboardings.filter(onb => {
       if (!onb) return false;
       const query = partnerSearchQuery.toLowerCase().trim();
       if (!query) return true;
@@ -1010,7 +1042,33 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         String(onb.bank_name || '').toLowerCase().includes(query)
       );
     });
-  }, [partnerApps.onboardings, partnerSearchQuery]);
+
+    return [...filtered].sort((a, b) => {
+      let valA, valB;
+      if (partnerSortField === 'name') {
+        valA = String(a.full_name || '').toLowerCase();
+        valB = String(b.full_name || '').toLowerCase();
+      } else if (partnerSortField === 'business') {
+        valA = String(a.business_name || '').toLowerCase();
+        valB = String(b.business_name || '').toLowerCase();
+      } else if (partnerSortField === 'city') {
+        valA = String(a.city || '').toLowerCase();
+        valB = String(b.city || '').toLowerCase();
+      } else if (partnerSortField === 'status') {
+        const wsA = String(a.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        const wsB = String(b.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+        valA = String(localStatuses[wsA] || a.status || 'submitted').toLowerCase();
+        valB = String(localStatuses[wsB] || b.status || 'submitted').toLowerCase();
+      } else {
+        valA = new Date(a.created_at || 0).getTime();
+        valB = new Date(b.created_at || 0).getTime();
+      }
+
+      if (valA < valB) return partnerSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return partnerSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [partnerApps.onboardings, partnerSearchQuery, partnerSortField, partnerSortOrder, localStatuses]);
 
   if (!user) {
     return (
@@ -2272,6 +2330,56 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 }}
               >
                 3. Onboarding Profiles ({filteredOnboardings.length})
+              </button>
+            </div>
+
+            {/* Sort Controls */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: 600 }}>Sort By:</span>
+              <select
+                value={partnerSortField}
+                onChange={(e) => setPartnerSortField(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  background: '#fff',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--ink)'
+                }}
+              >
+                <option value="date">Date Submitted</option>
+                <option value="name">Proprietor Name</option>
+                {partnerSubTab === 'onboardings' && (
+                  <option value="business">Business Name</option>
+                )}
+                <option value="city">City / Pincode</option>
+                <option value="status">Application Status</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setPartnerSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                style={{
+                  background: '#fff',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  transition: 'all 0.2s',
+                  fontFamily: 'var(--font-body)'
+                }}
+                title={partnerSortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+              >
+                {partnerSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
               </button>
             </div>
 
