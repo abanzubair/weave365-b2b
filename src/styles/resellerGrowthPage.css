@@ -383,7 +383,8 @@
 
 .social-tag {
   background: var(--white);
-  padding: 12px 24px;
+  padding: 8px 20px;
+  font-size: 15px;
   border-radius: 100px;
   font-weight: 600;
   color: var(--ink);
@@ -662,10 +663,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
-    padding: 10px 12px;
+    min-height: 38px;
+    padding: 8px 12px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .reseller-final-cta {
