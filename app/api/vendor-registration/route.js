@@ -184,20 +184,6 @@ export async function POST(request) {
         return Response.json({ status: 'error', error: profileError.message }, { status: 400 });
       }
 
-      // B. Save Signed Payment Terms Agreement
-      const { error: agreementError } = await supabase
-        .from('vendor_agreements')
-        .upsert({
-          whatsapp_number: cleanWhatsapp,
-          vendor_signed_name: payload.paymentVendorName,
-          signed_date: payload.paymentAgreementDate,
-          agreed_terms: { agreeAll: true }
-        }, { onConflict: 'whatsapp_number' });
-
-      if (agreementError) {
-        console.warn('[vendor-registration API] vendor_agreements upsert skipped/failed:', agreementError.message);
-      }
-
       return Response.json({ status: 'success' });
     }
 
