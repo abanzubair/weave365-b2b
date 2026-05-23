@@ -122,6 +122,13 @@ export function TrustedPartnerRegistrationPage() {
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   
+  // Agreement Download Modal States
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [pendingAgreementDocHtml, setPendingAgreementDocHtml] = useState('');
+  const [pendingWhatsapp, setPendingWhatsapp] = useState('');
+  const [pendingVendorName, setPendingVendorName] = useState('');
+  const [pendingDate, setPendingDate] = useState('');
+  
   // Tab 3: Onboarding Form State
   const [onboardingForm, setOnboardingForm] = useState({
     fullName: '',
@@ -513,7 +520,7 @@ export function TrustedPartnerRegistrationPage() {
     }));
   };
 
-  const handlePaymentTermsSubmit = async (e) => {
+  const handlePaymentTermsSubmit = (e) => {
     e.preventDefault();
     setPaymentError('');
     const { a1, a2, a3, a4, a5, b1, b2, b3, b4, b5, c1, c2, c3, d1, d2, d3, agreeAll, vendorName, date } = paymentAgreement;
@@ -533,12 +540,9 @@ export function TrustedPartnerRegistrationPage() {
       return;
     }
 
-    setPaymentSubmitting(true);
-
     const cleanWhatsapp = String(unlockMobile || reviewForm.whatsapp || '').trim().replace(/\D/g, '').slice(-10);
     if (cleanWhatsapp.length !== 10) {
       setPaymentError('Registered mobile/WhatsApp number not found. Please complete Step 1 first.');
-      setPaymentSubmitting(false);
       return;
     }
 
@@ -804,13 +808,27 @@ export function TrustedPartnerRegistrationPage() {
 </body>
 </html>`;
 
+    // Stage modal with details
+    setPendingAgreementDocHtml(docHtml);
+    setPendingWhatsapp(cleanWhatsapp);
+    setPendingVendorName(vendorName);
+    setPendingDate(date);
+    setShowDownloadModal(true);
+  };
+
+  const handleExecuteAgreementDownload = async () => {
+    if (!pendingAgreementDocHtml || !pendingWhatsapp) return;
+
+    setPaymentSubmitting(true);
+    setPaymentError('');
+
     // 1. Download HTML document copy locally
     try {
-      const blob = new Blob([docHtml], { type: 'text/html' });
+      const blob = new Blob([pendingAgreementDocHtml], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Weave365_Signed_Agreement_${cleanWhatsapp}.html`;
+      link.download = `Weave365_Signed_Agreement_${pendingWhatsapp}.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -820,7 +838,7 @@ export function TrustedPartnerRegistrationPage() {
     }
 
     // 2. Prepare Base64 payload of the agreement document to upload
-    const base64Doc = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(docHtml)));
+    const base64Doc = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(pendingAgreementDocHtml)));
 
     // 3. Post to API to secure and upload this signed legal document to Supabase
     try {
@@ -831,9 +849,9 @@ export function TrustedPartnerRegistrationPage() {
         },
         body: JSON.stringify({
           action: 'submit_agreement',
-          whatsapp: cleanWhatsapp,
-          vendorName,
-          date,
+          whatsapp: pendingWhatsapp,
+          vendorName: pendingVendorName,
+          date: pendingDate,
           agreementDoc: base64Doc
         })
       });
@@ -842,21 +860,23 @@ export function TrustedPartnerRegistrationPage() {
       if (response.ok && resData.status === 'success') {
         try {
           localStorage.setItem('weave365_payment_terms_agreed', 'true');
-          localStorage.setItem('weave365_payment_vendor_name', vendorName);
-          localStorage.setItem('weave365_payment_agreement_date', date);
+          localStorage.setItem('weave365_payment_vendor_name', pendingVendorName);
+          localStorage.setItem('weave365_payment_agreement_date', pendingDate);
         } catch (err) {
           console.warn('LocalStorage save skipped:', err);
         }
 
         setIsPaymentTermsAgreed(true);
-        alert('Terms agreed & official signed agreement copy downloaded successfully! Moving to Step 3 — Onboarding Form.');
+        setShowDownloadModal(false);
         setActiveTab('onboarding');
       } else {
         setPaymentError(resData.error || 'Failed to register your agreement. Please verify connection.');
+        setShowDownloadModal(false);
       }
     } catch (err) {
       console.error('Failed to submit agreement:', err);
       setPaymentError('Connection error occurred while registering terms. Please try again.');
+      setShowDownloadModal(false);
     } finally {
       setPaymentSubmitting(false);
     }
@@ -2091,6 +2111,53 @@ export function TrustedPartnerRegistrationPage() {
           </div>
         </div>
       </section>
+
+      {showDownloadModal && (
+        <div className="onboarding-modal-overlay">
+          <div className="onboarding-modal-card">
+            <div className="onboarding-modal-header">
+              <div className="onboarding-modal-header-icon">
+                <ShieldCheck size={32} />
+              </div>
+              <h3>Agreement Signed Successfully</h3>
+            </div>
+            <div className="onboarding-modal-body">
+              <p className="onboarding-modal-message">
+                Thank you for completing <strong>Step 2</strong>. Your B2B Merchant Agreement has been signed with an advanced digital counter-signature from <strong>Weave365 Operations</strong>.
+                <br /><br />
+                For legal compliance, audit records, and future dispute protection, please download and store your counter-signed legal copy on your local device. 
+                <br /><br />
+                <strong>Note:</strong> Your Step 3 Onboarding form will unlock immediately upon initiating this download.
+              </p>
+              <div className="onboarding-modal-actions">
+                <button 
+                  type="button" 
+                  className="onboarding-modal-btn-download"
+                  onClick={handleExecuteAgreementDownload}
+                  disabled={paymentSubmitting}
+                >
+                  {paymentSubmitting ? (
+                    <>
+                      <RefreshCw size={18} className="spinner" />
+                      Saving & Downloading...
+                    </>
+                  ) : (
+                    'Download Signed Agreement Copy 📥'
+                  )}
+                </button>
+                <button 
+                  type="button" 
+                  className="onboarding-modal-btn-cancel"
+                  onClick={() => setShowDownloadModal(false)}
+                  disabled={paymentSubmitting}
+                >
+                  Go Back & Review Terms
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
