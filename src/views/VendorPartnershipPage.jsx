@@ -14,7 +14,7 @@ import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
 import { VendorPartnership } from '../components/VendorPartnership.jsx';
 
-const registrationPath = '/Trusted-Partner-Registration';
+const registrationPath = '/trusted-partner-registration';
 
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(

@@ -19,13 +19,13 @@ export default async function sitemap() {
     {
       url: `${siteUrl}/catalog`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${siteUrl}/new-arrivals`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
@@ -53,7 +53,7 @@ export default async function sitemap() {
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/Trusted-Partner-Registration`,
+      url: `${siteUrl}/trusted-partner-registration`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
@@ -67,7 +67,7 @@ export default async function sitemap() {
     {
       url: `${siteUrl}/blog`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
   ];
@@ -76,7 +76,7 @@ export default async function sitemap() {
   const seoLandingSitemaps = Object.keys(seoLandingPages).map((slug) => ({
     url: `${siteUrl}/${slug}`,
     lastModified: new Date(),
-    changeFrequency: 'daily',
+    changeFrequency: 'weekly',
     priority: 0.85,
   }));
 
@@ -110,6 +110,7 @@ export default async function sitemap() {
     }));
   } catch (error) {
     console.error('Sitemap: Failed to fetch products:', error.message);
+    throw error;
   }
 
   // Dynamic blog post pages
@@ -150,6 +151,7 @@ export default async function sitemap() {
     }));
   } catch (error) {
     console.error('Sitemap: Failed to fetch blog posts for sitemap:', error.message);
+    throw error;
   }
 
   return [

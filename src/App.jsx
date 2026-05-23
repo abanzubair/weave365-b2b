@@ -866,7 +866,7 @@ export default function App({ initialData = {} }) {
 
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 
-    if (route === 'Trusted-Partner-Registration') return <TrustedPartnerRegistrationPage />;
+    if (route === 'trusted-partner-registration') return <TrustedPartnerRegistrationPage />;
 
     if (route === 's') {
       if (isSharedProduct) {

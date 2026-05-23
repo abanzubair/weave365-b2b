@@ -206,11 +206,11 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
-  if (route === 'Trusted-Partner-Registration') {
+  if (route === 'trusted-partner-registration') {
     const imageUrl = `${siteUrl}/artisan_at_loom_premium.webp`;
     const titleText = 'Trusted Partner Registration | Weave 365';
     const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.';
-    return buildMeta(titleText, descText, '/Trusted-Partner-Registration', imageUrl);
+    return buildMeta(titleText, descText, '/trusted-partner-registration', imageUrl);
   }
 
   if (route === 'vendor-partnership') {
