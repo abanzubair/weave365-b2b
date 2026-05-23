@@ -82,37 +82,7 @@
   z-index: 2;
 }
 
-.contact-card-wrapper {
-  background: rgba(255, 253, 249, 0.75);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(234, 219, 200, 0.6);
-  border-radius: 24px;
-  padding: 4rem 3.5rem;
-  box-shadow: var(--shadow);
-  position: relative;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-}
 
-.contact-card-wrapper:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 30px 60px rgba(128, 93, 49, 0.16);
-}
-
-/* Decorative inner gold border accent */
-.contact-card-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  border: 1px dashed rgba(183, 134, 70, 0.2);
-  border-radius: 16px;
-  pointer-events: none;
-}
-
-/* TYPOGRAPHY */
 .contact-brand-title {
   font-family: var(--font-modern-heading);
   font-size: 0.75rem;
@@ -352,21 +322,7 @@
   text-transform: uppercase;
 }
 
-/* FOOTER CAPTION */
-.contact-card-footer {
-  margin-top: 3.5rem;
-  padding-top: 2rem;
-  border-top: 1px dashed rgba(234, 219, 200, 0.6);
-  text-align: center;
-}
 
-.contact-card-footer p {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin: 0;
-  letter-spacing: 0.03em;
-}
 
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {

@@ -99,14 +99,6 @@ export function MobileMenu({
         onClose();
       } 
     },
-    { 
-      icon: <Headphones size={20} />, 
-      label: 'Contact Us', 
-      action: () => {
-        navigate('contact');
-        onClose();
-      } 
-    },
     ...(isAdmin ? [
       { 
         icon: <BadgeCheck size={20} />, 

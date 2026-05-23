@@ -99,7 +99,6 @@ export function ContactPage({ navigate }) {
       </div>
 
       <main className="contact-main">
-        <div className="contact-card-wrapper">
           <div className="contact-brand-title">Weave 365</div>
           <h1 className="contact-h1">Get in touch</h1>
           
@@ -205,11 +204,6 @@ export function ContactPage({ navigate }) {
 
           </div>
 
-          <div className="contact-card-footer">
-            <p>Varanasi Weaving & B2B Sourcing Headquarters • Daranagar, Varanasi, UP, India</p>
-          </div>
-
-        </div>
       </main>
     </div>
   );

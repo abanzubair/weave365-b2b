@@ -1020,11 +1020,6 @@ export default function App({ initialData = {} }) {
             >
               ABOUT
             </button>
-            <button 
-              onClick={() => scrollToSection('contact')}
-            >
-              CONTACT
-            </button>
           </nav>
 
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
