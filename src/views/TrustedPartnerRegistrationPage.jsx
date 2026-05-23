@@ -2114,20 +2114,15 @@ export function TrustedPartnerRegistrationPage() {
 
       {showDownloadModal && (
         <div className="onboarding-modal-overlay">
-          <div className="onboarding-modal-card">
-            <div className="onboarding-modal-header">
-              <div className="onboarding-modal-header-icon">
-                <ShieldCheck size={32} />
-              </div>
-              <h3>Agreement Signed Successfully</h3>
-            </div>
+          <div className="onboarding-modal-card minimal">
             <div className="onboarding-modal-body">
+              <div className="onboarding-modal-header-icon">
+                <ShieldCheck size={28} />
+              </div>
+              <h3>Agreement Signed</h3>
               <p className="onboarding-modal-message">
-                Thank you for completing <strong>Step 2</strong>. Your B2B Merchant Agreement has been signed with an advanced digital counter-signature from <strong>Weave365 Operations</strong>.
-                <br /><br />
-                For legal compliance, audit records, and future dispute protection, please download and store your counter-signed legal copy on your local device. 
-                <br /><br />
-                <strong>Note:</strong> Your Step 3 Onboarding form will unlock immediately upon initiating this download.
+                Your B2B Merchant Agreement has been counter-signed. 
+                Please download a copy for your records to unlock Step 3 Onboarding.
               </p>
               <div className="onboarding-modal-actions">
                 <button 
@@ -2138,11 +2133,11 @@ export function TrustedPartnerRegistrationPage() {
                 >
                   {paymentSubmitting ? (
                     <>
-                      <RefreshCw size={18} className="spinner" />
+                      <RefreshCw size={16} className="spinner" />
                       Saving & Downloading...
                     </>
                   ) : (
-                    'Download Signed Agreement Copy 📥'
+                    'Download Agreement Copy'
                   )}
                 </button>
                 <button 
@@ -2151,7 +2146,7 @@ export function TrustedPartnerRegistrationPage() {
                   onClick={() => setShowDownloadModal(false)}
                   disabled={paymentSubmitting}
                 >
-                  Go Back & Review Terms
+                  Go Back
                 </button>
               </div>
             </div>

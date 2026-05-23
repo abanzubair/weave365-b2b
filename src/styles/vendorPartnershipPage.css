@@ -2231,12 +2231,12 @@
 }
 
 /* ==================================================
-   F. PROFESSIONAL ONBOARDING DOWNLOAD MODAL
+   F. PROFESSIONAL ONBOARDING DOWNLOAD MODAL (MINIMAL & CALM)
    ================================================== */
 .onboarding-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(31, 20, 13, 0.65);
+  background: rgba(36, 25, 18, 0.45); /* Muted, calmer backdrop */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: grid;
@@ -2246,118 +2246,107 @@
   animation: modalFadeIn 0.3s ease-out;
 }
 
-.onboarding-modal-card {
-  background: #ffffff;
-  border: 1px solid rgba(183, 134, 70, 0.25);
-  border-radius: 16px;
-  max-width: 520px;
+.onboarding-modal-card.minimal {
+  background: var(--surface, #fffdf9);
+  border: 1px solid rgba(117, 111, 79, 0.15); /* Muted olive border */
+  border-radius: 12px;
+  max-width: 440px; /* Highly compact, minimal */
   width: 100%;
   box-shadow: 
-    0 24px 64px rgba(31, 20, 13, 0.18),
-    0 12px 24px rgba(183, 134, 70, 0.08);
+    0 16px 40px rgba(36, 25, 18, 0.08),
+    0 4px 12px rgba(117, 111, 79, 0.04);
   overflow: hidden;
   animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.onboarding-modal-header {
-  background: linear-gradient(135deg, #1f140d 0%, #3a2b20 100%);
-  padding: 28px 24px;
+.onboarding-modal-card.minimal .onboarding-modal-body {
+  padding: 36px 32px 32px;
   text-align: center;
-  color: #ffffff;
-  position: relative;
 }
 
-.onboarding-modal-header-icon {
-  width: 56px;
-  height: 56px;
+.onboarding-modal-card.minimal .onboarding-modal-header-icon {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #b78646; /* luxury gold */
+  background: rgba(117, 111, 79, 0.08); /* Calm light olive backdrop */
+  color: var(--olive, #756f4f); /* Muted calm olive icon */
   display: grid;
   place-items: center;
-  margin: 0 auto 16px;
+  margin: 0 auto 20px;
+  border: none;
 }
 
-.onboarding-modal-header h3 {
+.onboarding-modal-card.minimal h3 {
   font-family: var(--font-heading), 'Georgia', serif;
-  font-size: 22px;
-  margin: 0;
-  color: #ffffff;
+  font-size: 21px;
+  color: var(--ink, #241912);
   font-weight: 600;
-  letter-spacing: 0.5px;
+  margin-top: 0;
+  margin-bottom: 12px;
 }
 
-.onboarding-modal-body {
-  padding: 32px 28px;
-}
-
-.onboarding-modal-message {
+.onboarding-modal-card.minimal .onboarding-modal-message {
   font-family: var(--font-body), sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #666666;
-  margin: 0 0 28px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted, #6d5946);
+  margin: 0 0 26px;
   text-align: center;
 }
 
-.onboarding-modal-message strong {
-  color: #1f140d;
-  font-weight: 700;
-}
-
-.onboarding-modal-actions {
+.onboarding-modal-card.minimal .onboarding-modal-actions {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
-.onboarding-modal-btn-download {
+.onboarding-modal-card.minimal .onboarding-modal-btn-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 16px 24px;
-  background: #b78646; /* gold-accent */
+  gap: 8px;
+  padding: 14px 24px;
+  background: var(--olive, #756f4f); /* Calmer, natural olive green */
   color: #ffffff;
   font-family: var(--font-body), sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.2);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(117, 111, 79, 0.15);
 }
 
-.onboarding-modal-btn-download:hover {
-  background: #9d7036;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.3);
+.onboarding-modal-card.minimal .onboarding-modal-btn-download:hover {
+  background: #5c573d;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(117, 111, 79, 0.22);
 }
 
-.onboarding-modal-btn-download:active {
+.onboarding-modal-card.minimal .onboarding-modal-btn-download:active {
   transform: translateY(0);
 }
 
-.onboarding-modal-btn-cancel {
+.onboarding-modal-card.minimal .onboarding-modal-btn-cancel {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 24px;
+  padding: 12px 24px;
   background: transparent;
-  color: #666666;
+  color: var(--muted, #6d5946);
   font-family: var(--font-body), sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  border: 1px solid rgba(183, 134, 70, 0.25);
-  border-radius: 8px;
+  border: 1px solid rgba(117, 111, 79, 0.25);
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.onboarding-modal-btn-cancel:hover {
-  background: #f7f5f0;
-  color: #1f140d;
+.onboarding-modal-card.minimal .onboarding-modal-btn-cancel:hover {
+  background: var(--cream, #fbf6ee);
+  color: var(--ink, #241912);
+  border-color: rgba(117, 111, 79, 0.45);
 }
 
 @keyframes modalFadeIn {
