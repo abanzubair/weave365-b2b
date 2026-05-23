@@ -1302,8 +1302,8 @@ export default function App({ initialData = {} }) {
         </Suspense>
       </main>
 
-      {!isSharedPage && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
-      {!isSharedPage && <Footer navigate={navigate} />}
+      {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
+      {!isSharedPage && route !== 'admin' && <Footer navigate={navigate} />}
       {!isSharedPage && (
         <CartDrawer
           open={cartOpen}
