@@ -557,6 +557,7 @@ create policy "Allow admin all agreements"
 create table if not exists public.vendor_profiles (
   id uuid default gen_random_uuid() primary key,
   whatsapp_number text unique not null,
+  full_name text not null,
   alternate_contact text,
   email text unique not null,
   business_name text not null,
