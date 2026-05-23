@@ -729,3 +729,11 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Only for 1080p B2B Desktop monitors (e.g. 1920x1080 24" screens) */
+@media screen and (min-width: 1440px) {
+  .notice-cta-button {
+    padding: 6px 16px;
+    font-size: 14px;
+  }
+}
