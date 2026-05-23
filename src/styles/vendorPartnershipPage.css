@@ -1716,7 +1716,7 @@
    ================================================== */
 
 .onboarding-step-wrapper {
-  max-width: 680px;
+  max-width: 840px;
   margin: 0 auto;
   padding: 2rem 1.25rem;
 }
@@ -2186,15 +2186,22 @@
   .step3-categories-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .step3-category-card {
-    padding: 12px 14px !important;
-    gap: 10px !important;
-    font-size: 14px !important;
+    padding: 12px 10px !important;
+    gap: 8px !important;
+    font-size: 13px !important;
     flex-direction: row !important;
     justify-content: flex-start !important;
     align-items: center !important;
     text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
   }
 }
 
