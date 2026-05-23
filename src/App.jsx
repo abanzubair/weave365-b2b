@@ -140,6 +140,13 @@ export default function App({ initialData = {} }) {
     [products, visiblePriceMap],
   );
 
+  // Handle client-side legacy redirect from /reseller-growth to /wholesale-partner-program
+  useEffect(() => {
+    if (route === 'reseller-growth') {
+      router.replace('/wholesale-partner-program');
+    }
+  }, [route, router]);
+
   useEffect(() => {
     if (hasInitialData) return undefined;
 
