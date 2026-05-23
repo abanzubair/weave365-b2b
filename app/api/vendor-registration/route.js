@@ -10,8 +10,10 @@ export const runtime = 'edge';
 
 // Safe server-side client initialization
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Use service_role key to bypass RLS for administrative updates and file uploads
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 
 // Helper to parse base64 file payloads and upload them directly to Supabase Storage
 async function uploadBase64ToStorage(base64Str, path) {
@@ -35,9 +37,11 @@ async function uploadBase64ToStorage(base64Str, path) {
       bytes[i] = binaryStr.charCodeAt(i);
     }
     
+    const blob = new Blob([bytes], { type: contentType });
+    
     const { data, error } = await supabase.storage
       .from('vendor-onboarding')
-      .upload(path, bytes, {
+      .upload(path, blob, {
         contentType: contentType,
         upsert: true
       });
