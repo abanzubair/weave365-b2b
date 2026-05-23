@@ -131,14 +131,14 @@
 .notice-text strong {
   display: block;
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 26px;
   margin-bottom: 8px;
   color: var(--ink);
 }
 
 .notice-text p {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.5;
   margin: 0;
 }
@@ -147,7 +147,7 @@
   background: var(--surface-soft);
   color: var(--ink);
   border: 1px solid var(--line);
-  padding: 12px 24px;
+  padding: 8px 20px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -234,7 +234,7 @@
 
 .step-card h3 {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 25px;
   color: var(--ink);
   margin-bottom: 12px;
   position: relative;
@@ -243,7 +243,7 @@
 
 .step-card p {
   color: var(--muted);
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.5;
   margin: 0;
   position: relative;
@@ -268,11 +268,13 @@
 .benefits-image-wrapper {
   position: relative;
   border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .benefits-image {
   width: 100%;
-  aspect-ratio: 4/5;
+  aspect-ratio: 3/4;
   object-fit: cover;
   border-radius: 12px;
   box-shadow: 0 30px 60px rgba(0,0,0,0.1);
@@ -280,8 +282,8 @@
 
 .benefits-glass-card {
   position: absolute;
-  bottom: -30px;
-  right: -30px;
+  bottom: -50px;
+  right: -50px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -336,14 +338,14 @@
 .benefits-list strong {
   display: block;
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 22px;
   color: var(--ink);
   margin-bottom: 8px;
 }
 
 .benefits-list span {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.5;
 }
 
@@ -501,7 +503,7 @@
   }
 
   .notice-text strong {
-    font-size: 17px;
+    font-size: 20px;
     margin-bottom: 6px;
   }
 
@@ -513,7 +515,7 @@
   .notice-cta-button {
     grid-column: 1 / -1;
     width: 100%;
-    min-height: 46px;
+    min-height: 38px;
     margin-top: 2px;
   }
 

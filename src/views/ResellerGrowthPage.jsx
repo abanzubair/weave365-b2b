@@ -20,14 +20,14 @@ export function ResellerGrowthPage({ openAuth }) {
       {/* A. Hero Section */}
       <section className="reseller-hero-section">
         <div className="reseller-hero-content">
-          <span className="hero-kicker">Weave 365 Reseller Program</span>
-          <h1 className="hero-title">Grow Your Business as a Certified Reseller</h1>
+          <span className="hero-kicker">Weave 365 Wholesale & Reseller Program</span>
+          <h1 className="hero-title">Grow Your Business as a Certified Partner</h1>
           <p className="hero-description">
-            Set your own selling price, share premium catalogs with your network, and build your own customer base with zero inventory risk.
+            Set your own selling price, share premium Banarasi sarees, suits, fabrics, etc. with your network, and build your own customer base with zero inventory risk or custom bulk options.
           </p>
           <div className="hero-actions">
             <button className="gold-button" onClick={openAuth}>
-              Register as Reseller <ArrowRight size={18} />
+              Register as Partner <ArrowRight size={18} />
             </button>
             <a href="#how-it-works" className="secondary-button">
               Learn How It Works
@@ -41,9 +41,9 @@ export function ResellerGrowthPage({ openAuth }) {
         <div className="notice-card">
           <ShieldCheck size={28} className="notice-icon" />
           <div className="notice-text">
-            <strong>Important Notice for Resellers</strong>
+            <strong>Important Notice for Partners</strong>
             <p>
-              To become a certified reseller and unlock custom pricing, you must first register as a reseller. This feature will be enabled only after reseller registration and approval by our team.
+              To become a certified partner and unlock custom wholesale pricing, you must first register as a partner. This feature will be enabled only after registration and approval by our team.
             </p>
           </div>
           <button className="notice-cta-button" onClick={openAuth}>
@@ -56,7 +56,7 @@ export function ResellerGrowthPage({ openAuth }) {
       <section id="how-it-works" className="reseller-steps-section">
         <div className="section-header">
           <h2>How It Works</h2>
-          <p>Your journey to a successful reselling business in 6 simple steps</p>
+          <p>Your journey to a successful wholesale or reseller business in 6 simple steps</p>
         </div>
         
         <div className="steps-grid">
@@ -64,19 +64,19 @@ export function ResellerGrowthPage({ openAuth }) {
             <div className="step-number">1</div>
             <div className="step-icon"><BadgeCheck size={24} /></div>
             <h3>Register</h3>
-            <p>Sign up and register as a reseller on our platform.</p>
+            <p>Sign up and register as a partner on our platform.</p>
           </div>
           <div className="step-card">
             <div className="step-number">2</div>
             <div className="step-icon"><ShieldCheck size={24} /></div>
             <h3>Get Certified</h3>
-            <p>Our team will review and approve your reseller account.</p>
+            <p>Our team will review and approve your wholesale or reseller account.</p>
           </div>
           <div className="step-card">
             <div className="step-number">3</div>
             <div className="step-icon"><Store size={24} /></div>
             <h3>Browse Catalog</h3>
-            <p>Explore our premium, handpicked collections.</p>
+            <p>Explore our Banarasi Sarees, suits, fabrics, etc. collections.</p>
           </div>
           <div className="step-card">
             <div className="step-number">4</div>
@@ -107,15 +107,15 @@ export function ResellerGrowthPage({ openAuth }) {
               src={assetSrc(resellerImage)}
               alt="Reseller Business" 
               className="benefits-image"
-              width={600}
-              height={400}
+              width={900}
+              height={600}
               loading="lazy"
               decoding="async"
             />
             <div className="benefits-glass-card">
               <Users size={24} className="gold-icon" />
               <strong>Empower Your Network</strong>
-              <span>Turn your social circle into your business.</span>
+              <span>Turn your network into a thriving saree business.</span>
             </div>
           </div>
           <div className="benefits-content">
@@ -153,7 +153,7 @@ export function ResellerGrowthPage({ openAuth }) {
                 <BadgeCheck className="benefit-list-icon" />
                 <div>
                   <strong>Build Trust</strong>
-                  <span>Deliver premium quality as a certified reseller.</span>
+                  <span>Deliver premium quality as a certified B2B partner.</span>
                 </div>
               </li>
             </ul>
@@ -166,7 +166,7 @@ export function ResellerGrowthPage({ openAuth }) {
         <div className="social-content">
           <h2>Share Anywhere, Anytime</h2>
           <p>
-            Our platform is built for modern resellers. Generate custom links with your margin and share product catalogs instantly with your customers across:
+            Our platform is built for modern B2B partners. Sourcing premium Banarasi handlooms has never been easier. Share product collections instantly with your customers across:
           </p>
           <div className="social-tags">
             <span className="social-tag">WhatsApp</span>
@@ -180,9 +180,9 @@ export function ResellerGrowthPage({ openAuth }) {
       {/* F. Final CTA Section */}
       <section className="reseller-final-cta">
         <h2>Ready to build your business?</h2>
-        <p>Join our network of successful resellers today.</p>
+        <p>Join our network of successful B2B partners today.</p>
         <button className="gold-button large" onClick={openAuth}>
-          Register as Reseller
+          Register as Partner
         </button>
       </section>
     </div>

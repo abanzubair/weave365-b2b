@@ -7,14 +7,14 @@ export function ResellerGrowth({ imageUrl, navigate }) {
       <div className="editorial-container">
         <div className="editorial-layout">
           <div className="editorial-main-content">
-            <span className="editorial-kicker">Reseller Collaboration</span>
+            <span className="editorial-kicker">Wholesale & Reseller Partnerships</span>
             <h2 id="reseller-editorial-heading" className="editorial-title">
               Crafting <span>Success</span><br />
               Beyond the <span>Weave</span>.
             </h2>
             
             <p className="editorial-lead">
-              A partnership built on heritage, quality, and mutual growth. We provide the finest catalogues, you bring them to the world.
+              A partnership built on heritage, quality, and mutual growth. We provide the finest Banarasi collections, you deliver them to your market.
             </p>
 
             <div className="editorial-benefits-list">
@@ -22,21 +22,21 @@ export function ResellerGrowth({ imageUrl, navigate }) {
                 <span className="benefit-num">01</span>
                 <div>
                   <h3>Curated Collections</h3>
-                  <p>Handpicked sarees that resonate with global fashion trends.</p>
+                  <p>Banarasi sarees, suits, fabrics, etc. that resonate with global trends.</p>
                 </div>
               </div>
               <div className="benefit-item">
                 <span className="benefit-num">02</span>
                 <div>
                   <h3>Seamless Logistics</h3>
-                  <p>End-to-end support for shipping and quality assurance.</p>
+                  <p>End-to-end support for shipping and quality assurance, India & Global.</p>
                 </div>
               </div>
               <div className="benefit-item">
                 <span className="benefit-num">03</span>
                 <div>
                   <h3>Growth Toolkit</h3>
-                  <p>Marketing assets and priority access to new arrivals.</p>
+                  <p>Your own white-label storefront & priority access to new arrivals.</p>
                 </div>
               </div>
             </div>
@@ -63,7 +63,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               <div className="editorial-glass-card">
                 <ShieldCheck size={24} className="gold-icon" />
                 <strong>98% Retention</strong>
-                <span>Our resellers grow with us year after year.</span>
+                <span>Our B2B partners grow with us year after year.</span>
               </div>
             </div>
           </div>
