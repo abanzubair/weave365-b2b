@@ -532,6 +532,7 @@ create table if not exists public.vendor_agreements (
   vendor_signed_name text not null,
   agreed_terms jsonb default '{}'::jsonb,
   signed_date text not null,
+  document_url text, -- Public storage pointer to signed agreement HTML copy
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

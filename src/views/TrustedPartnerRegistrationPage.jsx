@@ -119,6 +119,9 @@ export function TrustedPartnerRegistrationPage() {
     date: getLocalDateString()
   });
   
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  
   // Tab 3: Onboarding Form State
   const [onboardingForm, setOnboardingForm] = useState({
     fullName: '',
@@ -510,36 +513,353 @@ export function TrustedPartnerRegistrationPage() {
     }));
   };
 
-  const handlePaymentTermsSubmit = (e) => {
+  const handlePaymentTermsSubmit = async (e) => {
     e.preventDefault();
+    setPaymentError('');
     const { a1, a2, a3, a4, a5, b1, b2, b3, b4, b5, c1, c2, c3, d1, d2, d3, agreeAll, vendorName, date } = paymentAgreement;
 
     if (!a1 || !a2 || !a3 || !a4 || !a5 || !b1 || !b2 || !b3 || !b4 || !b5 || !c1 || !c2 || !c3 || !d1 || !d2 || !d3 || !agreeAll) {
-      alert('Please read and agree to all clauses and check the "agree to all terms" box.');
+      setPaymentError('Please read and agree to all clauses and check the "agree to all terms" box.');
       return;
     }
 
     if (!vendorName.trim()) {
-      alert('Please enter your full name as per your ID proof.');
+      setPaymentError('Please enter your full name as per your ID proof.');
       return;
     }
 
     if (!date) {
-      alert('Please select the date.');
+      setPaymentError('Please select the date.');
       return;
     }
 
-    try {
-      localStorage.setItem('weave365_payment_terms_agreed', 'true');
-      localStorage.setItem('weave365_payment_vendor_name', vendorName);
-      localStorage.setItem('weave365_payment_agreement_date', date);
-    } catch (err) {
-      console.warn('Failed to save payment terms agreement locally:', err);
+    setPaymentSubmitting(true);
+
+    const cleanWhatsapp = String(unlockMobile || reviewForm.whatsapp || '').trim().replace(/\D/g, '').slice(-10);
+    if (cleanWhatsapp.length !== 10) {
+      setPaymentError('Registered mobile/WhatsApp number not found. Please complete Step 1 first.');
+      setPaymentSubmitting(false);
+      return;
     }
 
-    setIsPaymentTermsAgreed(true);
-    alert('Terms agreed. Our team will now proceed with Step 3 — Full Onboarding Form.');
-    setActiveTab('onboarding');
+    const timestamp = Date.now();
+    const agreementId = `WM-AG-${timestamp}`;
+
+    // Compile beautifully styled legal HTML document
+    const docHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weave365 B2B Merchant Agreement - Signed Copy</title>
+  <style>
+    body {
+      background-color: #faf8f5;
+      color: #1a1715;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      line-height: 1.6;
+      padding: 40px;
+    }
+    .agreement-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 2px solid #b78646;
+      padding: 60px 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+      position: relative;
+    }
+    .agreement-header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px double #b78646;
+      padding-bottom: 20px;
+    }
+    .logo-text {
+      font-size: 32px;
+      font-weight: bold;
+      color: #b78646;
+      letter-spacing: 2px;
+      margin: 0 0 10px 0;
+      text-transform: uppercase;
+    }
+    .doc-title {
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: #1a1715;
+      margin: 0;
+      text-transform: uppercase;
+      font-family: sans-serif;
+      font-weight: 600;
+    }
+    .meta-box {
+      background: #fdfbf7;
+      border: 1px solid rgba(183, 134, 70, 0.2);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      font-size: 13px;
+      font-family: sans-serif;
+    }
+    .meta-item strong {
+      color: #b78646;
+    }
+    .clause-section {
+      margin-bottom: 30px;
+    }
+    .clause-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #b78646;
+      border-bottom: 1px solid rgba(183, 134, 70, 0.15);
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      font-family: sans-serif;
+    }
+    .clause-item {
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .clause-item-head {
+      font-weight: bold;
+      color: #1a1715;
+    }
+    .signature-section {
+      margin-top: 50px;
+      border-top: 1px solid #b78646;
+      padding-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    .sig-block {
+      text-align: center;
+    }
+    .sig-line {
+      border-bottom: 1px dashed #b78646;
+      height: 40px;
+      margin-bottom: 10px;
+    }
+    .sig-name {
+      font-size: 13px;
+      font-weight: bold;
+      font-family: sans-serif;
+    }
+    .sig-meta {
+      font-size: 11px;
+      color: #666;
+      font-family: sans-serif;
+    }
+    .print-btn-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .print-btn {
+      background: #b78646;
+      color: #fff;
+      border: none;
+      padding: 12px 30px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: sans-serif;
+      transition: background 0.2s;
+    }
+    .print-btn:hover {
+      background: #9d7036;
+    }
+    @media print {
+      body { padding: 0; background: none; }
+      .agreement-container { border: none; box-shadow: none; padding: 0; }
+      .print-btn-container { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="agreement-container">
+    <div class="agreement-header">
+      <div class="logo-text">Weave 365</div>
+      <div class="doc-title">B2B Merchant Agreement & Terms</div>
+    </div>
+    
+    <div class="meta-box">
+      <div class="meta-item"><strong>Agreement ID:</strong> ${agreementId}</div>
+      <div class="meta-item"><strong>Registered Phone:</strong> +91 ${cleanWhatsapp}</div>
+      <div class="meta-item"><strong>Authorized Signatory:</strong> ${vendorName}</div>
+      <div class="meta-item"><strong>Date of Signature:</strong> ${date}</div>
+    </div>
+
+    <div class="clause-section">
+      <div class="clause-title">A. Payment Terms</div>
+      <div class="clause-item">
+        <span class="clause-item-head">A1 — Payment after delivery confirmation:</span>
+        Payment will be released 3 days after successful delivery to the customer.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">A2 — Payment held during dispute period:</span>
+        If a return or quality dispute is raised within 3 days of delivery, payment will be withheld until the dispute is resolved.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">A3 — Payment mode as agreed at onboarding:</span>
+        Payment will be made via bank transfer (NEFT/IMPS/UPI) to the account details provided during onboarding. Weave 365 is not liable for errors due to incorrect account details submitted by the vendor.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">A4 — No advance payment:</span>
+        Weave 365 does not make advance payments. All payments are processed post-delivery only.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">A5 — Deduction for returns and damage:</span>
+        Any returned product amount and associated courier charges will be deducted from the vendor's pending payment before disbursement.
+      </div>
+    </div>
+
+    <div class="clause-section">
+      <div class="clause-title">B. Return Policy</div>
+      <div class="clause-item">
+        <span class="clause-item-head">B1 — Color and quality must match approved photos:</span>
+        The product dispatched must exactly match the color, quality, and finish shown in the approved product images submitted during Step 1. Any deviation will be treated as a vendor-side defect.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">B2 — Returns due to quality or color mismatch go back to vendor:</span>
+        If a customer return is raised due to quality defect, color variation, or mismatch with listing photos, the returned product will be sent back to the vendor at the vendor's expense. No payment will be made for such orders.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">B3 — Return window — 3 days from delivery:</span>
+        Customers may raise a return request within 3 days of delivery. Returns raised after this window will not be accepted and vendor payment will be released normally.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">B4 — Defective or damaged in transit:</span>
+        If a product is damaged during courier transit, liability will be assessed jointly. Vendor must ensure proper packaging. Products with inadequate packaging will be vendor's liability.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">B5 — No return for buyer's remorse or size preference:</span>
+        Returns due to customer preference change, wrong size ordered, or buyer's remorse will not be charged to the vendor. These are handled by Weave 365's customer policy separately.
+      </div>
+    </div>
+
+    <div class="clause-section">
+      <div class="clause-title">C. Product & Listing Standards</div>
+      <div class="clause-item">
+        <span class="clause-item-head">C1 — No duplicate listings from other platforms:</span>
+        Products listed on Weave 365 must not be sold at a lower price on any other platform (Meesho, Flipkart, own website, etc.) during the period of active listing.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">C2 — Stock availability obligation:</span>
+        Once a product is listed, the vendor must maintain stock availability. If stock runs out, the vendor must notify Weave 365 immediately to avoid customer orders being placed on out-of-stock items.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">C3 — Dispatch within agreed timeline:</span>
+        Vendor must dispatch orders within the agreed timeline (default: 2 business days from order confirmation). Repeated delays may result in delisting.
+      </div>
+    </div>
+
+    <div class="clause-section">
+      <div class="clause-title">D. General Terms</div>
+      <div class="clause-item">
+        <span class="clause-item-head">D1 — Right to delist:</span>
+        Weave 365 reserves the right to delist a vendor's products at any time if quality standards, return rates, or these terms are not met, with 24 hours notice.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">D2 — Confidentiality of pricing:</span>
+        Vendor agrees not to disclose Weave 365's wholesale pricing, commission structure, or internal operational details to any third party.
+      </div>
+      <div class="clause-item">
+        <span class="clause-item-head">D3 — Agreement is binding:</span>
+        By submitting this form, the vendor agrees that these terms are legally binding. Weave 365 reserves the right to update these terms with 7 days prior notice.
+      </div>
+    </div>
+
+    <div class="signature-section">
+      <div class="sig-block">
+        <div class="sig-line" style="font-family: 'Courier New', monospace; font-size: 18px; color: #3b82f6; display: flex; align-items: center; justify-content: center;">
+          <i>WEAVE365 SECURE SIGNED</i>
+        </div>
+        <div class="sig-name">Weave 365 Operations</div>
+        <div class="sig-meta">Counter-signatory and Platform Admin</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line" style="font-family: 'Brush Script MT', cursive, sans-serif; font-size: 24px; color: #1e3a8a; display: flex; align-items: center; justify-content: center; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+          ${vendorName}
+        </div>
+        <div class="sig-name">${vendorName}</div>
+        <div class="sig-meta">Authorized Vendor Representative (Electronically Signed)</div>
+      </div>
+    </div>
+
+    <div class="print-btn-container">
+      <button class="print-btn" onclick="window.print()">Print or Save as PDF</button>
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    }
+  </script>
+</body>
+</html>`;
+
+    // 1. Download HTML document copy locally
+    try {
+      const blob = new Blob([docHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Weave365_Signed_Agreement_${cleanWhatsapp}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.warn('Failed to download copy locally:', err);
+    }
+
+    // 2. Prepare Base64 payload of the agreement document to upload
+    const base64Doc = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(docHtml)));
+
+    // 3. Post to API to secure and upload this signed legal document to Supabase
+    try {
+      const response = await fetch('/api/vendor-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'submit_agreement',
+          whatsapp: cleanWhatsapp,
+          vendorName,
+          date,
+          agreementDoc: base64Doc
+        })
+      });
+
+      const resData = await response.json();
+      if (response.ok && resData.status === 'success') {
+        try {
+          localStorage.setItem('weave365_payment_terms_agreed', 'true');
+          localStorage.setItem('weave365_payment_vendor_name', vendorName);
+          localStorage.setItem('weave365_payment_agreement_date', date);
+        } catch (err) {
+          console.warn('LocalStorage save skipped:', err);
+        }
+
+        setIsPaymentTermsAgreed(true);
+        alert('Terms agreed & official signed agreement copy downloaded successfully! Moving to Step 3 — Onboarding Form.');
+        setActiveTab('onboarding');
+      } else {
+        setPaymentError(resData.error || 'Failed to register your agreement. Please verify connection.');
+      }
+    } catch (err) {
+      console.error('Failed to submit agreement:', err);
+      setPaymentError('Connection error occurred while registering terms. Please try again.');
+    } finally {
+      setPaymentSubmitting(false);
+    }
   };
 
   // Tab 3: Onboarding Form Handlers
@@ -1293,11 +1613,25 @@ export function TrustedPartnerRegistrationPage() {
                       </div>
                     </div>
 
-                    <button type="submit" className="onboarding-submit-button">
-                      I agree to all terms — proceed to onboarding →
+                    {paymentError && (
+                      <div className="vendor-form-error" role="alert" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+                        <AlertCircle size={18} />
+                        <span>{paymentError}</span>
+                      </div>
+                    )}
+
+                    <button type="submit" className="onboarding-submit-button" disabled={paymentSubmitting}>
+                      {paymentSubmitting ? (
+                        <>
+                          <RefreshCw size={18} className="spinner" />
+                          Registering & Downloading Agreement...
+                        </>
+                      ) : (
+                        'I agree to all terms — proceed to onboarding & download copy →'
+                      )}
                     </button>
 
-                    <p className="onboarding-step-footer">Step 2 of 3 — Onboarding form will be shared after this agreement is reviewed.</p>
+                    <p className="onboarding-step-footer">Step 2 of 3 — Onboarding form will be unlocked immediately after this agreement copy is verified.</p>
                   </div>
                 </form>
               )

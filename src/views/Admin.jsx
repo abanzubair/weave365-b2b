@@ -141,6 +141,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedOnboarding, setSelectedOnboarding] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [activeAgreement, setActiveAgreement] = useState(null);
   const [partnerSubTab, setPartnerSubTab] = useState('reviews'); // 'reviews' | 'onboardings'
   const [copyFeedback, setCopyFeedback] = useState({});
   const [partnerSearchQuery, setPartnerSearchQuery] = useState('');
@@ -231,6 +232,25 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       void loadPartnerApplications();
     }
   }, [activeTab, allowed]);
+
+  // Load active onboarding's signed agreement on demand
+  useEffect(() => {
+    if (selectedOnboarding) {
+      const cleanWhatsapp = String(selectedOnboarding.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+      void fetch(`/api/vendor-registration?whatsapp=${cleanWhatsapp}`)
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.status === 'success' && resData.agreement) {
+            setActiveAgreement(resData.agreement);
+          } else {
+            setActiveAgreement(null);
+          }
+        })
+        .catch(() => setActiveAgreement(null));
+    } else {
+      setActiveAgreement(null);
+    }
+  }, [selectedOnboarding]);
 
   const handleCopy = (text, fieldName) => {
     if (!text) return;
@@ -2439,6 +2459,20 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             <div style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fff', color: 'var(--muted)' }}>
                               No Cheque uploaded
                             </div>
+                          )}
+
+                          {activeAgreement && activeAgreement.document_url && (
+                            <a 
+                              href={activeAgreement.document_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ flex: 1, border: '1px solid rgba(183,134,70,0.3)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fffcf5', cursor: 'pointer', textDecoration: 'none', color: 'var(--primary)', display: 'block' }}
+                              className="img-hover-trigger"
+                            >
+                              <FileText size={20} style={{ color: 'var(--primary)', marginBottom: '6px', margin: '0 auto 6px auto' }} />
+                              <div style={{ fontSize: '12px', fontWeight: 700 }}>Signed Merchant Agreement</div>
+                              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Click to view signed copy 📄</span>
+                            </a>
                           )}
                         </div>
                       </div>

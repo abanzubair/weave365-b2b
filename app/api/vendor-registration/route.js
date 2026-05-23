@@ -110,6 +110,33 @@ export async function POST(request) {
       return Response.json({ status: 'success', data });
     }
 
+    // 1.5. STEP 2: Save Signed Payment Terms Agreement & PDF Upload
+    if (action === 'submit_agreement') {
+      const cleanWhatsapp = String(payload.whatsapp || '').trim().replace(/\D/g, '').slice(-10);
+      
+      // Upload the signed agreement HTML copy to Storage first
+      const documentUrl = await uploadBase64ToStorage(payload.agreementDoc, `agreements/${cleanWhatsapp}/signed_terms.html`);
+
+      const { data, error } = await supabase
+        .from('vendor_agreements')
+        .upsert({
+          whatsapp_number: cleanWhatsapp,
+          vendor_signed_name: payload.vendorName,
+          signed_date: payload.date,
+          agreed_terms: { agreeAll: true },
+          document_url: documentUrl
+        }, { onConflict: 'whatsapp_number' })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[vendor-registration API] vendor_agreements upsert error:', error);
+        return Response.json({ status: 'error', error: error.message }, { status: 400 });
+      }
+
+      return Response.json({ status: 'success', data });
+    }
+
     // 2. STEP 3: Complete Advanced Onboarding Profile (Includes Step 2 Payment Terms Agreement)
     if (action === 'vendor_registration') {
       const cleanWhatsapp = String(payload.whatsapp || '').trim().replace(/\D/g, '').slice(-10);
@@ -160,15 +187,15 @@ export async function POST(request) {
       // B. Save Signed Payment Terms Agreement
       const { error: agreementError } = await supabase
         .from('vendor_agreements')
-        .insert({
+        .upsert({
           whatsapp_number: cleanWhatsapp,
           vendor_signed_name: payload.paymentVendorName,
           signed_date: payload.paymentAgreementDate,
           agreed_terms: { agreeAll: true }
-        });
+        }, { onConflict: 'whatsapp_number' });
 
       if (agreementError) {
-        console.warn('[vendor-registration API] vendor_agreements insert skipped/failed:', agreementError.message);
+        console.warn('[vendor-registration API] vendor_agreements upsert skipped/failed:', agreementError.message);
       }
 
       return Response.json({ status: 'success' });
