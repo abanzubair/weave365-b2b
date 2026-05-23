@@ -588,9 +588,21 @@ export async function syncSheetsToSupabase() {
       return res.text();
     };
 
+    // Gracefully handle hero sheet fetch failure so the entire sync doesn't abort
+    const fetchHeroText = async (url) => {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        return await res.text();
+      } catch (err) {
+        console.warn(`Optional hero sheet fetch failed, skipping hero update:`, err.message);
+        return null;
+      }
+    };
+
     const [products, hero, config] = await Promise.all([
       fetchText(csvUrl),
-      fetchText(heroCsvUrl),
+      fetchHeroText(heroCsvUrl),
       fetchText(configCsvUrl)
     ]);
 
@@ -598,9 +610,12 @@ export async function syncSheetsToSupabase() {
     
     const updates = [
       { id: 'products', csv_data: products, updated_at: timestamp },
-      { id: 'hero', csv_data: hero, updated_at: timestamp },
       { id: 'config', csv_data: config, updated_at: timestamp }
     ];
+
+    if (hero !== null) {
+      updates.push({ id: 'hero', csv_data: hero, updated_at: timestamp });
+    }
 
     const { error } = await supabase.from('sheet_data').upsert(updates);
     if (error) throw error;
