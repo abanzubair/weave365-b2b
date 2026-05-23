@@ -5233,4 +5233,18 @@ button {
   margin-right: 4px;
 }
 
+/* Animation helper for spinning loaders */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 

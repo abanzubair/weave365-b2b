@@ -46,7 +46,7 @@ const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module
 const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
 const Admin = lazy(() => import('./views/Admin.jsx').then((module) => ({ default: module.Admin })));
 const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ default: module.Account })));
-const ResellerGrowthPage = lazy(() => import('./views/ResellerGrowthPage.jsx').then((module) => ({ default: module.ResellerGrowthPage })));
+const WholesalePartnerProgramPage = lazy(() => import('./views/WholesalePartnerProgramPage.jsx').then((module) => ({ default: module.WholesalePartnerProgramPage })));
 const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
 const TrustedPartnerRegistrationPage = lazy(() => import('./views/TrustedPartnerRegistrationPage.jsx').then((module) => ({ default: module.TrustedPartnerRegistrationPage })));
 const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then((module) => ({ default: module.ResellerDashboard })));
@@ -139,13 +139,6 @@ export default function App({ initialData = {} }) {
     () => applyVisiblePricesToProducts(products, visiblePriceMap),
     [products, visiblePriceMap],
   );
-
-  // Handle client-side legacy redirect from /reseller-growth to /wholesale-partner-program
-  useEffect(() => {
-    if (route === 'reseller-growth') {
-      router.replace('/wholesale-partner-program');
-    }
-  }, [route, router]);
 
   useEffect(() => {
     if (hasInitialData) return undefined;
@@ -827,7 +820,7 @@ export default function App({ initialData = {} }) {
 
     if (route === 'wholesale-partner-program') {
 
-      return <ResellerGrowthPage openAuth={() => setAuthOpen(true)} />;
+      return <WholesalePartnerProgramPage openAuth={() => setAuthOpen(true)} />;
     }
 
     if (route === 'new-arrivals') {

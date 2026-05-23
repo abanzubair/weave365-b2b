@@ -3,7 +3,6 @@ import { storeConfig } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
-import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
@@ -262,14 +261,7 @@ export async function generateMetadata({ params }) {
   return metadataForRoute(route, product, sharedSlug, blogPostSlug);
 }
 
-export default async function CatchAllPage({ params }) {
-  const resolvedParams = await params;
-  const { route } = routeFromSlug(resolvedParams?.slug);
-
-  if (route === 'reseller-growth') {
-    redirect('/wholesale-partner-program');
-  }
-
+export default async function CatchAllPage() {
   const initialData = await getInitialData();
 
   return <App initialData={initialData} />;

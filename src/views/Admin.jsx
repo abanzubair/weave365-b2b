@@ -46,7 +46,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
 import { formatMoney } from '../storefrontShared.jsx';
 import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
-import { saveSupabaseBlogPost, fetchSupabaseBlogPosts } from '../productData.js';
+import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, syncSheetsToSupabase } from '../productData.js';
 
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
@@ -921,9 +921,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     } catch (err) {
       alert('Failed to delete blog post: ' + err.message);
     }
+  }  // Manual sheets sync handler restored
+  async function handleManualSync() {
+    if (!isSupabaseConfigured || !allowed || syncStatus === 'loading') return;
+    setSyncStatus('loading');
+    try {
+      await syncSheetsToSupabase();
+      alert('Successfully synced Google Sheets to Supabase!');
+      await loadAdminData();
+    } catch (err) {
+      alert('Sync failed: ' + err.message);
+    } finally {
+      setSyncStatus('idle');
+    }
   }
-
-  // Manual sheets sync completely disabled and removed
 
   async function loadAdminData() {
     if (!isSupabaseConfigured || !allowed) return;
@@ -1373,7 +1384,62 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
       {activeTab === 'pipeline' ? (
         <>
-
+          {/* Restored Premium Google Sheets Data Sync Banner */}
+          <div className="admin-sync-banner" style={{ 
+            background: 'var(--surface-soft, #f7f5f0)', 
+            border: '1px solid rgba(183, 134, 70, 0.15)', 
+            padding: '20px 24px', 
+            borderRadius: '14px', 
+            marginBottom: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '24px',
+            boxShadow: '0 4px 20px rgba(183, 134, 70, 0.03), inset 0 2px 4px rgba(0,0,0,0.01)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ 
+                background: '#ffffff', 
+                color: 'var(--primary, #b78646)', 
+                padding: '12px', 
+                borderRadius: '12px',
+                border: '1px solid rgba(183, 134, 70, 0.12)',
+                boxShadow: '0 4px 12px rgba(183, 134, 70, 0.08)'
+              }}>
+                <FileSpreadsheet size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--ink, #1c1917)', fontFamily: 'var(--font-display, inherit)' }}>Google Sheets & Database Synchronization</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: 'var(--muted, #78716c)', lineHeight: 1.4 }}>
+                  Sheets automatically synchronize in the background every 15 minutes, but you can force an instant update here.
+                </p>
+              </div>
+            </div>
+            <button 
+              type="button"
+              className="primary-button"
+              onClick={handleManualSync} 
+              disabled={syncStatus === 'loading'}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 24px',
+                fontSize: '13px',
+                fontWeight: 700,
+                background: 'var(--primary, #b78646)',
+                border: 'none',
+                color: '#ffffff',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(183, 134, 70, 0.25)',
+                transition: 'all 0.25s ease'
+              }}
+            >
+              <RefreshCw size={15} className={syncStatus === 'loading' ? 'spin' : ''} />
+              {syncStatus === 'loading' ? 'Syncing...' : 'Sync Now'}
+            </button>
+          </div>
 
           <div className="admin-metrics-grid">
             <MetricCard icon={Users} label="Users" value={adminData.profiles.length} hint={`${pendingProfiles.length} pending approval`} />
