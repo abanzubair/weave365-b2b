@@ -24,16 +24,21 @@ const buyerSubtypes = [
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
         Resellers (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', margin: '0 1px' }}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.637-1.03-5.114-2.905-6.989-1.875-1.875-4.37-2.907-7.01-2.908-5.438 0-9.863 4.42-9.866 9.863-.001 1.716.452 3.39 1.312 4.869l-.994 3.633 3.775-.989zm11.517-5.695c-.302-.15-1.786-.882-2.052-.98-.266-.096-.459-.144-.652.146-.193.289-.747.98-.916 1.173-.168.193-.337.217-.639.067-.303-.15-1.277-.47-2.433-1.5-.9-.803-1.507-1.795-1.684-2.1-.177-.302-.019-.465.132-.614.136-.134.303-.35.454-.525.152-.175.202-.299.303-.499.102-.2.05-.375-.025-.525-.075-.15-.652-1.572-.892-2.152-.233-.566-.47-.489-.652-.499-.168-.008-.362-.01-.555-.01-.193 0-.507.073-.772.36-.266.289-1.013.99-1.013 2.414 0 1.423 1.037 2.799 1.182 2.993.145.193 2.036 3.111 4.934 4.364.69.298 1.229.476 1.649.609.694.221 1.327.19 1.827.115.556-.083 1.786-.73 2.036-1.402.25-.672.25-1.25.175-1.373-.075-.124-.266-.197-.568-.347z"/>
+          {/* WhatsApp Outline SVG */}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
+          
+          {/* Instagram Outline SVG */}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
           </svg>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          
+          {/* Facebook Outline SVG */}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--gold)' }} aria-hidden="true">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
           </svg>
         </span>
         )
