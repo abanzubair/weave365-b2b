@@ -484,3 +484,126 @@ create trigger touch_reseller_customer_inquiries_updated_at
 before update on public.reseller_customer_inquiries
 for each row execute function public.touch_updated_at();
 alter table public.profiles add column if not exists reseller_dashboard_enabled boolean default false;
+
+-------------------------------------------------------------------------------
+-- B2B VENDOR PARTNER ONBOARDING PIPELINE TABLES
+-------------------------------------------------------------------------------
+
+-- 1. STEP 1: Product Review Applications
+create table if not exists public.vendor_reviews (
+  id uuid default gen_random_uuid() primary key,
+  full_name text not null,
+  whatsapp_number text unique not null,
+  city text not null,
+  pincode varchar(6) not null,
+  categories text not null, -- Comma-separated list of selected categories
+  price_range text not null,
+  image1 text, -- Base64 encoded or URL
+  image2 text,
+  image3 text,
+  image4 text,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  rejection_reason text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS and policy for vendor_reviews
+alter table public.vendor_reviews enable row level security;
+
+drop policy if exists "Allow public reviews inserts" on public.vendor_reviews;
+create policy "Allow public reviews inserts" 
+  on public.vendor_reviews for insert 
+  with check (true);
+
+drop policy if exists "Allow select reviews by phone or admin" on public.vendor_reviews;
+create policy "Allow select reviews by phone or admin" 
+  on public.vendor_reviews for select 
+  using (true); -- Public can query to lookup their phone unlock status
+
+drop policy if exists "Allow all actions on reviews for admin" on public.vendor_reviews;
+create policy "Allow all actions on reviews for admin" 
+  on public.vendor_reviews for all 
+  using (public.is_admin());
+
+-- 2. STEP 2: Signed Payment Terms Agreements
+create table if not exists public.vendor_agreements (
+  id uuid default gen_random_uuid() primary key,
+  whatsapp_number text unique not null,
+  vendor_signed_name text not null,
+  agreed_terms jsonb default '{}'::jsonb,
+  signed_date text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS and policy for vendor_agreements
+alter table public.vendor_agreements enable row level security;
+
+drop policy if exists "Allow insert agreements" on public.vendor_agreements;
+create policy "Allow insert agreements" 
+  on public.vendor_agreements for insert 
+  with check (true);
+
+drop policy if exists "Allow select agreements" on public.vendor_agreements;
+create policy "Allow select agreements" 
+  on public.vendor_agreements for select 
+  using (true);
+
+drop policy if exists "Allow admin all agreements" on public.vendor_agreements;
+create policy "Allow admin all agreements" 
+  on public.vendor_agreements for all 
+  using (public.is_admin());
+
+-- 3. STEP 3: Full Onboarding Profiles & Bank Details
+create table if not exists public.vendor_profiles (
+  id uuid default gen_random_uuid() primary key,
+  whatsapp_number text unique not null,
+  alternate_contact text,
+  email text unique not null,
+  business_name text not null,
+  business_type text not null,
+  business_address text not null,
+  city text not null,
+  pincode varchar(6) not null,
+  gst_number text,
+  pan_number text not null,
+  years_in_business text not null,
+  fabric_specialisation text not null,
+  monthly_capacity text not null,
+  dispatch_timeline text not null,
+  preferred_courier text not null,
+  dispatch_address_same text default 'same',
+  dispatch_address_different text,
+  
+  -- Bank Details
+  bank_account_holder text not null,
+  bank_name text not null,
+  bank_account_number text not null,
+  bank_ifsc text not null,
+  upi_id text,
+  
+  -- Documents
+  id_proof_url text, -- Aadhaar Base64 or URL pointer
+  cancelled_cheque_url text, -- Cheque Base64 or URL pointer
+  
+  status text default 'submitted' check (status in ('submitted', 'approved', 'flagged', 'rejected')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS and policy for vendor_profiles
+alter table public.vendor_profiles enable row level security;
+
+drop policy if exists "Allow public onboarding inserts" on public.vendor_profiles;
+create policy "Allow public onboarding inserts" 
+  on public.vendor_profiles for insert 
+  with check (true);
+
+drop policy if exists "Allow select onboarding profiles" on public.vendor_profiles;
+create policy "Allow select onboarding profiles" 
+  on public.vendor_profiles for select 
+  using (true);
+
+drop policy if exists "Allow admin all onboarding profiles" on public.vendor_profiles;
+create policy "Allow admin all onboarding profiles" 
+  on public.vendor_profiles for all 
+  using (public.is_admin());
+

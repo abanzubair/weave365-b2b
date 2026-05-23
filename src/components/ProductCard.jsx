@@ -88,7 +88,12 @@ export const ProductCard = memo(function ProductCard({
 
   const showMoqBadge = priceAccess?.priceGroup === 'wholesale';
   const showColorBadge = colorCount > 1;
-  const showPurityBadge = !!product.purity && priceAccess?.isLoggedIn !== false;
+  const showPurityBadge =
+    !!product.purity &&
+    priceAccess?.isLoggedIn !== false &&
+    priceAccess?.approvalStatus !== 'approved' &&
+    priceAccess?.priceGroup !== 'wholesale' &&
+    priceAccess?.priceGroup !== 'reseller';
   const showRightInfo = showMoqBadge || showColorBadge || showPurityBadge;
 
   useEffect(() => {
@@ -198,9 +203,11 @@ export const ProductCard = memo(function ProductCard({
           <div className="info-left">
             {!isPriceLocked ? (
               <>
-                {priceAccess?.priceGroup !== 'reseller' && priceAccess?.isLoggedIn !== false && (
-                  <label>{priceAccess?.priceLabel || 'PRICE'}</label>
-                )}
+                {priceAccess?.priceGroup !== 'reseller' &&
+                  priceAccess?.priceGroup !== 'wholesale' &&
+                  priceAccess?.isLoggedIn !== false && (
+                    <label>{priceAccess?.priceLabel || 'PRICE'}</label>
+                  )}
                 <strong>{formatMoney(basePrice)} {priceAccess?.priceGroup === 'wholesale' && <span>/pc</span>}</strong>
                 {priceAccess?.priceGroup === 'wholesale' && (
                   <small>{formatMoney(setPrice)} /set</small>
