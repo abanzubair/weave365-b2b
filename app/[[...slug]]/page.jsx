@@ -150,6 +150,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     return buildMeta(title, description, `/product/${encodeURIComponent(product.id)}`, image);
   }
 
+  if (route === 'contact') {
+    return buildMeta(
+      'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
+      'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
+      '/contact'
+    );
+  }
+
   if (route === 'about') {
     return buildMeta(
       'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',

@@ -39,7 +39,7 @@ import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import { Home, homeCategoryNames } from './views/Home.jsx';
 import { Favorites } from './views/Favorites.jsx';
-import { ComingSoon } from './views/ComingSoon.jsx';
+
 
 const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
@@ -60,6 +60,8 @@ const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ d
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
 const AboutPage = lazy(() => import('./views/AboutPage.jsx').then((module) => ({ default: module.AboutPage })));
 const EarlyAccessPage = lazy(() => import('./views/EarlyAccessPage.jsx').then((module) => ({ default: module.EarlyAccessPage })));
+const ContactPage = lazy(() => import('./views/ContactPage.jsx').then((module) => ({ default: module.ContactPage })));
+const NotFoundPage = lazy(() => import('./views/NotFoundPage.jsx').then((module) => ({ default: module.NotFoundPage })));
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
@@ -685,7 +687,7 @@ export default function App({ initialData = {} }) {
     }
   }, [route, navigate]);
 
-  // return <ComingSoon />;
+
 
   const isSharedPage = route === 's' || route === 'reseller-dashboard';
   const routeContent = (() => {
@@ -860,6 +862,8 @@ export default function App({ initialData = {} }) {
       );
     }
 
+    if (route === 'contact') return <ContactPage navigate={navigate} />;
+
     if (route === 'about') return <AboutPage navigate={navigate} />;
 
     if (route === 'early-access') return <EarlyAccessPage navigate={navigate} />;
@@ -883,7 +887,7 @@ export default function App({ initialData = {} }) {
       return <BlogList navigate={navigate} blogs={blogs} />;
     }
 
-    return <ComingSoon />;
+    return <NotFoundPage />;
   })();
 
   return (

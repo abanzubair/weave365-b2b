@@ -63,7 +63,7 @@ export function Footer({ navigate }) {
       <div>
         <h3>Company</h3>
         <a href="/about" onClick={(e) => { e.preventDefault(); navigate('about'); }}>About Us</a>
-        <a href="#contact">Contact Us</a>
+        <a href="/contact" onClick={(e) => { e.preventDefault(); navigate('contact'); }}>Contact Us</a>
         <a href="/catalog" onClick={(e) => { e.preventDefault(); navigate('catalog'); }}>Catalogue</a>
         <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }}>Bulk Order</a>
         <a href="/favorites" onClick={(e) => { e.preventDefault(); navigate('favorites'); }}>My Favorites</a>

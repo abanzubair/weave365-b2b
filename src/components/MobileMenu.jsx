@@ -103,13 +103,8 @@ export function MobileMenu({
       icon: <Headphones size={20} />, 
       label: 'Contact Us', 
       action: () => {
+        navigate('contact');
         onClose();
-        setTimeout(() => {
-          const el = document.getElementById('contact');
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 100);
       } 
     },
     ...(isAdmin ? [
