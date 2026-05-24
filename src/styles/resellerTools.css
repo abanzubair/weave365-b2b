@@ -842,27 +842,12 @@
 
 .reseller-share-dropdown-trigger {
   width: 100% !important;
-  background: var(--surface-muted) !important;
-  color: var(--ink) !important;
-  border: 1px solid var(--line) !important;
   font-weight: 700 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
   cursor: pointer;
-  border-radius: 10px;
-  min-height: 52px;
-  box-sizing: border-box;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 13px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reseller-share-dropdown-trigger:hover {
-  background: var(--line) !important;
-  color: var(--gold-dark) !important;
 }
 
 .reseller-share-dropdown-trigger svg.dropdown-arrow {
