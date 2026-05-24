@@ -1304,6 +1304,12 @@
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .color-swatch-row::-webkit-scrollbar {
+    display: none !important;
   }
 
   .color-swatch-row button {

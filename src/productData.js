@@ -85,36 +85,47 @@ export function parseProductCsv(text) {
 
   for (const rawRow of parsed.data) {
     const row = normalizeRow(rawRow);
-    const coverImage = driveImageUrl(row['Cover Image'] || row.Cover);
-    const colorEntries = parseColorEntries(row['Product Images'] || row['Product Link'] || row.Color);
-    const colorImages = colorEntries.map((entry) => driveImageUrl(entry.image)).filter(Boolean);
-    const images = unique([coverImage, ...colorImages]);
+    const hasVariantCol = Boolean(row.Variant || row.variant);
+    const firstVariantCode = (function() {
+      if (!hasVariantCol) return '';
+      const segs = String(row.Variant || row.variant || '').split('|').map(s => s.trim()).filter(Boolean);
+      if (!segs.length) return '';
+      const idx = segs[0].indexOf(':');
+      return idx === -1 ? segs[0] : segs[0].substring(0, idx).trim();
+    })();
 
-    const primaryImage = images[0] || colorImages[0] || '';
-    const hasCode = Boolean(row.Code);
-    const hasProductData = hasCode || Boolean(row['Pre Code']) || Boolean(row.Category);
-
-    if (!hasProductData && images.length > 0 && currentGroupKey && products.has(currentGroupKey)) {
-      products.get(currentGroupKey).images.push(...images);
-      continue;
-    }
+    const hasProductData = Boolean(row.Code) || Boolean(firstVariantCode) || Boolean(row['Pre Code']) || Boolean(row.Category);
 
     if (!hasProductData) {
+      const coverImage = driveImageUrl(row['Cover Image'] || row.Cover);
+      const imagesRawStr = String(row['Product Images'] || row['Product Link'] || row.Color || '').trim();
+      const imageUrls = imagesRawStr.split('|').map(s => s.trim()).filter(Boolean);
+      const images = unique([coverImage, ...imageUrls.map(url => driveImageUrl(url))]);
+
+      if (images.length > 0 && currentGroupKey && products.has(currentGroupKey)) {
+        products.get(currentGroupKey).images.push(...images);
+      }
       continue;
     }
 
-    const codeInfo = parseCode(row.Code, row['Pre Code'], getPrimaryColorName(row.Color));
+    const { colorEntries, variants: rowVariants, images } = parseRowMediaAndVariants(row);
+
+    const primaryCode = row.Code || firstVariantCode;
+    const primaryColorName = rowVariants[0]?.color || getPrimaryColorName(row.Color);
+    const codeInfo = parseCode(primaryCode, row['Pre Code'], primaryColorName);
     const groupKey = codeInfo.groupKey;
     currentGroupKey = groupKey;
 
     const existing = products.get(groupKey);
-    const variant = buildVariant(row, codeInfo, primaryImage, colorEntries);
-
     if (existing) {
-      existing.variants.push(variant);
+      for (const rv of rowVariants) {
+        if (!existing.variants.some(v => v.code === rv.code)) {
+          existing.variants.push(rv);
+        }
+      }
       if (images.length > 0) existing.images.push(...images);
       existing.colorOptions.push(...colorEntries);
-      const parsedTotalColors = parseTotalColors(row.Color, colorEntries);
+      const parsedTotalColors = parseTotalColors(row.Color || row.Col || row.Variant || row.variant, colorEntries);
       if (parsedTotalColors > 0 && existing.totalColors === null) {
         existing.totalColors = parsedTotalColors;
       }
@@ -156,7 +167,7 @@ export function parseProductCsv(text) {
       subtitle: row.Title || category,
       images: images,
       video: formatYoutubeUrl(video),
-      variants: [variant],
+      variants: rowVariants,
       colorOptions: colorEntries,
       weight: (function() {
         const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'weight') || 'Weight';
@@ -259,23 +270,6 @@ function normalizeCsvHeader(header, index) {
   return trimmed || `__empty_${index}`;
 }
 
-function buildVariant(row, codeInfo, image, colorEntries = []) {
-  const firstColorName = colorEntries[0]?.name || codeInfo.color || getPrimaryColorName(row.Color);
-  return {
-    code: row.Code || codeInfo.variantCode,
-    preCode: row['Pre Code'],
-    color: firstColorName,
-    image,
-    prices: {
-      mrp: parsePrice(row[moneyColumns.mrp]),
-      b2r: parsePrice(row[moneyColumns.b2r]),
-      single: parsePrice(row[moneyColumns.single]),
-      cod: parsePrice(row[moneyColumns.cod]),
-      offer: parsePrice(row[moneyColumns.offer]),
-    },
-  };
-}
-
 function parseCode(code = '', preCode = '', color = '') {
   const cleanCode = String(code || '').replace(/\s+/g, '');
   const cleanPreCode = String(preCode || '').replace(/\s+/g, '');
@@ -333,37 +327,123 @@ function parsePrice(value) {
   return cleaned ? Number(cleaned) : null;
 }
 
-function parseColorEntries(value) {
-  const rawValue = String(value || '').trim();
-  if (!rawValue || !rawValue.includes(':')) return [];
-
-  return rawValue
-    .split('|')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const match = entry.match(/^([^:]+):\s*(.+)$/);
-      if (!match) return null;
+function parseRowMediaAndVariants(row) {
+  const imagesRawStr = String(row['Product Images'] || row['Product Link'] || row.Color || '').trim();
+  const imageUrls = imagesRawStr.split('|').map(s => s.trim()).filter(Boolean);
+  
+  // 0th index of the URL list is treated as the cover image only
+  const coverImage = driveImageUrl(row['Cover Image'] || row.Cover || imageUrls[0] || '');
+  
+  let colorEntries = [];
+  let rowVariants = [];
+  
+  const variantColValue = row.Variant || row.variant || '';
+  
+  if (variantColValue) {
+    const variantSegments = String(variantColValue).split('|').map(s => s.trim()).filter(Boolean);
+    const parsedVariants = variantSegments.map(seg => {
+      const idx = seg.indexOf(':');
+      if (idx === -1) {
+        return { code: seg, color: '' };
+      }
       return {
-        name: match[1].trim(),
-        image: match[2].trim(),
+        code: seg.substring(0, idx).trim(),
+        color: seg.substring(idx + 1).trim()
       };
-    })
-    .filter((entry) => entry && entry.image);
+    });
+    
+    // First variant image starts at index 1 for fallback, cover is index 0
+    const firstVariantImage = imageUrls[1] ? driveImageUrl(imageUrls[1]) : coverImage;
+    
+    for (let i = 0; i < parsedVariants.length; i++) {
+      const pv = parsedVariants[i];
+      // Index i matches imageUrls[i] directly
+      const rawImg = imageUrls[i] || '';
+      const imgUrl = rawImg ? driveImageUrl(rawImg) : (i === 0 ? coverImage : firstVariantImage);
+      
+      // Exclude 0th variant (cover image) from color entries selection swatches
+      if (pv.color && i > 0) {
+        colorEntries.push({
+          name: pv.color,
+          image: imgUrl,
+        });
+      }
+      
+      const pvCodeInfo = parseCode(pv.code, row['Pre Code'], pv.color);
+      
+      rowVariants.push({
+        code: pv.code || pvCodeInfo.variantCode,
+        preCode: row['Pre Code'],
+        color: pv.color || pvCodeInfo.color || '',
+        image: imgUrl,
+        prices: {
+          mrp: parsePrice(row[moneyColumns.mrp]),
+          b2r: parsePrice(row[moneyColumns.b2r]),
+          single: parsePrice(row[moneyColumns.single]),
+          cod: parsePrice(row[moneyColumns.cod]),
+          offer: parsePrice(row[moneyColumns.offer]),
+        },
+      });
+    }
+  } else {
+    // Single variant fallback: Color is row.Color, image is coverImage or imageUrls[0]
+    const primaryImage = coverImage;
+    
+    const colorName = String(row.Color || row.Col || '').trim();
+    const primaryColorName = (colorName && !colorName.includes('/') && !colorName.includes('http') && !colorName.includes(':')) ? colorName : '';
+    
+    const codeInfo = parseCode(row.Code, row['Pre Code'], primaryColorName);
+    
+    rowVariants.push({
+      code: row.Code || codeInfo.variantCode,
+      preCode: row['Pre Code'],
+      color: primaryColorName,
+      image: primaryImage,
+      prices: {
+        mrp: parsePrice(row[moneyColumns.mrp]),
+        b2r: parsePrice(row[moneyColumns.b2r]),
+        single: parsePrice(row[moneyColumns.single]),
+        cod: parsePrice(row[moneyColumns.cod]),
+        offer: parsePrice(row[moneyColumns.offer]),
+      },
+    });
+    
+    if (primaryColorName) {
+      colorEntries.push({
+        name: primaryColorName,
+        image: primaryImage,
+      });
+    }
+  }
+  
+  const rawImagesParsed = imageUrls.map(url => driveImageUrl(url)).filter(Boolean);
+  const images = unique([coverImage, ...rawImagesParsed]);
+  
+  return {
+    colorEntries,
+    variants: rowVariants,
+    images,
+  };
 }
 
 function parseTotalColors(value, colorEntries = []) {
   if (colorEntries.length > 0) return colorEntries.length;
 
   const rawValue = String(value || '').trim();
+  if (rawValue.includes('|') || rawValue.includes(':')) {
+    const parsed = rawValue.split('|').map(s => s.trim()).filter(Boolean).length;
+    if (parsed > 0) return parsed;
+  }
   const parsed = parseInt(rawValue, 10);
   return Number.isNaN(parsed) ? null : parsed;
 }
 
 function getPrimaryColorName(value) {
-  const colorEntries = parseColorEntries(value);
-  if (colorEntries.length > 0) return colorEntries[0].name;
-  return String(value || '').trim();
+  const val = String(value || '').trim();
+  if (val.includes('/') || val.includes('http') || val.includes(':')) {
+    return '';
+  }
+  return val;
 }
 
 function dedupeColorOptions(items) {
