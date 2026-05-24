@@ -24,7 +24,8 @@ import {
   Trash2,
   RefreshCw,
   AlertCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Languages
 } from 'lucide-react';
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
@@ -34,7 +35,488 @@ if (typeof globalThis !== 'undefined' && !globalThis.process) {
   globalThis.process = { env: {} };
 }
 
-const businessTypes = ['Weaver', 'Master Weaver', 'Manufacturer', 'Trader', 'Job Worker', 'Supplier'];
+
+const translations = {
+  en: {
+    verificationOnboarding: 'Verification & Onboarding',
+    asideDesc: 'Apply to list your products on Weave 365. Every supplier is verified before products go live, so buyers get consistent quality and partners get a serious marketplace.',
+    noInstantSelfService: 'No instant self-service onboarding. Our team reviews fulfillment capability, product quality, and verification details before approval.',
+    step01: 'Form submission',
+    step02: 'WhatsApp verification',
+    step03: 'Sample/product review',
+    step04: 'Vendor approval',
+    step05: 'Product onboarding',
+    heroTitle: 'Trusted Partner Registration',
+    heroDesc: 'Share your craft, capacity, and product details for manual review by the Weave 365 team.',
+    tab1Submit: '1. Submit Products for Review',
+    tab2Payment: '2. Payment Terms',
+    tab3Onboarding: '3. Onboarding Form',
+    translateBtn: 'Translate to Hindi',
+    translateBtnHi: 'Switch to English',
+    step1Title: 'Product Review Submission (Step 1)',
+    step1Desc: 'Upload a few sample products to get catalog approval.',
+    contactInfo: 'Contact Information',
+    fullName: 'Full Name *',
+    fullNamePlaceholder: 'Enter your full name',
+    whatsappNumber: 'WhatsApp Number *',
+    whatsappPlaceholder: '9876543210',
+    city: 'City *',
+    cityPlaceholder: 'Varanasi, Kolkata, etc.',
+    pincode: 'Pincode *',
+    pincodePlaceholder: '221001',
+    catalogDetails: 'Catalog Details',
+    productCategories: 'Product Categories *',
+    priceRangeLabel: 'Approximate Price Range *',
+    priceRangeSelect: 'Select price range',
+    priceRangeUnder1k: 'Under ₹1,000',
+    priceRange1k3k: '₹1,000 - ₹3,000',
+    priceRange3k5k: '₹3,000 - ₹5,000',
+    priceRange5k10k: '₹5,000 - ₹10,000',
+    priceRange10kPlus: '₹10,000+',
+    samplePhotos: 'Sample Product Photos *',
+    uploadSubtitle: 'Upload exactly 4 clear sample photos of your sarees/textiles (e.g., cover, details, back, borders) to submit for review.',
+    photoSlot: 'Photo Slot',
+    dragDrop: 'Click or Drag & Drop',
+    uploadReqs: 'Photo Upload Requirements',
+    req1: 'All 4 image slots must be uploaded to submit the application',
+    req2: 'Strict maximum file size: 1MB per image',
+    req3: 'Format: JPEG, PNG or WebP accepted',
+    req4: 'Ensure photos are shot in bright natural light showing weaves clearly',
+    confirmPhotosAuth: 'I confirm these photos show authentic products produced by my business.',
+    submitReviewBtn: 'Submit Products for Review',
+    uploadingCatalogs: 'Uploading Catalogs...',
+    reviewSubmittedTitle: 'Products Submitted for Review!',
+    reviewSubmittedDesc: 'Our verification team will review your product catalog within 24-48 hours.',
+    reviewInstruction: 'Once approved, copy your submitted WhatsApp number and verify it under the Advanced Profile tab to unlock step 2.',
+    goPaymentTermsStatus: 'Go to Payment Terms Status Check',
+    clearCacheBtn: 'Clear cache & test again ↺',
+    paymentTermsLocked: 'Payment Terms & Return Policy Locked',
+    paymentLockedDesc: 'The Weave365 Payment Terms agreement is available exclusively to verified suppliers. Please complete Step 1 (Submit Products for Review) first. Once verified, enter your registered number below to unlock step 2.',
+    checkVerificationStatus: 'Check Review Verification Status',
+    enterWhatsappPlaceholder: 'Enter WhatsApp/Mobile number',
+    checkStatusBtn: 'Check Status 🔓',
+    checking: 'Checking...',
+    paymentTermsReturnPolicy: 'Payment terms & return policy',
+    step2of3: 'Weave 365 · Vendor onboarding · Step 2 of 3',
+    step2Desc: 'Read each clause carefully. You must agree to all terms before onboarding proceeds.',
+    secAPaymentTerms: 'A. Payment terms',
+    secBReturnPolicy: 'B. Return policy',
+    secCListingStandards: 'C. Product & listing standards',
+    secDGeneralTerms: 'D. General terms',
+    a1Title: 'A1 — Payment after delivery confirmation',
+    a1Desc: 'Payment will be released 3 days after successful delivery to the customer.',
+    a2Title: 'A2 — Payment held during dispute period',
+    a2Desc: 'If a return or quality dispute is raised within 3 days of delivery, payment will be withheld until the dispute is resolved.',
+    a3Title: 'A3 — Payment mode as agreed at onboarding',
+    a3Desc: 'Payment will be made via bank transfer (NEFT/IMPS/UPI) to the account details provided during onboarding. Weave 365 is not liable for errors due to incorrect account details submitted by the vendor.',
+    a4Title: 'A4 — No advance payment',
+    a4Desc: 'Weave 365 does not make advance payments. All payments are processed post-delivery only.',
+    a5Title: 'A5 — Deduction for returns and damage',
+    a5Desc: 'Any returned product amount and associated courier charges will be deducted from the vendor\'s pending payment before disbursement.',
+    b1Title: 'B1 — Color and quality must match approved photos',
+    b1Desc: 'The product dispatched must exactly match the color, quality, and finish shown in the approved product images submitted during Step 1. Any deviation will be treated as a vendor-side defect.',
+    b2Title: 'B2 — Returns due to quality or color mismatch go back to vendor',
+    b2Desc: 'If a customer return is raised due to quality defect, color variation, or mismatch with listing photos, the returned product will be sent back to the vendor at the vendor\'s expense. No payment will be made for such orders.',
+    b3Title: 'B3 — Return window — 3 days from delivery',
+    b3Desc: 'Customers may raise a return request within 3 days of delivery. Returns raised after this window will not be accepted and vendor payment will be released normally.',
+    b4Title: 'B4 — Defective or damaged in transit',
+    b4Desc: 'If a product is damaged during courier transit, liability will be assessed jointly. Vendor must ensure proper packaging. Products with inadequate packaging will be vendor\'s liability.',
+    b5Title: 'B5 — No return for buyer\'s remorse or size preference',
+    b5Desc: 'Returns due to customer preference change, wrong size ordered, or buyer\'s remorse will not be charged to the vendor. These are handled by Weave 365\'s customer policy separately.',
+    c1Title: 'C1 — No duplicate listings from other platforms',
+    c1Desc: 'Products listed on Weave 365 must not be sold at a lower price on any other platform (Meesho, Flipkart, own website, etc.) during the period of active listing.',
+    c2Title: 'C2 — Stock availability obligation',
+    c2Desc: 'Once a product is listed, the vendor must maintain stock availability. If stock runs out, the vendor must notify Weave 365 immediately to avoid customer orders being placed on out-of-stock items.',
+    c3Title: 'C3 — Dispatch within agreed timeline',
+    c3Desc: 'Vendor must dispatch orders within the agreed timeline (default: 2 business days from order confirmation). Repeated delays may result in delisting.',
+    d1Title: 'D1 — Right to delist',
+    d1Desc: 'Weave 365 reserves the right to delist a vendor\'s products at any time if quality standards, return rates, or these terms are not met, with 24 hours notice.',
+    d2Title: 'D2 — Confidentiality of pricing',
+    d2Desc: 'Vendor agrees not to disclose Weave 365\'s wholesale pricing, commission structure, or internal operational details to any third party.',
+    d3Title: 'D3 — Agreement is binding',
+    d3Desc: 'By submitting this form, the vendor agrees that these terms are legally binding. Weave 365 reserves the right to update these terms with 7 days prior notice.',
+    agreeAllCheck: 'I have read and agree to all payment terms, return policy, product standards, and general terms listed above. I understand that violation of these terms may result in payment hold or delisting.',
+    vendorFullNameLabel: 'Vendor full name',
+    asPerIdProof: 'As per ID proof',
+    dateOfSubmission: 'Date of Submission',
+    agreeAndProceedBtn: 'Agree & Proceed to Onboarding →',
+    registeringAgreement: 'Registering & Downloading Agreement...',
+    step2Footer: 'Step 2 of 3 — Onboarding form will be unlocked immediately after this agreement copy is verified.',
+    onboardingLocked: 'Onboarding Form Locked',
+    onboardingLockedDesc: 'The Weave365 Full Vendor Onboarding profile is available exclusively to verified suppliers. Please complete Step 1 (Submit Products for Review) first. Once verified, enter your registered number below to unlock step 3.',
+    paymentTermsRequired: 'Payment Terms Agreement Required',
+    paymentTermsReqDesc: 'Step 3 (Vendor Onboarding Form) will unlock once you review and agree to the Step 2 (Payment Terms & Return Policy).',
+    goReviewPaymentTermsBtn: 'Go to Step 2 — Review Payment Terms',
+    step3of3: 'Weave 365 · Vendor onboarding · Step 3 of 3',
+    onboardingFormTitle: 'Vendor onboarding form',
+    onboardingFormDesc: 'Complete all sections. Your listing will go live after Weave 365 team verification.',
+    secAPersonalDetails: 'A. Personal details',
+    fullNameLabel: 'Full name',
+    asPerAadhaarPan: 'As per Aadhaar / PAN',
+    whatsappLabel: 'WhatsApp number',
+    emailLabel: 'Email address',
+    altContactLabel: 'Alternate contact number',
+    secBBusinessDetails: 'B. Business details',
+    businessShopName: 'Business / shop name',
+    tradeNamePlaceholder: 'Trade name',
+    businessTypeLabel: 'Business type',
+    businessTypeSelect: 'Select',
+    businessTypeOpt1: 'Sole proprietor / Individual weaver',
+    businessTypeOpt2: 'Partnership firm',
+    businessTypeOpt3: 'Private limited company',
+    businessTypeOpt4: 'Manufacturer',
+    businessTypeOpt5: 'Trader / Wholesaler',
+    businessAddressLabel: 'Business address',
+    shopUnitAddressPlaceholder: 'Shop / unit address',
+    cityPlaceholderStep3: 'City',
+    pincodePlaceholderStep3: 'Pincode',
+    gstLabelStep3: 'GST number (if registered)',
+    panLabelStep3: 'PAN number',
+    yearsInBusinessLabel: 'Years in business',
+    yearsSelectPlaceholder: 'Select',
+    yearsOpt1: 'Less than 1 year',
+    yearsOpt2: '1 – 3 years',
+    yearsOpt3: '3 – 7 years',
+    yearsOpt4: '7 – 15 years',
+    yearsOpt5: '15+ years',
+    secCProductDetailsStep3: 'C. Product details',
+    categoriesStep3Label: 'Product categories you supply (select all that apply)',
+    pricePerPiece: 'Price range per piece',
+    monthlyCapacityStep3: 'Monthly supply capacity',
+    monthlyOpt1: 'Up to 20 pieces',
+    monthlyOpt2: '20 – 50 pieces',
+    monthlyOpt3: '50 – 100 pieces',
+    monthlyOpt4: '100 – 300 pieces',
+    monthlyOpt5: '300+ pieces',
+    fabricSpecialisation: 'Fabric / weave specialisation (e.g. Katan silk, Georgette, Organza, Chanderi)',
+    specialisationPlaceholder: 'Describe your specialisation',
+    secDDispatchOps: 'D. Dispatch & operations',
+    dispatchTimelineLabel: 'Dispatch timeline after order',
+    dispatchOpt1: 'Same day',
+    dispatchOpt2: '1 business day',
+    dispatchOpt3: '2 business days',
+    dispatchOpt4: '3 business days',
+    preferredCourierLabel: 'Preferred courier partner',
+    courierOpt1: 'Delhivery',
+    courierOpt2: 'Blue Dart',
+    courierOpt3: 'DTDC',
+    courierOpt4: 'India Post',
+    courierOpt5: 'Shiprocket',
+    courierOpt6: 'No preference',
+    dispatchLocationRadio: 'Dispatch location (pickup address same as business address?)',
+    yesSameAddress: 'Yes, same address',
+    differentAddress: 'Different address',
+    pickupAddressPlaceholder: 'Pickup / dispatch address',
+    secEBankDetails: 'E. Bank account details',
+    forPaymentDisbursal: 'For payment disbursement',
+    accountHolderName: 'Account holder name',
+    asPerBankRecords: 'As per bank records',
+    bankNameLabel: 'Bank name',
+    bankNamePlaceholder: 'e.g. SBI, HDFC, Axis',
+    accountNumberLabel: 'Account number',
+    accountNumberPlaceholder: 'Enter account number',
+    ifscLabel: 'IFSC code',
+    ifscPlaceholder: 'e.g. SBIN0001234',
+    upiLabel: 'UPI ID (optional — for faster payments)',
+    upiPlaceholder: 'yourname@upi',
+    bankInfoText: 'Weave 365 is not responsible for payment failures due to incorrect bank details. Please double-check before submitting.',
+    secFIdentityVerification: 'F. Identity verification',
+    aadhaarLabel: 'Aadhaar number',
+    aadhaarPlaceholder: 'XXXX XXXX XXXX',
+    panVerifyLabel: 'PAN number',
+    panVerifyPlaceholder: 'AAAAA0000A',
+    aadhaarUploadLabel: 'Aadhaar / ID proof',
+    chequeUploadLabel: 'Cancelled cheque',
+    fileUploadSpecs: 'JPG or PDF, max 2MB',
+    uploadedSuccessAadhaar: '✓ Aadhaar Uploaded',
+    uploadedSuccessCheque: '✓ Cheque Uploaded',
+    declarationCheckbox: 'I confirm that all information provided is accurate. I have read and agreed to the payment terms and return policy (Step 2) and understand that false information may result in permanent delisting.',
+    submitOnboardingFormBtn: 'Submit onboarding form →',
+    submittingOnboardingForm: 'Submitting Onboarding Form...',
+    step3Footer: 'Account activation takes 3–5 business days after document verification.',
+    onboardingSuccessTitle: 'Thank you for applying!',
+    onboardingSuccessDesc: 'Our team has received your full onboarding profile and verification documents. We will finalize your supplier listing shortly.',
+    onboardingSuccessSub: 'Account activation takes 3–5 business days after document verification.',
+    agreementSigned: 'Agreement Signed',
+    agreementSignedDesc: 'Your B2B Merchant Agreement has been counter-signed. Please download a copy for your records to unlock Step 3 Onboarding.',
+    downloadBtn: 'Download Agreement Copy',
+    savingDownloading: 'Saving & Downloading...',
+    goBack: 'Go Back',
+    heroTitleText: 'Trusted Partner Registration',
+    heroDescText: 'Share your craft, capacity, and product details for manual review by the Weave 365 team.',
+    catSaree: 'Saree',
+    catSuit: 'Suit',
+    catDupatta: 'Dupatta',
+    catLehenga: 'Lehenga',
+    catFabric: 'Fabric',
+    catAccessories: 'Accessories',
+    catSarees: 'Sarees',
+    catSuits: 'Suits',
+    catDupattas: 'Dupattas',
+    catLehengas: 'Lehengas',
+    catFabrics: 'Fabrics',
+    catAccessoriesPlural: 'Accessories',
+    priceOptSelect: 'Select',
+    priceOptUnder500: 'Under ₹500',
+    priceOpt500_999: '₹500 – ₹999',
+    priceOpt1000_1999: '₹1,000 – ₹1,999',
+    priceOpt2000_4999: '₹2,000 – ₹4,999',
+    priceOpt5000_9999: '₹5,000 – ₹9,999',
+    priceOpt10000Plus: '₹10,000+',
+    dispatchOptSelect: 'Select',
+    dispatchOptSameDay: 'Same day',
+    dispatchOpt1Day: '1 business day',
+    dispatchOpt2Days: '2 business days',
+    dispatchOpt3Days: '3 business days',
+    courierOptSelect: 'Select',
+    courierOptDelhivery: 'Delhivery',
+    courierOptBlueDart: 'Blue Dart',
+    courierOptDtdc: 'DTDC',
+    courierOptIndiaPost: 'India Post',
+    courierOptShiprocket: 'Shiprocket',
+    courierOptNoPref: 'No preference',
+  },
+  hi: {
+    verificationOnboarding: 'वेरिफिकेशन और ऑनबोर्डिंग',
+    asideDesc: 'वीव 365 पर अपने प्रोडक्ट्स को बेचने के लिए अप्लाई करें। हर सप्लायर का पहले वेरिफिकेशन किया जाता है ताकि ग्राहकों को बढ़िया क्वालिटी मिले और आपको एक अच्छा मार्केट मिले।',
+    noInstantSelfService: 'यहाँ कोई तुरंत ऑनबोर्डिंग नहीं होती है। हमारी टीम आपके काम, प्रोडक्ट्स की क्वालिटी और डिटेल्स चेक करने के बाद ही अप्रूवल देती है।',
+    step01: 'फॉर्म जमा करना',
+    step02: 'व्हाट्सएप वेरिफिकेशन',
+    step03: 'सैंपल/प्रोडक्ट रिव्यू',
+    step04: 'विक्रेता अप्रूवल',
+    step05: 'प्रोडक्ट ऑनबोर्डिंग',
+    heroTitle: 'भरोसेमंद पार्टनर रजिस्ट्रेशन',
+    heroDesc: 'वीव 365 टीम द्वारा रिव्यू के लिए अपने काम, कैपेसिटी और प्रोडक्ट की जानकारी यहाँ भेजें।',
+    tab1Submit: '1. रिव्यू के लिए प्रोडक्ट्स भेजें',
+    tab2Payment: '2. पेमेंट की शर्तें',
+    tab3Onboarding: '3. ऑनबोर्डिंग फॉर्म',
+    translateBtn: 'English में देखें',
+    translateBtnHi: 'हिन्दी में बदलें',
+    step1Title: 'प्रोडक्ट रिव्यू सबमिशन (स्टेप 1)',
+    step1Desc: 'कैटलॉग अप्रूवल पाने के लिए अपने कुछ सैंपल प्रोडक्ट्स अपलोड करें।',
+    contactInfo: 'कांटेक्ट डिटेल्स (सम्पर्क जानकारी)',
+    fullName: 'पूरा नाम *',
+    fullNamePlaceholder: 'अपना पूरा नाम लिखें',
+    whatsappNumber: 'व्हाट्सएप नंबर *',
+    whatsappPlaceholder: '9876543210',
+    city: 'शहर *',
+    cityPlaceholder: 'बनारस, कोलकाता, आदि।',
+    pincode: 'पिनकोड *',
+    pincodePlaceholder: '221001',
+    catalogDetails: 'कैटलॉग डिटेल्स',
+    productCategories: 'प्रोडक्ट कैटेगरीज़ *',
+    priceRangeLabel: 'अनुमानित प्राइस रेंज (कीमत) *',
+    priceRangeSelect: 'प्राइस रेंज चुनें',
+    priceRangeUnder1k: '₹1,000 से कम',
+    priceRange1k3k: '₹1,000 - ₹3,000',
+    priceRange3k5k: '₹3,000 - ₹5,000',
+    priceRange5k10k: '₹5,000 - ₹10,000',
+    priceRange10kPlus: '₹10,000 से ज़्यादा',
+    samplePhotos: 'सैंपल प्रोडक्ट की तस्वीरें *',
+    uploadSubtitle: 'रिव्यू के लिए सबमिट करने के लिए अपनी साड़ियों/कपड़ों की ठीक 4 साफ़ तस्वीरें अपलोड करें (जैसे: सामने से, काम का क्लोज़-अप, पीछे का हिस्सा, बॉर्डर)।',
+    photoSlot: 'फोटो स्लॉट',
+    dragDrop: 'क्लिक करें या फोटो यहाँ खींच कर छोड़ें',
+    uploadReqs: 'फोटो अपलोड करने के नियम',
+    req1: 'फॉर्म सबमिट करने के लिए सभी 4 फोटो स्लॉट अपलोड करना ज़रूरी है',
+    req2: 'फोटो का साइज ज़्यादा से ज़्यादा 1MB होना चाहिए',
+    req3: 'फोटो फॉर्मेट: JPEG, PNG या WebP ही चलेंगे',
+    req4: 'सुनिश्चित करें कि फोटो अच्छी रोशनी में ली गई हो ताकि काम साफ दिखे',
+    confirmPhotosAuth: 'मैं पुष्टि करता हूँ कि ये फोटो मेरे अपने काम की असली तस्वीरें हैं।',
+    submitReviewBtn: 'रिव्यू के लिए प्रोडक्ट्स भेजें',
+    uploadingCatalogs: 'कैटलॉग अपलोड हो रहा है...',
+    reviewSubmittedTitle: 'रिव्यू के लिए प्रोडक्ट्स सबमिट हो गए!',
+    reviewSubmittedDesc: 'हमारी टीम 24-48 घंटों के भीतर आपके भेजे गए प्रोडक्ट्स का रिव्यू करेगी।',
+    reviewInstruction: 'मैसेज आने के बाद, अपने व्हाट्सएप नंबर को कॉपी करें और स्टेप 2 अनलॉक करने के लिए पेमेंट की शर्तें टैब में जाकर वेरिफाई करें।',
+    goPaymentTermsStatus: 'पेमेंट की शर्तों का स्टेटस चेक करें',
+    clearCacheBtn: 'कैश साफ करें और फिर से टेस्ट करें ↺',
+    paymentTermsLocked: 'पेमेंट की शर्तें और रिटर्न पॉलिसी लॉक है',
+    paymentLockedDesc: 'वीव365 पेमेंट की शर्तों का एग्रीमेंट सिर्फ वेरिफाइड सप्लायर्स के लिए है। कृपया पहले स्टेप 1 (रिव्यू के लिए प्रोडक्ट्स भेजें) को पूरा करें। वेरिफिकेशन के बाद, स्टेप 2 अनलॉक करने के लिए नीचे अपना नंबर डालें।',
+    checkVerificationStatus: 'वेरिफिकेशन का स्टेटस चेक करें',
+    enterWhatsappPlaceholder: 'व्हाट्सएप/मोबाइल नंबर यहाँ लिखें',
+    checkStatusBtn: 'स्टेटस चेक करें 🔓',
+    checking: 'चेक किया जा रहा है...',
+    paymentTermsReturnPolicy: 'पेमेंट की शर्तें और रिटर्न पॉलिसी',
+    step2of3: 'वीव 365 · विक्रेता ऑनबोर्डिंग · स्टेप 2 का 3',
+    step2Desc: 'हर शर्त को ध्यान से पढ़ें। आगे बढ़ने के लिए आपको सभी शर्तों से सहमत होना होगा।',
+    secAPaymentTerms: 'क. पेमेंट की शर्तें',
+    secBReturnPolicy: 'ख. रिटर्न पॉलिसी',
+    secCListingStandards: 'ग. प्रोडक्ट लिस्टिंग के नियम',
+    secDGeneralTerms: 'घ. सामान्य नियम (जनरल टर्म्स)',
+    a1Title: 'क1 — डिलीवरी कन्फर्म होने के बाद पेमेंट',
+    a1Desc: 'कस्टमर को आर्डर डिलीवर होने के 3 दिन बाद पेमेंट रिलीज किया जाएगा।',
+    a2Title: 'क2 — विवाद (डिसप्यूट) के दौरान पेमेंट रोका जाएगा',
+    a2Desc: 'यदि डिलीवरी के 3 दिनों के भीतर कोई रिटर्न या क्वालिटी को लेकर शिकायत आती है, तो विवाद सुलझने तक पेमेंट होल्ड पर रहेगा।',
+    a3Title: 'क3 — ऑनबोर्डिंग के समय दिए गए बैंक खाते में पेमेंट',
+    a3Desc: 'पेमेंट ऑनबोर्डिंग के समय दिए गए बैंक अकाउंट में बैंक ट्रांसफर (NEFT/IMPS/UPI) के ज़रिए किया जाएगा। गलत बैंक डिटेल्स देने पर वीव 365 जिम्मेदार नहीं होगा।',
+    a4Title: 'क4 — कोई एडवांस पेमेंट नहीं',
+    a4Desc: 'वीव 365 कोई एडवांस पेमेंट नहीं देता है। सभी पेमेंट आर्डर डिलीवर होने के बाद ही प्रोसेस होंगे।',
+    a5Title: 'क5 — रिटर्न और डैमेज के पैसे काटे जाएंगे',
+    a5Desc: 'रिटर्न हुए प्रोडक्ट का अमाउंट और कूरियर चार्जेस आपके पेंडिंग पेमेंट्स में से काट लिए जाएंगे।',
+    b1Title: 'ख1 — रंग और क्वालिटी बिल्कुल फोटो जैसी होनी चाहिए',
+    b1Desc: 'भेजा गया आर्डर बिल्कुल स्टेप 1 में सबमिट किए गए फोटो के रंग, क्वालिटी और डिज़ाइन से मेल खाना चाहिए। किसी भी गड़बड़ी को सप्लायर की गलती माना जाएगा।',
+    b2Title: 'ख2 — क्वालिटी खराब या अलग होने पर प्रोडक्ट वापस सप्लायर के पास जाएगा',
+    b2Desc: 'यदि कस्टमर डिफेक्ट या अलग प्रोडक्ट होने के कारण रिटर्न करता है, तो वो प्रोडक्ट सप्लायर के खर्चे पर वापस भेजा जाएगा और उसका कोई पेमेंट नहीं मिलेगा।',
+    b3Title: 'ख3 — रिटर्न विंडो — डिलीवरी से 3 दिन तक',
+    b3Desc: 'कस्टमर डिलीवरी के 3 दिन के भीतर ही रिटर्न रिक्वेस्ट डाल सकते हैं। इसके बाद कोई रिटर्न स्वीकार नहीं होगा और आपका पेमेंट रिलीज कर दिया जाएगा।',
+    b4Title: 'ख4 — रास्ते में नुकसान या खराबी (डैमेज)',
+    b4Desc: 'कूरियर से लाते-ले जाते समय डैमेज होने पर दोनों पक्षों द्वारा जांच की जाएगी। सप्लायर की खराब पैकिंग की वजह से नुकसान होने पर पूरी जिम्मेदारी सप्लायर की होगी।',
+    b5Title: 'ख5 — कस्टमर का मन बदलने या गलत साइज आर्डर करने पर नुकसान नहीं',
+    b5Desc: 'यदि कस्टमर मन बदलने या गलत साइज आर्डर करने की वजह से रिटर्न करता है, तो इसका नुकसान सप्लायर को नहीं भुगतना पड़ेगा। इसका फैसला वीव 365 की अपनी पॉलिसी से होगा।',
+    c1Title: 'ग1 — किसी और प्लेटफार्म पर कम दाम में लिस्टिंग नहीं',
+    c1Desc: 'वीव 365 पर लिस्टेड प्रोडक्ट्स को आप किसी भी अन्य प्लेटफॉर्म (जैसे: मीशो, फ्लिपकार्ट या अपनी खुद की वेबसाइट) पर कम कीमत में नहीं बेच सकते।',
+    c2Title: 'ग2 — स्टॉक की जानकारी देना ज़रूरी है',
+    c2Desc: 'एक बार प्रोडक्ट लिस्ट होने के बाद, आपको उसका स्टॉक रखना होगा। स्टॉक खत्म होने पर तुरंत वीव 365 को बताएं ताकि आउट-ऑफ़-स्टॉक आर्डर न आएँ।',
+    c3Title: 'ग3 — तय समय के अंदर आर्डर भेजना (डिस्पैच)',
+    c3Desc: 'आपको तय समय सीमा के भीतर आर्डर भेजना होगा (आमतौर पर आर्डर कन्फर्म होने के 2 वर्किंग डेज में)। बार-बार देरी करने पर आपकी लिस्टिंग हटाई जा सकती है।',
+    d1Title: 'घ1 — डीलिस्ट (लिस्टिंग हटाने) का अधिकार',
+    d1Desc: 'यदि क्वालिटी ख़राब होती है, रिटर्न ज़्यादा आते हैं या नियम पूरे नहीं होते हैं, तो वीव 365 24 घंटे का नोटिस देकर किसी भी समय सप्लायर को हटा सकता है।',
+    d2Title: 'घ2 — कीमतों की गोपनीयता',
+    d2Desc: 'सप्लायर वीव 365 के होलसेल प्राइस, कमीशन और कामकाज से जुड़ी कोई भी जानकारी किसी बाहरी व्यक्ति को नहीं बता सकता।',
+    d3Title: 'घ3 — एग्रीमेंट कानूनी रूप से बाध्य है',
+    d3Desc: 'इस फॉर्म को सबमिट करके, सप्लायर मानता है कि ये नियम कानूनी रूप से लागू हैं। वीव 365 7 दिन पहले नोटिस देकर इन नियमों को बदल सकता है।',
+    agreeAllCheck: 'मैंने ऊपर लिखी पेमेंट की शर्तें, रिटर्न पॉलिसी, और बाकी नियम अच्छे से पढ़ लिए हैं और मैं इन सभी से सहमत हूँ। मैं समझता हूँ कि नियमों का उल्लंघन करने पर पेमेंट रोका जा सकता है।',
+    vendorFullNameLabel: 'विक्रेता (सप्लायर) का पूरा नाम',
+    asPerIdProof: 'आईडी प्रूफ (आधार/पैन) के अनुसार',
+    dateOfSubmission: 'जमा करने की तारीख',
+    agreeAndProceedBtn: 'सहमत हूँ और आगे बढ़ें →',
+    registeringAgreement: 'एग्रीमेंट रजिस्टर और डाउनलोड किया जा रहा है...',
+    step2Footer: 'स्टेप 2 का 3 — इस एग्रीमेंट कॉपी के वेरिफाई होने के तुरंत बाद ऑनबोर्डिंग फॉर्म खुल जाएगा।',
+    onboardingLocked: 'ऑनबोर्डिंग फॉर्म लॉक है',
+    onboardingLockedDesc: 'वीव365 का फुल ऑनबोर्डिंग फॉर्म सिर्फ वेरिफाइड सप्लायर्स के लिए ही है। कृपया पहले स्टेप 1 (रिव्यू के लिए प्रोडक्ट्स भेजें) को पूरा करें। वेरिफिकेशन के बाद, स्टेप 3 खोलने के लिए अपना नंबर डालें।',
+    paymentTermsRequired: 'पेमेंट एग्रीमेंट साइन करना ज़रूरी है',
+    paymentTermsReqDesc: 'स्टेप 3 (ऑनबोर्डिंग फॉर्म) आपके द्वारा स्टेप 2 (पेमेंट की शर्तें और रिटर्न पॉलिसी) को पूरा करने और सहमत होने के बाद ही खुलेगा।',
+    goReviewPaymentTermsBtn: 'स्टेप 2 पर जाएं — पेमेंट की शर्तें देखें',
+    step3of3: 'वीव 365 · विक्रेता ऑनबोर्डिंग · स्टेप 3 का 3',
+    onboardingFormTitle: 'विक्रेता (सप्लायर) ऑनबोर्डिंग फॉर्म',
+    onboardingFormDesc: 'सभी सेक्शन को पूरा भरें। वीव 365 टीम के वेरिफिकेशन के बाद आपकी लिस्टिंग लाइव हो जाएगी।',
+    secAPersonalDetails: 'क. पर्सनल डिटेल्स (व्यक्तिगत जानकारी)',
+    fullNameLabel: 'पूरा नाम',
+    asPerAadhaarPan: 'आधार कार्ड या पैन कार्ड के अनुसार',
+    whatsappLabel: 'व्हाट्सएप नंबर',
+    emailLabel: 'ईमेल पता',
+    altContactLabel: 'दूसरा कांटेक्ट नंबर (वैकल्पिक)',
+    secBBusinessDetails: 'ख. बिज़नेस डिटेल्स (व्यवसाय की जानकारी)',
+    businessShopName: 'बिज़नेस / दुकान का नाम',
+    tradeNamePlaceholder: 'दुकान या फर्म का नाम',
+    businessTypeLabel: 'बिज़नेस का प्रकार',
+    businessTypeSelect: 'चुनें',
+    businessTypeOpt1: 'खुद का काम / बुनकर (जुलाहा)',
+    businessTypeOpt2: 'पार्टनरशिप फर्म',
+    businessTypeOpt3: 'प्राइवेट लिमिटेड कंपनी',
+    businessTypeOpt4: 'बनाने वाले (मैन्युफैक्चरर)',
+    businessTypeOpt5: 'व्यापारी / थोक विक्रेता (होलसेलर)',
+    businessAddressLabel: 'दुकान/कारखाने का पता',
+    shopUnitAddressPlaceholder: 'गली, दुकान या यूनिट नंबर',
+    cityPlaceholderStep3: 'शहर',
+    pincodePlaceholderStep3: 'पिनकोड',
+    gstLabelStep3: 'जीएसटी नंबर (GST - यदि हो तो)',
+    panLabelStep3: 'पैन कार्ड नंबर',
+    yearsInBusinessLabel: 'काम का अनुभव (कितने साल से कर रहे हैं)',
+    yearsSelectPlaceholder: 'चुनें',
+    yearsOpt1: '1 साल से कम',
+    yearsOpt2: '1 – 3 साल',
+    yearsOpt3: '3 – 7 साल',
+    yearsOpt4: '7 – 15 साल',
+    yearsOpt5: '15 साल से ज़्यादा',
+    secCProductDetailsStep3: 'ग. प्रोडक्ट डिटेल्स',
+    categoriesStep3Label: 'कैटेगरीज़ जो आप बनाते/बेचते हैं (सभी सही विकल्पों पर टिक करें)',
+    pricePerPiece: 'एक पीस की होलसेल प्राइस रेंज',
+    monthlyCapacityStep3: '1 महीने में सप्लाई करने की कैपेसिटी',
+    monthlyOpt1: '20 पीस तक',
+    monthlyOpt2: '20 – 50 पीस',
+    monthlyOpt3: '50 – 100 पीस',
+    monthlyOpt4: '100 – 300 पीस',
+    monthlyOpt5: '300 पीस से ज़्यादा',
+    fabricSpecialisation: 'कपड़ा / बुनाई की खासियत (जैसे: कतान सिल्क, जॉर्जेट, ऑर्गेन्जा, चंदेरी)',
+    specialisationPlaceholder: 'अपने कपड़े/बुनाई की खासियत बताएं',
+    secDDispatchOps: 'घ. डिस्पैच और काम करने का समय',
+    dispatchTimelineLabel: 'ऑर्डर आने के कितने समय बाद पार्सल भेजेंगे (डिस्पैच टाइम)',
+    dispatchOpt1: 'उसी दिन (Same Day)',
+    dispatchOpt2: '1 वर्किंग डे में',
+    dispatchOpt3: '2 वर्किंग डेज़ में',
+    dispatchOpt4: '3 वर्किंग डेज़ में',
+    preferredCourierLabel: 'पसंदीदा कूरियर पार्टनर',
+    courierOpt1: 'Delhivery',
+    courierOpt2: 'Blue Dart',
+    courierOpt3: 'DTDC',
+    courierOpt4: 'India Post (सरकारी डाक)',
+    courierOpt5: 'Shiprocket',
+    courierOpt6: 'कोई प्राथमिकता नहीं',
+    dispatchLocationRadio: 'डिस्पैच का पता (क्या पिकअप का पता दुकान के पते जैसा ही है?)',
+    yesSameAddress: 'हाँ, वही पता है',
+    differentAddress: 'नहीं, अलग पता है',
+    pickupAddressPlaceholder: 'पिकअप / पार्सल भेजने का पता',
+    secEBankDetails: 'ङ. बैंक डिटेल्स (बैंक खाते की जानकारी)',
+    forPaymentDisbursal: 'पेमेंट सीधे बैंक में भेजने के लिए',
+    accountHolderName: 'खाताधारक का नाम',
+    asPerBankRecords: 'बैंक पासबुक के अनुसार',
+    bankNameLabel: 'बैंक का नाम',
+    bankNamePlaceholder: 'जैसे: SBI, HDFC, ICICI, Axis',
+    accountNumberLabel: 'अकाउंट (खाता) नंबर',
+    accountNumberPlaceholder: 'खाता संख्या यहाँ दर्ज करें',
+    ifscLabel: 'आईएफएससी (IFSC) कोड',
+    ifscPlaceholder: 'जैसे: SBIN0001234',
+    upiLabel: 'यूपीआई आईडी (UPI ID - वैकल्पिक - जल्दी पेमेंट के लिए)',
+    upiPlaceholder: 'yourname@upi',
+    bankInfoText: 'गलत बैंक डिटेल्स देने की वजह से पेमेंट रुकने पर वीव 365 की कोई जिम्मेदारी नहीं होगी। कृपया एक बार दोबारा जांच लें।',
+    secFIdentityVerification: 'च. पहचान और डॉक्यूमेंट्स वेरिफिकेशन',
+    aadhaarLabel: 'आधार कार्ड नंबर',
+    aadhaarPlaceholder: 'XXXX XXXX XXXX',
+    panVerifyLabel: 'पैन कार्ड नंबर',
+    panVerifyPlaceholder: 'AAAAA0000A',
+    aadhaarUploadLabel: 'आधार कार्ड / आईडी प्रूफ अपलोड करें',
+    chequeUploadLabel: 'कैंसिल चेक (Cancelled Cheque) अपलोड करें',
+    fileUploadSpecs: 'JPG, PNG या PDF, ज़्यादा से ज़्यादा 2MB',
+    uploadedSuccessAadhaar: '✓ आधार कार्ड अपलोड हो गया',
+    uploadedSuccessCheque: '✓ चेक अपलोड हो गया',
+    declarationCheckbox: 'मैं पुष्टि करता हूँ कि दी गई सभी जानकारी बिल्कुल सही है। मैंने स्टेप 2 में पेमेंट की शर्तें और रिटर्न पॉलिसी पढ़ ली हैं और मैं उनसे पूरी तरह सहमत हूँ। गलत जानकारी देने पर हमेशा के लिए ब्लैकलिस्ट किया जा सकता है।',
+    submitOnboardingFormBtn: 'ऑनबोर्डिंग फॉर्म सबमिट करें →',
+    submittingOnboardingForm: 'ऑनबोर्डिंग फॉर्म सबमिट हो रहा है...',
+    step3Footer: 'डॉक्यूमेंट्स वेरिफिकेशन के बाद खाता एक्टिव होने में 3 से 5 वर्किंग डेज़ लगते हैं।',
+    onboardingSuccessTitle: 'अप्लाई करने के लिए बहुत-बहुत धन्यवाद!',
+    onboardingSuccessDesc: 'हमें आपका ऑनबोर्डिंग फॉर्म और डॉक्यूमेंट्स मिल गए हैं। हमारी टीम जल्द ही आपके अकाउंट को वेरिफाई करके एक्टिवेट कर देगी।',
+    onboardingSuccessSub: 'डॉक्यूमेंट्स वेरिफिकेशन के बाद खाता एक्टिव होने में 3 से 5 वर्किंग डेज़ लगते हैं।',
+    agreementSigned: 'एग्रीमेंट साइन हो गया',
+    agreementSignedDesc: 'आपका बी2बी मर्चेंट एग्रीमेंट साइन हो गया है। कृपया आगे बढ़ने के लिए अपने रिकॉर्ड के लिए कॉपी डाउनलोड करें।',
+    downloadBtn: 'एग्रीमेंट डाउनलोड करें',
+    savingDownloading: 'डाउनलोड हो रहा है...',
+    goBack: 'वापस जाएं',
+    heroTitleText: 'विश्वसनीय पार्टनर रजिस्ट्रेशन',
+    heroDescText: 'वीव 365 टीम द्वारा रिव्यू के लिए अपने काम, कैपेसिटी और प्रोडक्ट की जानकारी यहाँ भेजें।',
+    catSaree: 'साड़ी',
+    catSuit: 'सूट',
+    catDupatta: 'दुपट्टा',
+    catLehenga: 'लहंगा',
+    catFabric: 'कपड़ा (फैब्रिक)',
+    catAccessories: 'एक्सेसरीज़',
+    catSarees: 'साड़ियाँ',
+    catSuits: 'सूट',
+    catDupattas: 'दुपट्टे',
+    catLehengas: 'लहंगे',
+    catFabrics: 'कपड़ा (फैब्रिक)',
+    catAccessoriesPlural: 'एक्सेसरीज़',
+    priceOptSelect: 'चुनें',
+    priceOptUnder500: '₹500 से कम',
+    priceOpt500_999: '₹500 – ₹999',
+    priceOpt1000_1999: '₹1,000 – ₹1,999',
+    priceOpt2000_4999: '₹2,000 – ₹4,999',
+    priceOpt5000_9999: '₹5,000 – ₹9,999',
+    priceOpt10000Plus: '₹10,000 से ज़्यादा',
+    dispatchOptSelect: 'चुनें',
+    dispatchOptSameDay: 'उसी दिन (Same Day)',
+    dispatchOpt1Day: '1 वर्किंग डे में',
+    dispatchOpt2Days: '2 वर्किंग डेज़ में',
+    dispatchOpt3Days: '3 वर्किंग डेज़ में',
+    courierOptSelect: 'चुनें',
+    courierOptDelhivery: 'Delhivery',
+    courierOptBlueDart: 'Blue Dart',
+    courierOptDtdc: 'DTDC',
+    courierOptIndiaPost: 'India Post (सरकारी डाक)',
+    courierOptShiprocket: 'Shiprocket',
+    courierOptNoPref: 'कोई प्राथमिकता नहीं',
+  }
+};
+
 const productionCapacities = ['Small Scale', 'Medium Scale', 'Large Scale'];
 const experienceRanges = ['0-2 Years', '3-5 Years', '5-10 Years', '10+ Years'];
 const dispatchCapabilities = ['Pan India', 'Export Orders', 'Custom Orders', 'Assorted Sets'];
@@ -97,6 +579,27 @@ const getLocalDateString = () => {
 
 export function TrustedPartnerRegistrationPage() {
   const heroImage = assetSrc(artisanImage);
+  
+  // Language state & helper
+  const [lang, setLang] = useState(() => {
+    try {
+      return localStorage.getItem('weave365_lang') || 'en';
+    } catch (e) {
+      return 'en';
+    }
+  });
+
+  const t = (key) => {
+    return translations[lang]?.[key] || translations['en']?.[key] || key;
+  };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('weave365_lang', lang);
+    } catch (e) {
+      console.warn('Failed to save language choice in localStorage:', e);
+    }
+  }, [lang]);
   
   // Tab states
   const [activeTab, setActiveTab] = useState('product-review'); // 'product-review', 'payment-terms', or 'onboarding'
@@ -1081,42 +1584,36 @@ export function TrustedPartnerRegistrationPage() {
   };
 
   return (
-    <div className="trusted-registration-page">
+    <div className={`trusted-registration-page ${lang === 'hi' ? 'lang-hi' : ''}`}>
       <section className="trusted-registration-hero" aria-labelledby="trusted-registration-heading">
         <img src={heroImage} alt="Weaver preparing textile products for Weave 365" width={1920} height={400} loading="lazy" decoding="async" />
         <div className="trusted-registration-hero-content">
-          <h1 id="trusted-registration-heading">Trusted Partner Registration</h1>
-          <p>Share your craft, capacity, and product details for manual review by the Weave 365 team.</p>
+          <h1 id="trusted-registration-heading">{t('heroTitleText')}</h1>
+          <p>{t('heroDescText')}</p>
         </div>
       </section>
 
       <section className="vendor-onboarding-section trusted-registration-section" id="trusted-partner-registration">
         <div className="vendor-onboarding-shell">
-          <aside className="vendor-onboarding-aside" aria-label="Trusted partner approval process">
+          <aside className="vendor-onboarding-aside" aria-label={t('verificationOnboarding')}>
             <div className="vendor-aside-header">
               <ShieldCheck className="vendor-aside-icon" size={32} />
-              <h2>Verification & Onboarding</h2>
+              <h2>{t('verificationOnboarding')}</h2>
             </div>
-            <p>
-              Apply to list your products on Weave 365. Every supplier is verified before products
-              go live, so buyers get consistent quality and partners get a serious marketplace.
-            </p>
+            <p>{t('asideDesc')}</p>
 
             <div className="vendor-approval-flow">
               {approvalSteps.map((step, index) => (
                 <div className="vendor-approval-step" key={step}>
                   <span>{String(index + 1).padStart(2, '0')}</span>
-                  <strong>{step}</strong>
+                  <strong>{t('step' + String(index + 1).padStart(2, '0'))}</strong>
                 </div>
               ))}
             </div>
 
             <div className="vendor-quality-note">
               <BadgeCheck size={20} />
-              <p>
-                No instant self-service onboarding. Our team reviews fulfillment capability,
-                product quality, and verification details before approval.
-              </p>
+              <p>{t('noInstantSelfService')}</p>
             </div>
           </aside>
 
@@ -1128,7 +1625,7 @@ export function TrustedPartnerRegistrationPage() {
                 className={`vendor-tab-btn ${activeTab === 'product-review' ? 'active' : ''}`}
                 onClick={() => setActiveTab('product-review')}
               >
-                1. Submit Products for Review
+                {t('tab1Submit')}
               </button>
               <button 
                 type="button"
@@ -1137,7 +1634,7 @@ export function TrustedPartnerRegistrationPage() {
               >
                 {!isProfileUnlocked && <Lock size={14} className="tab-lock-icon" />}
                 {isProfileUnlocked && <Unlock size={14} className="tab-unlock-icon" />}
-                2. Payment Terms
+                {t('tab2Payment')}
               </button>
               <button 
                 type="button"
@@ -1146,7 +1643,15 @@ export function TrustedPartnerRegistrationPage() {
               >
                 {(!isProfileUnlocked || !isPaymentTermsAgreed) && <Lock size={14} className="tab-lock-icon" />}
                 {(isProfileUnlocked && isPaymentTermsAgreed) && <Unlock size={14} className="tab-unlock-icon" />}
-                3. Onboarding Form
+                {t('tab3Onboarding')}
+              </button>
+              <button 
+                type="button"
+                className="vendor-tab-btn translate-toggle-btn"
+                onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
+              >
+                <Languages size={16} className="tab-translate-icon" />
+                {lang === 'en' ? 'हिन्दी में बदलें' : 'Switch to English'}
               </button>
             </div>
 
@@ -1155,11 +1660,11 @@ export function TrustedPartnerRegistrationPage() {
               reviewSubmitted ? (
                 <div className="vendor-success-card" role="status" aria-live="polite">
                   <CheckCircle2 size={42} />
-                  <h2>Products Submitted for Review!</h2>
-                  <p>Our verification team will review your product catalog within 24-48 hours.</p>
+                  <h2>{t('reviewSubmittedTitle')}</h2>
+                  <p>{t('reviewSubmittedDesc')}</p>
                   
                   <div className="status-instructions-note">
-                    <p>Once approved, copy your submitted WhatsApp number and verify it under the <strong>Advanced Profile</strong> tab to unlock step 2.</p>
+                    <p dangerouslySetInnerHTML={{ __html: t('reviewInstruction') }}></p>
                   </div>
 
                   <button 
@@ -1167,7 +1672,7 @@ export function TrustedPartnerRegistrationPage() {
                     className="vendor-submit-button"
                     onClick={() => setActiveTab('payment-terms')}
                   >
-                    Go to Payment Terms Status Check
+                    {t('goPaymentTermsStatus')}
                   </button>
 
                   {process.env.NODE_ENV === 'development' && (
@@ -1176,7 +1681,7 @@ export function TrustedPartnerRegistrationPage() {
                       className="clear-test-cache-link"
                       onClick={handleClearCache}
                     >
-                      Clear cache & test again ↺
+                      {t('clearCacheBtn')}
                     </button>
                   )}
                 </div>
@@ -1185,16 +1690,16 @@ export function TrustedPartnerRegistrationPage() {
                   <div className="vendor-form-heading">
                     <ClipboardCheck size={24} />
                     <div>
-                      <h2>Product Review Submission (Step 1)</h2>
-                      <p>Upload a few sample products to get catalog approval.</p>
+                      <h2>{t('step1Title')}</h2>
+                      <p>{t('step1Desc')}</p>
                     </div>
                   </div>
 
                   <fieldset className="vendor-form-section">
-                    <legend>Contact Information</legend>
+                    <legend>{t('contactInfo')}</legend>
                     <div className="vendor-form-grid">
                       <label>
-                        Full Name *
+                        {t('fullName')}
                         <input
                           type="text"
                           value={reviewForm.fullName}
@@ -1206,12 +1711,12 @@ export function TrustedPartnerRegistrationPage() {
                               .join(' ');
                             setReviewForm((prev) => ({ ...prev, fullName: capitalized }));
                           }}
-                          placeholder="Enter your full name"
+                          placeholder={t('fullNamePlaceholder')}
                           required
                         />
                       </label>
                       <label>
-                        WhatsApp Number *
+                        {t('whatsappNumber')}
                         <input
                           type="tel"
                           value={reviewForm.whatsapp}
@@ -1219,15 +1724,15 @@ export function TrustedPartnerRegistrationPage() {
                             const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
                             setReviewForm((prev) => ({ ...prev, whatsapp: raw }));
                           }}
-                          placeholder="9876543210"
+                          placeholder={t('whatsappPlaceholder')}
                           pattern="[0-9]{10}"
                           inputMode="numeric"
-                          title="Enter a 10-digit WhatsApp number"
+                          title={t('whatsappNumber')}
                           required
                         />
                       </label>
                       <label>
-                        City *
+                        {t('city')}
                         <input
                           type="text"
                           value={reviewForm.city}
@@ -1239,12 +1744,12 @@ export function TrustedPartnerRegistrationPage() {
                               .join(' ');
                             setReviewForm((prev) => ({ ...prev, city: capitalized }));
                           }}
-                          placeholder="Varanasi, Kolkata, etc."
+                          placeholder={t('cityPlaceholder')}
                           required
                         />
                       </label>
                       <label>
-                        Pincode *
+                        {t('pincode')}
                         <input
                           type="text"
                           value={reviewForm.pincode}
@@ -1252,10 +1757,10 @@ export function TrustedPartnerRegistrationPage() {
                             const raw = e.target.value.replace(/\D/g, '').slice(0, 6);
                             setReviewForm((prev) => ({ ...prev, pincode: raw }));
                           }}
-                          placeholder="221001"
+                          placeholder={t('pincodePlaceholder')}
                           pattern="\d{6}"
                           inputMode="numeric"
-                          title="Enter a 6-digit postal pincode"
+                          title={t('pincode')}
                           required
                         />
                       </label>
@@ -1263,10 +1768,10 @@ export function TrustedPartnerRegistrationPage() {
                   </fieldset>
 
                   <fieldset className="vendor-form-section">
-                    <legend>Catalog Details</legend>
+                    <legend>{t('catalogDetails')}</legend>
                     
                     <div className="review-category-group">
-                      <span className="group-label">Product Categories *</span>
+                      <span className="group-label">{t('productCategories')}</span>
                       <div className="review-category-grid">
                         {productCategoriesList.map((cat) => {
                           const isChecked = reviewForm.categories.includes(cat.name);
@@ -1278,7 +1783,7 @@ export function TrustedPartnerRegistrationPage() {
                               onClick={() => toggleReviewCategory(cat.name)}
                             >
                               <span className="chip-emoji">{cat.emoji}</span>
-                              <span className="chip-text">{cat.name}</span>
+                              <span className="chip-text">{t('cat' + cat.name)}</span>
                             </button>
                           );
                         })}
@@ -1287,26 +1792,26 @@ export function TrustedPartnerRegistrationPage() {
 
                     <div className="vendor-form-grid" style={{ marginTop: '16px' }}>
                       <label className="vendor-form-wide">
-                        Approximate Price Range *
+                        {t('priceRangeLabel')}
                         <select
                           value={reviewForm.priceRange}
                           onChange={(e) => setReviewForm((prev) => ({ ...prev, priceRange: e.target.value }))}
                           required
                         >
-                          <option value="">Select price range</option>
-                          <option value="Under ₹1,000">Under ₹1,000</option>
-                          <option value="₹1,000 - ₹3,000">₹1,000 - ₹3,000</option>
-                          <option value="₹3,000 - ₹5,000">₹3,000 - ₹5,000</option>
-                          <option value="₹5,000 - ₹10,000">₹5,000 - ₹10,000</option>
-                          <option value="₹10,000+">₹10,000+</option>
+                          <option value="">{t('priceRangeSelect')}</option>
+                          <option value="Under ₹1,000">{t('priceRangeUnder1k')}</option>
+                          <option value="₹1,000 - ₹3,000">{t('priceRange1k3k')}</option>
+                          <option value="₹3,000 - ₹5,000">{t('priceRange3k5k')}</option>
+                          <option value="₹5,000 - ₹10,000">{t('priceRange5k10k')}</option>
+                          <option value="₹10,000+">{t('priceRange10kPlus')}</option>
                         </select>
                       </label>
                     </div>
                   </fieldset>
 
                   <fieldset className="vendor-form-section">
-                    <legend>Sample Product Photos *</legend>
-                    <p className="upload-subtitle">Upload exactly 4 clear sample photos of your sarees/textiles (e.g., cover, details, back, borders) to submit for review.</p>
+                    <legend>{t('samplePhotos')}</legend>
+                    <p className="upload-subtitle">{t('uploadSubtitle')}</p>
                     
                     {/* Responsive Upload Grid */}
                     <div className="review-images-grid">
@@ -1341,8 +1846,8 @@ export function TrustedPartnerRegistrationPage() {
                           ) : (
                             <div className="review-image-placeholder">
                               <Upload size={24} className="placeholder-icon" />
-                              <span className="slot-title">Photo Slot {index + 1}</span>
-                              <span className="slot-helper">Click or Drag & Drop</span>
+                              <span className="slot-title">{t('photoSlot')} {index + 1}</span>
+                              <span className="slot-helper">{t('dragDrop')}</span>
                             </div>
                           )}
                         </div>
@@ -1353,13 +1858,13 @@ export function TrustedPartnerRegistrationPage() {
                     <div className="review-rules-card">
                       <div className="rules-header">
                         <AlertCircle size={16} />
-                        <h4>Photo Upload Requirements</h4>
+                        <h4>{t('uploadReqs')}</h4>
                       </div>
                       <ul>
-                        <li>All <strong>4 image slots</strong> must be uploaded to submit the application</li>
-                        <li>Strict maximum file size: <strong>1MB</strong> per image</li>
-                        <li>Format: JPEG, PNG or WebP accepted</li>
-                        <li>Ensure photos are shot in bright natural light showing weaves clearly</li>
+                        <li>{t('req1')}</li>
+                        <li>{t('req2')}</li>
+                        <li>{t('req3')}</li>
+                        <li>{t('req4')}</li>
                       </ul>
                     </div>
                   </fieldset>
@@ -1378,17 +1883,17 @@ export function TrustedPartnerRegistrationPage() {
                       onChange={(e) => setReviewForm((prev) => ({ ...prev, agreement: e.target.checked }))}
                       required
                     />
-                    I confirm these photos show authentic products produced by my business.
+                    {t('confirmPhotosAuth')}
                   </label>
 
                   <button type="submit" className="vendor-submit-button" disabled={reviewSubmitting}>
                     {reviewSubmitting ? (
                       <>
                         <RefreshCw size={18} className="spinner" />
-                        Uploading Catalogs...
+                        {t('uploadingCatalogs')}
                       </>
                     ) : (
-                      'Submit Products for Review'
+                      t('submitReviewBtn')
                     )}
                   </button>
                 </form>
@@ -1403,25 +1908,21 @@ export function TrustedPartnerRegistrationPage() {
                     <div className="lock-illustration">
                       <Lock size={64} className="padlock-icon animate-pulse" />
                     </div>
-                    <h2>Payment Terms & Return Policy Locked</h2>
-                    <p className="lock-desc">
-                      The Weave365 Payment Terms agreement is available exclusively to verified suppliers. 
-                      Please complete <strong>Step 1 (Submit Products for Review)</strong> first. 
-                      Once verified, enter your registered number below to unlock step 2.
-                    </p>
+                    <h2>{t('paymentTermsLocked')}</h2>
+                    <p className="lock-desc">{t('paymentLockedDesc')}</p>
 
                     <form className="status-check-card" onSubmit={verifyAndUnlockProfile}>
-                      <h3>Check Review Verification Status</h3>
+                      <h3>{t('checkVerificationStatus')}</h3>
                       <div className="status-input-group">
                         <input
                           type="tel"
                           value={unlockMobile}
                           onChange={(e) => setUnlockMobile(e.target.value)}
-                          placeholder="Enter WhatsApp/Mobile number"
+                          placeholder={t('enterWhatsappPlaceholder')}
                           required
                         />
                         <button type="submit" className="status-verify-btn" disabled={isVerifyingUnlock}>
-                          {isVerifyingUnlock ? 'Checking...' : 'Check Status 🔓'}
+                          {isVerifyingUnlock ? t('checking') : t('checkStatusBtn')}
                         </button>
                       </div>
                       {unlockMessage && <p className="status-msg success">{unlockMessage}</p>}
@@ -1435,25 +1936,25 @@ export function TrustedPartnerRegistrationPage() {
                         onClick={handleClearCache}
                         style={{ marginTop: '24px' }}
                       >
-                        Clear cache & test again ↺
+                        {t('clearCacheBtn')}
                       </button>
                     )}
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handlePaymentTermsSubmit}>
-                  <h2 className="sr-only">Weave 365 vendor payment terms and return policy agreement form — Step 2 of vendor onboarding</h2>
+                  <h2 className="sr-only">{t('paymentTermsReturnPolicy')}</h2>
 
                   <div className="onboarding-step-wrapper">
                     <div>
                       <span className="onboarding-step-meta">
-                        Weave 365 · Vendor onboarding · Step 2 of 3
+                        {t('step2of3')}
                       </span>
                       <h3 className="onboarding-step-title">
-                        Payment terms & return policy
+                        {t('paymentTermsReturnPolicy')}
                       </h3>
                       <p className="onboarding-step-desc">
-                        Read each clause carefully. You must agree to all terms before onboarding proceeds.
+                        {t('step2Desc')}
                       </p>
                     </div>
 
@@ -1462,42 +1963,42 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-currency-rupee" aria-hidden="true"></i>
-                          <span>A. Payment terms</span>
+                          <span>{t('secAPaymentTerms')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.a1} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, a1: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">A1 — Payment after delivery confirmation</p>
-                              <p className="onboarding-clause-desc">Payment will be released 3 days after successful delivery to the customer.</p>
+                              <p className="onboarding-clause-title">{t('a1Title')}</p>
+                              <p className="onboarding-clause-desc">{t('a1Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.a2} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, a2: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">A2 — Payment held during dispute period</p>
-                              <p className="onboarding-clause-desc">If a return or quality dispute is raised within 3 days of delivery, payment will be withheld until the dispute is resolved.</p>
+                              <p className="onboarding-clause-title">{t('a2Title')}</p>
+                              <p className="onboarding-clause-desc">{t('a2Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.a3} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, a3: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">A3 — Payment mode as agreed at onboarding</p>
-                              <p className="onboarding-clause-desc">Payment will be made via bank transfer (NEFT/IMPS/UPI) to the account details provided during onboarding. Weave 365 is not liable for errors due to incorrect account details submitted by the vendor.</p>
+                              <p className="onboarding-clause-title">{t('a3Title')}</p>
+                              <p className="onboarding-clause-desc">{t('a3Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.a4} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, a4: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">A4 — No advance payment</p>
-                              <p className="onboarding-clause-desc">Weave 365 does not make advance payments. All payments are processed post-delivery only.</p>
+                              <p className="onboarding-clause-title">{t('a4Title')}</p>
+                              <p className="onboarding-clause-desc">{t('a4Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.a5} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, a5: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">A5 — Deduction for returns and damage</p>
-                              <p className="onboarding-clause-desc">Any returned product amount and associated courier charges will be deducted from the vendor's pending payment before disbursement.</p>
+                              <p className="onboarding-clause-title">{t('a5Title')}</p>
+                              <p className="onboarding-clause-desc">{t('a5Desc')}</p>
                             </div>
                           </label>
                         </div>
@@ -1507,42 +2008,42 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-arrow-back-up" aria-hidden="true"></i>
-                          <span>B. Return policy</span>
+                          <span>{t('secBReturnPolicy')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.b1} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, b1: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">B1 — Color and quality must match approved photos</p>
-                              <p className="onboarding-clause-desc">The product dispatched must exactly match the color, quality, and finish shown in the approved product images submitted during Step 1. Any deviation will be treated as a vendor-side defect.</p>
+                              <p className="onboarding-clause-title">{t('b1Title')}</p>
+                              <p className="onboarding-clause-desc">{t('b1Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.b2} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, b2: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">B2 — Returns due to quality or color mismatch go back to vendor</p>
-                              <p className="onboarding-clause-desc">If a customer return is raised due to quality defect, color variation, or mismatch with listing photos, the returned product will be sent back to the vendor at the vendor's expense. No payment will be made for such orders.</p>
+                              <p className="onboarding-clause-title">{t('b2Title')}</p>
+                              <p className="onboarding-clause-desc">{t('b2Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.b3} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, b3: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">B3 — Return window — 3 days from delivery</p>
-                              <p className="onboarding-clause-desc">Customers may raise a return request within 3 days of delivery. Returns raised after this window will not be accepted and vendor payment will be released normally.</p>
+                              <p className="onboarding-clause-title">{t('b3Title')}</p>
+                              <p className="onboarding-clause-desc">{t('b3Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.b4} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, b4: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">B4 — Defective or damaged in transit</p>
-                              <p className="onboarding-clause-desc">If a product is damaged during courier transit, liability will be assessed jointly. Vendor must ensure proper packaging. Products with inadequate packaging will be vendor's liability.</p>
+                              <p className="onboarding-clause-title">{t('b4Title')}</p>
+                              <p className="onboarding-clause-desc">{t('b4Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.b5} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, b5: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">B5 — No return for buyer's remorse or size preference</p>
-                              <p className="onboarding-clause-desc">Returns due to customer preference change, wrong size ordered, or buyer's remorse will not be charged to the vendor. These are handled by Weave 365's customer policy separately.</p>
+                              <p className="onboarding-clause-title">{t('b5Title')}</p>
+                              <p className="onboarding-clause-desc">{t('b5Desc')}</p>
                             </div>
                           </label>
                         </div>
@@ -1552,28 +2053,28 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-shield-check" aria-hidden="true"></i>
-                          <span>C. Product & listing standards</span>
+                          <span>{t('secCListingStandards')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.c1} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, c1: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">C1 — No duplicate listings from other platforms</p>
-                              <p className="onboarding-clause-desc">Products listed on Weave 365 must not be sold at a lower price on any other platform (Meesho, Flipkart, own website, etc.) during the period of active listing.</p>
+                              <p className="onboarding-clause-title">{t('c1Title')}</p>
+                              <p className="onboarding-clause-desc">{t('c1Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.c2} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, c2: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">C2 — Stock availability obligation</p>
-                              <p className="onboarding-clause-desc">Once a product is listed, the vendor must maintain stock availability. If stock runs out, the vendor must notify Weave 365 immediately to avoid customer orders being placed on out-of-stock items.</p>
+                              <p className="onboarding-clause-title">{t('c2Title')}</p>
+                              <p className="onboarding-clause-desc">{t('c2Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.c3} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, c3: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">C3 — Dispatch within agreed timeline</p>
-                              <p className="onboarding-clause-desc">Vendor must dispatch orders within the agreed timeline (default: 2 business days from order confirmation). Repeated delays may result in delisting.</p>
+                              <p className="onboarding-clause-title">{t('c3Title')}</p>
+                              <p className="onboarding-clause-desc">{t('c3Desc')}</p>
                             </div>
                           </label>
                         </div>
@@ -1583,28 +2084,28 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-gavel" aria-hidden="true"></i>
-                          <span>D. General terms</span>
+                          <span>{t('secDGeneralTerms')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.d1} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, d1: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">D1 — Right to delist</p>
-                              <p className="onboarding-clause-desc">Weave 365 reserves the right to delist a vendor's products at any time if quality standards, return rates, or these terms are not met, with 24 hours notice.</p>
+                              <p className="onboarding-clause-title">{t('d1Title')}</p>
+                              <p className="onboarding-clause-desc">{t('d1Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.d2} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, d2: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">D2 — Confidentiality of pricing</p>
-                              <p className="onboarding-clause-desc">Vendor agrees not to disclose Weave 365's wholesale pricing, commission structure, or internal operational details to any third party.</p>
+                              <p className="onboarding-clause-title">{t('d2Title')}</p>
+                              <p className="onboarding-clause-desc">{t('d2Desc')}</p>
                             </div>
                           </label>
                           <label className="onboarding-clause-label">
                             <input type="checkbox" checked={paymentAgreement.d3} onChange={(e) => setPaymentAgreement(prev => ({ ...prev, d3: e.target.checked, agreeAll: false }))} className="onboarding-clause-checkbox" />
                             <div>
-                              <p className="onboarding-clause-title">D3 — Agreement is binding</p>
-                              <p className="onboarding-clause-desc">By submitting this form, the vendor agrees that these terms are legally binding. Weave 365 reserves the right to update these terms with 7 days prior notice.</p>
+                              <p className="onboarding-clause-title">{t('d3Title')}</p>
+                              <p className="onboarding-clause-desc">{t('d3Desc')}</p>
                             </div>
                           </label>
                         </div>
@@ -1615,25 +2116,25 @@ export function TrustedPartnerRegistrationPage() {
                       <label className="onboarding-agree-all-label">
                         <input type="checkbox" id="agreeAll" checked={paymentAgreement.agreeAll} onChange={(e) => handleAgreeAllChange(e.target.checked)} className="onboarding-agree-all-checkbox" />
                         <span className="onboarding-agree-all-text">
-                          I have read and agree to all payment terms, return policy, product standards, and general terms listed above. I understand that violation of these terms may result in payment hold or delisting.
+                          {t('agreeAllCheck')}
                         </span>
                       </label>
                     </div>
 
                     <div className="onboarding-signature-grid">
                       <div className="onboarding-signature-field">
-                        <label className="onboarding-signature-label">Vendor full name</label>
+                        <label className="onboarding-signature-label">{t('vendorFullNameLabel')}</label>
                         <input 
                           type="text" 
                           value={paymentAgreement.vendorName} 
                           onChange={(e) => setPaymentAgreement(prev => ({ ...prev, vendorName: e.target.value }))} 
-                          placeholder="As per ID proof" 
+                          placeholder={t('asPerIdProof')} 
                           required 
                           className="onboarding-signature-input"
                         />
                       </div>
                       <div className="onboarding-signature-field">
-                        <label className="onboarding-signature-label">Date of Submission</label>
+                        <label className="onboarding-signature-label">{t('dateOfSubmission')}</label>
                         <input 
                           type="date" 
                           value={paymentAgreement.date} 
@@ -1656,14 +2157,14 @@ export function TrustedPartnerRegistrationPage() {
                       {paymentSubmitting ? (
                         <>
                           <RefreshCw size={18} className="spinner" />
-                          Registering & Downloading Agreement...
+                          {t('registeringAgreement')}
                         </>
                       ) : (
-                        'I agree to all terms — proceed to onboarding & download copy →'
+                        t('agreeAndProceedBtn')
                       )}
                     </button>
 
-                    <p className="onboarding-step-footer">Step 2 of 3 — Onboarding form will be unlocked immediately after this agreement copy is verified.</p>
+                    <p className="onboarding-step-footer">{t('step2Footer')}</p>
                   </div>
                 </form>
               )
@@ -1677,25 +2178,21 @@ export function TrustedPartnerRegistrationPage() {
                     <div className="lock-illustration">
                       <Lock size={64} className="padlock-icon animate-pulse" />
                     </div>
-                    <h2>Onboarding Form Locked</h2>
-                    <p className="lock-desc">
-                      The Weave365 Full Vendor Onboarding profile is available exclusively to verified suppliers. 
-                      Please complete <strong>Step 1 (Submit Products for Review)</strong> first. 
-                      Once verified, enter your registered number below to unlock step 3.
-                    </p>
+                    <h2>{t('onboardingLocked')}</h2>
+                    <p className="lock-desc">{t('onboardingLockedDesc')}</p>
 
                     <form className="status-check-card" onSubmit={verifyAndUnlockProfile}>
-                      <h3>Check Review Verification Status</h3>
+                      <h3>{t('checkVerificationStatus')}</h3>
                       <div className="status-input-group">
                         <input
                           type="tel"
                           value={unlockMobile}
                           onChange={(e) => setUnlockMobile(e.target.value)}
-                          placeholder="Enter WhatsApp/Mobile number"
+                          placeholder={t('enterWhatsappPlaceholder')}
                           required
                         />
                         <button type="submit" className="status-verify-btn" disabled={isVerifyingUnlock}>
-                          {isVerifyingUnlock ? 'Checking...' : 'Check Status 🔓'}
+                          {isVerifyingUnlock ? t('checking') : t('checkStatusBtn')}
                         </button>
                       </div>
                       {unlockMessage && <p className="status-msg success">{unlockMessage}</p>}
@@ -1709,7 +2206,7 @@ export function TrustedPartnerRegistrationPage() {
                         onClick={handleClearCache}
                         style={{ marginTop: '24px' }}
                       >
-                        Clear cache & test again ↺
+                        {t('clearCacheBtn')}
                       </button>
                     )}
                   </div>
@@ -1720,27 +2217,24 @@ export function TrustedPartnerRegistrationPage() {
                     <div className="lock-illustration">
                       <Lock size={64} className="padlock-icon animate-pulse" />
                     </div>
-                    <h2>Payment Terms Agreement Required</h2>
-                    <p className="lock-desc">
-                      Step 3 (Vendor Onboarding Form) will unlock once you review and agree to the 
-                      <strong> Step 2 (Payment Terms & Return Policy)</strong>.
-                    </p>
+                    <h2>{t('paymentTermsRequired')}</h2>
+                    <p className="lock-desc">{t('paymentTermsReqDesc')}</p>
                     <button 
                       type="button" 
                       className="vendor-submit-button"
                       onClick={() => setActiveTab('payment-terms')}
                       style={{ marginTop: '16px' }}
                     >
-                      Go to Step 2 — Review Payment Terms
+                      {t('goReviewPaymentTermsBtn')}
                     </button>
                   </div>
                 </div>
               ) : submitted ? (
                 <div className="vendor-success-card" role="status" aria-live="polite">
                   <CheckCircle2 size={42} />
-                  <h2>Thank you for applying!</h2>
-                  <p>Our team has received your full onboarding profile and verification documents. We will finalize your supplier listing shortly.</p>
-                  <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>Account activation takes 3–5 business days after document verification.</p>
+                  <h2>{t('onboardingSuccessTitle')}</h2>
+                  <p>{t('onboardingSuccessDesc')}</p>
+                  <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>{t('onboardingSuccessSub')}</p>
 
                   {process.env.NODE_ENV === 'development' && (
                     <button
@@ -1749,24 +2243,24 @@ export function TrustedPartnerRegistrationPage() {
                       onClick={handleClearCache}
                       style={{ marginTop: '24px' }}
                     >
-                      Clear cache & test again ↺
+                      {t('clearCacheBtn')}
                     </button>
                   )}
                 </div>
               ) : (
                 <form onSubmit={handleOnboardingSubmit} className="vendor-registration-form">
-                  <h2 className="sr-only">Weave 365 full vendor onboarding form — Step 3 of 3, collecting business details, bank account, product info, and dispatch details</h2>
+                  <h2 className="sr-only">{t('onboardingFormTitle')}</h2>
 
                   <div className="onboarding-step-wrapper">
                     <div>
                       <span className="step3-meta">
-                        Weave 365 · Vendor onboarding · Step 3 of 3
+                        {t('step3of3')}
                       </span>
                       <h3 className="step3-title">
-                        Vendor onboarding form
+                        {t('onboardingFormTitle')}
                       </h3>
                       <p className="step3-desc">
-                        Complete all sections. Your listing will go live after Weave 365 team verification.
+                        {t('onboardingFormDesc')}
                       </p>
                     </div>
 
@@ -1775,23 +2269,23 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-user-circle" aria-hidden="true"></i>
-                          <span className="step3-section-title">A. Personal details</span>
+                          <span className="step3-section-title">{t('secAPersonalDetails')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Full name</label>
-                              <input type="text" value={onboardingForm.fullName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fullName: e.target.value }))} placeholder="As per Aadhaar / PAN" required className="step3-input" />
+                              <label className="step3-field-label">{t('fullNameLabel')}</label>
+                              <input type="text" value={onboardingForm.fullName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fullName: e.target.value }))} placeholder={t('asPerAadhaarPan')} required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">WhatsApp number</label>
+                              <label className="step3-field-label">{t('whatsappLabel')}</label>
                               <div className="tel-input-container">
                                 <span className="tel-input-prefix">+91</span>
                                 <input 
                                   type="tel" 
                                   value={onboardingForm.whatsapp} 
                                   onChange={(e) => setOnboardingForm(prev => ({ ...prev, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 10) }))} 
-                                  placeholder="XXXXX XXXXX" 
+                                  placeholder={t('whatsappPlaceholder')} 
                                   required 
                                   className="tel-input-field" 
                                 />
@@ -1800,18 +2294,18 @@ export function TrustedPartnerRegistrationPage() {
                           </div>
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Email address</label>
+                              <label className="step3-field-label">{t('emailLabel')}</label>
                               <input type="email" value={onboardingForm.email} onChange={(e) => setOnboardingForm(prev => ({ ...prev, email: e.target.value }))} placeholder="your@email.com" required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">Alternate contact number</label>
+                              <label className="step3-field-label">{t('altContactLabel')}</label>
                               <div className="tel-input-container">
                                 <span className="tel-input-prefix">+91</span>
                                 <input 
                                   type="tel" 
                                   value={onboardingForm.alternateContact} 
                                   onChange={(e) => setOnboardingForm(prev => ({ ...prev, alternateContact: e.target.value.replace(/\D/g, '').slice(0, 10) }))} 
-                                  placeholder="XXXXX XXXXX" 
+                                  placeholder={t('whatsappPlaceholder')} 
                                   className="tel-input-field" 
                                 />
                               </div>
@@ -1824,53 +2318,53 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-building" aria-hidden="true"></i>
-                          <span className="step3-section-title">B. Business details</span>
+                          <span className="step3-section-title">{t('secBBusinessDetails')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Business / shop name</label>
-                              <input type="text" value={onboardingForm.businessName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessName: e.target.value }))} placeholder="Trade name" required className="step3-input" />
+                              <label className="step3-field-label">{t('businessShopName')}</label>
+                              <input type="text" value={onboardingForm.businessName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessName: e.target.value }))} placeholder={t('tradeNamePlaceholder')} required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">Business type</label>
+                              <label className="step3-field-label">{t('businessTypeLabel')}</label>
                               <select value={onboardingForm.businessType} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessType: e.target.value }))} required className="step3-select">
-                                <option value="" disabled>Select</option>
-                                <option value="Sole proprietor / Individual weaver">Sole proprietor / Individual weaver</option>
-                                <option value="Partnership firm">Partnership firm</option>
-                                <option value="Private limited company">Private limited company</option>
-                                <option value="Manufacturer">Manufacturer</option>
-                                <option value="Trader / Wholesaler">Trader / Wholesaler</option>
+                                <option value="" disabled>{t('businessTypeSelect')}</option>
+                                <option value="Sole proprietor / Individual weaver">{t('businessTypeOpt1')}</option>
+                                <option value="Partnership firm">{t('businessTypeOpt2')}</option>
+                                <option value="Private limited company">{t('businessTypeOpt3')}</option>
+                                <option value="Manufacturer">{t('businessTypeOpt4')}</option>
+                                <option value="Trader / Wholesaler">{t('businessTypeOpt5')}</option>
                               </select>
                             </div>
                           </div>
                           <div>
-                            <label className="step3-field-label">Business address</label>
-                            <input type="text" value={onboardingForm.businessAddress} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessAddress: e.target.value }))} placeholder="Shop / unit address" required className="step3-input" style={{ marginBottom: '8px' }} />
+                            <label className="step3-field-label">{t('businessAddressLabel')}</label>
+                            <input type="text" value={onboardingForm.businessAddress} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessAddress: e.target.value }))} placeholder={t('shopUnitAddressPlaceholder')} required className="step3-input" style={{ marginBottom: '8px' }} />
                             <div className="step3-grid-3col">
-                              <input type="text" value={onboardingForm.city} onChange={(e) => setOnboardingForm(prev => ({ ...prev, city: e.target.value }))} placeholder="City" required className="step3-input" />
-                              <input type="text" value={onboardingForm.pincode} onChange={(e) => setOnboardingForm(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))} placeholder="Pincode" maxLength="6" required className="step3-input" />
+                              <input type="text" value={onboardingForm.city} onChange={(e) => setOnboardingForm(prev => ({ ...prev, city: e.target.value }))} placeholder={t('cityPlaceholderStep3')} required className="step3-input" />
+                              <input type="text" value={onboardingForm.pincode} onChange={(e) => setOnboardingForm(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))} placeholder={t('pincodePlaceholderStep3')} maxLength="6" required className="step3-input" />
                             </div>
                           </div>
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">GST number <span>(if registered)</span></label>
+                              <label className="step3-field-label">{t('gstLabelStep3')}</label>
                               <input type="text" value={onboardingForm.gstNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, gstNumber: e.target.value.toUpperCase() }))} placeholder="22AAAAA0000A1Z5" className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">PAN number</label>
+                              <label className="step3-field-label">{t('panLabelStep3')}</label>
                               <input type="text" value={onboardingForm.panNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumber: e.target.value.toUpperCase().slice(0, 10) }))} placeholder="AAAAA0000A" maxLength="10" required className="step3-input" />
                             </div>
                           </div>
                           <div>
-                            <label className="step3-field-label">Years in business</label>
+                            <label className="step3-field-label">{t('yearsInBusinessLabel')}</label>
                             <select value={onboardingForm.yearsInBusiness} onChange={(e) => setOnboardingForm(prev => ({ ...prev, yearsInBusiness: e.target.value }))} required className="step3-select">
-                              <option value="" disabled>Select</option>
-                              <option value="Less than 1 year">Less than 1 year</option>
-                              <option value="1 – 3 years">1 – 3 years</option>
-                              <option value="3 – 7 years">3 – 7 years</option>
-                              <option value="7 – 15 years">7 – 15 years</option>
-                              <option value="15+ years">15+ years</option>
+                              <option value="" disabled>{t('yearsSelectPlaceholder')}</option>
+                              <option value="Less than 1 year">{t('yearsOpt1')}</option>
+                              <option value="1 – 3 years">{t('yearsOpt2')}</option>
+                              <option value="3 – 7 years">{t('yearsOpt3')}</option>
+                              <option value="7 – 15 years">{t('yearsOpt4')}</option>
+                              <option value="15+ years">{t('yearsOpt5')}</option>
                             </select>
                           </div>
                         </div>
@@ -1880,55 +2374,55 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-hanger" aria-hidden="true"></i>
-                          <span className="step3-section-title">C. Product details</span>
+                          <span className="step3-section-title">{t('secCProductDetailsStep3')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div>
-                            <label className="step3-field-label">Product categories you supply <span>(select all that apply)</span></label>
+                            <label className="step3-field-label">{t('categoriesStep3Label')}</label>
                             <div className="step3-categories-grid">
                               {[
-                                { name: 'Sarees', icon: 'ti-flower' },
-                                { name: 'Suits', icon: 'ti-shirt' },
-                                { name: 'Dupattas', icon: 'ti-scissors' },
-                                { name: 'Lehengas', icon: 'ti-hanger' },
-                                { name: 'Fabrics', icon: 'ti-palette' },
-                                { name: 'Accessories', icon: 'ti-sparkles' }
+                                { name: 'Sarees', icon: 'ti-flower', key: 'catSarees' },
+                                { name: 'Suits', icon: 'ti-shirt', key: 'catSuits' },
+                                { name: 'Dupattas', icon: 'ti-scissors', key: 'catDupattas' },
+                                { name: 'Lehengas', icon: 'ti-hanger', key: 'catLehengas' },
+                                { name: 'Fabrics', icon: 'ti-palette', key: 'catFabrics' },
+                                { name: 'Accessories', icon: 'ti-sparkles', key: 'catAccessoriesPlural' }
                               ].map((cat) => (
                                 <label key={cat.name} className="step3-category-card">
                                   <input type="checkbox" checked={onboardingForm.productCategories.includes(cat.name)} onChange={() => toggleOnboardingCategory(cat.name)} />
-                                  <i className={`ti ${cat.icon}`} aria-hidden="true"></i> {cat.name}
+                                  <i className={`ti ${cat.icon}`} aria-hidden="true"></i> {t(cat.key)}
                                 </label>
                               ))}
                             </div>
                           </div>
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Price range per piece</label>
+                              <label className="step3-field-label">{t('pricePerPiece')}</label>
                               <select value={onboardingForm.priceRange} onChange={(e) => setOnboardingForm(prev => ({ ...prev, priceRange: e.target.value }))} required className="step3-select">
-                                <option value="" disabled>Select</option>
-                                <option value="Under ₹500">Under ₹500</option>
-                                <option value="₹500 – ₹999">₹500 – ₹999</option>
-                                <option value="₹1,000 – ₹1,999">₹1,000 – ₹1,999</option>
-                                <option value="₹2,000 – ₹4,999">₹2,000 – ₹4,999</option>
-                                <option value="₹5,000 – ₹9,999">₹5,000 – ₹9,999</option>
-                                <option value="₹10,000+">₹10,000+</option>
+                                <option value="" disabled>{t('priceOptSelect')}</option>
+                                <option value="Under ₹500">{t('priceOptUnder500')}</option>
+                                <option value="₹500 – ₹999">{t('priceOpt500_999')}</option>
+                                <option value="₹1,000 – ₹1,999">{t('priceOpt1000_1999')}</option>
+                                <option value="₹2,000 – ₹4,999">{t('priceOpt2000_4999')}</option>
+                                <option value="₹5,000 – ₹9,999">{t('priceOpt5000_9999')}</option>
+                                <option value="₹10,000+">{t('priceOpt10000Plus')}</option>
                               </select>
                             </div>
                             <div>
-                              <label className="step3-field-label">Monthly supply capacity</label>
+                              <label className="step3-field-label">{t('monthlyCapacityStep3')}</label>
                               <select value={onboardingForm.monthlyCapacity} onChange={(e) => setOnboardingForm(prev => ({ ...prev, monthlyCapacity: e.target.value }))} required className="step3-select">
-                                <option value="" disabled>Select</option>
-                                <option value="Up to 20 pieces">Up to 20 pieces</option>
-                                <option value="20 – 50 pieces">20 – 50 pieces</option>
-                                <option value="50 – 100 pieces">50 – 100 pieces</option>
-                                <option value="100 – 300 pieces">100 – 300 pieces</option>
-                                <option value="300+ pieces">300+ pieces</option>
+                                <option value="" disabled>{t('priceOptSelect')}</option>
+                                <option value="Up to 20 pieces">{t('monthlyOpt1')}</option>
+                                <option value="20 – 50 pieces">{t('monthlyOpt2')}</option>
+                                <option value="50 – 100 pieces">{t('monthlyOpt3')}</option>
+                                <option value="100 – 300 pieces">{t('monthlyOpt4')}</option>
+                                <option value="300+ pieces">{t('monthlyOpt5')}</option>
                               </select>
                             </div>
                           </div>
                           <div>
-                            <label className="step3-field-label">Fabric / weave specialisation <span>(e.g. Katan silk, Georgette, Organza, Chanderi)</span></label>
-                            <input type="text" value={onboardingForm.fabricSpecialisation} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fabricSpecialisation: e.target.value }))} placeholder="Describe your specialisation" required className="step3-input" />
+                            <label className="step3-field-label">{t('fabricSpecialisation')}</label>
+                            <input type="text" value={onboardingForm.fabricSpecialisation} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fabricSpecialisation: e.target.value }))} placeholder={t('specialisationPlaceholder')} required className="step3-input" />
                           </div>
                         </div>
                       </div>
@@ -1937,48 +2431,48 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-truck-delivery" aria-hidden="true"></i>
-                          <span className="step3-section-title">D. Dispatch & operations</span>
+                          <span className="step3-section-title">{t('secDDispatchOps')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Dispatch timeline after order</label>
+                              <label className="step3-field-label">{t('dispatchTimelineLabel')}</label>
                               <select value={onboardingForm.dispatchTimeline} onChange={(e) => setOnboardingForm(prev => ({ ...prev, dispatchTimeline: e.target.value }))} required className="step3-select">
-                                <option value="" disabled>Select</option>
-                                <option value="Same day">Same day</option>
-                                <option value="1 business day">1 business day</option>
-                                <option value="2 business days">2 business days</option>
-                                <option value="3 business days">3 business days</option>
+                                <option value="" disabled>{t('dispatchOptSelect')}</option>
+                                <option value="Same day">{t('dispatchOpt1')}</option>
+                                <option value="1 business day">{t('dispatchOpt2')}</option>
+                                <option value="2 business days">{t('dispatchOpt3')}</option>
+                                <option value="3 business days">{t('dispatchOpt4')}</option>
                               </select>
                             </div>
                             <div>
-                              <label className="step3-field-label">Preferred courier partner</label>
+                              <label className="step3-field-label">{t('preferredCourierLabel')}</label>
                               <select value={onboardingForm.preferredCourier} onChange={(e) => setOnboardingForm(prev => ({ ...prev, preferredCourier: e.target.value }))} required className="step3-select">
-                                <option value="" disabled>Select</option>
-                                <option value="Delhivery">Delhivery</option>
-                                <option value="Blue Dart">Blue Dart</option>
-                                <option value="DTDC">DTDC</option>
-                                <option value="India Post">India Post</option>
-                                <option value="Shiprocket">Shiprocket</option>
-                                <option value="No preference">No preference</option>
+                                <option value="" disabled>{t('courierOptSelect')}</option>
+                                <option value="Delhivery">{t('courierOpt1')}</option>
+                                <option value="Blue Dart">{t('courierOpt2')}</option>
+                                <option value="DTDC">{t('courierOpt3')}</option>
+                                <option value="India Post">{t('courierOpt4')}</option>
+                                <option value="Shiprocket">{t('courierOpt5')}</option>
+                                <option value="No preference">{t('courierOpt6')}</option>
                               </select>
                             </div>
                           </div>
                           <div>
-                            <label className="step3-field-label">Dispatch location (pickup address same as business address?)</label>
+                            <label className="step3-field-label">{t('dispatchLocationRadio')}</label>
                             <div className="step3-grid-2col">
                               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', border: onboardingForm.dispatchAddressSame === 'same' ? '1px solid var(--olive)' : '1px solid rgba(117, 111, 79, 0.2)', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', background: onboardingForm.dispatchAddressSame === 'same' ? 'rgba(117, 111, 79, 0.05)' : 'var(--white)', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
                                 <input type="radio" name="dispatch_addr" value="same" checked={onboardingForm.dispatchAddressSame === 'same'} onChange={() => setOnboardingForm(prev => ({ ...prev, dispatchAddressSame: 'same' }))} style={{ accentColor: 'var(--olive)' }} />
-                                Yes, same address
+                                {t('yesSameAddress')}
                               </label>
                               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', border: onboardingForm.dispatchAddressSame === 'different' ? '1px solid var(--olive)' : '1px solid rgba(117, 111, 79, 0.2)', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', background: onboardingForm.dispatchAddressSame === 'different' ? 'rgba(117, 111, 79, 0.05)' : 'var(--white)', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
                                 <input type="radio" name="dispatch_addr" value="different" checked={onboardingForm.dispatchAddressSame === 'different'} onChange={() => setOnboardingForm(prev => ({ ...prev, dispatchAddressSame: 'different' }))} style={{ accentColor: 'var(--olive)' }} />
-                                Different address
+                                {t('differentAddress')}
                               </label>
                             </div>
                             {onboardingForm.dispatchAddressSame === 'different' && (
                               <div style={{ marginTop: '8px' }}>
-                                <input type="text" value={onboardingForm.dispatchAddressDifferent} onChange={(e) => setOnboardingForm(prev => ({ ...prev, dispatchAddressDifferent: e.target.value }))} placeholder="Pickup / dispatch address" required className="step3-input" />
+                                <input type="text" value={onboardingForm.dispatchAddressDifferent} onChange={(e) => setOnboardingForm(prev => ({ ...prev, dispatchAddressDifferent: e.target.value }))} placeholder={t('pickupAddressPlaceholder')} required className="step3-input" />
                               </div>
                             )}
                           </div>
@@ -1989,38 +2483,38 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-building-bank" aria-hidden="true"></i>
-                          <span className="step3-section-title">E. Bank account details</span>
-                          <span style={{ fontSize: '12px', color: 'var(--muted)', marginLeft: 'auto', fontFamily: 'var(--font-body)' }}>For payment disbursement</span>
+                          <span className="step3-section-title">{t('secEBankDetails')}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--muted)', marginLeft: 'auto', fontFamily: 'var(--font-body)' }}>{t('forPaymentDisbursal')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Account holder name</label>
-                              <input type="text" value={onboardingForm.bankAccountHolder} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankAccountHolder: e.target.value }))} placeholder="As per bank records" required className="step3-input" />
+                              <label className="step3-field-label">{t('accountHolderName')}</label>
+                              <input type="text" value={onboardingForm.bankAccountHolder} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankAccountHolder: e.target.value }))} placeholder={t('asPerBankRecords')} required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">Bank name</label>
-                              <input type="text" value={onboardingForm.bankName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankName: e.target.value }))} placeholder="e.g. SBI, HDFC, Axis" required className="step3-input" />
+                              <label className="step3-field-label">{t('bankNameLabel')}</label>
+                              <input type="text" value={onboardingForm.bankName} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankName: e.target.value }))} placeholder={t('bankNamePlaceholder')} required className="step3-input" />
                             </div>
                           </div>
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Account number</label>
-                              <input type="text" value={onboardingForm.bankAccountNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankAccountNumber: e.target.value }))} placeholder="Enter account number" required className="step3-input" />
+                              <label className="step3-field-label">{t('accountNumberLabel')}</label>
+                              <input type="text" value={onboardingForm.bankAccountNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankAccountNumber: e.target.value }))} placeholder={t('accountNumberPlaceholder')} required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">IFSC code</label>
-                              <input type="text" value={onboardingForm.bankIfsc} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankIfsc: e.target.value.toUpperCase().slice(0, 11) }))} placeholder="e.g. SBIN0001234" maxLength={11} required className="step3-input" />
+                              <label className="step3-field-label">{t('ifscLabel')}</label>
+                              <input type="text" value={onboardingForm.bankIfsc} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankIfsc: e.target.value.toUpperCase().slice(0, 11) }))} placeholder={t('ifscPlaceholder')} maxLength={11} required className="step3-input" />
                             </div>
                           </div>
                           <div>
-                            <label className="step3-field-label">UPI ID <span>(optional — for faster payments)</span></label>
-                            <input type="text" value={onboardingForm.bankUpi} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankUpi: e.target.value }))} placeholder="yourname@upi" className="step3-input" />
+                            <label className="step3-field-label">{t('upiLabel')}</label>
+                            <input type="text" value={onboardingForm.bankUpi} onChange={(e) => setOnboardingForm(prev => ({ ...prev, bankUpi: e.target.value }))} placeholder={t('upiPlaceholder')} className="step3-input" />
                           </div>
                           <div className="step3-info-box">
                             <p className="step3-info-text">
                               <i className="ti ti-info-circle" aria-hidden="true"></i>
-                              Weave 365 is not responsible for payment failures due to incorrect bank details. Please double-check before submitting.
+                              {t('bankInfoText')}
                             </p>
                           </div>
                         </div>
@@ -2030,17 +2524,17 @@ export function TrustedPartnerRegistrationPage() {
                       <div className="onboarding-section-box">
                         <div className="onboarding-section-header">
                           <i className="ti ti-id-badge" aria-hidden="true"></i>
-                          <span className="step3-section-title">F. Identity verification</span>
+                          <span className="step3-section-title">{t('secFIdentityVerification')}</span>
                         </div>
                         <div className="onboarding-section-body">
                           <div className="step3-grid-2col">
                             <div>
-                              <label className="step3-field-label">Aadhaar number</label>
-                              <input type="text" value={onboardingForm.aadhaar} onChange={(e) => setOnboardingForm(prev => ({ ...prev, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))} placeholder="XXXX XXXX XXXX" maxLength="12" required className="step3-input" />
+                              <label className="step3-field-label">{t('aadhaarLabel')}</label>
+                              <input type="text" value={onboardingForm.aadhaar} onChange={(e) => setOnboardingForm(prev => ({ ...prev, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))} placeholder={t('aadhaarPlaceholder')} maxLength="12" required className="step3-input" />
                             </div>
                             <div>
-                              <label className="step3-field-label">PAN number</label>
-                              <input type="text" value={onboardingForm.panNumberVerify} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumberVerify: e.target.value.toUpperCase().slice(0, 10) }))} placeholder="AAAAA0000A" maxLength="10" required className="step3-input" />
+                              <label className="step3-field-label">{t('panVerifyLabel')}</label>
+                              <input type="text" value={onboardingForm.panNumberVerify} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumberVerify: e.target.value.toUpperCase().slice(0, 10) }))} placeholder={t('panVerifyPlaceholder')} maxLength="10" required className="step3-input" />
                             </div>
                           </div>
                           
@@ -2060,9 +2554,9 @@ export function TrustedPartnerRegistrationPage() {
                               />
                               <i className="ti ti-photo-up step3-upload-icon" aria-hidden="true" style={{ color: onboardingForm.idProof ? 'var(--olive)' : 'var(--muted)' }}></i>
                               <p className={`step3-upload-text ${onboardingForm.idProof ? 'uploaded' : ''}`}>
-                                {onboardingForm.idProof ? '✓ Aadhaar Uploaded' : 'Aadhaar / ID proof'}
+                                {onboardingForm.idProof ? t('uploadedSuccessAadhaar') : t('aadhaarUploadLabel')}
                               </p>
-                              <p className="step3-upload-subtext">JPG or PDF, max 2MB</p>
+                              <p className="step3-upload-subtext">{t('fileUploadSpecs')}</p>
                             </div>
                             
                             <div 
@@ -2079,9 +2573,9 @@ export function TrustedPartnerRegistrationPage() {
                               />
                               <i className="ti ti-photo-up step3-upload-icon" aria-hidden="true" style={{ color: onboardingForm.cancelledCheque ? 'var(--olive)' : 'var(--muted)' }}></i>
                               <p className={`step3-upload-text ${onboardingForm.cancelledCheque ? 'uploaded' : ''}`}>
-                                {onboardingForm.cancelledCheque ? '✓ Cheque Uploaded' : 'Cancelled cheque'}
+                                {onboardingForm.cancelledCheque ? t('uploadedSuccessCheque') : t('chequeUploadLabel')}
                               </p>
-                              <p className="step3-upload-subtext">JPG or PDF, max 2MB</p>
+                              <p className="step3-upload-subtext">{t('fileUploadSpecs')}</p>
                             </div>
                           </div>
                         </div>
@@ -2099,7 +2593,7 @@ export function TrustedPartnerRegistrationPage() {
                       <label className="step3-agreement-label">
                         <input type="checkbox" checked={onboardingForm.agreement} onChange={(e) => setOnboardingForm(prev => ({ ...prev, agreement: e.target.checked }))} className="step3-agreement-checkbox" />
                         <span className="step3-agreement-text">
-                          I confirm that all information provided is accurate. I have read and agreed to the payment terms and return policy (Step 2) and understand that false information may result in permanent delisting.
+                          {t('declarationCheckbox')}
                         </span>
                       </label>
                     </div>
@@ -2108,14 +2602,14 @@ export function TrustedPartnerRegistrationPage() {
                       {onboardingSubmitting ? (
                         <>
                           <RefreshCw size={18} className="spinner" />
-                          Submitting Onboarding Form...
+                          {t('submittingOnboardingForm')}
                         </>
                       ) : (
-                        'Submit onboarding form →'
+                        t('submitOnboardingFormBtn')
                       )}
                     </button>
 
-                    <p className="onboarding-step-footer" style={{ marginTop: '14px' }}>Account activation takes 3–5 business days after document verification.</p>
+                    <p className="onboarding-step-footer" style={{ marginTop: '14px' }}>{t('step3Footer')}</p>
                   </div>
                 </form>
               )
@@ -2131,10 +2625,9 @@ export function TrustedPartnerRegistrationPage() {
               <div className="onboarding-modal-header-icon">
                 <ShieldCheck size={28} />
               </div>
-              <h3>Agreement Signed</h3>
+              <h3>{t('agreementSigned')}</h3>
               <p className="onboarding-modal-message">
-                Your B2B Merchant Agreement has been counter-signed. 
-                Please download a copy for your records to unlock Step 3 Onboarding.
+                {t('agreementSignedDesc')}
               </p>
               <div className="onboarding-modal-actions">
                 <button 
@@ -2146,10 +2639,10 @@ export function TrustedPartnerRegistrationPage() {
                   {paymentSubmitting ? (
                     <>
                       <RefreshCw size={16} className="spinner" />
-                      Saving & Downloading...
+                      {t('savingDownloading')}
                     </>
                   ) : (
-                    'Download Agreement Copy'
+                    t('downloadBtn')
                   )}
                 </button>
                 <button 
@@ -2158,7 +2651,7 @@ export function TrustedPartnerRegistrationPage() {
                   onClick={() => setShowDownloadModal(false)}
                   disabled={paymentSubmitting}
                 >
-                  Go Back
+                  {t('goBack')}
                 </button>
               </div>
             </div>

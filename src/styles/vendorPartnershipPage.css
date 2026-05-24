@@ -648,7 +648,7 @@
 
 .vendor-form-heading h2 {
   font-family: var(--font-heading);
-  font-size: clamp(30px, 3.5vw, 42px);
+  font-size: clamp(30px, 3.5vw, 35px);
   line-height: 1.05;
   margin: 0 0 6px;
 }
@@ -1289,6 +1289,28 @@
   border: 1px solid rgba(234, 219, 200, 0.4);
 }
 
+.translate-toggle-btn {
+  border: 1px dashed rgba(183, 134, 70, 0.45) !important;
+  color: var(--olive) !important;
+  background: rgba(183, 134, 70, 0.04) !important;
+}
+
+.translate-toggle-btn:hover {
+  background: rgba(183, 134, 70, 0.1) !important;
+  border-style: solid !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(183, 134, 70, 0.08);
+}
+
+.tab-translate-icon {
+  color: var(--olive);
+  transition: transform 0.3s ease;
+}
+
+.translate-toggle-btn:hover .tab-translate-icon {
+  transform: rotate(15deg) scale(1.1);
+}
+
 .tab-lock-icon {
   color: #c99363;
 }
@@ -1722,7 +1744,7 @@
 }
 
 .onboarding-step-meta {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -1732,7 +1754,7 @@
 
 .onboarding-step-title {
   font-family: var(--font-heading);
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 600;
   color: var(--ink);
   margin: 10px 0 8px;
@@ -1741,7 +1763,7 @@
 
 .onboarding-step-desc {
   font-family: var(--font-body);
-  font-size: 20px;
+  font-size: 18px;
   color: var(--muted);
   line-height: 1.6;
   margin: 0 0 2rem;
@@ -2394,3 +2416,90 @@
     transform: translateY(0);
   }
 }
+
+/* ==================================================
+   G. DEVANAGARI (HINDI) TYPOGRAPHY LEGIBILITY OVERRIDES
+   Devanagari characters are naturally dense and complex.
+   Reducing font weights and scaling down heading sizes prevents clutter.
+   ================================================== */
+.lang-hi,
+.lang-hi * {
+  /* Devanagari script legibility optimization */
+  font-family: 'Outfit', 'Inter', 'Noto Sans Devanagari', -apple-system, sans-serif !important;
+}
+
+/* Fallback base weight for all elements in Hindi view is ultra-light */
+.lang-hi * {
+  font-weight: 300 !important;
+}
+
+/* Titles, headings, legends, active items, and bold callouts - capped at 500 (Medium) to ensure crisp elegance */
+.lang-hi h1,
+.lang-hi h2,
+.lang-hi h3,
+.lang-hi legend,
+.lang-hi strong,
+.lang-hi b,
+.lang-hi .trusted-registration-hero-content h1,
+.lang-hi .vendor-form-heading h2,
+.lang-hi .vendor-onboarding-aside h2,
+.lang-hi .vendor-benefits-content h2,
+.lang-hi .vendor-section-header h2,
+.lang-hi .vendor-step-card h3,
+.lang-hi .onboarding-modal-card h3,
+.lang-hi .vendor-form-section legend,
+.lang-hi .onboarding-clause-title,
+.lang-hi .onboarding-section-header span,
+.lang-hi .onboarding-step-title,
+.lang-hi .step3-title,
+.lang-hi .vendor-tab-btn.active,
+.lang-hi .review-category-chip.selected {
+  font-weight: 500 !important; /* Muted to 500 for crisp heading line weights */
+}
+
+/* --- Decreased Heading Sizes for Hindi Legibility --- */
+.lang-hi .vendor-form-heading h2 {
+  font-size: clamp(20px, 2.8vw, 20px) !important; /* Decreased from clamp(22px, 2.8vw, 26px) */
+}
+
+.lang-hi .onboarding-step-title {
+  font-size: 20px !important; /* Decreased from 26px */
+}
+
+.lang-hi .step3-title {
+  font-size: 20px !important; /* Decreased from 24px */
+}
+
+/* Tab buttons and general form controls - Muted to thin 300 weight */
+.lang-hi label,
+.lang-hi .vendor-registration-form label,
+.lang-hi .vendor-chip-group > span,
+.lang-hi .vendor-radio-block > span,
+.lang-hi .group-label,
+.lang-hi .step3-field-label,
+.lang-hi .onboarding-signature-label,
+.lang-hi .onboarding-agree-all-text,
+.lang-hi .vendor-tab-btn,
+.lang-hi .review-category-chip,
+.lang-hi .step3-category-card,
+.lang-hi .vendor-chip-option,
+.lang-hi .vendor-approval-step strong {
+  font-weight: 300 !important; /* Reduced to ultra-light 300 weight for optimal reading of dense scripts */
+}
+
+/* Specific numbers and active badges */
+.lang-hi .vendor-approval-step span,
+.lang-hi .vendor-step-number {
+  font-weight: 400 !important;
+}
+
+/* Action and submission buttons - Muted to light-medium (400) for clean text boundaries */
+.lang-hi .vendor-submit-button,
+.lang-hi .onboarding-submit-button,
+.lang-hi .vendor-hero-btn-primary,
+.lang-hi .vendor-hero-btn-secondary,
+.lang-hi .vendor-notice-cta-button,
+.lang-hi .onboarding-modal-btn-download {
+  font-weight: 400 !important;
+}
+

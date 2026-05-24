@@ -128,7 +128,7 @@ export const metadata = {
     },
   },
   icons: {
-    icon: '/logo.webp',
+    icon: 'https://images.weave365.in/Assets/Weave365.png',
   },
 };
 
