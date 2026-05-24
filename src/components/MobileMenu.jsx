@@ -71,7 +71,7 @@ export function MobileMenu({
       icon: <Store size={20} />, 
       label: 'Collections', 
       action: () => {
-        navigate('catalog');
+        navigate('catalogue');
         onClose();
       } 
     },
@@ -190,7 +190,7 @@ export function MobileMenu({
                   <button
                     className="mobile-search-view-all"
                     onClick={() => {
-                      navigate('catalog');
+                      navigate('catalogue');
                     }}
                   >
                     See all results for "{localSearch}"
@@ -221,7 +221,7 @@ export function MobileMenu({
                     className="mobile-account-subitem" 
                     onClick={() => {
                       setCategory(cat);
-                      navigate('catalog');
+                      navigate('catalogue');
                       onClose();
                     }}
                   >

@@ -5248,6 +5248,10 @@ button {
   margin-right: 4px;
 }
 
+.mobile-disclaimer-only {
+  display: none !important;
+}
+
 /* Animation helper for spinning loaders */
 @keyframes spin {
   from {

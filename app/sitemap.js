@@ -17,7 +17,7 @@ export default async function sitemap() {
       priority: 1.0,
     },
     {
-      url: `${siteUrl}/catalog`,
+      url: `${siteUrl}/catalogue`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,

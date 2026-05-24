@@ -169,8 +169,8 @@ export function AboutPage({ navigate }) {
         </p>
         <div>
           <a 
-            href="/catalog" 
-            onClick={(e) => { e.preventDefault(); navigate('catalog'); }}
+            href="/catalogue" 
+            onClick={(e) => { e.preventDefault(); navigate('catalogue'); }}
             className="about-hero-cta"
           >
             Explore B2B Collections <Award size={16} />

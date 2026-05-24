@@ -85,7 +85,7 @@ export function BulkInquiry({ navigate }) {
             <a className="primary-button" href={`https://wa.me/${storeConfig.whatsapp}`} target="_blank" rel="noreferrer">
               <WhatsappIcon size={18} /> Chat Directly
             </a>
-            <button className="secondary-button" type="button" onClick={() => navigate('catalog')}>
+            <button className="secondary-button" type="button" onClick={() => navigate('catalogue')}>
               Browse Catalog <ArrowRight size={18} />
             </button>
           </div>

@@ -442,8 +442,8 @@ export function ProductDetail({
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Catalogs",
-        "item": "https://www.weave365.in/catalog"
+        "name": "Catalogue",
+        "item": "https://www.weave365.in/catalogue"
       },
       {
         "@type": "ListItem",
@@ -714,8 +714,8 @@ export function ProductDetail({
 
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
-    { name: 'Catalogs', url: '/catalog', route: 'catalog' },
-    ...(product.category ? [{ name: product.category, url: '/catalog', route: 'catalog' }] : []),
+    { name: 'Catalogue', url: '/catalogue', route: 'catalogue' },
+    ...(product.category ? [{ name: product.category, url: '/catalogue', route: 'catalogue' }] : []),
     { name: product.title }
   ];
 
@@ -816,7 +816,7 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className="product-disclaimer-box">
+            <div className="product-disclaimer-box desktop-disclaimer-only">
               <p>
                 <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
               </p>
@@ -1073,6 +1073,12 @@ export function ProductDetail({
             <p className="buyer-note">
               <LockKeyhole size={16} /> Only registered buyers can download and share
             </p>
+
+            <div className="product-disclaimer-box mobile-disclaimer-only">
+              <p>
+                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
+              </p>
+            </div>
 
             <div className="global-sourcing-card mobile-sourcing-only">
               <div className="card-header">

@@ -37,7 +37,7 @@ export function NotFoundPage() {
               <Home size={17} />
               Back to Home
             </a>
-            <a href="/catalog" className="nf-btn nf-btn-secondary" onClick={(e) => { e.preventDefault(); router.push('/catalog'); }}>
+            <a href="/catalogue" className="nf-btn nf-btn-secondary" onClick={(e) => { e.preventDefault(); router.push('/catalogue'); }}>
               <Package size={17} />
               View Collections
             </a>

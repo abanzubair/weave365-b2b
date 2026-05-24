@@ -116,7 +116,7 @@ export default function App({ initialData = {} }) {
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
-    if (search && searchRef.current && route !== 'catalog') {
+    if (search && searchRef.current && route !== 'catalogue') {
       const rect = searchRef.current.getBoundingClientRect();
       setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
     } else if (!search) {
@@ -141,6 +141,12 @@ export default function App({ initialData = {} }) {
     () => applyVisiblePricesToProducts(products, visiblePriceMap),
     [products, visiblePriceMap],
   );
+
+  useEffect(() => {
+    if (route === 'catalog') {
+      router.replace('/catalogue' + (typeof window !== 'undefined' ? window.location.search : ''));
+    }
+  }, [route, router]);
 
   useEffect(() => {
     if (hasInitialData) return undefined;
@@ -390,7 +396,7 @@ export default function App({ initialData = {} }) {
   // Sync URL query params to filter states (e.g. ?category=dupatta)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'catalog') return;
+    if (route !== 'catalogue') return;
 
     const params = new URLSearchParams(window.location.search);
 
@@ -422,7 +428,7 @@ export default function App({ initialData = {} }) {
   // Sync filter states back to URL query params
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'catalog') return;
+    if (route !== 'catalogue') return;
 
     const params = new URLSearchParams(window.location.search);
     let changed = false;
@@ -453,7 +459,7 @@ export default function App({ initialData = {} }) {
 
     if (changed) {
       const newSearch = params.toString();
-      const newPath = `/catalog${newSearch ? '?' + newSearch : ''}`;
+      const newPath = `/catalogue${newSearch ? '?' + newSearch : ''}`;
       window.history.replaceState(null, '', newPath);
     }
   }, [category, fabric, route]);
@@ -711,7 +717,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'catalog' || route === 'partner') {
+    if (route === 'catalogue' || route === 'partner') {
       const partnerFilteredProducts = route === 'partner'
         ? visibleProducts.filter(p => p.partner && slugifyPartner(p.partner) === partnerName)
         : visibleProducts;
@@ -925,8 +931,8 @@ export default function App({ initialData = {} }) {
               NEW ARRIVALS
             </button>
             <button 
-              className={route === 'catalog' ? 'active' : ''} 
-              onClick={() => navigate('catalog')}
+              className={route === 'catalogue' ? 'active' : ''} 
+              onClick={() => navigate('catalogue')}
             >
               COLLECTIONS
             </button>
@@ -960,7 +966,7 @@ export default function App({ initialData = {} }) {
                       key={cat}
                       onClick={() => {
                         setCategory(cat);
-                        navigate('catalog');
+                        navigate('catalogue');
                         setDropdownOpen(null);
                       }}
                     >
@@ -1022,7 +1028,7 @@ export default function App({ initialData = {} }) {
             </button>
           </nav>
 
-          <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalog')}>
+          <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalogue')}>
             <Search size={20} />
           </button>
 
@@ -1185,7 +1191,7 @@ export default function App({ initialData = {} }) {
                       <h3>Quick Links</h3>
                       <ul className="quick-access-list">
                         <li>
-                          <button onClick={() => { navigate('catalog'); setSearchActive(false); }}>
+                          <button onClick={() => { navigate('catalogue'); setSearchActive(false); }}>
                             <span>Browse All Collections</span>
                             <ArrowRight size={14} />
                           </button>
@@ -1247,7 +1253,7 @@ export default function App({ initialData = {} }) {
                           <button 
                             className="premium-search-view-all-btn" 
                             onClick={() => {
-                              navigate('catalog');
+                              navigate('catalogue');
                               setSearchActive(false);
                             }}
                           >

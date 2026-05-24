@@ -46,7 +46,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
     e.preventDefault();
     if (targetRoute === 'category' && setCategory) {
       setCategory(param);
-      navigate('catalog');
+      navigate('catalogue');
     } else if (targetRoute === 'blog-guide') {
       navigate('blog', param);
     } else {
@@ -97,7 +97,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
                 {categories.map((item, idx) => (
                   <li key={idx}>
                     <a
-                      href={`/catalog?category=${item.value}`}
+                      href={`/catalogue?category=${item.value}`}
                       onClick={(e) => handleLinkClick(e, 'category', item.value)}
                     >
                       {item.label}

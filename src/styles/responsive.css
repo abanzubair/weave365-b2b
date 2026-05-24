@@ -730,6 +730,10 @@
     scroll-padding-inline: 0;
   }
 
+  .home-product-section {
+    overflow-x: hidden !important;
+  }
+
   /* ═══════════════════════════════════════════════════════════════
      CATALOG PAGE — Mobile Optimization (UI/UX Pro Max)
      Touch targets ≥ 44px · 2-col grid · Scrollable filter bar
@@ -1103,7 +1107,7 @@
   }
 
   .product-view {
-    padding-top: 20px !important;
+    padding-top: 6px !important;
   }
 }
 
@@ -1114,7 +1118,12 @@
 @media screen and (max-width: 820px) {
   .product-view {
     width: 100% !important;
-    padding: 16px var(--site-padding) 40px !important;
+    padding: 6px var(--site-padding) 40px !important;
+    overflow-x: hidden !important;
+  }
+
+  .premium-breadcrumb {
+    margin: 0.5rem 0 0.5rem !important;
   }
 
   .product-hero-grid {
@@ -1392,6 +1401,15 @@
     gap: 8px 12px !important;
   }
 
+  .desktop-disclaimer-only {
+    display: none !important;
+  }
+
+  .mobile-disclaimer-only {
+    display: block !important;
+    margin-top: 16px !important;
+    margin-bottom: 8px !important;
+  }
 }
 
 /* --- Responsive Layout for Long Description Accordions Grid --- */
