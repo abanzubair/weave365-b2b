@@ -72,6 +72,9 @@ const slugifyPartner = (name) => {
 };
 
 export default function App({ initialData = {} }) {
+  if (typeof window === 'undefined') {
+    console.log('SSR App: initialData status =', initialData?.status, 'products count =', initialData?.products?.length, 'hydrated =', initialData?.hydrated);
+  }
 
   useCurrency();
   const router = useRouter();
@@ -1306,9 +1309,7 @@ export default function App({ initialData = {} }) {
       )}
 
       <main>
-        <Suspense fallback={<RouteFallback />}>
-          {routeContent}
-        </Suspense>
+        {routeContent}
       </main>
 
       {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
