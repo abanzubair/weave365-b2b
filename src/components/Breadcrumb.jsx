@@ -55,8 +55,8 @@ export default function Breadcrumb({ items, navigate }) {
                           // Fallback parsing for slash paths if matches routes
                           if (item.url === '/' || item.url === '/home') {
                             navigate('home');
-                          } else if (item.url === '/catalogue') {
-                            navigate('catalogue');
+                          } else if (item.url === '/wholesale-catalogue') {
+                            navigate('wholesale-catalogue');
                           } else if (item.url === '/blog') {
                             navigate('blog');
                           } else {

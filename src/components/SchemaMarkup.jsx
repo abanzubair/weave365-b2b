@@ -57,7 +57,7 @@ export default function SchemaMarkup() {
           target: {
             "@type": "EntryPoint",
             urlTemplate:
-              "https://www.weave365.in/catalogue?search={search_term_string}",
+              "https://www.weave365.in/wholesale-catalogue?search={search_term_string}",
           },
           "query-input": "required name=search_term_string",
         },
@@ -86,22 +86,22 @@ export default function SchemaMarkup() {
             {
               "@type": "OfferCatalog",
               name: "Banarasi Sarees",
-              url: "https://www.weave365.in/catalogue?category=saree",
+              url: "https://www.weave365.in/wholesale-catalogue?category=saree",
             },
             {
               "@type": "OfferCatalog",
               name: "Suits",
-              url: "https://www.weave365.in/catalogue?category=suit",
+              url: "https://www.weave365.in/wholesale-catalogue?category=suit",
             },
             {
               "@type": "OfferCatalog",
               name: "Lehengas",
-              url: "https://www.weave365.in/catalogue?category=lehenga",
+              url: "https://www.weave365.in/wholesale-catalogue?category=lehenga",
             },
             {
               "@type": "OfferCatalog",
               name: "Dupattas",
-              url: "https://www.weave365.in/catalogue?category=dupatta",
+              url: "https://www.weave365.in/wholesale-catalogue?category=dupatta",
             },
           ],
         },

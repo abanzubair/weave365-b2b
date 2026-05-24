@@ -116,7 +116,7 @@ export default function App({ initialData = {} }) {
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
-    if (search && searchRef.current && route !== 'catalogue') {
+    if (search && searchRef.current && route !== 'wholesale-catalogue') {
       const rect = searchRef.current.getBoundingClientRect();
       setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
     } else if (!search) {
@@ -143,8 +143,8 @@ export default function App({ initialData = {} }) {
   );
 
   useEffect(() => {
-    if (route === 'catalog') {
-      router.replace('/catalogue' + (typeof window !== 'undefined' ? window.location.search : ''));
+    if (route === 'catalog' || route === 'catalogue') {
+      router.replace('/wholesale-catalogue' + (typeof window !== 'undefined' ? window.location.search : ''));
     }
   }, [route, router]);
 
@@ -396,7 +396,7 @@ export default function App({ initialData = {} }) {
   // Sync URL query params to filter states (e.g. ?category=dupatta)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'catalogue') return;
+    if (route !== 'wholesale-catalogue') return;
 
     const params = new URLSearchParams(window.location.search);
 
@@ -428,7 +428,7 @@ export default function App({ initialData = {} }) {
   // Sync filter states back to URL query params
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'catalogue') return;
+    if (route !== 'wholesale-catalogue') return;
 
     const params = new URLSearchParams(window.location.search);
     let changed = false;
@@ -459,7 +459,7 @@ export default function App({ initialData = {} }) {
 
     if (changed) {
       const newSearch = params.toString();
-      const newPath = `/catalogue${newSearch ? '?' + newSearch : ''}`;
+      const newPath = `/wholesale-catalogue${newSearch ? '?' + newSearch : ''}`;
       window.history.replaceState(null, '', newPath);
     }
   }, [category, fabric, route]);
@@ -717,7 +717,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'catalogue' || route === 'partner') {
+    if (route === 'wholesale-catalogue' || route === 'partner') {
       const partnerFilteredProducts = route === 'partner'
         ? visibleProducts.filter(p => p.partner && slugifyPartner(p.partner) === partnerName)
         : visibleProducts;
@@ -931,8 +931,8 @@ export default function App({ initialData = {} }) {
               NEW ARRIVALS
             </button>
             <button 
-              className={route === 'catalogue' ? 'active' : ''} 
-              onClick={() => navigate('catalogue')}
+              className={route === 'wholesale-catalogue' ? 'active' : ''} 
+              onClick={() => navigate('wholesale-catalogue')}
             >
               CATALOGUE
             </button>

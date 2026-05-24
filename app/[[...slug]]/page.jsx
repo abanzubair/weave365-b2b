@@ -134,11 +134,11 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
-  if (route === 'catalogue') {
+  if (route === 'wholesale-catalogue') {
     return buildMeta(
-      'Wholesale Catalogue | Weave 365',
-      'Browse the live Weave 365 wholesale Banarasi saree catalogue. Premium quality sarees for retailers and boutiques.',
-      '/catalogue'
+      'Wholesale Saree & Suit Catalogue | Weave 365',
+      'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
+      '/wholesale-catalogue'
     );
   }
 

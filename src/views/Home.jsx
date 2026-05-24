@@ -330,7 +330,7 @@ export function Home({
                 <div className="premium-hero-actions">
                   <button
                     className="premium-btn-filled"
-                    onClick={() => navigate('catalogue')}
+                    onClick={() => navigate('wholesale-catalogue')}
                   >
                     Explore Collections
                   </button>
@@ -560,7 +560,7 @@ export function Home({
               className="category-card"
               onClick={() => {
                 setCategory(name);
-                navigate('catalogue');
+                navigate('wholesale-catalogue');
               }}
             >
               <img
@@ -577,7 +577,7 @@ export function Home({
             </button>
           ))}
         </div>
-        <button className="center-button" onClick={() => navigate('catalogue')}>
+        <button className="center-button" onClick={() => navigate('wholesale-catalogue')}>
           View All Categories
         </button>
       </section>
@@ -586,7 +586,7 @@ export function Home({
         <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
             <SectionTitle title="Best Sellers" align="left" />
-            <button className="text-button" onClick={() => navigate('catalogue')}>
+            <button className="text-button" onClick={() => navigate('wholesale-catalogue')}>
               View All <ArrowRight size={17} />
             </button>
           </div>
@@ -630,7 +630,7 @@ export function Home({
       <section className="section home-product-section new-arrivals-section">
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
-          <button className="text-button" onClick={() => navigate('catalogue')}>
+          <button className="text-button" onClick={() => navigate('wholesale-catalogue')}>
             View All <ArrowRight size={17} />
           </button>
         </div>
@@ -674,7 +674,7 @@ export function Home({
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
           <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <button className="primary-button compact" onClick={() => navigate('catalogue')}>
+          <button className="primary-button compact" onClick={() => navigate('wholesale-catalogue')}>
             Know More
           </button>
         </div>
@@ -785,7 +785,7 @@ export function Home({
                 <Gem size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Explore Wholesale Saree Collections</h2>
               </div>
-              <p>Discover our extensive <a href="/catalogue" onClick={(e) => { e.preventDefault(); navigate('catalogue'); }} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/catalogue" onClick={(e) => { e.preventDefault(); navigate('catalogue'); }} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
+              <p>Discover our extensive <a href="/wholesale-catalogue" onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/wholesale-catalogue" onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
             </div>
 
             <div className="seo-compact-card">

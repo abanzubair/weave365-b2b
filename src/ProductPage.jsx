@@ -443,7 +443,7 @@ export function ProductDetail({
         "@type": "ListItem",
         "position": 2,
         "name": "Catalogue",
-        "item": "https://www.weave365.in/catalogue"
+        "item": "https://www.weave365.in/wholesale-catalogue"
       },
       {
         "@type": "ListItem",
@@ -714,8 +714,8 @@ export function ProductDetail({
 
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
-    { name: 'Catalogue', url: '/catalogue', route: 'catalogue' },
-    ...(product.category ? [{ name: product.category, url: '/catalogue', route: 'catalogue' }] : []),
+    { name: 'Catalogue', url: '/wholesale-catalogue', route: 'wholesale-catalogue' },
+    ...(product.category ? [{ name: product.category, url: '/wholesale-catalogue', route: 'wholesale-catalogue' }] : []),
     { name: product.title }
   ];
 

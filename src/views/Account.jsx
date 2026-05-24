@@ -80,7 +80,7 @@ export function Account({
           <p>{user.email}</p>
         </div>
         <div className="account-hero-actions" style={{ display: 'flex', gap: '12px' }}>
-          <button className="secondary-button" type="button" onClick={() => navigate('catalogue')}>
+          <button className="secondary-button" type="button" onClick={() => navigate('wholesale-catalogue')}>
             Browse Catalogue
           </button>
           <button className="secondary-button logout-btn" type="button" onClick={onSignOut}>
@@ -105,7 +105,7 @@ export function Account({
         <article className="account-panel">
           <div className="account-panel-head">
             <span><ShoppingBag size={18} /> My Order List</span>
-            <button type="button" onClick={() => navigate('catalogue')}>Add items</button>
+            <button type="button" onClick={() => navigate('wholesale-catalogue')}>Add items</button>
           </div>
           <div className="account-list">
             {cartItems.slice(0, 5).map((item) => (
