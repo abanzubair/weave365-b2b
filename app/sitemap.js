@@ -98,37 +98,43 @@ export default async function sitemap() {
 
   try {
     const products = await fetchProducts();
-    const activeProducts = products.filter((p) => !p.isArchived);
+    if (products && Array.isArray(products)) {
+      const activeProducts = products.filter((p) => !p.isArchived);
 
-    // Product detail pages
-    productPages = activeProducts.map((product) => ({
-      url: `${siteUrl}/product/${encodeURIComponent(product.id)}`,
-      lastModified: product.stockInDate || new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    }));
+      // Product detail pages
+      productPages = activeProducts.map((product) => ({
+        url: `${siteUrl}/product/${encodeURIComponent(product.id)}`,
+        lastModified: product.stockInDate || new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      }));
 
-    // Partner collection pages
-    const partnerNames = new Set();
-    activeProducts.forEach((product) => {
-      if (product.partner) partnerNames.add(product.partner);
-    });
+      // Partner collection pages
+      const partnerNames = new Set();
+      activeProducts.forEach((product) => {
+        if (product.partner) partnerNames.add(product.partner);
+      });
 
-    partnerPages = Array.from(partnerNames).map((name) => ({
-      url: `${siteUrl}/partner/${encodeURIComponent(name.toLowerCase().trim().replace(/\s+/g, '-'))}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    }));
+      partnerPages = Array.from(partnerNames).map((name) => ({
+        url: `${siteUrl}/partner/${encodeURIComponent(name.toLowerCase().trim().replace(/\s+/g, '-'))}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      }));
+    }
   } catch (error) {
-    console.error('Sitemap: Failed to fetch products:', error.message);
-    throw error;
+    console.warn('Sitemap: Failed to fetch products (falling back to static pages):', error.message || error);
   }
 
   // Dynamic blog post pages
   let blogPostPages = [];
   try {
-    const dbPosts = await fetchSupabaseBlogPosts();
+    let dbPosts = [];
+    try {
+      dbPosts = await fetchSupabaseBlogPosts();
+    } catch (dbError) {
+      console.warn('Sitemap: Failed to fetch Supabase blog posts:', dbError.message || dbError);
+    }
     const slugMap = new Map();
 
     // 1. Add hardcoded blog posts
@@ -144,16 +150,18 @@ export default async function sitemap() {
     });
 
     // 2. Add Supabase blog posts
-    dbPosts.forEach((post) => {
-      let parsedDate = post.createdAt ? new Date(post.createdAt) : (post.date ? new Date(post.date) : new Date());
-      if (isNaN(parsedDate.getTime())) {
-        parsedDate = new Date();
-      }
-      slugMap.set(post.slug, {
-        slug: post.slug,
-        date: parsedDate,
+    if (dbPosts && Array.isArray(dbPosts)) {
+      dbPosts.forEach((post) => {
+        let parsedDate = post.createdAt ? new Date(post.createdAt) : (post.date ? new Date(post.date) : new Date());
+        if (isNaN(parsedDate.getTime())) {
+          parsedDate = new Date();
+        }
+        slugMap.set(post.slug, {
+          slug: post.slug,
+          date: parsedDate,
+        });
       });
-    });
+    }
 
     blogPostPages = Array.from(slugMap.values()).map((post) => ({
       url: `${siteUrl}/blog/${encodeURIComponent(post.slug)}`,
@@ -162,8 +170,7 @@ export default async function sitemap() {
       priority: 0.7,
     }));
   } catch (error) {
-    console.error('Sitemap: Failed to fetch blog posts for sitemap:', error.message);
-    throw error;
+    console.warn('Sitemap: Failed to fetch blog posts for sitemap:', error.message || error);
   }
 
   return [

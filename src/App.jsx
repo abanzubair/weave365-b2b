@@ -41,27 +41,27 @@ import { Home, homeCategoryNames } from './views/Home.jsx';
 import { Favorites } from './views/Favorites.jsx';
 
 
-const Catalog = lazy(() => import('./CatalogPage.jsx').then((module) => ({ default: module.Catalog })));
-const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then((module) => ({ default: module.ProductDetailWrapper })));
-const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then((module) => ({ default: module.BulkInquiry })));
-const Admin = lazy(() => import('./views/Admin.jsx').then((module) => ({ default: module.Admin })));
-const Account = lazy(() => import('./views/Account.jsx').then((module) => ({ default: module.Account })));
-const WholesalePartnerProgramPage = lazy(() => import('./views/WholesalePartnerProgramPage.jsx').then((module) => ({ default: module.WholesalePartnerProgramPage })));
-const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then((module) => ({ default: module.VendorPartnershipPage })));
-const TrustedPartnerRegistrationPage = lazy(() => import('./views/TrustedPartnerRegistrationPage.jsx').then((module) => ({ default: module.TrustedPartnerRegistrationPage })));
-const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then((module) => ({ default: module.ResellerDashboard })));
-const SharedCatalog = lazy(() => import('./views/SharedCatalog.jsx').then((module) => ({ default: module.SharedCatalog })));
+import { Catalog } from './CatalogPage.jsx';
+import { ProductDetailWrapper } from './ProductPage.jsx';
+import { BulkInquiry } from './views/BulkInquiry.jsx';
+import { Admin } from './views/Admin.jsx';
+import { Account } from './views/Account.jsx';
+import { WholesalePartnerProgramPage } from './views/WholesalePartnerProgramPage.jsx';
+import { VendorPartnershipPage } from './views/VendorPartnershipPage.jsx';
+import { TrustedPartnerRegistrationPage } from './views/TrustedPartnerRegistrationPage.jsx';
+import { ResellerDashboard } from './views/ResellerDashboard.jsx';
+import { SharedCatalog } from './views/SharedCatalog.jsx';
 
-const SharedProductPage = lazy(() => import('./views/SharedProductPage.jsx').then((module) => ({ default: module.SharedProductPage })));
-const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then((module) => ({ default: module.NewArrivalsPage })));
-const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
-const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then((module) => ({ default: module.PartnerProgramPage })));
-const BlogList = lazy(() => import('./views/BlogList.jsx').then((module) => ({ default: module.BlogList })));
-const BlogPost = lazy(() => import('./views/BlogPost.jsx').then((module) => ({ default: module.BlogPost })));
-const AboutPage = lazy(() => import('./views/AboutPage.jsx').then((module) => ({ default: module.AboutPage })));
-const EarlyAccessPage = lazy(() => import('./views/EarlyAccessPage.jsx').then((module) => ({ default: module.EarlyAccessPage })));
-const ContactPage = lazy(() => import('./views/ContactPage.jsx').then((module) => ({ default: module.ContactPage })));
-const NotFoundPage = lazy(() => import('./views/NotFoundPage.jsx').then((module) => ({ default: module.NotFoundPage })));
+import { SharedProductPage } from './views/SharedProductPage.jsx';
+import { NewArrivalsPage } from './views/NewArrivalsPage.jsx';
+import SeoLandingPage from './views/SeoLandingPage.jsx';
+import { PartnerProgramPage } from './views/PartnerProgramPage.jsx';
+import { BlogList } from './views/BlogList.jsx';
+import { BlogPost } from './views/BlogPost.jsx';
+import { AboutPage } from './views/AboutPage.jsx';
+import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
+import { ContactPage } from './views/ContactPage.jsx';
+import { NotFoundPage } from './views/NotFoundPage.jsx';
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
