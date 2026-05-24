@@ -29,6 +29,7 @@
 @import './styles/sectionTitle.css';
 @import './styles/internalLinkNetwork.css';
 @import './styles/emptyCategorySourcing.css';
+@import './styles/admin.css';
 
 .search-lock {
   overflow: hidden !important;

@@ -147,6 +147,15 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [partnerSearchQuery, setPartnerSearchQuery] = useState('');
   const [partnerSortField, setPartnerSortField] = useState('date'); // 'date' | 'name' | 'city' | 'status' | 'business'
   const [partnerSortOrder, setPartnerSortOrder] = useState('desc'); // 'asc' | 'desc'
+  const [userSortField, setUserSortField] = useState('date'); // 'date' | 'name' | 'order_list' | 'favourites' | 'approval'
+  const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
+  const [userPageLimit, setUserPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
+  const [enquiryPageLimit, setEnquiryPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
+  const [enquirySortField, setEnquirySortField] = useState('date'); // 'date' | 'name' | 'status' | 'items'
+  const [enquirySortOrder, setEnquirySortOrder] = useState('desc'); // 'asc' | 'desc'
+  const [followUpPageLimit, setFollowUpPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
+  const [followUpSortField, setFollowUpSortField] = useState('date'); // 'date' | 'name' | 'title' | 'status'
+  const [followUpSortOrder, setFollowUpSortOrder] = useState('desc'); // 'asc' | 'desc'
   const [updatingWhatsapp, setUpdatingWhatsapp] = useState(null);
   const [localStatuses, setLocalStatuses] = useState({}); // { whatsapp: 'approved' | 'rejected' | 'flagged' }
 
@@ -1132,6 +1141,87 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const wholesaleProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'wholesale');
   const monthlyUsers = buildMonthlySeries(adminData.profiles);
 
+  const sortedProfiles = useMemo(() => {
+    const profiles = adminData.profiles || [];
+    return [...profiles].sort((a, b) => {
+      let valA, valB;
+      if (userSortField === 'name') {
+        valA = String(a.business_name || a.full_name || '').toLowerCase();
+        valB = String(b.business_name || b.full_name || '').toLowerCase();
+      } else if (userSortField === 'order_list') {
+        const cartA = userCartMap.get(a.id) || [];
+        const cartB = userCartMap.get(b.id) || [];
+        valA = cartA.length;
+        valB = cartB.length;
+      } else if (userSortField === 'favourites') {
+        const favA = userFavoriteMap.get(a.id) || [];
+        const favB = userFavoriteMap.get(b.id) || [];
+        valA = favA.length;
+        valB = favB.length;
+      } else if (userSortField === 'approval') {
+        valA = String(a.approval_status || 'pending').toLowerCase();
+        valB = String(b.approval_status || 'pending').toLowerCase();
+      } else { // 'date'
+        valA = new Date(a.created_at || 0).getTime();
+        valB = new Date(b.created_at || 0).getTime();
+      }
+
+      if (valA < valB) return userSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return userSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder]);
+
+  const sortedEnquiries = useMemo(() => {
+    const enquiries = adminData.optional.inquiries || [];
+    return [...enquiries].sort((a, b) => {
+      let valA, valB;
+      if (enquirySortField === 'name') {
+        valA = String(a.buyer_name || '').toLowerCase();
+        valB = String(b.buyer_name || '').toLowerCase();
+      } else if (enquirySortField === 'status') {
+        valA = String(a.status || 'new').toLowerCase();
+        valB = String(b.status || 'new').toLowerCase();
+      } else if (enquirySortField === 'items') {
+        valA = (a.items || []).length;
+        valB = (b.items || []).length;
+      } else { // 'date'
+        valA = new Date(a.created_at || 0).getTime();
+        valB = new Date(b.created_at || 0).getTime();
+      }
+
+      if (valA < valB) return enquirySortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return enquirySortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [adminData.optional.inquiries, enquirySortField, enquirySortOrder]);
+
+  const sortedFollowUps = useMemo(() => {
+    const followUps = adminData.optional.follow_ups || [];
+    return [...followUps].sort((a, b) => {
+      let valA, valB;
+      if (followUpSortField === 'name') {
+        const profileA = profileMap.get(a.buyer_id);
+        const profileB = profileMap.get(b.buyer_id);
+        valA = String(profileA?.business_name || profileA?.full_name || '').toLowerCase();
+        valB = String(profileB?.business_name || profileB?.full_name || '').toLowerCase();
+      } else if (followUpSortField === 'status') {
+        valA = String(a.status || 'open').toLowerCase();
+        valB = String(b.status || 'open').toLowerCase();
+      } else if (followUpSortField === 'title') {
+        valA = String(a.title || '').toLowerCase();
+        valB = String(b.title || '').toLowerCase();
+      } else { // 'date'
+        valA = new Date(a.created_at || 0).getTime();
+        valB = new Date(b.created_at || 0).getTime();
+      }
+
+      if (valA < valB) return followUpSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return followUpSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [adminData.optional.follow_ups, profileMap, followUpSortField, followUpSortOrder]);
+
   const filteredReviews = useMemo(() => {
     const filtered = partnerApps.reviews.filter(rev => {
       if (!rev) return false;
@@ -1265,176 +1355,50 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       </div>
 
       {/* Luxury Tabs Bar */}
-      <div className="admin-tabs-bar" style={{ 
-        display: 'inline-flex', 
-        gap: '6px', 
-        background: 'var(--surface-soft, #f7f5f0)', 
-        border: '1px solid rgba(183, 134, 70, 0.15)',
-        borderRadius: '14px',
-        padding: '6px',
-        marginBottom: '36px',
-        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)'
-      }}>
+      <div className="admin-tabs-bar">
         <button 
           type="button"
           onClick={() => setActiveTab('pipeline')}
-          style={{
-            background: activeTab === 'pipeline' ? '#ffffff' : 'transparent',
-            color: activeTab === 'pipeline' ? 'var(--primary)' : 'var(--muted)',
-            border: 'none',
-            borderRadius: '10px',
-            fontFamily: 'var(--font-body, sans-serif)',
-            fontSize: '14px',
-            fontWeight: activeTab === 'pipeline' ? 700 : 600,
-            padding: '12px 24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: activeTab === 'pipeline' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
-            transform: activeTab === 'pipeline' ? 'scale(1.02)' : 'scale(1)',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseOver={(e) => {
-            if (activeTab !== 'pipeline') {
-              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
-              e.currentTarget.style.color = 'var(--primary)';
-            }
-          }}
-          onMouseOut={(e) => {
-            if (activeTab !== 'pipeline') {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--muted)';
-            }
-          }}
+          className={`admin-tab-btn ${activeTab === 'pipeline' ? 'active' : ''}`}
         >
-          <Users size={18} style={{ strokeWidth: activeTab === 'pipeline' ? 2.5 : 2 }} /> Buyer Pipeline & Growth
+          <Users size={18} strokeWidth={activeTab === 'pipeline' ? 2.5 : 2} /> Buyer Pipeline & Growth
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('blogs')}
-          style={{
-            background: activeTab === 'blogs' ? '#ffffff' : 'transparent',
-            color: activeTab === 'blogs' ? 'var(--primary)' : 'var(--muted)',
-            border: 'none',
-            borderRadius: '10px',
-            fontFamily: 'var(--font-body, sans-serif)',
-            fontSize: '14px',
-            fontWeight: activeTab === 'blogs' ? 700 : 600,
-            padding: '12px 24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: activeTab === 'blogs' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
-            transform: activeTab === 'blogs' ? 'scale(1.02)' : 'scale(1)',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseOver={(e) => {
-            if (activeTab !== 'blogs') {
-              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
-              e.currentTarget.style.color = 'var(--primary)';
-            }
-          }}
-          onMouseOut={(e) => {
-            if (activeTab !== 'blogs') {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--muted)';
-            }
-          }}
+          className={`admin-tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}
         >
-          <FileText size={18} style={{ strokeWidth: activeTab === 'blogs' ? 2.5 : 2 }} /> B2B Editorial Blog Manager
+          <FileText size={18} strokeWidth={activeTab === 'blogs' ? 2.5 : 2} /> B2B Editorial Blog Manager
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('partners')}
-          style={{
-            background: activeTab === 'partners' ? '#ffffff' : 'transparent',
-            color: activeTab === 'partners' ? 'var(--primary)' : 'var(--muted)',
-            border: 'none',
-            borderRadius: '10px',
-            fontFamily: 'var(--font-body, sans-serif)',
-            fontSize: '14px',
-            fontWeight: activeTab === 'partners' ? 700 : 600,
-            padding: '12px 24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: activeTab === 'partners' ? '0 4px 20px rgba(183,134,70,0.15), 0 2px 6px rgba(0,0,0,0.04)' : 'none',
-            transform: activeTab === 'partners' ? 'scale(1.02)' : 'scale(1)',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseOver={(e) => {
-            if (activeTab !== 'partners') {
-              e.currentTarget.style.background = 'rgba(183,134,70,0.05)';
-              e.currentTarget.style.color = 'var(--primary)';
-            }
-          }}
-          onMouseOut={(e) => {
-            if (activeTab !== 'partners') {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--muted)';
-            }
-          }}
+          className={`admin-tab-btn ${activeTab === 'partners' ? 'active' : ''}`}
         >
-          <Award size={18} style={{ strokeWidth: activeTab === 'partners' ? 2.5 : 2 }} /> B2B Partner Applications
+          <Award size={18} strokeWidth={activeTab === 'partners' ? 2.5 : 2} /> B2B Partner Applications
         </button>
       </div>
 
       {activeTab === 'pipeline' ? (
         <>
           {/* Restored Premium Google Sheets Data Sync Banner */}
-          <div className="admin-sync-banner" style={{ 
-            background: 'var(--surface-soft, #f7f5f0)', 
-            border: '1px solid rgba(183, 134, 70, 0.15)', 
-            padding: '20px 24px', 
-            borderRadius: '14px', 
-            marginBottom: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '24px',
-            boxShadow: '0 4px 20px rgba(183, 134, 70, 0.03), inset 0 2px 4px rgba(0,0,0,0.01)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ 
-                background: '#ffffff', 
-                color: 'var(--primary, #b78646)', 
-                padding: '12px', 
-                borderRadius: '12px',
-                border: '1px solid rgba(183, 134, 70, 0.12)',
-                boxShadow: '0 4px 12px rgba(183, 134, 70, 0.08)'
-              }}>
+          <div className="admin-sync-banner">
+            <div className="admin-sync-content">
+              <div className="admin-sync-icon-wrap">
                 <FileSpreadsheet size={24} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--ink, #1c1917)', fontFamily: 'var(--font-display, inherit)' }}>Google Sheets & Database Synchronization</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: 'var(--muted, #78716c)', lineHeight: 1.4 }}>
+                <h3 className="admin-sync-title">Google Sheets & Database Synchronization</h3>
+                <p className="admin-sync-desc">
                   Sheets automatically synchronize in the background every 15 minutes, but you can force an instant update here.
                 </p>
               </div>
             </div>
             <button 
               type="button"
-              className="primary-button"
               onClick={handleManualSync} 
               disabled={syncStatus === 'loading'}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                fontSize: '13px',
-                fontWeight: 700,
-                background: 'var(--primary, #b78646)',
-                border: 'none',
-                color: '#ffffff',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(183, 134, 70, 0.25)',
-                transition: 'all 0.25s ease'
-              }}
+              className="admin-sync-btn"
             >
               <RefreshCw size={15} className={syncStatus === 'loading' ? 'spin' : ''} />
               {syncStatus === 'loading' ? 'Syncing...' : 'Sync Now'}
@@ -1477,28 +1441,73 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           </div>
 
           <article className="admin-panel">
-            <div className="admin-panel-head">
-              <span><Users size={18} /> Users, Order Lists & Favourites</span>
-              <small>{adminData.profiles.length} registered profile rows</small>
+            <div className="admin-panel-head admin-panel-head-flex">
+              <div>
+                <span><Users size={18} /> Users, Order Lists & Favourites</span>
+                <small>{adminData.profiles.length} registered profile rows</small>
+              </div>
+              <div className="admin-controls-group">
+                {/* Row display limit dropdown */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Show:</span>
+                  <select
+                    value={userPageLimit}
+                    onChange={(e) => setUserPageLimit(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="10">10 Rows</option>
+                    <option value="20">20 Rows</option>
+                    <option value="30">30 Rows</option>
+                    <option value="all">Show All</option>
+                  </select>
+                </div>
+
+                {/* Sort dropdown and order toggle */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Sort By:</span>
+                  <select
+                    value={userSortField}
+                    onChange={(e) => setUserSortField(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="date">Date Registered</option>
+                    <option value="name">Buyer Name</option>
+                    <option value="order_list">Order List Count</option>
+                    <option value="favourites">Favourites Count</option>
+                    <option value="approval">Approval Status</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setUserSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="admin-btn-toggle"
+                    title={userSortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+                  >
+                    {userSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="admin-table-wrap">
+            <div className="admin-table-wrap admin-table-wrap-scroller" style={{
+              maxHeight: userPageLimit === 'all' ? 'none' : `${parseInt(userPageLimit) * 80 + 50}px`,
+              overflowY: userPageLimit === 'all' ? 'visible' : 'auto'
+            }}>
               <table className="admin-table">
                 <thead>
-                  <tr>
-                    <th>Buyer</th>
-                    <th>Type</th>
-                    <th>Price Group</th>
-                    <th>Behaviour</th>
-                    <th>Approval</th>
-                    <th>Order List</th>
-                    <th>Favourites</th>
-                    <th>Reseller Dashboard</th>
-                    <th>Contact</th>
-                    <th>CRM Action</th>
+                  <tr className="admin-table-sticky-tr">
+                    <th className="admin-table-sticky-th">Buyer</th>
+                    <th className="admin-table-sticky-th">Type</th>
+                    <th className="admin-table-sticky-th">Price Group</th>
+                    <th className="admin-table-sticky-th">Behaviour</th>
+                    <th className="admin-table-sticky-th">Approval</th>
+                    <th className="admin-table-sticky-th">Order List</th>
+                    <th className="admin-table-sticky-th">Favourites</th>
+                    <th className="admin-table-sticky-th">Reseller Dashboard</th>
+                    <th className="admin-table-sticky-th">Contact</th>
+                    <th className="admin-table-sticky-th">CRM Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {adminData.profiles.map((profile) => {
+                  {sortedProfiles.map((profile) => {
                     const cartRows = userCartMap.get(profile.id) || [];
                     const favoriteRows = userFavoriteMap.get(profile.id) || [];
 
@@ -1507,12 +1516,15 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         <td>
                           <strong>{profile.business_name || profile.full_name || 'Unnamed buyer'}</strong>
                           <span>{profile.email}</span>
+                          <span className="admin-profile-registered-meta">
+                            Registered: {profile.created_at ? new Date(profile.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                          </span>
                         </td>
                         <td>
                           {profile.buyer_subtype ? (
-                            <span style={{ display: 'block' }}>
-                              <span style={{ textTransform: 'capitalize' }}>{profile.buyer_type}</span>
-                              <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '2px', fontStyle: 'italic' }}>
+                            <span className="admin-buyer-type-container">
+                              <span className="admin-buyer-type-label">{profile.buyer_type}</span>
+                              <small className="admin-buyer-subtype-label">
                                 {profile.buyer_subtype}
                               </small>
                             </span>
@@ -1526,14 +1538,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         <td>{cartRows.length} row{cartRows.length === 1 ? '' : 's'}</td>
                         <td>{favoriteRows.length}</td>
                         <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div className="admin-reseller-dash-cell">
                             <span className={`admin-status ${profile.reseller_dashboard_enabled ? 'approved' : 'pending'}`}>
                               {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
                             </span>
                             <button 
                               type="button" 
                               onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                              style={{ fontSize: '10px', padding: '2px 6px' }}
+                              className={`admin-btn-reseller-toggle ${profile.reseller_dashboard_enabled ? 'state-enabled' : 'state-disabled'}`}
                             >
                               {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
                             </button>
@@ -1543,31 +1555,46 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           <div className="admin-contact-info">
                             <strong>{profile.whatsapp || 'No WhatsApp'}</strong>
                             {profile.city && (
-                              <span style={{ textTransform: 'capitalize' }}>
-                                {profile.city}
+                              <span className="admin-capitalize" style={{ display: 'block' }}>
+                                {profile.city} {profile.pincode ? `(PIN ${profile.pincode})` : ''}
                               </span>
                             )}
-                            <span>
-                              {profile.pincode ? `PIN ${profile.pincode}` : ''}
-                              {isVaranasiPincode(profile.pincode) && ' Varanasi'}
-                            </span>
+                            {!profile.city && profile.pincode && (
+                              <span style={{ display: 'block' }}>PIN {profile.pincode}</span>
+                            )}
                             {isVaranasiPincode(profile.pincode) && (
-                              <span className="admin-status-hint">approval required</span>
+                              <span className="admin-status-hint" style={{ display: 'block', textTransform: 'uppercase', fontWeight: 700, fontSize: '11px', marginTop: '4px' }}>Approval Required</span>
                             )}
                           </div>
                         </td>
                         <td>
-                          <div className="admin-action-stack">
-                            <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'approved', 'wholesale')}>
+                          <div className="admin-action-stack admin-action-stack-grid">
+                            <button 
+                              type="button" 
+                              onClick={() => updateBuyerPriceAccess(profile, 'approved', 'wholesale')}
+                              className="admin-crm-btn btn-wholesale"
+                            >
                               Approve Wholesale
                             </button>
-                            <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'approved', 'reseller')}>
+                            <button 
+                              type="button" 
+                              onClick={() => updateBuyerPriceAccess(profile, 'approved', 'reseller')}
+                              className="admin-crm-btn btn-reseller"
+                            >
                               Approve Reseller
                             </button>
-                            <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'pending', 'pending')}>
+                            <button 
+                              type="button" 
+                              onClick={() => updateBuyerPriceAccess(profile, 'pending', 'pending')}
+                              className="admin-crm-btn btn-hold"
+                            >
                               Hold
                             </button>
-                            <button type="button" onClick={() => updateBuyerPriceAccess(profile, 'suspended', 'pending')}>
+                            <button 
+                              type="button" 
+                              onClick={() => updateBuyerPriceAccess(profile, 'suspended', 'pending')}
+                              className="admin-crm-btn btn-suspend"
+                            >
                               Suspend
                             </button>
                           </div>
@@ -1575,7 +1602,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                       </tr>
                     );
                   })}
-                  {adminData.profiles.length === 0 && (
+                  {sortedProfiles.length === 0 && (
                     <tr>
                       <td colSpan="9">No profiles found yet.</td>
                     </tr>
@@ -1586,35 +1613,81 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           </article>
 
           <article className="admin-panel">
-            <div className="admin-panel-head">
-              <span><MessageSquareText size={18} /> Product & Order List Inquiries</span>
-              <small>{enquiryRows.length} total inquiries logged</small>
+            <div className="admin-panel-head admin-panel-head-flex">
+              <div>
+                <span><MessageSquareText size={18} /> Product & Order List Inquiries</span>
+                <small>{enquiryRows.length} total inquiries logged</small>
+              </div>
+              <div className="admin-controls-group">
+                {/* Row display limit dropdown */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Show:</span>
+                  <select
+                    value={enquiryPageLimit}
+                    onChange={(e) => setEnquiryPageLimit(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="10">10 Rows</option>
+                    <option value="20">20 Rows</option>
+                    <option value="30">30 Rows</option>
+                    <option value="all">Show All</option>
+                  </select>
+                </div>
+
+                {/* Sort dropdown and order toggle */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Sort By:</span>
+                  <select
+                    value={enquirySortField}
+                    onChange={(e) => setEnquirySortField(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="date">Date Logged</option>
+                    <option value="name">Buyer Name</option>
+                    <option value="status">Status</option>
+                    <option value="items">Items Count</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setEnquirySortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="admin-btn-toggle"
+                    title={enquirySortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+                  >
+                    {enquirySortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="admin-table-wrap">
+            <div className="admin-table-wrap admin-table-wrap-scroller" style={{
+              maxHeight: enquiryPageLimit === 'all' ? 'none' : `${parseInt(enquiryPageLimit) * 80 + 50}px`,
+              overflowY: enquiryPageLimit === 'all' ? 'visible' : 'auto'
+            }}>
               <table className="admin-table">
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Buyer</th>
-                    <th>Items (Code / Color / Qty)</th>
-                    <th>Status</th>
-                    <th>CRM Actions</th>
+                  <tr className="admin-table-sticky-tr">
+                    <th className="admin-table-sticky-th">Date</th>
+                    <th className="admin-table-sticky-th">Buyer</th>
+                    <th className="admin-table-sticky-th">Items (Code / Color / Qty)</th>
+                    <th className="admin-table-sticky-th">Status</th>
+                    <th className="admin-table-sticky-th">CRM Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enquiryRows.map((inquiry) => (
+                  {sortedEnquiries.map((inquiry) => (
                     <tr key={inquiry.id}>
                       <td>{monthKey(inquiry.created_at)}</td>
                       <td>
                         <strong>{inquiry.buyer_name || 'Guest'}</strong>
-                        <span>{inquiry.email || 'No email'}</span>
-                        <span>{inquiry.phone || ''}</span>
+                        <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)' }}>{inquiry.email || 'No email'}</span>
+                        {inquiry.phone && (
+                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--primary)', fontWeight: 600 }}>WhatsApp: {inquiry.phone}</span>
+                        )}
                       </td>
                       <td>
                         <div className="admin-items-list">
                           {(inquiry.items || []).map((item, idx) => (
-                            <div key={idx} className="admin-item-row" style={{ display: 'flex', gap: '8px', fontSize: '12px', marginBottom: '4px' }}>
-                              <code style={{ background: '#f0f0f0', padding: '2px 4px', borderRadius: '4px' }}>{item.variant_code || inquiry.variant_code}</code>
+                            <div key={idx} className="admin-item-row">
+                              <code>{item.variant_code || inquiry.variant_code}</code>
                               <span>{item.color || 'No color'}</span>
                               <strong>x{item.quantity || 1}</strong>
                             </div>
@@ -1630,24 +1703,33 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         </span>
                       </td>
                       <td>
-                        <div className="admin-action-stack">
-                          {inquiry.status !== 'done' && inquiry.status !== 'followed_up' && (
+                        <div className="admin-action-stack admin-action-stack-grid">
+                          {inquiry.status !== 'done' && inquiry.status !== 'followed_up' ? (
                             <>
-                              <button type="button" onClick={() => updateInquiryStatus(inquiry.id, 'done')}>
+                              <button 
+                                type="button" 
+                                onClick={() => updateInquiryStatus(inquiry.id, 'done')}
+                                className="admin-crm-btn btn-wholesale"
+                              >
                                 Mark Done
                               </button>
-                              <button type="button" onClick={() => moveToFollowUp(inquiry)}>
+                              <button 
+                                type="button" 
+                                onClick={() => moveToFollowUp(inquiry)}
+                                className="admin-crm-btn btn-reseller"
+                              >
                                 Move to Follow-ups
                               </button>
                             </>
+                          ) : (
+                            <div className="admin-grid-placeholder-span2" /> // Placeholder to maintain visual grid integrity
                           )}
                           {inquiry.phone && (
                             <a 
                               href={`https://wa.me/${inquiry.phone.replace(/\D/g, '')}`} 
                               target="_blank" 
                               rel="noreferrer"
-                              className="admin-secondary-link"
-                              style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                              className="admin-crm-whatsapp-btn"
                             >
                               Chat on WhatsApp
                             </a>
@@ -1667,34 +1749,85 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           </article>
 
           <article className="admin-panel">
-            <div className="admin-panel-head">
-              <span><ClipboardList size={18} /> CRM Follow Ups</span>
-              <small>{followUpRows.length} active follow-up tasks</small>
+            <div className="admin-panel-head admin-panel-head-flex">
+              <div>
+                <span><ClipboardList size={18} /> CRM Follow Ups</span>
+                <small>{followUpRows.length} active follow-up tasks</small>
+              </div>
+              <div className="admin-controls-group">
+                {/* Row display limit dropdown */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Show:</span>
+                  <select
+                    value={followUpPageLimit}
+                    onChange={(e) => setFollowUpPageLimit(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="10">10 Rows</option>
+                    <option value="20">20 Rows</option>
+                    <option value="30">30 Rows</option>
+                    <option value="all">Show All</option>
+                  </select>
+                </div>
+
+                {/* Sort dropdown and order toggle */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Sort By:</span>
+                  <select
+                    value={followUpSortField}
+                    onChange={(e) => setFollowUpSortField(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="date">Date Created</option>
+                    <option value="name">Buyer Name</option>
+                    <option value="title">Task Title</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setFollowUpSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    className="admin-btn-toggle"
+                    title={followUpSortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
+                  >
+                    {followUpSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="admin-table-wrap">
+            <div className="admin-table-wrap admin-table-wrap-scroller" style={{
+              maxHeight: followUpPageLimit === 'all' ? 'none' : `${parseInt(followUpPageLimit) * 80 + 50}px`,
+              overflowY: followUpPageLimit === 'all' ? 'visible' : 'auto'
+            }}>
               <table className="admin-table">
                 <thead>
-                  <tr>
-                    <th>Created</th>
-                    <th>Buyer</th>
-                    <th>Task / Notes</th>
-                    <th>Status</th>
-                    <th>CRM Actions</th>
+                  <tr className="admin-table-sticky-tr">
+                    <th className="admin-table-sticky-th">Created</th>
+                    <th className="admin-table-sticky-th">Buyer</th>
+                    <th className="admin-table-sticky-th">Task / Notes</th>
+                    <th className="admin-table-sticky-th">Status</th>
+                    <th className="admin-table-sticky-th">CRM Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {followUpRows.map((follow) => {
+                  {sortedFollowUps.map((follow) => {
                     const profile = profileMap.get(follow.buyer_id);
                     return (
                       <tr key={follow.id}>
-                        <td>{monthKey(follow.created_at)}</td>
+                        <td className="admin-fs12">
+                          <span className="admin-fs12" style={{ display: 'block', color: 'var(--muted)' }}>
+                            {follow.created_at ? new Date(follow.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                          </span>
+                        </td>
                         <td>
                           <strong>{profile?.business_name || profile?.full_name || 'Unknown Buyer'}</strong>
-                          <span>{profile?.email || 'No email'}</span>
+                          <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)' }}>{profile?.email || 'No email'}</span>
+                          {profile?.whatsapp && (
+                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--primary)', fontWeight: 600 }}>WhatsApp: {profile.whatsapp}</span>
+                          )}
                         </td>
                         <td>
                           <strong>{follow.title}</strong>
-                          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>{follow.notes}</p>
+                          <p className="admin-follow-up-notes">{follow.notes}</p>
                         </td>
                         <td>
                           <span className={`admin-status ${follow.status || 'open'}`}>
@@ -1702,30 +1835,37 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           </span>
                         </td>
                         <td>
-                          <div className="admin-action-stack">
-                            {follow.status !== 'done' && (
-                              <button type="button" onClick={() => updateFollowUpStatus(follow.id, 'done')}>
-                                End Enquiry (Done)
+                          <div className="admin-action-stack admin-action-stack-grid" style={{ minWidth: '240px' }}>
+                            {follow.status !== 'done' ? (
+                              <button 
+                                type="button" 
+                                onClick={() => updateFollowUpStatus(follow.id, 'done')}
+                                className="admin-crm-btn btn-wholesale"
+                                style={{ gridColumn: 'span 2' }}
+                              >
+                                <Check size={12} style={{ marginRight: '4px' }} /> End Enquiry (Done)
                               </button>
+                            ) : (
+                              <span className="admin-status approved" style={{ gridColumn: 'span 2', textAlign: 'center', display: 'block' }}>✓ Task Completed</span>
                             )}
                             {profile?.whatsapp && (
                               <a 
                                 href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} 
                                 target="_blank" 
                                 rel="noreferrer"
-                                className="admin-secondary-link"
-                                style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                                className="admin-crm-whatsapp-btn"
+                                style={{ gridColumn: 'span 1', margin: 0, padding: '8px' }}
                               >
-                                WhatsApp Buyer
+                                <Phone size={12} style={{ marginRight: '4px' }} /> WhatsApp
                               </a>
                             )}
                             {profile?.whatsapp && (
                               <a 
                                 href={`tel:${profile.whatsapp.replace(/\D/g, '')}`} 
-                                className="admin-secondary-link"
-                                style={{ fontSize: '11px', marginTop: '4px', textDecoration: 'underline', color: 'var(--primary)' }}
+                                className="admin-crm-btn btn-reseller"
+                                style={{ gridColumn: 'span 1' }}
                               >
-                                Call Buyer
+                                <Phone size={12} style={{ marginRight: '4px' }} /> Call Buyer
                               </a>
                             )}
                           </div>
@@ -1735,7 +1875,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                   })}
                   {followUpRows.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="admin-muted">No follow-ups found.</td>
+                      <td colSpan="5" className="admin-muted" style={{ textAlign: 'center', padding: '24px' }}>No follow-ups found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -1790,43 +1930,26 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         </>
       ) : activeTab === 'blogs' ? (
         /* ==================== B2B BLOG MANAGER TAB ==================== */
-        <div className="admin-blog-manager-tab" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <div className="admin-blog-manager-tab">
           
           {/* Supabase blog_posts Setup Checklist Alert */}
           {adminData.errors.blog_posts ? (
-            <article style={{ 
-              background: '#fff9f0', 
-              border: '1px solid #ffe3b3', 
-              padding: '24px', 
-              borderRadius: '8px', 
-              marginBottom: '32px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
-            }}>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ background: '#fff0d6', color: '#b26a00', padding: '10px', borderRadius: '8px' }}>
+            <article className="admin-blog-setup-alert">
+              <div className="admin-blog-setup-flex">
+                <div className="admin-blog-setup-icon-wrap">
                   <AlertTriangle size={24} />
                 </div>
-                <div style={{ flexGrow: 1 }}>
-                  <h3 style={{ margin: 0, fontSize: '16px', color: '#804c00', fontFamily: 'var(--font-hero-heading, serif)' }}>
+                <div className="admin-blog-setup-content">
+                  <h3 className="admin-blog-setup-title">
                     Supabase Blog Table Required for Dynamic Publishing
                   </h3>
-                  <p style={{ margin: '8px 0 16px', fontSize: '14px', color: '#666', lineHeight: 1.5 }}>
+                  <p className="admin-blog-setup-desc">
                     Your code is ready for dynamic blogging, but the <strong>`blog_posts`</strong> table doesn't exist in your Supabase database yet. 
                     Copy and run the SQL below inside your <strong>Supabase Dashboard SQL Editor</strong> to go live.
                   </p>
                   
-                  <div style={{ position: 'relative' }}>
-                    <pre style={{ 
-                      background: '#121212', 
-                      color: '#a9b2c3', 
-                      padding: '16px', 
-                      borderRadius: '6px', 
-                      fontSize: '12px',
-                      overflowX: 'auto',
-                      maxHeight: '220px',
-                      fontFamily: 'monospace',
-                      lineHeight: '1.5'
-                    }}>
+                  <div className="admin-pos-relative">
+                    <pre className="admin-blog-setup-pre">
 {`CREATE TABLE IF NOT EXISTS public.blog_posts (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   slug text UNIQUE NOT NULL,
@@ -1875,26 +1998,15 @@ CREATE POLICY "Allow public read access" ON public.blog_posts FOR SELECT USING (
 CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true);`);
                         alert('SQL copied to clipboard!');
                       }}
-                      style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        fontSize: '11px',
-                        padding: '4px 8px',
-                        background: '#333',
-                        border: 'none',
-                        color: '#fff',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
+                      className="admin-blog-setup-copy-btn"
                     >
                       Copy SQL
                     </button>
                   </div>
                   
-                  <div style={{ marginTop: '16px', padding: '12px', background: '#fff', borderRadius: '6px', border: '1px dashed #ffe3b3', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#4caf50', borderRadius: '50%' }}></span>
-                    <small style={{ color: '#555' }}>
+                  <div className="admin-blog-setup-draft-notice">
+                    <span className="admin-blog-setup-dot"></span>
+                    <small className="admin-blog-setup-small">
                       <strong>Draft Mode Active:</strong> You can still draft and preview articles locally, but they won't save to the backend.
                     </small>
                   </div>
@@ -1902,26 +2014,16 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               </div>
             </article>
           ) : (
-            <div style={{ 
-              background: '#f4fbf7', 
-              border: '1px solid #c2ebd5', 
-              padding: '12px 20px', 
-              borderRadius: '8px', 
-              marginBottom: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#1b5e20'
-            }}>
+            <div className="admin-blog-setup-success">
               <Check size={18} />
-              <small style={{ fontSize: '13px', fontWeight: 600 }}>
+              <small className="admin-blog-setup-success-text">
                 Supabase Connection Active: Dynamic publishing is fully online and responsive.
               </small>
             </div>
           )}
 
           {/* List of Current Articles */}
-          <article className="admin-panel" style={{ marginBottom: '32px' }}>
+          <article className="admin-panel admin-panel-margin-bottom">
             <div className="admin-panel-head">
               <span><FileText size={18} /> Current Compiled Articles</span>
               <small>{blogs.length} articles total</small>
@@ -1946,12 +2048,12 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       <tr key={post.slug}>
                         <td>
                           <strong>{post.title}</strong>
-                          <span style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>
+                          <span className="admin-blog-item-slug">
                             /{post.slug}
                           </span>
                         </td>
                         <td>
-                          <span className="card-category-badge" style={{ position: 'static', border: 'none', background: 'var(--blog-light-grey)', color: 'var(--blog-gold-dark)', fontSize: '10px' }}>
+                          <span className="card-category-badge admin-blog-item-category">
                             {post.category}
                           </span>
                         </td>
@@ -1963,18 +2065,18 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                         </td>
                         <td>{post.date}</td>
                         <td>
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <div className="admin-flex-wrap-gap8">
                             <button 
                               type="button" 
                               onClick={() => handleEditPost(post)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', padding: '4px 10px', background: 'var(--blog-light-grey)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '4px' }}
+                              className="admin-blog-btn-edit"
                             >
                               <Edit size={12} /> Edit
                             </button>
                             <button 
                               type="button" 
                               onClick={() => handleDeleteBlog(post)}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', padding: '4px 10px', background: '#ffebee', color: '#c62828', border: '1px solid #ffcdd2', borderRadius: '4px' }}
+                              className="admin-blog-btn-delete"
                             >
                               <Trash2 size={12} /> Delete
                             </button>
@@ -1982,7 +2084,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                               href={`/blog/${post.slug}`} 
                               target="_blank" 
                               rel="noreferrer"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', padding: '4px 10px', background: '#fff', border: '1px solid rgba(183,134,70,0.3)', color: 'var(--blog-gold-dark)', borderRadius: '4px', textDecoration: 'none' }}
+                              className="admin-blog-btn-live"
                             >
                               <Eye size={12} /> Live
                             </a>
@@ -1997,29 +2099,29 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
           </article>
 
           {/* Editor Anchor */}
-          <div id="blog-editor-anchor" style={{ height: '1px' }}></div>
+          <div id="blog-editor-anchor" className="admin-anchor-height1"></div>
 
           {/* Interactive Split Editor Form & Preview */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px', alignItems: 'flex-start' }}>
+          <div className="admin-editor-split-layout">
             
             {/* The Form Panel */}
-            <article className="admin-panel" style={{ margin: 0 }}>
-              <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-                <span style={{ fontSize: '16px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <article className="admin-panel admin-m0">
+              <div className="admin-panel-head admin-panel-head-border">
+                <span className="admin-editor-title">
                   {editingPost ? '✍️ Edit B2B Blog Post' : '✍️ Compose B2B Blog Post'}
                 </span>
                 {editingPost && (
-                  <span style={{ background: 'var(--blog-gold-dark)', color: '#fff', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                  <span className="admin-editor-draft-badge">
                     EDITING DRAFT
                   </span>
                 )}
               </div>
 
-              <form onSubmit={handleSaveBlog} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <form onSubmit={handleSaveBlog} className="admin-editor-form">
                 
                 {/* Title */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Article Title *</label>
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Article Title *</label>
                   <input 
                     type="text" 
                     value={formTitle} 
@@ -2031,40 +2133,40 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                     }} 
                     placeholder="e.g. Pure Katan Silk vs. Organza: The Master Weaver's Guide"
                     required
-                    style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                    className="admin-field-input"
                   />
                 </div>
 
                 {/* Slug Auto Generator */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>URL Slug *</label>
+                <div className="admin-slug-row">
+                  <div className="admin-field-container-w100">
+                    <label className="admin-field-label">URL Slug *</label>
                     <input 
                       type="text" 
                       value={formSlug} 
                       onChange={(e) => setFormSlug(e.target.value)} 
                       placeholder="e.g. katan-silk-vs-organza"
                       required
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     />
                   </div>
                   <button 
                     type="button" 
                     onClick={autoSlugify}
-                    style={{ padding: '10px 16px', background: 'var(--blog-light-grey)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                    className="admin-btn-slug"
                   >
                     🔗 Auto-Generate Slug
                   </button>
                 </div>
 
                 {/* Category & Tags Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Category *</label>
+                <div className="admin-grid-2col">
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Category *</label>
                     <select 
                       value={formCategory} 
                       onChange={(e) => setFormCategory(e.target.value)}
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     >
                       <option value="Business Strategy">Business Strategy</option>
                       <option value="Fabric Education">Fabric Education</option>
@@ -2073,64 +2175,64 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                     </select>
                   </div>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Tags</label>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Tags</label>
                     <input 
                       type="text" 
                       value={formTag} 
                       onChange={(e) => setFormTag(e.target.value)} 
                       placeholder="e.g. Saree Reseller, Wholesale Trends"
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     />
                   </div>
                 </div>
 
                 {/* Custom Category (only shown if Custom selected) */}
                 {formCategory === 'Custom' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', animation: 'fadeIn 0.3s ease' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Custom Category Name *</label>
+                  <div className="admin-field-container-animated">
+                    <label className="admin-field-label">Custom Category Name *</label>
                     <input 
                       type="text" 
                       value={formCustomCategory} 
                       onChange={(e) => setFormCustomCategory(e.target.value)} 
                       placeholder="e.g. Saree Care Guides"
                       required
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     />
                   </div>
                 )}
 
                 {/* Author & Read Time Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Author Name</label>
+                <div className="admin-grid-2col">
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Author Name</label>
                     <input 
                       type="text" 
                       value={formAuthor} 
                       onChange={(e) => setFormAuthor(e.target.value)} 
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Read Duration</label>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Read Duration</label>
                     <input 
                       type="text" 
                       value={formReadTime} 
                       onChange={(e) => setFormReadTime(e.target.value)} 
                       placeholder="e.g. 8 Min Read"
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                      className="admin-field-input"
                     />
                   </div>
                 </div>
 
                 {/* Cover Image Selector */}
-                <div style={{ border: '1px solid var(--border)', padding: '16px', borderRadius: '8px', background: '#fafafa' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--blog-dark)', display: 'block', marginBottom: '12px' }}>
+                <div className="admin-editor-image-section">
+                  <label className="admin-editor-image-title">
                     🖼️ Cover Image Selection
                   </label>
                   
-                  <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                  <div className="admin-editor-image-options">
+                    <label className="admin-radio-label">
                       <input 
                         type="radio" 
                         name="imageInputType" 
@@ -2138,7 +2240,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                         onChange={() => setFormImageInputType('file')} 
                       /> Upload File (Base64 saved)
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                    <label className="admin-radio-label">
                       <input 
                         type="radio" 
                         name="imageInputType" 
@@ -2149,14 +2251,14 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                   </div>
 
                   {formImageInputType === 'file' ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div className="admin-field-container">
                       <input 
                         type="file" 
                         accept="image/*" 
                         onChange={handleImageFileChange}
-                        style={{ fontSize: '13px' }}
+                        className="admin-file-input"
                       />
-                      <small style={{ color: 'var(--muted)', marginTop: '4px' }}>
+                      <small className="admin-doc-card-muted">
                         Image file is compiled directly into Base64 format and stored in the database safely. Limit: 4MB.
                       </small>
                     </div>
@@ -2166,29 +2268,29 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       value={formImageUrl} 
                       onChange={(e) => setFormImageUrl(e.target.value)} 
                       placeholder="Paste your image URL here (e.g. res.cloudinary.com/...)"
-                      style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px' }}
+                      className="admin-field-input-w100"
                     />
                   )}
                 </div>
 
                 {/* Intro Description */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Short Intro Description *</label>
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Short Intro Description *</label>
                   <textarea 
                     value={formIntro} 
                     onChange={(e) => setFormIntro(e.target.value)} 
                     placeholder="Provide a 2-3 sentence executive summary that grabs search readers and highlights your core keywords."
                     required
                     rows="3"
-                    style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px', resize: 'vertical', lineHeight: '1.4' }}
+                    className="admin-field-textarea"
                   />
                 </div>
 
                 {/* Article Body Content */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Main Content Body (Markdown Supported) *</label>
-                    <span style={{ fontSize: '11px', color: 'var(--blog-gold-dark)', background: 'rgba(183,134,70,0.08)', padding: '2px 8px', borderRadius: '4px' }}>
+                <div className="admin-field-container">
+                  <div className="admin-flex-between">
+                    <label className="admin-field-label">Main Content Body (Markdown Supported) *</label>
+                    <span className="admin-markdown-badge">
                       Markdown Editor Active
                     </span>
                   </div>
@@ -2206,55 +2308,55 @@ Use > for blockquotes
 Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     required
                     rows="15"
-                    style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px', fontFamily: 'monospace', resize: 'vertical', lineHeight: '1.5' }}
+                    className="admin-field-textarea-monospace"
                   />
                 </div>
 
                 {/* FAQ List Builder */}
-                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '8px', background: '#fafafa' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <label style={{ fontSize: '14px', fontWeight: 700, color: 'var(--blog-dark)' }}>❓ B2B Schema FAQ Accordion Builder</label>
+                <div className="admin-faq-section">
+                  <div className="admin-faq-header">
+                    <label className="admin-faq-title">❓ B2B Schema FAQ Accordion Builder</label>
                     <button 
                       type="button" 
                       onClick={addFaqItem}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', background: 'var(--blog-gold-dark)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                      className="admin-btn-add-faq"
                     >
                       <Plus size={14} /> Add FAQ Item
                     </button>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div className="admin-field-container">
                     {formFaqs.map((faq, index) => (
-                      <div key={index} style={{ border: '1px solid var(--border)', padding: '14px', borderRadius: '6px', background: '#fff', position: 'relative' }}>
+                      <div key={index} className="admin-faq-item">
                         <button 
                           type="button" 
                           onClick={() => removeFaqItem(index)}
-                          style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: '#c62828', cursor: 'pointer' }}
+                          className="admin-btn-delete-faq"
                         >
                           <Trash2 size={16} />
                         </button>
                         
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginRight: '24px' }}>
+                        <div className="admin-faq-fields">
                           <input 
                             type="text" 
                             value={faq.q} 
                             onChange={(e) => updateFaqItem(index, 'q', e.target.value)} 
                             placeholder="Question (e.g. What is the Minimum Order Quantity?)"
-                            style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '13px', fontWeight: 600 }}
+                            className="admin-faq-input"
                           />
                           <textarea 
                             value={faq.a} 
                             onChange={(e) => updateFaqItem(index, 'a', e.target.value)} 
                             placeholder="Answer (e.g. Our MOQ is 12 pieces across colors...)"
                             rows="2"
-                            style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '13px', resize: 'vertical' }}
+                            className="admin-faq-textarea"
                           />
                         </div>
                       </div>
                     ))}
 
                     {formFaqs.length === 0 && (
-                      <small style={{ color: 'var(--muted)', textAlign: 'center', display: 'block', padding: '10px' }}>
+                      <small className="admin-faq-empty">
                         No FAQ items added yet. Schema accordion will not render.
                       </small>
                     )}
@@ -2262,59 +2364,45 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 </div>
 
                 {/* SEO Metas Section */}
-                <div style={{ border: '1px solid var(--border)', padding: '20px', borderRadius: '8px', background: '#fafafa', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <label style={{ fontSize: '14px', fontWeight: 700, color: 'var(--blog-dark)' }}>🔍 Google SEO Meta Settings</label>
+                <div className="admin-seo-meta-section">
+                  <label className="admin-faq-title">🔍 Google SEO Meta Settings</label>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Meta Title Tag</label>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Meta Title Tag</label>
                     <input 
                       type="text" 
                       value={formMetaTitle} 
                       onChange={(e) => setFormMetaTitle(e.target.value)} 
                       placeholder="Title shown on search engine tabs (under 60 chars)"
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px' }}
+                      className="admin-seo-input"
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blog-dark)' }}>Meta Description</label>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Meta Description</label>
                     <textarea 
                       value={formMetaDescription} 
                       onChange={(e) => setFormMetaDescription(e.target.value)} 
                       placeholder="Short snippet shown on Google search (under 155 chars)"
                       rows="3"
-                      style={{ padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', resize: 'vertical' }}
+                      className="admin-seo-textarea"
                     />
                   </div>
                 </div>
 
                 {/* Save & Reset Actions */}
-                <div style={{ display: 'flex', gap: '16px', marginTop: '10px', justifyContent: 'flex-end' }}>
+                <div className="admin-form-actions">
                   <button 
                     type="button" 
                     onClick={resetBlogForm}
-                    style={{ padding: '12px 24px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                    className="admin-btn-cancel"
                   >
                     Cancel / Reset Form
                   </button>
                   <button 
                     type="submit" 
                     disabled={isSubmittingBlog || (adminData.errors.blog_posts && formImageInputType === 'file' && !formImageBase64)}
-                    style={{ 
-                      padding: '12px 32px', 
-                      background: 'var(--blog-gold-dark)', 
-                      color: '#fff', 
-                      border: 'none', 
-                      borderRadius: '6px', 
-                      cursor: 'pointer', 
-                      fontWeight: 700, 
-                      fontSize: '14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 15px rgba(128, 93, 49, 0.2)',
-                      opacity: (isSubmittingBlog || (adminData.errors.blog_posts && formImageInputType === 'file' && !formImageBase64)) ? 0.6 : 1
-                    }}
+                    className="admin-btn-publish"
                   >
                     {isSubmittingBlog ? (
                       <>
@@ -2332,25 +2420,25 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </article>
 
             {/* The Live Previews Panel (Right sticky column) */}
-            <aside style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'sticky', top: '120px' }}>
+            <aside className="admin-editor-sticky-aside">
               
               {/* Google Search Card Preview */}
-              <article className="admin-panel" style={{ margin: 0 }}>
+              <article className="admin-panel admin-m0">
                 <div className="admin-panel-head">
                   <span>Google Search SERP Inspector</span>
                   <small>Real-time Google rendering</small>
                 </div>
-                <div style={{ padding: '20px' }}>
-                  <div style={{ fontFamily: 'arial, sans-serif', fontSize: '14px', lineHeight: '1.2' }}>
-                    <div style={{ fontSize: '12px', color: '#202124', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div className="admin-p20">
+                  <div className="admin-serp-preview">
+                    <div className="admin-serp-url-row">
                       <span>https://www.weave365.in</span>
-                      <span style={{ color: '#5f6368' }}>› blog › {formSlug || 'your-slug'}</span>
+                      <span className="admin-serp-slug">› blog › {formSlug || 'your-slug'}</span>
                     </div>
-                    <h3 style={{ fontSize: '20px', color: '#1a0dab', margin: '0 0 4px', fontWeight: 'normal', textDecoration: 'none', cursor: 'pointer' }}>
+                    <h3 className="admin-serp-title">
                       {formMetaTitle || formTitle || 'Please Enter a Title...'}
                     </h3>
-                    <p style={{ color: '#4d5156', margin: 0, fontSize: '14px', lineHeight: '1.58' }}>
-                      <span style={{ color: '#70757a', marginRight: '4px' }}>
+                    <p className="admin-serp-desc">
+                      <span className="admin-serp-date">
                         {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} —
                       </span>
                       {formMetaDescription || formIntro || 'Start typing your article summary to preview the search result description here...'}
@@ -2360,40 +2448,39 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
               </article>
 
               {/* Card Listing Grid Preview */}
-              <article className="admin-panel" style={{ margin: 0 }}>
+              <article className="admin-panel admin-m0">
                 <div className="admin-panel-head">
                   <span>Luxury Grid Card Preview</span>
                   <small>Storefront representation</small>
                 </div>
-                <div style={{ padding: '24px', background: '#fafafa' }}>
-                  <article className="blog-card" style={{ width: '100%', pointerEvents: 'none', margin: '0 auto', border: '1px solid rgba(0, 0, 0, 0.05)', boxShadow: '0 5px 25px rgba(0, 0, 0, 0.02)' }}>
-                    <div className="card-img-wrapper" style={{ height: '200px' }}>
+                <div className="admin-p24-bg-fafafa">
+                  <article className="blog-card admin-blog-card-preview">
+                    <div className="card-img-wrapper admin-blog-card-img-wrapper">
                       {formImageInputType === 'file' && formImageBase64 ? (
                         <img src={formImageBase64} alt="Preview" />
                       ) : formImageUrl ? (
                         <img src={formImageUrl} alt="Preview" />
                       ) : (
-                        <div style={{ height: '100%', background: 'linear-gradient(135deg, #181512 0%, #2a2219 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px' }}>
+                        <div className="admin-blog-card-img-placeholder">
                           Select an image to preview
                         </div>
                       )}
                       <span className="card-category-badge">{formCategory === 'Custom' ? formCustomCategory || 'Category' : formCategory}</span>
                     </div>
-                    <div className="card-info-pane" style={{ padding: '1.5rem' }}>
-                      <div className="post-meta-strip" style={{ marginBottom: '0.75rem' }}>
-                        <span style={{ fontSize: '11px' }}>
+                    <div className="card-info-pane admin-blog-card-info-pane">
+                      <div className="post-meta-strip admin-blog-card-meta-strip">
+                        <span className="admin-fs11">
                           {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
-                        <span className="meta-divider" style={{ width: '3px', height: '3px' }}></span>
-                        <span style={{ fontSize: '11px' }}>{formReadTime}</span>
+                        <span className="meta-divider admin-blog-card-meta-divider"></span>
+                        <span className="admin-fs11">{formReadTime}</span>
                       </div>
-                      <h3 style={{ fontSize: '1.2rem', marginBottom: '0.75rem' }}>{formTitle || 'Enter Article Title...'}</h3>
-                      <p style={{ fontSize: '0.85rem', lineClamp: '3', margin: 0 }}>{formIntro || 'Enter article intro summary description...'}</p>
+                      <h3 className="admin-blog-card-title">{formTitle || 'Enter Article Title...'}</h3>
+                      <p className="admin-blog-card-desc">{formIntro || 'Enter article intro summary description...'}</p>
                       
                       <button 
                         type="button"
-                        className="read-more-link"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginTop: '1.5rem', background: 'none', border: 'none', padding: 0 }}
+                        className="read-more-link admin-blog-card-read-more"
                       >
                         Read Article →
                       </button>
@@ -2408,56 +2495,34 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
         </div>
       ) : (
         /* ==================== B2B PARTNER APPLICATIONS TAB ==================== */
-        <div className="admin-partners-tab" style={{ animation: 'fadeIn 0.5s ease-out', display: 'grid', gap: '28px', position: 'relative' }}>
+        <div className="admin-partners-tab">
           
           {/* Spinner Overlay during status change operations */}
           {updatingWhatsapp && (
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(255,255,255,0.7)',
-              backdropFilter: 'blur(4px)',
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px'
-            }}>
+            <div className="admin-spinner-overlay">
               <RefreshCw size={42} className="spin" style={{ color: 'var(--primary)' }} />
-              <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ink)' }}>Updating Database Status...</span>
+              <span className="admin-spinner-text">Updating Database Status...</span>
             </div>
           )}
 
           {/* Header Dashboard Banner */}
-          <div className="admin-sync-banner" style={{ 
-            background: '#fff', 
-            border: '1px solid var(--border)', 
-            padding: '24px', 
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '24px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.015)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: 'var(--primary-soft)', color: 'var(--primary)', padding: '14px', borderRadius: '12px' }}>
+          <div className="admin-partners-banner">
+            <div className="admin-sync-content">
+              <div className="admin-partners-banner-icon-wrap">
                 <ClipboardList size={28} />
               </div>
               <div>
-                <h2 style={{ margin: 0, fontSize: '20px', fontFamily: 'var(--font-hero-heading, serif)', letterSpacing: '-0.01em' }}>B2B Partner Applications Portal</h2>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--muted)', lineHeight: '1.4' }}>
+                <h2 className="admin-partners-banner-title">B2B Partner Applications Portal</h2>
+                <p className="admin-partners-banner-desc">
                   Verify Step 1 product samples, signed payment agreements, and Step 3 onboarding files.
                 </p>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="admin-flex-gap12">
               <button 
-                className="secondary-button" 
+                className="secondary-button admin-btn-refresh-partners" 
                 onClick={loadPartnerApplications} 
                 disabled={partnerApps.loading}
-                style={{ padding: '10px 20px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}
               >
                 <RefreshCw size={14} className={partnerApps.loading ? 'spin' : ''} />
                 Refresh Applications
@@ -2466,18 +2531,18 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
           </div>
 
           {/* Mini-Metrics Analytics Panel */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          <div className="admin-partners-metrics-grid">
             
             {/* Step 1 Reviews Metrics Card */}
-            <div style={{ background: '#fff', border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: '#fff7ed', color: '#ea580c', padding: '10px', borderRadius: '10px' }}>
+            <div className="admin-partner-metric-card">
+              <div className="admin-partner-icon-orange">
                 <Users size={22} />
               </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Step 1 Product Reviews</span>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
-                  <strong style={{ fontSize: '22px' }}>{partnerApps.reviews.length}</strong>
-                  <span style={{ fontSize: '12px', color: '#ea580c', fontWeight: 600 }}>
+              <div className="admin-flex1">
+                <span className="admin-partner-metric-label">Step 1 Product Reviews</span>
+                <div className="admin-partner-metric-values">
+                  <strong className="admin-partner-metric-value">{partnerApps.reviews.length}</strong>
+                  <span className="admin-partner-status-orange">
                     {partnerApps.reviews.filter(r => {
                       const ws = r.whatsapp_number?.replace(/\D/g, '').slice(-10);
                       const st = localStatuses[ws] || r.status || 'pending';
@@ -2489,15 +2554,15 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </div>
 
             {/* Step 3 Onboardings Metrics Card */}
-            <div style={{ background: '#fff', border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: '#eff6ff', color: '#2563eb', padding: '10px', borderRadius: '10px' }}>
+            <div className="admin-partner-metric-card">
+              <div className="admin-partner-icon-blue">
                 <Award size={22} />
               </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Step 3 Onboardings</span>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
-                  <strong style={{ fontSize: '22px' }}>{partnerApps.onboardings.length}</strong>
-                  <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: 600 }}>
+              <div className="admin-flex1">
+                <span className="admin-partner-metric-label">Step 3 Onboardings</span>
+                <div className="admin-partner-metric-values">
+                  <strong className="admin-partner-metric-value">{partnerApps.onboardings.length}</strong>
+                  <span className="admin-partner-status-blue">
                     {partnerApps.onboardings.filter(o => {
                       const ws = o.whatsapp_number?.replace(/\D/g, '').slice(-10);
                       const st = localStatuses[ws] || o.status || 'submitted';
@@ -2509,20 +2574,20 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </div>
 
             {/* Database Sync Integration Metrics Card */}
-            <div style={{ background: '#fff', border: '1px solid var(--border)', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '10px', borderRadius: '10px' }}>
+            <div className="admin-partner-metric-card">
+              <div className="admin-partner-icon-green">
                 <Check size={22} />
               </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Supabase B2B Linked Rate</span>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
-                  <strong style={{ fontSize: '22px' }}>
+              <div className="admin-flex1">
+                <span className="admin-partner-metric-label">Supabase B2B Linked Rate</span>
+                <div className="admin-partner-metric-values">
+                  <strong className="admin-partner-metric-value">
                     {Math.round(
                       (partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length / 
                       Math.max(1, partnerApps.onboardings.length)) * 100
                     )}%
                   </strong>
-                  <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                  <span className="admin-partner-status-green">
                     {partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length} profiles synchronized
                   </span>
                 </div>
@@ -2532,74 +2597,32 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
           </div>
 
           {/* Filtering and Search Strip */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            background: '#fff',
-            border: '1px solid var(--border)',
-            padding: '16px 20px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.005)'
-          }}>
+          <div className="admin-partners-filter-strip">
             {/* Sub-Tabs Selector */}
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="admin-flex-gap8">
               <button
                 type="button"
                 onClick={() => setPartnerSubTab('reviews')}
-                style={{
-                  background: partnerSubTab === 'reviews' ? 'var(--primary-soft)' : 'none',
-                  border: 'none',
-                  color: partnerSubTab === 'reviews' ? 'var(--primary)' : 'var(--muted)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
+                className={`admin-partner-subtab-btn ${partnerSubTab === 'reviews' ? 'active' : ''}`}
               >
                 1. Product Reviews ({filteredReviews.length})
               </button>
               <button
                 type="button"
                 onClick={() => setPartnerSubTab('onboardings')}
-                style={{
-                  background: partnerSubTab === 'onboardings' ? 'var(--primary-soft)' : 'none',
-                  border: 'none',
-                  color: partnerSubTab === 'onboardings' ? 'var(--primary)' : 'var(--muted)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
+                className={`admin-partner-subtab-btn ${partnerSubTab === 'onboardings' ? 'active' : ''}`}
               >
                 3. Onboarding Profiles ({filteredOnboardings.length})
               </button>
             </div>
 
             {/* Sort Controls */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: 600 }}>Sort By:</span>
+            <div className="admin-flex-align-center-gap8">
+              <span className="admin-partner-sort-label">Sort By:</span>
               <select
                 value={partnerSortField}
                 onChange={(e) => setPartnerSortField(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  background: '#fff',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                  color: 'var(--ink)'
-                }}
+                className="admin-select-input"
               >
                 <option value="date">Date Submitted</option>
                 <option value="name">Proprietor Name</option>
@@ -2612,21 +2635,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
               <button
                 type="button"
                 onClick={() => setPartnerSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                style={{
-                  background: '#fff',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  transition: 'all 0.2s',
-                  fontFamily: 'var(--font-body)'
-                }}
+                className="admin-btn-toggle"
                 title={partnerSortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
               >
                 {partnerSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
@@ -2634,63 +2643,30 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </div>
 
             {/* Quick Search & Export Container */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="admin-flex-align-center-gap12">
               <button
                 type="button"
                 onClick={handleExportCSV}
-                style={{
-                  background: '#16a34a',
-                  border: 'none',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontFamily: 'var(--font-body)',
-                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.15)',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = '#15803d'}
-                onMouseOut={(e) => e.currentTarget.style.background = '#16a34a'}
+                className="admin-btn-export-excel"
               >
                 Export Excel 📥
               </button>
 
               {/* Quick Search Input */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', width: '320px' }}>
+              <div className="admin-search-wrapper">
                 <input
                   type="text"
                   placeholder="Search name, phone, city, fabric..."
                   value={partnerSearchQuery}
                   onChange={(e) => setPartnerSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px 8px 36px',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '13px'
-                  }}
+                  className="admin-search-input"
                 />
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>🔍</span>
+                <span className="admin-search-icon">🔍</span>
                 {partnerSearchQuery && (
                   <button
                     type="button"
                     onClick={() => setPartnerSearchQuery('')}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '14px',
-                      color: 'var(--muted)',
-                      cursor: 'pointer'
-                    }}
+                    className="admin-search-clear-btn"
                   >
                     ×
                   </button>
@@ -2712,7 +2688,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </div>
           ) : partnerSubTab === 'reviews' ? (
             /* ==================== SUB-TAB: STEP 1 REVIEWS ==================== */
-            <article className="admin-panel" style={{ margin: 0 }}>
+            <article className="admin-panel admin-m0">
               <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
                 <span>Step 1 Product Review Submissions</span>
                 <small>{filteredReviews.length} records matching</small>
@@ -2749,16 +2725,16 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                                 : '3px solid #ea580c'
                           }}
                         >
-                          <td style={{ fontSize: '12px' }}>{rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</td>
+                          <td className="admin-fs12">{rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</td>
                           <td><strong>{rev.full_name}</strong></td>
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div className="admin-flex-align-center-gap6">
                               <strong>{appWhatsapp}</strong>
                               <a 
                                 href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`} 
                                 target="_blank" 
                                 rel="noreferrer"
-                                style={{ display: 'inline-flex', color: '#25d366' }}
+                                className="admin-wa-icon-link"
                                 title="Chat on WhatsApp"
                               >
                                 <Phone size={13} />
@@ -2767,18 +2743,18 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           </td>
                           <td>{rev.city}{rev.pincode ? `, PIN ${rev.pincode}` : ''}</td>
                           <td>
-                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary)' }}>{rev.categories}</span>
+                            <span className="admin-category-span">{rev.categories}</span>
                           </td>
-                          <td style={{ fontSize: '12px' }}>{rev.price_range}</td>
+                          <td className="admin-fs12">{rev.price_range}</td>
                           <td>
-                            <div style={{ display: 'flex', gap: '6px' }}>
+                            <div className="admin-flex-wrap-gap8">
                               {[rev.image1, rev.image2, rev.image3, rev.image4].map((img, i) => {
                                 if (!img) return null;
                                 return (
                                   <img 
                                     key={i}
                                     src={img} 
-                                    style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)', cursor: 'pointer' }}
+                                    className="admin-thumbnail-img"
                                     onClick={() => setLightboxImage(img)}
                                     alt="Sample"
                                   />
@@ -2794,8 +2770,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           <td>
                             <button 
                               type="button" 
-                              className="secondary-button" 
-                              style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                              className="secondary-button admin-btn-inspect" 
                               onClick={() => setSelectedReview(rev)}
                             >
                               <Eye size={12} /> Inspect Detail
@@ -2806,7 +2781,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     })}
                     {filteredReviews.length === 0 && (
                       <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '48px', color: 'var(--muted)' }}>
+                        <td colSpan="9" className="admin-table-empty-cell">
                           No product review applications found matching your query.
                         </td>
                       </tr>
@@ -2817,7 +2792,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             </article>
           ) : (
             /* ==================== SUB-TAB: STEP 3 ONBOARDINGS ==================== */
-            <article className="admin-panel" style={{ margin: 0 }}>
+            <article className="admin-panel admin-m0">
               <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
                 <span>Step 3 Full Onboarding Profiles</span>
                 <small>{filteredOnboardings.length} records matching</small>
@@ -2855,32 +2830,32 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                                 : '3px solid #ea580c'
                           }}
                         >
-                          <td style={{ fontSize: '12px' }}>{onb.created_at ? onb.created_at.split('T')[0] : 'N/A'}</td>
+                          <td className="admin-fs12">{onb.created_at ? onb.created_at.split('T')[0] : 'N/A'}</td>
                           <td>
                             <strong>{onb.business_name || 'Unnamed Business'}</strong>
-                            <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)' }}>Proprietor: {onb.full_name}</span>
+                            <span className="admin-proprietor-label">Proprietor: {onb.full_name}</span>
                           </td>
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div className="admin-flex-align-center-gap6">
                               <span>{appWhatsapp}</span>
                               <a href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#25d366' }}>
                                 <Phone size={12} />
                               </a>
                             </div>
-                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)' }}>{onb.email}</span>
+                            <span className="admin-email-label">{onb.email}</span>
                           </td>
                           <td>
-                            <span style={{ display: 'block', fontSize: '12px' }}>GST: {onb.gst_number || 'N/A'}</span>
-                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)' }}>PAN: {onb.pan_number}</span>
+                            <span className="admin-display-block-fs12">GST: {onb.gst_number || 'N/A'}</span>
+                            <span className="admin-pan-label">PAN: {onb.pan_number}</span>
                           </td>
                           <td><strong>{onb.fabric_specialisation}</strong></td>
                           <td>
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            <div className="admin-flex-wrap-gap8">
                               {onb.id_proof_url && (
-                                <button type="button" className="secondary-button" style={{ padding: '2px 6px', fontSize: '10px' }} onClick={() => setLightboxImage(onb.id_proof_url)}>Aadhaar</button>
+                                <button type="button" className="secondary-button admin-btn-doc-badge" onClick={() => setLightboxImage(onb.id_proof_url)}>Aadhaar</button>
                               )}
                               {onb.cancelled_cheque_url && (
-                                <button type="button" className="secondary-button" style={{ padding: '2px 6px', fontSize: '10px' }} onClick={() => setLightboxImage(onb.cancelled_cheque_url)}>Cheque</button>
+                                <button type="button" className="secondary-button admin-btn-doc-badge" onClick={() => setLightboxImage(onb.cancelled_cheque_url)}>Cheque</button>
                               )}
                             </div>
                           </td>
@@ -2891,11 +2866,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           </td>
                           <td>
                             {matchedProfile ? (
-                              <span className="admin-status approved" style={{ width: 'fit-content', fontSize: '11px' }}>
+                              <span className="admin-status approved admin-status-linked">
                                 ✓ Linked ({matchedProfile.approval_status})
                               </span>
                             ) : (
-                              <span className="admin-status new" style={{ width: 'fit-content', fontSize: '11px' }}>
+                              <span className="admin-status new admin-status-linked">
                                 ⏳ Unregistered
                               </span>
                             )}
@@ -2903,8 +2878,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           <td>
                             <button 
                               type="button" 
-                              className="secondary-button" 
-                              style={{ padding: '8px 14px', fontSize: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                              className="secondary-button admin-btn-inspect-onboarding" 
                               onClick={() => setSelectedOnboarding(onb)}
                             >
                               <Eye size={12} /> Inspect Detail
@@ -2915,7 +2889,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     })}
                     {filteredOnboardings.length === 0 && (
                       <tr>
-                        <td colSpan="9" style={{ textAlign: 'center', padding: '48px', color: 'var(--muted)' }}>
+                        <td colSpan="9" className="admin-table-empty-cell">
                           No onboarding applications found matching your query.
                         </td>
                       </tr>
@@ -2934,23 +2908,23 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             const currentStatus = localStatuses[cleanWhatsapp] || rev.status || 'pending';
 
             return (
-              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', zIndex: 1000, display: 'grid', placeItems: 'center', animation: 'fadeIn 0.2s ease-out' }}>
-                <div style={{ width: 'min(720px, 94%)', maxHeight: '88vh', background: '#fffcf9', borderRadius: '16px', border: '1px solid rgba(183,134,70,0.2)', boxShadow: '0 24px 64px rgba(63,43,29,0.18)', overflowY: 'auto', display: 'flex', flexDirection: 'column', padding: '28px' }}>
+              <div className="admin-modal-overlay">
+                <div className="admin-review-modal">
                   
                   {/* Modal Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '14px', marginBottom: '20px' }}>
+                  <div className="admin-modal-header">
                     <div>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 800 }}>Step 1: Product Review Assessment</span>
-                      <h3 style={{ margin: '2px 0 0', fontFamily: 'var(--font-hero-heading, serif)', fontSize: '22px' }}>{rev.full_name}</h3>
+                      <span className="admin-modal-subtitle">Step 1: Product Review Assessment</span>
+                      <h3 className="admin-modal-title">{rev.full_name}</h3>
                     </div>
-                    <button type="button" onClick={() => setSelectedReview(null)} style={{ background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer', color: 'var(--muted)' }}>×</button>
+                    <button type="button" onClick={() => setSelectedReview(null)} className="admin-modal-close-btn">×</button>
                   </div>
 
                   {/* Modal Body */}
-                  <div style={{ display: 'grid', gap: '20px', fontSize: '14px', fontFamily: 'var(--font-body)' }}>
+                  <div className="admin-modal-body">
                     
                     {/* Information Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: '#fff', border: '1px solid var(--border)', padding: '16px', borderRadius: '10px' }}>
+                    <div className="admin-modal-info-grid">
                       <div><strong>WhatsApp Contact</strong>: {appWhatsapp}</div>
                       <div><strong>City / Pincode</strong>: {rev.city} / {rev.pincode}</div>
                       <div><strong>Categories Supplied</strong>: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{rev.categories}</span></div>
@@ -2958,25 +2932,24 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       <div><strong>Submission Date</strong>: {rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</div>
                       <div>
                         <strong>Current Status</strong>: 
-                        <span className={`admin-status ${currentStatus.toLowerCase()}`} style={{ marginLeft: '6px' }}>
+                        <span className={`admin-status ${currentStatus.toLowerCase()} admin-ml6`}>
                           {currentStatus}
                         </span>
                         {activeAgreement && (
-                      <div style={{ background: '#fffcf5', border: '1px solid rgba(183,134,70,0.3)', borderRadius: '10px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ background: 'var(--primary-soft)', color: 'var(--primary)', padding: '8px', borderRadius: '8px', display: 'grid', placeItems: 'center' }}>
+                      <div className="admin-agreement-modal-box">
+                        <div className="admin-flex-align-center-gap12">
+                          <div className="admin-agreement-icon-wrap">
                             <FileText size={20} />
                           </div>
                           <div>
-                            <strong style={{ fontSize: '13px', display: 'block', color: 'var(--ink)' }}>Signed Merchant Agreement</strong>
-                            <small style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Electronic copy generated at signature timestamp</small>
+                            <strong className="admin-agreement-title">Signed Merchant Agreement</strong>
+                            <small className="admin-agreement-desc">Electronic copy generated at signature timestamp</small>
                           </div>
                         </div>
                         <button 
                           type="button"
-                          className="secondary-button"
+                          className="secondary-button admin-btn-view-agreement"
                           onClick={() => handleViewAgreement(activeAgreement, appWhatsapp)}
-                          style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--primary)', border: 'none', color: '#fff', textDecoration: 'none', borderRadius: '6px', cursor: 'pointer' }}
                         >
                           View Signed Copy 📄
                         </button>
@@ -2987,21 +2960,21 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                     {/* Product Samples Images */}
                     <div>
-                      <strong style={{ display: 'block', marginBottom: '8px' }}>Submitted Product Samples (Exactly 4 Required):</strong>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                      <strong className="admin-display-block-mb8">Submitted Product Samples (Exactly 4 Required):</strong>
+                      <div className="admin-grid-4col">
                         {[rev.image1, rev.image2, rev.image3, rev.image4].map((img, i) => {
                           if (!img) {
                             return (
-                              <div key={i} style={{ border: '1px dashed var(--border)', borderRadius: '8px', aspectRatio: 1, display: 'grid', placeItems: 'center', color: 'var(--muted)', fontSize: '11px', background: '#fff' }}>
+                              <div key={i} className="admin-thumbnail-placeholder">
                                 Not uploaded
                               </div>
                             );
                           }
                           return (
-                            <div key={i} style={{ position: 'relative', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--border)', aspectRatio: 1, background: '#fff' }}>
+                            <div key={i} className="admin-thumbnail-wrapper">
                               <img 
                                 src={img} 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'zoom-in', transition: 'transform 0.3s' }} 
+                                className="admin-modal-img" 
                                 onClick={() => setLightboxImage(img)}
                                 alt="Sample"
                               />
@@ -3012,15 +2985,15 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     </div>
 
                     {/* Administrative Action Control Panel */}
-                    <div style={{ background: '#fff9f0', border: '1px dashed rgba(183,134,70,0.3)', padding: '20px', borderRadius: '12px', marginTop: '8px' }}>
-                      <h4 style={{ margin: '0 0 10px', fontSize: '14px', fontFamily: 'var(--font-hero-heading, serif)', color: '#804c00' }}>Review Status Controls</h4>
-                      <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#666', lineHeight: 1.4 }}>
+                    <div className="admin-review-control-panel">
+                      <h4 className="admin-review-control-title">Review Status Controls</h4>
+                      <p className="admin-review-control-desc">
                         Approving Step 1 marks their WhatsApp number as "approved" in the Database. This immediately unlocks Step 2 (Payment Terms) and Step 3 (Onboarding Forms) for the applicant.
                       </p>
-                      <div style={{ display: 'flex', gap: '12px' }}>
+                      <div className="admin-flex-gap12">
                         <button
                           type="button"
-                          className="primary-button"
+                          className="primary-button admin-btn-approve-review"
                           onClick={async () => {
                             const success = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
                             if (success) {
@@ -3028,13 +3001,12 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               setSelectedReview(null);
                             }
                           }}
-                          style={{ background: '#22c55e', border: 'none', color: '#fff', padding: '10px 24px', fontWeight: 600, flex: 1 }}
                         >
                           Approve Review & Unlock Step 2
                         </button>
                         <button
                           type="button"
-                          className="secondary-button"
+                          className="secondary-button admin-btn-reject-review"
                           onClick={async () => {
                             const success = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'rejected');
                             if (success) {
@@ -3042,7 +3014,6 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               setSelectedReview(null);
                             }
                           }}
-                          style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', padding: '10px 20px', fontWeight: 600 }}
                         >
                           Reject Application
                         </button>
@@ -3052,8 +3023,8 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   </div>
 
                   {/* Modal Footer */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '24px' }}>
-                    <button type="button" className="secondary-button" onClick={() => setSelectedReview(null)} style={{ padding: '8px 24px' }}>Close Inspector</button>
+                  <div className="admin-modal-footer">
+                    <button type="button" className="secondary-button admin-btn-modal-close" onClick={() => setSelectedReview(null)}>Close Inspector</button>
                   </div>
                 </div>
               </div>
@@ -3069,28 +3040,28 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             const matchedProfile = adminData.profiles.find(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === cleanWhatsapp);
 
             return (
-              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', zIndex: 1000, display: 'grid', placeItems: 'center', animation: 'fadeIn 0.2s ease-out' }}>
-                <div style={{ width: 'min(900px, 94%)', maxHeight: '90vh', background: '#fffcf9', borderRadius: '16px', border: '1px solid rgba(183,134,70,0.2)', boxShadow: '0 24px 64px rgba(63,43,29,0.18)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              <div className="admin-modal-overlay">
+                <div className="admin-onboarding-modal">
                   
                   {/* Modal Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', padding: '20px 28px', background: '#fff', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}>
+                  <div className="admin-modal-header-bg">
                     <div>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 800 }}>Step 3 Onboarding Application Detail</span>
-                      <h3 style={{ margin: '2px 0 0', fontFamily: 'var(--font-hero-heading, serif)', fontSize: '24px' }}>{onb.business_name || 'Unnamed Vendor'}</h3>
-                      <span style={{ fontSize: '13px', color: 'var(--muted)' }}>Proprietor: {onb.full_name} | WhatsApp: {onb.whatsapp_number}</span>
+                      <span className="admin-modal-subtitle">Step 3 Onboarding Application Detail</span>
+                      <h3 className="admin-modal-title-fs24">{onb.business_name || 'Unnamed Vendor'}</h3>
+                      <span className="admin-modal-header-meta">Proprietor: {onb.full_name} | WhatsApp: {onb.whatsapp_number}</span>
                     </div>
-                    <button type="button" onClick={() => setSelectedOnboarding(null)} style={{ background: 'none', border: 'none', fontSize: '32px', cursor: 'pointer', color: 'var(--muted)', padding: 0 }}>×</button>
+                    <button type="button" onClick={() => setSelectedOnboarding(null)} className="admin-modal-close-btn-lg">×</button>
                   </div>
 
                   {/* Modal Body */}
-                  <div style={{ padding: '28px', overflowY: 'auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '28px' }}>
+                  <div className="admin-modal-body-split">
                     
                     {/* Left Column: Business & Logistics */}
-                    <div style={{ display: 'grid', gap: '20px', alignContent: 'start' }}>
+                    <div className="admin-grid-gap20-align-start">
                       
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Company Information</h4>
-                        <div style={{ display: 'grid', gap: '8px', fontSize: '13px', lineHeight: '1.4' }}>
+                        <h4 className="admin-modal-section-title">Company Information</h4>
+                        <div className="admin-grid-gap8-fs13">
                           <div><strong>Business Legal Name</strong>: {onb.business_name}</div>
                           <div><strong>Business Role</strong>: {onb.business_type}</div>
                           <div><strong>Years in Business</strong>: {onb.years_in_business}</div>
@@ -3102,9 +3073,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       </div>
 
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Products & Fulfillment</h4>
-                        <div style={{ display: 'grid', gap: '8px', fontSize: '13px', lineHeight: '1.4' }}>
-                          <div><strong>Fabric Specialisations</strong>: <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{onb.fabric_specialisation}</span></div>
+                        <h4 className="admin-modal-section-title">Products & Fulfillment</h4>
+                        <div className="admin-grid-gap8-fs13">
+                          <div><strong>Fabric Specialisations</strong>: <span className="admin-font-bold-ink">{onb.fabric_specialisation}</span></div>
                           <div><strong>Monthly Production Capacity</strong>: {onb.monthly_capacity}</div>
                           <div><strong>Standard Dispatch Timeline</strong>: {onb.dispatch_timeline}</div>
                           <div><strong>Preferred Courier Partner</strong>: {onb.preferred_courier}</div>
@@ -3117,20 +3088,19 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                       {/* Document Viewer Section */}
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Uploaded Verification Files</h4>
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <h4 className="admin-modal-section-title">Uploaded Verification Files</h4>
+                        <div className="admin-flex-gap12">
                           {onb.id_proof_url ? (
                             <div 
                               onClick={() => setLightboxImage(onb.id_proof_url)}
-                              style={{ flex: 1, border: '1px solid var(--border)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fff', cursor: 'zoom-in', transition: 'all 0.2s' }}
-                              className="img-hover-trigger"
+                              className="admin-doc-card img-hover-trigger"
                             >
-                              <Eye size={20} style={{ color: 'var(--primary)', marginBottom: '6px' }} />
-                              <div style={{ fontSize: '12px', fontWeight: 700 }}>Aadhaar Card / ID Proof</div>
-                              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Click to zoom file</span>
+                              <Eye size={20} className="admin-doc-card-icon" />
+                              <div className="admin-doc-card-title">Aadhaar Card / ID Proof</div>
+                              <span className="admin-doc-card-muted">Click to zoom file</span>
                             </div>
                           ) : (
-                            <div style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fff', color: 'var(--muted)' }}>
+                            <div className="admin-doc-card-empty">
                               No Aadhaar uploaded
                             </div>
                           )}
@@ -3138,15 +3108,14 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           {onb.cancelled_cheque_url ? (
                             <div 
                               onClick={() => setLightboxImage(onb.cancelled_cheque_url)}
-                              style={{ flex: 1, border: '1px solid var(--border)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fff', cursor: 'zoom-in', transition: 'all 0.2s' }}
-                              className="img-hover-trigger"
+                              className="admin-doc-card img-hover-trigger"
                             >
-                              <Eye size={20} style={{ color: 'var(--primary)', marginBottom: '6px' }} />
-                              <div style={{ fontSize: '12px', fontWeight: 700 }}>Cancelled Cheque / Bank Proof</div>
-                              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Click to zoom file</span>
+                              <Eye size={20} className="admin-doc-card-icon" />
+                              <div className="admin-doc-card-title">Cancelled Cheque / Bank Proof</div>
+                              <span className="admin-doc-card-muted">Click to zoom file</span>
                             </div>
                           ) : (
-                            <div style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fff', color: 'var(--muted)' }}>
+                            <div className="admin-doc-card-empty">
                               No Cheque uploaded
                             </div>
                           )}
@@ -3155,12 +3124,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             <button 
                               type="button"
                               onClick={() => handleViewAgreement(activeAgreement || { vendor_signed_name: onb.full_name, signed_date: onb.created_at ? onb.created_at.split('T')[0] : new Date().toLocaleDateString('en-IN') }, appWhatsapp)}
-                              style={{ flex: 1, border: '1px solid rgba(183,134,70,0.3)', borderRadius: '10px', padding: '14px', textAlign: 'center', background: '#fffcf5', cursor: 'pointer', color: 'var(--primary)', display: 'block' }}
-                              className="img-hover-trigger"
+                              className="admin-doc-card-agreement img-hover-trigger"
                             >
-                              <FileText size={20} style={{ color: 'var(--primary)', marginBottom: '6px', margin: '0 auto 6px auto' }} />
-                              <div style={{ fontSize: '12px', fontWeight: 700 }}>Signed Merchant Agreement</div>
-                              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Click to view signed copy 📄</span>
+                              <FileText size={20} className="admin-doc-card-agreement-icon" />
+                              <div className="admin-doc-card-title">Signed Merchant Agreement</div>
+                              <span className="admin-doc-card-muted">Click to view signed copy 📄</span>
                             </button>
                           )}
                         </div>
@@ -3169,91 +3137,82 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     </div>
 
                     {/* Right Column: Bank Details & Supabase Database Integrations */}
-                    <div style={{ display: 'grid', gap: '20px', alignContent: 'start' }}>
+                    <div className="admin-grid-gap20-align-start">
                       
                       {/* Bank Details copy card */}
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Bank Disbursement Details</h4>
-                        <div style={{
-                          background: 'rgba(117,111,79,0.02)',
-                          border: '1px solid rgba(117,111,79,0.08)',
-                          borderRadius: '12px',
-                          padding: '16px',
-                          display: 'grid',
-                          gap: '12px'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Account Holder Name</div>
-                            <button type="button" onClick={() => handleCopy(onb.bank_account_holder, 'holder')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>
+                        <h4 className="admin-modal-section-title">Bank Disbursement Details</h4>
+                        <div className="admin-bank-details-card">
+                          <div className="admin-flex-between-align-center">
+                            <div className="admin-bank-card-label">Account Holder Name</div>
+                            <button type="button" onClick={() => handleCopy(onb.bank_account_holder, 'holder')} className="admin-bank-copy-btn">
                               <Copy size={12} /> {copyFeedback['holder'] ? '✓ Copied' : 'Copy'}
                             </button>
                           </div>
-                          <strong style={{ fontSize: '14px', marginTop: '-4px' }}>{onb.bank_account_holder || 'N/A'}</strong>
+                          <strong className="admin-bank-card-val">{onb.bank_account_holder || 'N/A'}</strong>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Bank Name</div>
-                            <button type="button" onClick={() => handleCopy(onb.bank_name, 'bankName')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>
+                          <div className="admin-flex-between-align-center">
+                            <div className="admin-bank-card-label">Bank Name</div>
+                            <button type="button" onClick={() => handleCopy(onb.bank_name, 'bankName')} className="admin-bank-copy-btn">
                               <Copy size={12} /> {copyFeedback['bankName'] ? '✓ Copied' : 'Copy'}
                             </button>
                           </div>
-                          <strong style={{ fontSize: '14px', marginTop: '-4px' }}>{onb.bank_name || 'N/A'}</strong>
+                          <strong className="admin-bank-card-val">{onb.bank_name || 'N/A'}</strong>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Bank Account Number</div>
-                            <button type="button" onClick={() => handleCopy(onb.bank_account_number, 'accNum')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>
+                          <div className="admin-flex-between-align-center">
+                            <div className="admin-bank-card-label">Bank Account Number</div>
+                            <button type="button" onClick={() => handleCopy(onb.bank_account_number, 'accNum')} className="admin-bank-copy-btn">
                               <Copy size={12} /> {copyFeedback['accNum'] ? '✓ Copied' : 'Copy'}
                             </button>
                           </div>
-                          <strong style={{ fontSize: '15px', color: 'var(--ink)', fontFamily: 'monospace', marginTop: '-4px' }}>{onb.bank_account_number || 'N/A'}</strong>
+                          <strong className="admin-bank-card-val-mono">{onb.bank_account_number || 'N/A'}</strong>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>IFSC Code</div>
-                            <button type="button" onClick={() => handleCopy(onb.bank_ifsc, 'ifsc')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>
+                          <div className="admin-flex-between-align-center">
+                            <div className="admin-bank-card-label">IFSC Code</div>
+                            <button type="button" onClick={() => handleCopy(onb.bank_ifsc, 'ifsc')} className="admin-bank-copy-btn">
                               <Copy size={12} /> {copyFeedback['ifsc'] ? '✓ Copied' : 'Copy'}
                             </button>
                           </div>
-                          <strong style={{ fontSize: '14px', fontFamily: 'monospace', marginTop: '-4px' }}>{onb.bank_ifsc || 'N/A'}</strong>
+                          <strong className="admin-bank-card-val-mono-fs14">{onb.bank_ifsc || 'N/A'}</strong>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>UPI Address (Alias ID)</div>
+                          <div className="admin-flex-between-align-center">
+                            <div className="admin-bank-card-label">UPI Address (Alias ID)</div>
                             {onb.upi_id && (
-                              <button type="button" onClick={() => handleCopy(onb.upi_id, 'upi')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>
+                              <button type="button" onClick={() => handleCopy(onb.upi_id, 'upi')} className="admin-bank-copy-btn">
                                 <Copy size={12} /> {copyFeedback['upi'] ? '✓ Copied' : 'Copy'}
                               </button>
                             )}
                           </div>
-                          <strong style={{ fontSize: '14px', marginTop: '-4px' }}>{onb.upi_id || 'N/A'}</strong>
+                          <strong className="admin-bank-card-val">{onb.upi_id || 'N/A'}</strong>
                         </div>
                       </div>
 
                       {/* Database Status Approval Actions */}
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Database Application Status</h4>
-                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', display: 'grid', gap: '12px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px' }}>Current Database Status: <strong>{currentStatus}</strong></span>
+                        <h4 className="admin-modal-section-title">Database Application Status</h4>
+                        <div className="admin-modal-status-box">
+                          <div className="admin-flex-between-align-center">
+                            <span className="admin-modal-status-label">Current Database Status: <strong>{currentStatus}</strong></span>
                             <span className={`admin-status ${currentStatus.toLowerCase()}`}>{currentStatus}</span>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div className="admin-grid-2col-gap8">
                             <button
                               type="button"
-                              className="primary-button"
+                              className="primary-button admin-btn-status-approve"
                               onClick={async () => {
                                 const success = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
                                 if (success) alert('Onboarding marked as Approved in database!');
                               }}
-                              style={{ background: '#16a34a', border: 'none', color: '#fff', padding: '8px', fontSize: '12px', fontWeight: 600 }}
                             >
                               Mark Profile Approved
                             </button>
                             <button
                               type="button"
-                              className="secondary-button"
+                              className="secondary-button admin-btn-status-flag"
                               onClick={async () => {
                                 const success = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'flagged');
                                 if (success) alert('Onboarding flagged in database.');
                               }}
-                              style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#dc2626', padding: '8px', fontSize: '12px', fontWeight: 600 }}
                             >
                               Flag Application
                             </button>
@@ -3263,58 +3222,55 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                       {/* Relational Database Integration card */}
                       <div>
-                        <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Supabase B2B Database Integration</h4>
-                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.015)' }}>
+                        <h4 className="admin-modal-section-title">Supabase B2B Database Integration</h4>
+                        <div className="admin-supabase-link-box">
                           {matchedProfile ? (
-                            <div style={{ display: 'grid', gap: '12px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="admin-grid-gap12">
+                              <div className="admin-flex-align-center-gap8">
                                 <span className="admin-status approved">✓ Profile Linked</span>
-                                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>({matchedProfile.email})</span>
+                                <span className="admin-doc-card-muted">({matchedProfile.email})</span>
                               </div>
-                              <div style={{ fontSize: '13px', display: 'grid', gap: '4px', color: 'var(--muted)' }}>
-                                <div><strong>Active Pricing Group</strong>: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{PRICE_GROUPS[matchedProfile.price_group] || 'None'}</span></div>
-                                <div><strong>Database Account status</strong>: <span style={{ textTransform: 'capitalize', fontWeight: 700, color: 'var(--ink)' }}>{matchedProfile.approval_status}</span></div>
+                              <div className="admin-supabase-matched-info">
+                                <div><strong>Active Pricing Group</strong>: <span className="admin-primary-bold">{PRICE_GROUPS[matchedProfile.price_group] || 'None'}</span></div>
+                                <div><strong>Database Account status</strong>: <span className="admin-ink-bold-capitalize">{matchedProfile.approval_status}</span></div>
                               </div>
                               
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+                              <div className="admin-grid-2col-gap8-mt8">
                                 <button 
                                   type="button"
-                                  className="primary-button" 
+                                  className="primary-button admin-btn-disburse-wholesale" 
                                   onClick={async () => {
                                     await updateBuyerPriceAccess(matchedProfile, 'approved', 'wholesale');
                                     alert('Applicant approved as a WHOLESALE merchant successfully!');
                                     setSelectedOnboarding(null);
                                   }}
-                                  style={{ background: '#16a34a', border: 'none', color: '#fff', padding: '10px', fontSize: '12px', fontWeight: 600 }}
                                 >
                                   Unlock Wholesaler Access
                                 </button>
                                 <button 
                                   type="button"
-                                  className="primary-button" 
+                                  className="primary-button admin-btn-disburse-reseller" 
                                   onClick={async () => {
                                     await updateBuyerPriceAccess(matchedProfile, 'approved', 'reseller');
                                     alert('Applicant approved as a RESELLER merchant successfully!');
                                     setSelectedOnboarding(null);
                                   }}
-                                  style={{ background: '#2563eb', border: 'none', color: '#fff', padding: '10px', fontSize: '12px', fontWeight: 600 }}
                                 >
                                   Unlock Reseller Access
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div style={{ display: 'grid', gap: '10px' }}>
-                              <span className="admin-status new" style={{ width: 'fit-content' }}>⏳ No Supabase Profile Found</span>
-                              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, lineHeight: 1.4 }}>
+                            <div className="admin-grid-gap10">
+                              <span className="admin-status new admin-width-fit">⏳ No Supabase Profile Found</span>
+                              <p className="admin-inquiry-notes-p">
                                 This vendor has submitted onboarding details, but hasn't created a login account on Weave365.in yet. Share their signup reminder link:
                               </p>
                               <a 
                                 href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb[1]}, we have verified your B2B Onboarding application for Weave 365! Please sign up an account at https://www.weave365.in using this WhatsApp number (+91 ${onb[2]}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="primary-button"
-                                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', textDecoration: 'none', fontSize: '12px', background: '#25d366', border: 'none', color: '#fff', fontWeight: 600 }}
+                                className="primary-button admin-btn-wa-signup"
                               >
                                 <Phone size={14} /> Send WhatsApp Signup Link
                               </a>
@@ -3328,8 +3284,8 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   </div>
 
                   {/* Modal Footer */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', padding: '16px 28px', background: '#fff', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }}>
-                    <button type="button" className="secondary-button" onClick={() => setSelectedOnboarding(null)} style={{ padding: '8px 24px' }}>Close Inspector</button>
+                  <div className="admin-modal-footer-bg">
+                    <button type="button" className="secondary-button admin-btn-modal-close" onClick={() => setSelectedOnboarding(null)}>Close Inspector</button>
                   </div>
                 </div>
               </div>
@@ -3340,20 +3296,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
           {lightboxImage && (
             <div 
               onClick={() => setLightboxImage(null)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.88)',
-                display: 'grid',
-                placeItems: 'center',
-                zIndex: 99999,
-                cursor: 'zoom-out',
-                animation: 'fadeIn 0.2s ease-out'
-              }}
+              className="admin-lightbox-overlay"
             >
               <img 
                 src={lightboxImage} 
-                style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 24px 70px rgba(0,0,0,0.7)' }} 
+                className="admin-lightbox-img" 
                 alt="Detailed Zoom View"
               />
             </div>

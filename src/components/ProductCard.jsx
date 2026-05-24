@@ -7,7 +7,6 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  Award,
   Bookmark,
   ChevronRight,
   Heart,
@@ -88,13 +87,7 @@ export const ProductCard = memo(function ProductCard({
 
   const showMoqBadge = priceAccess?.priceGroup === 'wholesale';
   const showColorBadge = colorCount > 1;
-  const showPurityBadge =
-    !!product.purity &&
-    priceAccess?.isLoggedIn !== false &&
-    priceAccess?.approvalStatus !== 'approved' &&
-    priceAccess?.priceGroup !== 'wholesale' &&
-    priceAccess?.priceGroup !== 'reseller';
-  const showRightInfo = showMoqBadge || showColorBadge || showPurityBadge;
+  const showRightInfo = showMoqBadge || showColorBadge;
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -203,11 +196,6 @@ export const ProductCard = memo(function ProductCard({
           <div className="info-left">
             {!isPriceLocked ? (
               <>
-                {priceAccess?.priceGroup !== 'reseller' &&
-                  priceAccess?.priceGroup !== 'wholesale' &&
-                  priceAccess?.isLoggedIn !== false && (
-                    <label>{priceAccess?.priceLabel || 'PRICE'}</label>
-                  )}
                 <strong>{formatMoney(basePrice)} {priceAccess?.priceGroup === 'wholesale' && <span>/pc</span>}</strong>
                 {priceAccess?.priceGroup === 'wholesale' && (
                   <small>{formatMoney(setPrice)} /set</small>
@@ -232,11 +220,6 @@ export const ProductCard = memo(function ProductCard({
               {showColorBadge && (
                 <div className="info-item">
                   <Palette size={15} /> {colorCount} Colors
-                </div>
-              )}
-              {showPurityBadge && (
-                <div className="info-item">
-                  <Award size={15} /> {product.purity}
                 </div>
               )}
             </div>
