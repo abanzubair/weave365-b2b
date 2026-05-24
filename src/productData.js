@@ -135,7 +135,10 @@ export function parseProductCsv(text) {
     const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
     const rawStatus = row.Tag || row.Status;
     const video = (function() {
-      const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'product video') || 'Product Video';
+      const key = Object.keys(row).find(k => {
+        const norm = k.trim().toLowerCase().replace(/\s+/g, '');
+        return norm === 'productvideo';
+      }) || 'Product Video';
       return row[key] || '';
     })();
 
@@ -184,7 +187,10 @@ export function parseProductCsv(text) {
         return val ? Number(val) : null;
       })(),
       priceRange: (function() {
-        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'price range');
+        const key = Object.keys(row).find(k => {
+          const norm = k.trim().toLowerCase().replace(/\s+/g, '');
+          return norm === 'pricerange';
+        });
         if (row[key]) return String(row[key]).trim();
         
         // Derive from B2B price (mrp)
@@ -574,7 +580,10 @@ function formatYoutubeUrl(link) {
 }
 
 function parseStockInDate(row) {
-  const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'stock in') || 'Stock in';
+  const key = Object.keys(row).find(k => {
+    const norm = k.trim().toLowerCase().replace(/\s+/g, '');
+    return norm === 'stockin' || norm === 'stockindate';
+  }) || 'Stock in';
   const val = String(row[key] || '').trim();
   if (!val) return null;
 
