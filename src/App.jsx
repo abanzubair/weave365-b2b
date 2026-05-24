@@ -934,7 +934,7 @@ export default function App({ initialData = {} }) {
               className={route === 'catalogue' ? 'active' : ''} 
               onClick={() => navigate('catalogue')}
             >
-              COLLECTIONS
+              CATALOGUE
             </button>
             <div className="nav-item-dropdown" ref={categoriesRef}>
               <button

@@ -69,7 +69,7 @@ export function MobileMenu({
     },
     { 
       icon: <Store size={20} />, 
-      label: 'Collections', 
+      label: 'Catalogue', 
       action: () => {
         navigate('catalogue');
         onClose();
