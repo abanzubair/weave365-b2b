@@ -62,6 +62,246 @@ async function uploadBase64ToStorage(base64Str, path) {
   }
 }
 
+
+/**
+ * Sends a beautifully styled B2B email notification to weave365@gmail.com
+ * when a new supplier completes Step 1 of the trusted partner registration.
+ * Edge-compatible fetch POST payload directly to Resend API endpoint.
+ */
+async function sendNotificationEmail(reviewData) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    console.warn('[vendor-registration API] RESEND_API_KEY environment variable is not configured. Skipping email notification.');
+    return;
+  }
+
+  // Fallback to onboarding@resend.dev (Resend's default sandbox domain sender) if no custom verified sender is supplied
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  const targetEmail = 'weave365@gmail.com';
+
+  const emailBody = {
+    from: `Weave365 Onboarding <${fromEmail}>`,
+    to: targetEmail,
+    subject: `🔔 New Supplier Partner Application: ${reviewData.full_name}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New Supplier Partner Application</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: #FAF8F5;
+            color: #1A1715;
+            margin: 0;
+            padding: 40px 20px;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border: 1px solid #EADECC;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+          }
+          .email-header {
+            background-color: #756F4F;
+            color: #FFFFFF;
+            padding: 30px;
+            text-align: center;
+          }
+          .email-header h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+          }
+          .email-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+          }
+          .email-body {
+            padding: 30px;
+          }
+          .welcome-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+          }
+          .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #756F4F;
+            border-bottom: 2px solid #FAF8F5;
+            padding-bottom: 8px;
+            margin-top: 28px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .field-group {
+            margin-bottom: 16px;
+            line-height: 1.5;
+          }
+          .field-label {
+            font-weight: 600;
+            color: #777777;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+          }
+          .field-value {
+            color: #1A1715;
+            font-size: 16px;
+          }
+          .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+          }
+          .image-slot {
+            aspect-ratio: 4 / 3;
+            border: 1px solid #EADECC;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #FAF8F5;
+          }
+          .image-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          .cta-box {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid #FAF8F5;
+          }
+          .cta-button {
+            display: inline-block;
+            background-color: #756F4F;
+            color: #FFFFFF !important;
+            text-decoration: none;
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(117, 111, 79, 0.15);
+          }
+          .email-footer {
+            background-color: #FAF8F5;
+            color: #777777;
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px solid #EADECC;
+          }
+          .email-footer p {
+            margin: 4px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <h1>Weave 365</h1>
+            <p>New Supplier Review Application (Step 1)</p>
+          </div>
+          <div class="email-body">
+            <div class="welcome-text">
+              <p>Hello Admin,</p>
+              <p>A new supplier has completed the <strong>Step 1: Submit Products for Review</strong> onboarding form on <strong>/trusted-partner-registration</strong>. Please find the application details below:</p>
+            </div>
+            
+            <div class="section-title">Supplier Information</div>
+            
+            <div class="field-group">
+              <div class="field-label">Full Name</div>
+              <div class="field-value">${reviewData.full_name}</div>
+            </div>
+            
+            <div class="field-group">
+              <div class="field-label">WhatsApp Number</div>
+              <div class="field-value">+91 ${reviewData.whatsapp_number}</div>
+            </div>
+            
+            <div class="field-group">
+              <div class="field-label">City & Pincode</div>
+              <div class="field-value">${reviewData.city} - ${reviewData.pincode}</div>
+            </div>
+            
+            <div class="section-title">Product Details</div>
+            
+            <div class="field-group">
+              <div class="field-label">Product Categories</div>
+              <div class="field-value">${reviewData.categories}</div>
+            </div>
+            
+            <div class="field-group">
+              <div class="field-label">Approximate Price Range</div>
+              <div class="field-value">${reviewData.price_range}</div>
+            </div>
+            
+            <div class="section-title">Uploaded Sample Photos</div>
+            <p style="font-size: 13px; color: #777777; margin-top: -8px; margin-bottom: 16px;">Click any image to view it in full resolution:</p>
+            
+            <div class="image-grid">
+              <div class="image-slot">
+                ${reviewData.image1 ? `<a href="${reviewData.image1}" target="_blank"><img src="${reviewData.image1}" alt="Sample 1"></a>` : `<div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">No Photo</div>`}
+              </div>
+              <div class="image-slot">
+                ${reviewData.image2 ? `<a href="${reviewData.image2}" target="_blank"><img src="${reviewData.image2}" alt="Sample 2"></a>` : `<div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">No Photo</div>`}
+              </div>
+              <div class="image-slot">
+                ${reviewData.image3 ? `<a href="${reviewData.image3}" target="_blank"><img src="${reviewData.image3}" alt="Sample 3"></a>` : `<div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">No Photo</div>`}
+              </div>
+              <div class="image-slot">
+                ${reviewData.image4 ? `<a href="${reviewData.image4}" target="_blank"><img src="${reviewData.image4}" alt="Sample 4"></a>` : `<div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">No Photo</div>`}
+              </div>
+            </div>
+            
+            <div class="cta-box">
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in'}/admin" class="cta-button">Open Admin Dashboard</a>
+            </div>
+          </div>
+          <div class="email-footer">
+            <p>This is an automated notification from your Weave 365 B2B Portal backend.</p>
+            <p>&copy; ${new Date().getFullYear()} Weave 365. All Rights Reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendApiKey}`
+      },
+      body: JSON.stringify(emailBody)
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[vendor-registration API] Resend email dispatch failed:', errText);
+    } else {
+      console.log(`[vendor-registration API] Partner registration email notification successfully sent to ${targetEmail}.`);
+    }
+  } catch (err) {
+    console.error('[vendor-registration API] Error dispatching notification email:', err);
+  }
+}
+
 export async function POST(request) {
   try {
     const payload = await request.json();
@@ -105,6 +345,12 @@ export async function POST(request) {
       if (error) {
         console.error('[vendor-registration API] vendor_reviews insert error:', error);
         return Response.json({ status: 'error', error: error.message }, { status: 400 });
+      }
+
+      // Fire off B2B partner registration notification email to weave365@gmail.com
+      if (data) {
+        // In edge/serverless runtime, we MUST await async fetch calls to guarantee they complete before the response is returned!
+        await sendNotificationEmail(data);
       }
 
       return Response.json({ status: 'success', data });
