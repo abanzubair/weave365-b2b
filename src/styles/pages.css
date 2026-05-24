@@ -1267,7 +1267,7 @@ button {
 .product-view {
   width: min(1440px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;
-  padding: 28px 0 54px;
+  padding: 10px 0 54px;
 }
 
 .breadcrumb {
