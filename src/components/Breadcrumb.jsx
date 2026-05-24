@@ -10,7 +10,7 @@ import React from 'react';
 export default function Breadcrumb({ items, navigate }) {
   if (!items || items.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.in';
+  const siteUrl = 'https://www.weave365.in';
 
   // Construct structured data schema
   const schemaData = {

@@ -482,6 +482,7 @@
   background:
     linear-gradient(180deg, var(--surface) 0%, var(--cream) 100%);
   position: relative;
+  overflow-x: hidden;
 }
 
 .vendor-onboarding-section::before {
@@ -502,11 +503,11 @@
 .vendor-onboarding-shell {
   position: relative;
   z-index: 1;
-  max-width: 1240px;
+  max-width: 1360px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
-  gap: 32px;
+  grid-template-columns: minmax(270px, 0.72fr) minmax(0, 1.28fr);
+  gap: 36px;
   align-items: start;
 }
 
@@ -524,19 +525,14 @@
   max-height: calc(100vh - 132px);
   padding: clamp(22px, 3vh, 30px);
   overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none; /* Hide scrollbar for clean luxury look */
 }
 
-.vendor-onboarding-aside::after {
-  content: '';
-  position: absolute;
-  right: -80px;
-  bottom: -90px;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: rgba(183, 134, 70, 0.08);
-  pointer-events: none;
+.vendor-onboarding-aside::-webkit-scrollbar {
+  display: none;
 }
+
 
 .vendor-aside-header {
   display: flex;
@@ -605,6 +601,7 @@
   font-family: var(--font-body);
   font-size: 15px;
   color: var(--ink);
+  font-weight: 600;
 }
 
 .vendor-quality-note {
@@ -975,17 +972,20 @@
 }
 
 /* ---- F. Stats Strip ---- */
+/* ---- F. Stats Strip (Minimal Premium Redesign) ---- */
 .vendor-stats-section {
-  padding: 80px var(--site-padding);
+  padding: 64px var(--site-padding);
   background: var(--surface-soft);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .vendor-stats-grid {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  gap: 24px;
 }
 
 .vendor-stat {
@@ -994,38 +994,50 @@
   align-items: center;
   text-align: center;
   gap: 12px;
-  padding: 32px 16px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(234, 219, 200, 0.35);
-  border-radius: 16px;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 28px 20px;
+  background: var(--white);
+  border: 1px solid rgba(117, 111, 79, 0.12);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .vendor-stat:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.05);
+  border-color: var(--olive);
+  box-shadow: 0 8px 20px rgba(117, 111, 79, 0.06);
+}
+
+.vendor-stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(117, 111, 79, 0.05);
+  display: grid;
+  place-items: center;
+  color: var(--olive);
+  margin-bottom: 4px;
 }
 
 .vendor-stat-icon {
-  color: var(--olive);
+  stroke-width: 2px;
 }
 
-.vendor-stat strong {
-  font-family: var(--font-heading);
-  font-size: 36px;
+.vendor-stat-count {
+  font-family: var(--font-modern-heading);
+  font-size: 32px;
+  font-weight: 700;
   color: var(--ink);
-  line-height: 1;
+  line-height: 1.1;
 }
 
-.vendor-stat span {
+.vendor-stat-label {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 12px;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
 }
 
 /* ---- G. Final CTA ---- */
@@ -1097,6 +1109,20 @@
   box-shadow: 0 18px 40px rgba(117, 111, 79, 0.28);
 }
 
+.vendor-btn-whatsapp-large.vendor-btn-outline-large {
+  background: transparent;
+  color: var(--olive);
+  border: 1px solid rgba(117, 111, 79, 0.4);
+  box-shadow: none;
+}
+
+.vendor-btn-whatsapp-large.vendor-btn-outline-large:hover {
+  background: rgba(117, 111, 79, 0.05);
+  color: var(--olive);
+  border-color: var(--olive);
+  transform: translateY(-4px);
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 1024px) {
   .vendor-onboarding-shell {
@@ -1105,6 +1131,8 @@
   .vendor-onboarding-aside {
     position: relative;
     top: auto;
+    max-height: none;
+    overflow: visible;
   }
   .vendor-steps-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -1136,11 +1164,11 @@
     font-size: 36px;
   }
   .vendor-onboarding-section {
-    padding: 64px 16px;
+    padding: 64px 10px;
   }
   .vendor-onboarding-aside,
   .vendor-form-panel {
-    padding: 24px;
+    padding: 16px;
   }
   .vendor-form-grid,
   .vendor-radio-grid {
@@ -1162,8 +1190,28 @@
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
+  .vendor-stats-section {
+    padding: 40px 16px;
+  }
   .vendor-stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .vendor-stat {
+    padding: 20px 12px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+  .vendor-stat-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 2px;
+  }
+  .vendor-stat-count {
+    font-size: 26px;
+  }
+  .vendor-stat-label {
+    font-size: 11px;
   }
   .vendor-notice-section {
     margin-top: -20px;
@@ -1180,12 +1228,25 @@
     padding: 10px 20px;
     font-size: 16px;
   }
+  .vendor-final-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+  .vendor-btn-whatsapp-large {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 24px;
+    font-size: 15px;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
   .vendor-onboarding-aside,
   .vendor-form-panel {
-    padding: 20px;
+    padding: 10px;
   }
   .vendor-chip-option {
     flex-basis: 100%;
@@ -1194,7 +1255,8 @@
     grid-template-columns: 1fr;
   }
   .vendor-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
   .vendor-hero-actions {
     flex-direction: column;
@@ -1270,7 +1332,7 @@
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -2203,6 +2265,11 @@
 }
 
 @media (max-width: 600px) {
+
+  .vendor-categories-section {
+  padding: 35px var(--site-padding);
+  }
+
   .onboarding-signature-grid, .step3-grid-2col, .step3-upload-grid {
     grid-template-columns: 1fr;
   }
@@ -2452,7 +2519,6 @@
 .lang-hi .onboarding-section-header span,
 .lang-hi .onboarding-step-title,
 .lang-hi .step3-title,
-.lang-hi .vendor-tab-btn.active,
 .lang-hi .review-category-chip.selected {
   font-weight: 500 !important; /* Muted to 500 for crisp heading line weights */
 }
@@ -2479,12 +2545,17 @@
 .lang-hi .step3-field-label,
 .lang-hi .onboarding-signature-label,
 .lang-hi .onboarding-agree-all-text,
-.lang-hi .vendor-tab-btn,
 .lang-hi .review-category-chip,
 .lang-hi .step3-category-card,
-.lang-hi .vendor-chip-option,
-.lang-hi .vendor-approval-step strong {
+.lang-hi .vendor-chip-option {
   font-weight: 300 !important; /* Reduced to ultra-light 300 weight for optimal reading of dense scripts */
+}
+
+/* Tab buttons and approval steps weight matched to English */
+.lang-hi .vendor-tab-btn,
+.lang-hi .vendor-tab-btn.active,
+.lang-hi .vendor-approval-step strong {
+  font-weight: 600 !important;
 }
 
 /* Specific numbers and active badges */

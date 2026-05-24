@@ -167,7 +167,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     };
   }, [post]);
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.in';
+  const siteUrl = 'https://www.weave365.in';
   const postUrl = `${siteUrl}/blog/${postSlug}`;
 
   // Helper to parse markdown links and convert them to React routers

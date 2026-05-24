@@ -17,6 +17,7 @@
  * @param {Function} props.onSignOut - Callback to end the user session
  */
 
+import { useState } from 'react';
 import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
@@ -31,7 +32,9 @@ function titleCase(value) {
 function AccountSummaryCard({ icon: Icon, label, value, hint }) {
   return (
     <article className="account-summary-card">
-      <Icon size={22} />
+      <div className="card-icon-wrapper">
+        <Icon size={20} />
+      </div>
       <span>{label}</span>
       <strong>{value}</strong>
       {hint && <small>{hint}</small>}
@@ -50,6 +53,8 @@ export function Account({
   updateQuantity,
   onSignOut,
 }) {
+  const [activeTab, setActiveTab] = useState('orders');
+
   if (!user) {
     return (
       <section className="section empty-page">
@@ -71,15 +76,29 @@ export function Account({
       ? 'Auto approved'
       : 'Waiting for admin review';
 
+  const userInitials = (buyerProfile?.full_name || buyerProfile?.business_name || user.email || 'U')
+    .trim()
+    .split(' ')
+    .slice(0, 2)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase();
+
   return (
     <section className="account-page">
-      <div className="account-hero">
-        <div>
-          <span>Account Area</span>
-          <h1>{buyerProfile?.business_name || buyerProfile?.full_name || user.email}</h1>
-          <p>{user.email}</p>
+      <div className="account-hero-card">
+        <div className="account-hero-profile">
+          <div className="account-avatar-wrapper">
+            <span className="account-avatar-text">{userInitials}</span>
+            <span className="account-avatar-badge" title="Active B2B Session"></span>
+          </div>
+          <div className="account-profile-info">
+            <span className="account-badge-top">Verified B2B Account</span>
+            <h1>{buyerProfile?.business_name || buyerProfile?.full_name || user.email}</h1>
+            <p>{user.email}</p>
+          </div>
         </div>
-        <div className="account-hero-actions" style={{ display: 'flex', gap: '12px' }}>
+        <div className="account-hero-actions">
           <button className="secondary-button" type="button" onClick={() => navigate('wholesale-catalogue')}>
             Browse Catalogue
           </button>
@@ -101,8 +120,35 @@ export function Account({
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />
       </div>
 
-      <div className="account-dashboard-grid">
-        <article className="account-panel">
+      {/* Premium Account Tabs for Responsive Mobile Screens */}
+      <div className="account-tabs-bar">
+        <button 
+          className={`account-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+          onClick={() => setActiveTab('orders')}
+        >
+          <ShoppingBag size={16} />
+          <span>Orders ({cartItems.length})</span>
+        </button>
+        <button 
+          className={`account-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
+          onClick={() => setActiveTab('favorites')}
+        >
+          <Heart size={16} />
+          <span>Saved ({favoriteProducts.length})</span>
+        </button>
+        {priceAccess.resellerDashboardEnabled && (
+          <button 
+            className={`account-tab-btn ${activeTab === 'reseller' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reseller')}
+          >
+            <UserRound size={16} />
+            <span>Business Center</span>
+          </button>
+        )}
+      </div>
+
+      <div className={`account-dashboard-grid tab-active-${activeTab}`}>
+        <article className="account-panel panel-orders">
           <div className="account-panel-head">
             <span><ShoppingBag size={18} /> My Order List</span>
             <button type="button" onClick={() => navigate('wholesale-catalogue')}>Add items</button>
@@ -126,7 +172,7 @@ export function Account({
           </div>
         </article>
 
-        <article className="account-panel">
+        <article className="account-panel panel-favorites">
           <div className="account-panel-head">
             <span><Bookmark size={18} /> My Favourites</span>
             <button type="button" onClick={() => navigate('favorites')}>View all</button>
@@ -145,23 +191,21 @@ export function Account({
           </div>
         </article>
 
+        {priceAccess.resellerDashboardEnabled && (
+          <article className="account-panel account-panel-highlight panel-reseller" style={{ border: '1px solid var(--primary-color)' }}>
+            <div className="account-panel-head">
+              <span><UserRound size={18} /> My Reseller Business Center</span>
+            </div>
+            <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
+              <h2 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h2>
+              <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
+              <button className="primary-button" onClick={() => navigate('reseller-dashboard')}>
+                Open Business Center
+              </button>
+            </div>
+          </article>
+        )}
       </div>
-
-
-      {priceAccess.resellerDashboardEnabled && (
-        <article className="account-panel account-panel-highlight" style={{ marginTop: '2rem', border: '1px solid var(--primary-color)' }}>
-          <div className="account-panel-head">
-            <span><UserRound size={18} /> My Reseller Business Center</span>
-          </div>
-          <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
-            <h2 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h2>
-            <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
-            <button className="primary-button" onClick={() => navigate('reseller-dashboard')}>
-              Open Business Center
-            </button>
-          </div>
-        </article>
-      )}
     </section>
   );
 }

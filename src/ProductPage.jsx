@@ -905,19 +905,26 @@ export function ProductDetail({
                         {priceAccess.priceLabel}
                       </span>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
-                      <span className="price-value">{formatMoney(displayPrice)}</span>
-                      <span className="price-unit">/pc</span>
+                    <div className="product-price-layout">
+                      <div className="price-piece-block">
+                        <span className="price-value">{formatMoney(displayPrice)}</span>
+                        <span className="price-unit">/pc</span>
+                        {canViewPrice && priceAccess?.priceGroup === 'wholesale' && totalColors <= 1 && (
+                          <div className="moq-badge">
+                            {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                          </div>
+                        )}
+                      </div>
                       {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && (
-                        <>
-                          <span className="price-pipe"></span>
-                          <span className="price-value" style={{ fontSize: '28px', color: 'var(--muted)', fontWeight: '600' }}>{formatMoney(displayPrice * totalColors)}</span>
-                          <span className="price-unit" style={{ fontSize: '16px' }}>/Set ({totalColors} pcs)</span>
-                        </>
-                      )}
-                      {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
-                        <div className="moq-badge">
-                          {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                        <div className="price-set-block">
+                          <span className="price-pipe">|</span>
+                          <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
+                          <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
+                          {canViewPrice && (
+                            <div className="moq-badge">
+                              {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

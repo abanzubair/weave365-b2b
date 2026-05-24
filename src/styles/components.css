@@ -126,11 +126,14 @@
 .quick-facts span {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .quick-facts svg {
   color: var(--gold-dark);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .quick-facts strong {

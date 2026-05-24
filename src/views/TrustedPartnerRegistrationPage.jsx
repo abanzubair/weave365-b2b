@@ -171,7 +171,7 @@ const translations = {
     cityPlaceholderStep3: 'City',
     pincodePlaceholderStep3: 'Pincode',
     gstLabelStep3: 'GST number (if registered)',
-    panLabelStep3: 'PAN number',
+    panLabelStep3: 'PAN number (optional)',
     yearsInBusinessLabel: 'Years in business',
     yearsSelectPlaceholder: 'Select',
     yearsOpt1: 'Less than 1 year',
@@ -188,7 +188,7 @@ const translations = {
     monthlyOpt3: '50 – 100 pieces',
     monthlyOpt4: '100 – 300 pieces',
     monthlyOpt5: '300+ pieces',
-    fabricSpecialisation: 'Fabric / weave specialisation (e.g. Katan silk, Georgette, Organza, Chanderi)',
+    fabricSpecialisation: 'Fabric / weave specialisation (optional) (e.g. Katan silk, Georgette, Organza, Chanderi)',
     specialisationPlaceholder: 'Describe your specialisation',
     secDDispatchOps: 'D. Dispatch & operations',
     dispatchTimelineLabel: 'Dispatch timeline after order',
@@ -223,7 +223,7 @@ const translations = {
     secFIdentityVerification: 'F. Identity verification',
     aadhaarLabel: 'Aadhaar number',
     aadhaarPlaceholder: 'XXXX XXXX XXXX',
-    panVerifyLabel: 'PAN number',
+    panVerifyLabel: 'PAN number (optional)',
     panVerifyPlaceholder: 'AAAAA0000A',
     aadhaarUploadLabel: 'Aadhaar / ID proof',
     chequeUploadLabel: 'Cancelled cheque',
@@ -410,7 +410,7 @@ const translations = {
     cityPlaceholderStep3: 'शहर',
     pincodePlaceholderStep3: 'पिनकोड',
     gstLabelStep3: 'जीएसटी नंबर (GST - यदि हो तो)',
-    panLabelStep3: 'पैन कार्ड नंबर',
+    panLabelStep3: 'पैन कार्ड नंबर (वैकल्पिक)',
     yearsInBusinessLabel: 'काम का अनुभव (कितने साल से कर रहे हैं)',
     yearsSelectPlaceholder: 'चुनें',
     yearsOpt1: '1 साल से कम',
@@ -427,7 +427,7 @@ const translations = {
     monthlyOpt3: '50 – 100 पीस',
     monthlyOpt4: '100 – 300 पीस',
     monthlyOpt5: '300 पीस से ज़्यादा',
-    fabricSpecialisation: 'कपड़ा / बुनाई की खासियत (जैसे: कतान सिल्क, जॉर्जेट, ऑर्गेन्जा, चंदेरी)',
+    fabricSpecialisation: 'कपड़ा / बुनाई की खासियत (वैकल्पिक) (जैसे: कतान सिल्क, जॉर्जेट, ऑर्गेन्जा, चंदेरी)',
     specialisationPlaceholder: 'अपने कपड़े/बुनाई की खासियत बताएं',
     secDDispatchOps: 'घ. डिस्पैच और काम करने का समय',
     dispatchTimelineLabel: 'ऑर्डर आने के कितने समय बाद पार्सल भेजेंगे (डिस्पैच टाइम)',
@@ -462,7 +462,7 @@ const translations = {
     secFIdentityVerification: 'च. पहचान और डॉक्यूमेंट्स वेरिफिकेशन',
     aadhaarLabel: 'आधार कार्ड नंबर',
     aadhaarPlaceholder: 'XXXX XXXX XXXX',
-    panVerifyLabel: 'पैन कार्ड नंबर',
+    panVerifyLabel: 'पैन कार्ड नंबर (वैकल्पिक)',
     panVerifyPlaceholder: 'AAAAA0000A',
     aadhaarUploadLabel: 'आधार कार्ड / आईडी प्रूफ अपलोड करें',
     chequeUploadLabel: 'कैंसिल चेक (Cancelled Cheque) अपलोड करें',
@@ -609,6 +609,15 @@ export function TrustedPartnerRegistrationPage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewError, setReviewError] = useState('');
+  
+  const reviewErrorRef = useRef(null);
+
+  useEffect(() => {
+    if (reviewError && reviewErrorRef.current) {
+      reviewErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      reviewErrorRef.current.focus();
+    }
+  }, [reviewError]);
   
   // Tab 2: Payment Agreement Form State
   const [isPaymentTermsAgreed, setIsPaymentTermsAgreed] = useState(false);
@@ -1870,9 +1879,55 @@ export function TrustedPartnerRegistrationPage() {
                   </fieldset>
 
                   {reviewError && (
-                    <div className="vendor-form-error" role="alert">
-                      <AlertCircle size={18} />
-                      <span>{reviewError}</span>
+                    <div className="onboarding-modal-overlay" role="dialog" aria-modal="true" style={{ position: 'fixed', zIndex: 10000 }}>
+                      <div className="onboarding-modal-card minimal" style={{ borderColor: 'rgba(139, 47, 47, 0.25)', maxWidth: '380px' }}>
+                        <div className="onboarding-modal-body" style={{ padding: '32px 24px' }}>
+                          <div 
+                            className="onboarding-modal-header-icon" 
+                            style={{ 
+                              background: 'rgba(139, 47, 47, 0.08)', 
+                              color: '#8b2f2f',
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '50%',
+                              display: 'grid',
+                              placeItems: 'center',
+                              margin: '0 auto 16px',
+                              border: 'none'
+                            }}
+                          >
+                            <AlertCircle size={22} />
+                          </div>
+                          <h3 style={{ fontSize: '18px', color: '#241912', marginBottom: '8px', fontFamily: "var(--font-heading)" }}>
+                            {lang === 'hi' ? 'त्रुटि (Error)' : 'Submission Error'}
+                          </h3>
+                          <p className="onboarding-modal-message" style={{ fontSize: '13.5px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                            {reviewError}
+                          </p>
+                          <div className="onboarding-modal-actions">
+                            <button 
+                              type="button" 
+                              className="onboarding-modal-btn-download" 
+                              style={{ 
+                                background: '#8b2f2f', 
+                                boxShadow: '0 4px 12px rgba(139, 47, 47, 0.15)',
+                                padding: '10px 20px',
+                                fontSize: '13px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                border: 'none',
+                                color: '#ffffff',
+                                width: '100%',
+                                display: 'inline-flex',
+                                justifyContent: 'center'
+                              }}
+                              onClick={() => setReviewError('')}
+                            >
+                              {lang === 'hi' ? 'ठीक है' : 'Dismiss'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -2147,9 +2202,55 @@ export function TrustedPartnerRegistrationPage() {
                     </div>
 
                     {paymentError && (
-                      <div className="vendor-form-error" role="alert" style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
-                        <AlertCircle size={18} />
-                        <span>{paymentError}</span>
+                      <div className="onboarding-modal-overlay" role="dialog" aria-modal="true" style={{ position: 'fixed', zIndex: 10000 }}>
+                        <div className="onboarding-modal-card minimal" style={{ borderColor: 'rgba(139, 47, 47, 0.25)', maxWidth: '380px' }}>
+                          <div className="onboarding-modal-body" style={{ padding: '32px 24px' }}>
+                            <div 
+                              className="onboarding-modal-header-icon" 
+                              style={{ 
+                                background: 'rgba(139, 47, 47, 0.08)', 
+                                color: '#8b2f2f',
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '50%',
+                                display: 'grid',
+                                placeItems: 'center',
+                                margin: '0 auto 16px',
+                                border: 'none'
+                              }}
+                            >
+                              <AlertCircle size={22} />
+                            </div>
+                            <h3 style={{ fontSize: '18px', color: '#241912', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+                              {lang === 'hi' ? 'त्रुटि (Error)' : 'Submission Error'}
+                            </h3>
+                            <p className="onboarding-modal-message" style={{ fontSize: '13.5px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                              {paymentError}
+                            </p>
+                            <div className="onboarding-modal-actions">
+                              <button 
+                                type="button" 
+                                className="onboarding-modal-btn-download" 
+                                style={{ 
+                                  background: '#8b2f2f', 
+                                  boxShadow: '0 4px 12px rgba(139, 47, 47, 0.15)',
+                                  padding: '10px 20px',
+                                  fontSize: '13px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  color: '#ffffff',
+                                  width: '100%',
+                                  display: 'inline-flex',
+                                  justifyContent: 'center'
+                                }}
+                                onClick={() => setPaymentError('')}
+                              >
+                                {lang === 'hi' ? 'ठीक है' : 'Dismiss'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -2353,7 +2454,7 @@ export function TrustedPartnerRegistrationPage() {
                             </div>
                             <div>
                               <label className="step3-field-label">{t('panLabelStep3')}</label>
-                              <input type="text" value={onboardingForm.panNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumber: e.target.value.toUpperCase().slice(0, 10) }))} placeholder="AAAAA0000A" maxLength="10" required className="step3-input" />
+                              <input type="text" value={onboardingForm.panNumber} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumber: e.target.value.toUpperCase().slice(0, 10) }))} placeholder="AAAAA0000A" maxLength="10" className="step3-input" />
                             </div>
                           </div>
                           <div>
@@ -2422,7 +2523,7 @@ export function TrustedPartnerRegistrationPage() {
                           </div>
                           <div>
                             <label className="step3-field-label">{t('fabricSpecialisation')}</label>
-                            <input type="text" value={onboardingForm.fabricSpecialisation} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fabricSpecialisation: e.target.value }))} placeholder={t('specialisationPlaceholder')} required className="step3-input" />
+                            <input type="text" value={onboardingForm.fabricSpecialisation} onChange={(e) => setOnboardingForm(prev => ({ ...prev, fabricSpecialisation: e.target.value }))} placeholder={t('specialisationPlaceholder')} className="step3-input" />
                           </div>
                         </div>
                       </div>
@@ -2534,7 +2635,7 @@ export function TrustedPartnerRegistrationPage() {
                             </div>
                             <div>
                               <label className="step3-field-label">{t('panVerifyLabel')}</label>
-                              <input type="text" value={onboardingForm.panNumberVerify} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumberVerify: e.target.value.toUpperCase().slice(0, 10) }))} placeholder={t('panVerifyPlaceholder')} maxLength="10" required className="step3-input" />
+                              <input type="text" value={onboardingForm.panNumberVerify} onChange={(e) => setOnboardingForm(prev => ({ ...prev, panNumberVerify: e.target.value.toUpperCase().slice(0, 10) }))} placeholder={t('panVerifyPlaceholder')} maxLength="10" className="step3-input" />
                             </div>
                           </div>
                           
@@ -2583,9 +2684,55 @@ export function TrustedPartnerRegistrationPage() {
                     </div>
 
                     {onboardingError && (
-                      <div className="vendor-form-error" role="alert" style={{ marginTop: '16px' }}>
-                        <AlertCircle size={18} />
-                        <span>{onboardingError}</span>
+                      <div className="onboarding-modal-overlay" role="dialog" aria-modal="true" style={{ position: 'fixed', zIndex: 10000 }}>
+                        <div className="onboarding-modal-card minimal" style={{ borderColor: 'rgba(139, 47, 47, 0.25)', maxWidth: '380px' }}>
+                          <div className="onboarding-modal-body" style={{ padding: '32px 24px' }}>
+                            <div 
+                              className="onboarding-modal-header-icon" 
+                              style={{ 
+                                background: 'rgba(139, 47, 47, 0.08)', 
+                                color: '#8b2f2f',
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '50%',
+                                display: 'grid',
+                                placeItems: 'center',
+                                margin: '0 auto 16px',
+                                border: 'none'
+                              }}
+                            >
+                              <AlertCircle size={22} />
+                            </div>
+                            <h3 style={{ fontSize: '18px', color: '#241912', marginBottom: '8px', fontFamily: "var(--font-heading)" }}>
+                              {lang === 'hi' ? 'त्रुटि (Error)' : 'Submission Error'}
+                            </h3>
+                            <p className="onboarding-modal-message" style={{ fontSize: '13.5px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                              {onboardingError}
+                            </p>
+                            <div className="onboarding-modal-actions">
+                              <button 
+                                type="button" 
+                                className="onboarding-modal-btn-download" 
+                                style={{ 
+                                  background: '#8b2f2f', 
+                                  boxShadow: '0 4px 12px rgba(139, 47, 47, 0.15)',
+                                  padding: '10px 20px',
+                                  fontSize: '13px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  border: 'none',
+                                  color: '#ffffff',
+                                  width: '100%',
+                                  display: 'inline-flex',
+                                  justifyContent: 'center'
+                                }}
+                                onClick={() => setOnboardingError('')}
+                              >
+                                {lang === 'hi' ? 'ठीक है' : 'Dismiss'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
 
