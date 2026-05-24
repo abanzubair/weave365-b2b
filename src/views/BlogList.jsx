@@ -53,7 +53,7 @@ export function BlogList({ navigate, blogs = [] }) {
       <Breadcrumb items={breadcrumbItems} navigate={navigate} />
       <header className="blog-list-header">
         <span className="blog-list-kicker">Weave 365 Insights</span>
-        <h1>The Saree Wholesaler's Business & Fabric Journal</h1>
+        <h1>The Saree Wholesaler's Business & Fabric Blog</h1>
         <p className="blog-list-subtitle">
           Expert boutique scaling roadmaps, historical Varanasi loom guides, and technical fabric blueprints to empower your ethnic wear enterprise.
         </p>

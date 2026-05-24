@@ -9,6 +9,7 @@ import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';
 import Breadcrumb from './components/Breadcrumb.jsx';
+import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
 
 export function Catalog({
   title,
@@ -291,7 +292,11 @@ export function Catalog({
       )}
 
       {status === 'ready' && products.length === 0 && (
-        <p className="empty-state">No products match this search.</p>
+        category && category !== 'All' ? (
+          <EmptyCategorySourcing categoryName={category} navigate={navigate} />
+        ) : (
+          <p className="empty-state">No products match this search.</p>
+        )
       )}
     </section>
   );

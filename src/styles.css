@@ -28,6 +28,7 @@
 @import './styles/productTrustStrip.css';
 @import './styles/sectionTitle.css';
 @import './styles/internalLinkNetwork.css';
+@import './styles/emptyCategorySourcing.css';
 
 .search-lock {
   overflow: hidden !important;

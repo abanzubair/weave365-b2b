@@ -10,6 +10,7 @@ import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
 
 export default function SeoLandingPage({
   slug,
@@ -301,9 +302,7 @@ export default function SeoLandingPage({
         )}
 
         {status === 'ready' && filteredProducts.length === 0 && (
-          <p className="empty-state" style={{ textAlign: 'center', margin: '5rem 0', color: '#777', fontSize: '1rem' }}>
-            No designs are currently listed under this wholesale collection. New weaves arrive weekly.
-          </p>
+          <EmptyCategorySourcing categoryName={pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} navigate={navigate} />
         )}
       </section>
 
