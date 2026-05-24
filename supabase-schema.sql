@@ -609,3 +609,33 @@ create policy "Allow admin all onboarding profiles"
   on public.vendor_profiles for all 
   using (public.is_admin());
 
+-------------------------------------------------------------------------------
+-- B2B CATALOG DOWNLOAD RATELIMITING / TRACKING TABLES
+-------------------------------------------------------------------------------
+
+create table if not exists public.download_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id text not null,
+  downloaded_at timestamptz default now()
+);
+
+-- Enable RLS for data protection
+alter table public.download_logs enable row level security;
+
+-- Policies: Only access own download logs unless admin
+drop policy if exists "Allow users to view own download logs" on public.download_logs;
+create policy "Allow users to view own download logs"
+  on public.download_logs for select
+  to authenticated
+  using ((select auth.uid()) = user_id or public.is_admin());
+
+drop policy if exists "Allow users to insert own download logs" on public.download_logs;
+create policy "Allow users to insert own download logs"
+  on public.download_logs for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id or public.is_admin());
+
+-- Index for high-performance daily lookup queries
+create index if not exists download_logs_user_product_date_idx 
+  on public.download_logs (user_id, product_id, downloaded_at);

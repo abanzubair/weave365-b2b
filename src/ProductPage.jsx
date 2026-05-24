@@ -533,6 +533,51 @@ export function ProductDetail({
   }
 
   const downloadImagesAsZip = useCallback(async () => {
+    const userId = priceAccess?.userId;
+    const productId = product.id;
+    if (!userId) {
+      setToastMessage('Please login to download images');
+      setTimeout(() => setToastMessage(''), 3000);
+      return;
+    }
+
+    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+    const localKey = `weave365_dl_${userId}_${productId}_${todayStr}`;
+
+    // 1. Fast client-side localStorage check
+    if (localStorage.getItem(localKey)) {
+      setToastMessage('Limit reached: 1 download per product per day');
+      setTimeout(() => setToastMessage(''), 4000);
+      return;
+    }
+
+    // 2. Cross-device database check via Supabase (if configured)
+    if (isSupabaseConfigured) {
+      try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const { data, error } = await supabase
+          .from('download_logs')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('product_id', productId)
+          .gte('downloaded_at', startOfDay.toISOString());
+
+        if (error) {
+          // Gracefully fallback to localStorage check only if table or connection is missing
+          console.warn('Supabase download limit check failed, falling back to localStorage:', error);
+        } else if (data && data.length > 0) {
+          localStorage.setItem(localKey, 'true');
+          setToastMessage('Limit reached: 1 download per product per day');
+          setTimeout(() => setToastMessage(''), 4000);
+          return;
+        }
+      } catch (err) {
+        console.warn('Error verifying download logs in database:', err);
+      }
+    }
+
     try {
       setIsDownloading(true);
       const [{ default: JSZip }, { saveAs }] = await Promise.all([
@@ -554,13 +599,26 @@ export function ProductDetail({
       await Promise.all(promises);
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-images.zip`);
+
+      // 3. Log download locally and in Supabase upon successful zipping/saving
+      localStorage.setItem(localKey, 'true');
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('download_logs').insert({
+            user_id: userId,
+            product_id: productId
+          });
+        } catch (err) {
+          console.warn('Failed to log download activity to database:', err);
+        }
+      }
     } catch (error) {
       console.error('Error downloading images:', error);
       alert('Failed to download images. They might be hosted on a server that restricts direct downloads.');
     } finally {
       setIsDownloading(false);
     }
-  }, [product.images, product.title]);
+  }, [product.images, product.title, priceAccess]);
 
   const shareProductImages = useCallback(async () => {
     const text = `*${product.title}*\n\nHere are the product images:\n${product.images.join('\n')}`;
