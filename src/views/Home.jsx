@@ -282,7 +282,7 @@ export function Home({
     const rail = document.getElementById(rowId);
     if (!rail) return;
 
-    const card = rail.querySelector('.product-card');
+    const card = rail.querySelector('.product-card, .blog-card');
     const styles = window.getComputedStyle(rail);
     const gap = parseFloat(styles.columnGap || styles.gap) || 0;
     const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
@@ -736,38 +736,56 @@ export function Home({
           </div>
         </div>
 
-        <div className="home-blog-grid">
-          {blogPosts.slice(0, 4).map((post) => (
-            <article
-              key={post.slug}
-              className="blog-card"
-              onClick={() => navigate('blog', post.slug)}
-            >
-              <div className="card-img-wrapper" style={{ height: '200px' }}>
-                <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
-                <span className="card-category-badge">{post.category}</span>
-              </div>
-              <div className="card-info-pane">
-                <div className="post-meta-strip">
-                  <span className="post-meta-item">
-                    <Calendar size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.date}
-                  </span>
-                  <span className="meta-divider"></span>
-                  <span className="post-meta-item">
-                    <Clock size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.readTime}
-                  </span>
+        <div className="scroll-wrapper blog-scroll-wrapper">
+          <button
+            className="scroll-arrow left blog-scroll-arrow"
+            onClick={() => scrollProductRail('home-blog-row', -1)}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <div className="home-blog-grid" id="home-blog-row">
+            {blogPosts.slice(0, 4).map((post) => (
+              <article
+                key={post.slug}
+                className="blog-card"
+                onClick={() => navigate('blog', post.slug)}
+              >
+                <div className="card-img-wrapper" style={{ height: '200px' }}>
+                  <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
+                  <span className="card-category-badge">{post.category}</span>
                 </div>
-                <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
-                <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
-                <button
-                  className="read-more-link"
-                  style={{ marginTop: 'auto', fontSize: '0.8rem' }}
-                >
-                  Read Guide <ArrowRight size={14} />
-                </button>
-              </div>
-            </article>
-          ))}
+                <div className="card-info-pane">
+                  <div className="post-meta-strip">
+                    <span className="post-meta-item">
+                      <Calendar size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.date}
+                    </span>
+                    <span className="meta-divider"></span>
+                    <span className="post-meta-item">
+                      <Clock size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.readTime}
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
+                  <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
+                  <button
+                    className="read-more-link"
+                    style={{ marginTop: 'auto', fontSize: '0.8rem' }}
+                  >
+                    Read Guide <ArrowRight size={14} />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <button
+            className="scroll-arrow right blog-scroll-arrow"
+            onClick={() => scrollProductRail('home-blog-row', 1)}
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </section>
 

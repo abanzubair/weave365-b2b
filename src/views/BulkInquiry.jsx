@@ -116,7 +116,7 @@ export function BulkInquiry({ navigate }) {
                 <input value={inquiry.name} onChange={(event) => updateField('name', event.target.value)} required />
               </label>
               <label>
-                Business / Shop Name
+                Business Name
                 <input value={inquiry.businessName} onChange={(event) => updateField('businessName', event.target.value)} />
               </label>
               <label>

@@ -602,7 +602,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         'Date Submitted',
         'Proprietor Name',
         'Business Legal Name',
-        'Business Type',
+        'Business Role',
         'WhatsApp Number',
         'Alternate Contact',
         'Email Address',
@@ -3092,7 +3092,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         <h4 style={{ margin: '0 0 10px', fontSize: '14px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>Company Information</h4>
                         <div style={{ display: 'grid', gap: '8px', fontSize: '13px', lineHeight: '1.4' }}>
                           <div><strong>Business Legal Name</strong>: {onb.business_name}</div>
-                          <div><strong>Business Type</strong>: {onb.business_type}</div>
+                          <div><strong>Business Role</strong>: {onb.business_type}</div>
                           <div><strong>Years in Business</strong>: {onb.years_in_business}</div>
                           <div><strong>GST Registration</strong>: {onb.gst_number || 'Not Registered'}</div>
                           <div><strong>Permanent Account Number (PAN)</strong>: {onb.pan_number}</div>

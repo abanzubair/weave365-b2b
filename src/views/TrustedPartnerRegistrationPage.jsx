@@ -157,15 +157,15 @@ const translations = {
     emailLabel: 'Email address',
     altContactLabel: 'Alternate contact number',
     secBBusinessDetails: 'B. Business details',
-    businessShopName: 'Business / shop name',
+    businessShopName: 'Business name',
     tradeNamePlaceholder: 'Trade name',
-    businessTypeLabel: 'Business type',
+    businessTypeLabel: 'Business Role',
     businessTypeSelect: 'Select',
-    businessTypeOpt1: 'Sole proprietor / Individual weaver',
-    businessTypeOpt2: 'Partnership firm',
-    businessTypeOpt3: 'Private limited company',
-    businessTypeOpt4: 'Manufacturer',
-    businessTypeOpt5: 'Trader / Wholesaler',
+    businessTypeOpt1: 'Weaver',
+    businessTypeOpt2: 'Master Weaver',
+    businessTypeOpt3: 'Manufacturer',
+    businessTypeOpt4: 'Wholesaler',
+    businessTypeOpt5: 'Retailer',
     businessAddressLabel: 'Business address',
     shopUnitAddressPlaceholder: 'Shop / unit address',
     cityPlaceholderStep3: 'City',
@@ -396,15 +396,15 @@ const translations = {
     emailLabel: 'ईमेल पता',
     altContactLabel: 'दूसरा कांटेक्ट नंबर (वैकल्पिक)',
     secBBusinessDetails: 'ख. बिज़नेस डिटेल्स (व्यवसाय की जानकारी)',
-    businessShopName: 'बिज़नेस / दुकान का नाम',
+    businessShopName: 'बिज़नेस का नाम',
     tradeNamePlaceholder: 'दुकान या फर्म का नाम',
-    businessTypeLabel: 'बिज़नेस का प्रकार',
+    businessTypeLabel: 'व्यवसाय में भूमिका',
     businessTypeSelect: 'चुनें',
-    businessTypeOpt1: 'खुद का काम / बुनकर (जुलाहा)',
-    businessTypeOpt2: 'पार्टनरशिप फर्म',
-    businessTypeOpt3: 'प्राइवेट लिमिटेड कंपनी',
-    businessTypeOpt4: 'बनाने वाले (मैन्युफैक्चरर)',
-    businessTypeOpt5: 'व्यापारी / थोक विक्रेता (होलसेलर)',
+    businessTypeOpt1: 'बुनकर (Weaver)',
+    businessTypeOpt2: 'मास्टर बुनकर (Master Weaver)',
+    businessTypeOpt3: 'निर्माता (Manufacturer)',
+    businessTypeOpt4: 'थोक विक्रेता (Wholesaler)',
+    businessTypeOpt5: 'रिटेलर / फुटकर विक्रेता (Retailer)',
     businessAddressLabel: 'दुकान/कारखाने का पता',
     shopUnitAddressPlaceholder: 'गली, दुकान या यूनिट नंबर',
     cityPlaceholderStep3: 'शहर',
@@ -2330,11 +2330,11 @@ export function TrustedPartnerRegistrationPage() {
                               <label className="step3-field-label">{t('businessTypeLabel')}</label>
                               <select value={onboardingForm.businessType} onChange={(e) => setOnboardingForm(prev => ({ ...prev, businessType: e.target.value }))} required className="step3-select">
                                 <option value="" disabled>{t('businessTypeSelect')}</option>
-                                <option value="Sole proprietor / Individual weaver">{t('businessTypeOpt1')}</option>
-                                <option value="Partnership firm">{t('businessTypeOpt2')}</option>
-                                <option value="Private limited company">{t('businessTypeOpt3')}</option>
-                                <option value="Manufacturer">{t('businessTypeOpt4')}</option>
-                                <option value="Trader / Wholesaler">{t('businessTypeOpt5')}</option>
+                                <option value="Weaver">{t('businessTypeOpt1')}</option>
+                                <option value="Master Weaver">{t('businessTypeOpt2')}</option>
+                                <option value="Manufacturer">{t('businessTypeOpt3')}</option>
+                                <option value="Wholesaler">{t('businessTypeOpt4')}</option>
+                                <option value="Retailer">{t('businessTypeOpt5')}</option>
                               </select>
                             </div>
                           </div>
