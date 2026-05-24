@@ -206,6 +206,10 @@ export default function App({ initialData = {} }) {
   }, [hasInitialData]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && 'history' in window) {
+      window.history.scrollRestoration = 'manual';
+    }
+
     const updateScrolled = () => {
       const scrollPos = window.scrollY || document.scrollingElement?.scrollTop || 0;
       setScrolled(scrollPos > 20);
