@@ -52,8 +52,18 @@ export function ResellerWhatsappShare({
   const safeQuantity = Math.max(1, Number(quantity) || 1);
   const shareImages = useMemo(
     () => uniqueProductShareImages(product, variant, imageUrl),
-    [imageUrl, product, variant],
+    [
+      imageUrl, 
+      product?.id, 
+      product?.images?.join(','), 
+      variant?.code, 
+      variant?.image
+    ],
   );
+
+  // Serialize array as a primitive string key to prevent infinite useEffect re-render loops
+  const shareImagesKey = useMemo(() => shareImages.join(','), [shareImages]);
+
   const customerPriceValue = useMemo(
     () => calculateCustomerPrice(basePrice || 0, mode, markupValue),
     [basePrice, mode, markupValue],
@@ -97,7 +107,7 @@ export function ResellerWhatsappShare({
       setIsPreparingImages(false);
     }
     return () => { isActive = false; };
-  }, [open, shareImages, isApprovedReseller, product.title, variant.code]);
+  }, [open, shareImagesKey, isApprovedReseller, product.title, variant.code]);
 
   if (!isApprovedReseller || !basePrice || !variant) return null;
 

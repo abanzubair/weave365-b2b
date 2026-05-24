@@ -5,7 +5,8 @@
  */
 .reseller-share-modal {
   position: relative;
-  width: min(560px, calc(100vw - 28px));
+  width: 100%;
+  max-width: 560px;
   max-height: min(92dvh, 760px);
   overflow: auto;
   padding: 28px;
@@ -166,10 +167,60 @@
 @media screen and (max-width: 820px) {
   .reseller-share-actions {
     flex-direction: column;
+    gap: 10px !important;
   }
 
   .reseller-share-actions .primary-button,
   .reseller-share-actions .secondary-button {
     width: 100%;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .reseller-share-modal {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  /* Clear fix for scroll container padding bug */
+  .reseller-share-modal::after {
+    content: '';
+    display: block;
+    height: 20px;
+    width: 100%;
+  }
+
+  .reseller-share-head h3 {
+    font-size: 20px;
+  }
+
+  /* Price summary - stacked rows instead of cramped columns */
+  .reseller-share-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 14px 0;
+  }
+
+  .reseller-share-summary div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 12px;
+  }
+
+  .reseller-share-summary span {
+    margin: 0;
+  }
+
+  /* Controls (Markup type & input) - stacked to prevent cramped tabs and input wrapping */
+  .reseller-share-controls {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .reseller-markup-tabs button {
+    font-size: 12px;
+    padding: 0 4px;
   }
 }
