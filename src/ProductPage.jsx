@@ -87,6 +87,22 @@ export function ProductDetail({
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [whatsappShareOpen, setWhatsappShareOpen] = useState(false);
+  const shareMenuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
+        setShareMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [activeAccordion, setActiveAccordion] = useState(null);
   const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -1044,28 +1060,42 @@ export function ProductDetail({
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
                 {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices ? (
-                  <ResellerWhatsappShare
-                    product={product}
-                    variant={variant}
-                    quantity={totalColors}
-                    selectedColorName={selectedColorName}
-                    imageUrl={selectedImage}
-                    priceAccess={priceAccess}
-                    triggerClassName="secondary-action-btn reseller-share-detail-btn"
-                    triggerLabel="Customer Share"
-                  />
+                  <div className="share-dropdown-container" ref={shareMenuRef}>
+                    <button
+                      className="secondary-action-btn reseller-share-dropdown-trigger"
+                      type="button"
+                      onClick={() => setShareMenuOpen(!shareMenuOpen)}
+                    >
+                      <Share2 size={18} /> Customer Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
+                    </button>
+                    {shareMenuOpen && (
+                      <div className="share-dropdown-menu">
+                        <button
+                          type="button"
+                          className="share-dropdown-item"
+                          onClick={() => {
+                            setShareMenuOpen(false);
+                            setWhatsappShareOpen(true);
+                          }}
+                        >
+                          <WhatsappIcon size={16} /> Share Photos on WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          className="share-dropdown-item"
+                          onClick={() => {
+                            setShareMenuOpen(false);
+                            setShowShareModal(true);
+                          }}
+                        >
+                          <Share2 size={16} /> Get White-Label Link
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductImages)}>
                     <Share2 size={18} /> Share
-                  </button>
-                )}
-                {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices && (
-                  <button
-                    className="secondary-action-btn reseller-link-detail-btn"
-                    type="button"
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    <Share2 size={18} /> White-label Link
                   </button>
                 )}
               </div>
@@ -1417,6 +1447,20 @@ export function ProductDetail({
           user={{ id: priceAccess.userId }}
           priceAccess={priceAccess}
           onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices && (
+        <ResellerWhatsappShare
+          showTrigger={false}
+          open={whatsappShareOpen}
+          onClose={() => setWhatsappShareOpen(false)}
+          product={product}
+          variant={variant}
+          quantity={totalColors}
+          selectedColorName={selectedColorName}
+          imageUrl={selectedImage}
+          priceAccess={priceAccess}
         />
       )}
 
