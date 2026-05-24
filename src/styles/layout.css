@@ -1417,9 +1417,7 @@
   .benefit-strip,
   .reseller-band,
   .newsletter,
-  .footer,
-  .top-bar-static,
-  .site-header {
+  .footer {
     padding-left: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
     padding-right: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
   }
@@ -1429,7 +1427,8 @@
     padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
   }
 
-  .top-bar-static {
+  .top-bar-static,
+  .site-header {
     padding-left: var(--site-padding) !important;
     padding-right: var(--site-padding) !important;
   }
