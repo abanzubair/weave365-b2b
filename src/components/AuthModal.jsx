@@ -415,10 +415,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
         setUser(demoUser);
         if (setBuyerProfile) setBuyerProfile(demoProfile);
-        setMessage('Logged in successfully.');
-        setTimeout(() => {
-          onClose();
-        }, 1000);
+        onClose();
       }
       return;
     }
@@ -465,10 +462,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         if (result.data.user) {
           setUser(result.data.user);
         }
-        setMessage('Logged in successfully.');
-        setTimeout(() => {
-          onClose();
-        }, 1000);
+        onClose();
       }
     }
   }
