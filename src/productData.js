@@ -333,6 +333,10 @@ function parsePrice(value) {
   return cleaned ? Number(cleaned) : null;
 }
 
+function isCoverVariantCode(code = '') {
+  return /-0$/i.test(String(code || '').trim());
+}
+
 function parseRowMediaAndVariants(row) {
   const imagesRawStr = String(row['Product Images'] || row['Product Link'] || row.Color || '').trim();
   const imageUrls = imagesRawStr.split('|').map(s => s.trim()).filter(Boolean);
@@ -367,29 +371,33 @@ function parseRowMediaAndVariants(row) {
       const rawImg = imageUrls[i] || '';
       const imgUrl = rawImg ? driveImageUrl(rawImg) : (i === 0 ? coverImage : firstVariantImage);
       
-      // Exclude 0th variant (cover image) from color entries selection swatches
-      if (pv.color && i > 0) {
+      const pvCodeInfo = parseCode(pv.code, row['Pre Code'], pv.color);
+      const variantCode = pv.code || pvCodeInfo.variantCode;
+      const isCoverVariant = isCoverVariantCode(variantCode);
+
+      // The -0 code is reserved for the cover image, not an orderable color.
+      if (pv.color && !isCoverVariant) {
         colorEntries.push({
           name: pv.color,
           image: imgUrl,
         });
       }
       
-      const pvCodeInfo = parseCode(pv.code, row['Pre Code'], pv.color);
-      
-      rowVariants.push({
-        code: pv.code || pvCodeInfo.variantCode,
-        preCode: row['Pre Code'],
-        color: pv.color || pvCodeInfo.color || '',
-        image: imgUrl,
-        prices: {
-          mrp: parsePrice(row[moneyColumns.mrp]),
-          b2r: parsePrice(row[moneyColumns.b2r]),
-          single: parsePrice(row[moneyColumns.single]),
-          cod: parsePrice(row[moneyColumns.cod]),
-          offer: parsePrice(row[moneyColumns.offer]),
-        },
-      });
+      if (!isCoverVariant) {
+        rowVariants.push({
+          code: variantCode,
+          preCode: row['Pre Code'],
+          color: pv.color || pvCodeInfo.color || '',
+          image: imgUrl,
+          prices: {
+            mrp: parsePrice(row[moneyColumns.mrp]),
+            b2r: parsePrice(row[moneyColumns.b2r]),
+            single: parsePrice(row[moneyColumns.single]),
+            cod: parsePrice(row[moneyColumns.cod]),
+            offer: parsePrice(row[moneyColumns.offer]),
+          },
+        });
+      }
     }
   } else {
     // Single variant fallback: Color is row.Color, image is coverImage or imageUrls[0]

@@ -70,11 +70,11 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Information</h3>
-        <a href="#disclaimer">Disclaimer</a>
-        <a href="#shipping">Shipping & Delivery</a>
-        <a href="#returns">Returns & Cancellation</a>
-        <a href="#privacy">Privacy & Security</a>
-        <a href="#terms">Terms & Conditions</a>
+        <a href="/disclaimer" onClick={(e) => { e.preventDefault(); navigate('disclaimer'); }}>Disclaimer</a>
+        <a href="/shipping-delivery" onClick={(e) => { e.preventDefault(); navigate('shipping-delivery'); }}>Shipping & Delivery</a>
+        <a href="/returns-cancellation" onClick={(e) => { e.preventDefault(); navigate('returns-cancellation'); }}>Returns & Cancellation</a>
+        <a href="/privacy-security" onClick={(e) => { e.preventDefault(); navigate('privacy-security'); }}>Privacy & Security</a>
+        <a href="/terms-conditions" onClick={(e) => { e.preventDefault(); navigate('terms-conditions'); }}>Terms & Conditions</a>
       </div>
       <div>
         <h3>Blog</h3>

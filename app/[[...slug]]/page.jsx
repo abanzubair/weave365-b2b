@@ -174,6 +174,46 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
     );
   }
 
+  if (route === 'disclaimer') {
+    return buildMeta(
+      'Product Disclaimer & Heritage Weave Variations | Weave 365',
+      'Understand the handwoven integrity, color calibration, and textile variations of our premium Varanasi silk sarees. Essential reading for wholesale buyers.',
+      '/disclaimer'
+    );
+  }
+
+  if (route === 'shipping-delivery') {
+    return buildMeta(
+      'Wholesale Saree Shipping & Worldwide Logistics | Weave 365',
+      'Direct Varanasi warehouse dispatch, express domestic delivery, international courier timelines (US, UK, UAE), and bulk freight cargo configurations.',
+      '/shipping-delivery'
+    );
+  }
+
+  if (route === 'returns-cancellation') {
+    return buildMeta(
+      'B2B Saree Returns & Cancellation Policies | Weave 365',
+      'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
+      '/returns-cancellation'
+    );
+  }
+
+  if (route === 'privacy-security') {
+    return buildMeta(
+      'Data Privacy, GST Security & Transaction Safety | Weave 365',
+      'How we secure your wholesale trade records, verify business profiles, protect GST numbers, and encrypt commercial transactions with top payment gateways.',
+      '/privacy-security'
+    );
+  }
+
+  if (route === 'terms-conditions') {
+    return buildMeta(
+      'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
+      'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
+      '/terms-conditions'
+    );
+  }
+
   if (route === 'wholesale-partner-program') {
     return buildMeta(
       'Wholesale & Reseller Partner Program | Weave 365',

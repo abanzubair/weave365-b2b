@@ -61,6 +61,11 @@ import { AboutPage } from './views/AboutPage.jsx';
 import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
 import { ContactPage } from './views/ContactPage.jsx';
 import { NotFoundPage } from './views/NotFoundPage.jsx';
+import { DisclaimerPage } from './views/DisclaimerPage.jsx';
+import { ShippingDeliveryPage } from './views/ShippingDeliveryPage.jsx';
+import { ReturnsCancellationPage } from './views/ReturnsCancellationPage.jsx';
+import { PrivacySecurityPage } from './views/PrivacySecurityPage.jsx';
+import { TermsConditionsPage } from './views/TermsConditionsPage.jsx';
 
 import { seoLandingPages } from './data/seoLandingPages.js';
 
@@ -903,6 +908,16 @@ export default function App({ initialData = {} }) {
     if (route === 'about') return <AboutPage navigate={navigate} />;
 
     if (route === 'early-access') return <EarlyAccessPage navigate={navigate} />;
+
+    if (route === 'disclaimer') return <DisclaimerPage navigate={navigate} />;
+
+    if (route === 'shipping-delivery') return <ShippingDeliveryPage navigate={navigate} />;
+
+    if (route === 'returns-cancellation') return <ReturnsCancellationPage navigate={navigate} />;
+
+    if (route === 'privacy-security') return <PrivacySecurityPage navigate={navigate} />;
+
+    if (route === 'terms-conditions') return <TermsConditionsPage navigate={navigate} />;
 
     if (route === 'vendor-partnership') return <VendorPartnershipPage />;
 

@@ -836,7 +836,7 @@ export function ProductDetail({
 
             <div className="product-disclaimer-box desktop-disclaimer-only">
               <p>
-                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
+                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. <strong>Model image is for reference only.</strong> Making a payment indicates your agreement to this.
               </p>
             </div>
 
