@@ -78,10 +78,10 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Blog</h3>
+        <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('blog'); }}>All Blog Articles</a>
         <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => { e.preventDefault(); navigate('blog', 'how-to-start-saree-reselling-business'); }}>Saree Reselling Guide</a>
         <a href="/blog/difference-katan-silk-and-organza-saree" onClick={(e) => { e.preventDefault(); navigate('blog', 'difference-katan-silk-and-organza-saree'); }}>Katan Silk vs. Organza</a>
         <a href="/blog/wholesale-saree-buying-guide-boutiques" onClick={(e) => { e.preventDefault(); navigate('blog', 'wholesale-saree-buying-guide-boutiques'); }}>Wholesale Saree Buying</a>
-        <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('blog'); }}>All Blog Articles</a>
       </div>
       <div>
         <h3>Social Links</h3>

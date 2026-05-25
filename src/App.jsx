@@ -15,7 +15,7 @@ import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
-import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager } from './storefrontShared.jsx';
+import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager, CURRENCIES } from './storefrontShared.jsx';
 import { assetSrc } from './utils/assetSrc.js';
 
 import {
@@ -31,7 +31,6 @@ import { loadProfileForUser, syncProfileFromUser } from './utils/profileHelpers.
 import { getBuyerAccess, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { applyVisiblePricesToProducts, buildVisiblePriceMap, loadVisiblePrices } from './services/priceService.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
-import { TopBar } from './components/TopBar.jsx';
 import { Footer } from './components/Footer.jsx';
 import { InternalLinkNetwork } from './components/InternalLinkNetwork.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
@@ -76,7 +75,10 @@ export default function App({ initialData = {} }) {
     console.log('SSR App: initialData status =', initialData?.status, 'products count =', initialData?.products?.length, 'hydrated =', initialData?.hydrated);
   }
 
-  useCurrency();
+  const currentCurrency = useCurrency();
+  const activeCurrency = useMemo(() => {
+    return CURRENCIES.find(c => c.code === currentCurrency) || CURRENCIES[0];
+  }, [currentCurrency]);
   const router = useRouter();
   const pathname = usePathname() || '/';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
@@ -113,9 +115,11 @@ export default function App({ initialData = {} }) {
   const partnerNavRef = useRef(null);
   const profileRef = useRef(null);
   const searchRef = useRef(null);
+  const currencyRef = useRef(null);
   const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
   const [partnerNavPos, setPartnerNavPos] = useState({ top: 0, left: 0 });
   const [profilePos, setProfilePos] = useState({ top: 0, left: 0 });
+  const [currencyPos, setCurrencyPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
@@ -228,14 +232,7 @@ export default function App({ initialData = {} }) {
   }, []);
 
   useEffect(() => {
-    fetch('https://api.exchangerate-api.com/v4/latest/INR')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.rates) {
-          CurrencyManager.setRates(data.rates);
-        }
-      })
-      .catch(err => console.error('Failed to fetch exchange rates', err));
+    void CurrencyManager.fetchRates();
   }, []);
 
   useEffect(() => {
@@ -1142,6 +1139,52 @@ export default function App({ initialData = {} }) {
               <ShoppingBag size={18} strokeWidth={1.5} />
               {cartProducts.length > 0 && <span className="premium-badge">{cartProducts.length}</span>}
             </button>
+
+            <div className="nav-item-dropdown" ref={currencyRef}>
+              <button 
+                className={`premium-icon-btn navbar-currency-trigger ${dropdownOpen === 'currency' ? 'active' : ''}`}
+                type="button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (dropdownOpen !== 'currency' && currencyRef.current) {
+                    const rect = currencyRef.current.getBoundingClientRect();
+                    setCurrencyPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
+                  }
+                  setDropdownOpen(dropdownOpen === 'currency' ? null : 'currency');
+                }}
+                aria-label="Change Currency"
+              >
+                <span className="navbar-currency-code">{activeCurrency.code}</span>
+                <ChevronDown size={11} className={dropdownOpen === 'currency' ? 'rotate' : ''} />
+              </button>
+              {dropdownOpen === 'currency' && createPortal(
+                <div 
+                  className="dropdown-menu currency-dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: currencyPos.top,
+                    left: currencyPos.left,
+                    transform: 'translateX(-50%) translateY(12px)',
+                    zIndex: 10000
+                  }}
+                >
+                  {CURRENCIES.map((c) => (
+                    <button
+                      key={c.code}
+                      className={c.code === currentCurrency ? 'active' : ''}
+                      onClick={() => {
+                        CurrencyManager.setCurrency(c.code);
+                        setDropdownOpen(null);
+                      }}
+                    >
+                      <span>{c.code}</span>
+                      {c.code === currentCurrency && <div className="active-dot" />}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )}
+            </div>
           </div>
 
         </header>

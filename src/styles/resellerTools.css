@@ -862,8 +862,10 @@
 .share-dropdown-menu {
   position: absolute;
   bottom: calc(100% + 8px); /* Pop up above the button */
-  left: 0;
   right: 0;
+  left: auto;
+  width: max-content;
+  min-width: 220px;
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -876,7 +878,7 @@
   flex-direction: column;
   gap: 4px;
   animation: shareDropdownSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: bottom center;
+  transform-origin: bottom right;
 }
 
 @keyframes shareDropdownSlide {
@@ -903,8 +905,8 @@
   font-size: 13.5px !important;
   font-weight: 600 !important;
   text-align: left !important;
-  cursor: pointer !important;
   text-transform: none !important;
+  white-space: nowrap !important;
   transition: all 0.25s ease !important;
 }
 
@@ -916,4 +918,7 @@
 
 .share-dropdown-item svg {
   color: var(--gold-dark) !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
 }

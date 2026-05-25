@@ -636,26 +636,28 @@ export function ProductDetail({
     }
   }, [product.images, product.title, priceAccess]);
 
-  const shareProductImages = useCallback(async () => {
-    const text = `*${product.title}*\n\nHere are the product images:\n${product.images.join('\n')}`;
+  const shareProductPage = useCallback(async () => {
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.in/product/${product.id}`;
+    const shareText = `Check out ${product.title} on Weave 365`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: product.title,
-          text: text,
+          text: shareText,
+          url: shareUrl,
         });
       } catch (error) {
         console.error('Error sharing:', error);
       }
     } else {
       try {
-        await navigator.clipboard.writeText(text);
-        alert('Image links copied to clipboard!');
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        alert('Product link copied to clipboard!');
       } catch (err) {
         alert('Sharing is not supported on this device.');
       }
     }
-  }, [product.images, product.title]);
+  }, [product.id, product.title]);
 
   useEffect(() => {
     setSelectedImage(product.images[0]);
@@ -917,7 +919,7 @@ export function ProductDetail({
                       </div>
                       {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && (
                         <div className="price-set-block">
-                          <span className="price-pipe">|</span>
+                          <span className="price-pipe"></span>
                           <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
                           <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
                           {canViewPrice && (
@@ -1066,7 +1068,7 @@ export function ProductDetail({
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-                {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices ? (
+                {(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale') && priceAccess?.canViewPrices ? (
                   <div className="share-dropdown-container" ref={shareMenuRef}>
                     <button
                       className="secondary-action-btn reseller-share-dropdown-trigger"
@@ -1085,7 +1087,7 @@ export function ProductDetail({
                             setWhatsappShareOpen(true);
                           }}
                         >
-                          <WhatsappIcon size={16} /> Share Photos on WhatsApp
+                          <WhatsappIcon size={18} /> Share Photos on WhatsApp
                         </button>
                         <button
                           type="button"
@@ -1095,13 +1097,13 @@ export function ProductDetail({
                             setShowShareModal(true);
                           }}
                         >
-                          <Share2 size={16} /> Get White-Label Link
+                          <Share2 size={18} /> Get White-Label Link
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductImages)}>
+                  <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductPage)}>
                     <Share2 size={18} /> Share
                   </button>
                 )}
@@ -1457,7 +1459,7 @@ export function ProductDetail({
         />
       )}
 
-      {priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices && (
+      {(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale') && priceAccess?.canViewPrices && (
         <ResellerWhatsappShare
           showTrigger={false}
           open={whatsappShareOpen}

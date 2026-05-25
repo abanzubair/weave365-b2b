@@ -24,14 +24,7 @@ export function TopBar({ isHome = false }) {
   const topBarWhatsapp = '+91 99191 01369';
 
   useEffect(() => {
-    fetch('https://api.exchangerate-api.com/v4/latest/INR')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.rates) {
-          CurrencyManager.setRates(data.rates);
-        }
-      })
-      .catch(err => console.error('Failed to fetch exchange rates', err));
+    void CurrencyManager.fetchRates();
   }, []);
 
   useEffect(() => {

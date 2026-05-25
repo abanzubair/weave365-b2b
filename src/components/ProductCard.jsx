@@ -69,7 +69,7 @@ export const ProductCard = memo(function ProductCard({
   const [enquiryState, setEnquiryState] = useState('idle');
   const [popupOpen, setPopupOpen] = useState(false);
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
-  const canResellerShare = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
+  const canResellerShare = priceAccess?.canViewPrices && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale');
   const [showShareModal, setShowShareModal] = useState(false);
   const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
   const [showOptions, setShowOptions] = useState(false);

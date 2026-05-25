@@ -47,7 +47,7 @@ export function ResellerWhatsappShare({
   const [preparedFiles, setPreparedFiles] = useState([]);
   const [isPreparingImages, setIsPreparingImages] = useState(false);
 
-  const isApprovedReseller = priceAccess?.canViewPrices && priceAccess?.priceGroup === 'reseller';
+  const isApprovedReseller = priceAccess?.canViewPrices && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale');
   const basePrice = customerPrice(variant?.prices, priceAccess);
   const safeQuantity = Math.max(1, Number(quantity) || 1);
   const shareImages = useMemo(

@@ -18,7 +18,9 @@ export const CURRENCIES = [
 
 let currentCurrency = 'INR';
 let exchangeRates = { INR: 1 };
+
 const currencyListeners = new Set();
+let fetchPromise = null;
 
 export const CurrencyManager = {
   get currency() { return currentCurrency; },
@@ -34,6 +36,35 @@ export const CurrencyManager = {
   subscribe(l) {
     currencyListeners.add(l);
     return () => currencyListeners.delete(l);
+  },
+  fetchRates() {
+    if (typeof window === 'undefined') {
+      return Promise.resolve(exchangeRates);
+    }
+    if (fetchPromise) {
+      return fetchPromise;
+    }
+
+    fetchPromise = fetch('https://api.exchangerate-api.com/v4/latest/INR')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.rates) {
+          CurrencyManager.setRates(data.rates);
+          return exchangeRates;
+        }
+        throw new Error('Invalid exchange rate structure from API');
+      })
+      .catch(err => {
+        console.warn('Failed to fetch live exchange rates. Using robust offline fallbacks instead.', err.message || err);
+        return exchangeRates;
+      });
+
+    return fetchPromise;
   }
 };
 

@@ -287,6 +287,84 @@
   justify-self: end;
 }
 
+/* Premium Minimal Navbar Currency Selector Styles */
+.navbar-currency-trigger {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  color: var(--ink) !important;
+  transition: color 0.3s ease, transform 0.2s ease !important;
+}
+
+.navbar-currency-trigger:hover,
+.navbar-currency-trigger.active {
+  color: var(--gold) !important;
+}
+
+.navbar-currency-trigger svg {
+  color: inherit !important;
+  opacity: 0.6;
+  transition: transform 0.2s ease !important;
+}
+
+.navbar-currency-trigger svg.rotate {
+  transform: rotate(180deg) !important;
+}
+
+.navbar-currency-code {
+  font-family: var(--font-hero-body);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: inherit;
+  text-transform: uppercase;
+}
+
+.currency-dropdown-menu {
+  min-width: 90px !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+  background: var(--white) !important;
+}
+
+.currency-dropdown-menu button {
+  text-transform: uppercase !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  color: var(--ink) !important;
+  transition: all 0.2s ease !important;
+}
+
+.currency-dropdown-menu button:hover {
+  background: var(--surface-soft) !important;
+  color: var(--gold-dark) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.currency-dropdown-menu button.active {
+  background: rgba(183, 134, 70, 0.06) !important;
+  color: var(--gold-dark) !important;
+  font-weight: 600 !important;
+}
+
+.currency-dropdown-menu button .active-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--gold);
+  border-radius: 50%;
+  margin-left: auto;
+}
+
 .premium-search-trigger {
   border: 0;
   background: transparent;

@@ -1383,12 +1383,26 @@
 
   .product-secondary-actions {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
 
-  .product-secondary-actions>* {
-    min-height: 48px !important;
-    font-size: 13px !important;
+  .product-secondary-actions .whatsapp-button,
+  .product-secondary-actions .catalog-add-button,
+  .product-secondary-actions .secondary-action-btn,
+  .product-secondary-actions .reseller-share-dropdown-trigger {
+    min-height: 46px !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    padding: 0 6px !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    letter-spacing: 0.2px !important;
+  }
+
+  .product-secondary-actions svg {
+    width: 15px !important;
+    height: 15px !important;
+    flex-shrink: 0 !important;
   }
 
 
