@@ -491,16 +491,16 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   }
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className={`auth-modal ${mode}-mode`}>
         <button className="icon-button modal-close" onClick={onClose}>
           <X />
         </button>
-        {user ? (
+        {user && mode !== 'reset-password' ? (
           <>
             <h2>Your Account</h2>
             <p>{user.email || 'Demo account'}</p>
-            {/* Welcome Card Reactivated */}
+            {/* Welcome Card Deactivated
             {userProfile.buyer_type && (
               <div className="account-profile-card">
                 <span>{userProfile.price_group === 'reseller' ? 'Reseller Price' : 'Wholesale Price'}</span>
@@ -518,6 +518,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 </small>
               </div>
             )}
+            */}
             {!isSupabaseConfigured && <p className="warning">Demo mode: configure Supabase in .env or .env.local for real login.</p>}
             <button className="secondary-button icon-label" onClick={logout}>
               <LogOut size={18} /> Logout

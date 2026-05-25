@@ -362,6 +362,8 @@ function parseRowMediaAndVariants(row) {
       };
     });
     
+    const hasSubVariants = parsedVariants.some(pv => pv.code && pv.code.includes('-'));
+    
     // First variant image starts at index 1 for fallback, cover is index 0
     const firstVariantImage = imageUrls[1] ? driveImageUrl(imageUrls[1]) : coverImage;
     
@@ -373,7 +375,10 @@ function parseRowMediaAndVariants(row) {
       
       const pvCodeInfo = parseCode(pv.code, row['Pre Code'], pv.color);
       const variantCode = pv.code || pvCodeInfo.variantCode;
-      const isCoverVariant = isCoverVariantCode(variantCode);
+      
+      const isExplicitCover = isCoverVariantCode(variantCode);
+      const isDynamicCover = hasSubVariants && !variantCode.includes('-');
+      const isCoverVariant = isExplicitCover || isDynamicCover;
 
       // The -0 code is reserved for the cover image, not an orderable color.
       if (pv.color && !isCoverVariant) {
@@ -383,7 +388,7 @@ function parseRowMediaAndVariants(row) {
         });
       }
       
-      if (!isCoverVariant) {
+      if (!isExplicitCover) {
         rowVariants.push({
           code: variantCode,
           preCode: row['Pre Code'],

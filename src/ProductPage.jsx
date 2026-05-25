@@ -699,7 +699,6 @@ export function ProductDetail({
     if (nextVariant.color) {
       setSelectedColorName(nextVariant.color);
     }
-
     if (nextVariant.image) {
       setSelectedImage(nextVariant.image);
     }
@@ -712,7 +711,12 @@ export function ProductDetail({
       setSelectedImage(nextColor.image);
     }
 
-    const matchingVariant = product.variants.find((item) => item.color === nextColorName);
+    const hasSubVariants = product.variants.some((v) => v.code && v.code.includes('-'));
+    const matchingVariant = product.variants.find((item) => {
+      if (hasSubVariants && item.code && !item.code.includes('-')) return false;
+      return item.color === nextColorName;
+    }) || product.variants.find((item) => item.color === nextColorName);
+
     if (matchingVariant?.code) {
       setVariantCode(matchingVariant.code);
     }
