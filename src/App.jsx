@@ -1071,6 +1071,12 @@ export default function App({ initialData = {} }) {
             >
               ABOUT
             </button>
+            <button 
+              className={route === 'contact' ? 'active' : ''} 
+              onClick={() => navigate('contact')}
+            >
+              CONTACT
+            </button>
           </nav>
 
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalogue')}>

@@ -1106,7 +1106,7 @@
   border: 0;
   background: transparent;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ink);
   text-align: left;
   transition: background 0.15s ease;

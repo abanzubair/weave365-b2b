@@ -261,6 +261,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     interestedCategories: [],
   });
   const [message, setMessage] = useState('');
+  const [tempDemoUser, setTempDemoUser] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -405,12 +406,17 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         email: email || 'demo@sareeva.local',
         user_metadata: { buyer_profile: demoProfile },
       };
-      localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
-      setUser(demoUser);
-      if (setBuyerProfile) setBuyerProfile(demoProfile);
-      setMessage(mode === 'register'
-        ? 'Demo registration saved with buyer profile.'
-        : 'Demo login active. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
+
+      if (mode === 'register') {
+        // Enforce email verification check for new registers in Demo Mode
+        setTempDemoUser(demoUser);
+        setMessage('demo-verification-sent');
+      } else {
+        localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
+        setUser(demoUser);
+        if (setBuyerProfile) setBuyerProfile(demoProfile);
+        setMessage('Demo login active. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
+      }
       return;
     }
 
@@ -430,19 +436,47 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     if (result.error) {
       setMessage(result.error.message);
     } else {
-      if (result.data.user) {
-        setUser(result.data.user);
-      }
-
-      if (mode === 'register' && result.data.session && result.data.user) {
-        const profileResult = await syncProfileFromUser(result.data.user);
-        if (profileResult.error) {
-          setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
-          return;
+      if (mode === 'register') {
+        // Enforce verification: check if session exists (if email confirmation is turned off in Supabase, session is returned immediately)
+        if (!result.data.session) {
+          // No session means they must confirm their email first!
+          // Bypassing setUser(result.data.user) so they are NOT auto-logged in!
+          setMessage('verification-email-sent');
+        } else {
+          // If Supabase has email verification disabled, it signs them in and returns a session immediately.
+          if (result.data.user) {
+            setUser(result.data.user);
+          }
+          const profileResult = await syncProfileFromUser(result.data.user);
+          if (profileResult.error) {
+            setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
+            return;
+          }
+          setMessage('Registered and logged in successfully.');
         }
+      } else {
+        // Login mode: log them in normally.
+        if (result.data.user) {
+          setUser(result.data.user);
+        }
+        setMessage('Logged in successfully.');
       }
+    }
+  }
 
-      setMessage(mode === 'login' ? 'Logged in successfully.' : 'Registration saved. Check your email if confirmation is required.');
+  function handleSimulateVerification() {
+    if (tempDemoUser) {
+      const demoUserWithConfirmedEmail = {
+        ...tempDemoUser,
+        email_confirmed_at: new Date().toISOString(),
+      };
+      localStorage.setItem('sareeva_user', JSON.stringify(demoUserWithConfirmedEmail));
+      setUser(demoUserWithConfirmedEmail);
+      if (setBuyerProfile) {
+        setBuyerProfile(demoUserWithConfirmedEmail.user_metadata.buyer_profile);
+      }
+      setTempDemoUser(null);
+      setMessage('Demo account verified and logged in successfully!');
     }
   }
 
@@ -491,7 +525,62 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           </>
         ) : (
           <>
-            {mode === 'forgot-password' ? (
+            {message === 'verification-email-sent' ? (
+              <>
+                <h2>Verify Your Email</h2>
+                <div className="auth-success-card" style={{ marginTop: '16px' }}>
+                  <strong style={{ color: '#b78646', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                    ✉️ Check your inbox
+                  </strong>
+                  <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
+                    We have sent a verification link to <strong>{email}</strong>Please confirm your email address to activate your account.
+                  </p>
+                </div>
+                <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '16px', lineHeight: 1.5 }}>
+                  Once verified, you will be able to log in to access direct factory pricing and live inventory.
+                </p>
+                <button
+                  className="secondary-button"
+                  style={{ marginTop: '20px', width: '100%' }}
+                  onClick={() => {
+                    setMode('login');
+                    setMessage('');
+                  }}
+                >
+                  Back to Login
+                </button>
+              </>
+            ) : message === 'demo-verification-sent' ? (
+              <>
+                <h2>Verify Your Email</h2>
+                <div className="auth-success-card" style={{ marginTop: '16px' }}>
+                  <strong style={{ color: '#b78646', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                    ✉️ Verification simulated
+                  </strong>
+                  <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
+                    A verification link has been simulated for <strong>{email}</strong>. In production, the user must click this link to access the platform.
+                  </p>
+                  <button
+                    className="primary-button"
+                    style={{ marginTop: '16px', width: '100%', background: '#b78646' }}
+                    onClick={handleSimulateVerification}
+                  >
+                    Simulate Clicking Verification Link
+                  </button>
+                </div>
+                <button
+                  className="secondary-button"
+                  style={{ marginTop: '20px', width: '100%' }}
+                  onClick={() => {
+                    setMode('login');
+                    setMessage('');
+                    setTempDemoUser(null);
+                  }}
+                >
+                  Back to Login
+                </button>
+              </>
+            ) : mode === 'forgot-password' ? (
               <>
                 <button
                   className="text-button"

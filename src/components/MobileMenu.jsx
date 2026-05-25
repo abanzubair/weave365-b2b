@@ -199,6 +199,19 @@ export function MobileMenu({
             <span className="mobile-menu-label">ABOUT</span>
             <ArrowRight size={16} className="mobile-menu-arrow" />
           </button>
+
+          {/* 6. CONTACT */}
+          <button 
+            className="mobile-menu-item" 
+            onClick={() => {
+              navigate('contact');
+              onClose();
+            }}
+          >
+            <span className="mobile-menu-icon"><Headphones size={20} /></span>
+            <span className="mobile-menu-label">CONTACT</span>
+            <ArrowRight size={16} className="mobile-menu-arrow" />
+          </button>
         </nav>
 
         <div className="mobile-menu-bottom-section">

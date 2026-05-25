@@ -718,6 +718,27 @@ export function ProductDetail({
     }
   }, [colorOptions, product.variants]);
 
+  const handleImageChange = useCallback((nextImage) => {
+    setSelectedImage(nextImage);
+
+    const matchingColor = colorOptions.find((item) => item.image === nextImage);
+    const matchingVariant = product.variants.find((item) => item.image === nextImage)
+      || product.variants.find((item) => matchingColor?.name && item.color === matchingColor.name);
+
+    if (matchingVariant?.code) {
+      setVariantCode(matchingVariant.code);
+    }
+
+    if (!matchingVariant && product.variants[0]?.code) {
+      setVariantCode(product.variants[0].code);
+    }
+
+    const nextColorName = matchingVariant?.color || matchingColor?.name || product.colorOptions?.[0]?.name || product.variants[0]?.color;
+    if (nextColorName) {
+      setSelectedColorName(nextColorName);
+    }
+  }, [colorOptions, product.colorOptions, product.variants]);
+
   const scrollProductRail = (rowId, direction) => {
     const rail = document.getElementById(rowId);
     if (!rail) return;
@@ -749,7 +770,7 @@ export function ProductDetail({
                 <button
                   key={image}
                   className={selectedImage === image ? 'active' : ''}
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => handleImageChange(image)}
                 >
                   <img
                     src={image}
@@ -962,7 +983,7 @@ export function ProductDetail({
               </span>
             ) : (
               <>
-                <span className="gst-disclaimer" style={{ marginBottom: '10px' }}>Excluding GST & shipping</span>
+                <span className="gst-disclaimer" style={{ marginBottom: '10px' }}>Excluding GST & Shipping</span>
                 <p className="b2b-shipping-note" style={{ 
                   margin: '0 0 24px 0', 
                   fontSize: '15px', 
