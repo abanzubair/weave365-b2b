@@ -586,6 +586,7 @@ create table if not exists public.vendor_profiles (
   -- Documents
   id_proof_url text, -- Aadhaar Base64 or URL pointer
   cancelled_cheque_url text, -- Cheque Base64 or URL pointer
+  drive_folder_url text,
   
   status text default 'submitted' check (status in ('submitted', 'approved', 'flagged', 'rejected')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -639,3 +640,6 @@ create policy "Allow users to insert own download logs"
 -- Index for high-performance daily lookup queries
 create index if not exists download_logs_user_product_date_idx 
   on public.download_logs (user_id, product_id, downloaded_at);
+
+-- Migration: Add drive_folder_url to vendor_profiles if it doesn't exist
+alter table public.vendor_profiles add column if not exists drive_folder_url text;

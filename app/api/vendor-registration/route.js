@@ -467,6 +467,23 @@ export async function POST(request) {
       return Response.json({ status: 'success', data });
     }
 
+    // 4.5. STEP 3 product listing drive link update trigger from Admin dashboard
+    if (action === 'update_drive_url') {
+      const cleanWhatsapp = String(payload.whatsapp || '').trim().replace(/\D/g, '').slice(-10);
+
+      const { data, error } = await supabase
+        .from('vendor_profiles')
+        .update({ drive_folder_url: payload.drive_folder_url })
+        .eq('whatsapp_number', cleanWhatsapp)
+        .select();
+
+      if (error) {
+        return Response.json({ status: 'error', error: error.message }, { status: 400 });
+      }
+
+      return Response.json({ status: 'success', data });
+    }
+
     return Response.json(
       { status: 'error', error: `Unsupported action parameter: ${action}` },
       { status: 400 }

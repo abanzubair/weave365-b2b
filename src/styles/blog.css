@@ -14,7 +14,7 @@
 .blog-list-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 8rem 5% 5rem;
+  padding: 1rem 5% 5rem;
 }
 
 .blog-list-header {
@@ -42,7 +42,7 @@
   letter-spacing: -0.01em;
   color: var(--blog-gold-dark);
   margin: 0 auto 1.5rem;
-  max-width: 800px;
+  /* max-width: 800px; */
 }
 
 .blog-list-subtitle {
@@ -348,8 +348,14 @@
 
 /* --- BLOG POST LAYOUT --- */
 .blog-post-page {
-  padding-top: 5rem;
+  padding-top: 1rem;
   background: #fafafa;
+}
+
+.blog-post-page .premium-breadcrumb {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.5rem 5% 1rem;
 }
 
 .blog-post-hero {
@@ -953,6 +959,10 @@
   }
   .featured-info-pane h2 {
     font-size: 1.75rem;
+  }
+  
+  .blog-post-page .premium-breadcrumb {
+    padding: 0.5rem 1rem 1rem;
   }
   
   /* Hero area mobile tweaks */

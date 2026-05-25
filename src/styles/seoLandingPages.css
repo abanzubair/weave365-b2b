@@ -23,6 +23,12 @@
   overflow-x: hidden;
 }
 
+.seo-landing-page .premium-breadcrumb {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 5% 0.25rem;
+}
+
 /* Breadcrumbs Styling */
 .seo-breadcrumbs {
   max-width: 1200px;

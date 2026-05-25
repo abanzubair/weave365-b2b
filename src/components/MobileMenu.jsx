@@ -37,7 +37,8 @@ export function MobileMenu({
   setCartOpen,
   cartCount,
   favoritesCount,
-  onSignOut
+  onSignOut,
+  vendorOnboarding
 }) {
   const currentCurrency = useCurrency();
   const [accountOpen, setAccountOpen] = useState(false);
@@ -64,6 +65,16 @@ export function MobileMenu({
         onClose();
       }
     },
+    ...(vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url ? [
+      {
+        icon: <Store size={18} style={{ color: '#b78646' }} />,
+        label: 'Product Listing',
+        action: () => {
+          window.open(vendorOnboarding.drive_folder_url, '_blank');
+          onClose();
+        }
+      }
+    ] : []),
     ...(user ? [
       { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
       { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },

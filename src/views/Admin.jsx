@@ -213,6 +213,45 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
   }
 
+  async function updateDatabaseDriveFolderUrl(whatsapp, driveUrl) {
+    const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(-10);
+    setUpdatingWhatsapp(cleanWhatsapp);
+    try {
+      const response = await fetch('/api/vendor-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'update_drive_url',
+          whatsapp: cleanWhatsapp,
+          drive_folder_url: driveUrl
+        })
+      });
+      
+      const resData = await response.json();
+      if (response.ok && resData.status === 'success') {
+        // Update local state to reflect the change immediately
+        setPartnerApps(prev => ({
+          ...prev,
+          onboardings: prev.onboardings.map(o => {
+            const ws = String(o.whatsapp_number || '').replace(/\D/g, '').slice(-10);
+            return ws === cleanWhatsapp ? { ...o, drive_folder_url: driveUrl } : o;
+          })
+        }));
+        return true;
+      } else {
+        console.warn('Database drive url update warning:', resData.error);
+        return false;
+      }
+    } catch (err) {
+      console.error('[updateDatabaseDriveFolderUrl] Error:', err);
+      return false;
+    } finally {
+      setUpdatingWhatsapp(null);
+    }
+  }
+
   async function loadPartnerApplications() {
     setPartnerApps(prev => ({ ...prev, loading: true, error: null }));
     try {
@@ -3216,6 +3255,44 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             >
                               Flag Application
                             </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Product Listing Drive Link Management */}
+                      <div>
+                        <h4 className="admin-modal-section-title">Product Listing Drive Link</h4>
+                        <div className="admin-modal-status-box">
+                          <div className="admin-flex-gap8" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                            <span className="admin-modal-status-label" style={{ marginBottom: '4px' }}>
+                              Google Drive Folder Link:
+                            </span>
+                            <div className="admin-flex-gap8" style={{ display: 'flex', gap: '8px' }}>
+                              <input 
+                                type="text"
+                                className="admin-field-input"
+                                placeholder="Paste Google Drive folder URL here..."
+                                defaultValue={onb.drive_folder_url || ''}
+                                id={`drive-url-${cleanWhatsapp}`}
+                                style={{ flex: 1, padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px' }}
+                              />
+                              <button
+                                type="button"
+                                className="primary-button"
+                                style={{ padding: '8px 16px', fontWeight: 'bold' }}
+                                onClick={async () => {
+                                  const driveUrlVal = document.getElementById(`drive-url-${cleanWhatsapp}`).value;
+                                  const success = await updateDatabaseDriveFolderUrl(appWhatsapp, driveUrlVal);
+                                  if (success) {
+                                    alert('Drive folder URL saved successfully!');
+                                  } else {
+                                    alert('Failed to save Drive folder URL. Please try again.');
+                                  }
+                                }}
+                              >
+                                Save Link
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -106,6 +106,7 @@ export default function App({ initialData = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [buyerProfile, setBuyerProfile] = useState(null);
+  const [vendorOnboarding, setVendorOnboarding] = useState(null);
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [pincode, setPincode] = useState('');
@@ -277,6 +278,7 @@ export default function App({ initialData = {} }) {
     async function hydrateProfile() {
       if (!user) {
         setBuyerProfile(null);
+        setVendorOnboarding(null);
         return;
       }
 
@@ -285,7 +287,31 @@ export default function App({ initialData = {} }) {
       }
 
       const { profile } = await loadProfileForUser(user);
-      if (isActive) setBuyerProfile(profile);
+      if (isActive) {
+        setBuyerProfile(profile);
+        
+        if (isSupabaseConfigured && profile?.whatsapp_number) {
+          const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
+          try {
+            const { data: vProfile } = await supabase
+              .from('vendor_profiles')
+              .select('status, drive_folder_url')
+              .eq('whatsapp_number', cleanWhatsapp)
+              .maybeSingle();
+            
+            if (vProfile && isActive) {
+              setVendorOnboarding(vProfile);
+            } else if (isActive) {
+              setVendorOnboarding(null);
+            }
+          } catch (e) {
+            console.error('Error hydrating vendor profile:', e);
+            if (isActive) setVendorOnboarding(null);
+          }
+        } else if (isActive) {
+          setVendorOnboarding(null);
+        }
+      }
     }
 
     void hydrateProfile();
@@ -1088,6 +1114,25 @@ export default function App({ initialData = {} }) {
                       >
                         My Account
                       </button>
+                      {vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url && (
+                        <button
+                          onClick={() => {
+                            window.open(vendorOnboarding.drive_folder_url, '_blank');
+                            setDropdownOpen(null);
+                          }}
+                          className="premium-product-listing-btn"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontWeight: '600',
+                            color: '#b78646',
+                            transition: 'color 0.2s ease',
+                          }}
+                        >
+                          Product Listing
+                        </button>
+                      )}
                       {isAdmin && (
                         <button
                           onClick={() => {
@@ -1347,6 +1392,7 @@ export default function App({ initialData = {} }) {
           cartCount={cartCount}
           favoritesCount={favoritesCount}
           onSignOut={handleSignOut}
+          vendorOnboarding={vendorOnboarding}
         />
 
       )}
