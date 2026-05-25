@@ -415,7 +415,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
         setUser(demoUser);
         if (setBuyerProfile) setBuyerProfile(demoProfile);
-        setMessage('Demo login active. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env or .env.local for real accounts.');
+        setMessage('Logged in successfully.');
+        setTimeout(() => {
+          onClose();
+        }, 1000);
       }
       return;
     }
@@ -453,6 +456,9 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
             return;
           }
           setMessage('Registered and logged in successfully.');
+          setTimeout(() => {
+            onClose();
+          }, 1000);
         }
       } else {
         // Login mode: log them in normally.
@@ -460,6 +466,9 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           setUser(result.data.user);
         }
         setMessage('Logged in successfully.');
+        setTimeout(() => {
+          onClose();
+        }, 1000);
       }
     }
   }
@@ -477,6 +486,9 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       }
       setTempDemoUser(null);
       setMessage('Demo account verified and logged in successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     }
   }
 
