@@ -186,6 +186,39 @@ export function safeFileName(value) {
 
 export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const isWholesale = priceAccess?.priceGroup === 'wholesale';
+
+  if (isWholesale && canViewPrices) {
+    const itemLines = items.map((item) => {
+      const price = customerPrice(item.variant.prices, priceAccess) || 0;
+      const totalColors = item.product.totalColors ?? (item.product.variants?.length || 1);
+      const colorText = item.selectedColorName || item.variant.color || 'Set';
+      const isSet = totalColors > 1;
+      
+      const setQty = isSet ? Math.max(1, Math.round(item.quantity / totalColors)) : item.quantity;
+      const unitLabel = isSet ? (setQty > 1 ? 'Sets' : 'Set') : (setQty > 1 ? 'pcs' : 'pc');
+      const finalPrice = price * item.quantity;
+
+      return [
+        `${item.product.title}`,
+        `Code: ${item.variant.code} | Color: ${colorText} | Qty: ${setQty} ${unitLabel} | Price: ${formatMoney(finalPrice)}`
+      ].join('\n');
+    });
+
+    const lines = [
+      `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
+      '',
+      itemLines.join('\n\n'),
+      '',
+      total != null ? `Estimated total: ${formatMoney(total)} (Excluding GST & Shipping)` : '',
+      pincode ? `Pincode: ${pincode}` : '',
+      codStatus === 'available' ? 'COD checked: Available' : '',
+    ].filter(Boolean);
+
+    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+  }
+
+  // Fallback for non-wholesale users
   const lines = [
     `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
     '',
@@ -207,6 +240,24 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) 
 export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus, priceAccess) {
   const price = customerPrice(variant.prices, priceAccess);
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const isWholesale = priceAccess?.priceGroup === 'wholesale';
+
+  if (isWholesale && canViewPrices && price != null) {
+    const isSet = quantity > 1;
+    const unitLabel = isSet ? 'Set' : 'pc';
+    const finalPrice = isSet ? price * quantity : price;
+
+    const lines = [
+      `Hello ${storeConfig.name},`,
+      `I want to buy this catalog: `,
+      `${product.title}`,
+      `Code: ${variant.code} | Color: ${quantity}`,
+      `Quant: 1 ${unitLabel} | price : ${formatMoney(finalPrice)} (Excluding GST & Shipping)`
+    ];
+    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+  }
+
+  // Fallback for Guest/Reseller accounts
   const lines = [
     `Hello ${storeConfig.name}, I want to buy this catalog:`,
     '',

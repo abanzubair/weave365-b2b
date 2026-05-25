@@ -1936,6 +1936,7 @@ button {
   font-size: 13px;
   letter-spacing: 0.6px;
   line-height: 1.2;
+  margin-bottom: 7px;
 }
 
 .main-price-display .gst-note {
@@ -2020,8 +2021,9 @@ button {
 }
 
 .product-variation-card {
-  margin: 20px 0;
-  padding: 24px 0 4px;
+  margin: 15px 0;
+  margin-bottom: 0px;
+  padding: 12px 0 4px;
   border-top: 1px solid var(--line);
 }
 
@@ -2030,7 +2032,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .variation-card-head h2 {

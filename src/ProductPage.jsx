@@ -861,7 +861,7 @@ export function ProductDetail({
 
             <div className="product-disclaimer-box desktop-disclaimer-only">
               <p>
-                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. <strong>Model image is for reference only.</strong> Making a payment indicates your agreement to this.
+                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. <strong>Model/Cover image is for reference only.</strong> Making a payment indicates your agreement to this.
               </p>
             </div>
 
@@ -900,28 +900,6 @@ export function ProductDetail({
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
-
-            {(product.metaDescription || product.summary) && (
-              <p className="product-short-desc-premium">
-                {product.metaDescription || product.summary}
-              </p>
-            )}
-
-            {product.partner && (
-              <div
-                className="trusted-partner-card-v2"
-                onClick={() => navigate('partner', product.partner)}
-                title={`View all products by ${product.partner}`}
-              >
-                <div className="partner-card-accent-bar" />
-                <Award size={18} className="partner-award-icon" />
-                <div className="partner-card-info">
-                  <span className="partner-label-v2">Trusted Partner</span>
-                  <span className="partner-dot">•</span>
-                  <span className="partner-name-v2">{product.partner}</span>
-                </div>
-              </div>
-            )}
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
@@ -964,6 +942,16 @@ export function ProductDetail({
               </div>
             </div>
 
+            {priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest' ? (
+              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
+                Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
+              </span>
+            ) : (
+              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
+                <span className="free-shipping-highlight">Excluding GST & Shipping</span>
+              </span>
+            )}
+
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
               <div className="tiered-pricing-card">
                 <div className="tier-column">
@@ -981,26 +969,18 @@ export function ProductDetail({
               </div>
             )}
 
-            {priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest' ? (
-              <span className="gst-disclaimer">
-                Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
-              </span>
-            ) : (
-              <>
-                <span className="gst-disclaimer" style={{ marginBottom: '10px' }}>Excluding GST & Shipping</span>
-                <p className="b2b-shipping-note" style={{ 
-                  margin: '0 0 24px 0', 
-                  fontSize: '15px', 
-                  lineHeight: '1.6', 
-                  color: 'var(--muted)', 
-                  fontFamily: 'var(--font-ui)', 
-                  fontWeight: '500'
-                }}>
-                  For accurate shipping charges and delivery timelines, kindly WhatsApp us your order quantity along with your city and pin code. We will get back to you promptly.
-                </p>
-              </>
+            {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
+              <p className="b2b-shipping-note" style={{ 
+                margin: '0 0 12px 0', 
+                fontSize: '15px', 
+                lineHeight: '1.6', 
+                color: 'var(--muted)', 
+                fontFamily: 'var(--font-ui)', 
+                fontWeight: '500'
+              }}>
+                For accurate shipping charges and delivery timelines, kindly WhatsApp us your order quantity along with your city and pin code. We will get back to you promptly.
+              </p>
             )}
-
 
             <div className="quick-facts">
               <span>
@@ -1067,12 +1047,6 @@ export function ProductDetail({
               ))}
             </div>
 
-
-
-
-
-
-
             <div className="product-main-actions">
               <div className="product-secondary-actions">
                 <button
@@ -1137,6 +1111,29 @@ export function ProductDetail({
             <p className="buyer-note">
               <LockKeyhole size={16} /> Only registered buyers can download and share
             </p>
+
+            {(product.metaDescription || product.summary) && (
+              <p className="product-short-desc-premium" style={{ marginTop: '20px' }}>
+                {product.metaDescription || product.summary}
+              </p>
+            )}
+
+            {product.partner && (
+              <div
+                className="trusted-partner-card-v2"
+                onClick={() => navigate('partner', product.partner)}
+                title={`View all products by ${product.partner}`}
+                style={{ marginTop: '12px', marginBottom: '24px' }}
+              >
+                <div className="partner-card-accent-bar" />
+                <Award size={18} className="partner-award-icon" />
+                <div className="partner-card-info">
+                  <span className="partner-label-v2">Trusted Partner</span>
+                  <span className="partner-dot">•</span>
+                  <span className="partner-name-v2">{product.partner}</span>
+                </div>
+              </div>
+            )}
 
             <div className="product-disclaimer-box mobile-disclaimer-only">
               <p>
