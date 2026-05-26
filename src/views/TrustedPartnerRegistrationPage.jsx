@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
+import SliderCaptcha from '../components/SliderCaptcha.jsx';
 
 // Global polyfill layer to protect edge runtime client evaluation from process.env reference errors.
 if (typeof globalThis !== 'undefined' && !globalThis.process) {
@@ -692,6 +693,20 @@ export function TrustedPartnerRegistrationPage() {
   const [isVerifyingUnlock, setIsVerifyingUnlock] = useState(false);
   const [unlockMessage, setUnlockMessage] = useState('');
   const [unlockError, setUnlockError] = useState('');
+  
+  // Captcha verification states
+  const [isReviewCaptchaVerified, setIsReviewCaptchaVerified] = useState(false);
+  const [isUnlockCaptchaVerified, setIsUnlockCaptchaVerified] = useState(false);
+  const [isPaymentCaptchaVerified, setIsPaymentCaptchaVerified] = useState(false);
+  const [isOnboardingCaptchaVerified, setIsOnboardingCaptchaVerified] = useState(false);
+  
+  // Reset captchas when activeTab changes
+  useEffect(() => {
+    setIsReviewCaptchaVerified(false);
+    setIsUnlockCaptchaVerified(false);
+    setIsPaymentCaptchaVerified(false);
+    setIsOnboardingCaptchaVerified(false);
+  }, [activeTab]);
   
   const fileInputsRef = useRef([]);
   const idProofRef = useRef(null);
@@ -1590,6 +1605,10 @@ export function TrustedPartnerRegistrationPage() {
     setUnlockError('');
     setReviewError('');
     setOnboardingError('');
+    setIsReviewCaptchaVerified(false);
+    setIsUnlockCaptchaVerified(false);
+    setIsPaymentCaptchaVerified(false);
+    setIsOnboardingCaptchaVerified(false);
   };
 
   return (
@@ -1941,7 +1960,9 @@ export function TrustedPartnerRegistrationPage() {
                     {t('confirmPhotosAuth')}
                   </label>
 
-                  <button type="submit" className="vendor-submit-button" disabled={reviewSubmitting}>
+                  <SliderCaptcha onVerify={setIsReviewCaptchaVerified} isReset={activeTab !== 'product-review'} />
+
+                  <button type="submit" className="vendor-submit-button" disabled={reviewSubmitting || !isReviewCaptchaVerified}>
                     {reviewSubmitting ? (
                       <>
                         <RefreshCw size={18} className="spinner" />
@@ -1976,10 +1997,11 @@ export function TrustedPartnerRegistrationPage() {
                           placeholder={t('enterWhatsappPlaceholder')}
                           required
                         />
-                        <button type="submit" className="status-verify-btn" disabled={isVerifyingUnlock}>
+                        <button type="submit" className="status-verify-btn" disabled={isVerifyingUnlock || !isUnlockCaptchaVerified}>
                           {isVerifyingUnlock ? t('checking') : t('checkStatusBtn')}
                         </button>
                       </div>
+                      <SliderCaptcha onVerify={setIsUnlockCaptchaVerified} isReset={activeTab !== 'payment-terms' || isProfileUnlocked} />
                       {unlockMessage && <p className="status-msg success">{unlockMessage}</p>}
                       {unlockError && <p className="status-msg error">{unlockError}</p>}
                     </form>
@@ -2254,7 +2276,9 @@ export function TrustedPartnerRegistrationPage() {
                       </div>
                     )}
 
-                    <button type="submit" className="onboarding-submit-button" disabled={paymentSubmitting}>
+                    <SliderCaptcha onVerify={setIsPaymentCaptchaVerified} isReset={activeTab !== 'payment-terms' || isPaymentTermsAgreed} />
+
+                    <button type="submit" className="onboarding-submit-button" disabled={paymentSubmitting || !isPaymentCaptchaVerified}>
                       {paymentSubmitting ? (
                         <>
                           <RefreshCw size={18} className="spinner" />
@@ -2745,7 +2769,9 @@ export function TrustedPartnerRegistrationPage() {
                       </label>
                     </div>
 
-                    <button type="submit" className="onboarding-submit-button" disabled={onboardingSubmitting} style={{ marginTop: '20px' }}>
+                    <SliderCaptcha onVerify={setIsOnboardingCaptchaVerified} isReset={activeTab !== 'onboarding' || submitted} />
+
+                    <button type="submit" className="onboarding-submit-button" disabled={onboardingSubmitting || !isOnboardingCaptchaVerified} style={{ marginTop: '20px' }}>
                       {onboardingSubmitting ? (
                         <>
                           <RefreshCw size={18} className="spinner" />

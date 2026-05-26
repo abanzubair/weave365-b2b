@@ -13,6 +13,7 @@ import {
   Facebook, 
   Instagram, 
   Youtube, 
+  Linkedin,
   ArrowRight,
   ExternalLink,
   ChevronRight
@@ -71,7 +72,8 @@ export function ContactPage({ navigate }) {
       "https://www.facebook.com/weaves365",
       "https://www.instagram.com/weaves365.wholesale",
       "https://www.youtube.com/@weaves365",
-      "https://in.pinterest.com/weaves365/"
+      "https://in.pinterest.com/weaves365/",
+      "https://www.linkedin.com/company/weaves365"
     ]
   };
 
@@ -109,7 +111,7 @@ export function ContactPage({ navigate }) {
               <h2 className="contact-section-title">Direct Inquiry</h2>
               <div className="contact-links">
                 
-                <a href="mailto:weave365@gmail.com" className="contact-item-link">
+                <div className="contact-item-text">
                   <div className="contact-icon-box">
                     <Mail size={20} />
                   </div>
@@ -117,10 +119,9 @@ export function ContactPage({ navigate }) {
                     <span className="contact-label">Email Us</span>
                     <span className="contact-value">weave365@gmail.com</span>
                   </div>
-                  <ExternalLink size={14} className="contact-item-arrow" />
-                </a>
+                </div>
 
-                <a href="tel:+919919101369" className="contact-item-link">
+                <div className="contact-item-text">
                   <div className="contact-icon-box">
                     <Phone size={20} />
                   </div>
@@ -128,8 +129,7 @@ export function ContactPage({ navigate }) {
                     <span className="contact-label">Call / WhatsApp</span>
                     <span className="contact-value">+91 9919 101369</span>
                   </div>
-                  <ExternalLink size={14} className="contact-item-arrow" />
-                </a>
+                </div>
 
               </div>
             </div>
@@ -160,13 +160,13 @@ export function ContactPage({ navigate }) {
               <div className="contact-socials-grid">
                 
                 <a 
-                  href="https://www.facebook.com/weaves365" 
+                  href="https://www.linkedin.com/company/weaves365" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="contact-social-btn"
                 >
-                  <Facebook size={18} />
-                  <span>Facebook</span>
+                  <Linkedin size={18} />
+                  <span>LinkedIn</span>
                 </a>
 
                 <a 
@@ -177,6 +177,16 @@ export function ContactPage({ navigate }) {
                 >
                   <Instagram size={18} />
                   <span>Instagram</span>
+                </a>
+
+                <a 
+                  href="https://www.facebook.com/weaves365" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="contact-social-btn"
+                >
+                  <Facebook size={18} />
+                  <span>Facebook</span>
                 </a>
 
                 <a 
