@@ -241,6 +241,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const price = customerPrice(variant.prices, priceAccess);
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
+  const productUrl = `https://www.weave365.in/product/${product.id}`;
 
   if (isWholesale && canViewPrices && price != null) {
     const isSet = quantity > 1;
@@ -254,20 +255,26 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
       `Code: ${variant.code} | Color: ${quantity}`,
       `Quant: 1 ${unitLabel} | price : ${formatMoney(finalPrice)} (Excluding GST & Shipping)`
     ];
+    lines.push('', `Product Link: ${productUrl}`);
     return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
   // Fallback for Guest/Reseller accounts
+  const priceText = canViewPrices && price != null
+    ? `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`
+    : '';
+
   const lines = [
-    `Hello ${storeConfig.name}, I want to buy this catalog:`,
-    '',
+    `Hello ${storeConfig.name},`,
+    `I want to buy this catalog:`,
     `${product.title}`,
-    `Code: ${variant.code}`,
-    `Designs: ${quantity}`,
-    canViewPrices && price != null ? `Price: ${formatMoney(price)} / piece` : '',
+    `Code: ${variant.code} | Color: ${quantity}`,
+    priceText,
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);
+
+  lines.push('', `Product Link: ${productUrl}`);
 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }

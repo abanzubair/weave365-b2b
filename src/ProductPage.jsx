@@ -897,16 +897,13 @@ export function ProductDetail({
               <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
             </button>
             <h1 className="product-title-serif">{product.title}</h1>
-            <div className="product-code-new">
-              Code: <strong>{variant.code}</strong>
-            </div>
 
             {product.partner && (
               <div
                 className="trusted-partner-card-v2"
                 onClick={() => navigate('partner', product.partner)}
                 title={`View all products by ${product.partner}`}
-                style={{ marginTop: '12px', marginBottom: '24px' }}
+                style={{ marginTop: '12px', marginBottom: '16px' }}
               >
                 <div className="partner-card-accent-bar" />
                 <Award size={18} className="partner-award-icon" />
@@ -917,6 +914,10 @@ export function ProductDetail({
                 </div>
               </div>
             )}
+
+            <div className="product-code-new">
+              Code: <strong>{variant.code}</strong>
+            </div>
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
@@ -931,9 +932,12 @@ export function ProductDetail({
                       <div className="price-piece-block">
                         <span className="price-value">{formatMoney(displayPrice)}</span>
                         <span className="price-unit">/pc</span>
-                        {canViewPrice && priceAccess?.priceGroup === 'wholesale' && totalColors <= 1 && (
+                        {canViewPrice && (
+                          (priceAccess?.priceGroup === 'wholesale' && totalColors <= 1) ||
+                          priceAccess?.priceGroup === 'reseller'
+                        ) && (
                           <div className="moq-badge">
-                            {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                            {priceAccess?.priceGroup === 'reseller' ? 'Flexible MOQ' : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`)}
                           </div>
                         )}
                       </div>
@@ -961,20 +965,12 @@ export function ProductDetail({
 
             {priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest' ? (
               <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
-                Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
+                Excluding GST • <span className="free-shipping-highlight">Free Shipping in India</span>
               </span>
             ) : (
-              <>
-                <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
-                  <span className="free-shipping-highlight">Excluding GST & Shipping</span>
-                </span>
-                <div className="international-courier-note">
-                  <Globe size={16} />
-                  <span>
-                    International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper.
-                  </span>
-                </div>
-              </>
+              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
+                <span className="free-shipping-highlight">Excluding GST & Shipping</span>
+              </span>
             )}
 
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
@@ -993,6 +989,13 @@ export function ProductDetail({
                 </div>
               </div>
             )}
+
+            <div className="international-courier-note">
+              <Globe size={16} />
+              <span>
+                International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper.
+              </span>
+            </div>
 
             {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
               <p className="b2b-shipping-note" style={{ 
