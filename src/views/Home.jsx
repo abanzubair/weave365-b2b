@@ -63,6 +63,11 @@ export function Home({
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
   const [showNewHero, setShowNewHero] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 820px)');
@@ -746,7 +751,7 @@ export function Home({
           </button>
 
           <div className="home-blog-grid" id="home-blog-row">
-            {blogs.slice(0, 4).map((post) => (
+            {isMounted && blogs.slice(0, 4).map((post) => (
               <article
                 key={post.slug}
                 className="blog-card"
