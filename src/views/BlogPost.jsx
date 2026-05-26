@@ -13,7 +13,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, User, Share2, MessageSquare, Heart, ArrowRight, Bookmark } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function BlogPost({ postSlug, navigate, blogs = [] }) {
@@ -33,6 +33,15 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const relatedPosts = useMemo(() => {
     if (!post) return [];
     return blogs.filter((p) => p.slug !== post.slug).slice(0, 2);
+  }, [blogs, post]);
+
+  const { prevPost, nextPost } = useMemo(() => {
+    if (!post || blogs.length === 0) return { prevPost: null, nextPost: null };
+    const currentIndex = blogs.findIndex((p) => p.slug === post.slug);
+    return {
+      prevPost: currentIndex > 0 ? blogs[currentIndex - 1] : null,
+      nextPost: currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null
+    };
   }, [blogs, post]);
 
   // Dynamic Browser Tab Title & Meta Description SEO injection
@@ -166,9 +175,6 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       if (oldBreadcrumbScript) oldBreadcrumbScript.remove();
     };
   }, [post]);
-
-  const siteUrl = 'https://www.weave365.in';
-  const postUrl = `${siteUrl}/blog/${postSlug}`;
 
   // Helper to parse markdown links and convert them to React routers
   const renderTextWithLinks = (text) => {
@@ -324,20 +330,6 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     });
   };
 
-  const handleShare = (platform) => {
-    let url = '';
-    if (platform === 'whatsapp') {
-      url = `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + ' ' + postUrl)}`;
-    } else if (platform === 'pinterest') {
-      url = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(postUrl)}&media=${encodeURIComponent(post.image)}&description=${encodeURIComponent(post.title)}`;
-    } else if (platform === 'twitter') {
-      url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(postUrl)}`;
-    }
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  };
-
   if (!post) {
     return (
       <div className="blog-list-container text-center" style={{ padding: '12rem 5% 8rem' }}>
@@ -413,45 +405,85 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
 
         {/* Right Sticky Sidebar Widget Column */}
         <aside className="blog-sidebar-panel">
-          {/* Share Article Widget */}
-          <div className="sidebar-widget">
-            <h3>Share This Insight</h3>
-            <div className="share-links-row">
-              <button 
-                className="share-btn-luxury"
-                onClick={() => handleShare('whatsapp')}
-                aria-label="Share on WhatsApp"
-              >
-                WhatsApp
-              </button>
-              <button 
-                className="share-btn-luxury"
-                onClick={() => handleShare('pinterest')}
-                aria-label="Share on Pinterest"
-              >
-                Pinterest
-              </button>
-              <button 
-                className="share-btn-luxury"
-                onClick={() => handleShare('twitter')}
-                aria-label="Share on Twitter"
-              >
-                Twitter / X
-              </button>
+          {/* Blog Category Widget */}
+          <div className="sidebar-widget sidebar-category-widget">
+            <h3>Blog Category</h3>
+            <ul className="sidebar-category-list">
+              {['Wholesale Guides', 'Reseller Business', 'Banarasi Insights', 'Business Growth'].map((cat) => (
+                <li key={cat}>
+                  <a
+                    href={`/blog?category=${cat}`}
+                    onClick={(e) => { e.preventDefault(); navigate('blog', `?category=${cat}`); }}
+                    className={post.category === cat ? 'active' : ''}
+                  >
+                    <span className="sidebar-cat-dot" />
+                    {cat}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Recent Posts Widget */}
+          <div className="sidebar-widget sidebar-recent-widget">
+            <h3>Recent Posts</h3>
+            <div className="sidebar-recent-list">
+              {blogs
+                .filter((p) => p.slug !== post.slug)
+                .slice(0, 4)
+                .map((rp) => (
+                  <a
+                    key={rp.slug}
+                    className="sidebar-recent-item"
+                    href={`/blog/${rp.slug}`}
+                    onClick={(e) => { e.preventDefault(); navigate('blog', rp.slug); }}
+                  >
+                    <div className="sidebar-recent-thumb">
+                      <img src={rp.image} alt={rp.title} loading="lazy" />
+                    </div>
+                    <div className="sidebar-recent-info">
+                      <span className="sidebar-recent-title">{rp.title}</span>
+                      <span className="sidebar-recent-date">{rp.date}</span>
+                    </div>
+                  </a>
+                ))}
             </div>
           </div>
 
-          {/* B2B Sourcing Widget */}
-          <div className="sidebar-widget sidebar-cta-widget">
-            <h3>B2B Wholesale Portal</h3>
-            <p>Source authentic Banarasi sarees and suits direct from Varanasi weavers with a flexible MOQ, certified purity, and international shipping.</p>
-            <button 
-              className="sidebar-luxury-btn"
-              onClick={() => navigate('bulk-inquiry')}
-            >
-              Get Bulk Sourcing Quotes <ArrowRight size={16} />
-            </button>
-          </div>
+          {/* Prev / Next Navigation Widget */}
+          {(prevPost || nextPost) && (
+            <div className="sidebar-widget sidebar-nav-widget">
+              <h3>Navigate Posts</h3>
+              <div className="sidebar-nav-links">
+                {prevPost ? (
+                  <a
+                    className="sidebar-nav-link sidebar-nav-prev"
+                    href={`/blog/${prevPost.slug}`}
+                    onClick={(e) => { e.preventDefault(); navigate('blog', prevPost.slug); }}
+                  >
+                    <ChevronLeft size={16} className="sidebar-nav-icon" />
+                    <div className="sidebar-nav-text">
+                      <span className="sidebar-nav-label">Previous</span>
+                      <span className="sidebar-nav-title">{prevPost.title}</span>
+                    </div>
+                  </a>
+                ) : <div />}
+                {nextPost ? (
+                  <a
+                    className="sidebar-nav-link sidebar-nav-next"
+                    href={`/blog/${nextPost.slug}`}
+                    onClick={(e) => { e.preventDefault(); navigate('blog', nextPost.slug); }}
+                  >
+                    <div className="sidebar-nav-text" style={{ textAlign: 'right' }}>
+                      <span className="sidebar-nav-label">Next</span>
+                      <span className="sidebar-nav-title">{nextPost.title}</span>
+                    </div>
+                    <ChevronRight size={16} className="sidebar-nav-icon" />
+                  </a>
+                ) : <div />}
+              </div>
+            </div>
+          )}
         </aside>
       </div>
 

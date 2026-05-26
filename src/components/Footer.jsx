@@ -82,6 +82,7 @@ export function Footer({ navigate }) {
         <a href="/blog?category=Wholesale Guides" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Wholesale Guides'); }}>Wholesale Guides</a>
         <a href="/blog?category=Reseller Business" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Reseller Business'); }}>Reseller Business</a>
         <a href="/blog?category=Banarasi Insights" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Banarasi Insights'); }}>Banarasi Insights</a>
+        <a href="/blog?category=Business Growth" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Business Growth'); }}>Business Growth</a>
       </div>
       <div>
         <h3>Social Links</h3>
