@@ -319,7 +319,7 @@
   opacity: 0.75;
   margin-bottom: 1.5rem;
   display: -webkit-box;
-  line-clamp: 3;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1189,7 +1189,10 @@
 
   .related-posts-section .card-info-pane p {
     font-size: 0.8rem !important;
-    line-clamp: 2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     margin-bottom: 1rem;
     line-height: 1.45;
   }
@@ -1303,20 +1306,23 @@
   }
 
   .home-blog-grid .card-info-pane {
-    padding: 1.25rem 1.25rem 1.5rem;
+    padding: 1rem 1rem 1.25rem;
   }
 
   .home-blog-grid .card-info-pane h3 {
     font-size: 1rem !important;
     min-height: unset !important;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
     line-height: 1.35;
   }
 
   .home-blog-grid .card-info-pane p {
     font-size: 0.8rem !important;
-    line-clamp: 2;
-    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
     line-height: 1.45;
   }
 
@@ -1325,7 +1331,7 @@
   }
 
   .home-blog-grid .post-meta-strip {
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
   }
 
   .home-blog-grid .post-meta-item {
