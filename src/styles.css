@@ -55,6 +55,14 @@
   border-top: 1px solid rgba(0,0,0,0.06);
 }
 
+@media (min-width: 1920px) {
+  .seo-compact-section {
+    max-width: 1800px;
+    padding-left: 6%;
+    padding-right: 6%;
+  }
+}
+
 .seo-compact-container {
   display: grid;
   grid-template-columns: 1fr 1.6fr;

@@ -39,16 +39,14 @@ const initialInquiry = {
 
 const categories = ['Sarees', 'Suits', 'Dupattas', 'Lehengas', 'Fabric', 'Mixed order'];
 const timelines = ['Urgent', 'Within 7 days', 'Within 15 days', 'Flexible'];
-const preferenceOptions = ['Katan Silk', 'Dola Silk', 'Cotton', 'Georgette', 'Zari', 'Printed', 'Designer', 'Wedding'];
 
 export function BulkInquiry({ navigate }) {
   const [inquiry, setInquiry] = useState(initialInquiry);
-  const [selectedPreferences, setSelectedPreferences] = useState([]);
   const [submitted, setSubmitted] = useState(false);
 
   const whatsappUrl = useMemo(
-    () => buildBulkInquiryWhatsappUrl(inquiry, selectedPreferences),
-    [inquiry, selectedPreferences],
+    () => buildBulkInquiryWhatsappUrl(inquiry),
+    [inquiry],
   );
 
   function updateField(field, value) {
@@ -56,14 +54,6 @@ export function BulkInquiry({ navigate }) {
       ...current,
       [field]: field === 'pincode' ? normalizePincodeInput(value) : value,
     }));
-  }
-
-  function togglePreference(preference) {
-    setSelectedPreferences((current) =>
-      current.includes(preference)
-        ? current.filter((item) => item !== preference)
-        : [...current, preference],
-    );
   }
 
   function submitInquiry(event) {
@@ -199,18 +189,6 @@ export function BulkInquiry({ navigate }) {
               </label>
             </div>
 
-            <div className="preference-chip-group" aria-label="Quick preferences">
-              {preferenceOptions.map((preference) => (
-                <button
-                  key={preference}
-                  type="button"
-                  className={selectedPreferences.includes(preference) ? 'active' : ''}
-                  onClick={() => togglePreference(preference)}
-                >
-                  {preference}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="bulk-form-section">
@@ -272,7 +250,6 @@ export function BulkInquiry({ navigate }) {
           <SummaryRow label="Category" value={inquiry.category} />
           <SummaryRow label="Quantity" value={inquiry.quantity || 'Not added'} />
           <SummaryRow label="Budget" value={inquiry.budget || 'Open'} />
-          <SummaryRow label="Preferences" value={selectedPreferences.join(', ') || 'Not selected'} />
           <SummaryRow label="Timeline" value={inquiry.timeline} />
           <SummaryRow label="Pincode" value={inquiry.pincode || 'Not added'} />
           <div className="bulk-summary-note">
@@ -294,7 +271,7 @@ function SummaryRow({ label, value }) {
   );
 }
 
-function buildBulkInquiryWhatsappUrl(inquiry, preferences) {
+function buildBulkInquiryWhatsappUrl(inquiry) {
   const lines = [
     `Hello ${storeConfig.name}, I want to place a bulk inquiry.`,
     '',
@@ -312,7 +289,6 @@ function buildBulkInquiryWhatsappUrl(inquiry, preferences) {
     inquiry.fabric ? `Fabric: ${inquiry.fabric}` : '',
     inquiry.work ? `Work: ${inquiry.work}` : '',
     inquiry.occasion ? `Occasion / Use: ${inquiry.occasion}` : '',
-    preferences.length ? `Selected Preferences: ${preferences.join(', ')}` : '',
     '',
     inquiry.pincode ? `Delivery Pincode: ${inquiry.pincode}` : '',
     `Timeline: ${inquiry.timeline}`,

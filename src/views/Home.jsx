@@ -679,7 +679,7 @@ export function Home({
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
           <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <button className="primary-button compact" onClick={() => navigate('wholesale-catalogue')}>
+          <button className="primary-button compact" onClick={() => navigate('about')}>
             Know More
           </button>
         </div>
@@ -728,7 +728,7 @@ export function Home({
         <div className="home-blog-header">
           <div className="home-blog-header-left">
             <span>Corporate Intelligence & Craft Heritage</span>
-            <h2>Insights from Varanasi Looms</h2>
+            <h2>Insights from Banaras Looms</h2>
           </div>
           <div className="home-blog-header-right">
             <button

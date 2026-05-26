@@ -9,7 +9,7 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight } from 'lucide-react';
+import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
@@ -1236,6 +1236,18 @@ export default function App({ initialData = {} }) {
                 document.body
               )}
             </div>
+            
+            {user && (
+              <button 
+                className="premium-icon-btn navbar-logout-btn" 
+                type="button" 
+                onClick={handleSignOut}
+                aria-label="Logout"
+                title="Logout"
+              >
+                <LogOut size={18} strokeWidth={1.5} />
+              </button>
+            )}
             
             <button 
               className="premium-icon-btn cart-btn" 
