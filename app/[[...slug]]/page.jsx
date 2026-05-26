@@ -50,7 +50,7 @@ async function getInitialData() {
   });
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
@@ -135,10 +135,34 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   }
 
   if (route === 'wholesale-catalogue') {
+    const search = searchParams?.search;
+    const category = searchParams?.category;
+    const fabric = searchParams?.fabric;
+    
+    let title = 'Wholesale Saree & Suit Catalogue | Weave 365';
+    let description = 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.';
+    let canonical = '/wholesale-catalogue';
+    
+    if (search) {
+      title = `Wholesale Banarasi Sarees matching "${search}" | Weave 365`;
+      description = `Explore wholesale Banarasi sarees matching "${search}" at direct-from-weaver wholesale prices with flexible MOQ for resellers and boutiques.`;
+      canonical = `/wholesale-catalogue?search=${encodeURIComponent(search)}`;
+    } else if (category && category !== 'all') {
+      const prettyCategory = category.charAt(0).toUpperCase() + category.slice(1);
+      title = `Wholesale Banarasi ${prettyCategory} Collection | Weave 365`;
+      description = `Shop premium wholesale Banarasi ${prettyCategory} direct from Varanasi weavers. High quality, flexible MOQ, and worldwide delivery for resellers.`;
+      canonical = `/wholesale-catalogue?category=${encodeURIComponent(category)}`;
+    } else if (fabric && fabric !== 'all') {
+      const prettyFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
+      title = `Pure ${prettyFabric} Silk Banarasi Sarees Wholesale | Weave 365`;
+      description = `Discover handwoven pure ${prettyFabric} Banarasi sarees at wholesale prices. Certified quality checks and worldwide shipping for boutique owners.`;
+      canonical = `/wholesale-catalogue?fabric=${encodeURIComponent(fabric)}`;
+    }
+    
     return buildMeta(
-      'Wholesale Saree & Suit Catalogue | Weave 365',
-      'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
-      '/wholesale-catalogue'
+      title,
+      description,
+      canonical
     );
   }
 
@@ -296,8 +320,9 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug) {
   };
 }
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const { route, productId, sharedSlug, blogPostSlug } = routeFromSlug(resolvedParams?.slug);
   let product = null;
 
@@ -306,7 +331,7 @@ export async function generateMetadata({ params }) {
     product = data.products.find((item) => item.id === productId);
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams);
 }
 
 export default async function CatchAllPage() {

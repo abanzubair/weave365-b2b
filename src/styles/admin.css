@@ -939,7 +939,8 @@
 }
 
 .admin-blog-card-img-wrapper {
-  height: 200px;
+  width: 100%;
+  aspect-ratio: 1.91 / 1;
 }
 
 .admin-blog-card-img-placeholder {

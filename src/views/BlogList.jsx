@@ -30,18 +30,9 @@ export function BlogList({ navigate, blogs = [] }) {
     return blogs.filter((post) => post.category === activeCategory);
   }, [blogs, activeCategory]);
 
-  // Featured post is the first one overall (or from the filtered list if we want to be dynamic)
-  // Let's keep the absolute first post as the featured hero to preserve luxury layouts
-  const featuredPost = useMemo(() => {
-    return blogs[0] || null;
-  }, [blogs]);
-
   const remainingPosts = useMemo(() => {
-    // If filtering, display everything in the grid
-    if (activeCategory !== 'All') return filteredPosts;
-    // If 'All', slice out the featured post
-    return filteredPosts.slice(1);
-  }, [filteredPosts, activeCategory]);
+    return filteredPosts;
+  }, [filteredPosts]);
 
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
@@ -52,128 +43,112 @@ export function BlogList({ navigate, blogs = [] }) {
     <div className="blog-list-container">
       <Breadcrumb items={breadcrumbItems} navigate={navigate} />
       <header className="blog-list-header">
-        <span className="blog-list-kicker">Weave 365 Insights</span>
+        {/* <span className="blog-list-kicker">Weave 365 Insights</span> */}
         <h1>The Saree Wholesaler's Business & Fabric Blog</h1>
         <p className="blog-list-subtitle">
           Expert boutique scaling roadmaps, historical Varanasi loom guides, and technical fabric blueprints to empower your ethnic wear enterprise.
         </p>
       </header>
 
-      {/* Elegant Filter Navigation */}
-      <div className="blog-filters">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={`blog-filter-btn ${activeCategory === cat ? 'active' : ''}`}
-            onClick={() => setActiveCategory(cat)}
-          >
-            {cat === 'All' ? 'All Guides' : cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Featured Luxury Banner Post (only shown when 'All' is selected to maintain perfect editorial hierarchy) */}
-      {activeCategory === 'All' && featuredPost && (
-        <article 
-          className="featured-post-card animate-fade-in"
-          onClick={() => navigate('blog', featuredPost.slug)}
-        >
-          <div className="featured-img-wrapper">
-            <img 
-              src={featuredPost.image} 
-              alt={featuredPost.title} 
-              loading="lazy"
-            />
-            <span className="featured-badge">Featured Guide</span>
-          </div>
-
-          <div className="featured-info-pane">
-            <div className="post-meta-strip">
-              <span className="card-category-tag">{featuredPost.category}</span>
-              <span className="meta-divider"></span>
-              <span className="post-meta-item">
-                <Calendar size={12} style={{ marginRight: '4px', display: 'inline' }} /> {featuredPost.date}
-              </span>
-              <span className="meta-divider"></span>
-              <span className="post-meta-item">
-                <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} /> {featuredPost.readTime}
-              </span>
-            </div>
-
-            <h2>{featuredPost.title}</h2>
-            <p>{featuredPost.intro}</p>
-
-            <button 
-              className="read-more-link"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('blog', featuredPost.slug);
-              }}
-            >
-              Start Reading <ArrowRight size={16} />
-            </button>
-          </div>
-        </article>
-      )}
-
-      {/* Grid of Other Articles */}
-      {remainingPosts.length > 0 ? (
-        <section className="blog-grid">
-          {remainingPosts.map((post) => (
-            <article 
-              key={post.slug} 
-              className="blog-card animate-fade-in"
-              onClick={() => navigate('blog', post.slug)}
-            >
-              <div className="card-img-wrapper">
-                <img 
-                  src={post.image} 
-                  alt={post.title} 
-                  loading="lazy"
-                />
-                <span className="card-category-badge">{post.category}</span>
-              </div>
-
-              <div className="card-info-pane">
-                <div className="post-meta-strip">
-                  <span className="post-meta-item">
-                    <Calendar size={12} style={{ marginRight: '4px', display: 'inline' }} /> {post.date}
-                  </span>
-                  <span className="meta-divider"></span>
-                  <span className="post-meta-item">
-                    <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} /> {post.readTime}
-                  </span>
-                </div>
-
-                <h3>{post.title}</h3>
-                <p>{post.intro}</p>
-
-                <button 
-                  className="read-more-link"
-                  style={{ marginTop: 'auto' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('blog', post.slug);
-                  }}
+      {/* Main Split Layout */}
+      <div className="blog-list-main-layout">
+        
+        {/* Left Side: Blog Grid */}
+        <div className="blog-list-content-column">
+          {remainingPosts.length > 0 ? (
+            <section className="blog-grid" style={{ marginBottom: 0 }}>
+              {remainingPosts.map((post) => (
+                <article 
+                  key={post.slug} 
+                  className="blog-card animate-fade-in"
+                  onClick={() => navigate('blog', post.slug)}
                 >
-                  Read Article <ArrowRight size={14} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </section>
-      ) : (
-        <div className="blog-empty-state">
-          <h3>No articles found</h3>
-          <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
-          <button 
-            className="blog-filter-btn active"
-            onClick={() => setActiveCategory('All')}
-          >
-            Show All Articles
-          </button>
+                  <div className="card-img-wrapper">
+                    <img 
+                      src={post.image} 
+                      alt={post.title} 
+                      loading="lazy"
+                    />
+                    <span className="card-category-badge">{post.category}</span>
+                  </div>
+
+                  <div className="card-info-pane">
+                    <div className="post-meta-strip">
+                      <span className="post-meta-item">
+                        <Calendar size={12} style={{ marginRight: '4px', display: 'inline' }} /> {post.date}
+                      </span>
+                      <span className="meta-divider"></span>
+                      <span className="post-meta-item">
+                        <Clock size={12} style={{ marginRight: '4px', display: 'inline' }} /> {post.readTime}
+                      </span>
+                    </div>
+
+                    <h3>{post.title}</h3>
+                    <p>{post.intro}</p>
+
+                    <button 
+                      className="read-more-link"
+                      style={{ marginTop: 'auto' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('blog', post.slug);
+                      }}
+                    >
+                      Read Article <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </section>
+          ) : (
+            <div className="blog-empty-state">
+              <h3>No articles found</h3>
+              <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
+              <button 
+                className="blog-filter-btn active"
+                onClick={() => setActiveCategory('All')}
+              >
+                Show All Articles
+              </button>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right Side: Sticky Filter Sidebar */}
+        <aside className="blog-list-sidebar-column">
+          <div className="blog-filters-sticky-wrapper">
+            <div className="blog-filters">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`blog-filter-btn ${activeCategory === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat === 'All' ? 'All Guides' : cat}
+                </button>
+              ))}
+            </div>
+            
+            {/* Premium Sourcing CTA Widget */}
+            <div className="sidebar-widget sidebar-cta-widget" style={{ marginTop: '2.5rem', padding: '2rem' }}>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                B2B Sourcing Portal
+              </h3>
+              <p style={{ fontSize: '0.85rem', lineHeight: '1.5', opacity: 0.85, marginBottom: '1.5rem' }}>
+                Source authentic Banarasi sarees and suits direct from Varanasi weavers with low MOQs and reliable global shipping.
+              </p>
+              <button 
+                className="sidebar-luxury-btn"
+                style={{ padding: '0.8rem', fontSize: '0.8rem' }}
+                onClick={() => navigate('bulk-inquiry')}
+              >
+                Request Bulk Quotes
+              </button>
+            </div>
+          </div>
+        </aside>
+
+      </div>
     </div>
   );
 }

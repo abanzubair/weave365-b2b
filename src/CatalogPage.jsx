@@ -145,7 +145,11 @@ export function Catalog({
     <section className="section catalog-page">
       <Breadcrumb items={breadcrumbItems} navigate={navigate} />
 
-      <h1 className="sr-only">{title || "Banarasi Sarees and Suits Wholesale Catalogue"}</h1>
+      <h1 className="sr-only">
+        {search && search.trim() !== ''
+          ? `Wholesale Banarasi Sarees matching "${search}" - Weave 365`
+          : (title || "Banarasi Sarees and Suits Wholesale Catalogue")}
+      </h1>
       {openDropdown && (
         <div 
           className={`filter-backdrop-overlay ${isClosing ? 'closing' : ''}`} 
@@ -155,9 +159,12 @@ export function Catalog({
 
       <div className="catalog-toolbar">
         <div className="catalog-header-row">
-          <SectionTitle title={title || "Wholesale Catalogue"} align="left" />
+          <SectionTitle 
+            title={search && search.trim() !== '' ? `Search Results: "${search}"` : (title || "Wholesale Catalogue")} 
+            align="left" 
+          />
           {hasActiveFilters && (
-            <button className="reset-filters-btn" onClick={resetFilters}>
+            <button className="reset-filters-btn mobile-only-reset" onClick={resetFilters}>
               <RotateCcw size={14} /> Reset Filters
             </button>
           )}
@@ -172,6 +179,12 @@ export function Catalog({
                 type="text"
                 value={search || ''}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
+                  }
+                }}
                 placeholder="Search designs, fabrics, codes..."
               />
               {search && (
@@ -262,6 +275,16 @@ export function Catalog({
               ))}
             </div>
           </div>
+
+          {hasActiveFilters && (
+            <button className="filter-dropdown-trigger reset-filters-trigger desktop-only-reset" onClick={resetFilters}>
+              <div className="filter-label-wrap">
+                <label>Reset</label>
+                <span>All Filters</span>
+              </div>
+              <RotateCcw size={15} className="reset-icon-gold" />
+            </button>
+          )}
         </div>
       </div>
 

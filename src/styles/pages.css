@@ -1153,6 +1153,71 @@ button {
   transform: rotate(-180deg);
 }
 
+/* Visibility triggers for desktop/mobile reset buttons */
+@media screen and (min-width: 821px) {
+  .mobile-only-reset {
+    display: none !important;
+  }
+  .desktop-only-reset {
+    display: inline-flex !important;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  .desktop-only-reset {
+    display: none !important;
+  }
+  .mobile-only-reset {
+    display: inline-flex !important;
+  }
+}
+
+/* Premium Filter-matched Desktop Reset Button */
+.reset-filters-trigger {
+  border: 1px dashed rgba(183, 134, 70, 0.4) !important;
+  background: rgba(255, 253, 249, 0.4) !important;
+  min-width: 140px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.reset-filters-trigger:hover {
+  border: 1px solid var(--gold) !important;
+  background: var(--white) !important;
+  box-shadow: 0 4px 14px rgba(183, 134, 70, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.reset-filters-trigger:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.reset-filters-trigger label {
+  color: var(--gold-dark) !important;
+  font-weight: 800 !important;
+  font-size: 9px !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer;
+}
+
+.reset-filters-trigger span {
+  color: var(--muted) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.reset-filters-trigger .reset-icon-gold {
+  color: var(--gold-mid);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.reset-filters-trigger:hover .reset-icon-gold {
+  transform: rotate(-180deg);
+  color: var(--gold);
+}
+
 .catalog-filters-container {
   display: flex;
   gap: 16px;

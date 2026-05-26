@@ -32,28 +32,8 @@ const FacebookIcon = () => (
 );
 
 const buyerSubtypes = [
-  { value: 'Wholesalers', label: 'Wholesalers', type: 'wholesale' },
-  { value: 'Retail Shops', label: 'Retail Shops', type: 'wholesale' },
-  { value: 'Boutiques', label: 'Boutiques', type: 'wholesale' },
-  { value: 'Online Stores', label: 'Online Stores', type: 'wholesale' },
-  { value: 'Fashion Designer', label: 'Fashion Designer', type: 'wholesale' },
-  { value: 'Exporters', label: 'Exporters', type: 'wholesale' },
-  { 
-    value: 'Resellers (WhatsApp, Instagram, Facebook)', 
-    label: (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-        Resellers (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', margin: '0 1px' }}>
-          <WhatsAppIcon />
-          <InstagramIcon />
-          <FacebookIcon />
-        </span>
-        )
-      </span>
-    ), 
-    type: 'reseller' 
-  },
-  { value: 'Home-Based Reseller', label: 'Home-Based Reseller', type: 'reseller' },
+  { value: 'Wholeseller (MOQ 1: Set)', label: 'Wholeseller (MOQ 1: Set)', type: 'wholesale' },
+  { value: 'Reseller (MOQ: Flexible)', label: 'Reseller (MOQ: Flexible)', type: 'reseller' },
 ];
 
 
@@ -102,9 +82,6 @@ function B2BSegmentDropdown({ value, onChange }) {
 
   const selectedOpt = buyerSubtypes.find(opt => opt.value === value);
 
-  const wholesaleOptions = buyerSubtypes.filter(opt => opt.type === 'wholesale');
-  const resellerOptions = buyerSubtypes.filter(opt => opt.type === 'reseller');
-
   const handleSelect = (opt) => {
     onChange(opt);
     setIsOpen(false);
@@ -139,36 +116,18 @@ function B2BSegmentDropdown({ value, onChange }) {
 
       {isOpen && (
         <div className="custom-select-overlay" role="listbox">
-          <div>
-            <div className="custom-select-group-title">MOQ: 1 Set (Wholesale Prices)</div>
-            {wholesaleOptions.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
-                onClick={() => handleSelect(opt)}
-                role="option"
-                aria-selected={value === opt.value}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          <div>
-            <div className="custom-select-group-title">MOQ: 1 Piece (Reseller Prices)</div>
-            {resellerOptions.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
-                onClick={() => handleSelect(opt)}
-                role="option"
-                aria-selected={value === opt.value}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {buyerSubtypes.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
+              onClick={() => handleSelect(opt)}
+              role="option"
+              aria-selected={value === opt.value}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -254,7 +213,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     whatsapp: '',
     businessName: '',
     buyerType: 'wholesale',
-    buyerSubtype: 'Wholesalers',
+    buyerSubtype: 'Wholeseller (MOQ 1: Set)',
     buyingBehavior: 'instant',
     city: '',
     pincode: '',
@@ -299,7 +258,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
       buyer_type: profile.buyerType,
-      buyer_subtype: profile.buyerSubtype || 'Wholesalers',
+      buyer_subtype: profile.buyerSubtype || 'Wholeseller (MOQ 1: Set)',
       buying_behavior: profile.buyingBehavior,
       city: profile.city.trim(),
       pincode: normalizePincodeInput(profile.pincode),
@@ -745,7 +704,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type / Segment</span>
                           <B2BSegmentDropdown
-                            value={profile.buyerSubtype || 'Wholesalers'}
+                            value={profile.buyerSubtype || 'Wholeseller (MOQ 1: Set)'}
                             onChange={(opt) => {
                               setProfile(current => ({
                                 ...current,

@@ -752,7 +752,7 @@ export function Home({
                 className="blog-card"
                 onClick={() => navigate('blog', post.slug)}
               >
-                <div className="card-img-wrapper" style={{ height: '200px' }}>
+                <div className="card-img-wrapper">
                   <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
                   <span className="card-category-badge">{post.category}</span>
                 </div>

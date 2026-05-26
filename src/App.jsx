@@ -458,6 +458,15 @@ export default function App({ initialData = {} }) {
     } else if (fabric !== 'All' && !params.has('fabric')) {
       setFabric('All');
     }
+
+    const searchParam = params.get('search');
+    if (searchParam) {
+      if (searchParam !== search) {
+        setSearch(searchParam);
+      }
+    } else if (search && !params.has('search')) {
+      setSearch('');
+    }
   }, [pathname, route, categories, fabrics]);
 
   // Sync filter states back to URL query params
@@ -492,12 +501,24 @@ export default function App({ initialData = {} }) {
       }
     }
 
+    if (search && search.trim() !== '') {
+      if (params.get('search') !== search) {
+        params.set('search', search);
+        changed = true;
+      }
+    } else {
+      if (params.has('search')) {
+        params.delete('search');
+        changed = true;
+      }
+    }
+
     if (changed) {
       const newSearch = params.toString();
       const newPath = `/wholesale-catalogue${newSearch ? '?' + newSearch : ''}`;
       window.history.replaceState(null, '', newPath);
     }
-  }, [category, fabric, route]);
+  }, [category, fabric, route, search]);
 
   useEffect(() => {
     if (!user) {
@@ -691,6 +712,19 @@ export default function App({ initialData = {} }) {
       href = `/blog/${productId}`;
     } else if (nextRoute === 'home') {
       href = '/';
+    } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue') {
+      const params = new URLSearchParams();
+      if (search && search.trim() !== '') {
+        params.set('search', search);
+      }
+      if (category && category !== 'All') {
+        params.set('category', category.toLowerCase());
+      }
+      if (fabric && fabric !== 'All') {
+        params.set('fabric', fabric.toLowerCase());
+      }
+      const searchStr = params.toString();
+      href = `/wholesale-catalogue${searchStr ? '?' + searchStr : ''}`;
     }
 
     router.push(href);
@@ -699,7 +733,7 @@ export default function App({ initialData = {} }) {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [router]);
+  }, [router, search, category, fabric]);
 
   const handleSignOut = useCallback(async () => {
     if (isSupabaseConfigured) {
@@ -1266,6 +1300,13 @@ export default function App({ initialData = {} }) {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setSearchActive(false);
+                      navigate('wholesale-catalogue');
+                    }
+                  }}
                   placeholder="What are you looking for?"
                   autoFocus
                   className="premium-search-input-field"

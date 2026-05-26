@@ -1074,7 +1074,7 @@ export function ProductDetail({
                       type="button"
                       onClick={() => setShareMenuOpen(!shareMenuOpen)}
                     >
-                      <Share2 size={18} /> Customer Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
+                      <Share2 size={18} /> Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
                     </button>
                     {shareMenuOpen && (
                       <div className="share-dropdown-menu">
@@ -1086,7 +1086,7 @@ export function ProductDetail({
                             setWhatsappShareOpen(true);
                           }}
                         >
-                          <WhatsappIcon size={18} /> Share Photos on WhatsApp
+                          <WhatsappIcon size={18} /> Share on Whatsapp
                         </button>
                         <button
                           type="button"

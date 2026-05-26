@@ -744,9 +744,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [editingPost, setEditingPost] = useState(null);
   const [formTitle, setFormTitle] = useState('');
   const [formSlug, setFormSlug] = useState('');
-  const [formCategory, setFormCategory] = useState('Business Strategy');
+  const [formCategory, setFormCategory] = useState('Wholesale Guides');
   const [formCustomCategory, setFormCustomCategory] = useState('');
   const [formTag, setFormTag] = useState('');
+  const [formDate, setFormDate] = useState('');
   const [formReadTime, setFormReadTime] = useState('8 Min Read');
   const [formAuthor, setFormAuthor] = useState('Weave 365 Editorial');
   const [formIntro, setFormIntro] = useState('');
@@ -812,9 +813,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setEditingPost(null);
     setFormTitle('');
     setFormSlug('');
-    setFormCategory('Business Strategy');
+    setFormCategory('Wholesale Guides');
     setFormCustomCategory('');
     setFormTag('');
+    setFormDate('');
     setFormReadTime('8 Min Read');
     setFormAuthor('Weave 365 Editorial');
     setFormIntro('');
@@ -831,7 +833,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setFormTitle(post.title || '');
     setFormSlug(post.slug || '');
 
-    const standardCategories = ['Business Strategy', 'Fabric Education', 'Buying Guides'];
+    const standardCategories = ['Wholesale Guides', 'Reseller Business', 'Banarasi Insights', 'Business Growth'];
     if (standardCategories.includes(post.category)) {
       setFormCategory(post.category);
       setFormCustomCategory('');
@@ -841,6 +843,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
 
     setFormTag(post.tag || '');
+    setFormDate(post.date || '');
     setFormReadTime(post.readTime || post.read_time || '8 Min Read');
     setFormAuthor(post.author || 'Weave 365 Editorial');
     setFormIntro(post.intro || '');
@@ -886,6 +889,8 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       return;
     }
 
+    const finalDate = formDate.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
     setIsSubmittingBlog(true);
     try {
       const payload = {
@@ -894,6 +899,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         slug: formSlug,
         category: finalCategory,
         tag: formTag || finalCategory,
+        date: finalDate,
         readTime: formReadTime,
         author: formAuthor,
         intro: formIntro,
@@ -2207,9 +2213,10 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       onChange={(e) => setFormCategory(e.target.value)}
                       className="admin-field-input"
                     >
-                      <option value="Business Strategy">Business Strategy</option>
-                      <option value="Fabric Education">Fabric Education</option>
-                      <option value="Buying Guides">Buying Guides</option>
+                      <option value="Wholesale Guides">Wholesale Guides</option>
+                      <option value="Reseller Business">Reseller Business</option>
+                      <option value="Banarasi Insights">Banarasi Insights</option>
+                      <option value="Business Growth">Business Growth</option>
                       <option value="Custom">Custom / Add New...</option>
                     </select>
                   </div>
@@ -2241,8 +2248,8 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                   </div>
                 )}
 
-                {/* Author & Read Time Row */}
-                <div className="admin-grid-2col">
+                {/* Author, Read Time & Date Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
                   <div className="admin-field-container">
                     <label className="admin-field-label">Author Name</label>
                     <input 
@@ -2259,6 +2266,16 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       value={formReadTime} 
                       onChange={(e) => setFormReadTime(e.target.value)} 
                       placeholder="e.g. 8 Min Read"
+                      className="admin-field-input"
+                    />
+                  </div>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Publication Date</label>
+                    <input 
+                      type="text" 
+                      value={formDate} 
+                      onChange={(e) => setFormDate(e.target.value)} 
+                      placeholder="e.g. May 26, 2026"
                       className="admin-field-input"
                     />
                   </div>
@@ -2478,7 +2495,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     </h3>
                     <p className="admin-serp-desc">
                       <span className="admin-serp-date">
-                        {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} —
+                        {formDate.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} —
                       </span>
                       {formMetaDescription || formIntro || 'Start typing your article summary to preview the search result description here...'}
                     </p>
@@ -2509,7 +2526,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     <div className="card-info-pane admin-blog-card-info-pane">
                       <div className="post-meta-strip admin-blog-card-meta-strip">
                         <span className="admin-fs11">
-                          {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {formDate.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                         <span className="meta-divider admin-blog-card-meta-divider"></span>
                         <span className="admin-fs11">{formReadTime}</span>
