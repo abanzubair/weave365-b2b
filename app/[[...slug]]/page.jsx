@@ -1,6 +1,6 @@
 import App from '../../src/App.jsx';
 import { storeConfig } from '../../src/config.js';
-import { fetchConfigOptions, fetchHeroData, fetchProducts } from '../../src/productData.js';
+import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 
@@ -29,15 +29,17 @@ function toSerializable(value) {
 }
 
 async function getInitialData() {
-  const [productsResult, heroResult, configResult] = await Promise.allSettled([
+  const [productsResult, heroResult, configResult, blogsResult] = await Promise.allSettled([
     fetchProducts(),
     fetchHeroData(),
     fetchConfigOptions(),
+    fetchSupabaseBlogPosts(),
   ]);
 
   const products = productsResult.status === 'fulfilled' ? productsResult.value : [];
   const heroSlides = heroResult.status === 'fulfilled' ? heroResult.value : [];
   const configOptions = configResult.status === 'fulfilled' ? configResult.value : defaultConfigOptions;
+  const dbPosts = blogsResult.status === 'fulfilled' ? blogsResult.value : [];
   const productError = productsResult.status === 'rejected' ? productsResult.reason : null;
 
   return toSerializable({
@@ -45,12 +47,13 @@ async function getInitialData() {
     products,
     heroSlides,
     configOptions,
+    dbPosts,
     status: productError ? 'error' : 'ready',
     error: productError?.message || '',
   });
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = []) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
@@ -107,7 +110,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
   // Dynamic Blog Routing Metadata
   if (route === 'blog') {
     if (blogPostSlug) {
-      const post = blogPosts.find((p) => p.slug === blogPostSlug);
+      const post = dbPosts.find((p) => p.slug === blogPostSlug) || blogPosts.find((p) => p.slug === blogPostSlug);
       if (post) {
         return buildMeta(
           post.metaTitle,
@@ -325,13 +328,19 @@ export async function generateMetadata({ params, searchParams }) {
   const resolvedSearchParams = await searchParams;
   const { route, productId, sharedSlug, blogPostSlug } = routeFromSlug(resolvedParams?.slug);
   let product = null;
+  let dbPosts = [];
 
-  if (route === 'product' && productId) {
+  if ((route === 'product' && productId) || (route === 'blog' && blogPostSlug)) {
     const data = await getInitialData();
-    product = data.products.find((item) => item.id === productId);
+    if (productId) {
+      product = data.products.find((item) => item.id === productId);
+    }
+    if (blogPostSlug) {
+      dbPosts = data.dbPosts || [];
+    }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts);
 }
 
 export default async function CatchAllPage() {

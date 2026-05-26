@@ -2004,6 +2004,23 @@ button {
   margin-bottom: 7px;
 }
 
+.international-courier-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 16px 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.international-courier-note svg {
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}
+
 .main-price-display .gst-note {
   font-size: 18px !important;
   font-weight: 500;

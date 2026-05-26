@@ -138,7 +138,13 @@ export default function App({ initialData = {} }) {
   }, [search, route]);
 
   const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
-  const [blogs, setBlogs] = useState(() => blogPosts);
+  const [blogs, setBlogs] = useState(() => {
+    const serverBlogs = initialData.dbPosts || [];
+    const slugMap = new Map();
+    blogPosts.forEach((post) => slugMap.set(post.slug, post));
+    serverBlogs.forEach((post) => slugMap.set(post.slug, post));
+    return Array.from(slugMap.values());
+  });
   const [configOptions, setConfigOptions] = useState(() => (
     initialData.configOptions || { priceRanges: [], categories: [], fabrics: [] }
   ));
@@ -782,6 +788,7 @@ export default function App({ initialData = {} }) {
           toggleFavorite={toggleFavorite}
           favoriteKeys={favoriteKeySet}
           priceAccess={priceAccess}
+          blogs={blogs}
         />
       );
     }

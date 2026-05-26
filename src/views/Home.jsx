@@ -23,7 +23,6 @@ import brandCollabImage from '../../assets/brand_collaboration.webp';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
 import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
-import { blogPosts } from '../data/blogPosts.js';
 import { Calendar, Clock } from 'lucide-react';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
@@ -57,6 +56,7 @@ export function Home({
   toggleFavorite,
   favoriteKeys,
   priceAccess,
+  blogs = [],
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -746,7 +746,7 @@ export function Home({
           </button>
 
           <div className="home-blog-grid" id="home-blog-row">
-            {blogPosts.slice(0, 4).map((post) => (
+            {blogs.slice(0, 4).map((post) => (
               <article
                 key={post.slug}
                 className="blog-card"

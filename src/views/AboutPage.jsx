@@ -24,9 +24,6 @@ import {
 import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import resellerDisplayImage from '../../assets/reseller_premium_catalog_display.webp';
-import warehouseImage from '../../assets/varanasi_b2b_warehouse.webp';
-import luxuryPackagingImage from '../../assets/saree_luxury_packaging.webp';
-import founderImage from '../../assets/founder_portrait.png';
 import { assetSrc } from '../utils/assetSrc.js';
 
 export function AboutPage({ navigate }) {
@@ -34,9 +31,6 @@ export function AboutPage({ navigate }) {
 
   const artisanSectionImage = assetSrc(artisanImage);
   const resellerSectionImage = assetSrc(resellerDisplayImage);
-  const warehouseSectionImage = assetSrc(warehouseImage);
-  const packagingSectionImage = assetSrc(luxuryPackagingImage);
-  const founderSectionImage = assetSrc(founderImage);
 
   const faqs = [
     {
@@ -49,7 +43,7 @@ export function AboutPage({ navigate }) {
     },
     {
       question: "Do you support white-label branding and custom packaging for boutique owners?",
-      answer: "Yes, we are the backend supply force for some of the largest ethnic boutiques globally. Under our premium White Label Brand Program, we can customize brand woven labels, high-density metallic card hangtags, luxury hand-made cardboard packaging boxes, and moisture-proof silk storage bags. All goods are dispatched from our white-labeled warehouse, keeping Weave 365 completely anonymous."
+      answer: "Yes, we are the backend supply force for some of the largest ethnic boutiques globally. Under our premium White Label Brand Program, we can coordinate direct white-labeling with your custom brand tags and labels. All goods are dispatched in secure, unmarked weatherproof packaging, keeping Weave 365 completely anonymous so you can add your custom luxury packaging at your store."
     },
     {
       question: "What are your shipping timelines, transit cargo charges, and insurance coverages?",
@@ -122,7 +116,7 @@ export function AboutPage({ navigate }) {
           "@type": "Person",
           "name": "Devika Sen"
         },
-        "reviewBody": "Ultimate backend supplier for international B2B saree wholesale. The triple-layer moisture packaging is impeccable.",
+        "reviewBody": "Ultimate backend supplier for international B2B saree wholesale. The weatherproof transit packaging is impeccable.",
         "reviewRating": {
           "@type": "Rating",
           "ratingValue": "5"
@@ -244,24 +238,6 @@ export function AboutPage({ navigate }) {
       <section className="about-founder-section">
         <div className="about-founder-container">
           <div className="about-founder-grid">
-            <div className="about-founder-left">
-              <div className="about-founder-image-wrapper">
-                <img 
-                  src={founderSectionImage} 
-                  alt="Zubair Ahmad, Founder & Creative Director of Weave 365" 
-                  className="about-founder-image"
-                  width={600}
-                  height={600}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="about-founder-experience-badge">
-                  <strong>10+</strong>
-                  <span>Years of Textile Innovation</span>
-                </div>
-              </div>
-            </div>
-            
             <div className="about-founder-right">
               <span className="about-kicker">Visionary Leadership</span>
               <h2>Preserving the Handloom Soul, Empowering Global Commerce</h2>
@@ -410,8 +386,8 @@ export function AboutPage({ navigate }) {
 
             <div className="about-quality-step">
               <div className="about-step-number">05</div>
-              <h3>Luxury Storage Wrap</h3>
-              <p>Wrapping inside custom moisture-proof tracing sleeves and premium hard-box boxing.</p>
+              <h3>Secure Transit Wrap</h3>
+              <p>Wrapping inside water-resistant protective film and secure courier wraps to ensure absolute safety during transport.</p>
             </div>
           </div>
         </div>
@@ -421,7 +397,7 @@ export function AboutPage({ navigate }) {
       <section className="about-shipping-section">
         <div className="about-shipping-container">
           <div className="about-shipping-left">
-            <h2>Worldwide Air Cargo & Moisture-Proof Boxing</h2>
+            <h2>Worldwide Air Cargo & Secure Weatherproof Protection</h2>
             <p>
               Premium textiles require specialized handling to prevent humidity oxidation on delicate silver and gold zari work during transit. We have engineered custom bulk logistics to guarantee pristine arrivals, domestic or international.
             </p>
@@ -436,8 +412,8 @@ export function AboutPage({ navigate }) {
 
             <div className="about-shipping-feature">
               <Layers size={28} className="about-shipping-feature-icon" />
-              <h3>Premium Storage Boxes</h3>
-              <p>Every saree is cocooned in premium anti-static tracing tissue and placed inside heavy-gauge moisture-proof boxes.</p>
+              <h3>Weatherproof Protection</h3>
+              <p>Every saree is cocooned in dust-free protective tissue and sealed inside water-resistant, tear-proof transit wraps.</p>
             </div>
 
             <div className="about-shipping-feature">
@@ -455,56 +431,42 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 6b. WAREHOUSE & PACKAGING VISUAL GALLERY */}
+      {/* 6b. B2B OPERATIONS & DISPATCH */}
       <section className="about-operations-section">
         <div className="about-operations-container">
           <div className="about-center-header">
-            <span className="about-kicker">Operational Excellence</span>
-            <h2>Direct Varanasi Warehouses & Premium Moisture-Safe Packaging</h2>
+            <span className="about-kicker">Direct & Transparent Operations</span>
+            <h2>Loom-Direct Sourcing & Secure Weatherproof Dispatch</h2>
             <p>
-              Explore our state-of-the-art collection houses and custom anti-oxidation packing protocols that preserve the pristine quality of every handloom masterpiece.
+              We believe in keeping things simple, authentic, and highly profitable for your business. By operating entirely online, we deliver real wholesale rates directly from the weavers' looms while ensuring safe, weatherproof transit for every parcel.
             </p>
           </div>
 
           <div className="about-operations-grid">
             <div className="about-operations-card">
-              <div className="about-ops-image-wrapper">
-                <img 
-                  src={warehouseSectionImage} 
-                  alt="Varanasi Sourcing & Quality Vaults Warehouse" 
-                  className="about-ops-image"
-                  loading="lazy"
-                  decoding="async"
-                  width={600}
-                  height={400}
-                />
-                <div className="about-ops-overlay"></div>
+              <div className="about-ops-icon-wrapper">
+                <div className="about-ops-icon-circle">
+                  <Compass size={32} className="about-ops-icon" />
+                </div>
               </div>
               <div className="about-ops-content">
-                <h3>Varanasi Sourcing & Quality Vaults</h3>
+                <h3>Loom-Direct Quality Inspection</h3>
                 <p>
-                  Located in the heart of Varanasi (Daranagar), our direct collection and inspection warehouse is humidity-controlled to ensure that every handloom Banarasi silk saree retains its natural sheen, fabric resilience, and silver-plated zari threads without environmental damage. Boutique owners are always assured of fresh loom-direct dispatches.
+                  We coordinate directly with local weavers across Varanasi. Instead of maintaining expensive retail showrooms or bulk warehouses, we inspect every saree at the loom source for flawless weaving and authentic yarn. Operating online allows us to cut massive overhead costs, passing 100% of the margins and savings directly to your boutique.
                 </p>
               </div>
             </div>
 
             <div className="about-operations-card">
-              <div className="about-ops-image-wrapper">
-                <img 
-                  src={packagingSectionImage} 
-                  alt="Triple-Layer Anti-Oxidant Moisture Packaging" 
-                  className="about-ops-image"
-                  loading="lazy"
-                  decoding="async"
-                  width={600}
-                  height={400}
-                />
-                <div className="about-ops-overlay"></div>
+              <div className="about-ops-icon-wrapper">
+                <div className="about-ops-icon-circle">
+                  <ShieldCheck size={32} className="about-ops-icon" />
+                </div>
               </div>
               <div className="about-ops-content">
-                <h3>Triple-Layer Anti-Oxidant Packaging</h3>
+                <h3>Secure Weatherproof Transit</h3>
                 <p>
-                  Pure silk and real metallic zari are highly sensitive to moisture and oxidation during long-distance transit. We secure every wholesale saree order in specialized acid-free tracing tissue, followed by a secondary heat-sealed protective polymer sleeve, and dispatch them inside heavy-gauge, double-walled corrugated cardboard boxes.
+                  Premium handloom silk and real metallic zari must be fully protected from moisture, dust, and transit friction. Every saree is wrapped in clean, dust-free protective tissue and sealed inside high-strength, weatherproof polymer courier wraps. This guarantees your products arrive completely dry and pristine, while keeping shipping weights minimal.
                 </p>
               </div>
             </div>
@@ -608,7 +570,7 @@ export function AboutPage({ navigate }) {
             <div className="about-testimonial-card">
               <div className="about-stars">★★★★★</div>
               <p className="about-test-quote">
-                "Weave 365 is the ultimate backend supplier for international B2B saree wholesale. The triple-layer moisture packaging is impeccable, and the DHL air cargo arrives in Houston in exactly 5 days. Our premium boutique collection has a 100% customer return rate."
+                "Weave 365 is the ultimate backend supplier for international B2B saree wholesale. The weatherproof transit packaging is impeccable, and the DHL air cargo arrives in Houston in exactly 5 days. Our premium boutique collection has a 100% customer return rate."
               </p>
               <div className="about-test-buyer">
                 <strong>Devika Sen</strong>

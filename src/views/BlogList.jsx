@@ -10,11 +10,14 @@
  * @param {Array} props.blogs - Dynamic collection of blog posts loaded from both static datasets and Supabase CMS
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowRight, Calendar, Clock, User, Filter } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function BlogList({ navigate, blogs = [] }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('All');
 
   const categories = useMemo(() => {
@@ -24,6 +27,27 @@ export function BlogList({ navigate, blogs = [] }) {
     });
     return ['All', ...Array.from(list)];
   }, [blogs]);
+
+  // Sync activeCategory with URL query parameter
+  useEffect(() => {
+    const catParam = searchParams?.get('category');
+    if (catParam) {
+      const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+      if (matched) {
+        setActiveCategory(matched);
+        return;
+      }
+    }
+    setActiveCategory('All');
+  }, [searchParams, categories]);
+
+  const handleCategoryChange = (cat) => {
+    if (cat === 'All') {
+      router.push('/blog');
+    } else {
+      router.push(`/blog?category=${encodeURIComponent(cat)}`);
+    }
+  };
 
   const filteredPosts = useMemo(() => {
     if (activeCategory === 'All') return blogs;
@@ -106,7 +130,7 @@ export function BlogList({ navigate, blogs = [] }) {
               <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
               <button 
                 className="blog-filter-btn active"
-                onClick={() => setActiveCategory('All')}
+                onClick={() => handleCategoryChange('All')}
               >
                 Show All Articles
               </button>
@@ -122,7 +146,7 @@ export function BlogList({ navigate, blogs = [] }) {
                 <button
                   key={cat}
                   className={`blog-filter-btn ${activeCategory === cat ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleCategoryChange(cat)}
                 >
                   {cat === 'All' ? 'All Guides' : cat}
                 </button>

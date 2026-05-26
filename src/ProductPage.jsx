@@ -871,7 +871,7 @@ export function ProductDetail({
                 <h3>Global B2B Sourcing</h3>
               </div>
               <p>
-                Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper. Fast WhatsApp ordering is available for India and global B2B orders.
+                {product.metaDescription || product.summary || "Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. Fast WhatsApp ordering is available for India and global B2B orders."}
               </p>
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
@@ -900,6 +900,23 @@ export function ProductDetail({
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
+
+            {product.partner && (
+              <div
+                className="trusted-partner-card-v2"
+                onClick={() => navigate('partner', product.partner)}
+                title={`View all products by ${product.partner}`}
+                style={{ marginTop: '12px', marginBottom: '24px' }}
+              >
+                <div className="partner-card-accent-bar" />
+                <Award size={18} className="partner-award-icon" />
+                <div className="partner-card-info">
+                  <span className="partner-label-v2">Trusted Partner</span>
+                  <span className="partner-dot">•</span>
+                  <span className="partner-name-v2">{product.partner}</span>
+                </div>
+              </div>
+            )}
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
@@ -947,9 +964,17 @@ export function ProductDetail({
                 Excluding GST • <span className="free-shipping-highlight">Free Shipping</span>
               </span>
             ) : (
-              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
-                <span className="free-shipping-highlight">Excluding GST & Shipping</span>
-              </span>
+              <>
+                <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
+                  <span className="free-shipping-highlight">Excluding GST & Shipping</span>
+                </span>
+                <div className="international-courier-note">
+                  <Globe size={16} />
+                  <span>
+                    International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper.
+                  </span>
+                </div>
+              </>
             )}
 
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
@@ -1112,28 +1137,6 @@ export function ProductDetail({
               <LockKeyhole size={16} /> Only registered buyers can download and share
             </p>
 
-            {(product.metaDescription || product.summary) && (
-              <p className="product-short-desc-premium" style={{ marginTop: '20px' }}>
-                {product.metaDescription || product.summary}
-              </p>
-            )}
-
-            {product.partner && (
-              <div
-                className="trusted-partner-card-v2"
-                onClick={() => navigate('partner', product.partner)}
-                title={`View all products by ${product.partner}`}
-                style={{ marginTop: '12px', marginBottom: '24px' }}
-              >
-                <div className="partner-card-accent-bar" />
-                <Award size={18} className="partner-award-icon" />
-                <div className="partner-card-info">
-                  <span className="partner-label-v2">Trusted Partner</span>
-                  <span className="partner-dot">•</span>
-                  <span className="partner-name-v2">{product.partner}</span>
-                </div>
-              </div>
-            )}
 
             <div className="product-disclaimer-box mobile-disclaimer-only">
               <p>
@@ -1147,7 +1150,7 @@ export function ProductDetail({
                 <h3>Global B2B Sourcing</h3>
               </div>
               <p>
-                Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper. Fast WhatsApp ordering is available for India and global B2B orders.
+                {product.metaDescription || product.summary || "Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. Fast WhatsApp ordering is available for India and global B2B orders."}
               </p>
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
