@@ -46,7 +46,7 @@ const partnerPages = {
     ctaRoute: 'bulk-inquiry',
     seal: 'SOURCE',
     stats: [
-      ['MOQ', 'Negotiation'],
+      ['MOQ', 'Flexible'],
       ['QC', 'Before Dispatch'],
       ['Stock', 'Live Updates'],
     ],

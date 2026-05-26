@@ -82,6 +82,31 @@ export default async function sitemap() {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    // Blog category pages
+    {
+      url: `${siteUrl}/blog/category/wholesale-guides`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${siteUrl}/blog/category/reseller-business`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${siteUrl}/blog/category/banarasi-insights`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${siteUrl}/blog/category/business-growth`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
   ];
 
   // Dynamic landing pages from SEO repository
@@ -128,6 +153,7 @@ export default async function sitemap() {
 
   // Dynamic blog post pages
   let blogPostPages = [];
+  let dynamicCategoryPages = [];
   try {
     let dbPosts = [];
     try {
@@ -136,30 +162,28 @@ export default async function sitemap() {
       console.warn('Sitemap: Failed to fetch Supabase blog posts:', dbError.message || dbError);
     }
     const slugMap = new Map();
+    const categorySet = new Set();
+    const slugifyCategory = (cat) => cat.toLowerCase().trim().replace(/\s+/g, '-');
 
     // 1. Add hardcoded blog posts
     blogPosts.forEach((post) => {
       let parsedDate = new Date(post.date);
-      if (isNaN(parsedDate.getTime())) {
-        parsedDate = new Date();
-      }
-      slugMap.set(post.slug, {
-        slug: post.slug,
-        date: parsedDate,
-      });
+      if (isNaN(parsedDate.getTime())) parsedDate = new Date();
+      slugMap.set(post.slug, { slug: post.slug, date: parsedDate });
+      if (post.category) categorySet.add(post.category);
     });
 
     // 2. Add Supabase blog posts
     if (dbPosts && Array.isArray(dbPosts)) {
       dbPosts.forEach((post) => {
-        let parsedDate = post.createdAt ? new Date(post.createdAt) : (post.date ? new Date(post.date) : new Date());
-        if (isNaN(parsedDate.getTime())) {
-          parsedDate = new Date();
-        }
-        slugMap.set(post.slug, {
-          slug: post.slug,
-          date: parsedDate,
-        });
+        let parsedDate = post.createdAt
+          ? new Date(post.createdAt)
+          : post.date
+          ? new Date(post.date)
+          : new Date();
+        if (isNaN(parsedDate.getTime())) parsedDate = new Date();
+        slugMap.set(post.slug, { slug: post.slug, date: parsedDate });
+        if (post.category) categorySet.add(post.category);
       });
     }
 
@@ -169,6 +193,23 @@ export default async function sitemap() {
       changeFrequency: 'weekly',
       priority: 0.7,
     }));
+
+    // Dynamic category pages (any categories not already in static list)
+    const staticCatSlugs = new Set([
+      'wholesale-guides',
+      'reseller-business',
+      'banarasi-insights',
+      'business-growth',
+    ]);
+    dynamicCategoryPages = Array.from(categorySet)
+      .map((cat) => slugifyCategory(cat))
+      .filter((slug) => !staticCatSlugs.has(slug))
+      .map((slug) => ({
+        url: `${siteUrl}/blog/category/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      }));
   } catch (error) {
     console.warn('Sitemap: Failed to fetch blog posts for sitemap:', error.message || error);
   }
@@ -179,5 +220,6 @@ export default async function sitemap() {
     ...productPages,
     ...partnerPages,
     ...blogPostPages,
+    ...dynamicCategoryPages,
   ];
 }

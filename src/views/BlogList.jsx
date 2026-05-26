@@ -11,57 +11,213 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowRight, Calendar, Clock, User, Filter } from 'lucide-react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { ArrowRight, Calendar, Clock, User, Filter, Search, X } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function BlogList({ navigate, blogs = [] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = useMemo(() => {
-    const list = new Set();
+    const order = [
+      'All',
+      'Wholesale Guides',
+      'Reseller Business',
+      'Banarasi Insights',
+      'Business Growth'
+    ];
+    const presentCategories = new Set();
     blogs.forEach((post) => {
-      if (post.category) list.add(post.category);
+      if (post.category) presentCategories.add(post.category);
     });
-    return ['All', ...Array.from(list)];
+
+    const sorted = order.filter(cat => cat === 'All' || presentCategories.has(cat));
+    
+    // Append any other dynamic categories not explicitly in order
+    presentCategories.forEach((cat) => {
+      if (!sorted.includes(cat)) sorted.push(cat);
+    });
+
+    return sorted;
   }, [blogs]);
 
-  // Sync activeCategory with URL query parameter
+  const pathname = usePathname() || '';
+  const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
+
+  const slugifyCategory = (cat) => {
+    return cat.toLowerCase().trim().replace(/\s+/g, '-');
+  };
+
+  // Sync activeCategory and searchQuery with URL path segment or fallback to query parameter
   useEffect(() => {
-    const catParam = searchParams?.get('category');
-    if (catParam) {
-      const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+    // 1. Check path segment first (e.g. /blog/category/banarasi-insights)
+    if (pathSegments[0] === 'blog' && pathSegments[1] === 'category' && pathSegments[2]) {
+      const catSlug = decodeURIComponent(pathSegments[2]).toLowerCase();
+      const matched = categories.find(c => slugifyCategory(c) === catSlug);
       if (matched) {
         setActiveCategory(matched);
-        return;
+      }
+    } else {
+      const catParam = searchParams?.get('category');
+      if (catParam) {
+        const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+        if (matched) {
+          setActiveCategory(matched);
+        }
+      } else {
+        setActiveCategory('All');
       }
     }
-    setActiveCategory('All');
-  }, [searchParams, categories]);
+
+    // Sync search query parameter
+    const searchParam = searchParams?.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    } else {
+      setSearchQuery('');
+    }
+  }, [searchParams, categories, pathSegments]);
+
+  // JSON-LD Schema: Blog index or category CollectionPage + BreadcrumbList
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const origin = window.location.origin;
+    const slugifyCategory = (cat) => cat.toLowerCase().trim().replace(/\s+/g, '-');
+    const isCategory = activeCategory !== 'All';
+    const catSlug = isCategory ? slugifyCategory(activeCategory) : '';
+    const pageUrl = isCategory
+      ? `${origin}/blog/category/${catSlug}`
+      : `${origin}/blog`;
+
+    // 1. Blog / CollectionPage schema
+    const pageSchema = isCategory
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          '@id': pageUrl,
+          name: `${activeCategory} – Wholesale Saree Business Guides | Weave 365`,
+          description: `Expert B2B articles on ${activeCategory} for boutique owners, saree resellers and wholesale buyers sourcing Banarasi sarees from Varanasi.`,
+          url: pageUrl,
+          publisher: { '@type': 'Organization', name: 'Weave 365', url: origin },
+          mainEntity: {
+            '@type': 'ItemList',
+            itemListElement: blogs
+              .filter((p) => p.category === activeCategory)
+              .slice(0, 10)
+              .map((p, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                url: `${origin}/blog/${p.slug}`,
+                name: p.title,
+              })),
+          },
+        }
+      : {
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          '@id': `${origin}/blog`,
+          name: "The Saree Wholesaler's Business & Fabric Blog | Weave 365",
+          description:
+            'Expert boutique scaling roadmaps, historical Varanasi loom guides, and technical fabric blueprints to empower your ethnic wear enterprise.',
+          url: `${origin}/blog`,
+          publisher: { '@type': 'Organization', name: 'Weave 365', url: origin },
+          blogPost: blogs.slice(0, 10).map((p) => ({
+            '@type': 'BlogPosting',
+            headline: p.title,
+            url: `${origin}/blog/${p.slug}`,
+            datePublished: p.date,
+            image: p.image,
+            description: p.metaDescription || p.intro,
+          })),
+        };
+
+    // 2. BreadcrumbList schema
+    const breadcrumbItems = isCategory
+      ? [
+          { name: 'Home', item: `${origin}/` },
+          { name: 'Insights & Blogs', item: `${origin}/blog` },
+          { name: activeCategory, item: pageUrl },
+        ]
+      : [
+          { name: 'Home', item: `${origin}/` },
+          { name: 'Insights & Blogs', item: `${origin}/blog` },
+        ];
+
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbItems.map((bc, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: bc.name,
+        item: bc.item,
+      })),
+    };
+
+    const inject = (id, schema) => {
+      let el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement('script');
+        el.type = 'application/ld+json';
+        el.id = id;
+        document.head.appendChild(el);
+      }
+      el.text = JSON.stringify(schema);
+    };
+
+    inject('blog-list-page-ld-json', pageSchema);
+    inject('blog-list-breadcrumb-ld-json', breadcrumbSchema);
+
+    return () => {
+      ['blog-list-page-ld-json', 'blog-list-breadcrumb-ld-json'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+    };
+  }, [activeCategory, blogs]);
 
   const handleCategoryChange = (cat) => {
     if (cat === 'All') {
       router.push('/blog');
     } else {
-      router.push(`/blog?category=${encodeURIComponent(cat)}`);
+      router.push(`/blog/category/${slugifyCategory(cat)}`);
     }
   };
 
   const filteredPosts = useMemo(() => {
-    if (activeCategory === 'All') return blogs;
-    return blogs.filter((post) => post.category === activeCategory);
-  }, [blogs, activeCategory]);
+    let result = blogs;
+    if (activeCategory !== 'All') {
+      result = result.filter((post) => post.category === activeCategory);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter((post) => 
+        (post.title && post.title.toLowerCase().includes(q)) ||
+        (post.intro && post.intro.toLowerCase().includes(q)) ||
+        (post.category && post.category.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [blogs, activeCategory, searchQuery]);
 
   const remainingPosts = useMemo(() => {
     return filteredPosts;
   }, [filteredPosts]);
 
-  const breadcrumbItems = [
-    { name: 'Home', url: '/', route: 'home' },
-    { name: 'Insights & Blogs' }
-  ];
+  const breadcrumbItems = useMemo(() => {
+    const base = [
+      { name: 'Home', url: '/', route: 'home' },
+      { name: 'Insights & Blogs', url: activeCategory !== 'All' ? '/blog' : undefined, route: activeCategory !== 'All' ? 'blog' : undefined }
+    ];
+    if (activeCategory !== 'All') {
+      base.push({ name: activeCategory });
+    }
+    return base;
+  }, [activeCategory]);
 
   return (
     <div className="blog-list-container">
@@ -127,13 +283,28 @@ export function BlogList({ navigate, blogs = [] }) {
           ) : (
             <div className="blog-empty-state">
               <h3>No articles found</h3>
-              <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
-              <button 
-                className="blog-filter-btn active"
-                onClick={() => handleCategoryChange('All')}
-              >
-                Show All Articles
-              </button>
+              {searchQuery ? (
+                <>
+                  <p>No results matched your search for "{searchQuery}". Try using different keywords or resetting the filters.</p>
+                  <button 
+                    className="blog-filter-btn active"
+                    style={{ marginTop: '1.5rem' }}
+                    onClick={() => setSearchQuery('')}
+                  >
+                    Clear Search
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
+                  <button 
+                    className="blog-filter-btn active"
+                    onClick={() => handleCategoryChange('All')}
+                  >
+                    Show All Articles
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -141,6 +312,25 @@ export function BlogList({ navigate, blogs = [] }) {
         {/* Right Side: Sticky Filter Sidebar */}
         <aside className="blog-list-sidebar-column">
           <div className="blog-filters-sticky-wrapper">
+            {/* Sleek Search Bar */}
+            <div className="sidebar-search-container">
+              <Search className="search-icon" size={16} />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="sidebar-search-input"
+              />
+              {searchQuery && (
+                <button className="search-clear-btn" onClick={() => setSearchQuery('')}>
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <span className="sidebar-filter-title">Categories</span>
+
             <div className="blog-filters">
               {categories.map((cat) => (
                 <button
@@ -148,7 +338,7 @@ export function BlogList({ navigate, blogs = [] }) {
                   className={`blog-filter-btn ${activeCategory === cat ? 'active' : ''}`}
                   onClick={() => handleCategoryChange(cat)}
                 >
-                  {cat === 'All' ? 'All Guides' : cat}
+                  {cat === 'All' ? 'All Blogs' : cat}
                 </button>
               ))}
             </div>

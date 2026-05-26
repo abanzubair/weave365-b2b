@@ -15,12 +15,15 @@ function cleanSlug(slug = []) {
 }
 
 function routeFromSlug(slug = []) {
-  const [route = 'home', value = ''] = cleanSlug(slug);
+  const clean = cleanSlug(slug);
+  const route = clean[0] || 'home';
+  const isBlogCategory = route === 'blog' && clean[1] === 'category';
   return {
     route,
-    productId: route === 'product' ? decodeURIComponent(value) : '',
-    sharedSlug: (route === 's' || route === 'partner') ? decodeURIComponent(value) : '',
-    blogPostSlug: route === 'blog' ? decodeURIComponent(value) : '',
+    productId: route === 'product' ? decodeURIComponent(clean[1] || '') : '',
+    sharedSlug: (route === 's' || route === 'partner') ? decodeURIComponent(clean[1] || '') : '',
+    blogPostSlug: route === 'blog' && !isBlogCategory ? decodeURIComponent(clean[1] || '') : '',
+    blogCategorySlug: isBlogCategory ? decodeURIComponent(clean[2] || '') : '',
   };
 }
 
@@ -53,7 +56,7 @@ async function getInitialData() {
   });
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = []) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '') {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
@@ -109,6 +112,17 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 
   // Dynamic Blog Routing Metadata
   if (route === 'blog') {
+    if (blogCategorySlug) {
+      const prettyCategoryName = blogCategorySlug
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      return buildMeta(
+        `${prettyCategoryName} Wholesale Saree Sourcing Guides | Weave 365`,
+        `Explore all expert B2B ${prettyCategoryName} guides and boutique reselling articles direct from Varanasi master weavers on Weave 365.`,
+        `/blog/category/${blogCategorySlug}`
+      );
+    }
     if (blogPostSlug) {
       const post = dbPosts.find((p) => p.slug === blogPostSlug) || blogPosts.find((p) => p.slug === blogPostSlug);
       if (post) {
@@ -326,7 +340,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const { route, productId, sharedSlug, blogPostSlug } = routeFromSlug(resolvedParams?.slug);
+  const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(resolvedParams?.slug);
   let product = null;
   let dbPosts = [];
 
@@ -340,7 +354,7 @@ export async function generateMetadata({ params, searchParams }) {
     }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug);
 }
 
 export default async function CatchAllPage() {

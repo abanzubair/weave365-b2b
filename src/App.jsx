@@ -93,7 +93,7 @@ export default function App({ initialData = {} }) {
   const isSharedProduct = route === 's' && pathSegments[2] === 'p';
   const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
-  const blogPostSlug = route === 'blog' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const blogPostSlug = route === 'blog' && pathSegments[1] !== 'category' ? decodeURIComponent(pathSegments[1] || '') : null;
 
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);

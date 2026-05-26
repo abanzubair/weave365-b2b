@@ -460,3 +460,42 @@
     padding: 1.5rem;
   }
 }
+
+/* Wide screens (24 inch monitors and larger) */
+@media screen and (min-width: 1400px) {
+  .partner-program-breadcrumbs {
+    max-width: 1580px;
+  }
+
+  .partner-program-hero {
+    max-width: 1580px;
+    grid-template-columns: minmax(0, 1.0fr) minmax(420px, 0.8fr);
+  }
+
+  .partner-program-seo-copy {
+    max-width: 1580px;
+  }
+
+  .partner-program-split {
+    max-width: 1580px;
+  }
+
+  .partner-program-table,
+  .partner-program-callout {
+    max-width: 1320px;
+  }
+
+  .partner-program-related-grid {
+    max-width: 1580px;
+  }
+
+  .partner-program-page .seo-guide-container {
+    max-width: 1380px;
+  }
+
+  .partner-program-page .seo-faq-split-container {
+    max-width: 1580px;
+  }
+}
+
+

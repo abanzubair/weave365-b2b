@@ -25,6 +25,7 @@ import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import resellerDisplayImage from '../../assets/reseller_premium_catalog_display.webp';
 import { assetSrc } from '../utils/assetSrc.js';
+import { WhatsappIcon } from '../storefrontShared.jsx';
 
 export function AboutPage({ navigate }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);
@@ -246,13 +247,13 @@ export function AboutPage({ navigate }) {
               </p>
               <div className="about-founder-story">
                 <p>
-                  As a third-generation textile visionary, our founder, <strong>Zubair Ahmad</strong>, witnessed the struggles of Varanasi's local weavers first-hand. While local weavers created incomparable masterpieces, outdated agent structures left them disconnected from global demand and poorly compensated.
+                  As a third-generation business / textile visionary, our founder, <strong>Zubair Ahmad</strong>, witnessed the struggles of Varanasi's local weavers first-hand. While local weavers created incomparable masterpieces, outdated agent structures left them disconnected from global demand and poorly compensated.
                 </p>
                 <p>
                   Determined to redefine the Banarasi trade, Zubair founded Weave 365. By merging authentic handloom curation with a robust direct-to-retailer B2B model, he eliminated middle-party inefficiencies and established strict, laboratory-tested quality checks.
                 </p>
                 <p>
-                  Today, under Zubair's guidance, Weave 365 serves as the reliable supply backbone for over 500+ boutiques globally, proving that traditional craftsmanship and modern digital systems can thrive together.
+                  Today, under Zubair's guidance, Weave 365 serves as the reliable supply backbone for over 500+ boutiques globally, proving that traditional craftsmanship and modern digital systems can thrive together. Building a Couture House from Banaras Loom, Translating Banarasi Textile into Couture Fashion.
                 </p>
               </div>
 
@@ -480,7 +481,7 @@ export function AboutPage({ navigate }) {
           <div className="about-trust-grid">
             <div className="about-trust-info">
               <span className="about-kicker">Absolute Credibility</span>
-              <h2>A Transparent B2B Saree Supplier Partner</h2>
+              <h2>A Transparent B2B Banarasi Saree Supplier Partner</h2>
               <p>
                 We believe premium aesthetics must be supported by corporate transparency. Below are our business registration parameters, warehouse locations, and direct communications pathways.
               </p>
@@ -489,7 +490,7 @@ export function AboutPage({ navigate }) {
                 <div className="about-whatsapp-header">
                   <div className="about-whatsapp-avatar-group">
                     <div className="about-whatsapp-avatar">
-                      <MessageCircle size={20} style={{ color: 'var(--gold)' }} />
+                      <WhatsappIcon size={20} style={{ color: 'var(--gold)' }} />
                     </div>
                   </div>
                   <div className="about-whatsapp-meta">
@@ -506,7 +507,7 @@ export function AboutPage({ navigate }) {
                   rel="noopener noreferrer" 
                   className="about-whatsapp-btn"
                 >
-                  <MessageCircle size={18} /> Chat with Wholesale Team
+                  <WhatsappIcon size={18} /> Chat with Wholesale Team
                 </a>
               </div>
             </div>
@@ -515,8 +516,8 @@ export function AboutPage({ navigate }) {
               <div className="about-trust-card">
                 <FileText size={26} className="about-trust-card-icon" />
                 <h3>GST Verification</h3>
-                <p>Fully compliant corporate vendor. Standard GST invoices provided for boutique tax input credit.</p>
-                <p style={{ marginTop: '10px' }}><code>GSTIN: 09AABHW8236A1Z0</code></p>
+                <p>Fully compliant corporate vendor. Standard GST invoices provided for buyers tax input credit.</p>
+                {/* <p style={{ marginTop: '10px' }}><code>GSTIN: 09AABHW8236A1Z0</code></p> */}
               </div>
 
               <div className="about-trust-card">
@@ -524,7 +525,7 @@ export function AboutPage({ navigate }) {
                 <h3>Varanasi Roots</h3>
                 <p>Our primary weaving collection house is located in the heart of Varanasi, enabling daily quality check operations.</p>
                 <p className="about-trust-card-location">
-                  <MapPin size={14} color="var(--gold)" /> Daranagar, Varanasi, UP, IN
+                  <MapPin size={14} color="var(--gold)" />Varanasi, UP, IN
                 </p>
               </div>
 
@@ -537,7 +538,7 @@ export function AboutPage({ navigate }) {
               <div className="about-trust-card">
                 <Heart size={26} className="about-trust-card-icon" />
                 <h3>25+ Years Weave Roots</h3>
-                <p>Supported by a legacy family network with over two decades of handloom trading, weaving, and global boutique exports.</p>
+                <p>Supported by the artisian / weaver network with over two decades of handloom trading, weaving, and global exports.</p>
               </div>
             </div>
           </div>

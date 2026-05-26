@@ -13,11 +13,40 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Copy, Check, Share2 } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+
+const slugifyCategory = (cat) => {
+  if (!cat) return '';
+  return cat.toLowerCase().trim().replace(/\s+/g, '-');
+};
 
 export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleUniversalShare = async () => {
+    const shareData = {
+      title: post?.title,
+      text: post?.intro || `Check out this article on Weave365`,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Share dismissed or failed:', err);
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
 
   // Scroll to top when post changes
   useEffect(() => {
@@ -32,7 +61,10 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
 
   const relatedPosts = useMemo(() => {
     if (!post) return [];
-    return blogs.filter((p) => p.slug !== post.slug).slice(0, 2);
+    const sameCategory = blogs.filter((p) => p.slug !== post.slug && p.category === post.category);
+    if (sameCategory.length >= 4) return sameCategory.slice(0, 4);
+    const others = blogs.filter((p) => p.slug !== post.slug && p.category !== post.category);
+    return [...sameCategory, ...others].slice(0, 4);
   }, [blogs, post]);
 
   const { prevPost, nextPost } = useMemo(() => {
@@ -43,6 +75,36 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       nextPost: currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null
     };
   }, [blogs, post]);
+
+  const allTags = useMemo(() => {
+    const tagsSet = new Set();
+    blogs.forEach((p) => {
+      if (p.tag) {
+        const parts = p.tag.split(/[,|]+/).map(t => t.trim()).filter(Boolean);
+        parts.forEach(t => tagsSet.add(t));
+      }
+    });
+    
+    const defaultTags = [
+      'Banarasi Sarees',
+      'Wholesale Saree',
+      'B2B Supplier',
+      'Katan Silk',
+      'Organza Saree',
+      'Boutique Growth',
+      'Saree Reseller',
+      'Varanasi Weavers',
+      'Meenakari Saree',
+      'Soft Silk',
+      'Bridal Collection'
+    ];
+    
+    if (tagsSet.size < 4) {
+      defaultTags.forEach(t => tagsSet.add(t));
+    }
+    
+    return Array.from(tagsSet).slice(0, 15).sort();
+  }, [blogs]);
 
   // Dynamic Browser Tab Title & Meta Description SEO injection
   useEffect(() => {
@@ -144,7 +206,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     const breadcrumbListItems = [
       { name: 'Home', url: '/' },
       { name: 'Insights & Blogs', url: '/blog' },
-      ...(post.category ? [{ name: post.category, url: '/blog' }] : []),
+      ...(post.category ? [{ name: post.category, url: `/blog/category/${slugifyCategory(post.category)}` }] : []),
       { name: post.title, url: `/blog/${post.slug}` }
     ];
 
@@ -347,9 +409,21 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     return [
       { name: 'Home', url: '/', route: 'home' },
       { name: 'Insights & Blogs', url: '/blog', route: 'blog' },
-      ...(post.category ? [{ name: post.category, url: '/blog', route: 'blog' }] : []),
+      ...(post.category ? [{
+        name: post.category,
+        url: `/blog/category/${slugifyCategory(post.category)}`,
+        route: 'blog',
+        routeVal: `category/${slugifyCategory(post.category)}`
+      }] : []),
       { name: post.title }
     ];
+  }, [post]);
+
+  const absoluteImageUrl = useMemo(() => {
+    if (!post?.image) return '';
+    if (post.image.startsWith('http')) return post.image;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.in';
+    return `${origin}${post.image.startsWith('/') ? '' : '/'}${post.image}`;
   }, [post]);
 
   return (
@@ -401,10 +475,47 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
           <div className="article-rich-text">
             {parseContentBlocks(post.content)}
           </div>
+
+          {/* Share Article Widget */}
+          <div className="blog-post-share-section">
+            <span className="share-title">Share this article:</span>
+            <div className="share-buttons-container">
+              <button
+                onClick={handleUniversalShare}
+                className={`share-btn universal-share ${copied ? 'copied' : ''}`}
+                title="Share Article"
+              >
+                {copied ? <Check size={16} /> : <Share2 size={16} />}
+                <span>{copied ? 'Link Copied!' : 'Share'}</span>
+              </button>
+            </div>
+          </div>
         </article>
 
         {/* Right Sticky Sidebar Widget Column */}
         <aside className="blog-sidebar-panel">
+          {/* Sleek Search Bar */}
+          <div className="sidebar-search-container" style={{ background: '#fff' }}>
+            <Search className="search-icon" size={16} />
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  navigate('blog', `?search=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
+              className="sidebar-search-input"
+            />
+            {searchQuery && (
+              <button className="search-clear-btn" onClick={() => setSearchQuery('')}>
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
           {/* Blog Category Widget */}
           <div className="sidebar-widget sidebar-category-widget">
             <h3>Blog Category</h3>
@@ -450,6 +561,28 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
             </div>
           </div>
 
+          {/* Tags Widget */}
+          {allTags.length > 0 && (
+            <div className="sidebar-widget sidebar-tags-widget">
+              <h3>Popular Tags</h3>
+              <div className="sidebar-tags-cloud">
+                {allTags.map((tag) => (
+                  <a
+                    key={tag}
+                    href={`/blog?search=${encodeURIComponent(tag)}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('blog', `?search=${encodeURIComponent(tag)}`);
+                    }}
+                    className="sidebar-tag-pill"
+                  >
+                    {tag}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Prev / Next Navigation Widget */}
           {(prevPost || nextPost) && (
             <div className="sidebar-widget sidebar-nav-widget">
@@ -462,25 +595,19 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                     onClick={(e) => { e.preventDefault(); navigate('blog', prevPost.slug); }}
                   >
                     <ChevronLeft size={16} className="sidebar-nav-icon" />
-                    <div className="sidebar-nav-text">
-                      <span className="sidebar-nav-label">Previous</span>
-                      <span className="sidebar-nav-title">{prevPost.title}</span>
-                    </div>
+                    <span className="sidebar-nav-label">Previous</span>
                   </a>
-                ) : <div />}
+                ) : <div className="sidebar-nav-placeholder" />}
                 {nextPost ? (
                   <a
                     className="sidebar-nav-link sidebar-nav-next"
                     href={`/blog/${nextPost.slug}`}
                     onClick={(e) => { e.preventDefault(); navigate('blog', nextPost.slug); }}
                   >
-                    <div className="sidebar-nav-text" style={{ textAlign: 'right' }}>
-                      <span className="sidebar-nav-label">Next</span>
-                      <span className="sidebar-nav-title">{nextPost.title}</span>
-                    </div>
+                    <span className="sidebar-nav-label">Next</span>
                     <ChevronRight size={16} className="sidebar-nav-icon" />
                   </a>
-                ) : <div />}
+                ) : <div className="sidebar-nav-placeholder" />}
               </div>
             </div>
           )}
@@ -518,7 +645,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       {/* Related Posts Section */}
       {relatedPosts.length > 0 && (
         <section className="related-posts-section">
-          <h2>Continue Reading Business Insights</h2>
+          <h2>Continue Reading{post.category ? ` ${post.category}` : ' More Articles'}</h2>
           <div className="blog-grid">
             {relatedPosts.map((rPost) => (
               <article 
