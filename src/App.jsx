@@ -548,7 +548,7 @@ export default function App({ initialData = {} }) {
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
   const visibleProducts = useMemo(() => {
-    return pricedProducts.filter((product) => {
+    const filtered = pricedProducts.filter((product) => {
       const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
       const text = [
         product.title,
@@ -575,6 +575,13 @@ export default function App({ initialData = {} }) {
       const matchesFabric = fabric === 'All' ||
         (product.fabric && product.fabric.trim() === fabric.trim());
       return matchesSearch && matchesCategory && matchesPrice && matchesFabric && !product.isArchived;
+    });
+
+    // Sort by stockInDate descending (latest item first)
+    return filtered.sort((a, b) => {
+      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+      return dateB - dateA; // descending
     });
   }, [category, priceRange, fabric, pricedProducts, searchTerm]);
 
