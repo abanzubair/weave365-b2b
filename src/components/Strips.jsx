@@ -1,24 +1,10 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Tag, HeartHandshake, Sparkles, BadgeCheck, Globe, PackageCheck, ShieldCheck } from 'lucide-react';
-
-const WhatsAppIcon = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={props.className}
-  >
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    <path d="M17 10c-.2-.4-.7-.5-1.1-.3l-1 .5c-.3.2-.4.6-.2.9.3.6.8 1.2 1.3 1.7.5.5 1.1 1 1.7 1.3.3.2.7.1.9-.2l.5-1c.2-.4.1-.9-.3-1.1L17 10z" fill="currentColor" />
-  </svg>
-);
+import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 const featureStripItems = [
   { icon: Tag, line1: 'White Label', line2: 'Catalogue' },
-  { icon: WhatsAppIcon, line1: 'Easy Sharing', line2: 'on WhatsApp' },
+  { icon: (props) => <WhatsappIcon size={36} {...props} />, line1: 'Easy Sharing', line2: 'on WhatsApp' },
   { icon: HeartHandshake, line1: 'Reseller', line2: 'Friendly' },
   { icon: Sparkles, line1: 'Daily New', line2: 'Arrivals' },
   { icon: BadgeCheck, line1: 'Trusted Quality', line2: 'Assurance' },
