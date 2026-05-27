@@ -478,36 +478,24 @@ button {
   gap: 1px;
 }
 
-/* Line 1 */
-.feature-strip strong:first-of-type {
+/* Line 1 & Line 2 — unified styling */
+.feature-strip strong {
   display: block;
   font-family: 'Manrope', sans-serif;
-  font-size: 13px !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
   font-style: normal;
-  line-height: 1.3;
+  line-height: 1.35;
   color: #26180F !important;
   text-transform: none !important;
   letter-spacing: 0.01em !important;
+  opacity: 1;
 }
 
-/* Line 2 */
-.feature-strip strong:last-of-type {
-  display: block;
-  font-family: 'Manrope', sans-serif;
-  font-size: 11px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.02em !important;
-  text-transform: none !important;
-  line-height: 1.35;
+.feature-strip div.feature-item:hover strong {
   color: #8C593B !important;
-  opacity: 0.9;
-  transition: color 0.3s ease;
 }
 
-.feature-strip div.feature-item:hover strong:last-of-type {
-  color: #a36f4f !important;
-}
 
 
 .benefit-strip {

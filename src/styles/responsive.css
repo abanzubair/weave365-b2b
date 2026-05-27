@@ -307,18 +307,14 @@
     height: 20px;
   }
 
-  .feature-strip strong:first-of-type {
+  .feature-strip strong {
     font-family: 'Manrope', sans-serif !important;
-    font-size: 12px !important;
+    font-size: 11.5px !important;
     font-style: normal !important;
-    line-height: 1.3;
-  }
-
-  .feature-strip strong:last-of-type {
-    font-family: 'Manrope', sans-serif !important;
-    font-size: 10px !important;
+    font-weight: 600 !important;
     line-height: 1.35;
-    letter-spacing: 0.02em !important;
+    color: #26180F !important;
+    letter-spacing: 0.01em !important;
     text-transform: none !important;
   }
 
