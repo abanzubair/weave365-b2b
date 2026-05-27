@@ -85,23 +85,31 @@ export function NewArrivalsPage({
 
   // 1. Isolate the base new arrivals
   const baseNewArrivals = useMemo(() => {
-    let filtered = products.filter(p => p.isNew && !p.isArchived);
+    // Map products to preserve their original index order in the sheet
+    const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    let filtered = productsWithIndex.filter(p => p.isNew && !p.isArchived);
 
-    // Sort by stockInDate descending (latest item first)
+    // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
     filtered.sort((a, b) => {
       const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
       const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-      return dateB - dateA; // descending
+      if (dateA !== dateB) {
+        return dateB - dateA;
+      }
+      return b._originalIndex - a._originalIndex;
     });
 
     // Defensive fallback: if no explicitly flagged new items, pull the latest 16 items by stockInDate
     if (filtered.length === 0) {
-      filtered = [...products]
+      filtered = [...productsWithIndex]
         .filter(p => !p.isArchived)
         .sort((a, b) => {
           const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
           const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-          return dateB - dateA; // descending
+          if (dateA !== dateB) {
+            return dateB - dateA;
+          }
+          return b._originalIndex - a._originalIndex;
         })
         .slice(0, 16);
     }

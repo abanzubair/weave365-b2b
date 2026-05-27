@@ -548,7 +548,8 @@ export default function App({ initialData = {} }) {
   const searchTerm = useDeferredValue(search.trim().toLowerCase());
 
   const visibleProducts = useMemo(() => {
-    const filtered = pricedProducts.filter((product) => {
+    const productsWithIndex = pricedProducts.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    const filtered = productsWithIndex.filter((product) => {
       const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
       const text = [
         product.title,
@@ -577,11 +578,14 @@ export default function App({ initialData = {} }) {
       return matchesSearch && matchesCategory && matchesPrice && matchesFabric && !product.isArchived;
     });
 
-    // Sort by stockInDate descending (latest item first)
+    // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
     return filtered.sort((a, b) => {
       const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
       const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-      return dateB - dateA; // descending
+      if (dateA !== dateB) {
+        return dateB - dateA;
+      }
+      return b._originalIndex - a._originalIndex;
     });
   }, [category, priceRange, fabric, pricedProducts, searchTerm]);
 
