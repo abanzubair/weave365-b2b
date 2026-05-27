@@ -307,14 +307,22 @@
     height: 32px;
   }
 
-  .feature-strip strong {
-    font-size: 11.5px !important;
+  .feature-strip strong:first-of-type {
+    font-size: 13px !important;
     line-height: 1.25;
   }
 
-  .feature-strip span {
-    font-size: 11px;
+  .feature-strip strong:last-of-type {
+    font-size: 9px !important;
     line-height: 1.35;
+    letter-spacing: 0.1em !important;
+  }
+
+  .feature-strip span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
   }
 
   /* Deal Section */

@@ -414,38 +414,95 @@ button {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0;
-  margin: -34px auto 0;
-  padding: 14px 18px;
+  margin: -36px auto 0;
+  padding: 16px 12px;
   position: relative;
   z-index: 3;
-  background: #FAF3EC; /* Premium warm ivory-blush beige */
-  border: 1px solid rgba(140, 89, 59, 0.12); /* Delicate gold-tinted outline */
-  border-radius: 12px; /* Balanced rounded corners */
+  background: rgba(253, 249, 244, 0.85); /* Exquisite glassmorphic cream */
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(198, 158, 106, 0.22); /* Glowing gold-tinted frame */
+  border-radius: 16px; /* Highly-refined rounded edges */
   box-shadow: 
-    0 12px 24px rgba(140, 89, 59, 0.03),
-    0 1px 2px rgba(140, 89, 59, 0.01);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9), /* Internal glass glare */
+    0 20px 40px rgba(38, 24, 15, 0.05); /* Soft premium shadow */
 }
 
 .feature-strip div.feature-item {
-  padding: 0 8px;
-  border-right: 1px solid rgba(140, 89, 59, 0.12); /* Extremely fine divider lines */
+  padding: 12px 6px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 8px;
+  gap: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform, background-color;
+  z-index: 1;
 }
 
-.feature-strip div.feature-item:last-child {
-  border-right: 0;
+/* Luxury Hover State Radial Halo */
+.feature-strip div.feature-item::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(198, 158, 106, 0.12) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.feature-strip div.feature-item:hover::before {
+  transform: translate(-50%, -50%) scale(1.15);
+  opacity: 1;
+}
+
+.feature-strip div.feature-item:hover {
+  transform: translateY(-4px) translateZ(0);
+  background: rgba(198, 158, 106, 0.035);
+}
+
+/* Fading Divider Lines */
+.feature-strip div.feature-item::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(140, 89, 59, 0.15) 20%, rgba(140, 89, 59, 0.15) 80%, transparent);
+  transition: opacity 0.3s ease;
+}
+
+.feature-strip div.feature-item:last-child::after {
+  display: none;
+}
+
+/* Hide divider line when hovering over adjacent items */
+.feature-strip div.feature-item:hover::after,
+.feature-strip div.feature-item:hover + div.feature-item::after {
+  opacity: 0;
 }
 
 .feature-strip svg {
-  width: 32px;
-  height: 32px;
-  color: #8C593B; /* Elegant warm bronze */
-  stroke-width: 1.3px;
+  width: 36px;
+  height: 36px;
+  color: #8C593B; /* Warm copper-bronze */
+  transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.3s ease;
+  filter: drop-shadow(0 2px 8px rgba(140, 89, 59, 0.05));
+}
+
+.feature-strip div.feature-item:hover svg {
+  transform: scale(1.08) rotate(1deg);
+  color: #a36f4f;
 }
 
 .feature-strip span {
@@ -455,15 +512,35 @@ button {
   gap: 2px;
 }
 
-.feature-strip strong {
+/* Line 1: Cormorant Garamond Fine Serif */
+.feature-strip strong:first-of-type {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-style: italic; /* Classic high-end look */
+  line-height: 1.25;
+  color: #26180F !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* Line 2: Inter/Manrope Premium Sans-Serif sublabel */
+.feature-strip strong:last-of-type {
   display: block;
   font-family: var(--font-body);
-  font-size: 12px !important;
+  font-size: 9.5px !important;
   font-weight: 700 !important;
-  line-height: 1.25;
-  color: #26180F !important; /* Deep luxury warm ink */
-  text-transform: none !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: 0.11em !important;
+  text-transform: uppercase !important;
+  line-height: 1.35;
+  color: #8C593B !important;
+  opacity: 0.85;
+  transition: color 0.3s ease;
+}
+
+.feature-strip div.feature-item:hover strong:last-of-type {
+  color: #a36f4f !important;
 }
 
 .benefit-strip {
