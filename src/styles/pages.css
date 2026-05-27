@@ -414,27 +414,27 @@ button {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0;
-  margin: -48px auto 0;
-  padding: 28px 24px;
+  margin: -34px auto 0;
+  padding: 14px 18px;
   position: relative;
   z-index: 3;
   background: #FAF3EC; /* Premium warm ivory-blush beige */
-  border: 1px solid rgba(140, 89, 59, 0.14); /* Soft outline */
-  border-radius: 24px; /* Highly rounded corners */
+  border: 1px solid rgba(140, 89, 59, 0.12); /* Delicate gold-tinted outline */
+  border-radius: 12px; /* Balanced rounded corners */
   box-shadow: 
-    0 20px 40px rgba(140, 89, 59, 0.04),
-    0 1px 3px rgba(140, 89, 59, 0.02);
+    0 12px 24px rgba(140, 89, 59, 0.03),
+    0 1px 2px rgba(140, 89, 59, 0.01);
 }
 
 .feature-strip div.feature-item {
-  padding: 0 16px;
-  border-right: 1.5px solid rgba(140, 89, 59, 0.15); /* Warm divider lines */
+  padding: 0 8px;
+  border-right: 1px solid rgba(140, 89, 59, 0.12); /* Extremely fine divider lines */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .feature-strip div.feature-item:last-child {
@@ -442,23 +442,23 @@ button {
 }
 
 .feature-strip svg {
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   color: #8C593B; /* Elegant warm bronze */
-  stroke-width: 1.5px;
+  stroke-width: 1.3px;
 }
 
 .feature-strip span {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .feature-strip strong {
   display: block;
   font-family: var(--font-body);
-  font-size: 13.5px !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
   line-height: 1.25;
   color: #26180F !important; /* Deep luxury warm ink */
