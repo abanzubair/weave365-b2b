@@ -465,6 +465,12 @@ button {
   filter: drop-shadow(0 2px 8px rgba(140, 89, 59, 0.05));
 }
 
+/* Filled WhatsApp icon needs slight scale-down to match Lucide stroke-icon visual weight */
+.feature-strip div.feature-item:nth-child(2) svg {
+  width: 30px;
+  height: 30px;
+}
+
 .feature-strip span {
   display: flex;
   flex-direction: column;
