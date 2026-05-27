@@ -475,6 +475,10 @@
 }
 
 /* Drop Caps Styling */
+.article-rich-text>p:first-of-type {
+  margin-bottom: -0.95rem;
+}
+
 .article-rich-text>p:first-of-type::first-letter {
   font-family: var(--font-hero-heading, 'Cinzel', serif);
   font-size: 4rem;
@@ -661,6 +665,35 @@
 .sidebar-category-list a:hover .sidebar-cat-dot,
 .sidebar-category-list a.active .sidebar-cat-dot {
   background: var(--blog-gold-dark);
+}
+
+/* All Blogs Button inside Category Widget */
+.sidebar-all-blogs-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--blog-gold-dark);
+  border: 1.5px solid var(--blog-gold-dark);
+  border-radius: 6px;
+  font-family: var(--font-hero-body, 'Inter', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-all-blogs-btn:hover {
+  background: var(--blog-gold-dark);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.25);
+  transform: translateY(-1px);
   border-color: var(--blog-gold-dark);
 }
 
@@ -1005,37 +1038,7 @@
   scroll-snap-align: start;
 }
 
-/* Floating Anchor Button */
-.floating-back-btn {
-  position: fixed;
-  bottom: 2.5rem;
-  left: 2.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: var(--blog-gold-dark);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.55rem 1.1rem;
-  border-radius: 50px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.25);
-  transition: var(--blog-transition);
-  animation: slideInLeft 0.5s ease-out;
-}
 
-.floating-back-btn:hover {
-  background: var(--blog-gold-light);
-  border-color: var(--blog-gold-light);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(183, 134, 70, 0.35);
-}
 
 /* --- ANIMATIONS --- */
 @keyframes fadeIn {
@@ -1281,18 +1284,7 @@
     padding: 1.15rem;
   }
 
-  /* Refine bottom fixed back action pill */
-  .floating-back-btn {
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.45rem 1rem;
-    font-size: 0.68rem;
-  }
 
-  .floating-back-btn:hover {
-    transform: translateX(-50%) translateY(-2px);
-  }
 
   /* ========== RELATED POSTS RAIL — MOBILE REDESIGN ========== */
   .related-posts-section {
@@ -1621,6 +1613,10 @@
   padding: 0.75rem 1rem;
   background: #fafafa;
   transition: all 0.3s ease;
+}
+
+.blog-filters-sticky-wrapper .sidebar-search-container {
+  margin-bottom: 1.75rem;
 }
 
 .sidebar-search-container:focus-within {

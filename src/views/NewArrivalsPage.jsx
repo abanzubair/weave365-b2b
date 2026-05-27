@@ -87,6 +87,13 @@ export function NewArrivalsPage({
   const baseNewArrivals = useMemo(() => {
     let filtered = products.filter(p => p.isNew && !p.isArchived);
 
+    // Sort by stockInDate descending (latest item first)
+    filtered.sort((a, b) => {
+      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+      return dateB - dateA; // descending
+    });
+
     // Defensive fallback: if no explicitly flagged new items, pull the latest 16 items by stockInDate
     if (filtered.length === 0) {
       filtered = [...products]

@@ -194,7 +194,7 @@
   .newsletter {
     grid-template-columns: 1fr;
     gap: 32px;
-    padding: 56px var(--site-padding);
+    padding: 24px var(--site-padding);
     text-align: center;
     overflow: hidden;
   }

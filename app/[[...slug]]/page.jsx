@@ -56,7 +56,7 @@ async function getInitialData() {
   });
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '') {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', newestProductImage = null) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
@@ -275,7 +275,8 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     return buildMeta(
       'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
       'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
-      '/new-arrivals'
+      '/new-arrivals',
+      newestProductImage
     );
   }
 
@@ -343,8 +344,9 @@ export async function generateMetadata({ params, searchParams }) {
   const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(resolvedParams?.slug);
   let product = null;
   let dbPosts = [];
+  let newestProductImage = null;
 
-  if ((route === 'product' && productId) || (route === 'blog' && blogPostSlug)) {
+  if ((route === 'product' && productId) || (route === 'blog' && blogPostSlug) || route === 'new-arrivals') {
     const data = await getInitialData();
     if (productId) {
       product = data.products.find((item) => item.id === productId);
@@ -352,9 +354,34 @@ export async function generateMetadata({ params, searchParams }) {
     if (blogPostSlug) {
       dbPosts = data.dbPosts || [];
     }
+    if (route === 'new-arrivals' && data.products) {
+      let filtered = data.products.filter(p => p.isNew && !p.isArchived);
+      
+      // Sort by stockInDate descending (latest item first)
+      filtered.sort((a, b) => {
+        const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+        const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+        return dateB - dateA; // descending
+      });
+
+      if (filtered.length === 0) {
+        filtered = [...data.products]
+          .filter(p => !p.isArchived)
+          .sort((a, b) => {
+            const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+            const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+            return dateB - dateA; // descending
+          })
+          .slice(0, 16);
+      }
+
+      if (filtered.length > 0) {
+        newestProductImage = filtered[0].images?.[0] || null;
+      }
+    }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, newestProductImage);
 }
 
 export default async function CatchAllPage() {

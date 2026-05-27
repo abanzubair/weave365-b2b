@@ -13,7 +13,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Copy, Check, Share2 } from 'lucide-react';
+import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Copy, Check, Share2 } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 
 const slugifyCategory = (cat) => {
@@ -430,13 +430,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     <div className="blog-post-page">
       <Breadcrumb items={breadcrumbItems} navigate={navigate} />
 
-      {/* Floating Back Anchor */}
-      <button 
-        className="floating-back-btn"
-        onClick={() => navigate('blog')}
-      >
-        <ArrowLeft size={16} /> Back to Blog
-      </button>
+
 
       {/* Hero Header Section */}
       <section className="blog-post-hero">
@@ -533,6 +527,12 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                 </li>
               ))}
             </ul>
+            <button
+              className="sidebar-all-blogs-btn"
+              onClick={() => navigate('blog')}
+            >
+              All Blogs <ArrowRight size={14} />
+            </button>
           </div>
 
           {/* Recent Posts Widget */}
