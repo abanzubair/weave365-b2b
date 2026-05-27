@@ -303,13 +303,13 @@
   }
 
   .feature-strip svg {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
   }
 
   .feature-strip strong {
     font-family: 'Manrope', sans-serif !important;
-    font-size: 11.5px !important;
+    font-size: 13.5px !important;
     font-style: normal !important;
     font-weight: 600 !important;
     line-height: 1.35;
