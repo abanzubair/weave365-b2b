@@ -188,22 +188,43 @@ export function Home({
     };
   }, []);
 
-  const bestsellers = useMemo(() =>
-    products
-      .filter((p) => p.isTopSeller)
-      .slice(0, 8)
-      .map(p => ({
-        product: p,
-        image: p.images[0] || fallbackHeroImage,
-        variant: p.variants[0]
-      })),
-    [products, fallbackHeroImage]
-  );
+  const bestsellers = useMemo(() => {
+    const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    const filtered = productsWithIndex.filter((p) => p.isTopSeller);
+    
+    filtered.sort((a, b) => {
+      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+      if (dateA !== dateB) {
+        return dateB - dateA;
+      }
+      return b._originalIndex - a._originalIndex;
+    });
+
+    return filtered.slice(0, 8).map(p => ({
+      product: p,
+      image: p.images[0] || fallbackHeroImage,
+      variant: p.variants[0]
+    }));
+  }, [products, fallbackHeroImage]);
 
   const arrivals = useMemo(() => {
-    const newProducts = products.filter(p => p.isNew);
-    const source = newProducts.length > 0 ? newProducts.slice(0, 8) : products.slice(0, 8);
-    return source.map(p => ({
+    const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    let filtered = productsWithIndex.filter(p => p.isNew);
+    if (filtered.length === 0) {
+      filtered = [...productsWithIndex];
+    }
+    
+    filtered.sort((a, b) => {
+      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
+      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
+      if (dateA !== dateB) {
+        return dateB - dateA;
+      }
+      return b._originalIndex - a._originalIndex;
+    });
+
+    return filtered.slice(0, 8).map(p => ({
       product: p,
       image: p.images[0] || fallbackHeroImage,
       variant: p.variants[0]
