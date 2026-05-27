@@ -459,55 +459,56 @@ button {
 }
 
 .feature-strip svg {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   color: #8C593B; /* Warm copper-bronze */
   filter: drop-shadow(0 2px 8px rgba(140, 89, 59, 0.05));
 }
 
 /* Filled WhatsApp icon needs slight scale-down to match Lucide stroke-icon visual weight */
 .feature-strip div.feature-item:nth-child(2) svg {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
 }
 
 .feature-strip span {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
-/* Line 1: Cormorant Garamond Fine Serif */
+/* Line 1 */
 .feature-strip strong:first-of-type {
   display: block;
-  font-family: var(--font-heading);
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  font-style: italic; /* Classic high-end look */
-  line-height: 1.25;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  font-style: normal;
+  line-height: 1.3;
   color: #26180F !important;
   text-transform: none !important;
-  letter-spacing: normal !important;
+  letter-spacing: 0.01em !important;
 }
 
-/* Line 2: Inter/Manrope Premium Sans-Serif sublabel */
+/* Line 2 */
 .feature-strip strong:last-of-type {
   display: block;
-  font-family: var(--font-body);
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.11em !important;
-  text-transform: uppercase !important;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
   line-height: 1.35;
   color: #8C593B !important;
-  opacity: 0.85;
+  opacity: 0.9;
   transition: color 0.3s ease;
 }
 
 .feature-strip div.feature-item:hover strong:last-of-type {
   color: #a36f4f !important;
 }
+
 
 .benefit-strip {
   width: min(1440px, calc(100% - var(--site-padding) * 2));
@@ -805,8 +806,8 @@ button {
   }
 
   .feature-strip svg {
-    width: 46px;
-    height: 46px;
+    width: 28px;
+    height: 28px;
   }
 
   .benefit-strip svg {
