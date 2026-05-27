@@ -519,6 +519,8 @@ export function Home({
         */}
       </section>
 
+      <FeatureStrip />
+
       {dealProducts.length > 0 && (
         <section className="deal-section" aria-labelledby="deal-heading">
           <div className="deal-copy">

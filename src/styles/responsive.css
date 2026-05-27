@@ -284,27 +284,31 @@
   /* Feature Strip */
   .feature-strip {
     width: calc(100% - 40px);
-    margin: 20px auto 0;
+    margin: 24px auto 0;
     grid-template-columns: repeat(2, 1fr);
-    padding: 14px;
-    gap: 12px;
+    padding: 18px 12px;
+    gap: 16px 8px;
+    border-radius: 20px;
   }
 
-  .feature-strip div {
-    border-right: 0;
-    padding: 0;
-    text-align: left;
-    align-items: flex-start;
-    gap: 9px;
+  .feature-strip div.feature-item {
+    border-right: 0 !important;
+    padding: 6px 4px !important;
+    text-align: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 
   .feature-strip svg {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
 
   .feature-strip strong {
-    font-size: 12px;
+    font-size: 11.5px !important;
     line-height: 1.25;
   }
 
