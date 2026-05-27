@@ -40,20 +40,90 @@ import {
   FileSpreadsheet,
   Phone,
   Copy,
+  Search,
 } from 'lucide-react';
 import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
+import { seoLandingPages } from '../data/seoLandingPages.js';
 import { formatMoney } from '../storefrontShared.jsx';
 import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
-import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, syncSheetsToSupabase } from '../productData.js';
+import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting, syncSheetsToSupabase } from '../productData.js';
 
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
   { key: 'follow_ups', label: 'Follow Ups' },
   { key: 'blog_posts', label: 'Blog Posts' },
+  { key: 'page_seo_settings', label: 'Page SEO Settings' },
 ];
+
+const pageSeoTableSql = `CREATE TABLE IF NOT EXISTS public.page_seo_settings (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  path text UNIQUE NOT NULL,
+  meta_title text NOT NULL,
+  meta_description text NOT NULL,
+  og_title text,
+  og_description text,
+  image_url text,
+  canonical_path text,
+  robots_index boolean DEFAULT true,
+  robots_follow boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.page_seo_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "page seo public read" ON public.page_seo_settings;
+CREATE POLICY "page seo public read" ON public.page_seo_settings FOR SELECT TO anon, authenticated USING (true);
+DROP POLICY IF EXISTS "page seo admin only" ON public.page_seo_settings;
+CREATE POLICY "page seo admin only" ON public.page_seo_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());`;
+
+const defaultSeoPageOptions = [
+  { path: '/', label: 'Home' },
+  { path: '/wholesale-catalogue', label: 'Wholesale Catalogue' },
+  { path: '/new-arrivals', label: 'New Arrivals' },
+  { path: '/about', label: 'About' },
+  { path: '/contact', label: 'Contact' },
+  { path: '/bulk-inquiry', label: 'Bulk Inquiry' },
+  { path: '/blog', label: 'Blog Listing' },
+  { path: '/wholesale-partner-program', label: 'Wholesale Partner Program' },
+  { path: '/trusted-partner-registration', label: 'Trusted Partner Registration' },
+  { path: '/vendor-partnership', label: 'Vendor Partnership' },
+  { path: '/shipping-delivery', label: 'Shipping Delivery' },
+  { path: '/returns-cancellation', label: 'Returns Cancellation' },
+  { path: '/privacy-security', label: 'Privacy Security' },
+  { path: '/terms-conditions', label: 'Terms Conditions' },
+  { path: '/disclaimer', label: 'Disclaimer' },
+  ...Object.values(seoLandingPages).map((page) => ({
+    path: `/${page.slug}`,
+    label: page.h1 || page.slug,
+  })),
+];
+
+function normalizeSeoPath(path) {
+  const cleaned = String(path || '/').trim();
+  if (!cleaned || cleaned === 'home') return '/';
+  const pathOnly = cleaned.split('?')[0];
+  const withSlash = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+  return withSlash.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+}
+
+function mapSeoRow(row = {}) {
+  return {
+    id: row.id,
+    path: normalizeSeoPath(row.path),
+    metaTitle: row.metaTitle || row.meta_title || '',
+    metaDescription: row.metaDescription || row.meta_description || '',
+    ogTitle: row.ogTitle || row.og_title || '',
+    ogDescription: row.ogDescription || row.og_description || '',
+    imageUrl: row.imageUrl || row.image_url || '',
+    canonicalPath: row.canonicalPath || row.canonical_path || '',
+    robotsIndex: row.robotsIndex ?? row.robots_index ?? true,
+    robotsFollow: row.robotsFollow ?? row.robots_follow ?? true,
+    updatedAt: row.updatedAt || row.updated_at,
+  };
+}
 
 const emptyAdminData = {
   profiles: [],
@@ -134,7 +204,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
   // Tab control
-  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'blogs' | 'partners'
+  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'seo' | 'blogs' | 'partners'
 
   // B2B Partner Onboarding sheets data
   const [partnerApps, setPartnerApps] = useState({ reviews: [], onboardings: [], loading: false, error: null });
@@ -759,6 +829,33 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [formImageBase64, setFormImageBase64] = useState('');
   const [formFaqs, setFormFaqs] = useState([]);
   const [isSubmittingBlog, setIsSubmittingBlog] = useState(false);
+  const [pageSeoId, setPageSeoId] = useState(null);
+  const [pageSeoPath, setPageSeoPath] = useState('/');
+  const [pageSeoMetaTitle, setPageSeoMetaTitle] = useState('');
+  const [pageSeoMetaDescription, setPageSeoMetaDescription] = useState('');
+  const [pageSeoOgTitle, setPageSeoOgTitle] = useState('');
+  const [pageSeoOgDescription, setPageSeoOgDescription] = useState('');
+  const [pageSeoImageUrl, setPageSeoImageUrl] = useState('');
+  const [pageSeoCanonicalPath, setPageSeoCanonicalPath] = useState('/');
+  const [pageSeoRobotsIndex, setPageSeoRobotsIndex] = useState(true);
+  const [pageSeoRobotsFollow, setPageSeoRobotsFollow] = useState(true);
+  const [isSubmittingPageSeo, setIsSubmittingPageSeo] = useState(false);
+
+  const pageSeoRows = useMemo(
+    () => (adminData.optional.page_seo_settings || []).map(mapSeoRow),
+    [adminData.optional.page_seo_settings],
+  );
+
+  const pageSeoOptions = useMemo(() => {
+    const options = new Map(defaultSeoPageOptions.map((item) => [normalizeSeoPath(item.path), item]));
+    pageSeoRows.forEach((row) => {
+      const normalized = normalizeSeoPath(row.path);
+      if (!options.has(normalized)) {
+        options.set(normalized, { path: normalized, label: normalized });
+      }
+    });
+    return Array.from(options.values());
+  }, [pageSeoRows]);
 
   // Form helpers
   function autoSlugify() {
@@ -826,6 +923,73 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setFormImageUrl('');
     setFormImageBase64('');
     setFormFaqs([]);
+  }
+
+  function resetPageSeoForm(nextPath = '/') {
+    const normalizedPath = normalizeSeoPath(nextPath);
+    setPageSeoId(null);
+    setPageSeoPath(normalizedPath);
+    setPageSeoMetaTitle('');
+    setPageSeoMetaDescription('');
+    setPageSeoOgTitle('');
+    setPageSeoOgDescription('');
+    setPageSeoImageUrl('');
+    setPageSeoCanonicalPath(normalizedPath);
+    setPageSeoRobotsIndex(true);
+    setPageSeoRobotsFollow(true);
+  }
+
+  function loadPageSeoForm(path) {
+    const normalizedPath = normalizeSeoPath(path);
+    const existing = pageSeoRows.find((row) => normalizeSeoPath(row.path) === normalizedPath);
+    if (!existing) {
+      resetPageSeoForm(normalizedPath);
+      return;
+    }
+
+    setPageSeoId(existing.id || null);
+    setPageSeoPath(existing.path);
+    setPageSeoMetaTitle(existing.metaTitle || '');
+    setPageSeoMetaDescription(existing.metaDescription || '');
+    setPageSeoOgTitle(existing.ogTitle || '');
+    setPageSeoOgDescription(existing.ogDescription || '');
+    setPageSeoImageUrl(existing.imageUrl || '');
+    setPageSeoCanonicalPath(existing.canonicalPath || existing.path);
+    setPageSeoRobotsIndex(existing.robotsIndex !== false);
+    setPageSeoRobotsFollow(existing.robotsFollow !== false);
+  }
+
+  async function handleSavePageSeo(e) {
+    e.preventDefault();
+    const normalizedPath = normalizeSeoPath(pageSeoPath);
+    if (!pageSeoMetaTitle.trim() || !pageSeoMetaDescription.trim()) {
+      alert('Meta title and meta description are required for this page.');
+      return;
+    }
+
+    setIsSubmittingPageSeo(true);
+    try {
+      const savedRow = await saveSupabasePageSeoSetting({
+        id: pageSeoId,
+        path: normalizedPath,
+        metaTitle: pageSeoMetaTitle.trim(),
+        metaDescription: pageSeoMetaDescription.trim(),
+        ogTitle: pageSeoOgTitle.trim(),
+        ogDescription: pageSeoOgDescription.trim(),
+        imageUrl: pageSeoImageUrl.trim(),
+        canonicalPath: pageSeoCanonicalPath.trim() || normalizedPath,
+        robotsIndex: pageSeoRobotsIndex,
+        robotsFollow: pageSeoRobotsFollow,
+      });
+      const saved = mapSeoRow(savedRow);
+      setPageSeoId(saved.id || null);
+      alert('Page SEO settings saved successfully!');
+      await loadAdminData();
+    } catch (err) {
+      alert('Failed to save page SEO settings: ' + err.message);
+    } finally {
+      setIsSubmittingPageSeo(false);
+    }
   }
 
   function handleEditPost(post) {
@@ -1401,7 +1565,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
       {/* Luxury Tabs Bar */}
       <div className="admin-tabs-bar">
-        <button 
+        <button
           type="button"
           onClick={() => setActiveTab('pipeline')}
           className={`admin-tab-btn ${activeTab === 'pipeline' ? 'active' : ''}`}
@@ -1416,6 +1580,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           <FileText size={18} strokeWidth={activeTab === 'blogs' ? 2.5 : 2} /> B2B Editorial Blog Manager
         </button>
         <button 
+          type="button"
+          onClick={() => setActiveTab('seo')}
+          className={`admin-tab-btn ${activeTab === 'seo' ? 'active' : ''}`}
+        >
+          <Search size={18} strokeWidth={activeTab === 'seo' ? 2.5 : 2} /> Page SEO Settings
+        </button>
+        <button
           type="button"
           onClick={() => setActiveTab('partners')}
           className={`admin-tab-btn ${activeTab === 'partners' ? 'active' : ''}`}
@@ -1929,7 +2100,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           </article>
 
           <div className="admin-dashboard-grid">
-            {optionalTables.filter(t => t.key !== 'inquiries' && t.key !== 'follow_ups' && t.key !== 'blog_posts').map((table) => {
+            {optionalTables.filter(t => !['inquiries', 'follow_ups', 'blog_posts', 'page_seo_settings'].includes(t.key)).map((table) => {
               const rows = adminData.optional[table.key] || [];
               const error = adminData.errors[table.key];
 
@@ -1973,6 +2144,279 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             </article>
           )}
         </>
+      ) : activeTab === 'seo' ? (
+        <div className="admin-blog-manager-tab">
+          {adminData.errors.page_seo_settings ? (
+            <article className="admin-blog-setup-alert">
+              <div className="admin-blog-setup-flex">
+                <div className="admin-blog-setup-icon-wrap">
+                  <AlertTriangle size={24} />
+                </div>
+                <div className="admin-blog-setup-content">
+                  <h3 className="admin-blog-setup-title">
+                    Supabase Page SEO Table Required
+                  </h3>
+                  <p className="admin-blog-setup-desc">
+                    Create the <strong>`page_seo_settings`</strong> table so page titles and descriptions can be managed from this admin panel and rendered by Next.js metadata.
+                  </p>
+                  <div className="admin-pos-relative">
+                    <pre className="admin-blog-setup-pre">{pageSeoTableSql}</pre>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(pageSeoTableSql);
+                        alert('SQL copied to clipboard!');
+                      }}
+                      className="admin-blog-setup-copy-btn"
+                    >
+                      Copy SQL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ) : (
+            <div className="admin-blog-setup-success">
+              <Check size={18} />
+              <small className="admin-blog-setup-success-text">
+                Supabase Connection Active: page metadata overrides are available to server-rendered Google crawlers.
+              </small>
+            </div>
+          )}
+
+          <div className="admin-editor-split-layout">
+            <article className="admin-panel admin-m0">
+              <div className="admin-panel-head admin-panel-head-border">
+                <span className="admin-editor-title">
+                  Page Meta Title and Description
+                </span>
+                <small>{pageSeoRows.length} saved overrides</small>
+              </div>
+
+              <form onSubmit={handleSavePageSeo} className="admin-editor-form">
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Choose Page</label>
+                  <select
+                    value={pageSeoPath}
+                    onChange={(e) => loadPageSeoForm(e.target.value)}
+                    className="admin-field-input"
+                  >
+                    {pageSeoOptions.map((page) => (
+                      <option key={page.path} value={page.path}>
+                        {page.label} ({page.path})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Custom URL Path</label>
+                  <input
+                    type="text"
+                    value={pageSeoPath}
+                    onChange={(e) => {
+                      const nextPath = normalizeSeoPath(e.target.value);
+                      setPageSeoPath(nextPath);
+                      if (!pageSeoCanonicalPath || pageSeoCanonicalPath === pageSeoPath) {
+                        setPageSeoCanonicalPath(nextPath);
+                      }
+                    }}
+                    placeholder="/about"
+                    className="admin-field-input"
+                  />
+                </div>
+
+                <div className="admin-seo-meta-section">
+                  <label className="admin-faq-title">Google SEO Meta Settings</label>
+
+                  <div className="admin-field-container">
+                    <div className="admin-flex-between">
+                      <label className="admin-field-label">Meta Title Tag *</label>
+                      <small className={pageSeoMetaTitle.length > 60 ? 'admin-seo-count-warn' : 'admin-doc-card-muted'}>
+                        {pageSeoMetaTitle.length}/60
+                      </small>
+                    </div>
+                    <input
+                      type="text"
+                      value={pageSeoMetaTitle}
+                      onChange={(e) => {
+                        setPageSeoMetaTitle(e.target.value);
+                        if (!pageSeoOgTitle || pageSeoOgTitle === pageSeoMetaTitle) {
+                          setPageSeoOgTitle(e.target.value);
+                        }
+                      }}
+                      placeholder="Wholesale Banarasi Sarees Online | Weave 365"
+                      required
+                      className="admin-seo-input"
+                    />
+                  </div>
+
+                  <div className="admin-field-container">
+                    <div className="admin-flex-between">
+                      <label className="admin-field-label">Meta Description *</label>
+                      <small className={pageSeoMetaDescription.length > 155 ? 'admin-seo-count-warn' : 'admin-doc-card-muted'}>
+                        {pageSeoMetaDescription.length}/155
+                      </small>
+                    </div>
+                    <textarea
+                      value={pageSeoMetaDescription}
+                      onChange={(e) => {
+                        setPageSeoMetaDescription(e.target.value);
+                        if (!pageSeoOgDescription || pageSeoOgDescription === pageSeoMetaDescription) {
+                          setPageSeoOgDescription(e.target.value);
+                        }
+                      }}
+                      placeholder="Short snippet shown on Google search results."
+                      rows="3"
+                      required
+                      className="admin-seo-textarea"
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-grid-2col">
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Open Graph Title</label>
+                    <input
+                      type="text"
+                      value={pageSeoOgTitle}
+                      onChange={(e) => setPageSeoOgTitle(e.target.value)}
+                      placeholder="Defaults to meta title"
+                      className="admin-field-input"
+                    />
+                  </div>
+                  <div className="admin-field-container">
+                    <label className="admin-field-label">Canonical Path</label>
+                    <input
+                      type="text"
+                      value={pageSeoCanonicalPath}
+                      onChange={(e) => setPageSeoCanonicalPath(normalizeSeoPath(e.target.value))}
+                      placeholder="/about"
+                      className="admin-field-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Open Graph Description</label>
+                  <textarea
+                    value={pageSeoOgDescription}
+                    onChange={(e) => setPageSeoOgDescription(e.target.value)}
+                    placeholder="Defaults to meta description"
+                    rows="2"
+                    className="admin-field-textarea"
+                  />
+                </div>
+
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Social Preview Image URL</label>
+                  <input
+                    type="text"
+                    value={pageSeoImageUrl}
+                    onChange={(e) => setPageSeoImageUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="admin-field-input"
+                  />
+                </div>
+
+                <div className="admin-robots-row">
+                  <label className="admin-radio-label">
+                    <input
+                      type="checkbox"
+                      checked={pageSeoRobotsIndex}
+                      onChange={(e) => setPageSeoRobotsIndex(e.target.checked)}
+                    />
+                    Index page
+                  </label>
+                  <label className="admin-radio-label">
+                    <input
+                      type="checkbox"
+                      checked={pageSeoRobotsFollow}
+                      onChange={(e) => setPageSeoRobotsFollow(e.target.checked)}
+                    />
+                    Follow links
+                  </label>
+                </div>
+
+                <div className="admin-form-actions">
+                  <button
+                    type="button"
+                    onClick={() => resetPageSeoForm(pageSeoPath)}
+                    className="admin-btn-cancel"
+                  >
+                    Clear Form
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingPageSeo || Boolean(adminData.errors.page_seo_settings)}
+                    className="admin-btn-publish"
+                  >
+                    {isSubmittingPageSeo ? (
+                      <>
+                        <RefreshCw size={16} className="spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={16} /> Save Page SEO
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </article>
+
+            <aside className="admin-editor-sticky-aside">
+              <article className="admin-panel admin-m0">
+                <div className="admin-panel-head">
+                  <span>Google Search SERP Inspector</span>
+                  <small>Real-time Google rendering</small>
+                </div>
+                <div className="admin-p20">
+                  <div className="admin-serp-preview">
+                    <div className="admin-serp-url-row">
+                      <span>https://www.weave365.in</span>
+                      <span className="admin-serp-slug">
+                        {normalizeSeoPath(pageSeoCanonicalPath || pageSeoPath) === '/' ? '' : normalizeSeoPath(pageSeoCanonicalPath || pageSeoPath).replace(/\//g, ' > ')}
+                      </span>
+                    </div>
+                    <h3 className="admin-serp-title">
+                      {pageSeoMetaTitle || 'Enter a page title...'}
+                    </h3>
+                    <p className="admin-serp-desc">
+                      <span className="admin-serp-date">
+                        {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} -
+                      </span>
+                      {pageSeoMetaDescription || 'Start typing a page description to preview the Google search snippet here.'}
+                    </p>
+                  </div>
+                </div>
+              </article>
+
+              <article className="admin-panel admin-m0">
+                <div className="admin-panel-head">
+                  <span>Saved Page Overrides</span>
+                  <small>{pageSeoRows.length} rows</small>
+                </div>
+                <div className="admin-seo-page-list">
+                  {pageSeoRows.map((row) => (
+                    <button
+                      type="button"
+                      key={row.path}
+                      onClick={() => loadPageSeoForm(row.path)}
+                      className="admin-seo-page-row"
+                    >
+                      <strong>{row.path}</strong>
+                      <span>{row.metaTitle}</span>
+                    </button>
+                  ))}
+                  {pageSeoRows.length === 0 && (
+                    <p className="admin-muted admin-p20">No saved page metadata overrides yet.</p>
+                  )}
+                </div>
+              </article>
+            </aside>
+          </div>
+        </div>
       ) : activeTab === 'blogs' ? (
         /* ==================== B2B BLOG MANAGER TAB ==================== */
         <div className="admin-blog-manager-tab">

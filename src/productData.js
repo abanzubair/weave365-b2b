@@ -765,6 +765,76 @@ export async function fetchSupabaseBlogPosts() {
   }
 }
 
+function normalizeSeoPath(path) {
+  const cleaned = String(path || '/').trim();
+  if (!cleaned || cleaned === 'home') return '/';
+  const withSlash = cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
+  return withSlash.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+}
+
+export async function fetchSupabasePageSeoSettings() {
+  if (!isSupabaseConfigured) return [];
+  try {
+    const { data, error } = await supabase
+      .from('page_seo_settings')
+      .select('*')
+      .order('path', { ascending: true });
+    if (error) {
+      console.warn('Unable to select from page_seo_settings:', error.message);
+      return [];
+    }
+    return (data || []).map((row) => ({
+      id: row.id,
+      path: normalizeSeoPath(row.path),
+      metaTitle: row.meta_title || '',
+      metaDescription: row.meta_description || '',
+      ogTitle: row.og_title || '',
+      ogDescription: row.og_description || '',
+      imageUrl: row.image_url || '',
+      canonicalPath: row.canonical_path ? normalizeSeoPath(row.canonical_path) : '',
+      robotsIndex: row.robots_index !== false,
+      robotsFollow: row.robots_follow !== false,
+      updatedAt: row.updated_at,
+    }));
+  } catch (err) {
+    console.error('Error fetching Supabase page SEO settings:', err);
+    return [];
+  }
+}
+
+export async function saveSupabasePageSeoSetting(setting) {
+  if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
+
+  const now = new Date().toISOString();
+  const row = {
+    path: normalizeSeoPath(setting.path),
+    meta_title: setting.metaTitle,
+    meta_description: setting.metaDescription,
+    og_title: setting.ogTitle || setting.metaTitle,
+    og_description: setting.ogDescription || setting.metaDescription,
+    image_url: setting.imageUrl || null,
+    canonical_path: setting.canonicalPath ? normalizeSeoPath(setting.canonicalPath) : normalizeSeoPath(setting.path),
+    robots_index: setting.robotsIndex !== false,
+    robots_follow: setting.robotsFollow !== false,
+    updated_at: now,
+  };
+
+  if (setting.id) {
+    row.id = setting.id;
+  } else {
+    row.created_at = now;
+  }
+
+  const { data, error } = await supabase
+    .from('page_seo_settings')
+    .upsert(row, { onConflict: 'path' })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function saveSupabaseBlogPost(post) {
   if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
   

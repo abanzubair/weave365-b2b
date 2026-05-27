@@ -832,6 +832,60 @@
   font-family: var(--font-body, sans-serif);
 }
 
+.admin-seo-count-warn {
+  color: #c2410c;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.admin-robots-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.admin-seo-page-list {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.admin-seo-page-row {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  font-family: var(--font-body, sans-serif);
+  transition: all 0.2s;
+}
+
+.admin-seo-page-row:hover {
+  border-color: rgba(183, 134, 70, 0.45);
+  background: #fffaf2;
+}
+
+.admin-seo-page-row strong {
+  color: var(--blog-gold-dark);
+  font-size: 13px;
+}
+
+.admin-seo-page-row span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .admin-form-actions {
   display: flex;
   gap: 16px;

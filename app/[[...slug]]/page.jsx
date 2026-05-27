@@ -1,6 +1,6 @@
 import App from '../../src/App.jsx';
 import { storeConfig } from '../../src/config.js';
-import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts } from '../../src/productData.js';
+import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 
@@ -56,11 +56,28 @@ async function getInitialData() {
   });
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', newestProductImage = null) {
+function normalizeSeoPath(path) {
+  const cleaned = String(path || '/').trim();
+  if (!cleaned || cleaned === 'home') return '/';
+  const pathOnly = cleaned.split('?')[0];
+  const withSlash = pathOnly.startsWith('/') ? pathOnly : `/${pathOnly}`;
+  return withSlash.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+}
+
+function seoOverrideForPath(pageSeoSettings, canonicalPath) {
+  const normalized = normalizeSeoPath(canonicalPath);
+  return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === normalized);
+}
+
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', newestProductImage = null, pageSeoSettings = []) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
-    const url = `${siteUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
+    const override = seoOverrideForPath(pageSeoSettings, canonicalPath);
+    const finalTitle = override?.metaTitle || title;
+    const finalDescription = override?.metaDescription || description;
+    const finalCanonicalPath = override?.canonicalPath || canonicalPath;
+    const url = `${siteUrl}${finalCanonicalPath === '/' ? '' : finalCanonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
-    let finalImageUrl = imageUrl || defaultImage;
+    let finalImageUrl = override?.imageUrl || imageUrl || defaultImage;
 
     // Ensure image URL is absolute
     if (finalImageUrl && finalImageUrl.startsWith('/')) {
@@ -80,24 +97,32 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     }
 
     return {
-      title,
-      description,
+      title: finalTitle,
+      description: finalDescription,
       alternates: { canonical: url },
       openGraph: {
-        title,
-        description,
+        title: override?.ogTitle || finalTitle,
+        description: override?.ogDescription || finalDescription,
         type: extraOg.type || 'website',
         url,
         siteName: storeConfig.name,
-        images: [{ url: finalImageUrl, alt: title, width: 1200, height: 630 }],
+        images: [{ url: finalImageUrl, alt: finalTitle, width: 1200, height: 630 }],
         ...extraOg,
       },
       twitter: {
         card: 'summary_large_image',
-        title,
-        description,
+        title: override?.ogTitle || finalTitle,
+        description: override?.ogDescription || finalDescription,
         images: [finalImageUrl],
       },
+      robots: override ? {
+        index: override.robotsIndex !== false,
+        follow: override.robotsFollow !== false,
+        googleBot: {
+          index: override.robotsIndex !== false,
+          follow: override.robotsFollow !== false,
+        },
+      } : undefined,
     };
   };
 
@@ -345,6 +370,7 @@ export async function generateMetadata({ params, searchParams }) {
   let product = null;
   let dbPosts = [];
   let newestProductImage = null;
+  const pageSeoSettings = await fetchSupabasePageSeoSettings();
 
   if ((route === 'product' && productId) || (route === 'blog' && blogPostSlug) || route === 'new-arrivals') {
     const data = await getInitialData();
@@ -388,7 +414,7 @@ export async function generateMetadata({ params, searchParams }) {
     }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, newestProductImage);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, newestProductImage, pageSeoSettings);
 }
 
 export default async function CatchAllPage() {

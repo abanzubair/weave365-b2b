@@ -114,6 +114,21 @@ create table if not exists public.admin_notes (
   created_at timestamptz default now()
 );
 
+create table if not exists public.page_seo_settings (
+  id uuid primary key default gen_random_uuid(),
+  path text not null unique,
+  meta_title text not null,
+  meta_description text not null,
+  og_title text,
+  og_description text,
+  image_url text,
+  canonical_path text,
+  robots_index boolean default true,
+  robots_follow boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
 update public.profiles
 set buyer_type = 'wholesale'
 where buyer_type is null or buyer_type not in ('wholesale', 'reseller');
@@ -225,6 +240,12 @@ before update on public.follow_ups
 for each row
 execute function public.touch_updated_at();
 
+drop trigger if exists touch_page_seo_settings_updated_at on public.page_seo_settings;
+create trigger touch_page_seo_settings_updated_at
+before update on public.page_seo_settings
+for each row
+execute function public.touch_updated_at();
+
 create index if not exists profiles_email_idx on public.profiles (lower(email));
 create index if not exists profiles_approval_status_idx on public.profiles (approval_status);
 create index if not exists profiles_price_group_idx on public.profiles (price_group);
@@ -235,6 +256,7 @@ create index if not exists inquiries_status_idx on public.inquiries (status);
 create index if not exists saved_customer_orders_user_id_idx on public.saved_customer_orders (user_id);
 create index if not exists follow_ups_buyer_id_idx on public.follow_ups (buyer_id);
 create index if not exists admin_notes_buyer_id_idx on public.admin_notes (buyer_id);
+create index if not exists page_seo_settings_path_idx on public.page_seo_settings (path);
 
 alter table public.profiles enable row level security;
 alter table public.cart_items enable row level security;
@@ -243,6 +265,7 @@ alter table public.inquiries enable row level security;
 alter table public.saved_customer_orders enable row level security;
 alter table public.follow_ups enable row level security;
 alter table public.admin_notes enable row level security;
+alter table public.page_seo_settings enable row level security;
 
 drop policy if exists "profiles access policy" on public.profiles;
 drop policy if exists "profiles select own or admin" on public.profiles;
@@ -330,6 +353,19 @@ create policy "follow ups admin only"
 drop policy if exists "admin notes admin only" on public.admin_notes;
 create policy "admin notes admin only"
   on public.admin_notes for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "page seo public read" on public.page_seo_settings;
+create policy "page seo public read"
+  on public.page_seo_settings for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "page seo admin only" on public.page_seo_settings;
+create policy "page seo admin only"
+  on public.page_seo_settings for all
   to authenticated
   using (public.is_admin())
   with check (public.is_admin());
