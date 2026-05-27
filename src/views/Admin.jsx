@@ -79,25 +79,124 @@ CREATE POLICY "page seo public read" ON public.page_seo_settings FOR SELECT TO a
 DROP POLICY IF EXISTS "page seo admin only" ON public.page_seo_settings;
 CREATE POLICY "page seo admin only" ON public.page_seo_settings FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());`;
 
+const staticSeoDefaults = [
+  {
+    path: '/',
+    label: 'Home',
+    metaTitle: 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+    metaDescription: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
+  },
+  {
+    path: '/wholesale-catalogue',
+    label: 'Wholesale Catalogue',
+    metaTitle: 'Wholesale Saree & Suit Catalogue | Weave 365',
+    metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
+  },
+  {
+    path: '/new-arrivals',
+    label: 'New Arrivals',
+    metaTitle: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
+    metaDescription: 'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
+  },
+  {
+    path: '/about',
+    label: 'About',
+    metaTitle: 'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',
+    metaDescription: 'Discover Weave 365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
+  },
+  {
+    path: '/contact',
+    label: 'Contact',
+    metaTitle: 'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
+    metaDescription: 'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
+  },
+  {
+    path: '/bulk-inquiry',
+    label: 'Bulk Inquiry',
+    metaTitle: 'Banarasi Saree Wholesale Bulk Inquiry & Sourcing | Weave 365',
+    metaDescription: 'Submit a bulk inquiry for premium Banarasi sarees and suits. We curate custom catalogs for boutiques, retailers, and exporters with flexible MOQ.',
+  },
+  {
+    path: '/blog',
+    label: 'Blog Listing',
+    metaTitle: 'Wholesale Banarasi Saree Sourcing & Reselling Blog | Weave 365',
+    metaDescription: 'Expert business guides, boutique scaling strategies, saree reselling tips, and fabric guides for wholesale Banarasi sarees and suits direct from Varanasi weavers.',
+  },
+  {
+    path: '/wholesale-partner-program',
+    label: 'Wholesale Partner Program',
+    metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
+    metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
+  },
+  {
+    path: '/trusted-partner-registration',
+    label: 'Trusted Partner Registration',
+    metaTitle: 'Trusted Partner Registration | Weave 365',
+    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.',
+  },
+  {
+    path: '/vendor-partnership',
+    label: 'Vendor Partnership',
+    metaTitle: 'Vendor Partnership | Weave 365',
+    metaDescription: 'List your products with Weave 365 and reach active wholesale saree buyers across India.',
+  },
+  {
+    path: '/shipping-delivery',
+    label: 'Shipping Delivery',
+    metaTitle: 'Wholesale Saree Shipping & Worldwide Logistics | Weave 365',
+    metaDescription: 'Direct Varanasi warehouse dispatch, express domestic delivery, international courier timelines (US, UK, UAE), and bulk freight cargo configurations.',
+  },
+  {
+    path: '/returns-cancellation',
+    label: 'Returns Cancellation',
+    metaTitle: 'B2B Saree Returns & Cancellation Policies | Weave 365',
+    metaDescription: 'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
+  },
+  {
+    path: '/privacy-security',
+    label: 'Privacy Security',
+    metaTitle: 'Data Privacy, GST Security & Transaction Safety | Weave 365',
+    metaDescription: 'How we secure your wholesale trade records, verify business profiles, protect GST numbers, and encrypt commercial transactions with top payment gateways.',
+  },
+  {
+    path: '/terms-conditions',
+    label: 'Terms Conditions',
+    metaTitle: 'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
+    metaDescription: 'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
+  },
+  {
+    path: '/disclaimer',
+    label: 'Disclaimer',
+    metaTitle: 'Product Disclaimer & Heritage Weave Variations | Weave 365',
+    metaDescription: 'Understand the handwoven integrity, color calibration, and textile variations of our premium Varanasi silk sarees. Essential reading for wholesale buyers.',
+  },
+  {
+    path: '/early-access',
+    label: 'Early Access',
+    metaTitle: 'Request Early Access | Weave 365 Wholesale Banarasi Sarees',
+    metaDescription: 'Get early access to our wholesale Banarasi saree new arrivals. Verified boutique owners, retailers, and resellers can join our premium updates.',
+  },
+  {
+    path: '/sourcing-partners',
+    label: 'Sourcing Partners',
+    metaTitle: 'Sourcing Partners for Banarasi Sarees & Suits | Weave 365',
+    metaDescription: 'Become a Banarasi saree and suit sourcing partner with Weave 365. Coordinate weavers, MOQ, wholesale pricing, catalog support, quality checks, stock updates, and dispatch.',
+  },
+  {
+    path: '/white-label-brands',
+    label: 'White Label Brands',
+    metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
+    metaDescription: 'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
+  },
+];
+
 const defaultSeoPageOptions = [
-  { path: '/', label: 'Home' },
-  { path: '/wholesale-catalogue', label: 'Wholesale Catalogue' },
-  { path: '/new-arrivals', label: 'New Arrivals' },
-  { path: '/about', label: 'About' },
-  { path: '/contact', label: 'Contact' },
-  { path: '/bulk-inquiry', label: 'Bulk Inquiry' },
-  { path: '/blog', label: 'Blog Listing' },
-  { path: '/wholesale-partner-program', label: 'Wholesale Partner Program' },
-  { path: '/trusted-partner-registration', label: 'Trusted Partner Registration' },
-  { path: '/vendor-partnership', label: 'Vendor Partnership' },
-  { path: '/shipping-delivery', label: 'Shipping Delivery' },
-  { path: '/returns-cancellation', label: 'Returns Cancellation' },
-  { path: '/privacy-security', label: 'Privacy Security' },
-  { path: '/terms-conditions', label: 'Terms Conditions' },
-  { path: '/disclaimer', label: 'Disclaimer' },
+  ...staticSeoDefaults,
   ...Object.values(seoLandingPages).map((page) => ({
     path: `/${page.slug}`,
     label: page.h1 || page.slug,
+    metaTitle: page.metaTitle,
+    metaDescription: page.metaDescription,
   })),
 ];
 
@@ -856,6 +955,19 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     });
     return Array.from(options.values());
   }, [pageSeoRows]);
+  const selectedDefaultSeo = useMemo(() => {
+    const normalized = normalizeSeoPath(pageSeoPath);
+    return pageSeoOptions.find((page) => normalizeSeoPath(page.path) === normalized) || null;
+  }, [pageSeoOptions, pageSeoPath]);
+  const selectedSavedSeo = useMemo(() => {
+    const normalized = normalizeSeoPath(pageSeoPath);
+    return pageSeoRows.find((row) => normalizeSeoPath(row.path) === normalized) || null;
+  }, [pageSeoRows, pageSeoPath]);
+  const currentSeoMeta = useMemo(() => ({
+    title: selectedSavedSeo?.metaTitle || selectedDefaultSeo?.metaTitle || '',
+    description: selectedSavedSeo?.metaDescription || selectedDefaultSeo?.metaDescription || '',
+    source: selectedSavedSeo ? 'Supabase override' : selectedDefaultSeo?.metaTitle ? 'Code default' : 'Not found',
+  }), [selectedDefaultSeo, selectedSavedSeo]);
 
   // Form helpers
   function autoSlugify() {
@@ -2224,6 +2336,45 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     placeholder="/about"
                     className="admin-field-input"
                   />
+                </div>
+
+                <div className="admin-current-meta-box">
+                  <div className="admin-current-meta-head">
+                    <div>
+                      <span className="admin-current-meta-kicker">Current Meta</span>
+                      <strong>{currentSeoMeta.source}</strong>
+                    </div>
+                    {(currentSeoMeta.title || currentSeoMeta.description) && (
+                      <button
+                        type="button"
+                        className="admin-current-meta-copy"
+                        onClick={() => {
+                          setPageSeoMetaTitle(currentSeoMeta.title);
+                          setPageSeoMetaDescription(currentSeoMeta.description);
+                          if (!pageSeoOgTitle) setPageSeoOgTitle(currentSeoMeta.title);
+                          if (!pageSeoOgDescription) setPageSeoOgDescription(currentSeoMeta.description);
+                        }}
+                      >
+                        <Copy size={13} /> Use Values
+                      </button>
+                    )}
+                  </div>
+                  {currentSeoMeta.title || currentSeoMeta.description ? (
+                    <div className="admin-current-meta-grid">
+                      <div>
+                        <small>Title</small>
+                        <p>{currentSeoMeta.title}</p>
+                      </div>
+                      <div>
+                        <small>Description</small>
+                        <p>{currentSeoMeta.description}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="admin-current-meta-empty">
+                      No existing metadata was found for this custom path yet.
+                    </p>
+                  )}
                 </div>
 
                 <div className="admin-seo-meta-section">
