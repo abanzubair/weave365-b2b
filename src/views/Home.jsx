@@ -5,7 +5,7 @@
  * and search engine optimized text content (Varanasi direct weaver heritage).
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin } from 'lucide-react';
+import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin, Layers } from 'lucide-react';
 import { fallbackProductImage, expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
@@ -24,6 +24,7 @@ import weaverImage from '../../assets/artisan_at_loom_premium.webp';
 import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { Calendar, Clock } from 'lucide-react';
+import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
@@ -370,24 +371,24 @@ export function Home({
 
                 <div className="premium-hero-features">
                   <div className="premium-feature">
-                    <Grid size={24} strokeWidth={1.5} />
+                    <Layers size={24} strokeWidth={1.5} />
                     <div className="premium-feature-text">
-                      <strong>Premium Quality</strong>
-                      <span>Finest fabrics and<br />authentic craftsmanship.</span>
+                      <strong>White Label</strong>
+                      <span>Share catalogues without<br />our branding.</span>
                     </div>
                   </div>
                   <div className="premium-feature">
-                    <Tag size={24} strokeWidth={1.5} />
+                    <Users size={24} strokeWidth={1.5} />
                     <div className="premium-feature-text">
-                      <strong>Wholesale Prices</strong>
-                      <span>Competitive pricing<br />for your business.</span>
+                      <strong>Wholesale Ready</strong>
+                      <span>Made for resellers, boutiques,<br />and exporters.</span>
                     </div>
                   </div>
                   <div className="premium-feature">
-                    <Truck size={24} strokeWidth={1.5} />
+                    <WhatsappIcon size={24} />
                     <div className="premium-feature-text">
-                      <strong>Reliable Supply</strong>
-                      <span>Timely delivery & bulk<br />order support.</span>
+                      <strong>WhatsApp Sharing</strong>
+                      <span>Easily share catalogues<br />with customers.</span>
                     </div>
                   </div>
                 </div>
