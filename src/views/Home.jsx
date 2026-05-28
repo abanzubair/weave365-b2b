@@ -12,7 +12,7 @@ import { StateMessage } from '../components/StateMessage.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { FeatureStrip, BenefitStrip, Stat } from '../components/Strips.jsx';
+import { BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import newBanner1 from '../../assets/newBanner1.webp';
@@ -518,8 +518,6 @@ export function Home({
         </div>
         */}
       </section>
-
-      <FeatureStrip />
 
       {dealProducts.length > 0 && (
         <section className="deal-section" aria-labelledby="deal-heading">

@@ -281,50 +281,6 @@
     object-position: center;
   }
 
-  /* Feature Strip */
-  .feature-strip {
-    width: calc(100% - 40px);
-    margin: 24px auto 0;
-    grid-template-columns: repeat(2, 1fr);
-    padding: 18px 12px;
-    gap: 16px 8px;
-    border-radius: 20px;
-  }
-
-  .feature-strip div.feature-item {
-    border-right: 0 !important;
-    padding: 6px 4px !important;
-    text-align: center !important;
-    align-items: center !important;
-    justify-content: center !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
-
-  .feature-strip svg {
-    width: 30px;
-    height: 30px;
-  }
-
-  .feature-strip strong {
-    font-family: 'Manrope', sans-serif !important;
-    font-size: 13.5px !important;
-    font-style: normal !important;
-    font-weight: 600 !important;
-    line-height: 1.35;
-    color: #26180F !important;
-    letter-spacing: 0.01em !important;
-    text-transform: none !important;
-  }
-
-  .feature-strip span {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-  }
-
   /* Deal Section */
   .deal-section {
     width: calc(100% - 40px);
@@ -1078,12 +1034,6 @@
     --site-padding: 16px;
   }
 
-  .feature-strip {
-    grid-template-columns: 1fr;
-    /* Stack features to avoid narrow columns */
-    gap: 16px;
-  }
-
   .section-title h2 {
     font-size: 28px !important;
     /* Smaller titles to fit viewport */
@@ -1095,16 +1045,6 @@
 
   .hero h1 {
     font-size: 32px !important;
-  }
-
-  .feature-strip strong {
-    overflow-wrap: break-word;
-    line-height: 1.2;
-  }
-
-  .feature-strip span {
-    overflow-wrap: break-word;
-    line-height: 1.4;
   }
 }
 

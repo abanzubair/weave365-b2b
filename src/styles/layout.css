@@ -127,7 +127,6 @@
 .main-nav button,
 .main-nav a,
 .login-link,
-.feature-strip div,
 .benefit-strip div,
 .reseller-band li,
 .text-button,
@@ -140,7 +139,6 @@
 .top-bar svg { color: var(--brown-800) !important; }
 
 .top-bar svg,
-.feature-strip svg,
 .benefit-strip svg,
 .stats-panel svg,
 .reseller-band svg {

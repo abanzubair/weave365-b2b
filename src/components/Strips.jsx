@@ -1,29 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Tag, HeartHandshake, Sparkles, BadgeCheck, Globe, PackageCheck, ShieldCheck } from 'lucide-react';
-
-const WhatsAppIcon = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={props.strokeWidth || 2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={props.className}
-  >
-    <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" />
-    <path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" />
-  </svg>
-);
-
-const featureStripItems = [
-  { icon: Tag, line1: 'White Label', line2: 'Catalogue' },
-  { icon: WhatsAppIcon, line1: 'Easy Sharing', line2: 'on WhatsApp' },
-  { icon: HeartHandshake, line1: 'Reseller', line2: 'Friendly' },
-  { icon: Sparkles, line1: 'Weekly New', line2: 'Arrivals' },
-  { icon: BadgeCheck, line1: 'Trusted Quality', line2: 'Assurance' },
-  { icon: Globe, line1: 'Worldwide', line2: 'Shipping' },
-];
+import { Tag, HeartHandshake, PackageCheck, ShieldCheck } from 'lucide-react';
 
 const benefitStripItems = [
   { icon: PackageCheck, title: '1000+ Designs Available', copy: 'Wide catalog depth for every market' },
@@ -31,22 +7,6 @@ const benefitStripItems = [
   { icon: Tag, title: '10+ Years in Banaras Network', copy: 'Strong sourcing relationships and local reach' },
   { icon: HeartHandshake, title: '95% Repeat Buyer Rate', copy: 'Reliable products, pricing, and dispatch' },
 ];
-
-export function FeatureStrip() {
-  return (
-    <section className="feature-strip">
-      {featureStripItems.map(({ icon: Icon, line1, line2 }, idx) => (
-        <div key={idx} className="feature-item">
-          <Icon strokeWidth={1.5} />
-          <span>
-            <strong>{line1}</strong>
-            <strong>{line2}</strong>
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
 
 export function BenefitStrip() {
   return (
