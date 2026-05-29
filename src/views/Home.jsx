@@ -15,9 +15,6 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
-import newBanner1 from '../../assets/newBanner1.webp';
-import newBanner1Mobile from '../../assets/newBanner1Mobile.webp';
-import newBanner2 from '../../assets/newBanner2.webp';
 import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
 import brandCollabImage from '../../assets/brand_collaboration.webp';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
@@ -325,9 +322,9 @@ export function Home({
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
           <section className="premium-hero">
             <picture className="premium-hero-bg-picture">
-              <source media="(max-width: 820px)" srcSet={assetSrc(newBanner1Mobile)} />
+              <source media="(max-width: 820px)" srcSet="https://images.weave365.in/assets/banner/hero1m.webp" />
               <img
-                src={assetSrc(newBanner1)}
+                src="https://images.weave365.in/assets/banner/hero1.webp"
                 alt="Wholesale Banarasi Sarees and Suits Weave 365"
                 className="premium-hero-bg-img"
                 fetchPriority="high"
