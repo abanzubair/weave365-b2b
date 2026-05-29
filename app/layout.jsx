@@ -128,7 +128,7 @@ export const metadata = {
     },
   },
   icons: {
-    icon: '/favicon.svg',
+    icon: 'https://images.weave365.in/Assets/Banner/favicon.svg',
   },
 };
 
