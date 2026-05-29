@@ -276,6 +276,33 @@ function normalizeCsvHeader(header, index) {
   return trimmed || `__empty_${index}`;
 }
 
+function readCsvValue(row, ...keys) {
+  for (const key of keys) {
+    const value = String(row[key] || '').trim();
+    if (value) return value;
+  }
+  return '';
+}
+
+function normalizeHeroType(rawType, imageName) {
+  const type = String(rawType || '').trim().toLowerCase();
+  const name = String(imageName || '').trim().toLowerCase();
+
+  if (type === 'desktop' || type === 'hero desktop' || type === 'banner desktop') {
+    return 'banner';
+  }
+
+  if (type === 'mobile' || type === 'hero mobile' || type === 'banner mobile') {
+    return 'banner mobile';
+  }
+
+  if ((type === 'category' || type === 'categories') && name) {
+    return name;
+  }
+
+  return type || 'banner';
+}
+
 function parseCode(code = '', preCode = '', color = '') {
   const cleanCode = String(code || '').replace(/\s+/g, '');
   const cleanPreCode = String(preCode || '').replace(/\s+/g, '');
@@ -635,19 +662,34 @@ export async function fetchHeroData() {
     });
 
     return parsed.data.map((row) => {
+      const imageName = readCsvValue(row, 'Image Name', 'Name');
+      const type = normalizeHeroType(readCsvValue(row, 'Type'), imageName);
+
       return {
-        image: driveImageUrl(row['Image URL']),
-        video: driveVideoUrl(row['Video URL']),
-        title: row['Title'] || '',
-        subtitle: row['Subtitle'] || '',
-        buttonText: row['Button Text'] || '',
-        buttonLink: row['Button Link'] || '',
-        type: (row['Type'] || 'banner').toLowerCase(),
-        headingColor: row['Heading Color'] || '',
-        subheadingColor: row['Subheading Color'] || '',
-        button1Color: row['Button 1 Color'] || row['Button Color'] || '',
-        button2Color: row['Button 2 Color'] || '',
-        headerColor: row['Header Color'] || '',
+        imageName,
+        image: driveImageUrl(readCsvValue(row, 'Image URL', 'Image')),
+        video: driveVideoUrl(readCsvValue(row, 'Video URL', 'Video')),
+        title: readCsvValue(row, 'Title', 'Heading'),
+        subtitle: readCsvValue(row, 'Subtitle', 'Subheading'),
+        buttonText: readCsvValue(row, 'Button1 Text', 'Button 1 Text', 'Button Text'),
+        buttonLink: readCsvValue(row, 'Button1 Link', 'Button 1 Link', 'Button Link'),
+        button2Text: readCsvValue(row, 'Button2 Text', 'Button 2 Text'),
+        button2Link: readCsvValue(row, 'Button2 Link', 'Button 2 Link'),
+        type,
+        headingColor: readCsvValue(row, 'Title Color', 'Heading Color'),
+        subheadingColor: readCsvValue(row, 'Subtitle Color', 'Subheading Color'),
+        button1Color: readCsvValue(row, 'Button1 Color', 'Button 1 Color', 'Button Color'),
+        button2Color: readCsvValue(row, 'Button2 Color', 'Button 2 Color'),
+        headerColor: readCsvValue(row, 'Header Color'),
+        accentColor: readCsvValue(row, 'Accent Color'),
+        rightText: readCsvValue(row, 'Right Text', 'Sidebar Text'),
+        rightTextColor: readCsvValue(row, 'Right Text Color', 'Sidebar Text Color'),
+        feature1: readCsvValue(row, 'Feature 1', 'Feature1'),
+        feature2: readCsvValue(row, 'Feature 2', 'Feature2'),
+        feature3: readCsvValue(row, 'Feature 3', 'Feature3'),
+        imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
+        overlayColor: readCsvValue(row, 'Overlay Color'),
+        overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
       };
     }).filter(hero => hero.image || hero.video);
   } catch (error) {

@@ -25,6 +25,82 @@ import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
+const defaultHero = {
+  image: 'https://images.weave365.in/assets/banner/hero1.webp',
+  mobileImage: 'https://images.weave365.in/assets/banner/hero1m.webp',
+  title: 'Timeless Weaves\nEndless Possibilities',
+  subtitle: 'Banarasi Sarees & Suits for your business,\ncrafted for every story.',
+  buttonText: 'Explore Collections',
+  buttonLink: 'wholesale-catalogue',
+  button2Text: 'Request Catalog',
+  button2Link: 'bulk-inquiry',
+  rightText: "B2B\nSAREE\nCOLLECTION\n'26",
+};
+
+const defaultHeroFeatures = [
+  {
+    title: 'White Label',
+    text: 'Share catalogues without\nour branding.',
+  },
+  {
+    title: 'Wholesale Ready',
+    text: 'Made for resellers, boutiques,\nand exporters.',
+  },
+  {
+    title: 'WhatsApp Sharing',
+    text: 'Easily share catalogues\nwith customers.',
+  },
+];
+
+function normalizeHeroText(value) {
+  return String(value || '').replace(/\\n/g, '\n').trim();
+}
+
+function renderHeroLines(value) {
+  return normalizeHeroText(value).split(/\r?\n|\|/).map((line, index, lines) => (
+    <Fragment key={`${line}-${index}`}>
+      {line}
+      {index < lines.length - 1 ? <br /> : null}
+    </Fragment>
+  ));
+}
+
+function parseHeroFeature(value, fallback) {
+  const text = normalizeHeroText(value);
+  if (!text) return fallback;
+
+  const separator = text.includes('|') ? '|' : text.includes(':') ? ':' : '';
+  if (!separator) {
+    return { ...fallback, title: text };
+  }
+
+  const [title, ...rest] = text.split(separator);
+  return {
+    title: title.trim() || fallback.title,
+    text: rest.join(separator).trim() || fallback.text,
+  };
+}
+
+function buildHeroStyle(hero) {
+  const style = {};
+  const setVar = (name, value) => {
+    const normalized = String(value || '').trim();
+    if (normalized) style[name] = normalized;
+  };
+
+  setVar('--hero-title-color', hero?.headingColor);
+  setVar('--hero-subtitle-color', hero?.subheadingColor);
+  setVar('--hero-button1-color', hero?.button1Color);
+  setVar('--hero-button2-color', hero?.button2Color);
+  setVar('--hero-accent-color', hero?.accentColor || hero?.button1Color);
+  setVar('--hero-right-text-color', hero?.rightTextColor);
+  setVar('--hero-image-position', hero?.imagePosition);
+  setVar('--hero-overlay-color', hero?.overlayColor);
+  setVar('--hero-overlay-opacity', hero?.overlayOpacity);
+
+  return style;
+}
+
 function getDealCountdown() {
   const now = new Date();
   const end = new Date(now);
@@ -123,16 +199,35 @@ export function Home({
   */
 
   const activeHeroData = bannerSlides[currentSlide] || null;
+  const heroImage = activeHeroData?.image || defaultHero.image;
+  const heroMobileImage = isMobile ? heroImage : defaultHero.mobileImage;
+  const heroTitle = activeHeroData?.title || defaultHero.title;
+  const heroSubtitle = activeHeroData?.subtitle || defaultHero.subtitle;
+  const heroButtonText = activeHeroData?.buttonText || defaultHero.buttonText;
+  const heroButtonLink = activeHeroData?.buttonLink || defaultHero.buttonLink;
+  const heroButton2Text = activeHeroData?.button2Text || defaultHero.button2Text;
+  const heroButton2Link = activeHeroData?.button2Link || defaultHero.button2Link;
+  const heroRightText = activeHeroData?.rightText || defaultHero.rightText;
+  const heroStyle = buildHeroStyle(activeHeroData);
+  const heroFeatures = defaultHeroFeatures.map((feature, index) => (
+    parseHeroFeature(activeHeroData?.[`feature${index + 1}`], feature)
+  ));
+
+  useEffect(() => {
+    if (currentSlide >= bannerSlides.length && bannerSlides.length > 0) {
+      setCurrentSlide(0);
+    }
+  }, [bannerSlides.length, currentSlide]);
 
   useEffect(() => {
     // Premium hero is always dark → force white header text
-    document.documentElement.style.setProperty('--header-text-color', 'white');
+    document.documentElement.style.setProperty('--header-text-color', activeHeroData?.headerColor || 'white');
     document.documentElement.classList.add('header-over-dark');
     return () => {
       document.documentElement.style.removeProperty('--header-text-color');
       document.documentElement.classList.remove('header-over-dark');
     };
-  }, []);
+  }, [activeHeroData?.headerColor]);
 
   // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection for Home page
   useEffect(() => {
@@ -314,18 +409,30 @@ export function Home({
     rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
   };
 
+  const openHeroLink = (link, fallbackRoute) => {
+    const target = String(link || fallbackRoute || '').trim();
+    if (!target) return;
+
+    if (/^(https?:|mailto:|tel:|whatsapp:)/i.test(target)) {
+      window.location.href = target;
+      return;
+    }
+
+    navigate(target.replace(/^\/+/, '') || fallbackRoute);
+  };
+
   return (
     <>
       <section className="hero-transition-container">
         <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
         {/* Original Slide */}
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
-          <section className="premium-hero">
+          <section className="premium-hero" style={heroStyle}>
             <picture className="premium-hero-bg-picture">
-              <source media="(max-width: 820px)" srcSet="https://images.weave365.in/assets/banner/hero1m.webp" />
+              <source media="(max-width: 820px)" srcSet={heroMobileImage} />
               <img
-                src="https://images.weave365.in/assets/banner/hero1.webp"
-                alt="Wholesale Banarasi Sarees and Suits Weave 365"
+                src={heroImage}
+                alt={activeHeroData?.title || 'Wholesale Banarasi Sarees and Suits Weave 365'}
                 className="premium-hero-bg-img"
                 fetchPriority="high"
                 decoding="async"
@@ -338,62 +445,46 @@ export function Home({
             <div className="premium-hero-content">
               <div className="premium-hero-main">
                 <div className="premium-hero-title" aria-level="2" role="heading">
-                  {/* <span className="title-slash">/</span> Timeless<br />
-                  Weaves.<br />
-                  Endless<br />
-                  Possibilities. */}
-                  Timeless Weaves<br />
-                  Endless Possibilities
+                  {renderHeroLines(heroTitle)}
                 </div>
 
                 <p className="premium-hero-subtitle">
-                  Banarasi Sarees & Suits for your business,
-                  crafted for every story.
+                  {renderHeroLines(heroSubtitle)}
                 </p>
 
                 <div className="premium-hero-actions">
                   <button
                     className="premium-btn-filled"
-                    onClick={() => navigate('wholesale-catalogue')}
+                    onClick={() => openHeroLink(heroButtonLink, defaultHero.buttonLink)}
                   >
-                    Explore Collections
+                    {heroButtonText}
                   </button>
                   <button
                     className="premium-btn-text"
-                    onClick={() => navigate('bulk-inquiry')}
+                    onClick={() => openHeroLink(heroButton2Link, defaultHero.button2Link)}
                   >
-                    Request Catalog <ArrowRight size={18} />
+                    {heroButton2Text} <ArrowRight size={18} />
                   </button>
                 </div>
 
                 <div className="premium-hero-features">
-                  <div className="premium-feature">
-                    <Layers size={24} strokeWidth={1.5} />
-                    <div className="premium-feature-text">
-                      <strong>White Label</strong>
-                      <span>Share catalogues without<br />our branding.</span>
+                  {heroFeatures.map((feature, index) => (
+                    <div className="premium-feature" key={`${feature.title}-${index}`}>
+                      {index === 0 ? <Layers size={24} strokeWidth={1.5} /> : null}
+                      {index === 1 ? <Users size={24} strokeWidth={1.5} /> : null}
+                      {index === 2 ? <WhatsappIcon size={24} /> : null}
+                      <div className="premium-feature-text">
+                        <strong>{feature.title}</strong>
+                        <span>{renderHeroLines(feature.text)}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="premium-feature">
-                    <Users size={24} strokeWidth={1.5} />
-                    <div className="premium-feature-text">
-                      <strong>Wholesale Ready</strong>
-                      <span>Made for resellers, boutiques,<br />and exporters.</span>
-                    </div>
-                  </div>
-                  <div className="premium-feature">
-                    <WhatsappIcon size={24} />
-                    <div className="premium-feature-text">
-                      <strong>WhatsApp Sharing</strong>
-                      <span>Easily share catalogues<br />with customers.</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
               <div className="premium-hero-sidebar">
                 <div className="premium-hero-collection-info">
-                  <span>B2B<br />SAREE<br />COLLECTION<br />'26</span>
+                  <span>{renderHeroLines(heroRightText)}</span>
                 </div>
                 {/* <div className="premium-hero-pagination">
                   <span className="current-slide">01</span>
