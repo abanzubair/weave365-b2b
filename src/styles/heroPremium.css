@@ -210,7 +210,7 @@
 }
 
 .premium-feature svg {
-  color: var(--hero-accent-color, #D9BBA8);
+  color: var(--hero-feature-svg-color, var(--hero-accent-color, #D9BBA8));
   flex-shrink: 0;
 }
 
@@ -221,7 +221,7 @@
 }
 
 .premium-feature-text strong {
-  color: #F8FAFC;
+  color: var(--hero-feature-heading-color, #F8FAFC);
   font-family: var(--font-hero-body);
   font-size: 13px;
   font-weight: 600;
@@ -232,6 +232,7 @@
 .premium-feature-text span {
   font-size: 12px;
   line-height: 1.45;
+  color: var(--hero-feature-text-color, inherit);
   opacity: 0.7;
 }
 

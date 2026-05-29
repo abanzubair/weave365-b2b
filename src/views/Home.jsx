@@ -94,6 +94,9 @@ function buildHeroStyle(hero) {
   setVar('--hero-button2-color', hero?.button2Color);
   setVar('--hero-accent-color', hero?.accentColor || hero?.button1Color);
   setVar('--hero-right-text-color', hero?.rightTextColor);
+  setVar('--hero-feature-svg-color', hero?.featureSvgColor);
+  setVar('--hero-feature-heading-color', hero?.featureHeadingColor);
+  setVar('--hero-feature-text-color', hero?.featureTextColor);
   setVar('--hero-image-position', hero?.imagePosition);
   setVar('--hero-overlay-color', hero?.overlayColor);
   setVar('--hero-overlay-opacity', hero?.overlayOpacity);
