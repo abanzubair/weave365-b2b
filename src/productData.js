@@ -156,7 +156,7 @@ export function parseProductCsv(text) {
       fabric: row.Fabric,
       work: row.Work,
       pattern: row.Pattern,
-      weave: row.Weave,
+      weave: row.Weave || row.weave || row.WEAVE || '',
       purity: row.Purity,
       type: row.Type,
       status: rawStatus,

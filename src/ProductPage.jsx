@@ -903,7 +903,7 @@ export function ProductDetail({
                 className="trusted-partner-card-v2"
                 onClick={() => navigate('partner', product.partner)}
                 title={`View all products by ${product.partner}`}
-                style={{ marginTop: '12px', marginBottom: '16px' }}
+                style={{ marginTop: '12px', marginBottom: '12px' }}
               >
                 <div className="partner-card-accent-bar" />
                 <Award size={18} className="partner-award-icon" />
@@ -918,6 +918,15 @@ export function ProductDetail({
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
             </div>
+
+            {product.weave && (
+              <div className="luxury-weave-craft-card">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="weave-loom-svg">
+                  <path d="M6 3v18M12 3v18M18 3v18M3 6h18M3 12h18M3 18h18" />
+                </svg>
+                <span>{product.weave} Weave</span>
+              </div>
+            )}
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
@@ -1017,6 +1026,14 @@ export function ProductDetail({
               <span>
                 <ShoppingBag size={22} /> Weight per piece: <strong>{formatWeight(singleWeight)}</strong>
               </span>
+              {product.weave && (
+                <span className="quick-fact-weave">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--gold-mid)', flexShrink: 0 }}>
+                    <path d="M6 3v18M12 3v18M18 3v18M3 6h18M3 12h18M3 18h18" />
+                  </svg>
+                  Weave Method: <strong>{product.weave}</strong>
+                </span>
+              )}
             </div>
 
             {colorOptions.length > 0 && (
@@ -1260,6 +1277,19 @@ export function ProductDetail({
             </div>
 
             <div className="showcase-highlights-grid">
+              {product.weave && (
+                <div className="highlight-card premium-weave-highlight">
+                  <span className="card-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--gold-mid)' }}>
+                      <path d="M6 3v18M12 3v18M18 3v18M3 6h18M3 12h18M3 18h18" />
+                    </svg>
+                  </span>
+                  <div className="card-body">
+                    <h3>Weave Method</h3>
+                    <p>Authentic {product.weave} handloom weaving technique</p>
+                  </div>
+                </div>
+              )}
               <div className="highlight-card">
                 <span className="card-icon"><Star size={18} /></span>
                 <div className="card-body">
@@ -1274,7 +1304,7 @@ export function ProductDetail({
                   <p>Smooth texture and lightweight comfortable feel all day</p>
                 </div>
               </div>
-              <div className="highlight-card">
+              <div className="highlight-card animate-detailing">
                 <span className="card-icon"><Sparkles size={18} /></span>
                 <div className="card-body">
                   <h3>Intricate Detailing</h3>

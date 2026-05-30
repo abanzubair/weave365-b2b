@@ -1630,7 +1630,7 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-family: var(--font-ui);
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .product-code-new strong {
@@ -5569,5 +5569,45 @@ button {
 .spin {
   animation: spin 1s linear infinite;
 }
+
+/* ==========================================================================
+   UI/UX PRO MAX - LUXURY WEAVING CRAFTSMANSHIP CARD & ACCENTS (MINIMAL)
+   ========================================================================== */
+
+.luxury-weave-craft-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(183, 134, 70, 0.05);
+  border: 1px solid rgba(183, 134, 70, 0.15);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin: 0 0 14px 0;
+  color: var(--gold-dark);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.luxury-weave-craft-card svg {
+  flex-shrink: 0;
+  color: var(--gold-mid);
+}
+
+/* Quick Fact Weave Alignment */
+.quick-fact-weave svg {
+  color: var(--gold-mid) !important;
+}
+
+/* Highlights Grid Enhancement for Weave card - Minimal */
+.premium-weave-highlight {
+  border: 1px solid rgba(183, 134, 70, 0.18) !important;
+  background: linear-gradient(135deg, rgba(255, 253, 249, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+}
+
+
 
 
