@@ -35,15 +35,18 @@
 }
 
 /* Dark gradient overlays — left side for text readability, bottom for features */
-.premium-hero-overlay {
+/* .premium-hero-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
   display: block;
-  background: var(--hero-overlay-color, transparent);
-  opacity: var(--hero-overlay-opacity, 0);
+  background: var(--hero-overlay-color, 
+    linear-gradient(90deg, rgba(15, 12, 10, 0.4) 0%, rgba(15, 12, 10, 0.18) 40%, transparent 80%),
+    linear-gradient(to top, rgba(15, 12, 10, 0.45) 0%, rgba(15, 12, 10, 0.18) 25%, transparent 60%)
+  );
+  opacity: var(--hero-overlay-opacity, 1);
   pointer-events: none;
-}
+} */
 
 /* ── Content Layout ────────────────────────────────────────── */
 .premium-hero-content {
@@ -263,7 +266,8 @@
   left: 0;
   width: 1px;
   height: clamp(260px, 28vh, 290px);
-  background: rgba(230, 208, 195, 0.32);
+  background: var(--hero-right-text-color, #e3aa9d);
+  opacity: 0.95;
 }
 
 .premium-hero-collection-info {
@@ -399,6 +403,13 @@
 
   .premium-hero-bg-img {
     object-position: var(--hero-image-position, 72% center);
+  }
+
+  .premium-hero-overlay {
+    background: var(--hero-overlay-color, 
+      linear-gradient(to top, rgba(15, 12, 10, 0.5) 0%, rgba(15, 12, 10, 0.18) 45%, transparent 85%),
+      linear-gradient(90deg, rgba(15, 12, 10, 0.18) 0%, transparent 65%)
+    );
   }
 
   /* overlay can be enabled from the hero sheet with Overlay Color and Overlay Opacity */
@@ -556,7 +567,7 @@
 
 /* ── Desktop Header Over Dark Hero ─────────────────────────── */
 
-/* Top bar: transparent on home page */
+/* Top bar: transparent on home page when unscrolled at top */
 .header-over-dark .home-top-bar {
   background: transparent;
   position: relative;
@@ -579,15 +590,17 @@
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
+/* Header base: transparent overlay at the top (unscrolled) */
 .header-over-dark .site-header.home-header {
   position: fixed !important;
   width: 100%;
   top: 0;
   left: 0;
-  background: transparent;
+  background: transparent !important;
   border-bottom: none !important;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   transition: background 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     border-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     backdrop-filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -595,20 +608,10 @@
     box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* Header scrolled state: solid white translucent backdrop with blur */
 .header-over-dark .site-header.home-header.scrolled {
   position: fixed !important;
   transform: translateZ(0);
-}
-
-.header-over-dark .site-header.home-header.scrolled:not(.past-hero) {
-  background: rgba(15, 12, 10, 0.65) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
-  backdrop-filter: blur(20px) saturate(1.8) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15) !important;
-}
-
-.header-over-dark .site-header.home-header.past-hero {
   background: rgba(255, 255, 255, 0.75) !important;
   -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
   backdrop-filter: blur(20px) saturate(1.8) !important;
@@ -616,83 +619,108 @@
   border-bottom: 1px solid var(--line) !important;
 }
 
-.header-over-dark .site-header.home-header .brand-logo {
-  filter: brightness(0) invert(1);
+/* Logo: original colors (or dynamic custom color) at top, original dark logo when scrolled */
+.header-over-dark .site-header.home-header:not(.scrolled) .brand-logo {
+  filter: none !important;
   transition: filter 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.past-hero .brand-logo {
-  filter: none !important;
+@supports (-webkit-mask-image: url('')) or (mask-image: url('')) {
+  html[style*="--hero-logo-color"] .header-over-dark .site-header.home-header:not(.scrolled) .brand-logo {
+    filter: none !important;
+    background-color: var(--hero-logo-color) !important;
+    -webkit-mask-image: url('../../assets/Weave365.svg');
+    mask-image: url('../../assets/Weave365.svg');
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+  }
 }
 
-.header-over-dark .site-header.home-header .main-nav > button,
-.header-over-dark .site-header.home-header .main-nav > a,
-.header-over-dark .site-header.home-header .main-nav > .nav-item-dropdown > button,
-.header-over-dark .site-header.home-header .login-link,
-.header-over-dark .site-header.home-header .icon-button,
-.header-over-dark .site-header.home-header .hamburger-btn,
-.header-over-dark .site-header.home-header .header-actions button,
-.header-over-dark .site-header.home-header .premium-search-trigger,
-.header-over-dark .site-header.home-header .premium-auth-link,
-.header-over-dark .site-header.home-header .premium-icon-btn {
-  color: rgba(255, 255, 255, 0.9) !important;
+.header-over-dark .site-header.home-header.scrolled .brand-logo {
+  filter: none !important;
+  background-color: transparent !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+
+/* Nav links: white (or dynamic custom color) at top, premium ink when scrolled */
+.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > button,
+.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > a,
+.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > .nav-item-dropdown > button,
+.header-over-dark .site-header.home-header:not(.scrolled) .login-link,
+.header-over-dark .site-header.home-header:not(.scrolled) .icon-button,
+.header-over-dark .site-header.home-header:not(.scrolled) .hamburger-btn,
+.header-over-dark .site-header.home-header:not(.scrolled) .hamburger-btn .hamburger-svg,
+.header-over-dark .site-header.home-header:not(.scrolled) .header-actions button,
+.header-over-dark .site-header.home-header:not(.scrolled) .premium-search-trigger,
+.header-over-dark .site-header.home-header:not(.scrolled) .premium-auth-link,
+.header-over-dark .site-header.home-header:not(.scrolled) .premium-icon-btn {
+  color: var(--hero-nav-color, rgba(255, 255, 255, 0.9)) !important;
   transition: color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.past-hero .main-nav > button,
-.header-over-dark .site-header.home-header.past-hero .main-nav > a,
-.header-over-dark .site-header.home-header.past-hero .main-nav > .nav-item-dropdown > button,
-.header-over-dark .site-header.home-header.past-hero .login-link,
-.header-over-dark .site-header.home-header.past-hero .icon-button,
-.header-over-dark .site-header.home-header.past-hero .hamburger-btn,
-.header-over-dark .site-header.home-header.past-hero .header-actions button,
-.header-over-dark .site-header.home-header.past-hero .premium-search-trigger,
-.header-over-dark .site-header.home-header.past-hero .premium-auth-link,
-.header-over-dark .site-header.home-header.past-hero .premium-icon-btn {
+.header-over-dark .site-header.home-header.scrolled .main-nav > button,
+.header-over-dark .site-header.home-header.scrolled .main-nav > a,
+.header-over-dark .site-header.home-header.scrolled .main-nav > .nav-item-dropdown > button,
+.header-over-dark .site-header.home-header.scrolled .login-link,
+.header-over-dark .site-header.home-header.scrolled .icon-button,
+.header-over-dark .site-header.home-header.scrolled .hamburger-btn,
+.header-over-dark .site-header.home-header.scrolled .hamburger-btn .hamburger-svg,
+.header-over-dark .site-header.home-header.scrolled .header-actions button,
+.header-over-dark .site-header.home-header.scrolled .premium-search-trigger,
+.header-over-dark .site-header.home-header.scrolled .premium-auth-link,
+.header-over-dark .site-header.home-header.scrolled .premium-icon-btn {
   color: var(--ink) !important;
+  transition: color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header .brand-divider {
-  background-color: rgba(255, 255, 255, 0.35) !important;
+/* Subtitle and Dividers */
+.header-over-dark .site-header.home-header:not(.scrolled) .brand-divider {
+  background-color: var(--hero-nav-color, rgba(255, 255, 255, 0.35)) !important;
   opacity: 0.5 !important;
 }
 
-.header-over-dark .site-header.home-header.past-hero .brand-divider {
+.header-over-dark .site-header.home-header.scrolled .brand-divider {
   background-color: var(--line) !important;
   opacity: 0.25 !important;
 }
 
-.header-over-dark .site-header.home-header .brand-subtitle span:first-child {
-  color: rgba(255, 255, 255, 0.95) !important;
+.header-over-dark .site-header.home-header:not(.scrolled) .brand-subtitle span:first-child {
+  color: var(--hero-nav-color, rgba(255, 255, 255, 0.95)) !important;
 }
 
-.header-over-dark .site-header.home-header.past-hero .brand-subtitle span:first-child {
+.header-over-dark .site-header.home-header.scrolled .brand-subtitle span:first-child {
   color: var(--ink) !important;
 }
 
-.header-over-dark .site-header.home-header .brand-subtitle span:last-child {
-  color: rgba(255, 255, 255, 0.7) !important;
+.header-over-dark .site-header.home-header:not(.scrolled) .brand-subtitle span:last-child {
+  color: var(--hero-nav-color, rgba(255, 255, 255, 0.7)) !important;
 }
 
-.header-over-dark .site-header.home-header.past-hero .brand-subtitle span:last-child {
+.header-over-dark .site-header.home-header.scrolled .brand-subtitle span:last-child {
   color: var(--muted) !important;
 }
 
-.header-over-dark .site-header.home-header .premium-divider {
-  background-color: rgba(255, 255, 255, 0.3) !important;
+.header-over-dark .site-header.home-header:not(.scrolled) .premium-divider {
+  background-color: var(--hero-nav-color, rgba(255, 255, 255, 0.3)) !important;
 }
 
-.header-over-dark .site-header.home-header.past-hero .premium-divider {
+.header-over-dark .site-header.home-header.scrolled .premium-divider {
   background-color: var(--line) !important;
 }
 
-.header-over-dark .site-header.home-header .main-nav .active {
+.header-over-dark .site-header.home-header:not(.scrolled) .main-nav .active {
   border-color: rgba(217, 187, 168, 0.7) !important;
   transition: border-color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.past-hero .main-nav .active {
+.header-over-dark .site-header.home-header.scrolled .main-nav .active {
   border-color: var(--gold) !important;
+  color: var(--gold) !important;
 }
 
 /* ── Extreme Wide Screens (1920px+) ───────────────────────── */

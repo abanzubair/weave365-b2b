@@ -693,6 +693,8 @@ export async function fetchHeroData() {
         imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
         overlayColor: readCsvValue(row, 'Overlay Color'),
         overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
+        logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
+        navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
       };
     }).filter(hero => hero.image || hero.video);
   } catch (error) {

@@ -225,12 +225,20 @@ export function Home({
   useEffect(() => {
     // Premium hero is always dark → force white header text
     document.documentElement.style.setProperty('--header-text-color', activeHeroData?.headerColor || 'white');
+    if (activeHeroData?.logoColor) {
+      document.documentElement.style.setProperty('--hero-logo-color', activeHeroData.logoColor);
+    }
+    if (activeHeroData?.navigationColor) {
+      document.documentElement.style.setProperty('--hero-nav-color', activeHeroData.navigationColor);
+    }
     document.documentElement.classList.add('header-over-dark');
     return () => {
       document.documentElement.style.removeProperty('--header-text-color');
+      document.documentElement.style.removeProperty('--hero-logo-color');
+      document.documentElement.style.removeProperty('--hero-nav-color');
       document.documentElement.classList.remove('header-over-dark');
     };
-  }, [activeHeroData?.headerColor]);
+  }, [activeHeroData?.headerColor, activeHeroData?.logoColor, activeHeroData?.navigationColor]);
 
   // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection for Home page
   useEffect(() => {
