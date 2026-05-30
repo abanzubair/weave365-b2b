@@ -157,10 +157,12 @@
 }
 
 /* Table Scroll Wrapper and Sticky Headers */
-.admin-table-wrap-scroller {
+.admin-table-wrap-scroller,
+.admin-table-wrap {
   border: 1px solid var(--border, rgba(183, 134, 70, 0.12));
   border-radius: 8px;
   overflow-x: auto;
+  width: 100%;
 }
 
 .admin-table {
@@ -319,6 +321,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .admin-buyer-type-container {
@@ -373,6 +376,7 @@
   border-radius: 8px;
   margin-bottom: 32px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.025);
+  overflow: hidden;
 }
 
 .admin-blog-setup-flex {
@@ -390,6 +394,8 @@
 
 .admin-blog-setup-content {
   flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .admin-blog-setup-title {
@@ -1053,6 +1059,7 @@
 
 .admin-blog-card-preview {
   width: 100%;
+  max-width: 420px !important;
   pointer-events: none;
   margin: 0 auto;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -2115,4 +2122,413 @@
   font-size: 11px;
   font-weight: 700;
   display: inline-block;
+}
+
+/* ==================== B2B BLOG EDITOR RESPONSIVENESS ==================== */
+
+/* Base fluid constraints for form controls */
+.admin-field-input,
+.admin-field-textarea,
+.admin-field-textarea-monospace,
+.admin-seo-input,
+.admin-seo-textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Split layout collapses to single column at tablet width */
+@media (max-width: 1280px) {
+  .admin-editor-split-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .admin-editor-sticky-aside {
+    position: static;
+    top: auto;
+  }
+}
+
+/* Overflow containment — prevent child min-widths from blowing out the layout */
+.admin-blog-manager-tab,
+.admin-editor-split-layout,
+.admin-panel {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-table-wrap,
+.admin-table-wrap-scroller {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.admin-blog-setup-pre {
+  max-width: 100%;
+  word-break: break-all;
+}
+
+/* Grid children must allow shrinking below their content size */
+.admin-editor-split-layout > * {
+  min-width: 0;
+}
+
+.admin-editor-form {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* 3-Column fluid metadata row (Author, Read Duration, Date) */
+.admin-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* Safety viewport constraints on the overall Admin Page wrapper */
+.admin-page {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.admin-page > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* ==================== NARROW SCREENS (≤768px) ==================== */
+@media (max-width: 768px) {
+
+  /* --- Grid collapses --- */
+  .admin-grid-2col,
+  .admin-grid-3col {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .admin-grid-4col {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+
+  .admin-slug-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .admin-btn-slug {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* --- Tabs bar: horizontal scroll --- */
+  .admin-tabs-bar {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    width: 100%;
+    max-width: 100%;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-tab-btn {
+    flex: 1 0 auto;
+  }
+
+  /* --- Sync banner --- */
+  .admin-sync-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  /* --- Blog setup alert --- */
+  .admin-blog-setup-flex {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .admin-blog-setup-alert {
+    padding: 16px;
+  }
+
+  .admin-blog-setup-pre {
+    font-size: 11px;
+    padding: 12px;
+    max-height: 180px;
+  }
+
+  .admin-blog-setup-draft-notice {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .admin-blog-setup-success {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  /* --- Panels --- */
+  .admin-panel {
+    padding: 14px;
+  }
+
+  .admin-panel-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-panel-head span {
+    font-size: 14px;
+  }
+
+  .admin-panel-head-border {
+    flex-wrap: wrap;
+  }
+
+  /* --- Blog editor form --- */
+  .admin-editor-title {
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .admin-editor-form {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .admin-editor-image-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-editor-image-section {
+    padding: 12px;
+  }
+
+  /* --- FAQ section --- */
+  .admin-faq-section {
+    padding: 14px;
+  }
+
+  .admin-faq-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-faq-item {
+    padding: 10px;
+  }
+
+  /* --- SEO meta section --- */
+  .admin-seo-meta-section {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  /* --- Form action buttons: stack full-width --- */
+  .admin-form-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .admin-btn-cancel,
+  .admin-btn-publish {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 16px;
+  }
+
+  /* --- Misc layout helpers --- */
+  .admin-flex-between {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .admin-editor-sticky-aside {
+    gap: 20px;
+  }
+
+  .admin-blog-card-preview {
+    max-width: 100% !important;
+  }
+
+  .admin-p24-bg-fafafa {
+    padding: 14px;
+  }
+
+  /* --- SERP preview --- */
+  .admin-serp-title {
+    font-size: 16px;
+  }
+
+  .admin-serp-desc {
+    font-size: 12px;
+  }
+
+  .admin-serp-url-row {
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+
+  .admin-flex-wrap-gap8 {
+    gap: 6px;
+  }
+
+  /* --- Partners tab --- */
+  .admin-partners-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .admin-partners-banner-title {
+    font-size: 16px;
+  }
+
+  .admin-partners-filter-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .admin-search-wrapper {
+    width: 100%;
+  }
+
+  .admin-flex-gap8 {
+    flex-wrap: wrap;
+  }
+
+  .admin-partners-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* --- Modals --- */
+  .admin-modal-body-split {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .admin-modal-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .admin-review-modal {
+    padding: 16px;
+  }
+
+  .admin-modal-header-bg {
+    padding: 14px 16px;
+  }
+
+  .admin-modal-title-fs24 {
+    font-size: 18px;
+  }
+}
+
+/* ==================== EXTRA NARROW (≤480px) ==================== */
+@media (max-width: 480px) {
+  .admin-blog-manager-tab {
+    gap: 16px;
+  }
+
+  .admin-panel {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .admin-panel-head span {
+    font-size: 13px;
+  }
+
+  .admin-editor-form {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .admin-field-input,
+  .admin-field-textarea,
+  .admin-field-textarea-monospace,
+  .admin-seo-input,
+  .admin-seo-textarea,
+  .admin-faq-input,
+  .admin-faq-textarea {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .admin-field-label {
+    font-size: 12px;
+  }
+
+  .admin-blog-setup-pre {
+    font-size: 10px;
+    padding: 8px;
+    max-height: 150px;
+  }
+
+  .admin-btn-cancel,
+  .admin-btn-publish {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .admin-blog-btn-edit,
+  .admin-blog-btn-delete,
+  .admin-blog-btn-live {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .admin-blog-card-info-pane {
+    padding: 1rem;
+  }
+
+  .admin-blog-card-title {
+    font-size: 1rem;
+  }
+
+  .admin-blog-card-desc {
+    font-size: 0.8rem;
+  }
+
+  .admin-faq-fields {
+    margin-right: 20px;
+  }
+
+  .admin-modal-footer,
+  .admin-modal-footer-bg {
+    padding: 12px 14px;
+  }
+
+  .admin-partner-metric-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .admin-partner-metric-value {
+    font-size: 18px;
+  }
 }

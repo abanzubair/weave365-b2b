@@ -126,6 +126,16 @@ export function EarlyAccessPage({ navigate }) {
       return;
     }
 
+    if (!form.storeLink || !form.storeLink.trim()) {
+      setFormError('Please provide your shop, page, or store link.');
+      return;
+    }
+
+    if (!form.monthlyBudget) {
+      setFormError('Please select your monthly buying budget.');
+      return;
+    }
+
     if (!isVerified) {
       showToast('Please slide the verification bar to confirm you are a genuine visitor.');
       return;
@@ -336,10 +346,11 @@ export function EarlyAccessPage({ navigate }) {
 
               {/* Budget Option Select */}
               <div className="form-group">
-                <label htmlFor="monthlyBudget">Monthly buying budget</label>
+                <label htmlFor="monthlyBudget">Monthly buying budget *</label>
                 <div className="select-wrapper">
                   <select
                     id="monthlyBudget"
+                    required
                     value={form.monthlyBudget}
                     onChange={(e) => updateField('monthlyBudget', e.target.value)}
                     disabled={isSubmitting}
@@ -382,16 +393,17 @@ export function EarlyAccessPage({ navigate }) {
 
               {/* Optional Store / page link */}
               <div className="form-group">
-                <label htmlFor="storeLink">Your shop / page / store link <span className="optional-label">(optional but preferred)</span></label>
+                <label htmlFor="storeLink">Your shop / page / store link *</label>
                 <input
                   id="storeLink"
                   type="text"
+                  required
                   value={form.storeLink}
                   onChange={(e) => updateField('storeLink', e.target.value)}
                   placeholder="Instagram, Facebook, website, or Meesho link"
                   disabled={isSubmitting}
                 />
-                <span className="field-hint">Sharing a link speeds up your verification significantly.</span>
+                <span className="field-hint">Sharing a link is required to verify your business presence.</span>
               </div>
 
               {/* Checkbox */}

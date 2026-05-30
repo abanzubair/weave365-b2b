@@ -917,7 +917,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [formCustomCategory, setFormCustomCategory] = useState('');
   const [formTag, setFormTag] = useState('');
   const [formDate, setFormDate] = useState('');
-  const [formReadTime, setFormReadTime] = useState('8 Min Read');
+  const [formReadTime, setFormReadTime] = useState('8 Minutes Read');
   const [formAuthor, setFormAuthor] = useState('Weave 365 Editorial');
   const [formIntro, setFormIntro] = useState('');
   const [formContent, setFormContent] = useState('');
@@ -1026,7 +1026,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setFormCustomCategory('');
     setFormTag('');
     setFormDate('');
-    setFormReadTime('8 Min Read');
+    setFormReadTime('8 Minutes Read');
     setFormAuthor('Weave 365 Editorial');
     setFormIntro('');
     setFormContent('');
@@ -1120,7 +1120,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
     setFormTag(post.tag || '');
     setFormDate(post.date || '');
-    setFormReadTime(post.readTime || post.read_time || '8 Min Read');
+    setFormReadTime(post.readTime || post.read_time || '8 Minutes Read');
     setFormAuthor(post.author || 'Weave 365 Editorial');
     setFormIntro(post.intro || '');
     setFormContent(post.content || '');
@@ -2673,24 +2673,21 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th>S.No.</th>
                     <th>Article</th>
                     <th>Category</th>
                     <th>Read Time</th>
-                    <th>Origin Status</th>
                     <th>Date</th>
                     <th>CRM & Editor Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {blogs.map((post) => {
-                    const isDynamic = Boolean(post.id);
+                  {blogs.map((post, index) => {
                     return (
                       <tr key={post.slug}>
+                        <td>{index + 1}</td>
                         <td>
                           <strong>{post.title}</strong>
-                          <span className="admin-blog-item-slug">
-                            /{post.slug}
-                          </span>
                         </td>
                         <td>
                           <span className="card-category-badge admin-blog-item-category">
@@ -2698,11 +2695,6 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                           </span>
                         </td>
                         <td>{post.readTime || post.read_time}</td>
-                        <td>
-                          <span className={`admin-status ${isDynamic ? 'approved' : 'new'}`}>
-                            {isDynamic ? 'Supabase Dynamic' : 'Static Editorial'}
-                          </span>
-                        </td>
                         <td>{post.date}</td>
                         <td>
                           <div className="admin-flex-wrap-gap8">
@@ -2844,7 +2836,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 )}
 
                 {/* Author, Read Time & Date Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                <div className="admin-grid-3col">
                   <div className="admin-field-container">
                     <label className="admin-field-label">Author Name</label>
                     <input 
@@ -2860,7 +2852,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       type="text" 
                       value={formReadTime} 
                       onChange={(e) => setFormReadTime(e.target.value)} 
-                      placeholder="e.g. 8 Min Read"
+                      placeholder="e.g. 8 Minutes Read"
                       className="admin-field-input"
                     />
                   </div>
