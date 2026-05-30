@@ -23,10 +23,11 @@ const moneyColumns = {
 export async function fetchConfigOptions() {
   if (!isSupabaseConfigured) return { priceRanges: [], categories: [], fabrics: [] };
   
+  await autoSyncIfNeeded(); // Await auto sync to guarantee edge environments finish syncing before returning data
+
   const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'config').single();
   if (!data?.csv_data) return { priceRanges: [], categories: [], fabrics: [] };
 
-  void autoSyncIfNeeded(); // Background auto sync
   const text = data.csv_data;
   const parsed = Papa.parse(text, {
     header: true,
@@ -60,12 +61,13 @@ export async function fetchProducts() {
     throw new Error("Data system not configured");
   }
 
+  await autoSyncIfNeeded(); // Await auto sync to guarantee edge environments finish syncing before returning data
+
   const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products').single();
   if (!data?.csv_data) {
     throw new Error("Product data not found in sync table");
   }
 
-  void autoSyncIfNeeded(); // Background auto sync
   return parseProductCsv(data.csv_data);
 }
 
@@ -650,6 +652,8 @@ function unique(items) {
 export async function fetchHeroData() {
   try {
     if (!isSupabaseConfigured) return [];
+
+    await autoSyncIfNeeded(); // Trigger and await auto sync check to ensure hero slides are kept up-to-date
 
     const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'hero').single();
     if (!data?.csv_data) return [];

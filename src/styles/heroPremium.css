@@ -568,30 +568,30 @@
 /* ── Desktop Header Over Dark Hero ─────────────────────────── */
 
 /* Top bar: transparent on home page when unscrolled at top */
-.header-over-dark .home-top-bar {
+.home-top-bar {
   background: transparent;
   position: relative;
   z-index: 21;
 }
 
-.header-over-dark .home-top-bar,
-.header-over-dark .home-top-bar a,
-.header-over-dark .home-top-bar span {
+.home-top-bar,
+.home-top-bar a,
+.home-top-bar span {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.header-over-dark .home-top-bar svg {
+.home-top-bar svg {
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.header-over-dark .home-top-bar .currency-trigger {
+.home-top-bar .currency-trigger {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* Header base: transparent overlay at the top (unscrolled) */
-.header-over-dark .site-header.home-header {
+.site-header.home-header {
   position: fixed !important;
   width: 100%;
   top: 0;
@@ -609,7 +609,7 @@
 }
 
 /* Header scrolled state: solid white translucent backdrop with blur */
-.header-over-dark .site-header.home-header.scrolled {
+.site-header.home-header.scrolled {
   position: fixed !important;
   transform: translateZ(0);
   background: rgba(255, 255, 255, 0.75) !important;
@@ -619,14 +619,14 @@
   border-bottom: 1px solid var(--line) !important;
 }
 
-/* Logo: original colors (or dynamic custom color) at top, original dark logo when scrolled */
-.header-over-dark .site-header.home-header:not(.scrolled) .brand-logo {
-  filter: none !important;
+/* Logo: white at top */
+.site-header.home-header:not(.scrolled) .brand-logo {
+  filter: brightness(0) invert(1) !important;
   transition: filter 0.3s ease;
 }
 
 @supports (-webkit-mask-image: url('')) or (mask-image: url('')) {
-  html[style*="--hero-logo-color"] .header-over-dark .site-header.home-header:not(.scrolled) .brand-logo {
+  html[style*="--hero-logo-color"] .site-header.home-header:not(.scrolled) .brand-logo {
     filter: none !important;
     background-color: var(--hero-logo-color) !important;
     -webkit-mask-image: url('../../assets/Weave365.svg');
@@ -637,88 +637,90 @@
     mask-repeat: no-repeat;
     -webkit-mask-position: center;
     mask-position: center;
+    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 389.14 85.5' width='389.14' height='85.5'/>") !important;
   }
 }
 
-.header-over-dark .site-header.home-header.scrolled .brand-logo {
+.site-header.home-header.scrolled .brand-logo {
   filter: none !important;
   background-color: transparent !important;
   mask-image: none !important;
   -webkit-mask-image: none !important;
+  content: normal !important;
 }
 
 /* Nav links: white (or dynamic custom color) at top, premium ink when scrolled */
-.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > button,
-.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > a,
-.header-over-dark .site-header.home-header:not(.scrolled) .main-nav > .nav-item-dropdown > button,
-.header-over-dark .site-header.home-header:not(.scrolled) .login-link,
-.header-over-dark .site-header.home-header:not(.scrolled) .icon-button,
-.header-over-dark .site-header.home-header:not(.scrolled) .hamburger-btn,
-.header-over-dark .site-header.home-header:not(.scrolled) .hamburger-btn .hamburger-svg,
-.header-over-dark .site-header.home-header:not(.scrolled) .header-actions button,
-.header-over-dark .site-header.home-header:not(.scrolled) .premium-search-trigger,
-.header-over-dark .site-header.home-header:not(.scrolled) .premium-auth-link,
-.header-over-dark .site-header.home-header:not(.scrolled) .premium-icon-btn {
+.site-header.home-header .main-nav > button,
+.site-header.home-header .main-nav > a,
+.site-header.home-header .main-nav > .nav-item-dropdown > button,
+.site-header.home-header .login-link,
+.site-header.home-header .icon-button,
+.site-header.home-header .hamburger-btn,
+.site-header.home-header .hamburger-btn .hamburger-svg,
+.site-header.home-header .header-actions button,
+.site-header.home-header .premium-search-trigger,
+.site-header.home-header .premium-auth-link,
+.site-header.home-header .premium-icon-btn {
   color: var(--hero-nav-color, rgba(255, 255, 255, 0.9)) !important;
   transition: color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.scrolled .main-nav > button,
-.header-over-dark .site-header.home-header.scrolled .main-nav > a,
-.header-over-dark .site-header.home-header.scrolled .main-nav > .nav-item-dropdown > button,
-.header-over-dark .site-header.home-header.scrolled .login-link,
-.header-over-dark .site-header.home-header.scrolled .icon-button,
-.header-over-dark .site-header.home-header.scrolled .hamburger-btn,
-.header-over-dark .site-header.home-header.scrolled .hamburger-btn .hamburger-svg,
-.header-over-dark .site-header.home-header.scrolled .header-actions button,
-.header-over-dark .site-header.home-header.scrolled .premium-search-trigger,
-.header-over-dark .site-header.home-header.scrolled .premium-auth-link,
-.header-over-dark .site-header.home-header.scrolled .premium-icon-btn {
+.site-header.home-header.scrolled .main-nav > button,
+.site-header.home-header.scrolled .main-nav > a,
+.site-header.home-header.scrolled .main-nav > .nav-item-dropdown > button,
+.site-header.home-header.scrolled .login-link,
+.site-header.home-header.scrolled .icon-button,
+.site-header.home-header.scrolled .hamburger-btn,
+.site-header.home-header.scrolled .hamburger-btn .hamburger-svg,
+.site-header.home-header.scrolled .header-actions button,
+.site-header.home-header.scrolled .premium-search-trigger,
+.site-header.home-header.scrolled .premium-auth-link,
+.site-header.home-header.scrolled .premium-icon-btn {
   color: var(--ink) !important;
   transition: color 0.3s ease;
 }
 
 /* Subtitle and Dividers */
-.header-over-dark .site-header.home-header:not(.scrolled) .brand-divider {
+.site-header.home-header .brand-divider {
   background-color: var(--hero-nav-color, rgba(255, 255, 255, 0.35)) !important;
   opacity: 0.5 !important;
 }
 
-.header-over-dark .site-header.home-header.scrolled .brand-divider {
+.site-header.home-header.scrolled .brand-divider {
   background-color: var(--line) !important;
   opacity: 0.25 !important;
 }
 
-.header-over-dark .site-header.home-header:not(.scrolled) .brand-subtitle span:first-child {
+.site-header.home-header .brand-subtitle span:first-child {
   color: var(--hero-nav-color, rgba(255, 255, 255, 0.95)) !important;
 }
 
-.header-over-dark .site-header.home-header.scrolled .brand-subtitle span:first-child {
+.site-header.home-header.scrolled .brand-subtitle span:first-child {
   color: var(--ink) !important;
 }
 
-.header-over-dark .site-header.home-header:not(.scrolled) .brand-subtitle span:last-child {
+.site-header.home-header .brand-subtitle span:last-child {
   color: var(--hero-nav-color, rgba(255, 255, 255, 0.7)) !important;
 }
 
-.header-over-dark .site-header.home-header.scrolled .brand-subtitle span:last-child {
+.site-header.home-header.scrolled .brand-subtitle span:last-child {
   color: var(--muted) !important;
 }
 
-.header-over-dark .site-header.home-header:not(.scrolled) .premium-divider {
+.site-header.home-header .premium-divider {
   background-color: var(--hero-nav-color, rgba(255, 255, 255, 0.3)) !important;
 }
 
-.header-over-dark .site-header.home-header.scrolled .premium-divider {
+.site-header.home-header.scrolled .premium-divider {
   background-color: var(--line) !important;
 }
 
-.header-over-dark .site-header.home-header:not(.scrolled) .main-nav .active {
+.site-header.home-header .main-nav .active {
   border-color: rgba(217, 187, 168, 0.7) !important;
   transition: border-color 0.3s ease;
 }
 
-.header-over-dark .site-header.home-header.scrolled .main-nav .active {
+.site-header.home-header.scrolled .main-nav .active {
   border-color: var(--gold) !important;
   color: var(--gold) !important;
 }

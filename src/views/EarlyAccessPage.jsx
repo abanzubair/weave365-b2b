@@ -86,23 +86,9 @@ export function EarlyAccessPage({ navigate }) {
   };
 
   const handleWhatsappChange = (value) => {
-    // Keep only digits and plus sign
-    const raw = value.replace(/[^\d+]/g, '');
-    let formatted = raw;
-    
-    // Add simple spaces for reading if it starts with +91 or is a 10 digit number
-    if (raw.startsWith('+91') && raw.length > 3) {
-      const rest = raw.slice(3);
-      if (rest.length > 5) {
-        formatted = `+91 ${rest.slice(0, 5)} ${rest.slice(5, 10)}`;
-      } else {
-        formatted = `+91 ${rest}`;
-      }
-    } else if (raw.length === 10 && !raw.startsWith('+')) {
-      formatted = `+91 ${raw.slice(0, 5)} ${raw.slice(5, 10)}`;
-    }
-    
-    updateField('whatsappNumber', formatted);
+    // Keep only digits (no '+' allowed) and remove any auto formatting/+91 injection
+    const raw = value.replace(/\D/g, '');
+    updateField('whatsappNumber', raw);
   };
 
   const handlePincodeChange = (value) => {
@@ -269,14 +255,14 @@ export function EarlyAccessPage({ navigate }) {
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="whatsappNumber">WhatsApp number *</label>
+                  <label htmlFor="whatsappNumber">WhatsApp number with country code *</label>
                   <input
                     id="whatsappNumber"
                     type="tel"
                     required
                     value={form.whatsappNumber}
                     onChange={(e) => handleWhatsappChange(e.target.value)}
-                    placeholder="+91 XXXXX XXXXX"
+                    placeholder="e.g. 919876543210 (without +)"
                     disabled={isSubmitting}
                   />
                 </div>
