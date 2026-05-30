@@ -95,7 +95,7 @@
   }
 
   .brand-logo {
-    height: 32px !important;
+    height: 20px !important;
     width: auto !important;
     transition: filter 0.3s ease;
   }
@@ -528,7 +528,7 @@
   }
 
   .footer-logo {
-    height: 34px;
+    height: 20px;
   }
 
   .footer h3 {

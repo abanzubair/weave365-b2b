@@ -2685,7 +2685,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                   {blogs.map((post, index) => {
                     return (
                       <tr key={post.slug}>
-                        <td>{index + 1}</td>
+                        <td>{blogs.length - index}</td>
                         <td>
                           <strong>{post.title}</strong>
                         </td>
@@ -3011,7 +3011,12 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   <label className="admin-faq-title">🔍 Google SEO Meta Settings</label>
                   
                   <div className="admin-field-container">
-                    <label className="admin-field-label">Meta Title Tag</label>
+                    <div className="admin-flex-between">
+                      <label className="admin-field-label">Meta Title Tag</label>
+                      <small className={formMetaTitle.length > 60 ? 'admin-seo-count-warn' : 'admin-doc-card-muted'}>
+                        {formMetaTitle.length}/60
+                      </small>
+                    </div>
                     <input 
                       type="text" 
                       value={formMetaTitle} 
@@ -3022,7 +3027,12 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   </div>
 
                   <div className="admin-field-container">
-                    <label className="admin-field-label">Meta Description</label>
+                    <div className="admin-flex-between">
+                      <label className="admin-field-label">Meta Description</label>
+                      <small className={formMetaDescription.length > 155 ? 'admin-seo-count-warn' : 'admin-doc-card-muted'}>
+                        {formMetaDescription.length}/155
+                      </small>
+                    </div>
                     <textarea 
                       value={formMetaDescription} 
                       onChange={(e) => setFormMetaDescription(e.target.value)} 

@@ -578,12 +578,14 @@
 }
 
 .admin-editor-draft-badge {
-  background: var(--blog-gold-dark);
-  color: #fff;
+  background: rgba(100, 116, 139, 0.06) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(100, 116, 139, 0.18) !important;
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 .admin-editor-form {
