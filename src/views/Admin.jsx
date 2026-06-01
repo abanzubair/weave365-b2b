@@ -1258,7 +1258,21 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setSyncStatus('loading');
     try {
       await syncSheetsToSupabase();
-      alert('Successfully synced Google Sheets to Supabase!');
+      
+      // Automatically trigger the background visual indexer endpoint
+      try {
+        const visualSyncResponse = await fetch('/api/search/visual/../../sync/visual', { method: 'POST' });
+        if (visualSyncResponse.ok) {
+          const resData = await visualSyncResponse.json();
+          alert(`Google Sheets synced successfully!\n\nAI Visual Indexer: ${resData.message}`);
+        } else {
+          alert('Sheets synced, but visual search AI indexing API returned an error.');
+        }
+      } catch (visErr) {
+        console.error('Sheets synced, but visual search AI indexing trigger failed:', visErr);
+        alert('Sheets synced successfully! (Visual vector indexing background task failed to trigger).');
+      }
+
       await loadAdminData();
     } catch (err) {
       alert('Sync failed: ' + err.message);

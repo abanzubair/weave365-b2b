@@ -1,0 +1,501 @@
+/* ==========================================================================
+   Weave365 AI Visual Search Scoped Stylesheet
+   Luxury Aesthetic: Gold Shimmer, Glassmorphism, Premium Micro-interactions
+   ========================================================================== */
+
+/* 📸 Search Bar Camera Trigger Icon */
+.visual-search-trigger-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  margin-left: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.visual-search-trigger-btn:hover {
+  color: var(--gold-light);
+  background-color: var(--surface-soft);
+  transform: scale(1.08);
+}
+
+.visual-search-trigger-btn:active {
+  transform: scale(0.95);
+}
+
+/* 🖼️ Glassmorphic Modal Backdrop */
+.visual-search-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(36, 25, 18, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: VSModalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 📦 Premium Modal Card */
+.visual-search-modal-card {
+  background: rgba(255, 253, 249, 0.92);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 70px rgba(128, 93, 49, 0.18), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: VSModalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar styling inside modal */
+.visual-search-modal-card::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+.visual-search-modal-card::-webkit-scrollbar-thumb {
+  background: var(--surface-strong);
+  border-radius: 3px;
+}
+
+.visual-search-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-soft);
+}
+
+.visual-search-modal-header h2 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 600;
+}
+
+.visual-search-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visual-search-close-btn:hover {
+  background-color: var(--surface-soft);
+  color: var(--ink);
+  transform: rotate(90deg);
+}
+
+/* 🛬 Luxury Drag-and-Drop Zone */
+.visual-search-dropzone {
+  border: 2px dashed var(--gold-pale);
+  background-color: rgba(251, 246, 238, 0.5);
+  border-radius: 12px;
+  padding: 48px 24px;
+  margin: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.visual-search-dropzone.dragging,
+.visual-search-dropzone:hover {
+  border-color: var(--gold);
+  background-color: var(--surface-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(183, 134, 70, 0.08);
+}
+
+.visual-search-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  margin-bottom: 16px;
+  box-shadow: 0 6px 15px rgba(183, 134, 70, 0.06);
+  transition: all 0.3s ease;
+}
+
+.visual-search-dropzone:hover .visual-search-icon-circle {
+  background-color: var(--surface-accent);
+  color: var(--gold-dark);
+}
+
+.visual-search-dropzone h3 {
+  font-family: var(--font-modern-heading);
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.visual-search-dropzone p {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 320px;
+  margin: 0 auto 20px;
+}
+
+.visual-search-select-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--white);
+  border: none;
+  font-family: var(--font-modern-heading);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 10px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.25);
+  transition: all 0.25s ease;
+}
+
+.visual-search-select-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(128, 93, 49, 0.35);
+  opacity: 0.95;
+}
+
+/* ✂️ Visual Crop Interface */
+.visual-crop-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.visual-crop-canvas-wrapper {
+  position: relative;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  background-color: #000;
+  margin-bottom: 20px;
+}
+
+.visual-crop-canvas-wrapper img {
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Crop selection box overlay styling */
+.visual-crop-selector-box {
+  position: absolute;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+  cursor: move;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+/* Golden Crop drag handles */
+.visual-crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--white);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.visual-crop-handle-nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.visual-crop-handle-ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.visual-crop-handle-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.visual-crop-handle-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+.visual-crop-instructions {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.visual-crop-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* 🎨 Dominant Colors Capsule Chips */
+.visual-color-chips-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.visual-color-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  font-family: var(--font-modern-heading);
+}
+
+.visual-color-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* 🧶 Shimmering Gold Luxury Loader */
+.visual-search-loading-wrapper {
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.visual-search-loading-text {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  color: var(--gold-dark);
+  margin-top: 24px;
+  letter-spacing: 0.5px;
+}
+
+.visual-search-loading-subtext {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+  font-family: var(--font-body);
+}
+
+/* Animated luxury thread loader */
+.gold-weave-loader {
+  position: relative;
+  width: 80px;
+  height: 50px;
+}
+
+.gold-weave-thread {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--gold);
+  border-radius: 50%;
+  animation: GoldWeaveThreadJump 1.5s infinite ease-in-out;
+  box-shadow: 0 4px 10px rgba(183, 134, 70, 0.3);
+}
+
+.gold-weave-thread:nth-child(1) {
+  left: 10px;
+  animation-delay: 0s;
+  background-color: var(--gold-dark);
+}
+
+.gold-weave-thread:nth-child(2) {
+  left: 34px;
+  animation-delay: 0.2s;
+  background-color: var(--gold);
+}
+
+.gold-weave-thread:nth-child(3) {
+  left: 58px;
+  animation-delay: 0.4s;
+  background-color: var(--gold-light);
+}
+
+/* 🎯 Match Results Container */
+.visual-search-results-section {
+  padding: 0 24px 24px;
+}
+
+.visual-results-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--surface-soft);
+}
+
+.visual-results-meta span {
+  font-size: 14px;
+  color: var(--muted);
+  font-family: var(--font-modern-heading);
+}
+
+.visual-search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 540px) {
+  .visual-search-results-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Visual search mini product card */
+.visual-match-card {
+  background: var(--paper);
+  border: 1px solid var(--surface-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.visual-match-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold-pale);
+  box-shadow: 0 10px 25px rgba(128, 93, 49, 0.08);
+}
+
+.visual-match-img-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 125%; /* 4:5 ratio */
+  overflow: hidden;
+  background-color: var(--cream);
+}
+
+.visual-match-img-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.visual-match-card:hover .visual-match-img-wrapper img {
+  transform: scale(1.05);
+}
+
+/* Similarity badge styling */
+.visual-similarity-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(36, 25, 18, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--gold-light);
+  border: 1px solid var(--gold-pale);
+  border-radius: 20px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-modern-heading);
+}
+
+.visual-match-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.visual-match-info h4 {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0 0 4px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.visual-match-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-modern-heading);
+}
+
+.visual-match-code {
+  font-weight: 500;
+}
+
+.visual-match-color {
+  background-color: var(--surface-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+@keyframes VSModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes VSModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes GoldWeaveThreadJump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-24px);
+  }
+}
