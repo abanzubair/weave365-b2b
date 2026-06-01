@@ -26,7 +26,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
 
           {/* Content side — right */}
           <div className="vendor-main-content">
-            <span className="vendor-kicker">Weaver Partnership</span>
+            <span className="vendor-kicker">Weaver Onboarding</span>
             <h1 id="vendor-editorial-heading" className="vendor-title">
               Your <span>Craft</span>.<br />
               Our <span>Platform</span>.<br />
@@ -34,7 +34,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
             </h1>
 
             <p className="vendor-lead">
-              We connect India's premium weavers and ethnic wear manufacturers directly with a global B2B wholesale buyer network. Zero upfront fees. Zero hassle. Maximum market reach.
+              We connect Banarasi master weavers and ethnic wear manufacturers directly with a global B2B wholesale buyer network. Zero upfront fees. Zero hassle. Maximum market reach.
             </p>
 
             <div className="vendor-benefits-list">
@@ -42,7 +42,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
                 <span className="vendor-benefit-num">01</span>
                 <div>
                   <h2>Instant Global Access</h2>
-                  <p>Connect with 500+ verified wholesale buyers from day one.</p>
+                  <p>Connect with verified wholesale buyers from day one.</p>
                 </div>
               </div>
               <div className="vendor-benefit-item">
@@ -56,7 +56,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
                 <span className="vendor-benefit-num">03</span>
                 <div>
                   <h2>Complete Catalog Management</h2>
-                  <p>Just send your product photos—we handle listing, SEO, and marketing for you.</p>
+                  <p>Just upload your product photos, we handle listing, SEO, and marketing for you.</p>
                 </div>
               </div>
             </div>
