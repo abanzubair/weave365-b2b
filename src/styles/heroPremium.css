@@ -35,7 +35,7 @@
 }
 
 /* Dark gradient overlays — left side for text readability, bottom for features */
-/* .premium-hero-overlay {
+.premium-hero-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -46,7 +46,7 @@
   );
   opacity: var(--hero-overlay-opacity, 1);
   pointer-events: none;
-} */
+}
 
 /* ── Content Layout ────────────────────────────────────────── */
 .premium-hero-content {
@@ -244,8 +244,8 @@
   flex: 0 0 clamp(230px, 18vw, 300px);
   min-height: clamp(310px, 36vh, 370px);
   margin-top: 0;
-  margin-right: 60px;
-  padding-left: clamp(58px, 5.2vw, 86px);
+  margin-right: 38px;
+  padding-left: clamp(27px, 2.2vw, 86px);
   margin-bottom: 300px;
   opacity: 0;
   transform: translateY(24px);
@@ -262,10 +262,10 @@
 .premium-hero-sidebar::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 27px;
   left: 0;
   width: 1px;
-  height: clamp(260px, 28vh, 290px);
+  height: clamp(130px, 17vh, 290px);
   background: var(--hero-right-text-color, #e3aa9d);
   opacity: 0.95;
 }
@@ -378,7 +378,39 @@
   }
 
   .premium-hero-sidebar {
-    display: none;
+    position: absolute;
+    top: clamp(90px, 11vh, 120px);
+    left: 24px;
+    margin: 0;
+    padding: 0 0 0 20px;
+    min-height: auto;
+    flex: none;
+    display: block;
+    z-index: 10;
+    opacity: 0.95;
+    transform: none;
+    transition: none;
+  }
+
+  .premium-hero-sidebar::before {
+    top: 6px;
+    left: 0;
+    width: 3px;
+    height: clamp(95px, 12vh, 125px);
+    background: var(--hero-right-text-color, #e3aa9d);
+    opacity: 0.9;
+  }
+
+  .premium-hero-collection-info {
+    margin-top: 0;
+    font-size: clamp(22px, 3.5vw, 28px);
+    line-height: 1.1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--hero-right-text-color, #e3aa9d);
+    opacity: 0.95;
+    text-align: left;
+    font-family: var(--font-hero-heading);
   }
 
   .premium-hero-features {
@@ -514,9 +546,7 @@
   }
 
 
-  .premium-hero-sidebar {
-    display: none;
-  }
+
 
   .premium-hero-scroll {
     right: 15px;

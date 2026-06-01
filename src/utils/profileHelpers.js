@@ -55,19 +55,10 @@ export async function syncProfileFromUser(user) {
       .insert(profileRow);
   }
 
-  const {
-    id: _id,
-    approval_status: _approvalStatus,
-    price_group: _priceGroup,
-    role: _role,
-    created_at: _createdAt,
-    ...profileUpdate
-  } = profileRow;
-
-  return supabase
-    .from('profiles')
-    .update(profileUpdate)
-    .eq('id', user.id);
+  // To prevent overwriting admin updates or direct database edits with stale user metadata
+  // from the Supabase Auth session on every page refresh, we should not blindly overwrite
+  // the profile row if it already exists.
+  return { error: null };
 }
 
 export async function loadProfileForUser(user) {

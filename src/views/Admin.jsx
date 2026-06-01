@@ -1667,7 +1667,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       <div className="admin-hero">
         <div>
           <span>Admin Dashboard</span>
-          <h1>Buyer pipeline, orders, order lists and growth signals.</h1>
+          <h1>Buyer pipeline, orders, order lists.</h1>
           <p>Monitor registered buyers, saved order lists, favourites, enquiries, follow-ups, and order activity from Supabase.</p>
         </div>
         <button className="secondary-button" onClick={loadAdminData} disabled={status === 'loading'}>
@@ -1682,28 +1682,28 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           onClick={() => setActiveTab('pipeline')}
           className={`admin-tab-btn ${activeTab === 'pipeline' ? 'active' : ''}`}
         >
-          <Users size={18} strokeWidth={activeTab === 'pipeline' ? 2.5 : 2} /> Buyer Pipeline & Growth
+          <Users size={18} strokeWidth={activeTab === 'pipeline' ? 2.5 : 2} /> Buyer Pipeline
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('blogs')}
           className={`admin-tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}
         >
-          <FileText size={18} strokeWidth={activeTab === 'blogs' ? 2.5 : 2} /> B2B Editorial Blog Manager
+          <FileText size={18} strokeWidth={activeTab === 'blogs' ? 2.5 : 2} /> Blog Manager
         </button>
         <button 
           type="button"
           onClick={() => setActiveTab('seo')}
           className={`admin-tab-btn ${activeTab === 'seo' ? 'active' : ''}`}
         >
-          <Search size={18} strokeWidth={activeTab === 'seo' ? 2.5 : 2} /> Page SEO Settings
+          <Search size={18} strokeWidth={activeTab === 'seo' ? 2.5 : 2} /> SEO Settings
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('partners')}
           className={`admin-tab-btn ${activeTab === 'partners' ? 'active' : ''}`}
         >
-          <Award size={18} strokeWidth={activeTab === 'partners' ? 2.5 : 2} /> B2B Partner Applications
+          <Award size={18} strokeWidth={activeTab === 'partners' ? 2.5 : 2} /> Vendor Applications
         </button>
       </div>
 
@@ -3212,7 +3212,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <Award size={22} />
               </div>
               <div className="admin-flex1">
-                <span className="admin-partner-metric-label">Step 3 Onboardings</span>
+                <span className="admin-partner-metric-label">Step 2 & 3 Onboardings</span>
                 <div className="admin-partner-metric-values">
                   <strong className="admin-partner-metric-value">{partnerApps.onboardings.length}</strong>
                   <span className="admin-partner-status-blue">
@@ -3258,14 +3258,14 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 onClick={() => setPartnerSubTab('reviews')}
                 className={`admin-partner-subtab-btn ${partnerSubTab === 'reviews' ? 'active' : ''}`}
               >
-                1. Product Reviews ({filteredReviews.length})
+                Product Reviews ({filteredReviews.length})
               </button>
               <button
                 type="button"
                 onClick={() => setPartnerSubTab('onboardings')}
                 className={`admin-partner-subtab-btn ${partnerSubTab === 'onboardings' ? 'active' : ''}`}
               >
-                3. Onboarding Profiles ({filteredOnboardings.length})
+                Onboarding Profiles ({filteredOnboardings.length})
               </button>
             </div>
 
