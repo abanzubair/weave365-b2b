@@ -129,7 +129,7 @@ const staticSeoDefaults = [
     metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
   },
   {
-    path: '/trusted-partner-registration',
+    path: '/vendor-registration',
     label: 'Trusted Partner Registration',
     metaTitle: 'Trusted Partner Registration | Weave 365',
     metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.',
