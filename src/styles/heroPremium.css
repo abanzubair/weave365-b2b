@@ -382,7 +382,7 @@
     top: clamp(90px, 11vh, 120px);
     left: 24px;
     margin: 0;
-    padding: 0 0 0 20px;
+    padding: 0 0 0 0;
     min-height: auto;
     flex: none;
     display: block;
@@ -399,18 +399,19 @@
     height: clamp(95px, 12vh, 125px);
     background: var(--hero-right-text-color, #e3aa9d);
     opacity: 0.9;
+    display: none;
   }
 
   .premium-hero-collection-info {
-    margin-top: 0;
-    font-size: clamp(22px, 3.5vw, 28px);
-    line-height: 1.1;
+    margin-top: 90px;
+    font-size: clamp(18px, 3.5vw, 28px);
+    line-height: 1.2;
     letter-spacing: 0.05em;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     color: var(--hero-right-text-color, #e3aa9d);
     opacity: 0.95;
     text-align: left;
-    font-family: var(--font-hero-heading);
+    font-family: var(--font-manrope-next);
   }
 
   .premium-hero-features {
