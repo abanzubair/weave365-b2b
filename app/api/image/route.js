@@ -25,11 +25,13 @@ export async function GET(request) {
     const imageKey = searchParams.get('key');
 
     let key = '';
+    let decodedImageUrl = '';
     if (imageKey) {
       key = imageKey;
     } else if (imageUrl) {
       // Decode and parse the URL to extract the R2 key
       const decodedUrl = decodeURIComponent(imageUrl);
+      decodedImageUrl = decodedUrl;
       
       if (decodedUrl.includes('images.weave365.in/')) {
         key = decodedUrl.split('images.weave365.in/')[1];
@@ -96,6 +98,16 @@ export async function GET(request) {
       return new Response(object.body, { headers });
     } else {
       // ⚙️ S3 client fetch (Local Next.js dev server fallback environment)
+      const hasS3Credentials = Boolean(
+        process.env.R2_ENDPOINT &&
+        process.env.R2_ACCESS_KEY_ID &&
+        process.env.R2_SECRET_ACCESS_KEY
+      );
+
+      if (!hasS3Credentials && decodedImageUrl && /^https?:\/\//i.test(decodedImageUrl)) {
+        return Response.redirect(decodedImageUrl, 302);
+      }
+
       const s3 = getS3Client();
       const bucketName = process.env.R2_BUCKET_NAME || 'weave365images';
 
