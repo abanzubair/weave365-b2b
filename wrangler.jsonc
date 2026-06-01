@@ -1,15 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "weave365",
-  "main": ".open-next/worker.js",
   "compatibility_date": "2026-05-20",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
+  "pages_build_output_dir": ".vercel/output/static",
   "r2_buckets": [
     {
       "binding": "R2_BUCKET",
@@ -23,4 +19,3 @@
     "enabled": true
   }
 }
-
