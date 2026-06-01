@@ -1,4 +1,5 @@
 import { ChevronRight, Sparkles, ShieldCheck, Heart } from 'lucide-react';
+import { AppLink } from './AppLink.jsx';
 
 export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
   return (
@@ -51,6 +52,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
 
             <div className="brand-pillars-list">
               
+              <div className="brand-collab-strip" style={{ display: 'none' }}></div> {/* keep visual identical */}
               <div className="brand-pillar-item">
                 <span className="pillar-num">01</span>
                 <div className="pillar-info">
@@ -78,10 +80,12 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
             </div>
 
             {/* Premium Editorial CTA */}
-            <button 
+            <AppLink 
+              to="vendor-partnership" 
               className="brand-editorial-cta" 
-              onClick={() => navigate('vendor-partnership')}
+              navigate={navigate}
               aria-label="Apply for brand showcase"
+              style={{ textDecoration: 'none' }}
             >
               <div className="brand-cta-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
                 <span className="cta-label" style={{ fontSize: '20px', fontWeight: '600' }}>Apply for Brand Showcase</span>
@@ -90,7 +94,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
               <div className="cta-arrow-circle" style={{ marginLeft: '16px' }}>
                 <ChevronRight size={20} />
               </div>
-            </button>
+            </AppLink>
 
           </div>
 

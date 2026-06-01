@@ -22,6 +22,7 @@ import { storeConfig } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { Calendar, Clock } from 'lucide-react';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
+import { AppLink } from '../components/AppLink.jsx';
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
@@ -136,6 +137,13 @@ export function Home({
   blogs = [],
 }) {
   const [isMobile, setIsMobile] = useState(false);
+  const handleLinkClick = (e, to, productId = null, shopName = null) => {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
+      return;
+    }
+    e.preventDefault();
+    navigate(to, productId, shopName);
+  };
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
@@ -488,18 +496,22 @@ export function Home({
                 </p>
 
                 <div className="premium-hero-actions">
-                  <button
+                  <AppLink
+                    to={heroButtonLink || defaultHero.buttonLink}
                     className="premium-btn-filled"
-                    onClick={() => openHeroLink(heroButtonLink, defaultHero.buttonLink)}
+                    navigate={navigate}
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     {heroButtonText}
-                  </button>
-                  <button
+                  </AppLink>
+                  <AppLink
+                    to={heroButton2Link || defaultHero.button2Link}
                     className="premium-btn-text"
-                    onClick={() => openHeroLink(heroButton2Link, defaultHero.button2Link)}
+                    navigate={navigate}
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                   >
                     {heroButton2Text} <ArrowRight size={18} />
-                  </button>
+                  </AppLink>
                 </div>
 
                 <div className="premium-hero-features">
@@ -666,7 +678,7 @@ export function Home({
           >
             {dealProducts.map(({ product, variant, image, discountPercent }) => (
               <article className="deal-card" key={product.id}>
-                <button className="deal-image" type="button" onClick={() => navigate('product', product.id)}>
+                <AppLink to="product" productId={product.id} className="deal-image" navigate={navigate}>
                   <img
                     src={image}
                     alt={product.title}
@@ -677,7 +689,7 @@ export function Home({
                     onError={(e) => { e.target.style.opacity = '0'; }}
                   />
                   <span>{discountPercent}% Off</span>
-                </button>
+                </AppLink>
                 <div className="deal-card-copy">
                   <strong>{product.title}</strong>
                   <small>{variant.code}</small>
@@ -691,9 +703,9 @@ export function Home({
                       <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>
                     )}
                   </div>
-                  <button className="deal-order-button" type="button" onClick={() => navigate('product', product.id)}>
+                  <AppLink to="product" productId={product.id} className="deal-order-button" navigate={navigate} style={{ textDecoration: 'none' }}>
                     <ShoppingBag size={16} /> Order Now
-                  </button>
+                  </AppLink>
                 </div>
               </article>
             ))}
@@ -705,13 +717,13 @@ export function Home({
         <SectionTitle title="Shop By Category" align="left" />
         <div className="category-grid">
           {homeCategoryNames.map((name, index) => (
-            <button
+            <AppLink
               key={name}
+              to="wholesale-catalogue"
               className="category-card"
-              onClick={() => {
-                setCategory(name);
-                navigate('wholesale-catalogue');
-              }}
+              onClick={() => setCategory(name)}
+              navigate={navigate}
+              style={{ textDecoration: 'none' }}
             >
               <img
                 src={categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length]}
@@ -724,21 +736,21 @@ export function Home({
               />
               <span>{name}</span>
               <ArrowRight size={18} />
-            </button>
+            </AppLink>
           ))}
         </div>
-        <button className="center-button" onClick={() => navigate('wholesale-catalogue')}>
+        <AppLink to="wholesale-catalogue" className="center-button" navigate={navigate} style={{ textDecoration: 'none' }}>
           View All Categories
-        </button>
+        </AppLink>
       </section>
 
       {bestsellers.length > 0 && (
         <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
             <SectionTitle title="Best Sellers" align="left" />
-            <button className="text-button" onClick={() => navigate('wholesale-catalogue')}>
+            <AppLink to="wholesale-catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               View All <ArrowRight size={17} />
-            </button>
+            </AppLink>
           </div>
           <StateMessage status={status} error={error} />
           <div className="scroll-wrapper">
@@ -780,9 +792,9 @@ export function Home({
       <section className="section home-product-section new-arrivals-section">
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
-          <button className="text-button" onClick={() => navigate('wholesale-catalogue')}>
+          <AppLink to="wholesale-catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             View All <ArrowRight size={17} />
-          </button>
+          </AppLink>
         </div>
         <StateMessage status={status} error={error} />
         <div className="scroll-wrapper">
@@ -824,9 +836,9 @@ export function Home({
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
           <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <button className="primary-button compact" onClick={() => navigate('about')}>
+          <AppLink to="about" className="primary-button compact" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             Know More
-          </button>
+          </AppLink>
         </div>
         <div className="stats-panel">
           <Stat icon={<LayoutGrid />} value="1000+" label="Unique Designs" />
@@ -876,13 +888,14 @@ export function Home({
             <h2>Insights from Banaras Looms</h2>
           </div>
           <div className="home-blog-header-right">
-            <button
+            <AppLink
+              to="blog"
               className="blog-filter-btn active"
-              onClick={() => navigate('blog')}
-              style={{ padding: '0.75rem 2rem' }}
+              navigate={navigate}
+              style={{ padding: '0.75rem 2rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
             >
               Read All Insights
-            </button>
+            </AppLink>
           </div>
         </div>
 
@@ -897,10 +910,13 @@ export function Home({
 
           <div className="home-blog-grid" id="home-blog-row">
             {isMounted && blogs.slice(0, 4).map((post) => (
-              <article
+              <AppLink
                 key={post.slug}
+                to="blog"
+                productId={post.slug}
                 className="blog-card"
-                onClick={() => navigate('blog', post.slug)}
+                navigate={navigate}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
               >
                 <div className="card-img-wrapper">
                   <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
@@ -918,14 +934,14 @@ export function Home({
                   </div>
                   <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
                   <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
-                  <button
+                  <span
                     className="read-more-link"
-                    style={{ marginTop: 'auto', fontSize: '0.8rem' }}
+                    style={{ marginTop: 'auto', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     Read Guide <ArrowRight size={14} />
-                  </button>
+                  </span>
                 </div>
-              </article>
+              </AppLink>
             ))}
           </div>
 
@@ -944,7 +960,7 @@ export function Home({
           <div className="seo-compact-left">
             <span className="seo-compact-kicker">TRUSTED PARTNERSHIP</span>
             <h2>Trusted B2B Banarasi Saree Supplier</h2>
-            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our B2B portal is designed specifically to supply <a href="/wholesale-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('wholesale-banarasi-sarees'); }} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
+            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our B2B portal is designed specifically to supply <a href="/wholesale-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'wholesale-banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
           </div>
 
           <div className="seo-compact-right">
@@ -953,7 +969,7 @@ export function Home({
                 <Gem size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Explore Wholesale Saree Collections</h2>
               </div>
-              <p>Discover our extensive <a href="/wholesale-catalogue" onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => { e.preventDefault(); navigate('katan-silk-sarees'); }} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => { e.preventDefault(); navigate('organza-banarasi-sarees'); }} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/wholesale-catalogue" onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
+              <p>Discover our extensive <a href="/wholesale-catalogue" onClick={(e) => handleLinkClick(e, 'wholesale-catalogue')} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => handleLinkClick(e, 'katan-silk-sarees')} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'organza-banarasi-sarees')} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/wholesale-catalogue" onClick={(e) => handleLinkClick(e, 'wholesale-catalogue')} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
             </div>
 
             <div className="seo-compact-card">
@@ -961,7 +977,7 @@ export function Home({
                 <Award size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Why Retailers Choose Weave 365</h2>
               </div>
-              <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern B2B commerce.</p>
+              <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern B2B commerce.</p>
             </div>
 
             <div className="seo-compact-card">
@@ -969,7 +985,7 @@ export function Home({
                 <MapPin size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Banarasi Sarees Direct from Varanasi</h2>
               </div>
-              <p>By partnering directly with <a href="/vendor-partnership" onClick={(e) => { e.preventDefault(); navigate('vendor-partnership'); }} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
+              <p>By partnering directly with <a href="/vendor-partnership" onClick={(e) => handleLinkClick(e, 'vendor-partnership')} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
             </div>
 
             <div className="seo-compact-card">
@@ -977,7 +993,7 @@ export function Home({
                 <Globe size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Flexible MOQ for Wholesale, Export and Dropshipping</h2>
               </div>
-              <p>We understand that every business scales differently. That's why we offer flexible Minimum Order Quantities (MOQ), supporting small boutique dropshipping, large-scale domestic retail, and international export orders worldwide. Learn how to launch your business with our expert <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => { e.preventDefault(); navigate('blog', 'how-to-start-saree-reselling-business'); }} className="seo-inline-link">saree reselling business blueprint</a>.</p>
+              <p>We understand that every business scales differently. That's why we offer flexible Minimum Order Quantities (MOQ), supporting small boutique dropshipping, large-scale domestic retail, and international export orders worldwide. Learn how to launch your business with our expert <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => handleLinkClick(e, 'blog', 'how-to-start-saree-reselling-business')} className="seo-inline-link">saree reselling business blueprint</a>.</p>
             </div>
           </div>
         </div>

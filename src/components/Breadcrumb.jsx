@@ -47,21 +47,16 @@ export default function Breadcrumb({ items, navigate }) {
                   <a
                     href={item.url}
                     onClick={(e) => {
+                      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
+                        return;
+                      }
                       if (navigate && !item.url.startsWith('http')) {
                         e.preventDefault();
                         if (item.route) {
                           navigate(item.route, item.routeVal, item.routeSlug);
                         } else {
-                          // Fallback parsing for slash paths if matches routes
-                          if (item.url === '/' || item.url === '/home') {
-                            navigate('home');
-                          } else if (item.url === '/wholesale-catalogue') {
-                            navigate('wholesale-catalogue');
-                          } else if (item.url === '/blog') {
-                            navigate('blog');
-                          } else {
-                            window.location.href = item.url;
-                          }
+                          const routeSlug = item.url.replace(/^\/+/, '') || 'home';
+                          navigate(routeSlug);
                         }
                       }
                     }}

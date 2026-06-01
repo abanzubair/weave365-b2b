@@ -14,6 +14,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ArrowRight, Calendar, Clock, User, Filter, Search, X } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import { AppLink } from '../components/AppLink.jsx';
 
 export function BlogList({ navigate, blogs = [] }) {
   const searchParams = useSearchParams();
@@ -238,10 +239,13 @@ export function BlogList({ navigate, blogs = [] }) {
           {remainingPosts.length > 0 ? (
             <section className="blog-grid" style={{ marginBottom: 0 }}>
               {remainingPosts.map((post) => (
-                <article 
+                <AppLink 
                   key={post.slug} 
+                  to="blog"
+                  productId={post.slug}
                   className="blog-card animate-fade-in"
-                  onClick={() => navigate('blog', post.slug)}
+                  navigate={navigate}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
                 >
                   <div className="card-img-wrapper">
                     <img 
@@ -266,18 +270,14 @@ export function BlogList({ navigate, blogs = [] }) {
                     <h3>{post.title}</h3>
                     <p>{post.intro}</p>
 
-                    <button 
+                    <span 
                       className="read-more-link"
-                      style={{ marginTop: 'auto' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('blog', post.slug);
-                      }}
+                      style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                     >
                       Read Article <ArrowRight size={14} />
-                    </button>
+                    </span>
                   </div>
-                </article>
+                </AppLink>
               ))}
             </section>
           ) : (
@@ -351,13 +351,14 @@ export function BlogList({ navigate, blogs = [] }) {
               <p style={{ fontSize: '0.85rem', lineHeight: '1.5', opacity: 0.85, marginBottom: '1.5rem' }}>
                 Source authentic Banarasi sarees and suits direct from Varanasi weavers with low MOQs and reliable global shipping.
               </p>
-              <button 
+              <AppLink 
+                to="bulk-inquiry"
                 className="sidebar-luxury-btn"
-                style={{ padding: '0.8rem', fontSize: '0.8rem' }}
-                onClick={() => navigate('bulk-inquiry')}
+                style={{ padding: '0.8rem', fontSize: '0.8rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                navigate={navigate}
               >
                 Request Bulk Quotes
-              </button>
+              </AppLink>
             </div>
           </div>
         </aside>

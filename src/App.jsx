@@ -34,6 +34,7 @@ import { RouteFallback } from './components/RouteFallback.jsx';
 import { Footer } from './components/Footer.jsx';
 import { InternalLinkNetwork } from './components/InternalLinkNetwork.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
+import { AppLink } from './components/AppLink.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import { Home, homeCategoryNames } from './views/Home.jsx';
@@ -752,6 +753,12 @@ export default function App({ initialData = {} }) {
     }
   }, [router, search, category, fabric]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.__appNavigate = navigate;
+    }
+  }, [navigate]);
+
   const handleSignOut = useCallback(async () => {
     if (isSupabaseConfigured) {
       await supabase.auth.signOut();
@@ -1014,25 +1021,29 @@ export default function App({ initialData = {} }) {
             href="/"
             className="brand"
             onClick={(e) => {
-              e.preventDefault();
-              navigate('home');
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                e.preventDefault();
+                navigate('home');
+              }
             }}
           >
             <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
           </a>
           <nav className="main-nav">
-            <button 
+            <AppLink 
+              to="new-arrivals" 
               className={route === 'new-arrivals' ? 'active' : ''} 
-              onClick={() => navigate('new-arrivals')}
+              navigate={navigate}
             >
               NEW ARRIVALS
-            </button>
-            <button 
+            </AppLink>
+            <AppLink 
+              to="wholesale-catalogue" 
               className={route === 'wholesale-catalogue' ? 'active' : ''} 
-              onClick={() => navigate('wholesale-catalogue')}
+              navigate={navigate}
             >
               CATALOGUE
-            </button>
+            </AppLink>
             <div className="nav-item-dropdown" ref={categoriesRef}>
               <button
                 className={dropdownOpen === 'categories' ? 'active' : ''}
@@ -1117,18 +1128,20 @@ export default function App({ initialData = {} }) {
                 document.body
               )}
             </div>
-            <button 
+            <AppLink 
+              to="about" 
               className={route === 'about' ? 'active' : ''} 
-              onClick={() => navigate('about')}
+              navigate={navigate}
             >
               ABOUT
-            </button>
-            <button 
+            </AppLink>
+            <AppLink 
+              to="contact" 
               className={route === 'contact' ? 'active' : ''} 
-              onClick={() => navigate('contact')}
+              navigate={navigate}
             >
               CONTACT
-            </button>
+            </AppLink>
           </nav>
 
           <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalogue')}>

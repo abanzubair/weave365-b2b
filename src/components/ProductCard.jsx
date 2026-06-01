@@ -19,6 +19,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -157,7 +158,7 @@ export const ProductCard = memo(function ProductCard({
   return (
     <article className="product-card">
       <div className="card-media">
-        <button className="image-button" onClick={() => navigate('product', product.id)}>
+        <AppLink to="product" productId={product.id} className="image-button" navigate={navigate}>
           <img
             src={image}
             alt={descriptiveAlt}
@@ -176,7 +177,7 @@ export const ProductCard = memo(function ProductCard({
               ))}
             </div>
           )}
-        </button>
+        </AppLink>
         <button
           className="save-btn-circle"
           onClick={() => toggleFavorite(product)}
@@ -188,8 +189,15 @@ export const ProductCard = memo(function ProductCard({
       </div>
 
       <div className="product-card-copy">
-        <h3 className="card-title" onClick={() => navigate('product', product.id)}>
-          {product.title}
+        <h3 className="card-title" style={{ cursor: 'pointer' }}>
+          <AppLink 
+            to="product" 
+            productId={product.id} 
+            navigate={navigate}
+            style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
+          >
+            {product.title}
+          </AppLink>
         </h3>
 
         <div className={`card-info-grid ${(isPriceLocked || !showRightInfo) ? 'price-locked' : ''}`}>

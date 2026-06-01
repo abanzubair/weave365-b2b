@@ -45,16 +45,21 @@ function PinterestIcon({ size = 16, className = "" }) {
 }
 
 export function Footer({ navigate }) {
+  const handleLinkClick = (e, to, productId = null, shopName = null) => {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
+      return;
+    }
+    e.preventDefault();
+    navigate(to, productId, shopName);
+  };
+
   return (
     <footer id="contact" className="footer">
       <div>
         <a
           href="/"
           className="brand footer-brand"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('home');
-          }}
+          onClick={(e) => handleLinkClick(e, 'home')}
         >
           <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" />
         </a>
@@ -62,27 +67,27 @@ export function Footer({ navigate }) {
       </div>
       <div>
         <h3>Company</h3>
-        <a href="/about" onClick={(e) => { e.preventDefault(); navigate('about'); }}>About Us</a>
-        <a href="/contact" onClick={(e) => { e.preventDefault(); navigate('contact'); }}>Contact Us</a>
-        <a href="/wholesale-catalogue" onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }}>Catalogue</a>
-        <a href="/bulk-inquiry" onClick={(e) => { e.preventDefault(); navigate('bulk-inquiry'); }}>Bulk Order</a>
-        <a href="/favorites" onClick={(e) => { e.preventDefault(); navigate('favorites'); }}>My Favorites</a>
+        <a href="/about" onClick={(e) => handleLinkClick(e, 'about')}>About Us</a>
+        <a href="/contact" onClick={(e) => handleLinkClick(e, 'contact')}>Contact Us</a>
+        <a href="/wholesale-catalogue" onClick={(e) => handleLinkClick(e, 'wholesale-catalogue')}>Catalogue</a>
+        <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')}>Bulk Order</a>
+        <a href="/favorites" onClick={(e) => handleLinkClick(e, 'favorites')}>My Favorites</a>
       </div>
       <div>
         <h3>Information</h3>
-        <a href="/disclaimer" onClick={(e) => { e.preventDefault(); navigate('disclaimer'); }}>Disclaimer</a>
-        <a href="/shipping-delivery" onClick={(e) => { e.preventDefault(); navigate('shipping-delivery'); }}>Shipping & Delivery</a>
-        <a href="/returns-cancellation" onClick={(e) => { e.preventDefault(); navigate('returns-cancellation'); }}>Returns & Cancellation</a>
-        <a href="/privacy-security" onClick={(e) => { e.preventDefault(); navigate('privacy-security'); }}>Privacy & Security</a>
-        <a href="/terms-conditions" onClick={(e) => { e.preventDefault(); navigate('terms-conditions'); }}>Terms & Conditions</a>
+        <a href="/disclaimer" onClick={(e) => handleLinkClick(e, 'disclaimer')}>Disclaimer</a>
+        <a href="/shipping-delivery" onClick={(e) => handleLinkClick(e, 'shipping-delivery')}>Shipping & Delivery</a>
+        <a href="/returns-cancellation" onClick={(e) => handleLinkClick(e, 'returns-cancellation')}>Returns & Cancellation</a>
+        <a href="/privacy-security" onClick={(e) => handleLinkClick(e, 'privacy-security')}>Privacy & Security</a>
+        <a href="/terms-conditions" onClick={(e) => handleLinkClick(e, 'terms-conditions')}>Terms & Conditions</a>
       </div>
       <div>
         <h3>Blog</h3>
-        <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('blog'); }}>All Blog Articles</a>
-        <a href="/blog?category=Wholesale Guides" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Wholesale Guides'); }}>Wholesale Guides</a>
-        <a href="/blog?category=Reseller Business" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Reseller Business'); }}>Reseller Business</a>
-        <a href="/blog?category=Banarasi Insights" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Banarasi Insights'); }}>Banarasi Insights</a>
-        <a href="/blog?category=Business Growth" onClick={(e) => { e.preventDefault(); navigate('blog', '?category=Business Growth'); }}>Business Growth</a>
+        <a href="/blog" onClick={(e) => handleLinkClick(e, 'blog')}>All Blog Articles</a>
+        <a href="/blog?category=Wholesale Guides" onClick={(e) => handleLinkClick(e, 'blog', '?category=Wholesale Guides')}>Wholesale Guides</a>
+        <a href="/blog?category=Reseller Business" onClick={(e) => handleLinkClick(e, 'blog', '?category=Reseller Business')}>Reseller Business</a>
+        <a href="/blog?category=Banarasi Insights" onClick={(e) => handleLinkClick(e, 'blog', '?category=Banarasi Insights')}>Banarasi Insights</a>
+        <a href="/blog?category=Business Growth" onClick={(e) => handleLinkClick(e, 'blog', '?category=Business Growth')}>Business Growth</a>
       </div>
       <div>
         <h3>Social Links</h3>
@@ -101,10 +106,7 @@ export function Footer({ navigate }) {
         <a
           href="/vendor-partnership"
           className="footer-link"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('vendor-partnership');
-          }}
+          onClick={(e) => handleLinkClick(e, 'vendor-partnership')}
         >
           <UserPlus size={16} /> Weaver Onboarding
         </a>

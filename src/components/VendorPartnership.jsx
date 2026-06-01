@@ -4,6 +4,7 @@
  * Guides Varanasi craft weavers and manufacturers on how to catalog and list their products on the platform.
  */
 import { ChevronRight, Factory, Handshake, BarChart3, Camera, Truck, IndianRupee } from 'lucide-react';
+import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
 
 export function VendorPartnership({ imageUrl, navigate, onCta }) {
@@ -59,9 +60,10 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
               </div>
             </div>
 
-            <button
+            <AppLink
+              to="vendor-registration"
               className="vendor-cta"
-              onClick={onCta || (() => navigate('vendor-partnership'))}
+              style={{ textDecoration: 'none' }}
             >
               <div className="vendor-cta-content">
                 <span className="vendor-cta-label">List Your Products</span>
@@ -70,7 +72,7 @@ export function VendorPartnership({ imageUrl, navigate, onCta }) {
               <div className="vendor-cta-action">
                 <ChevronRight size={28} className="vendor-arrow-icon" />
               </div>
-            </button>
+            </AppLink>
           </div>
         </div>
 

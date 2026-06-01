@@ -15,6 +15,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Copy, Check, Share2 } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import { AppLink } from '../components/AppLink.jsx';
 
 const slugifyCategory = (cat) => {
   if (!cat) return '';
@@ -25,6 +26,13 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+  const handleLinkClick = (e, to, productId = null, shopName = null) => {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
+      return;
+    }
+    e.preventDefault();
+    navigate(to, productId, shopName);
+  };
 
   const handleUniversalShare = async () => {
     const shareData = {
@@ -257,10 +265,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
           <a
             key={match.index}
             href={url}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(targetRoute);
-            }}
+            onClick={(e) => handleLinkClick(e, targetRoute)}
             className="seo-inline-link"
           >
             {label}
@@ -397,9 +402,9 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       <div className="blog-list-container text-center" style={{ padding: '12rem 5% 8rem' }}>
         <h1 style={{ fontFamily: "var(--font-hero-heading)", color: "var(--blog-gold-dark)", fontSize: '3rem', marginBottom: '1.5rem' }}>Article Not Found</h1>
         <p className="blog-list-subtitle" style={{ marginBottom: '3rem' }}>The blog post you are looking for may have been moved or renamed.</p>
-        <button className="blog-filter-btn active" onClick={() => navigate('blog')}>
+        <AppLink to="blog" className="blog-filter-btn active" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
           Return to Blog List
-        </button>
+        </AppLink>
       </div>
     );
   }
@@ -518,7 +523,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                 <li key={cat}>
                   <a
                     href={`/blog?category=${cat}`}
-                    onClick={(e) => { e.preventDefault(); navigate('blog', `?category=${cat}`); }}
+                    onClick={(e) => handleLinkClick(e, 'blog', `?category=${cat}`)}
                     className={post.category === cat ? 'active' : ''}
                   >
                     <span className="sidebar-cat-dot" />
@@ -527,12 +532,14 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                 </li>
               ))}
             </ul>
-            <button
+            <AppLink
+              to="blog"
               className="sidebar-all-blogs-btn"
-              onClick={() => navigate('blog')}
+              navigate={navigate}
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'none' }}
             >
               All Blogs <ArrowRight size={14} />
-            </button>
+            </AppLink>
           </div>
 
           {/* Recent Posts Widget */}
@@ -547,7 +554,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                     key={rp.slug}
                     className="sidebar-recent-item"
                     href={`/blog/${rp.slug}`}
-                    onClick={(e) => { e.preventDefault(); navigate('blog', rp.slug); }}
+                    onClick={(e) => handleLinkClick(e, 'blog', rp.slug)}
                   >
                     <div className="sidebar-recent-thumb">
                       <img src={rp.image} alt={rp.title} loading="lazy" />
@@ -570,10 +577,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                   <a
                     key={tag}
                     href={`/blog?search=${encodeURIComponent(tag)}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate('blog', `?search=${encodeURIComponent(tag)}`);
-                    }}
+                    onClick={(e) => handleLinkClick(e, 'blog', `?search=${encodeURIComponent(tag)}`)}
                     className="sidebar-tag-pill"
                   >
                     {tag}
@@ -592,7 +596,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                   <a
                     className="sidebar-nav-link sidebar-nav-prev"
                     href={`/blog/${prevPost.slug}`}
-                    onClick={(e) => { e.preventDefault(); navigate('blog', prevPost.slug); }}
+                    onClick={(e) => handleLinkClick(e, 'blog', prevPost.slug)}
                   >
                     <ChevronLeft size={16} className="sidebar-nav-icon" />
                     <span className="sidebar-nav-label">Previous</span>
@@ -602,7 +606,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                   <a
                     className="sidebar-nav-link sidebar-nav-next"
                     href={`/blog/${nextPost.slug}`}
-                    onClick={(e) => { e.preventDefault(); navigate('blog', nextPost.slug); }}
+                    onClick={(e) => handleLinkClick(e, 'blog', nextPost.slug)}
                   >
                     <span className="sidebar-nav-label">Next</span>
                     <ChevronRight size={16} className="sidebar-nav-icon" />
@@ -648,10 +652,13 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
           <h2>Continue Reading{post.category ? ` ${post.category}` : ' More Articles'}</h2>
           <div className="blog-grid">
             {relatedPosts.map((rPost) => (
-              <article 
+              <AppLink 
                 key={rPost.slug} 
+                to="blog"
+                productId={rPost.slug}
                 className="blog-card"
-                onClick={() => navigate('blog', rPost.slug)}
+                navigate={navigate}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
               >
                 <div className="card-img-wrapper">
                   <img src={rPost.image} alt={rPost.title} loading="lazy" />
@@ -665,14 +672,14 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                   </div>
                   <h3>{rPost.title}</h3>
                   <p>{rPost.intro}</p>
-                  <button 
+                  <span 
                     className="read-more-link"
-                    style={{ marginTop: 'auto' }}
+                    style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     Read Guide <ArrowRight size={14} />
-                  </button>
+                  </span>
                 </div>
-              </article>
+              </AppLink>
             ))}
           </div>
         </section>

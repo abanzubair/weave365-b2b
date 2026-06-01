@@ -1,4 +1,5 @@
 import { CheckCircle2, ChevronRight, Share2, Package, TrendingUp, ShieldCheck } from 'lucide-react';
+import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
 
 export function ResellerGrowth({ imageUrl, navigate }) {
@@ -41,11 +42,11 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               </div>
             </div>
 
-            <button 
+            <AppLink 
+              to="wholesale-partner-program" 
               className="growth-cta" 
-              onClick={() => {
-                navigate('wholesale-partner-program');
-              }}
+              navigate={navigate}
+              style={{ textDecoration: 'none' }}
             >
               <div className="growth-content">
                 <span className="growth-label">Grow with us</span>
@@ -54,7 +55,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               <div className="growth-action">
                 <ChevronRight size={28} className="arrow-icon" />
               </div>
-            </button>
+            </AppLink>
           </div>
 
           <div className="editorial-visual-stack">
