@@ -9,11 +9,10 @@
 import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut, Camera } from 'lucide-react';
+import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
-import { VisualSearchModal } from './components/VisualSearchModal.jsx';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager, CURRENCIES } from './storefrontShared.jsx';
@@ -104,7 +103,6 @@ export default function App({ initialData = {} }) {
   const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
   const [error, setError] = useState(() => initialData.error || '');
   const [search, setSearch] = useState('');
-  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [category, setCategory] = useState('All');
   const [fabric, setFabric] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
@@ -1356,15 +1354,6 @@ export default function App({ initialData = {} }) {
                   autoFocus
                   className="premium-search-input-field"
                 />
-                <button
-                  type="button"
-                  className="visual-search-trigger-btn header-visual-search-btn"
-                  onClick={() => setIsVisualSearchOpen(true)}
-                  title="Search by Image"
-                  style={{ marginRight: '16px' }}
-                >
-                  <Camera size={20} strokeWidth={1.5} />
-                </button>
                 {search && (
                   <button className="search-clear-btn" onClick={() => setSearch('')}>
                     Clear
@@ -1541,15 +1530,6 @@ export default function App({ initialData = {} }) {
         buyerProfile={buyerProfile}
         setBuyerProfile={setBuyerProfile}
         initialMode={authInitialMode}
-      />
-      <VisualSearchModal
-        isOpen={isVisualSearchOpen}
-        onClose={() => setIsVisualSearchOpen(false)}
-        priceAccess={priceAccess}
-        onSelectVariant={(variantCode, productGroupKey) => {
-          setSearchActive(false);
-          navigate('product', `${productGroupKey}?variant=${variantCode}`);
-        }}
       />
     </>
   );

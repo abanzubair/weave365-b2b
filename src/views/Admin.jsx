@@ -1258,31 +1258,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setSyncStatus('loading');
     try {
       await syncSheetsToSupabase();
-      
-      // Automatically trigger the background visual indexer endpoint
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const headers = sessionData?.session?.access_token
-          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
-          : {};
-        const visualSyncResponse = await fetch('/api/sync/visual', { method: 'POST', headers });
-        const resData = await visualSyncResponse.json().catch(() => ({}));
-
-        if (visualSyncResponse.ok) {
-          const remainingText = Number.isFinite(resData.remaining) && resData.remaining > 0
-            ? `\nRemaining images: ${resData.remaining}`
-            : '';
-          alert(`Google Sheets synced successfully!\n\nAI Visual Indexer: ${resData.message}${remainingText}`);
-        } else {
-          const detail = resData.error || resData.message || `HTTP ${visualSyncResponse.status}`;
-          console.error('Visual search AI indexing API returned an error:', detail, resData);
-          alert(`Sheets synced, but visual search AI indexing API returned an error:\n\n${detail}`);
-        }
-      } catch (visErr) {
-        console.error('Sheets synced, but visual search AI indexing trigger failed:', visErr);
-        alert('Sheets synced successfully! (Visual vector indexing background task failed to trigger).');
-      }
-
+      alert('Successfully synced Google Sheets to Supabase!');
       await loadAdminData();
     } catch (err) {
       alert('Sync failed: ' + err.message);

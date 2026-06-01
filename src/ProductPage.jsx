@@ -660,34 +660,9 @@ export function ProductDetail({
   }, [product.id, product.title]);
 
   useEffect(() => {
-    let initialVariantCode = product.variants[0]?.code;
-    
-    // Check if a specific color variant is requested via URL query params (for visual search redirects)
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const requestedVariant = urlParams.get('variant');
-      if (requestedVariant && product.variants.some(v => v.code === requestedVariant)) {
-        initialVariantCode = requestedVariant;
-      }
-    }
-
-    const matchedVariant = product.variants.find((v) => v.code === initialVariantCode) || product.variants[0];
-    setVariantCode(initialVariantCode);
-    
-    if (matchedVariant) {
-      if (matchedVariant.image) {
-        setSelectedImage(matchedVariant.image);
-      } else {
-        setSelectedImage(product.images[0]);
-      }
-      
-      if (matchedVariant.color) {
-        setSelectedColorName(matchedVariant.color);
-      } else {
-        setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
-      }
-    }
-    
+    setSelectedImage(product.images[0]);
+    setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
+    setVariantCode(product.variants[0]?.code);
     setVariationDrawerOpen(false);
   }, [product]);
 

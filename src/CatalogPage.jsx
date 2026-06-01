@@ -4,13 +4,12 @@
  * instantaneous text search, custom responsive product grids, and quick order list compilation.
  */
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, X, RotateCcw, Camera } from 'lucide-react';
+import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
-import { VisualSearchModal } from './components/VisualSearchModal.jsx';
 
 export function Catalog({
   title,
@@ -38,7 +37,6 @@ export function Catalog({
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
 
   // Google JSON-LD BreadcrumbList Schema injection
   useEffect(() => {
@@ -189,14 +187,6 @@ export function Catalog({
                 }}
                 placeholder="Search designs, fabrics, codes..."
               />
-              <button
-                type="button"
-                className="visual-search-trigger-btn"
-                onClick={() => setIsVisualSearchOpen(true)}
-                title="Search by Image"
-              >
-                <Camera size={16} />
-              </button>
               {search && (
                 <button className="clear-search-btn" onClick={() => setSearch('')}>
                   <X size={14} />
@@ -331,17 +321,6 @@ export function Catalog({
           <p className="empty-state">No products match this search.</p>
         )
       )}
-
-      {/* Luxury AI Visual Search Modal */}
-      <VisualSearchModal
-        isOpen={isVisualSearchOpen}
-        onClose={() => setIsVisualSearchOpen(false)}
-        priceAccess={priceAccess}
-        onSelectVariant={(variantCode, productGroupKey) => {
-          // Direct, variant-activated premium B2B routing!
-          navigate('product', `${productGroupKey}?variant=${variantCode}`);
-        }}
-      />
     </section>
   );
 }

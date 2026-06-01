@@ -18,9 +18,6 @@
     "NEXT_PUBLIC_STORE_WHATSAPP": "919919101369",
     "NEXT_PUBLIC_ADMIN_EMAILS": "abanzubair@gmail.com"
   },
-  "ai": {
-    "binding": "AI"
-  },
   "observability": {
     "enabled": true
   }
