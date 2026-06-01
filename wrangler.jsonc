@@ -6,12 +6,6 @@
     "nodejs_compat"
   ],
   "pages_build_output_dir": ".vercel/output/static",
-  "r2_buckets": [
-    {
-      "binding": "R2_BUCKET",
-      "bucket_name": "weave365images"
-    }
-  ],
   "ai": {
     "binding": "AI"
   },
