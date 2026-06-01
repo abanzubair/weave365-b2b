@@ -3951,12 +3951,12 @@ button {
   max-width: 780px;
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(36px, 4.4vw, 66px);
+  font-size: 44px;
   line-height: 0.98;
 }
 
 .admin-hero p {
-  max-width: 720px;
+  /* max-width: 720px; */
   margin: 12px 0 0;
   color: var(--muted);
   font-size: 17px;
