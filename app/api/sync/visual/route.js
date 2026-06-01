@@ -4,19 +4,34 @@ import { parseProductCsv } from '../../../../src/productData.js';
 
 export const runtime = 'edge';
 
-function getAdminSupabase() {
+function getSyncSupabase(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
-    throw new Error('Supabase URL or Service Role Key missing in backend environment');
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is missing in the backend environment.');
   }
-  return createClient(url, serviceKey);
+
+  if (serviceKey) {
+    return createClient(url, serviceKey);
+  }
+
+  const authHeader = request.headers.get('authorization');
+  if (!anonKey || !authHeader) {
+    throw new Error('Visual indexing needs either SUPABASE_SERVICE_ROLE_KEY in the backend environment or an authenticated admin session from the browser.');
+  }
+
+  return createClient(url, anonKey, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: authHeader } },
+  });
 }
 
 export async function POST(request) {
   try {
     // 1. Verify admin permissions (optional security checks)
-    const supabaseAdmin = getAdminSupabase();
+    const supabaseAdmin = getSyncSupabase(request);
 
     // 2. Fetch the latest products CSV synced in Supabase
     const { data: sheetData, error: sheetError } = await supabaseAdmin

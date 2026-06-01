@@ -1261,12 +1261,22 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       
       // Automatically trigger the background visual indexer endpoint
       try {
-        const visualSyncResponse = await fetch('/api/search/visual/../../sync/visual', { method: 'POST' });
+        const { data: sessionData } = await supabase.auth.getSession();
+        const headers = sessionData?.session?.access_token
+          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+          : {};
+        const visualSyncResponse = await fetch('/api/sync/visual', { method: 'POST', headers });
+        const resData = await visualSyncResponse.json().catch(() => ({}));
+
         if (visualSyncResponse.ok) {
-          const resData = await visualSyncResponse.json();
-          alert(`Google Sheets synced successfully!\n\nAI Visual Indexer: ${resData.message}`);
+          const remainingText = Number.isFinite(resData.remaining) && resData.remaining > 0
+            ? `\nRemaining images: ${resData.remaining}`
+            : '';
+          alert(`Google Sheets synced successfully!\n\nAI Visual Indexer: ${resData.message}${remainingText}`);
         } else {
-          alert('Sheets synced, but visual search AI indexing API returned an error.');
+          const detail = resData.error || resData.message || `HTTP ${visualSyncResponse.status}`;
+          console.error('Visual search AI indexing API returned an error:', detail, resData);
+          alert(`Sheets synced, but visual search AI indexing API returned an error:\n\n${detail}`);
         }
       } catch (visErr) {
         console.error('Sheets synced, but visual search AI indexing trigger failed:', visErr);
