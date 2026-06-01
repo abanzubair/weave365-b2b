@@ -201,9 +201,33 @@ export function Home({
   }, []);
   */
 
-  const activeHeroData = bannerSlides[currentSlide] || null;
-  const heroImage = activeHeroData?.image || defaultHero.image;
-  const heroMobileImage = isMobile ? heroImage : defaultHero.mobileImage;
+  const desktopBanners = useMemo(() => heroSlides.filter(s => s.type === 'banner'), [heroSlides]);
+  const mobileBanners = useMemo(() => heroSlides.filter(s => s.type === 'banner mobile'), [heroSlides]);
+
+  const activeHeroData = useMemo(() => {
+    const activeSlide = bannerSlides[currentSlide] || null;
+    if (!activeSlide) return null;
+
+    if (activeSlide.type === 'banner mobile') {
+      const correspondingDesktop = desktopBanners[currentSlide] || desktopBanners[0] || null;
+      if (correspondingDesktop) {
+        return {
+          ...correspondingDesktop,
+          ...Object.fromEntries(
+            Object.entries(activeSlide).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+          ),
+          image: activeSlide.image || correspondingDesktop.image,
+        };
+      }
+    }
+    return activeSlide;
+  }, [bannerSlides, currentSlide, desktopBanners]);
+
+  const currentDesktopSlide = desktopBanners[currentSlide] || null;
+  const currentMobileSlide = mobileBanners[currentSlide] || mobileBanners[0] || null;
+
+  const heroImage = currentDesktopSlide?.image || defaultHero.image;
+  const heroMobileImage = currentMobileSlide?.image || currentDesktopSlide?.image || defaultHero.mobileImage;
   const heroTitle = activeHeroData?.title || defaultHero.title;
   const heroSubtitle = activeHeroData?.subtitle || defaultHero.subtitle;
   const heroButtonText = activeHeroData?.buttonText || defaultHero.buttonText;
@@ -493,7 +517,7 @@ export function Home({
                 </div>
               </div>
 
-              <div className="premium-hero-sidebar">
+              <div className={`premium-hero-sidebar ${normalizeHeroText(heroRightText).length > 30 ? 'long-text' : ''}`}>
                 <div className="premium-hero-collection-info">
                   <span>{renderHeroLines(heroRightText)}</span>
                 </div>

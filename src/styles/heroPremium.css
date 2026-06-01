@@ -1453,3 +1453,60 @@
     font-size: 11px;
   }
 }
+
+/* ==================================================
+   DYNAMIC LONG TEXT SIDEBAR SUPPORT (PROMOTIONS & OFFERS)
+   ================================================== */
+.premium-hero-sidebar.long-text {
+  flex: 0 0 clamp(320px, 24vw, 400px) !important; /* Increase width on desktop to prevent narrow single-word wrapping */
+  padding-left: 0 !important; /* Align text flush to the layout margin now that vertical line is removed */
+  margin-bottom: 220px !important;
+}
+
+.premium-hero-sidebar.long-text::before {
+  display: none !important; /* Remove left vertical line completely */
+}
+
+.premium-hero-sidebar.long-text .premium-hero-collection-info {
+  font-family: var(--font-hero-body) !important; /* Editorial serif works best for headings, sans-serif is best for body text */
+  font-size: clamp(14px, 1.15vw, 17px) !important;
+  font-weight: 350 !important;
+  line-height: 1.55 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: none !important; /* Keep capitalization natural for readability */
+  color: var(--hero-right-text-color, #F8FAFC) !important;
+  opacity: 0.95 !important;
+}
+
+/* Mobile & Tablet Adaptation for Long Sidebar Text */
+@media (max-width: 1024px) {
+  .premium-hero-main {
+    order: 2 !important; /* Push main hero text to order 2 */
+  }
+
+  .premium-hero-sidebar.long-text {
+    order: 1 !important; /* Render long sidebar text first (above the main title) */
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin-top: 12px !important; /* Space below transparent site header */
+    margin-bottom: 28px !important; /* Clean breathing room between promo text and hero title */
+    padding-left: 0 !important; /* Align flush with main mobile title padding now that line is removed */
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .premium-hero-sidebar.long-text::before {
+    display: none !important; /* Remove left vertical line on mobile completely */
+  }
+
+  .premium-hero-sidebar.long-text .premium-hero-collection-info {
+    margin-top: 0 !important;
+    font-size: clamp(13px, 3.8vw, 15px) !important;
+    line-height: 1.55 !important;
+  }
+}
+
