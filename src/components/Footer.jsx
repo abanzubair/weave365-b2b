@@ -104,9 +104,9 @@ export function Footer({ navigate }) {
         <a href="#working-hours"><Clock size={16} /> Mon - Sat (10AM - 6PM)</a>
         <a href="#collaboration" className="footer-link"><Handshake size={16} /> Collaboration</a>
         <a
-          href="/vendor-partnership"
+          href="/weaver-onboarding"
           className="footer-link"
-          onClick={(e) => handleLinkClick(e, 'vendor-partnership')}
+          onClick={(e) => handleLinkClick(e, 'weaver-onboarding')}
         >
           <UserPlus size={16} /> Weaver Onboarding
         </a>

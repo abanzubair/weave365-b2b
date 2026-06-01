@@ -15,7 +15,7 @@ import { assetSrc } from '../utils/assetSrc.js';
 import { VendorPartnership } from '../components/VendorPartnership.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 
-const registrationPath = '/vendor-registration';
+const registrationPath = '/weaver-registration';
 
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
@@ -93,7 +93,7 @@ export function VendorPartnershipPage() {
         <p>Join our growing network of artisans and manufacturers. Zero risk, maximum reach.</p>
         <div className="vendor-final-actions">
           <AppLink 
-            to="vendor-registration" 
+            to="weaver-registration" 
             className="vendor-btn-whatsapp-large"
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
           >

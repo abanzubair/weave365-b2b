@@ -321,18 +321,18 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
-  if (route === 'vendor-registration') {
+  if (route === 'weaver-registration') {
     const imageUrl = `${siteUrl}/artisan_at_loom_premium.webp`;
     const titleText = 'Trusted Partner Registration | Weave 365';
     const descText = 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.';
-    return buildMeta(titleText, descText, '/vendor-registration', imageUrl);
+    return buildMeta(titleText, descText, '/weaver-registration', imageUrl);
   }
 
-  if (route === 'vendor-partnership') {
+  if (route === 'weaver-onboarding') {
     return buildMeta(
       'Vendor Partnership | Weave 365',
       'List your products with Weave 365 and reach active wholesale saree buyers across India.',
-      '/vendor-partnership'
+      '/weaver-onboarding'
     );
   }
 

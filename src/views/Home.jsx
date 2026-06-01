@@ -985,7 +985,7 @@ export function Home({
                 <MapPin size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Banarasi Sarees Direct from Varanasi</h2>
               </div>
-              <p>By partnering directly with <a href="/vendor-partnership" onClick={(e) => handleLinkClick(e, 'vendor-partnership')} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
+              <p>By partnering directly with <a href="/weaver-onboarding" onClick={(e) => handleLinkClick(e, 'weaver-onboarding')} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
             </div>
 
             <div className="seo-compact-card">

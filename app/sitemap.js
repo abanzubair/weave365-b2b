@@ -59,13 +59,13 @@ export default async function sitemap() {
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/vendor-partnership`,
+      url: `${siteUrl}/weaver-onboarding`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/vendor-registration`,
+      url: `${siteUrl}/weaver-registration`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,

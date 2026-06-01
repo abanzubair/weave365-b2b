@@ -87,28 +87,16 @@ const staticSeoDefaults = [
     metaDescription: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
   },
   {
-    path: '/wholesale-catalogue',
-    label: 'Wholesale Catalogue',
-    metaTitle: 'Wholesale Saree & Suit Catalogue | Weave 365',
-    metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
-  },
-  {
-    path: '/new-arrivals',
-    label: 'New Arrivals',
-    metaTitle: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
-    metaDescription: 'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
-  },
-  {
     path: '/about',
     label: 'About',
     metaTitle: 'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',
     metaDescription: 'Discover Weave 365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
   },
   {
-    path: '/contact',
-    label: 'Contact',
-    metaTitle: 'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
-    metaDescription: 'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
+    path: '/blog',
+    label: 'Blog',
+    metaTitle: 'Wholesale Banarasi Saree Sourcing & Reselling Blog | Weave 365',
+    metaDescription: 'Expert business guides, boutique scaling strategies, saree reselling tips, and fabric guides for wholesale Banarasi sarees and suits direct from Varanasi weavers.',
   },
   {
     path: '/bulk-inquiry',
@@ -117,52 +105,10 @@ const staticSeoDefaults = [
     metaDescription: 'Submit a bulk inquiry for premium Banarasi sarees and suits. We curate custom catalogs for boutiques, retailers, and exporters with flexible MOQ.',
   },
   {
-    path: '/blog',
-    label: 'Blog Listing',
-    metaTitle: 'Wholesale Banarasi Saree Sourcing & Reselling Blog | Weave 365',
-    metaDescription: 'Expert business guides, boutique scaling strategies, saree reselling tips, and fabric guides for wholesale Banarasi sarees and suits direct from Varanasi weavers.',
-  },
-  {
-    path: '/wholesale-partner-program',
-    label: 'Wholesale Partner Program',
-    metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
-    metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
-  },
-  {
-    path: '/vendor-registration',
-    label: 'Trusted Partner Registration',
-    metaTitle: 'Trusted Partner Registration | Weave 365',
-    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.',
-  },
-  {
-    path: '/vendor-partnership',
-    label: 'Vendor Partnership',
-    metaTitle: 'Vendor Partnership | Weave 365',
-    metaDescription: 'List your products with Weave 365 and reach active wholesale saree buyers across India.',
-  },
-  {
-    path: '/shipping-delivery',
-    label: 'Shipping Delivery',
-    metaTitle: 'Wholesale Saree Shipping & Worldwide Logistics | Weave 365',
-    metaDescription: 'Direct Varanasi warehouse dispatch, express domestic delivery, international courier timelines (US, UK, UAE), and bulk freight cargo configurations.',
-  },
-  {
-    path: '/returns-cancellation',
-    label: 'Returns Cancellation',
-    metaTitle: 'B2B Saree Returns & Cancellation Policies | Weave 365',
-    metaDescription: 'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
-  },
-  {
-    path: '/privacy-security',
-    label: 'Privacy Security',
-    metaTitle: 'Data Privacy, GST Security & Transaction Safety | Weave 365',
-    metaDescription: 'How we secure your wholesale trade records, verify business profiles, protect GST numbers, and encrypt commercial transactions with top payment gateways.',
-  },
-  {
-    path: '/terms-conditions',
-    label: 'Terms Conditions',
-    metaTitle: 'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
-    metaDescription: 'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
+    path: '/contact',
+    label: 'Contact',
+    metaTitle: 'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
+    metaDescription: 'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
   },
   {
     path: '/disclaimer',
@@ -177,10 +123,52 @@ const staticSeoDefaults = [
     metaDescription: 'Get early access to our wholesale Banarasi saree new arrivals. Verified boutique owners, retailers, and resellers can join our premium updates.',
   },
   {
+    path: '/new-arrivals',
+    label: 'New Arrivals',
+    metaTitle: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
+    metaDescription: 'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
+  },
+  {
+    path: '/privacy-security',
+    label: 'Privacy & Security',
+    metaTitle: 'Data Privacy, GST Security & Transaction Safety | Weave 365',
+    metaDescription: 'How we secure your wholesale trade records, verify business profiles, protect GST numbers, and encrypt commercial transactions with top payment gateways.',
+  },
+  {
+    path: '/returns-cancellation',
+    label: 'Returns & Cancellation',
+    metaTitle: 'B2B Saree Returns & Cancellation Policies | Weave 365',
+    metaDescription: 'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
+  },
+  {
+    path: '/shipping-delivery',
+    label: 'Shipping & Delivery',
+    metaTitle: 'Wholesale Saree Shipping & Worldwide Logistics | Weave 365',
+    metaDescription: 'Direct Varanasi warehouse dispatch, express domestic delivery, international courier timelines (US, UK, UAE), and bulk freight cargo configurations.',
+  },
+  {
     path: '/sourcing-partners',
     label: 'Sourcing Partners',
     metaTitle: 'Sourcing Partners for Banarasi Sarees & Suits | Weave 365',
     metaDescription: 'Become a Banarasi saree and suit sourcing partner with Weave 365. Coordinate weavers, MOQ, wholesale pricing, catalog support, quality checks, stock updates, and dispatch.',
+  },
+  {
+    path: '/terms-conditions',
+    label: 'Terms & Conditions',
+    metaTitle: 'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
+    metaDescription: 'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
+  },
+  {
+    path: '/weaver-onboarding',
+    label: 'Weaver Onboarding',
+    metaTitle: 'Weaver Onboarding: Sell Direct | Weave 365',
+    metaDescription: 'Join Weave 365 as a verified weaver. Get fast onboarding, secure payments, and premium digital tools to showcase your looms to global wholesale buyers.',
+  },
+  {
+    path: '/weaver-registration',
+    label: 'Weaver Registration',
+    metaTitle: 'Trusted Partner Registration | Weave 365',
+    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.',
   },
   {
     path: '/white-label-brands',
@@ -188,16 +176,30 @@ const staticSeoDefaults = [
     metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
     metaDescription: 'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
   },
+  {
+    path: '/wholesale-catalogue',
+    label: 'Wholesale Catalogue',
+    metaTitle: 'Wholesale Saree & Suit Catalogue | Weave 365',
+    metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
+  },
+  {
+    path: '/wholesale-partner-program',
+    label: 'Wholesale Partner Program',
+    metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
+    metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
+  },
 ];
 
 const defaultSeoPageOptions = [
   ...staticSeoDefaults,
-  ...Object.values(seoLandingPages).map((page) => ({
-    path: `/${page.slug}`,
-    label: page.h1 || page.slug,
-    metaTitle: page.metaTitle,
-    metaDescription: page.metaDescription,
-  })),
+  ...Object.values(seoLandingPages)
+    .map((page) => ({
+      path: `/${page.slug}`,
+      label: page.h1 || page.slug,
+      metaTitle: page.metaTitle,
+      metaDescription: page.metaDescription,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label)),
 ];
 
 function normalizeSeoPath(path) {
@@ -947,14 +949,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
   const pageSeoOptions = useMemo(() => {
     const options = new Map(defaultSeoPageOptions.map((item) => [normalizeSeoPath(item.path), item]));
-    pageSeoRows.forEach((row) => {
-      const normalized = normalizeSeoPath(row.path);
-      if (!options.has(normalized)) {
-        options.set(normalized, { path: normalized, label: normalized });
-      }
+    // Sort: Home first, then alphabetical by label
+    return Array.from(options.values()).sort((a, b) => {
+      if (a.path === '/') return -1;
+      if (b.path === '/') return 1;
+      return (a.label || '').localeCompare(b.label || '');
     });
-    return Array.from(options.values());
-  }, [pageSeoRows]);
+  }, []);
   const selectedDefaultSeo = useMemo(() => {
     const normalized = normalizeSeoPath(pageSeoPath);
     return pageSeoOptions.find((page) => normalizeSeoPath(page.path) === normalized) || null;
@@ -1089,7 +1090,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         ogTitle: pageSeoOgTitle.trim(),
         ogDescription: pageSeoOgDescription.trim(),
         imageUrl: pageSeoImageUrl.trim(),
-        canonicalPath: pageSeoCanonicalPath.trim() || normalizedPath,
+        canonicalPath: normalizedPath,
         robotsIndex: pageSeoRobotsIndex,
         robotsFollow: pageSeoRobotsFollow,
       });
@@ -2425,27 +2426,15 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                   </div>
                 </div>
 
-                <div className="admin-grid-2col">
-                  <div className="admin-field-container">
-                    <label className="admin-field-label">Open Graph Title</label>
-                    <input
-                      type="text"
-                      value={pageSeoOgTitle}
-                      onChange={(e) => setPageSeoOgTitle(e.target.value)}
-                      placeholder="Defaults to meta title"
-                      className="admin-field-input"
-                    />
-                  </div>
-                  <div className="admin-field-container">
-                    <label className="admin-field-label">Canonical Path</label>
-                    <input
-                      type="text"
-                      value={pageSeoCanonicalPath}
-                      onChange={(e) => setPageSeoCanonicalPath(normalizeSeoPath(e.target.value))}
-                      placeholder="/about"
-                      className="admin-field-input"
-                    />
-                  </div>
+                <div className="admin-field-container">
+                  <label className="admin-field-label">Open Graph Title</label>
+                  <input
+                    type="text"
+                    value={pageSeoOgTitle}
+                    onChange={(e) => setPageSeoOgTitle(e.target.value)}
+                    placeholder="Defaults to meta title"
+                    className="admin-field-input"
+                  />
                 </div>
 
                 <div className="admin-field-container">
@@ -2527,7 +2516,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     <div className="admin-serp-url-row">
                       <span>https://www.weave365.in</span>
                       <span className="admin-serp-slug">
-                        {normalizeSeoPath(pageSeoCanonicalPath || pageSeoPath) === '/' ? '' : normalizeSeoPath(pageSeoCanonicalPath || pageSeoPath).replace(/\//g, ' > ')}
+                        {normalizeSeoPath(pageSeoPath) === '/' ? '' : normalizeSeoPath(pageSeoPath).replace(/\//g, ' > ')}
                       </span>
                     </div>
                     <h3 className="admin-serp-title">

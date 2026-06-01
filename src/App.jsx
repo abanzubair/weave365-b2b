@@ -978,9 +978,9 @@ export default function App({ initialData = {} }) {
 
     if (route === 'terms-conditions') return <TermsConditionsPage navigate={navigate} />;
 
-    if (route === 'vendor-partnership') return <VendorPartnershipPage />;
+    if (route === 'weaver-onboarding') return <VendorPartnershipPage />;
 
-    if (route === 'vendor-registration') return <TrustedPartnerRegistrationPage />;
+    if (route === 'weaver-registration') return <TrustedPartnerRegistrationPage />;
 
     if (route === 's') {
       if (isSharedProduct) {

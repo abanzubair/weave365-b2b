@@ -4,7 +4,7 @@
    ================================================ */
 
 .vendor-editorial-section {
-  padding: 100px 0;
+  padding: 40px 0 100px;
   background-color: var(--cream);
   position: relative;
   overflow: hidden;
@@ -33,7 +33,7 @@
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
   gap: 80px;
-  align-items: center;
+  align-items: start;
 }
 
 /* ---- Visual Stack (left side) ---- */
@@ -137,7 +137,7 @@
 
 .vendor-title {
   font-family: var(--font-heading);
-  font-size: clamp(48px, 6vw, 72px);
+  font-size: clamp(36px, 4.5vw, 56px);
   line-height: 1.05;
   color: var(--ink);
   margin-bottom: 32px;
@@ -200,7 +200,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 24px 32px;
+  padding: 16px 24px;
   background: var(--surface);
   color: var(--ink);
   text-decoration: none;
@@ -208,7 +208,7 @@
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
-  max-width: 480px;
+  max-width: 400px;
   border: 1px solid rgba(117, 111, 79, 0.2);
   box-shadow: 0 10px 30px rgba(117, 111, 79, 0.08);
   cursor: pointer;
@@ -222,7 +222,7 @@
 
 .vendor-cta-label {
   font-family: var(--font-heading);
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -241,8 +241,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--white);
   color: var(--olive);

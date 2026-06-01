@@ -81,7 +81,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
 
             {/* Premium Editorial CTA */}
             <AppLink 
-              to="vendor-partnership" 
+              to="weaver-onboarding" 
               className="brand-editorial-cta" 
               navigate={navigate}
               aria-label="Apply for brand showcase"
