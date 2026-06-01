@@ -694,9 +694,8 @@ create table if not exists public.product_image_embeddings (
   variant_code text not null,               -- Links to the specific color variant (e.g. 101004-1)
   image_url text not null unique,           -- The public URL of the indexed image (unique)
   
-  -- Embedding vector size. 
-  -- both 'clip-vit-base-patch32' and Cloudflare's 'bge-visual' use 512 dimensions.
-  embedding vector(512) not null,
+  -- Replicate CLIP / ViT-L/14 image embedding size.
+  embedding vector(768) not null,
   
   -- Secondary metadata for quick color filtering and sorting
   dominant_colors jsonb default '[]'::jsonb, -- e.g. [{"hex": "#8B0000", "weight": 0.75}]
@@ -729,7 +728,7 @@ create policy "Allow admins all operations on embeddings"
 
 -- 7. Deploy vector similarity matching function
 create or replace function match_saree_images (
-  query_embedding vector(512),
+  query_embedding vector(768),
   match_threshold float,
   match_count int
 )
@@ -756,4 +755,3 @@ begin
   limit match_count;
 end;
 $$;
-

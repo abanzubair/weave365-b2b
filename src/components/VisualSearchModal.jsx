@@ -262,11 +262,11 @@ export function VisualSearchModal({ isOpen, onClose, onSelectVariant, priceAcces
           body: formData
         });
 
-        if (!apiRes.ok) {
-          throw new Error('API search returned error status');
-        }
-
         const data = await apiRes.json();
+
+        if (!apiRes.ok) {
+          throw new Error(data.error || 'API search returned error status');
+        }
         
         if (data.status === 'success') {
           // Store matches and mark search as done
@@ -277,7 +277,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectVariant, priceAcces
 
       } catch (err) {
         console.error('Visual Matching Failed:', err);
-        alert('AI Image Sourcing is currently initializing or busy. Please try again in a moment.');
+        alert(err.message || 'AI Image Sourcing is currently initializing or busy. Please try again in a moment.');
       } finally {
         setIsProcessing(false);
         setHasSearched(true);
