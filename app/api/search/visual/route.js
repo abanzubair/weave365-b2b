@@ -1,7 +1,7 @@
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 // Unified client connection using backend environment keys
 function getAdminSupabase() {

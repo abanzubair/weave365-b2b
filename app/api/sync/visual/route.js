@@ -2,7 +2,7 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 import { createClient } from '@supabase/supabase-js';
 import { parseProductCsv } from '../../../../src/productData.js';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 function getAdminSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
