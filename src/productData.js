@@ -21,14 +21,9 @@ const moneyColumns = {
 };
 
 export async function fetchConfigOptions() {
-  if (!isSupabaseConfigured) return { priceRanges: [], categories: [], fabrics: [] };
-  
-  await autoSyncIfNeeded(); // Await auto sync to guarantee edge environments finish syncing before returning data
+  const text = await fetchSyncedCsv('config', configCsvUrl, 'config sheet', { optional: true });
+  if (!text) return { priceRanges: [], categories: [], fabrics: [] };
 
-  const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'config').single();
-  if (!data?.csv_data) return { priceRanges: [], categories: [], fabrics: [] };
-
-  const text = data.csv_data;
   const parsed = Papa.parse(text, {
     header: true,
     skipEmptyLines: true,
@@ -57,18 +52,9 @@ export async function fetchConfigOptions() {
 }
 
 export async function fetchProducts() {
-  if (!isSupabaseConfigured) {
-    throw new Error("Data system not configured");
-  }
+  const text = await fetchSyncedCsv('products', csvUrl, 'products sheet');
 
-  await autoSyncIfNeeded(); // Await auto sync to guarantee edge environments finish syncing before returning data
-
-  const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products').single();
-  if (!data?.csv_data) {
-    throw new Error("Product data not found in sync table");
-  }
-
-  return parseProductCsv(data.csv_data);
+  return parseProductCsv(text);
 }
 
 export function parseProductCsv(text) {
@@ -649,16 +635,44 @@ function parseStockInDate(row) {
 function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
+
+async function fetchPublicCsvText(url, label, { optional = false } = {}) {
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.text();
+  } catch (err) {
+    console.warn(`[Data] Public ${label} fetch failed:`, err.message);
+    if (optional) return '';
+    throw new Error(`Unable to load ${label}.`);
+  }
+}
+
+async function fetchSyncedCsv(id, url, label, { optional = false } = {}) {
+  if (isSupabaseConfigured) {
+    try {
+      await autoSyncIfNeeded();
+      const { data, error } = await supabase
+        .from('sheet_data')
+        .select('csv_data')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      if (data?.csv_data) return data.csv_data;
+    } catch (err) {
+      console.warn(`[Data] Supabase ${label} unavailable, using public sheet fallback:`, err.message);
+    }
+  }
+
+  return fetchPublicCsvText(url, label, { optional });
+}
+
 export async function fetchHeroData() {
   try {
-    if (!isSupabaseConfigured) return [];
+    const text = await fetchSyncedCsv('hero', heroCsvUrl, 'hero sheet', { optional: true });
+    if (!text) return [];
 
-    await autoSyncIfNeeded(); // Trigger and await auto sync check to ensure hero slides are kept up-to-date
-
-    const { data } = await supabase.from('sheet_data').select('csv_data').eq('id', 'hero').single();
-    if (!data?.csv_data) return [];
-
-    const text = data.csv_data;
     const parsed = Papa.parse(text, {
       header: true,
       skipEmptyLines: true,
