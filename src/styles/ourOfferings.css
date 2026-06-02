@@ -1,0 +1,760 @@
+/* ═══════════════════════════════════════════════════════════════
+   EDITORIAL LUXURY STYLESHEET — Weave365 (Minimal Light Edition)
+   Sophisticated heritage, clean whitespace, and exquisite serif typography
+   ═══════════════════════════════════════════════════════════════ */
+
+.offerings-page-container.minimal-luxury {
+  background-color: var(--paper, #ffffff);
+  color: var(--ink, #241912);
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Breadcrumb Bar ───────────────────────────────────────── */
+.offerings-breadcrumb-bar {
+  padding: 0 0 32px 0;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+.breadcrumb-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.breadcrumb-link {
+  background: none;
+  border: none;
+  color: var(--muted, #6d5946);
+  opacity: 0.6;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.breadcrumb-link:hover {
+  color: var(--gold, #b78646);
+  opacity: 1;
+}
+
+.breadcrumb-separator {
+  color: var(--line, #eadbc8);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-current {
+  color: var(--gold-dark, #805d31);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+/* ── Minimalist Hero Section ────────────────────────────────── */
+.offerings-hero-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 60px;
+  background-color: var(--ink, #241912); /* Deep luxury dark ink base */
+  overflow: hidden;
+  border-bottom: 1px solid var(--line, #eadbc8);
+}
+
+.hero-bg-wrapper-luxury {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-bg-img-luxury {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  opacity: 0.55; /* Rich, dark handloom weave texture visible */
+  filter: contrast(1.05) brightness(0.8);
+}
+
+.hero-bg-overlay-luxury {
+  position: absolute;
+  inset: 0;
+  display: block;
+  /* Luxurious dark vignette overlay to make the white text pop with high contrast */
+  background: linear-gradient(180deg, rgba(36, 25, 18, 0.75) 0%, rgba(36, 25, 18, 0.55) 50%, rgba(36, 25, 18, 0.85) 100%);
+  pointer-events: none;
+}
+
+.offerings-hero-section .breadcrumb-link {
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 1;
+}
+
+.offerings-hero-section .breadcrumb-link:hover {
+  color: var(--gold-pale, #cdaa7c);
+}
+
+.offerings-hero-section .breadcrumb-separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.offerings-hero-section .breadcrumb-current {
+  color: var(--gold-pale, #cdaa7c);
+}
+
+.offerings-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.editorial-hero-text {
+  max-width: 800px;
+  text-align: center;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.hero-kicker-luxury {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-pale, #cdaa7c); /* Warm elegant light gold kicker */
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-title-luxury {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.15;
+  font-weight: 400;
+  margin: 0;
+  color: #ffffff; /* White text for perfect contrast on dark background */
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gold-serif-text {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  color: var(--gold-pale, #cdaa7c); /* Lighter golden accent */
+  font-style: italic;
+}
+
+.hero-divider-luxury {
+  width: 50px;
+  height: 1px;
+  background-color: var(--gold-pale, #cdaa7c);
+  margin: 10px 0;
+  opacity: 0.6;
+}
+
+.hero-desc-luxury {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(15px, 1.15vw, 18px);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85); /* Pristine white-cream body readability */
+  max-width: 660px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+.hero-action-luxury {
+  margin-top: 16px;
+}
+
+.minimal-ink-btn {
+  background: #ffffff; /* Bright, modern high-contrast white button */
+  color: var(--ink, #241912);
+  border: 1px solid transparent;
+  padding: 15px 36px;
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.minimal-ink-btn:hover {
+  background: transparent;
+  color: #ffffff;
+  border-color: var(--gold-pale, #cdaa7c);
+  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.05);
+}
+
+/* ── Pillars Section (Airy 3-Column Grid) ───────────────────── */
+.pillars-section-luxury {
+  padding: 100px 24px;
+  background-color: var(--paper, #ffffff);
+  border-bottom: 1px solid var(--line, #eadbc8);
+}
+
+.pillars-grid-luxury {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pillar-item-luxury {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  border-right: 1px solid rgba(234, 219, 200, 0.3);
+}
+
+.pillar-item-luxury:last-child {
+  border-right: none;
+}
+
+.pillar-icon-wrapper {
+  color: var(--gold, #b78646);
+  margin-bottom: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--line, #eadbc8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface, #fffdf9);
+}
+
+.pillar-title-luxury {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: 24px;
+  color: var(--ink, #241912);
+  font-weight: 500;
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+
+.pillar-desc-luxury {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
+  margin: 0;
+}
+
+/* ── White Label Showcase (Spacious 2-Column Editorial) ───────── */
+.wl-showcase-section-luxury {
+  padding: 100px 24px;
+  background-color: var(--surface, #fffdf9);
+  border-bottom: 1px solid var(--line, #eadbc8);
+}
+
+.wl-editorial-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.section-kicker-luxury {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold, #b78646);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.section-title-luxury {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: clamp(28px, 3.5vw, 44px);
+  color: var(--ink, #241912);
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.title-underline-luxury {
+  width: 40px;
+  height: 1px;
+  background-color: var(--gold, #b78646);
+  margin: 16px 0 24px;
+  opacity: 0.6;
+}
+
+.section-desc-luxury {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
+  margin: 0 0 32px 0;
+}
+
+.wl-editorial-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.wl-editorial-list li {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.list-number-luxury {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: 32px;
+  color: var(--gold-pale, #cdaa7c);
+  line-height: 1;
+  font-weight: 300;
+}
+
+.list-text-luxury {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-text-luxury h4 {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink, #241912);
+  margin: 0;
+}
+
+.list-text-luxury p {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 14px;
+  line-height: 1.6;
+  color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
+  margin: 0;
+}
+
+/* Simulated Saree Delivery Sizing (Right Visual Column) */
+.wl-visual-column {
+  display: flex;
+  justify-content: center;
+}
+
+.unbranded-packaging-card {
+  width: 100%;
+  max-width: 380px;
+  background-color: var(--paper, #ffffff);
+  border: 1px solid var(--line, #eadbc8);
+  border-radius: 4px;
+  padding: 40px;
+  box-shadow: var(--shadow, 0 18px 45px rgba(128, 93, 49, 0.08));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+.unbranded-packaging-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold-pale, #cdaa7c);
+}
+
+.box-inner-border {
+  border: 1px solid var(--line, #eadbc8);
+  padding: 48px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.box-brand-placeholder {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: 26px;
+  letter-spacing: 0.15em;
+  color: var(--ink, #241912);
+  font-weight: 400;
+}
+
+.box-divider {
+  width: 30px;
+  height: 1px;
+  background: var(--line, #eadbc8);
+  margin: 16px 0;
+}
+
+.box-location-placeholder {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #5c4a3a; /* Darker warm charcoal for readable captions */
+  font-weight: 500;
+}
+
+.box-seal-luxury {
+  margin-top: 36px;
+  border: 1px dashed var(--gold, #b78646);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: var(--cream, #fbf6ee);
+}
+
+.seal-text-luxury {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gold-dark, #805d31);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.box-label-caption {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5c4a3a; /* Darker warm charcoal for readable captions */
+  opacity: 0.8; /* Increased opacity for perfect contrast */
+  text-align: center;
+  margin-top: 24px;
+}
+
+/* ── Weaver Network & Social Impact (Artisan Storytelling) ────── */
+.weaver-impact-section-luxury {
+  padding: 100px 24px;
+  background-color: var(--paper, #ffffff);
+  border-bottom: 1px solid var(--line, #eadbc8);
+}
+
+.weaver-editorial-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.artisan-portrait-frame {
+  position: relative;
+  padding: 16px;
+  border: 1px solid rgba(234, 219, 200, 0.4);
+  max-width: 420px;
+  width: 100%;
+}
+
+.artisan-image-luxury {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.02) brightness(0.95);
+}
+
+/* Delicate Gold Frame Corners */
+.frame-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--gold, #b78646);
+  border-style: solid;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.top-left-g {
+  top: 8px;
+  left: 8px;
+  border-width: 1.5px 0 0 1.5px;
+}
+
+.top-right-g {
+  top: 8px;
+  right: 8px;
+  border-width: 1.5px 1.5px 0 0;
+}
+
+.bottom-left-g {
+  bottom: 8px;
+  left: 8px;
+  border-width: 0 0 1.5px 1.5px;
+}
+
+.bottom-right-g {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+.weaver-text-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.weaver-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 12px 0 36px 0;
+  border-top: 1px solid var(--line, #eadbc8);
+  border-bottom: 1px solid var(--line, #eadbc8);
+  padding: 24px 0;
+}
+
+.weaver-stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value-luxury {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: 40px;
+  color: var(--gold-dark, #805d31);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.stat-label-luxury {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 11px;
+  color: #4A3F35; /* Rich dark warm grey for clear labeling */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.impact-quote-box {
+  background-color: var(--cream, #fbf6ee);
+  border-left: 2px solid var(--gold, #b78646);
+  padding: 24px 28px;
+}
+
+.impact-quote-box p {
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-style: italic;
+  font-size: clamp(18px, 1.4vw, 21px); /* Increased size to ensure italicized serif strokes are perfectly readable */
+  line-height: 1.65;
+  color: var(--ink, #241912);
+  margin: 0 0 12px 0;
+}
+
+.impact-quote-box strong {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 12px; /* Adjusted size to keep quote block balanced */
+  letter-spacing: 0.05em;
+  color: #4A3F35; /* Rich dark warm grey for clear labeling */
+  text-transform: uppercase;
+  display: block;
+}
+
+/* ── FAQ Accordion Section (Clean Minimalist) ──────────────── */
+.faq-section-luxury {
+  padding: 100px 24px;
+  background-color: var(--surface, #fffdf9);
+}
+
+.faq-header-luxury {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.faq-accordion-luxury {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item-luxury {
+  border-bottom: 1px solid var(--line, #eadbc8);
+  overflow: hidden;
+}
+
+.faq-item-luxury:first-child {
+  border-top: 1px solid var(--line, #eadbc8);
+}
+
+.faq-question-btn-luxury {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 24px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-heading, 'Cormorant Garamond', serif);
+  font-size: clamp(18px, 1.8vw, 22px); /* Increased size for superior readability of Cormorant serif strokes */
+  font-weight: 500;
+  color: var(--ink, #241912);
+  transition: all 0.3s ease;
+}
+
+.faq-question-btn-luxury:hover {
+  color: var(--gold, #b78646);
+}
+
+.faq-icon-indicator-luxury {
+  color: var(--gold, #b78646);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq-item-luxury.active .faq-icon-indicator-luxury {
+  transform: rotate(180deg);
+}
+
+.faq-answer-container-luxury {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq-item-luxury.active .faq-answer-container-luxury {
+  grid-template-rows: 1fr;
+}
+
+.faq-answer-content-luxury {
+  overflow: hidden;
+}
+
+.faq-answer-content-luxury p {
+  padding: 0 8px 24px 8px;
+  margin: 0;
+  color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+/* ── Responsive Adaptation ────────────────────────────────── */
+@media (max-width: 1440px) {
+  .offerings-hero-section {
+    padding: 60px 24px 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pillars-grid-luxury {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .pillar-item-luxury {
+    border-right: none;
+    border-bottom: 1px solid rgba(234, 219, 200, 0.3);
+    padding-bottom: 32px;
+  }
+
+  .pillar-item-luxury:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .wl-editorial-layout {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .wl-visual-column {
+    grid-row: 1;
+  }
+
+  .weaver-editorial-layout {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pillars-section-luxury,
+  .wl-showcase-section-luxury,
+  .weaver-impact-section-luxury,
+  .faq-section-luxury {
+    padding: 64px 20px;
+  }
+
+  .offerings-hero-section {
+    padding: 50px 20px 30px;
+  }
+
+  .hero-title-luxury {
+    font-size: 34px;
+  }
+
+  .artisan-image-luxury {
+    height: 380px;
+  }
+
+  .weaver-stats-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .faq-question-btn-luxury {
+    font-size: 17px; /* Increased size on mobile for clear viewing */
+    padding: 20px 4px;
+  }
+
+  .faq-answer-content-luxury p {
+    padding: 0 4px 18px 4px;
+    font-size: 14px;
+  }
+}

@@ -61,6 +61,7 @@ import { BlogPost } from './views/BlogPost.jsx';
 import { AboutPage } from './views/AboutPage.jsx';
 import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
 import { ContactPage } from './views/ContactPage.jsx';
+import { OurOfferings } from './views/OurOfferings.jsx';
 import { NotFoundPage } from './views/NotFoundPage.jsx';
 import { DisclaimerPage } from './views/DisclaimerPage.jsx';
 import { ShippingDeliveryPage } from './views/ShippingDeliveryPage.jsx';
@@ -997,6 +998,8 @@ export default function App({ initialData = {} }) {
       return <BlogList navigate={navigate} blogs={blogs} />;
     }
 
+    if (route === 'our-offerings') return <OurOfferings navigate={navigate} openAuth={() => setAuthOpen(true)} />;
+
     return <NotFoundPage />;
   })();
 
@@ -1136,11 +1139,11 @@ export default function App({ initialData = {} }) {
               ABOUT
             </AppLink>
             <AppLink 
-              to="contact" 
-              className={route === 'contact' ? 'active' : ''} 
+              to="our-offerings" 
+              className={route === 'our-offerings' ? 'active' : ''} 
               navigate={navigate}
             >
-              CONTACT
+              OUR OFFERINGS
             </AppLink>
           </nav>
 
