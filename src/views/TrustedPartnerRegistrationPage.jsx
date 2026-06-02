@@ -2994,9 +2994,6 @@ export function TrustedPartnerRegistrationPage() {
                     <div className="guidelines-modal-img-wrapper">
                       <img src={url} alt={`Sample ${index + 1}`} loading="lazy" />
                     </div>
-                    <span className="guidelines-modal-item-label">
-                      {activeGuidelinesModal === 'accepted' ? 'Accepted' : 'Rejected'} #{index + 1}
-                    </span>
                   </div>
                 ))}
               </div>
