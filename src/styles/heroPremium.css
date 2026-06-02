@@ -1510,11 +1510,11 @@
 @media (min-width: 1200px) {
   .premium-hero-sidebar.long-text {
     position: absolute;
-    right: 40px;
-    top: clamp(20px, 5vh, 100px);
+    left: var(--site-padding);
+    top: clamp(140px, 16vh, 180px);
     width: clamp(320px, 24vw, 400px) !important;
     margin-bottom: 0 !important;
-    margin-right: 0 !important;
+    margin-left: 0 !important;
     min-height: auto !important;
   }
 }
