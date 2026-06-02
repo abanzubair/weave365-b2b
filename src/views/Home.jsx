@@ -487,6 +487,12 @@ export function Home({
 
             <div className="premium-hero-content">
               <div className="premium-hero-main">
+                {normalizeHeroText(heroRightText) && (
+                  <div className="premium-hero-promo-badge">
+                    {renderHeroLines(heroRightText)}
+                  </div>
+                )}
+
                 <div className="premium-hero-title" aria-level="2" role="heading">
                   {renderHeroLines(heroTitle)}
                 </div>
