@@ -49,6 +49,12 @@
 }
 
 .breadcrumb-link:hover {
+  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
   color: var(--gold, #b78646);
   opacity: 1;
 }
@@ -75,54 +81,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 24px 60px;
-  background-color: var(--ink, #241912); /* Deep luxury dark ink base */
+  padding: 120px 24px 100px; /* Elegant vertical padding for spacious editorial text-only layout */
+  background: linear-gradient(180deg, var(--surface-soft, #faf6f0) 0%, var(--paper, #ffffff) 100%);
   overflow: hidden;
   border-bottom: 1px solid var(--line, #eadbc8);
 }
 
-.hero-bg-wrapper-luxury {
+.offerings-hero-section::before {
+  content: '';
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  background: radial-gradient(circle at 50% 50%, rgba(183, 134, 70, 0.05) 0%, transparent 70%);
+  pointer-events: none;
   z-index: 1;
 }
 
-.hero-bg-img-luxury {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  opacity: 0.55; /* Rich, dark handloom weave texture visible */
-  filter: contrast(1.05) brightness(0.8);
-}
-
-.hero-bg-overlay-luxury {
-  position: absolute;
-  inset: 0;
-  display: block;
-  /* Luxurious dark vignette overlay to make the white text pop with high contrast */
-  background: linear-gradient(180deg, rgba(36, 25, 18, 0.75) 0%, rgba(36, 25, 18, 0.55) 50%, rgba(36, 25, 18, 0.85) 100%);
-  pointer-events: none;
-}
-
 .offerings-hero-section .breadcrumb-link {
-  color: rgba(255, 255, 255, 0.7);
-  opacity: 1;
+  color: var(--muted, #6d5946);
+  opacity: 0.6;
 }
 
 .offerings-hero-section .breadcrumb-link:hover {
-  color: var(--gold-pale, #cdaa7c);
+  color: var(--gold-dark, #805d31);
+  opacity: 1;
 }
 
 .offerings-hero-section .breadcrumb-separator {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--line, #eadbc8);
 }
 
 .offerings-hero-section .breadcrumb-current {
-  color: var(--gold-pale, #cdaa7c);
+  color: var(--gold-dark, #805d31);
 }
 
 .offerings-hero-content {
@@ -148,7 +137,7 @@
   font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold-pale, #cdaa7c); /* Warm elegant light gold kicker */
+  color: var(--gold-dark, #805d31); /* Warm elegant light gold kicker */
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -161,21 +150,21 @@
   line-height: 1.15;
   font-weight: 400;
   margin: 0;
-  color: #ffffff; /* White text for perfect contrast on dark background */
+  color: var(--ink, #241912); /* Dark text for perfect contrast on light background */
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 
 .gold-serif-text {
   font-family: var(--font-heading, 'Cormorant Garamond', serif);
-  color: var(--gold-pale, #cdaa7c); /* Lighter golden accent */
+  color: var(--gold-dark, #805d31); /* Lighter golden accent */
   font-style: italic;
 }
 
 .hero-divider-luxury {
   width: 50px;
   height: 1px;
-  background-color: var(--gold-pale, #cdaa7c);
+  background-color: var(--gold-dark, #805d31);
   margin: 10px 0;
   opacity: 0.6;
 }
@@ -184,7 +173,7 @@
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: clamp(15px, 1.15vw, 18px);
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.85); /* Pristine white-cream body readability */
+  color: var(--muted, #6d5946); /* Pristine white-cream body readability */
   max-width: 660px;
   margin: 0 auto;
   font-weight: 400;
@@ -195,8 +184,8 @@
 }
 
 .minimal-ink-btn {
-  background: #ffffff; /* Bright, modern high-contrast white button */
-  color: var(--ink, #241912);
+  background: var(--ink, #241912); /* Dark, modern high-contrast button */
+  color: #ffffff;
   border: 1px solid transparent;
   padding: 15px 36px;
   font-family: var(--font-modern-heading, 'Outfit', sans-serif);
@@ -213,9 +202,8 @@
 
 .minimal-ink-btn:hover {
   background: transparent;
-  color: #ffffff;
-  border-color: var(--gold-pale, #cdaa7c);
-  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.05);
+  color: var(--ink, #241912);
+  border-color: var(--ink, #241912);
 }
 
 /* ── Pillars Section (Airy 3-Column Grid) ───────────────────── */
@@ -758,3 +746,22 @@
     font-size: 14px;
   }
 }
+
+/* Centering wrapper for reused ContactSection */
+.offerings-contact-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 100px var(--site-padding);
+  background-color: var(--surface-soft, #faf6f0);
+  border-top: 1px solid var(--line, #eadbc8);
+  border-bottom: 1px solid var(--line, #eadbc8);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .offerings-contact-wrapper {
+    padding: 60px 20px;
+  }
+}
+

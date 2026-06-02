@@ -35,6 +35,126 @@ function PinterestIcon({ size = 20, className = "" }) {
   );
 }
 
+export function ContactSection({ navigate }) {
+  return (
+    <main className="contact-main">
+        <div className="contact-brand-title">Weave 365</div>
+        <h1 className="contact-h1">Get in touch</h1>
+        
+        <div className="contact-grid">
+          
+          {/* DIRECT CHANNELS SECTION */}
+          <div className="contact-section">
+            <h2 className="contact-section-title">Direct Inquiry</h2>
+            <div className="contact-links">
+              
+              <div className="contact-item-text">
+                <div className="contact-icon-box">
+                  <Mail size={20} />
+                </div>
+                <div className="contact-item-info">
+                  <span className="contact-label">Email Us</span>
+                  <span className="contact-value">weave365@gmail.com</span>
+                </div>
+              </div>
+
+              <div className="contact-item-text">
+                <div className="contact-icon-box">
+                  <Phone size={20} />
+                </div>
+                <div className="contact-item-info">
+                  <span className="contact-label">Call / WhatsApp</span>
+                  <span className="contact-value">+91 9919 101369</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* OPERATIONAL HOURS SECTION */}
+          <div className="contact-section">
+            <h2 className="contact-section-title">Our Hours</h2>
+            <div className="contact-hours-box">
+              <div className="contact-hours-icon-box">
+                <Clock size={20} />
+              </div>
+              <div className="contact-hours-details">
+                <div className="contact-hour-row">
+                  <span className="day-label">Monday - Friday</span>
+                  <span className="time-value">9 AM to 7 PM IST</span>
+                </div>
+                <div className="contact-hour-row">
+                  <span className="day-label">Saturday - Sunday</span>
+                  <span className="time-value">10 AM to 2 PM IST</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SOCIAL REACH SECTION */}
+          <div className="contact-section">
+            <h2 className="contact-section-title">Follow us</h2>
+            <div className="contact-socials-grid">
+              
+              <a 
+                href="https://www.linkedin.com/company/weaves365" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="contact-social-btn"
+              >
+                <Linkedin size={18} />
+                <span>LinkedIn</span>
+              </a>
+
+              <a 
+                href="https://www.instagram.com/weaves365.wholesale" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="contact-social-btn"
+              >
+                <Instagram size={18} />
+                <span>Instagram</span>
+              </a>
+
+              <a 
+                href="https://www.facebook.com/weaves365" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="contact-social-btn"
+              >
+                <Facebook size={18} />
+                <span>Facebook</span>
+              </a>
+
+              <a 
+                href="https://www.youtube.com/@weaves365" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="contact-social-btn"
+              >
+                <Youtube size={18} />
+                <span>Youtube</span>
+              </a>
+
+              <a 
+                href="https://in.pinterest.com/weaves365/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="contact-social-btn"
+              >
+                <PinterestIcon size={18} />
+                <span>Pinterest</span>
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+
+    </main>
+  );
+}
+
 export function ContactPage({ navigate }) {
   
   // JSON-LD structured data for B2B Google Search crawlers
@@ -100,121 +220,7 @@ export function ContactPage({ navigate }) {
         <span className="active">Contact Us</span>
       </div>
 
-      <main className="contact-main">
-          <div className="contact-brand-title">Weave 365</div>
-          <h1 className="contact-h1">Get in touch</h1>
-          
-          <div className="contact-grid">
-            
-            {/* DIRECT CHANNELS SECTION */}
-            <div className="contact-section">
-              <h2 className="contact-section-title">Direct Inquiry</h2>
-              <div className="contact-links">
-                
-                <div className="contact-item-text">
-                  <div className="contact-icon-box">
-                    <Mail size={20} />
-                  </div>
-                  <div className="contact-item-info">
-                    <span className="contact-label">Email Us</span>
-                    <span className="contact-value">weave365@gmail.com</span>
-                  </div>
-                </div>
-
-                <div className="contact-item-text">
-                  <div className="contact-icon-box">
-                    <Phone size={20} />
-                  </div>
-                  <div className="contact-item-info">
-                    <span className="contact-label">Call / WhatsApp</span>
-                    <span className="contact-value">+91 9919 101369</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* OPERATIONAL HOURS SECTION */}
-            <div className="contact-section">
-              <h2 className="contact-section-title">Our Hours</h2>
-              <div className="contact-hours-box">
-                <div className="contact-hours-icon-box">
-                  <Clock size={20} />
-                </div>
-                <div className="contact-hours-details">
-                  <div className="contact-hour-row">
-                    <span className="day-label">Monday - Friday</span>
-                    <span className="time-value">9 AM to 7 PM IST</span>
-                  </div>
-                  <div className="contact-hour-row">
-                    <span className="day-label">Saturday - Sunday</span>
-                    <span className="time-value">10 AM to 2 PM IST</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SOCIAL REACH SECTION */}
-            <div className="contact-section">
-              <h2 className="contact-section-title">Follow us</h2>
-              <div className="contact-socials-grid">
-                
-                <a 
-                  href="https://www.linkedin.com/company/weaves365" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="contact-social-btn"
-                >
-                  <Linkedin size={18} />
-                  <span>LinkedIn</span>
-                </a>
-
-                <a 
-                  href="https://www.instagram.com/weaves365.wholesale" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="contact-social-btn"
-                >
-                  <Instagram size={18} />
-                  <span>Instagram</span>
-                </a>
-
-                <a 
-                  href="https://www.facebook.com/weaves365" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="contact-social-btn"
-                >
-                  <Facebook size={18} />
-                  <span>Facebook</span>
-                </a>
-
-                <a 
-                  href="https://www.youtube.com/@weaves365" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="contact-social-btn"
-                >
-                  <Youtube size={18} />
-                  <span>Youtube</span>
-                </a>
-
-                <a 
-                  href="https://in.pinterest.com/weaves365/" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="contact-social-btn"
-                >
-                  <PinterestIcon size={18} />
-                  <span>Pinterest</span>
-                </a>
-
-              </div>
-            </div>
-
-          </div>
-
-      </main>
+      <ContactSection navigate={navigate} />
     </div>
   );
 }

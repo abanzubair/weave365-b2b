@@ -11,15 +11,14 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
+import { ContactSection } from './ContactPage.jsx';
 
-import heroImage from '../../assets/offerings_hero_bg.png';
 import weaverImage from '../../assets/offerings_weaver.png';
 
 import '../styles/ourOfferings.css';
 
 export function OurOfferings({ navigate, openAuth }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);
-  const heroBg = assetSrc(heroImage);
 
   const faqs = [
     {
@@ -78,13 +77,7 @@ export function OurOfferings({ navigate, openAuth }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} 
       />
 
-      {/* 1. Hero Section (Editorial Minimal) */}
       <section className="offerings-hero-section">
-        {/* Background Image with elegant light overlay */}
-        <div className="hero-bg-wrapper-luxury">
-          <img src={heroBg} alt="" className="hero-bg-img-luxury" />
-          <div className="hero-bg-overlay-luxury"></div>
-        </div>
 
         <div className="offerings-hero-content">
           <div className="offerings-breadcrumb-bar">
@@ -305,6 +298,10 @@ export function OurOfferings({ navigate, openAuth }) {
           </div>
         </div>
       </section>
+      {/* 6. Contact Us Section */}
+      <div className="offerings-contact-wrapper">
+        <ContactSection navigate={navigate} />
+      </div>
     </div>
   );
 }

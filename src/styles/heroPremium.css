@@ -39,7 +39,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  display: block;
+  display: none;
   background: var(--hero-overlay-color, 
     linear-gradient(90deg, rgba(15, 12, 10, 0.4) 0%, rgba(15, 12, 10, 0.18) 40%, transparent 80%),
     linear-gradient(to top, rgba(15, 12, 10, 0.45) 0%, rgba(15, 12, 10, 0.18) 25%, transparent 60%)

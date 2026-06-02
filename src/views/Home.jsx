@@ -483,7 +483,6 @@ export function Home({
                 height={1080}
               />
             </picture>
-            <div className="premium-hero-overlay"></div>
 
             <div className="premium-hero-content">
               <div className="premium-hero-main">
