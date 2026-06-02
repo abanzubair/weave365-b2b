@@ -2,7 +2,7 @@
 
 A premium, modular B2B e-commerce platform built with Next.js, React, and Supabase, designed specifically for wholesale saree resellers.
 
-🔗 **Live Website**: [https://weave365-b2b.vercel.app/](https://weave365-b2b.vercel.app/)
+🔗 **Live Website**: [https://weave365-b2b.vercel.app/](https://weave365.in/)
 
 ## ✨ Features
 
