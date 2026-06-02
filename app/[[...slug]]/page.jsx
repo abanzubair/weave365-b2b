@@ -90,9 +90,6 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
         // 🚀 Cloudflare R2 images: serve directly through our native edge-bound API endpoint on our main domain
         // This completely bypasses Cloudflare WAF/Bot Fight Mode for WhatsApp crawler bots with zero egress cost
         finalImageUrl = `${siteUrl}/api/image?url=${encodeURIComponent(finalImageUrl)}`;
-      } else if (finalImageUrl.includes('drive.google.com')) {
-        // ⚙️ Google Drive images: proxy via wsrv.nl to format, compress, and circumvent Google Drive scraper blocks
-        finalImageUrl = `https://wsrv.nl/?url=${encodeURIComponent(finalImageUrl)}&w=800&q=80`;
       }
     }
 

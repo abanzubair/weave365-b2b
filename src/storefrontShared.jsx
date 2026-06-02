@@ -161,10 +161,7 @@ export function uniqueProductShareImages(product, variant, fallbackImage) {
 }
 
 export function shareImageProxyUrl(imageUrl) {
-  if (!imageUrl || imageUrl.startsWith('data:')) return imageUrl;
-  // Further optimize images: 600px width, 60% quality. 
-  // Smaller files are MUCH more likely to be accepted by the Web Share API and mobile OSs.
-  return `https://wsrv.nl/?url=${encodeURIComponent(imageUrl)}&w=600&q=60&output=jpg`;
+  return imageUrl;
 }
 
 export async function fileFromImageUrl(imageUrl, filename) {
@@ -282,5 +279,3 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
 export function normalizePincodeInput(value) {
   return String(value).replace(/\D/g, '').slice(0, 6);
 }
-
-

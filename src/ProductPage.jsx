@@ -567,35 +567,26 @@ export function ProductDetail({
       return;
     }
 
-    // 2. Cross-device database check via Supabase (if configured)
-    if (isSupabaseConfigured) {
-      try {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const { data, error } = await supabase
-          .from('download_logs')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('product_id', productId)
-          .gte('downloaded_at', startOfDay.toISOString());
-
-        if (error) {
-          // Gracefully fallback to localStorage check only if table or connection is missing
-          console.warn('Supabase download limit check failed, falling back to localStorage:', error);
-        } else if (data && data.length > 0) {
-          localStorage.setItem(localKey, 'true');
-          setToastMessage('Limit reached: 1 download per product per day');
-          setTimeout(() => setToastMessage(''), 4000);
-          return;
-        }
-      } catch (err) {
-        console.warn('Error verifying download logs in database:', err);
-      }
-    }
-
     try {
       setIsDownloading(true);
+
+      // 2. Try Database Insert FIRST to act as a lock
+      if (isSupabaseConfigured) {
+        const { error } = await supabase.from('download_logs').insert({
+          user_id: userId,
+          product_id: productId
+        });
+
+        if (error) {
+          console.warn('Database rate limit blocked download:', error);
+          localStorage.setItem(localKey, 'true'); // Sync local storage
+          setToastMessage('Limit reached: 1 download per product per day');
+          setTimeout(() => setToastMessage(''), 4000);
+          return; // Finally block will set isDownloading(false)
+        }
+      }
+
+      // 3. Proceed with actual download
       const [{ default: JSZip }, { saveAs }] = await Promise.all([
         import('jszip'),
         import('file-saver'),
@@ -604,8 +595,7 @@ export function ProductDetail({
 
       const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const promises = product.images.map(async (url, index) => {
-        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const blob = await response.blob();
         const filename = `${safeTitle}-${index + 1}.jpg`;
@@ -616,18 +606,8 @@ export function ProductDetail({
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-images.zip`);
 
-      // 3. Log download locally and in Supabase upon successful zipping/saving
+      // 4. Log download locally
       localStorage.setItem(localKey, 'true');
-      if (isSupabaseConfigured) {
-        try {
-          await supabase.from('download_logs').insert({
-            user_id: userId,
-            product_id: productId
-          });
-        } catch (err) {
-          console.warn('Failed to log download activity to database:', err);
-        }
-      }
     } catch (error) {
       console.error('Error downloading images:', error);
       alert('Failed to download images. They might be hosted on a server that restricts direct downloads.');
@@ -811,7 +791,7 @@ export function ProductDetail({
             </div>
 
             <div className="catalog-main-image" ref={mainImageRef}>
-              {selectedImage && (selectedImage.includes('youtube.com/embed') || selectedImage.includes('youtube-nocookie.com/embed')) ? (
+              {selectedImage && (selectedImage.startsWith('https://www.youtube.com/embed') || selectedImage.startsWith('https://www.youtube-nocookie.com/embed')) ? (
                 <div className="video-container">
                   <iframe
                     src={`${selectedImage}${selectedImage.includes('?') ? '&' : '?'}autoplay=1&mute=1&rel=0&modestbranding=1`}
@@ -1522,9 +1502,9 @@ export function ProductDetail({
         />
       )}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c') }} />
     </>
   );
 }
