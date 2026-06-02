@@ -510,7 +510,7 @@
     opacity: 0.9;
   }
 
-  .premium-feature:last-child {
+  .premium-feature:nth-child(2) {
     display: none;
   }
 
