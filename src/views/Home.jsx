@@ -40,12 +40,12 @@ const defaultHero = {
 
 const defaultHeroFeatures = [
   {
-    title: 'White Label',
-    text: 'Share catalogues\nwithout our branding.',
+    title: 'Wholesale Ready',
+    text: 'Made for resellers,\nboutiques, and exporters.',
   },
   {
-    title: 'Wholesale Ready',
-    text: 'Made for resellers,\n boutiques, and exporters.',
+    title: 'White Label',
+    text: 'Share catalogues\nwithout our branding.',
   },
   {
     title: 'WhatsApp Sharing',
@@ -517,8 +517,8 @@ export function Home({
                 <div className="premium-hero-features">
                   {heroFeatures.map((feature, index) => (
                     <div className="premium-feature" key={`${feature.title}-${index}`}>
-                      {index === 0 ? <Layers size={24} strokeWidth={1.5} /> : null}
-                      {index === 1 ? <Users size={24} strokeWidth={1.5} /> : null}
+                      {index === 0 ? <Users size={24} strokeWidth={1.5} /> : null}
+                      {index === 1 ? <Layers size={24} strokeWidth={1.5} /> : null}
                       {index === 2 ? <WhatsappIcon size={24} /> : null}
                       <div className="premium-feature-text">
                         <strong>{feature.title}</strong>
