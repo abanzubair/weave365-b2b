@@ -1611,8 +1611,8 @@
 
 .review-rules-card .rules-header h4 {
   font-family: var(--font-heading);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   margin: 0;
 }
 
@@ -1621,14 +1621,15 @@
   padding-left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .review-rules-card li {
   font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.45;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
 }
 
 /* Spin animation for spinner */
@@ -2603,4 +2604,294 @@
 .lang-hi .onboarding-modal-btn-download {
   font-weight: 400 !important;
 }
+
+/* ==================================================
+   PHOTO GUIDELINES & SAMPLE POPUPS MODAL STYLES
+   ================================================== */
+
+.photo-guidelines-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(63, 43, 29, 0.04);
+  margin: 8px 0 8px 0;
+}
+
+.photo-guidelines-card h3 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.photo-guidelines-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.guidelines-btn-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.guidelines-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid transparent;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Accepted button styles */
+.guidelines-btn.accepted {
+  background: rgba(117, 111, 79, 0.08);
+  color: var(--olive);
+  border-color: rgba(117, 111, 79, 0.2);
+}
+
+.guidelines-btn.accepted:hover {
+  background: var(--olive);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(117, 111, 79, 0.15);
+}
+
+/* Not Accepted button styles */
+.guidelines-btn.not-accepted {
+  background: rgba(139, 74, 47, 0.06);
+  color: #8b4a2f;
+  border-color: rgba(139, 74, 47, 0.16);
+}
+
+.guidelines-btn.not-accepted:hover {
+  background: #8b4a2f;
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 74, 47, 0.15);
+}
+
+/* Guidelines Modal Overlay */
+.guidelines-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(31, 20, 13, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 40px);
+  animation: guidelinesFadeIn 0.3s ease;
+}
+
+/* Guidelines Modal Card */
+.guidelines-modal-card {
+  width: 100%;
+  max-width: 900px;
+  max-height: 85vh;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(31, 20, 13, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: guidelinesSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Header */
+.guidelines-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(234, 219, 200, 0.6);
+  background: var(--white);
+}
+
+.guidelines-modal-header h2 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.guidelines-header-icon.success {
+  color: var(--olive);
+}
+
+.guidelines-header-icon.danger {
+  color: #8b4a2f;
+}
+
+.guidelines-modal-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 4px;
+}
+
+.guidelines-modal-close:hover {
+  color: var(--ink);
+}
+
+/* Body */
+.guidelines-modal-body {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(117, 111, 79, 0.3) transparent;
+}
+
+.guidelines-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.guidelines-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.guidelines-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(117, 111, 79, 0.3);
+  border-radius: 999px;
+}
+
+.guidelines-modal-desc {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #000000;
+  margin-top: 0;
+  margin-bottom: 28px;
+}
+
+/* Image Grid */
+.guidelines-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+}
+
+.guidelines-modal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid rgba(234, 219, 200, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(63, 43, 29, 0.02);
+  transition: all 0.3s ease;
+}
+
+.guidelines-modal-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(63, 43, 29, 0.08);
+  border-color: rgba(117, 111, 79, 0.3);
+}
+
+.guidelines-modal-img-wrapper {
+  aspect-ratio: 4 / 5;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--cream);
+  position: relative;
+}
+
+.guidelines-modal-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.guidelines-modal-item:hover img {
+  transform: scale(1.05);
+}
+
+.guidelines-modal-item-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guidelines-modal-item:hover .guidelines-modal-item-label {
+  color: var(--ink);
+}
+
+/* Hindi Specific Weight Adjustment */
+.lang-hi .photo-guidelines-card h3 {
+  font-weight: 500 !important;
+}
+
+.lang-hi .photo-guidelines-subtitle {
+  font-weight: 300 !important;
+}
+
+.lang-hi .guidelines-btn {
+  font-weight: 600 !important;
+}
+
+/* Animations */
+@keyframes guidelinesFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes guidelinesSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .guidelines-modal-card {
+    max-height: 90vh;
+  }
+  .guidelines-modal-header {
+    padding: 16px 24px;
+  }
+  .guidelines-modal-body {
+    padding: 24px;
+  }
+  .guidelines-modal-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+}
+
+
 

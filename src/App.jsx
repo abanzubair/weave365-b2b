@@ -1139,11 +1139,11 @@ export default function App({ initialData = {} }) {
               ABOUT
             </AppLink>
             <AppLink 
-              to="our-offerings" 
-              className={route === 'our-offerings' ? 'active' : ''} 
+              to="contact" 
+              className={route === 'contact' ? 'active' : ''} 
               navigate={navigate}
             >
-              OUR OFFERINGS
+              CONTACT US
             </AppLink>
           </nav>
 

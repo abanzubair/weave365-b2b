@@ -74,6 +74,14 @@ const translations = {
     priceRange3k5k: '₹3,000 - ₹5,000',
     priceRange5k10k: '₹5,000 - ₹10,000',
     priceRange10kPlus: '₹10,000+',
+    viewPhotoGuidelines: 'View Photo Guidelines',
+    beforeUploadingDesc: 'Before uploading, please review our imaging standards to ensure quick product approval:',
+    acceptedPhotoSamples: 'Accepted Photos',
+    notAcceptedPhotoSamples: 'Rejected Photos',
+    acceptedTitle: 'Accepted Photos',
+    notAcceptedTitle: 'Rejected Photos',
+    acceptedModalDesc: 'These samples demonstrate the lighting, angles, and detail clarity required for approval.',
+    notAcceptedModalDesc: 'Avoid uploading photos with these issues (blurry, bad lighting, watermarks, cluttered backgrounds, etc.) to prevent rejection.',
     samplePhotos: 'Sample Product Photos *',
     uploadSubtitle: 'Upload exactly 4 clear sample photos of your sarees/textiles (e.g., cover, details, back, borders) to submit for review.',
     photoSlot: 'Photo Slot',
@@ -313,6 +321,14 @@ const translations = {
     priceRange3k5k: '₹3,000 - ₹5,000',
     priceRange5k10k: '₹5,000 - ₹10,000',
     priceRange10kPlus: '₹10,000 से ज़्यादा',
+    viewPhotoGuidelines: 'फोटो अपलोड गाइडलाइन्स (View Photo Guidelines)',
+    beforeUploadingDesc: 'अपलोड करने से पहले, जल्दी अप्रूवल के लिए कृपया हमारी इमेजिंग गाइडलाइन्स देखें:',
+    acceptedPhotoSamples: 'Accepted Photos',
+    notAcceptedPhotoSamples: 'Rejected Photos',
+    acceptedTitle: 'स्वीकार किए जाने वाले फोटो',
+    notAcceptedTitle: 'अस्वीकार किए जाने वाले फोटो',
+    acceptedModalDesc: 'ये फोटो दिखाते हैं कि मंजूरी के लिए कैसी रोशनी, एंगल और क्लैरिटी की ज़रूरत है।',
+    notAcceptedModalDesc: 'अस्वीकृति से बचने के लिए इस तरह के फोटो अपलोड करने से बचें (जैसे: धुंधली, खराब रोशनी, वाटरमार्क, या बहुत सामान वाली पृष्ठभूमि)।',
     samplePhotos: 'सैंपल प्रोडक्ट की तस्वीरें *',
     uploadSubtitle: 'रिव्यू के लिए सबमिट करने के लिए अपनी साड़ियों/कपड़ों की ठीक 4 साफ़ तस्वीरें अपलोड करें (जैसे: सामने से, काम का क्लोज़-अप, पीछे का हिस्सा, बॉर्डर)।',
     photoSlot: 'फोटो स्लॉट',
@@ -578,6 +594,72 @@ const getLocalDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
+const acceptedSamples = [
+  "https://images.weave365.in/assets/sample/yes/y01.webp",
+  "https://images.weave365.in/assets/sample/yes/y02.webp",
+  "https://images.weave365.in/assets/sample/yes/y03.webp",
+  "https://images.weave365.in/assets/sample/yes/y04.webp",
+  "https://images.weave365.in/assets/sample/yes/y05.webp",
+  "https://images.weave365.in/assets/sample/yes/y06.webp",
+  "https://images.weave365.in/assets/sample/yes/y07.webp",
+  "https://images.weave365.in/assets/sample/yes/y08.webp",
+  "https://images.weave365.in/assets/sample/yes/y09.webp",
+  "https://images.weave365.in/assets/sample/yes/y10.webp"
+];
+
+const rejectedSamples = [
+  "https://images.weave365.in/assets/sample/no/n01.webp",
+  "https://images.weave365.in/assets/sample/no/n02.webp",
+  "https://images.weave365.in/assets/sample/no/n03.webp",
+  "https://images.weave365.in/assets/sample/no/n04.webp",
+  "https://images.weave365.in/assets/sample/no/n05.webp",
+  "https://images.weave365.in/assets/sample/no/n06.webp",
+  "https://images.weave365.in/assets/sample/no/n07.webp",
+  "https://images.weave365.in/assets/sample/no/n08.webp",
+  "https://images.weave365.in/assets/sample/no/n09.webp",
+  "https://images.weave365.in/assets/sample/no/n10.webp",
+  "https://images.weave365.in/assets/sample/no/n11.webp",
+  "https://images.weave365.in/assets/sample/no/n12.webp",
+  "https://images.weave365.in/assets/sample/no/n13.webp",
+  "https://images.weave365.in/assets/sample/no/n14.webp",
+  "https://images.weave365.in/assets/sample/no/n15.webp",
+  "https://images.weave365.in/assets/sample/no/n16.webp",
+  "https://images.weave365.in/assets/sample/no/n17.webp",
+  "https://images.weave365.in/assets/sample/no/n18.webp",
+  "https://images.weave365.in/assets/sample/no/n19.webp",
+  "https://images.weave365.in/assets/sample/no/n20.webp",
+  "https://images.weave365.in/assets/sample/no/n21.webp",
+  "https://images.weave365.in/assets/sample/no/n22.webp",
+  "https://images.weave365.in/assets/sample/no/n23.webp",
+  "https://images.weave365.in/assets/sample/no/n24.webp",
+  "https://images.weave365.in/assets/sample/no/n25.webp",
+  "https://images.weave365.in/assets/sample/no/n26.webp",
+  "https://images.weave365.in/assets/sample/no/n27.webp",
+  "https://images.weave365.in/assets/sample/no/n28.webp",
+  "https://images.weave365.in/assets/sample/no/n29.webp",
+  "https://images.weave365.in/assets/sample/no/n30.webp",
+  "https://images.weave365.in/assets/sample/no/n31.webp",
+  "https://images.weave365.in/assets/sample/no/n32.webp",
+  "https://images.weave365.in/assets/sample/no/n33.webp",
+  "https://images.weave365.in/assets/sample/no/n34.webp",
+  "https://images.weave365.in/assets/sample/no/n35.webp",
+  "https://images.weave365.in/assets/sample/no/n36.webp",
+  "https://images.weave365.in/assets/sample/no/n37.webp",
+  "https://images.weave365.in/assets/sample/no/n38.webp",
+  "https://images.weave365.in/assets/sample/no/n39.webp",
+  "https://images.weave365.in/assets/sample/no/n40.webp",
+  "https://images.weave365.in/assets/sample/no/n41.webp",
+  "https://images.weave365.in/assets/sample/no/n42.webp",
+  "https://images.weave365.in/assets/sample/no/n43.webp",
+  "https://images.weave365.in/assets/sample/no/n44.webp",
+  "https://images.weave365.in/assets/sample/no/n45.webp",
+  "https://images.weave365.in/assets/sample/no/n46.webp",
+  "https://images.weave365.in/assets/sample/no/n47.webp",
+  "https://images.weave365.in/assets/sample/no/n48.webp",
+  "https://images.weave365.in/assets/sample/no/n49.webp",
+  "https://images.weave365.in/assets/sample/no/n50.webp"
+];
+
 export function TrustedPartnerRegistrationPage() {
   const heroImage = assetSrc(artisanImage);
   
@@ -589,6 +671,8 @@ export function TrustedPartnerRegistrationPage() {
       return 'en';
     }
   });
+
+  const [activeGuidelinesModal, setActiveGuidelinesModal] = useState(null); // 'accepted' | 'not-accepted' | null
 
   const t = (key) => {
     return translations[lang]?.[key] || translations['en']?.[key] || key;
@@ -707,6 +791,23 @@ export function TrustedPartnerRegistrationPage() {
     setIsPaymentCaptchaVerified(false);
     setIsOnboardingCaptchaVerified(false);
   }, [activeTab]);
+
+  // Handle escape key and background scroll lock for guidelines modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveGuidelinesModal(null);
+      }
+    };
+    if (activeGuidelinesModal) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [activeGuidelinesModal]);
   
   const fileInputsRef = useRef([]);
   const idProofRef = useRef(null);
@@ -1837,6 +1938,30 @@ export function TrustedPartnerRegistrationPage() {
                     </div>
                   </fieldset>
 
+                  {/* Photo Guidelines Card */}
+                  <div className="photo-guidelines-card">
+                    <h3>{t('viewPhotoGuidelines')}</h3>
+                    <p className="photo-guidelines-subtitle">{t('beforeUploadingDesc')}</p>
+                    <div className="guidelines-btn-group">
+                      <button
+                        type="button"
+                        className="guidelines-btn accepted"
+                        onClick={() => setActiveGuidelinesModal('accepted')}
+                      >
+                        <CheckCircle2 size={16} />
+                        {t('acceptedPhotoSamples')}
+                      </button>
+                      <button
+                        type="button"
+                        className="guidelines-btn not-accepted"
+                        onClick={() => setActiveGuidelinesModal('not-accepted')}
+                      >
+                        <AlertCircle size={16} />
+                        {t('notAcceptedPhotoSamples')}
+                      </button>
+                    </div>
+                  </div>
+
                   <fieldset className="vendor-form-section">
                     <legend>{t('samplePhotos')}</legend>
                     <p className="upload-subtitle">{t('uploadSubtitle')}</p>
@@ -1885,7 +2010,7 @@ export function TrustedPartnerRegistrationPage() {
                     {/* Image specifications guidelines box */}
                     <div className="review-rules-card">
                       <div className="rules-header">
-                        <AlertCircle size={16} />
+                        <AlertCircle size={18} />
                         <h4>{t('uploadReqs')}</h4>
                       </div>
                       <ul>
@@ -2826,6 +2951,54 @@ export function TrustedPartnerRegistrationPage() {
                 >
                   {t('goBack')}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Guidelines Modal Popups */}
+      {activeGuidelinesModal && (
+        <div className="guidelines-modal-overlay" onClick={() => setActiveGuidelinesModal(null)} role="dialog" aria-modal="true">
+          <div className="guidelines-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="guidelines-modal-header">
+              <h2>
+                {activeGuidelinesModal === 'accepted' ? (
+                  <>
+                    <CheckCircle2 className="guidelines-header-icon success" size={22} />
+                    {t('acceptedTitle')} ({acceptedSamples.length})
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="guidelines-header-icon danger" size={22} />
+                    {t('notAcceptedTitle')} ({rejectedSamples.length})
+                  </>
+                )}
+              </h2>
+              <button 
+                type="button" 
+                className="guidelines-modal-close" 
+                onClick={() => setActiveGuidelinesModal(null)}
+                aria-label="Close modal"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="guidelines-modal-body">
+              <p className="guidelines-modal-desc">
+                {activeGuidelinesModal === 'accepted' ? t('acceptedModalDesc') : t('notAcceptedModalDesc')}
+              </p>
+              <div className="guidelines-modal-grid">
+                {(activeGuidelinesModal === 'accepted' ? acceptedSamples : rejectedSamples).map((url, index) => (
+                  <div key={index} className="guidelines-modal-item">
+                    <div className="guidelines-modal-img-wrapper">
+                      <img src={url} alt={`Sample ${index + 1}`} loading="lazy" />
+                    </div>
+                    <span className="guidelines-modal-item-label">
+                      {activeGuidelinesModal === 'accepted' ? 'Accepted' : 'Rejected'} #{index + 1}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
