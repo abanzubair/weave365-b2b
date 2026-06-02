@@ -41,11 +41,11 @@ const defaultHero = {
 const defaultHeroFeatures = [
   {
     title: 'White Label',
-    text: 'Share catalogues without\nour branding.',
+    text: 'Share catalogues\nwithout our branding.',
   },
   {
     title: 'Wholesale Ready',
-    text: 'Made for resellers, boutiques,\nand exporters.',
+    text: 'Made for resellers,\n boutiques, and exporters.',
   },
   {
     title: 'WhatsApp Sharing',
