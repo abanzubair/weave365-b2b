@@ -22,6 +22,9 @@ export function Catalog({
   fabrics,
   fabric,
   setFabric,
+  weaves,
+  weave,
+  setWeave,
   priceRanges,
   priceRange,
   setPriceRange,
@@ -41,7 +44,7 @@ export function Catalog({
   // Google JSON-LD BreadcrumbList Schema injection
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
+ 
     const schemaItems = [
       { name: 'Home', url: '/' },
       { name: title || 'Wholesale Saree Catalogue', url: '/shop' }
@@ -52,7 +55,10 @@ export function Catalog({
     if (fabric && fabric !== 'All') {
       schemaItems.push({ name: fabric, url: `/shop` });
     }
-
+    if (weave && weave !== 'All') {
+      schemaItems.push({ name: weave, url: `/shop` });
+    }
+ 
     const breadcrumbSchema = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -63,18 +69,18 @@ export function Catalog({
         "item": `${window.location.origin}${item.url}`
       }))
     };
-
+ 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.id = 'catalog-breadcrumb-ld-json';
     script.text = JSON.stringify(breadcrumbSchema);
     document.head.appendChild(script);
-
+ 
     return () => {
       const oldScript = document.getElementById('catalog-breadcrumb-ld-json');
       if (oldScript) oldScript.remove();
     };
-  }, [title, category, fabric]);
+  }, [title, category, fabric, weave]);
 
   const closeWithAnimation = () => {
     if (isClosing) return;
@@ -121,12 +127,14 @@ export function Catalog({
   const hasActiveFilters =
     category !== 'All' ||
     fabric !== 'All' ||
+    weave !== 'All' ||
     (priceAccess?.canViewPrices && priceRange !== 'All') ||
     (search && search.trim() !== '');
-
+ 
   const resetFilters = () => {
     setCategory('All');
     setFabric('All');
+    setWeave('All');
     setPriceRange('All');
     if (setSearch) setSearch('');
     setVisibleCount(25);
@@ -137,9 +145,10 @@ export function Catalog({
       { name: 'Home', url: '/', route: 'home' },
       { name: title || 'Wholesale Saree Catalogue', url: '/shop', route: 'shop' },
       ...(category && category !== 'All' ? [{ name: category }] : []),
-      ...(fabric && fabric !== 'All' ? [{ name: fabric }] : [])
+      ...(fabric && fabric !== 'All' ? [{ name: fabric }] : []),
+      ...(weave && weave !== 'All' ? [{ name: weave }] : [])
     ];
-  }, [title, category, fabric]);
+  }, [title, category, fabric, weave]);
 
   return (
     <section className="section catalog-page">
@@ -266,6 +275,32 @@ export function Catalog({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
+                    setVisibleCount(25);
+                    closeWithAnimation();
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+ 
+          {/* Weave Dropdown */}
+          <div className={`filter-dropdown weave-filter ${openDropdown === 'weave' ? 'open' : ''} ${isClosing && openDropdown === 'weave' ? 'closing' : ''}`}>
+            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('weave'); }}>
+              <div className="filter-label-wrap">
+                <label>Weave</label>
+                <span>{weave}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {weaves.map((name) => (
+                <button
+                  key={name}
+                  className={weave === name ? 'active' : ''}
+                  onClick={() => {
+                    setWeave(name);
                     setVisibleCount(25);
                     closeWithAnimation();
                   }}

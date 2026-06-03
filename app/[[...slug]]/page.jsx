@@ -7,7 +7,7 @@ import { blogPosts } from '../../src/data/blogPosts.js';
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
-const defaultConfigOptions = { priceRanges: [], categories: [], fabrics: [] };
+const defaultConfigOptions = { priceRanges: [], categories: [], fabrics: [], weaves: [] };
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
 
 function cleanSlug(slug = []) {

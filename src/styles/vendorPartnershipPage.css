@@ -660,7 +660,7 @@
 
 .vendor-form-heading p {
   margin: 0;
-  color: var(--muted);
+  color: #000000;
   font-family: var(--font-body);
   font-size: 15px;
 }
@@ -676,12 +676,10 @@
 .vendor-form-section legend {
   width: 100%;
   padding: 0 0 12px;
-  margin-bottom: 4px;
   color: var(--ink);
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 600;
-  border-bottom: 1px solid rgba(234, 219, 200, 0.78);
 }
 
 .vendor-form-grid {
@@ -1472,7 +1470,7 @@
 .upload-subtitle {
   font-family: var(--font-body);
   font-size: 14px;
-  color: var(--muted);
+  color: #000000;
   margin: -4px 0 16px 0;
 }
 
@@ -1611,7 +1609,7 @@
 
 .review-rules-card .rules-header h4 {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
   margin: 0;
 }
@@ -1627,7 +1625,7 @@
 .review-rules-card li {
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
   line-height: 1.5;
 }
@@ -2620,7 +2618,7 @@
 
 .photo-guidelines-card h3 {
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 8px;
@@ -2629,7 +2627,8 @@
 .photo-guidelines-subtitle {
   font-family: var(--font-body);
   font-size: 14px;
-  color: var(--muted);
+  font-weight: 600;
+  color: #000000;
   margin-bottom: 20px;
   line-height: 1.5;
 }
@@ -2673,13 +2672,13 @@
 
 /* Not Accepted button styles */
 .guidelines-btn.not-accepted {
-  background: rgba(139, 74, 47, 0.06);
-  color: #8b4a2f;
-  border-color: rgba(139, 74, 47, 0.16);
+  background: rgba(117, 111, 79, 0.08);
+  color: var(--olive);
+  border-color: rgba(117, 111, 79, 0.2);
 }
 
 .guidelines-btn.not-accepted:hover {
-  background: #8b4a2f;
+  background: var(--olive);
   color: var(--white);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(139, 74, 47, 0.15);
@@ -2781,7 +2780,8 @@
 
 .guidelines-modal-desc {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.6;
   color: #000000;
   margin-top: 0;
@@ -2801,8 +2801,7 @@
   gap: 10px;
   background: var(--white);
   border: 1px solid rgba(234, 219, 200, 0.5);
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 6px;
   box-shadow: 0 4px 15px rgba(63, 43, 29, 0.02);
   transition: all 0.3s ease;
 }
@@ -2852,7 +2851,7 @@
 }
 
 .lang-hi .photo-guidelines-subtitle {
-  font-weight: 300 !important;
+  font-weight: 500 !important;
 }
 
 .lang-hi .guidelines-btn {
@@ -2891,6 +2890,280 @@
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;
   }
+}
+
+/* ==================================================
+   H. PHOTO CONTEXT & DETAILED GUIDELINES MODAL STYLES
+   ================================================== */
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+  text-align: left;
+}
+
+.context-card {
+  background: var(--white);
+  border: 1px solid rgba(117, 111, 79, 0.15);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(63, 43, 29, 0.02);
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.context-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(117, 111, 79, 0.1);
+}
+
+.context-card-header h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.context-card-header.success {
+  color: var(--olive);
+  border-bottom-color: rgba(117, 111, 79, 0.2);
+}
+
+.context-card-header.danger {
+  color: #8b4a2f;
+  border-bottom-color: rgba(139, 74, 47, 0.2);
+}
+
+.context-card-header.info {
+  color: #a38b58;
+  border-bottom-color: rgba(163, 139, 88, 0.2);
+}
+
+.context-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.context-item-group {
+  background: rgba(117, 111, 79, 0.03);
+  border-left: 3px solid var(--olive);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  text-align: left;
+}
+
+.context-group-title {
+  margin: 0 0 6px 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.context-group-desc {
+  margin: 0 0 8px 0;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.45;
+}
+
+.context-sublist {
+  margin: 0;
+  padding-left: 18px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.55;
+}
+
+.context-sublist li {
+  margin-bottom: 6px;
+  list-style-type: disc;
+}
+
+.context-mainlist {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.65;
+}
+
+.context-mainlist li {
+  margin-bottom: 10px;
+  list-style-type: disc;
+}
+
+.context-mainlist.danger-list {
+  color: #000000;
+}
+
+.context-mainlist.tips-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.context-mainlist.tips-list li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 14px;
+  color: #000000;
+  font-weight: 500;
+  list-style-type: none;
+}
+
+.context-mainlist.tips-list li::before {
+  content: "•";
+  color: #a38b58;
+  font-size: 20px;
+  position: absolute;
+  left: 0;
+  top: -2px;
+}
+
+/* Photo Sample Modal Label Overrides */
+.sample-modal-section {
+  text-align: left;
+}
+
+.sample-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(117, 111, 79, 0.1);
+}
+
+.sample-section-title.success {
+  color: var(--ink);
+}
+
+.sample-section-title.danger {
+  color: var(--ink);
+}
+
+.guidelines-modal-item-label.success {
+  color: var(--olive);
+}
+
+.guidelines-modal-item-label.danger {
+  color: #8b4a2f;
+}
+
+.guidelines-modal-item.accepted-item {
+  border-color: rgba(117, 111, 79, 0.2);
+}
+
+.guidelines-modal-item.accepted-item:hover {
+  border-color: var(--olive);
+}
+
+.guidelines-modal-item.rejected-item {
+  border-color: rgba(139, 74, 47, 0.16);
+}
+
+.guidelines-modal-item.rejected-item:hover {
+  border-color: #8b4a2f;
+}
+
+/* Modal sizing adjustments to fit columns */
+.guidelines-modal-card {
+  max-width: 1080px !important;
+}
+
+.guidelines-modal-body.context-body {
+  padding: 32px;
+  background: var(--surface);
+}
+
+/* Hindi specific weights */
+.lang-hi .sample-section-title {
+  font-weight: 500 !important;
+}
+.lang-hi .context-group-title {
+  font-weight: 500 !important;
+}
+.lang-hi .guidelines-modal-item-label {
+  font-weight: 600 !important;
+}
+
+@media (max-width: 900px) {
+  .context-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ==================================================
+   I. GLOBAL BLACK TEXT OVERRIDES FOR REGISTRATION PAGE
+   ================================================== */
+.trusted-registration-page p,
+.trusted-registration-page label,
+.trusted-registration-page h1,
+.trusted-registration-page h2,
+.trusted-registration-page h3,
+.trusted-registration-page h4,
+.trusted-registration-page legend,
+.trusted-registration-page li,
+.trusted-registration-page select,
+.trusted-registration-page textarea,
+.trusted-registration-page input:not([type="submit"]):not([type="button"]),
+.trusted-registration-page span:not(button span):not(.vendor-tab-btn span):not(.guidelines-btn span):not(.vendor-submit-button span):not(.onboarding-submit-button span):not(.onboarding-modal-btn-download span) {
+  color: #000000 !important;
+}
+
+.trusted-registration-page .vendor-tab-btn,
+.trusted-registration-page .translate-toggle-btn,
+.trusted-registration-page .guidelines-btn,
+.trusted-registration-page .step-title,
+.trusted-registration-page .step-desc,
+.trusted-registration-page .vendor-aside-header h2,
+.trusted-registration-page .vendor-onboarding-aside p,
+.trusted-registration-page .vendor-approval-step strong,
+.trusted-registration-page .vendor-approval-step span,
+.trusted-registration-page .vendor-step-number,
+.trusted-registration-page .onboarding-clause-title,
+.trusted-registration-page .onboarding-clause-text,
+.trusted-registration-page .onboarding-agree-all-text,
+.trusted-registration-page .onboarding-step-footer,
+.trusted-registration-page .onboarding-signature-label,
+.trusted-registration-page .onboarding-signature-hint,
+.trusted-registration-page .onboarding-signature-subtext,
+.trusted-registration-page .step3-agreement-text,
+.trusted-registration-page .step3-info-text,
+.trusted-registration-page .upload-subtitle,
+.trusted-registration-page .photo-guidelines-subtitle,
+.trusted-registration-page .context-group-desc,
+.trusted-registration-page .context-sublist,
+.trusted-registration-page .context-mainlist,
+.trusted-registration-page .context-mainlist.tips-list li {
+  color: #000000 !important;
+}
+
+/* Maintain light theme readability for Hero banner text (white on dark background) */
+.trusted-registration-hero-content h1,
+.trusted-registration-hero-content p {
+  color: #ffffff !important;
 }
 
 

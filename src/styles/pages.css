@@ -1275,6 +1275,11 @@ button {
   color: var(--brown-900);
   cursor: pointer;
   transition: all 0.2s;
+  margin-bottom: 4px;
+}
+
+.filter-dropdown-menu button:last-child {
+  margin-bottom: 0;
 }
 
 .filter-dropdown-menu button:hover {

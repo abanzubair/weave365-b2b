@@ -22,7 +22,7 @@ const moneyColumns = {
 
 export async function fetchConfigOptions() {
   const text = await fetchSyncedCsv('config', configCsvUrl, 'config sheet', { optional: true });
-  if (!text) return { priceRanges: [], categories: [], fabrics: [] };
+  if (!text) return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
 
   const parsed = Papa.parse(text, {
     header: true,
@@ -48,7 +48,13 @@ export async function fetchConfigOptions() {
     .map(s => s.trim())
     .slice(0, 50);
 
-  return { priceRanges, categories, fabrics };
+  const weaves = parsed.data
+    .map(row => row['Weave'] || row['weave'])
+    .filter(Boolean)
+    .map(s => s.trim())
+    .slice(0, 50);
+
+  return { priceRanges, categories, fabrics, weaves };
 }
 
 export async function fetchProducts() {

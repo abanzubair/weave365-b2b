@@ -106,6 +106,7 @@ export default function App({ initialData = {} }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [fabric, setFabric] = useState('All');
+  const [weave, setWeave] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [authOpen, setAuthOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState('login');
@@ -148,7 +149,7 @@ export default function App({ initialData = {} }) {
     return Array.from(slugMap.values());
   });
   const [configOptions, setConfigOptions] = useState(() => (
-    initialData.configOptions || { priceRanges: [], categories: [], fabrics: [] }
+    initialData.configOptions || { priceRanges: [], categories: [], fabrics: [], weaves: [] }
   ));
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
@@ -436,6 +437,17 @@ export default function App({ initialData = {} }) {
     return ['All', ...Array.from(set).sort()];
   }, [pricedProducts, configOptions.fabrics]);
 
+  const weaves = useMemo(() => {
+    if (configOptions.weaves && configOptions.weaves.length > 0) {
+      return ['All', ...configOptions.weaves];
+    }
+    const set = new Set();
+    pricedProducts.forEach(p => {
+      if (p.weave) set.add(p.weave.trim());
+    });
+    return ['All', ...Array.from(set).sort()];
+  }, [pricedProducts, configOptions.weaves]);
+
   // Sync URL query params to filter states (e.g. ?category=dupatta)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -467,6 +479,18 @@ export default function App({ initialData = {} }) {
       setFabric('All');
     }
 
+    const weaveParam = params.get('weave');
+    if (weaveParam) {
+      const matched = weaves.find(w => w.toLowerCase() === weaveParam.toLowerCase());
+      if (matched && matched !== weave) {
+        setWeave(matched);
+      } else if (!matched && weaveParam.toLowerCase() === 'all' && weave !== 'All') {
+        setWeave('All');
+      }
+    } else if (weave !== 'All' && !params.has('weave')) {
+      setWeave('All');
+    }
+
     const searchParam = params.get('search');
     if (searchParam) {
       if (searchParam !== search) {
@@ -475,7 +499,7 @@ export default function App({ initialData = {} }) {
     } else if (search && !params.has('search')) {
       setSearch('');
     }
-  }, [pathname, route, categories, fabrics]);
+  }, [pathname, route, categories, fabrics, weaves]);
 
   // Sync filter states back to URL query params
   useEffect(() => {
@@ -509,6 +533,18 @@ export default function App({ initialData = {} }) {
       }
     }
 
+    if (weave && weave !== 'All') {
+      if (params.get('weave') !== weave.toLowerCase()) {
+        params.set('weave', weave.toLowerCase());
+        changed = true;
+      }
+    } else {
+      if (params.has('weave')) {
+        params.delete('weave');
+        changed = true;
+      }
+    }
+
     if (search && search.trim() !== '') {
       if (params.get('search') !== search) {
         params.set('search', search);
@@ -526,7 +562,7 @@ export default function App({ initialData = {} }) {
       const newPath = `/wholesale-catalogue${newSearch ? '?' + newSearch : ''}`;
       window.history.replaceState(null, '', newPath);
     }
-  }, [category, fabric, route, search]);
+  }, [category, fabric, weave, route, search]);
 
   useEffect(() => {
     if (!user) {
@@ -561,6 +597,7 @@ export default function App({ initialData = {} }) {
         product.category,
         product.groupKey,
         product.partner,
+        product.weave,
         variantCodes,
       ]
         .filter(Boolean)
@@ -577,7 +614,9 @@ export default function App({ initialData = {} }) {
         (product.priceRange && product.priceRange.trim() === priceRange.trim());
       const matchesFabric = fabric === 'All' ||
         (product.fabric && product.fabric.trim() === fabric.trim());
-      return matchesSearch && matchesCategory && matchesPrice && matchesFabric && !product.isArchived;
+      const matchesWeave = weave === 'All' ||
+        (product.weave && product.weave.trim().toLowerCase() === weave.trim().toLowerCase());
+      return matchesSearch && matchesCategory && matchesPrice && matchesFabric && matchesWeave && !product.isArchived;
     });
 
     // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
@@ -589,7 +628,7 @@ export default function App({ initialData = {} }) {
       }
       return b._originalIndex - a._originalIndex;
     });
-  }, [category, priceRange, fabric, pricedProducts, searchTerm]);
+  }, [category, priceRange, fabric, weave, pricedProducts, searchTerm]);
 
   const productsById = useMemo(
     () => new Map(pricedProducts.map((product) => [product.id, product])),
@@ -742,6 +781,9 @@ export default function App({ initialData = {} }) {
       if (fabric && fabric !== 'All') {
         params.set('fabric', fabric.toLowerCase());
       }
+      if (weave && weave !== 'All') {
+        params.set('weave', weave.toLowerCase());
+      }
       const searchStr = params.toString();
       href = `/wholesale-catalogue${searchStr ? '?' + searchStr : ''}`;
     }
@@ -752,7 +794,7 @@ export default function App({ initialData = {} }) {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [router, search, category, fabric]);
+  }, [router, search, category, fabric, weave]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -829,6 +871,9 @@ export default function App({ initialData = {} }) {
           fabrics={fabrics}
           fabric={fabric}
           setFabric={setFabric}
+          weaves={weaves}
+          weave={weave}
+          setWeave={setWeave}
           priceRanges={priceRanges}
           priceRange={priceRange}
           setPriceRange={setPriceRange}

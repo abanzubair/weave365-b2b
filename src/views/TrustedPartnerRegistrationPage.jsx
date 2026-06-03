@@ -76,19 +76,44 @@ const translations = {
     priceRange10kPlus: '₹10,000+',
     viewPhotoGuidelines: 'View Photo Guidelines',
     beforeUploadingDesc: 'Before uploading, please review our imaging standards to ensure quick product approval:',
-    acceptedPhotoSamples: 'Accepted Photos',
-    notAcceptedPhotoSamples: 'Rejected Photos',
+    photoSample: 'Photo Sample',
+    photoContext: 'Photo Context',
+    photoSampleModalDesc: 'Explore accepted and rejected photo samples to understand the image requirements.',
     acceptedTitle: 'Accepted Photos',
-    notAcceptedTitle: 'Rejected Photos',
-    acceptedModalDesc: 'These samples demonstrate the lighting, angles, and detail clarity required for approval.',
-    notAcceptedModalDesc: 'Avoid uploading photos with these issues (blurry, bad lighting, watermarks, cluttered backgrounds, etc.) to prevent rejection.',
+    notAcceptedTitle: 'Not Accepted Photos',
+    acceptedRequiredPhotos: 'Accepted / Required Photos',
+    fullLengthProductViews: 'Full-Length Product Views',
+    fullLengthDesc: 'Complete, unfolded shots showing the entire product layout:',
+    forSarees: 'For Sarees: Must clearly show the Body, Anchal (Pallu), Border, and Blouse piece.',
+    forSuits: 'For Unstitched Suits: Must display the Top, Bottom, and Dupatta together.',
+    highResCaptures: 'High-Resolution Real Captures',
+    trueColors: 'True-to-Life Product Colors',
+    brightLighting: 'Bright & White-Balanced Lighting',
+    neutralBackgrounds: 'Neutral or Plain Backgrounds',
+    verticalRatio: 'Vertical 3:4 Aspect Ratio',
+    notAcceptedPhotosTitle: 'Not Accepted Photos',
+    aiDigitalArt: 'AI-Generated & Digital Art',
+    stockPhotos: 'Downloaded or Stock Photos',
+    blurredLowRes: 'Blurred or Low-Resolution',
+    screenshots: 'Screenshots',
+    watermarkedImages: 'Watermarked Images',
+    filteredEdited: 'Overly Filtered or Edited',
+    groupCollages: 'Group / Collages Photos',
+    brandingLogos: 'Branding or brand names Logos, Watermarks',
+    fakeSilkMark: 'Fake or Misused Silk Mark Tags',
+    croppedLogos: 'Cropped-Out or Hidden Logos',
+    stockLogoGraphics: 'Stock Logo Graphics',
+    importantTipsTitle: 'Important Tips for a Successful Registration',
+    tipFormat: 'File Format: Ensure all photos are uploaded in JPG, JPEG, or PNG formats only.',
+    tipSize: 'File Size: Keep the image size within the allowed limit (e.g., usually under 1MB or 2MB per image).',
+    tipBackground: 'Background: Use a clean, neutral, or uncluttered background for product photos so the focus remains entirely on the saree or suit.',
     samplePhotos: 'Sample Product Photos *',
     uploadSubtitle: 'Upload exactly 4 clear sample photos of your sarees/textiles (e.g., cover, details, back, borders) to submit for review.',
     photoSlot: 'Photo Slot',
     dragDrop: 'Click or Drag & Drop',
     uploadReqs: 'Photo Upload Requirements',
     req1: 'All 4 image slots must be uploaded to submit the application',
-    req2: 'Strict maximum file size: 1MB per image',
+    req2: 'Strict maximum file size: 2MB per image',
     req3: 'Format: JPEG, PNG or WebP accepted',
     req4: 'Ensure photos are shot in bright natural light showing weaves clearly',
     confirmPhotosAuth: 'I confirm these photos show authentic products produced by my business.',
@@ -323,19 +348,44 @@ const translations = {
     priceRange10kPlus: '₹10,000 से ज़्यादा',
     viewPhotoGuidelines: 'फोटो अपलोड गाइडलाइन्स (View Photo Guidelines)',
     beforeUploadingDesc: 'अपलोड करने से पहले, जल्दी अप्रूवल के लिए कृपया हमारी इमेजिंग गाइडलाइन्स देखें:',
-    acceptedPhotoSamples: 'Accepted Photos',
-    notAcceptedPhotoSamples: 'Rejected Photos',
+    photoSample: 'फोटो सैंपल',
+    photoContext: 'फोटो संदर्भ',
+    photoSampleModalDesc: 'छवियों की आवश्यकताओं को समझने के लिए स्वीकृत और अस्वीकृत फोटो नमूनों को देखें।',
     acceptedTitle: 'स्वीकार किए जाने वाले फोटो',
     notAcceptedTitle: 'अस्वीकार किए जाने वाले फोटो',
-    acceptedModalDesc: 'ये फोटो दिखाते हैं कि मंजूरी के लिए कैसी रोशनी, एंगल और क्लैरिटी की ज़रूरत है।',
-    notAcceptedModalDesc: 'अस्वीकृति से बचने के लिए इस तरह के फोटो अपलोड करने से बचें (जैसे: धुंधली, खराब रोशनी, वाटरमार्क, या बहुत सामान वाली पृष्ठभूमि)।',
+    acceptedRequiredPhotos: 'स्वीकृत / आवश्यक फोटो',
+    fullLengthProductViews: 'फुल-लेंथ प्रोडक्ट व्यू',
+    fullLengthDesc: 'पूरे प्रोडक्ट का लेआउट दिखाने वाले पूरे, बिना मुड़े हुए शॉट्स:',
+    forSarees: 'साड़ियों के लिए: बॉडी, आंचल (पल्लू), बॉर्डर और ब्लाउज पीस स्पष्ट रूप से दिखना चाहिए।',
+    forSuits: 'बिना सिले सूट के लिए: टॉप, बॉटम और दुपट्टा एक साथ दिखना चाहिए।',
+    highResCaptures: 'हाई-रिज़ॉल्यूशन रियल कैप्चर',
+    trueColors: 'प्राकृतिक/वास्तविक उत्पाद के रंग',
+    brightLighting: 'चमकदार और व्हाइट-बैलेंस्ड लाइटिंग',
+    neutralBackgrounds: 'न्यूट्रल या प्लेन बैकग्राउंड',
+    verticalRatio: 'वर्टिकल 3:4 आस्पेक्ट रेशियो',
+    notAcceptedPhotosTitle: 'अस्वीकृत फोटो',
+    aiDigitalArt: 'एआई-जेनरेटेड और डिजिटल आर्ट',
+    stockPhotos: 'डाउनलोड की गई या स्टॉक तस्वीरें',
+    blurredLowRes: 'धुंधली या कम रिज़ॉल्यूशन वाली',
+    screenshots: 'स्क्रीनशॉट',
+    watermarkedImages: 'वाटरमार्क वाली तस्वीरें',
+    filteredEdited: 'अत्यधिक फ़िल्टर की गई या एडिट की गई',
+    groupCollages: 'ग्रुप / कोलाज फोटो',
+    brandingLogos: 'ब्रांडिंग या ब्रांड नाम लोगो, वाटरमार्क',
+    fakeSilkMark: 'नकली या गलत इस्तेमाल किए गए सिल्क मार्क टैग',
+    croppedLogos: 'क्रॉप किए गए या छिपे हुए लोगो',
+    stockLogoGraphics: 'स्टॉक लोगो ग्राफिक्स',
+    importantTipsTitle: 'सफल रजिस्ट्रेशन के लिए महत्वपूर्ण टिप्स',
+    tipFormat: 'फाइल फॉर्मेट: सुनिश्चित करें कि सभी फोटो केवल JPG, JPEG या PNG फॉर्मेट में अपलोड की गई हों।',
+    tipSize: 'फाइल साइज: इमेज का साइज तय सीमा के भीतर रखें (जैसे, प्रति इमेज आमतौर पर 1MB या 2MB से कम)।',
+    tipBackground: 'बैकग्राउंड: प्रोडक्ट फ़ोटो के लिए एक साफ़, न्यूट्रल या बिना क्लटर वाली पृष्ठभूमि का उपयोग करें ताकि पूरा ध्यान साड़ी या सूट पर रहे।',
     samplePhotos: 'सैंपल प्रोडक्ट की तस्वीरें *',
     uploadSubtitle: 'रिव्यू के लिए सबमिट करने के लिए अपनी साड़ियों/कपड़ों की ठीक 4 साफ़ तस्वीरें अपलोड करें (जैसे: सामने से, काम का क्लोज़-अप, पीछे का हिस्सा, बॉर्डर)।',
     photoSlot: 'फोटो स्लॉट',
     dragDrop: 'क्लिक करें या फोटो यहाँ खींच कर छोड़ें',
     uploadReqs: 'फोटो अपलोड करने के नियम',
     req1: 'फॉर्म सबमिट करने के लिए सभी 4 फोटो स्लॉट अपलोड करना ज़रूरी है',
-    req2: 'फोटो का साइज ज़्यादा से ज़्यादा 1MB होना चाहिए',
+    req2: 'फोटो का साइज ज़्यादा से ज़्यादा 2MB होना चाहिए',
     req3: 'फोटो फॉर्मेट: JPEG, PNG या WebP ही चलेंगे',
     req4: 'सुनिश्चित करें कि फोटो अच्छी रोशनी में ली गई हो ताकि काम साफ दिखे',
     confirmPhotosAuth: 'मैं पुष्टि करता हूँ कि ये फोटो मेरे अपने काम की असली तस्वीरें हैं।',
@@ -600,11 +650,7 @@ const acceptedSamples = [
   "https://images.weave365.in/assets/sample/yes/y03.webp",
   "https://images.weave365.in/assets/sample/yes/y04.webp",
   "https://images.weave365.in/assets/sample/yes/y05.webp",
-  "https://images.weave365.in/assets/sample/yes/y06.webp",
-  "https://images.weave365.in/assets/sample/yes/y07.webp",
-  "https://images.weave365.in/assets/sample/yes/y08.webp",
-  "https://images.weave365.in/assets/sample/yes/y09.webp",
-  "https://images.weave365.in/assets/sample/yes/y10.webp"
+  "https://images.weave365.in/assets/sample/yes/y06.webp"
 ];
 
 const rejectedSamples = [
@@ -870,9 +916,9 @@ export function TrustedPartnerRegistrationPage() {
       return;
     }
     
-    // Strict <1MB validation
-    if (file.size > 1 * 1024 * 1024) {
-      setReviewError(`Image in slot ${index + 1} exceeds 1MB limit. Please compress or choose a smaller file.`);
+    // Strict <2MB validation
+    if (file.size > 2 * 1024 * 1024) {
+      setReviewError(`Image in slot ${index + 1} exceeds 2MB limit. Please compress or choose a smaller file.`);
       return;
     }
     
@@ -1946,18 +1992,18 @@ export function TrustedPartnerRegistrationPage() {
                       <button
                         type="button"
                         className="guidelines-btn accepted"
-                        onClick={() => setActiveGuidelinesModal('accepted')}
+                        onClick={() => setActiveGuidelinesModal('sample')}
                       >
-                        <CheckCircle2 size={16} />
-                        {t('acceptedPhotoSamples')}
+                        <ImageIcon size={16} />
+                        {t('photoSample')}
                       </button>
                       <button
                         type="button"
                         className="guidelines-btn not-accepted"
-                        onClick={() => setActiveGuidelinesModal('not-accepted')}
+                        onClick={() => setActiveGuidelinesModal('context')}
                       >
-                        <AlertCircle size={16} />
-                        {t('notAcceptedPhotoSamples')}
+                        <ClipboardCheck size={16} />
+                        {t('photoContext')}
                       </button>
                     </div>
                   </div>
@@ -2963,15 +3009,15 @@ export function TrustedPartnerRegistrationPage() {
           <div className="guidelines-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="guidelines-modal-header">
               <h2>
-                {activeGuidelinesModal === 'accepted' ? (
+                {activeGuidelinesModal === 'sample' ? (
                   <>
-                    <CheckCircle2 className="guidelines-header-icon success" size={22} />
-                    {t('acceptedTitle')} ({acceptedSamples.length})
+                    <ImageIcon className="guidelines-header-icon success" size={22} />
+                    {t('photoSample')}
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="guidelines-header-icon danger" size={22} />
-                    {t('notAcceptedTitle')} ({rejectedSamples.length})
+                    <ClipboardCheck className="guidelines-header-icon success" size={22} />
+                    {t('photoContext')}
                   </>
                 )}
               </h2>
@@ -2984,20 +3030,130 @@ export function TrustedPartnerRegistrationPage() {
                 &times;
               </button>
             </div>
-            <div className="guidelines-modal-body">
-              <p className="guidelines-modal-desc">
-                {activeGuidelinesModal === 'accepted' ? t('acceptedModalDesc') : t('notAcceptedModalDesc')}
-              </p>
-              <div className="guidelines-modal-grid">
-                {(activeGuidelinesModal === 'accepted' ? acceptedSamples : rejectedSamples).map((url, index) => (
-                  <div key={index} className="guidelines-modal-item">
-                    <div className="guidelines-modal-img-wrapper">
-                      <img src={url} alt={`Sample ${index + 1}`} loading="lazy" />
+            {activeGuidelinesModal === 'sample' ? (
+              <div className="guidelines-modal-body">
+                <p className="guidelines-modal-desc">
+                  {t('photoSampleModalDesc')}
+                </p>
+                
+                {/* Section 1: Accepted Samples */}
+                <div className="sample-modal-section accepted-section">
+                  <h3 className="sample-section-title success">
+                    <CheckCircle2 size={24} />
+                    {t('acceptedTitle')}
+                  </h3>
+                  <div className="guidelines-modal-grid">
+                    {acceptedSamples.map((url, index) => (
+                      <div key={index} className="guidelines-modal-item accepted-item">
+                        <div className="guidelines-modal-img-wrapper">
+                          <img src={url} alt={`Accepted Sample ${index + 1}`} loading="lazy" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section 2: Rejected Samples */}
+                <div className="sample-modal-section rejected-section" style={{ marginTop: '32px' }}>
+                  <h3 className="sample-section-title danger">
+                    <AlertCircle size={24} />
+                    {t('notAcceptedTitle')}
+                  </h3>
+                  <div className="guidelines-modal-grid">
+                    {rejectedSamples.map((url, index) => (
+                      <div key={index} className="guidelines-modal-item rejected-item">
+                        <div className="guidelines-modal-img-wrapper">
+                          <img src={url} alt={`Rejected Sample ${index + 1}`} loading="lazy" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="guidelines-modal-body context-body">
+                <div className="context-grid">
+                  {/* Column 1: Accepted / Required Photos */}
+                  <div className="context-card accepted-card">
+                    <div className="context-card-header success">
+                      <CheckCircle2 size={24} />
+                      <h3>{t('acceptedRequiredPhotos')}</h3>
+                    </div>
+                    <div className="context-card-content">
+                      <div className="context-item-group">
+                        <h4 className="context-group-title">{t('fullLengthProductViews')}</h4>
+                        <p className="context-group-desc">{t('fullLengthDesc')}</p>
+                        <ul className="context-sublist">
+                          <li>{t('forSarees')}</li>
+                          <li>{t('forSuits')}</li>
+                        </ul>
+                      </div>
+                      
+                      <ul className="context-mainlist">
+                        <li>{t('highResCaptures')}</li>
+                        <li>{t('trueColors')}</li>
+                        <li>{t('brightLighting')}</li>
+                        <li>{t('neutralBackgrounds')}</li>
+                        <li>{t('verticalRatio')}</li>
+                      </ul>
                     </div>
                   </div>
-                ))}
+
+                  {/* Column 2: Not Accepted Photos */}
+                  <div className="context-card rejected-card">
+                    <div className="context-card-header danger">
+                      <AlertCircle size={24} />
+                      <h3>{t('notAcceptedPhotosTitle')}</h3>
+                    </div>
+                    <div className="context-card-content">
+                      <ul className="context-mainlist danger-list">
+                        <li>{t('aiDigitalArt')}</li>
+                        <li>{t('stockPhotos')}</li>
+                        <li>{t('blurredLowRes')}</li>
+                        <li>{t('screenshots')}</li>
+                        <li>{t('watermarkedImages')}</li>
+                        <li>{t('filteredEdited')}</li>
+                        <li>{t('groupCollages')}</li>
+                        <li>{t('brandingLogos')}</li>
+                        <li>{t('fakeSilkMark')}</li>
+                        <li>{t('croppedLogos')}</li>
+                        <li>{t('stockLogoGraphics')}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Column 3: Important Tips */}
+                  <div className="context-card tips-card">
+                    <div className="context-card-header info">
+                      <BadgeCheck size={24} />
+                      <h3>{t('importantTipsTitle')}</h3>
+                    </div>
+                    <div className="context-card-content">
+                      <ul className="context-mainlist tips-list">
+                        <li>
+                          <strong>{lang === 'hi' ? 'फाइल फॉर्मेट: ' : 'File Format: '}</strong>
+                          {lang === 'hi' 
+                            ? 'सुनिश्चित करें कि सभी फोटो केवल JPG, JPEG या PNG फॉर्मेट में अपलोड की गई हों।' 
+                            : 'Ensure all photos are uploaded in JPG, JPEG, or PNG formats only.'}
+                        </li>
+                        <li>
+                          <strong>{lang === 'hi' ? 'फाइल साइज: ' : 'File Size: '}</strong>
+                          {lang === 'hi' 
+                            ? 'इमेज का साइज तय सीमा के भीतर रखें (जैसे, प्रति इमेज आमतौर पर 1MB या 2MB से कम)।' 
+                            : 'Keep the image size within the allowed limit (e.g., usually under 1MB or 2MB per image).'}
+                        </li>
+                        <li>
+                          <strong>{lang === 'hi' ? 'बैकग्राउंड: ' : 'Background: '}</strong>
+                          {lang === 'hi' 
+                            ? 'प्रोडक्ट फ़ोटो के लिए एक साफ़, न्यूतरल या बिना क्लटर वाली पृष्ठभूमि का उपयोग करें ताकि पूरा ध्यान साड़ी या सूट पर रहे।' 
+                            : 'Use a clean, neutral, or uncluttered background for product photos so the focus remains entirely on the saree or suit.'}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
