@@ -514,7 +514,7 @@ export function Home({
                 </div>
 
                 <p className="premium-hero-subtitle">
-                  {renderHeroLines(heroSubtitle)}
+                  {normalizeHeroText(heroSubtitle).replace(/\r?\n|\|/g, ' ')}
                 </p>
 
                 <div className="premium-hero-actions">
