@@ -82,6 +82,21 @@ function parseHeroFeature(value, fallback) {
   };
 }
 
+function getContrastColor(hexColor, fallback) {
+  if (!hexColor) return fallback;
+  const color = String(hexColor).trim().replace('#', '');
+  if (color.length === 3 || color.length === 6) {
+    const r = parseInt(color.length === 3 ? color[0] + color[0] : color.substring(0, 2), 16);
+    const g = parseInt(color.length === 3 ? color[1] + color[1] : color.substring(2, 4), 16);
+    const b = parseInt(color.length === 3 ? color[2] + color[2] : color.substring(4, 6), 16);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      return yiq >= 128 ? '#241912' : '#FFFFFF';
+    }
+  }
+  return fallback;
+}
+
 function buildHeroStyle(hero) {
   const style = {};
   const setVar = (name, value) => {
@@ -92,6 +107,7 @@ function buildHeroStyle(hero) {
   setVar('--hero-title-color', hero?.headingColor);
   setVar('--hero-subtitle-color', hero?.subheadingColor);
   setVar('--hero-button1-color', hero?.button1Color);
+  setVar('--hero-button1-hover-text-color', getContrastColor(hero?.button1Color, '#241912'));
   setVar('--hero-button2-color', hero?.button2Color);
   setVar('--hero-accent-color', hero?.accentColor || hero?.button1Color);
   setVar('--hero-right-text-color', hero?.rightTextColor);
@@ -101,6 +117,7 @@ function buildHeroStyle(hero) {
   setVar('--hero-image-position', hero?.imagePosition);
   setVar('--hero-overlay-color', hero?.overlayColor);
   setVar('--hero-overlay-opacity', hero?.overlayOpacity);
+  setVar('--hero-scroll-color', hero?.scrollColor);
 
   return style;
 }

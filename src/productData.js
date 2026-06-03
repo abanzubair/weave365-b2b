@@ -719,6 +719,7 @@ export async function fetchHeroData() {
         overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
         logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
         navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
+        scrollColor: readCsvValue(row, 'Scroll Color', 'ScrollColor', 'Scroll'),
       };
     }).filter(hero => hero.image || hero.video);
   } catch (error) {

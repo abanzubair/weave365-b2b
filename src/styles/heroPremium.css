@@ -71,7 +71,7 @@
 .premium-hero-promo-badge {
   font-family: var(--font-hero-body);
   font-size: clamp(14px, 1.15vw, 17px);
-  font-weight: 350;
+  font-weight: 500;
   line-height: 1.55;
   letter-spacing: 0.03em;
   color: var(--hero-right-text-color, #F8FAFC);
@@ -80,7 +80,7 @@
   transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
               transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: 0.08s;
-  margin-bottom: clamp(18px, 2.5vh, 26px);
+  margin-bottom: clamp(50px, 7vh, 72px);
   text-align: left;
 }
 
@@ -186,7 +186,7 @@
 
 .premium-btn-filled:hover {
   background: var(--hero-button1-color, #D9BBA8);
-  color: #241912;
+  color: var(--hero-button1-hover-text-color, #241912);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(217, 187, 168, 0.25);
 }
@@ -355,7 +355,7 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #D1C0B5;
+  color: var(--hero-scroll-color, #D1C0B5);
   font-family: var(--font-hero-body);
   font-size: 12px;
   font-weight: 300;
@@ -455,7 +455,7 @@
     margin-bottom: -1px;
     min-height: 580px;
     margin-top: 0 !important;
-    padding-top: 90px;
+    padding-top: 130px;
   }
 
   .premium-hero-bg-img {
@@ -491,8 +491,8 @@
 
   .premium-hero-subtitle {
     font-size: 14px;
-    margin-bottom: 32px;
-    padding-top: 18px;
+    margin-bottom: 24px;
+    padding-top: 12px;
     max-width: 280px;
     line-height: 1.5;
     opacity: 0.85;
@@ -528,7 +528,7 @@
     padding: 0;
     height: auto;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--hero-button2-color, rgba(255, 255, 255, 0.9));
     opacity: 0.9;
   }
 
@@ -540,8 +540,12 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    margin-top: 48px;
+    margin-top: 32px;
     width: 90%;
+  }
+
+  .premium-hero-sidebar {
+    display: none !important;
   }
 
   .premium-feature {
@@ -822,7 +826,7 @@
 @media (min-width: 1200px) and (max-width: 1600px) {
   .premium-hero-promo-badge {
     font-size: clamp(13px, 1.05vw, 15px);
-    margin-bottom: 18px;
+    margin-bottom: 48px;
   }
 
   .premium-hero-title {
