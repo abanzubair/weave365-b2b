@@ -556,6 +556,10 @@
   .premium-hero-right {
     transform: translateY(-20px);
   }
+
+  .premium-hero-scroll-btn {
+    bottom: 12px;
+  }
 }
 
 /* ── 24-Inch Monitor & Large Desktop Optimization (≥ 1800px) ── */
