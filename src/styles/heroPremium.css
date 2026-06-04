@@ -558,7 +558,7 @@
   }
 
   .premium-hero-scroll-btn {
-    bottom: 12px;
+    bottom: 13px !important;
   }
 }
 
