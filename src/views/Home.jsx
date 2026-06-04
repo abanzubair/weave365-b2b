@@ -549,7 +549,7 @@ export function Home({
                     {renderHeroLines(heroTitle)}
                   </div>
                   <p className="premium-hero-subtitle">
-                    {renderHeroSubtitle(heroSubtitle)}
+                    {isMobile ? renderHeroSubtitle(heroRightText) : renderHeroSubtitle(heroSubtitle)}
                   </p>
                 </div>
 
@@ -567,10 +567,9 @@ export function Home({
                       to={heroButton2Link || defaultHero.button2Link}
                       className="premium-btn-text"
                       navigate={navigate}
-                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       <span>{heroButton2Text}</span>
-                      <ArrowRight size={16} />
                     </AppLink>
                   )}
                 </div>
@@ -580,20 +579,43 @@ export function Home({
               <div className="premium-hero-middle"></div>
 
 
-              {/* Right Column: Right-aligned description list */}
+              {/* Right Column: Right-aligned text & features list */}
               <div className="premium-hero-right">
-                <div className="premium-hero-features-list">
-                  {heroFeatures.map((feature, index) => (
-                    <div className="premium-hero-feature-item" key={`${feature.title}-${index}`}>
-                      <h3 className="feature-item-title">{feature.title}</h3>
-                      <p className="feature-item-desc">{renderHeroLines(feature.text)}</p>
+                <div className="premium-hero-right-container">
+                  {heroRightText && (
+                    <div className="premium-hero-right-text">
+                      {renderHeroSubtitle(heroRightText)}
                     </div>
-                  ))}
+                  )}
+                  <div className="premium-hero-features-list">
+                    {heroFeatures.map((feature, index) => (
+                      <div className="premium-hero-feature-item" key={`${feature.title}-${index}`}>
+                        <h3 className="feature-item-title">{feature.title}</h3>
+                        <p className="feature-item-desc">{renderHeroLines(feature.text)}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-
+            {/* Scroll Indicator */}
+            <button 
+              className="premium-hero-scroll-btn" 
+              onClick={() => {
+                const nextSection = document.querySelector('.deal-section') || document.querySelector('.category-section') || document.querySelector('.section');
+                if (nextSection) {
+                  nextSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+                }
+              }}
+              style={{ color: 'var(--hero-scroll-color, #E6D0C3)' }}
+              aria-label="Scroll to Explore"
+            >
+              <span>Scroll to Explore</span>
+              <ArrowDown size={14} />
+            </button>
           </section>
         </div>
 

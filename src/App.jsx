@@ -1270,7 +1270,7 @@ export default function App({ initialData = {} }) {
                       {isAdmin && (
                         <button
                           onClick={() => {
-                            navigate('admin');
+                            window.open('/admin', '_blank');
                             setDropdownOpen(null);
                           }}
                         >
