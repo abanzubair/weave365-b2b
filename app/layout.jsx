@@ -10,7 +10,8 @@ import {
   Work_Sans, 
   Poppins, 
   Cormorant, 
-  Montserrat 
+  Montserrat,
+  Marcellus
 } from 'next/font/google';
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -73,6 +74,13 @@ const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-montserrat-next',
+  display: 'swap',
+});
+
+const marcellus = Marcellus({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-marcellus-next',
   display: 'swap',
 });
 
@@ -143,7 +151,9 @@ export default function RootLayout({ children }) {
     poppins.variable,
     cormorant.variable,
     montserrat.variable,
+    marcellus.variable,
   ].join(' ');
+
 
   return (
     <html lang="en" data-scroll-behavior="smooth" className={fontClasses}>

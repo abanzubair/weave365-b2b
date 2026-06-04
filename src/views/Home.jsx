@@ -29,9 +29,9 @@ export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric
 const defaultHero = {
   image: 'https://images.weave365.in/assets/banner/hero1.webp',
   mobileImage: 'https://images.weave365.in/assets/banner/hero1m.webp',
-  title: 'Timeless Weaves\nEndless Possibilities',
-  subtitle: 'Banarasi Sarees & Suits for your business,\ncrafted for every story.',
-  buttonText: 'Explore Collections',
+  title: 'Beyond\nBeauty',
+  subtitle: 'Bringing You the Elements of Style',
+  buttonText: 'Read More',
   buttonLink: 'wholesale-catalogue',
   button2Text: 'Request Catalog',
   button2Link: 'bulk-inquiry',
@@ -40,16 +40,16 @@ const defaultHero = {
 
 const defaultHeroFeatures = [
   {
-    title: 'Wholesale Ready',
-    text: 'Made for resellers,\nboutiques, and exporters.',
+    title: 'Experts in Colour',
+    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
   },
   {
-    title: 'White Label',
-    text: 'Share catalogues\nwithout our branding.',
+    title: 'Eternal Desire',
+    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
   },
   {
-    title: 'WhatsApp Sharing',
-    text: 'Easily share catalogues\nwith customers.',
+    title: 'Feel Beautiful',
+    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
   },
 ];
 
@@ -61,6 +61,19 @@ function renderHeroLines(value) {
   return normalizeHeroText(value).split(/\r?\n|\|/).map((line, index, lines) => (
     <Fragment key={`${line}-${index}`}>
       {line}
+      {index < lines.length - 1 ? <br /> : null}
+    </Fragment>
+  ));
+}
+
+function renderHeroSubtitle(value) {
+  const lines = normalizeHeroText(value).split(/\r?\n|\|/);
+  if (lines.length <= 1) {
+    return normalizeHeroText(value);
+  }
+  return lines.map((line, index) => (
+    <Fragment key={`${line}-${index}`}>
+      {index === 0 ? <strong className="hero-subtitle-bold">{line}</strong> : <span className="hero-subtitle-normal">{line}</span>}
       {index < lines.length - 1 ? <br /> : null}
     </Fragment>
   ));
@@ -253,17 +266,40 @@ export function Home({
 
   const heroImage = currentDesktopSlide?.image || defaultHero.image;
   const heroMobileImage = currentMobileSlide?.image || currentDesktopSlide?.image || defaultHero.mobileImage;
-  const heroTitle = activeHeroData?.title || defaultHero.title;
-  const heroSubtitle = activeHeroData?.subtitle || defaultHero.subtitle;
+
+  const rawTitle = activeHeroData?.title;
+  const heroTitle = (rawTitle && rawTitle.trim() !== '') ? rawTitle : defaultHero.title;
+
+  const rawSubtitle = activeHeroData?.subtitle;
+  const heroSubtitle = (rawSubtitle && rawSubtitle.trim() !== '') ? rawSubtitle : defaultHero.subtitle;
+
   const heroButtonText = activeHeroData?.buttonText || defaultHero.buttonText;
   const heroButtonLink = activeHeroData?.buttonLink || defaultHero.buttonLink;
   const heroButton2Text = activeHeroData?.button2Text || defaultHero.button2Text;
   const heroButton2Link = activeHeroData?.button2Link || defaultHero.button2Link;
   const heroRightText = activeHeroData?.rightText || defaultHero.rightText;
   const heroStyle = buildHeroStyle(activeHeroData);
-  const heroFeatures = defaultHeroFeatures.map((feature, index) => (
-    parseHeroFeature(activeHeroData?.[`feature${index + 1}`], feature)
-  ));
+  const heroFeatures = defaultHeroFeatures.map((feature, index) => {
+    const idx = index + 1;
+    const titleVal = activeHeroData?.[`feature${idx}Title`]?.trim();
+    const descVal = activeHeroData?.[`feature${idx}Desc`]?.trim();
+
+    if (titleVal || descVal) {
+      return {
+        title: titleVal || feature.title,
+        text: descVal || feature.text,
+      };
+    }
+
+    // Fallback to combined column feature1/2/3
+    const oldVal = activeHeroData?.[`feature${idx}`];
+    if (oldVal) {
+      return parseHeroFeature(oldVal, feature);
+    }
+
+    return feature;
+  });
+
 
   useEffect(() => {
     if (currentSlide >= bannerSlides.length && bannerSlides.length > 0) {
@@ -488,6 +524,7 @@ export function Home({
         {/* Original Slide */}
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
           <section className="premium-hero" style={heroStyle}>
+            {/* Full-bleed Background Picture */}
             <picture className="premium-hero-bg-picture">
               <source media="(max-width: 820px)" srcSet={heroMobileImage} />
               <img
@@ -501,21 +538,20 @@ export function Home({
               />
             </picture>
 
+            {/* Dark gradient overlay for text readability */}
+            <div className="premium-hero-overlay"></div>
+
             <div className="premium-hero-content">
-              <div className="premium-hero-main">
-                {normalizeHeroText(heroRightText) && (
-                  <div className="premium-hero-promo-badge">
-                    {renderHeroLines(heroRightText)}
+              <div className="premium-hero-left">
+                <div className="premium-hero-header-group">
+                  <div className="premium-hero-title" aria-level="2" role="heading">
+
+                    {renderHeroLines(heroTitle)}
                   </div>
-                )}
-
-                <div className="premium-hero-title" aria-level="2" role="heading">
-                  {renderHeroLines(heroTitle)}
+                  <p className="premium-hero-subtitle">
+                    {renderHeroSubtitle(heroSubtitle)}
+                  </p>
                 </div>
-
-                <p className="premium-hero-subtitle">
-                  {normalizeHeroText(heroSubtitle).replace(/\r?\n|\|/g, ' ')}
-                </p>
 
                 <div className="premium-hero-actions">
                   <AppLink
@@ -524,48 +560,40 @@ export function Home({
                     navigate={navigate}
                     style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    {heroButtonText}
+                    <span>{heroButtonText}</span>
                   </AppLink>
-                  <AppLink
-                    to={heroButton2Link || defaultHero.button2Link}
-                    className="premium-btn-text"
-                    navigate={navigate}
-                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                  >
-                    {heroButton2Text} <ArrowRight size={18} />
-                  </AppLink>
+                  {heroButton2Text && (
+                    <AppLink
+                      to={heroButton2Link || defaultHero.button2Link}
+                      className="premium-btn-text"
+                      navigate={navigate}
+                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <span>{heroButton2Text}</span>
+                      <ArrowRight size={16} />
+                    </AppLink>
+                  )}
                 </div>
+              </div>
 
-                <div className="premium-hero-features">
+              {/* Middle Column: Left empty for background image layout */}
+              <div className="premium-hero-middle"></div>
+
+
+              {/* Right Column: Right-aligned description list */}
+              <div className="premium-hero-right">
+                <div className="premium-hero-features-list">
                   {heroFeatures.map((feature, index) => (
-                    <div className="premium-feature" key={`${feature.title}-${index}`}>
-                      {index === 0 ? <Users size={24} strokeWidth={1.5} /> : null}
-                      {index === 1 ? <Layers size={24} strokeWidth={1.5} /> : null}
-                      {index === 2 ? <WhatsappIcon size={24} /> : null}
-                      <div className="premium-feature-text">
-                        <strong>{feature.title}</strong>
-                        <span>{renderHeroLines(feature.text)}</span>
-                      </div>
+                    <div className="premium-hero-feature-item" key={`${feature.title}-${index}`}>
+                      <h3 className="feature-item-title">{feature.title}</h3>
+                      <p className="feature-item-desc">{renderHeroLines(feature.text)}</p>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className={`premium-hero-sidebar ${normalizeHeroText(heroRightText).length > 30 ? 'long-text' : ''}`}>
-                <div className="premium-hero-collection-info">
-                  <span>{renderHeroLines(heroRightText)}</span>
-                </div>
-                {/* <div className="premium-hero-pagination">
-                  <span className="current-slide">01</span>
-                  <span className="divider">/</span>
-                  <span className="total-slides">03</span>
-                </div> */}
-              </div>
-            </div>
-            <div className="premium-hero-scroll">
-              <span>Scroll to Explore</span>
-              <ArrowDown size={20} strokeWidth={1.5} />
-            </div>
+
           </section>
         </div>
 
