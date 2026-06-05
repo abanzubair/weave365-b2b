@@ -258,6 +258,8 @@ export function ReviewsSection({ navigate, user }) {
                   size={20}
                   fill={star <= Math.round(stats.avg) ? 'var(--gold)' : 'none'}
                   stroke="var(--gold)"
+                  strokeLinejoin="miter"
+                  strokeLinecap="square"
                   className="rating-star-icon"
                 />
               ))}
@@ -321,6 +323,8 @@ export function ReviewsSection({ navigate, user }) {
                         size={28}
                         fill={star <= formData.rating ? 'var(--gold)' : 'none'}
                         stroke="var(--gold)"
+                        strokeLinejoin="miter"
+                        strokeLinecap="square"
                         className="interactive-star"
                       />
                     </button>
@@ -413,6 +417,8 @@ export function ReviewsSection({ navigate, user }) {
                     size={14}
                     fill={star <= review.rating ? 'var(--gold)' : 'none'}
                     stroke="var(--gold)"
+                    strokeLinejoin="miter"
+                    strokeLinecap="square"
                     className="feed-star-icon"
                   />
                 ))}
@@ -510,14 +516,14 @@ export function ReviewsPage({ navigate, user }) {
           <div className="reviews-rotating-seal-wrap">
             <svg viewBox="0 0 100 100" className="reviews-rotating-seal">
               <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="reviewsSealPath" fill="none" />
-              <text fill="var(--olive)" fontSize="8" fontFamily="var(--font-hero-body)" letterSpacing="2.8" fontWeight="600">
+              <text fill="#c69e6a" fontSize="8" fontFamily="var(--font-hero-body)" letterSpacing="2.8" fontWeight="600">
                 <textPath href="#reviewsSealPath" startOffset="0%">
                   TRUSTED B2B • VERIFIED REVIEWS • 100% TRANSPARENT • 
                 </textPath>
               </text>
             </svg>
             <div className="reviews-seal-center">
-              <Award size={50} strokeWidth={1} />
+              <Award size={50} strokeWidth={1.25} />
             </div>
           </div>
         </div>

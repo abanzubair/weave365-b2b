@@ -3302,7 +3302,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         </div>
                         <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
                           {[1,2,3,4,5].map(s => (
-                            <Star key={s} size={14} fill={s <= review.rating ? '#c69e6a' : 'none'} stroke="#c69e6a" />
+                            <Star key={s} size={14} fill={s <= review.rating ? '#c69e6a' : 'none'} stroke="#c69e6a" strokeLinejoin="miter" strokeLinecap="square" />
                           ))}
                         </div>
                         {review.title && <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>{review.title}</div>}
