@@ -788,29 +788,45 @@ export function Home({
       <section className="section category-section">
         <SectionTitle title="Shop By Category" align="left" />
         <div className="category-grid">
-          {homeCategoryNames.map((name, index) => (
-            <AppLink
-              key={name}
-              to="wholesale-catalogue"
-              className="category-card"
-              onClick={() => setCategory(name)}
-              navigate={navigate}
-              navOptions={{ category: name }}
-              style={{ textDecoration: 'none' }}
-            >
-              <img
-                src={categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length]}
-                alt={name}
-                loading="lazy"
-                decoding="async"
-                width={300}
-                height={300}
-                onError={(e) => { e.target.style.opacity = '0'; }}
-              />
-              <span>{name}</span>
-              <ArrowRight size={18} />
-            </AppLink>
-          ))}
+          {homeCategoryNames.map((name, index) => {
+            const seoCategoryMap = {
+              'saree': 'wholesale-banarasi-sarees',
+              'suit': 'wholesale-banarasi-suits',
+              'lehenga': 'wholesale-banarasi-lehengas',
+              'dupatta': 'wholesale-banarasi-dupattas'
+            };
+            const targetHref = seoCategoryMap[name.toLowerCase()]
+              ? `/${seoCategoryMap[name.toLowerCase()]}`
+              : `/wholesale-catalogue?category=${name.toLowerCase()}`;
+
+            return (
+              <a
+                key={name}
+                href={targetHref}
+                className="category-card"
+                onClick={(e) => {
+                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                    e.preventDefault();
+                    setCategory(name);
+                    navigate('wholesale-catalogue', null, null, { category: name });
+                  }
+                }}
+                style={{ textDecoration: 'none' }}
+              >
+                <img
+                  src={categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length]}
+                  alt={name}
+                  loading="lazy"
+                  decoding="async"
+                  width={300}
+                  height={300}
+                  onError={(e) => { e.target.style.opacity = '0'; }}
+                />
+                <span>{name}</span>
+                <ArrowRight size={18} />
+              </a>
+            );
+          })}
         </div>
         <AppLink to="wholesale-catalogue" className="center-button" navigate={navigate} style={{ textDecoration: 'none' }}>
           View All Categories
