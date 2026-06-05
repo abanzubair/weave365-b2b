@@ -280,7 +280,7 @@ export function ReviewsSection({ navigate, user }) {
                 />
               ))}
             </div>
-            <span className="reviews-count-label">Based on {stats.count} verified B2B partners</span>
+            <span className="reviews-count-label">Based on {stats.count} happy buyers</span>
           </div>
 
           <div className="reviews-cta-container">
