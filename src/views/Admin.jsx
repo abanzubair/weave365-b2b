@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+import { SharpStar } from './ReviewsPage.jsx';
 import { blogPosts } from '../data/blogPosts.js';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 import { formatMoney } from '../storefrontShared.jsx';
@@ -3302,7 +3303,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         </div>
                         <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
                           {[1,2,3,4,5].map(s => (
-                            <Star key={s} size={14} fill={s <= review.rating ? '#c69e6a' : 'none'} stroke="#c69e6a" strokeLinejoin="miter" strokeLinecap="square" />
+                            <SharpStar key={s} size={14} fill={s <= review.rating ? '#c69e6a' : 'none'} stroke="#c69e6a" />
                           ))}
                         </div>
                         {review.title && <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>{review.title}</div>}

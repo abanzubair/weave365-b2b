@@ -6,11 +6,29 @@
  * Integrates directly with Supabase table `service_reviews` with a client-side localStorage fallback.
  */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Star, Award, ChevronRight, Plus, HelpCircle, Check, Loader } from 'lucide-react';
+import { Award, ChevronRight, Plus, HelpCircle, Check, Loader } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import SliderCaptcha from '../components/SliderCaptcha.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
+
+export function SharpStar({ size = 24, fill = 'none', stroke = 'currentColor', strokeWidth = 2, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
+      className={className}
+    >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}
 
 const SEED_REVIEWS = [
   {
@@ -253,13 +271,11 @@ export function ReviewsSection({ navigate, user }) {
             <div className="reviews-rating-big">{stats.avg}</div>
             <div className="reviews-stars-row">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star
+                <SharpStar
                   key={star}
                   size={20}
                   fill={star <= Math.round(stats.avg) ? 'var(--gold)' : 'none'}
                   stroke="var(--gold)"
-                  strokeLinejoin="miter"
-                  strokeLinecap="square"
                   className="rating-star-icon"
                 />
               ))}
@@ -319,12 +335,10 @@ export function ReviewsSection({ navigate, user }) {
                       className="star-rating-btn"
                       aria-label={`Rate ${star} stars`}
                     >
-                      <Star
+                      <SharpStar
                         size={28}
                         fill={star <= formData.rating ? 'var(--gold)' : 'none'}
                         stroke="var(--gold)"
-                        strokeLinejoin="miter"
-                        strokeLinecap="square"
                         className="interactive-star"
                       />
                     </button>
@@ -412,13 +426,11 @@ export function ReviewsSection({ navigate, user }) {
 
               <div className="review-card-stars">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
+                  <SharpStar
                     key={star}
                     size={14}
                     fill={star <= review.rating ? 'var(--gold)' : 'none'}
                     stroke="var(--gold)"
-                    strokeLinejoin="miter"
-                    strokeLinecap="square"
                     className="feed-star-icon"
                   />
                 ))}
