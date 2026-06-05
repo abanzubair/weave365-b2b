@@ -795,6 +795,7 @@ export function Home({
               className="category-card"
               onClick={() => setCategory(name)}
               navigate={navigate}
+              navOptions={{ category: name }}
               style={{ textDecoration: 'none' }}
             >
               <img

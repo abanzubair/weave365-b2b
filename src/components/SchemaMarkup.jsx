@@ -86,22 +86,22 @@ export default function SchemaMarkup() {
             {
               "@type": "OfferCatalog",
               name: "Banarasi Sarees",
-              url: "https://www.weave365.in/wholesale-catalogue?category=saree",
+              url: "https://www.weave365.in/wholesale-banarasi-sarees",
             },
             {
               "@type": "OfferCatalog",
               name: "Suits",
-              url: "https://www.weave365.in/wholesale-catalogue?category=suit",
+              url: "https://www.weave365.in/wholesale-banarasi-suits",
             },
             {
               "@type": "OfferCatalog",
               name: "Lehengas",
-              url: "https://www.weave365.in/wholesale-catalogue?category=lehenga",
+              url: "https://www.weave365.in/wholesale-banarasi-lehengas",
             },
             {
               "@type": "OfferCatalog",
               name: "Dupattas",
-              url: "https://www.weave365.in/wholesale-catalogue?category=dupatta",
+              url: "https://www.weave365.in/wholesale-banarasi-dupattas",
             },
           ],
         },

@@ -229,6 +229,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
+  if (route === 'reviews') {
+    return buildMeta(
+      'Client Sourcing Reviews | B2B Partner Feedback | Weave 365',
+      'Verified reviews and feedback from boutique owners, apparel retailers, and saree resellers across India sourcing from Weave 365.',
+      '/reviews'
+    );
+  }
+
   if (route === 'early-access') {
     return buildMeta(
       'Request Early Access | Weave 365 Wholesale Banarasi Sarees',

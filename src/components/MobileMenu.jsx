@@ -141,7 +141,7 @@ export function MobileMenu({
                     className="mobile-account-subitem" 
                     onClick={() => {
                       setCategory(cat);
-                      navigate('wholesale-catalogue');
+                      navigate('wholesale-catalogue', null, null, { category: cat });
                       onClose();
                     }}
                   >

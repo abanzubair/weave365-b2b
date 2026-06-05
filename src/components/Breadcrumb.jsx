@@ -53,7 +53,7 @@ export default function Breadcrumb({ items, navigate }) {
                       if (navigate && !item.url.startsWith('http')) {
                         e.preventDefault();
                         if (item.route) {
-                          navigate(item.route, item.routeVal, item.routeSlug);
+                          navigate(item.route, item.routeVal, item.routeSlug, item.routeOptions);
                         } else {
                           const routeSlug = item.url.replace(/^\/+/, '') || 'home';
                           navigate(routeSlug);

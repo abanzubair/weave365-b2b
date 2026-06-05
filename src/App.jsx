@@ -78,6 +78,13 @@ const slugifyPartner = (name) => {
   return name.toLowerCase().trim().replace(/\s+/g, '-');
 };
 
+const seoCategoryRoutes = {
+  'wholesale-banarasi-sarees': 'Saree',
+  'wholesale-banarasi-suits': 'Suit',
+  'wholesale-banarasi-lehengas': 'Lehenga',
+  'wholesale-banarasi-dupattas': 'Dupatta'
+};
+
 export default function App({ initialData = {} }) {
   if (typeof window === 'undefined') {
     console.log('SSR App: initialData status =', initialData?.status, 'products count =', initialData?.products?.length, 'hydrated =', initialData?.hydrated);
@@ -90,13 +97,20 @@ export default function App({ initialData = {} }) {
   const router = useRouter();
   const pathname = usePathname() || '/';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
-  const route = pathSegments[0] || 'home';
+  const [pendingRoute, setPendingRoute] = useState(null);
+  
+  useEffect(() => {
+    setPendingRoute(null);
+  }, [pathname]);
+
+  const route = pendingRoute || pathSegments[0] || 'home';
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
   const sharedSlug = route === 's' ? decodeURIComponent(pathSegments[1] || '') : null;
   const isSharedProduct = route === 's' && pathSegments[2] === 'p';
   const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
   const blogPostSlug = route === 'blog' && pathSegments[1] !== 'category' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const isSeoCategoryRoute = Object.keys(seoCategoryRoutes).includes(route);
 
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
@@ -106,6 +120,7 @@ export default function App({ initialData = {} }) {
   const [error, setError] = useState(() => initialData.error || '');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const activeCategory = isSeoCategoryRoute ? seoCategoryRoutes[route] : category;
   const [fabric, setFabric] = useState('All');
   const [weave, setWeave] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
@@ -452,20 +467,22 @@ export default function App({ initialData = {} }) {
   // Sync URL query params to filter states (e.g. ?category=dupatta)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'wholesale-catalogue') return;
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return;
 
     const params = new URLSearchParams(window.location.search);
 
-    const catParam = params.get('category');
-    if (catParam) {
-      const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
-      if (matched && matched !== category) {
-        setCategory(matched);
-      } else if (!matched && catParam.toLowerCase() === 'all' && category !== 'All') {
+    if (!isSeoCategoryRoute) {
+      const catParam = params.get('category');
+      if (catParam) {
+        const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+        if (matched && matched !== category) {
+          setCategory(matched);
+        } else if (!matched && catParam.toLowerCase() === 'all' && category !== 'All') {
+          setCategory('All');
+        }
+      } else if (category !== 'All' && !params.has('category')) {
         setCategory('All');
       }
-    } else if (category !== 'All' && !params.has('category')) {
-      setCategory('All');
     }
 
     const fabricParam = params.get('fabric');
@@ -505,20 +522,22 @@ export default function App({ initialData = {} }) {
   // Sync filter states back to URL query params
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (route !== 'wholesale-catalogue') return;
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return;
 
     const params = new URLSearchParams(window.location.search);
     let changed = false;
 
-    if (category && category !== 'All') {
-      if (params.get('category') !== category.toLowerCase()) {
-        params.set('category', category.toLowerCase());
-        changed = true;
-      }
-    } else {
-      if (params.has('category')) {
-        params.delete('category');
-        changed = true;
+    if (!isSeoCategoryRoute) {
+      if (category && category !== 'All') {
+        if (params.get('category') !== category.toLowerCase()) {
+          params.set('category', category.toLowerCase());
+          changed = true;
+        }
+      } else {
+        if (params.has('category')) {
+          params.delete('category');
+          changed = true;
+        }
       }
     }
 
@@ -560,10 +579,11 @@ export default function App({ initialData = {} }) {
 
     if (changed) {
       const newSearch = params.toString();
-      const newPath = `/wholesale-catalogue${newSearch ? '?' + newSearch : ''}`;
+      const basePath = isSeoCategoryRoute ? `/${route}` : '/wholesale-catalogue';
+      const newPath = `${basePath}${newSearch ? '?' + newSearch : ''}`;
       window.history.replaceState(null, '', newPath);
     }
-  }, [category, fabric, weave, route, search]);
+  }, [category, fabric, weave, route, search, isSeoCategoryRoute]);
 
   useEffect(() => {
     if (!user) {
@@ -606,11 +626,11 @@ export default function App({ initialData = {} }) {
         .toLowerCase();
       const matchesSearch = text.includes(searchTerm);
       const matchesCategory =
-        category === 'All' ||
-        (category === 'New Arrivals' && product.isNew) ||
-        (category === 'Bestsellers' && product.isTopSeller) ||
-        product.fabric === category ||
-        product.category === category;
+        activeCategory === 'All' ||
+        (activeCategory === 'New Arrivals' && product.isNew) ||
+        (activeCategory === 'Bestsellers' && product.isTopSeller) ||
+        product.fabric === activeCategory ||
+        product.category === activeCategory;
       const matchesPrice = priceRange === 'All' ||
         (product.priceRange && product.priceRange.trim() === priceRange.trim());
       const matchesFabric = fabric === 'All' ||
@@ -629,7 +649,7 @@ export default function App({ initialData = {} }) {
       }
       return b._originalIndex - a._originalIndex;
     });
-  }, [category, priceRange, fabric, weave, pricedProducts, searchTerm]);
+  }, [activeCategory, priceRange, fabric, weave, pricedProducts, searchTerm]);
 
   const productsById = useMemo(
     () => new Map(pricedProducts.map((product) => [product.id, product])),
@@ -757,7 +777,7 @@ export default function App({ initialData = {} }) {
     setCodStatus(serviceable ? 'available' : 'unavailable');
   }, [pincode]);
 
-  const navigate = useCallback((nextRoute, productId = null, shopName = null) => {
+  const navigate = useCallback((nextRoute, productId = null, shopName = null, navOptions = {}) => {
     let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
       href = `/product/${productId}`;
@@ -773,23 +793,61 @@ export default function App({ initialData = {} }) {
       href = '/';
     } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue') {
       const params = new URLSearchParams();
-      if (search && search.trim() !== '') {
-        params.set('search', search);
+      const currentSearch = navOptions.search !== undefined ? navOptions.search : search;
+      const currentCategory = navOptions.category !== undefined ? navOptions.category : category;
+      const currentFabric = navOptions.fabric !== undefined ? navOptions.fabric : fabric;
+      const currentWeave = navOptions.weave !== undefined ? navOptions.weave : weave;
+
+      const seoCategoryMap = {
+        'saree': 'wholesale-banarasi-sarees',
+        'sarees': 'wholesale-banarasi-sarees',
+        'suit': 'wholesale-banarasi-suits',
+        'suits': 'wholesale-banarasi-suits',
+        'lehenga': 'wholesale-banarasi-lehengas',
+        'lehengas': 'wholesale-banarasi-lehengas',
+        'dupatta': 'wholesale-banarasi-dupattas',
+        'dupattas': 'wholesale-banarasi-dupattas'
+      };
+
+      const isCleanCategory = currentCategory && currentCategory !== 'All' && 
+                             (!currentSearch || currentSearch.trim() === '') && 
+                             (!currentFabric || currentFabric === 'All') && 
+                             (!currentWeave || currentWeave === 'All');
+
+      if (isCleanCategory && seoCategoryMap[currentCategory.toLowerCase()]) {
+        href = `/${seoCategoryMap[currentCategory.toLowerCase()]}`;
+      } else {
+        if (currentSearch && currentSearch.trim() !== '') {
+          params.set('search', currentSearch);
+        }
+        if (currentCategory && currentCategory !== 'All') {
+          params.set('category', currentCategory.toLowerCase());
+        }
+        if (currentFabric && currentFabric !== 'All') {
+          params.set('fabric', currentFabric.toLowerCase());
+        }
+        if (currentWeave && currentWeave !== 'All') {
+          params.set('weave', currentWeave.toLowerCase());
+        }
+        const searchStr = params.toString();
+        href = `/wholesale-catalogue${searchStr ? '?' + searchStr : ''}`;
       }
-      if (category && category !== 'All') {
-        params.set('category', category.toLowerCase());
-      }
-      if (fabric && fabric !== 'All') {
-        params.set('fabric', fabric.toLowerCase());
-      }
-      if (weave && weave !== 'All') {
-        params.set('weave', weave.toLowerCase());
-      }
-      const searchStr = params.toString();
-      href = `/wholesale-catalogue${searchStr ? '?' + searchStr : ''}`;
     }
 
-    router.push(href);
+    const targetPath = href.split('?')[0];
+    if (targetPath !== pathname) {
+      setPendingRoute(nextRoute);
+      // Safety fallback: clear the loading state after 2 seconds if Next.js routing fails or gets stuck
+      setTimeout(() => {
+        setPendingRoute(null);
+      }, 2000);
+    } else {
+      setPendingRoute(null);
+    }
+
+    setTimeout(() => {
+      router.push(href);
+    }, 10);
 
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
@@ -855,19 +913,25 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'wholesale-catalogue' || route === 'partner') {
+    if (route === 'wholesale-catalogue' || route === 'catalogue' || route === 'partner' || isSeoCategoryRoute) {
       const partnerFilteredProducts = route === 'partner'
         ? visibleProducts.filter(p => p.partner && slugifyPartner(p.partner) === partnerName)
         : visibleProducts;
 
+      const catalogTitle = isSeoCategoryRoute 
+        ? `Wholesale Banarasi ${activeCategory}s`
+        : route === 'partner' 
+          ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` 
+          : 'Wholesale Catalogue';
+
       return (
         <Catalog
-          title={route === 'partner' ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` : 'Wholesale Catalogue'}
+          title={catalogTitle}
           products={partnerFilteredProducts}
           status={status}
           error={error}
           categories={categories}
-          category={category}
+          category={activeCategory}
           setCategory={setCategory}
           fabrics={fabrics}
           fabric={fabric}
@@ -886,6 +950,7 @@ export default function App({ initialData = {} }) {
           favoriteKeys={favoriteKeySet}
           priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
+          isTransitioning={!!pendingRoute}
         />
       );
     }
@@ -907,6 +972,7 @@ export default function App({ initialData = {} }) {
           setPincode={setPincode}
           codStatus={codStatus}
           checkPincode={checkPincode}
+          user={user}
         />
       );
     }
@@ -1125,7 +1191,7 @@ export default function App({ initialData = {} }) {
                       key={cat}
                       onClick={() => {
                         setCategory(cat);
-                        navigate('catalogue');
+                        navigate('catalogue', null, null, { category: cat });
                         setDropdownOpen(null);
                       }}
                     >

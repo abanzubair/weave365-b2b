@@ -18,6 +18,7 @@ export function AppLink({
   navigate,
   children,
   className,
+  navOptions = {},
   ...props
 }) {
   const router = useRouter();
@@ -77,7 +78,7 @@ export function AppLink({
     const navFn = navigate || (typeof window !== 'undefined' ? window.__appNavigate : null);
 
     if (navFn) {
-      navFn(to, productId, shopName);
+      navFn(to, productId, shopName, navOptions);
     } else {
       router.push(resolvedHref);
       if (typeof window !== 'undefined') {

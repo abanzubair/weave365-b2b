@@ -963,3 +963,65 @@
     font-size: 9px;
   }
 }
+
+/* ==========================================================================
+   Skeleton Loading Screen Styles
+   ========================================================================== */
+.skeleton-card {
+  pointer-events: none;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-media {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #f0f0f0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite linear;
+}
+
+.skeleton-text {
+  background: #f0f0f0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: loading-shimmer 1.5s infinite linear;
+}
+
+.skeleton-title {
+  height: 18px;
+  width: 80%;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.skeleton-price {
+  height: 18px;
+  width: 60%;
+  margin-top: 2px;
+}
+
+.skeleton-button {
+  height: 34px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite linear;
+  width: 100%;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

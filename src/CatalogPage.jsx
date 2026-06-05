@@ -36,6 +36,7 @@ export function Catalog({
   favoriteKeys,
   priceAccess,
   openAuth,
+  isTransitioning = false,
 }) {
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -47,16 +48,16 @@ export function Catalog({
  
     const schemaItems = [
       { name: 'Home', url: '/' },
-      { name: title || 'Wholesale Saree Catalogue', url: '/shop' }
+      { name: title || 'Wholesale Saree Catalogue', url: '/wholesale-catalogue' }
     ];
     if (category && category !== 'All') {
-      schemaItems.push({ name: category, url: `/shop` });
+      schemaItems.push({ name: category, url: `/wholesale-catalogue` });
     }
     if (fabric && fabric !== 'All') {
-      schemaItems.push({ name: fabric, url: `/shop` });
+      schemaItems.push({ name: fabric, url: `/wholesale-catalogue` });
     }
     if (weave && weave !== 'All') {
-      schemaItems.push({ name: weave, url: `/shop` });
+      schemaItems.push({ name: weave, url: `/wholesale-catalogue` });
     }
  
     const breadcrumbSchema = {
@@ -138,16 +139,31 @@ export function Catalog({
     setPriceRange('All');
     if (setSearch) setSearch('');
     setVisibleCount(25);
+    navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', search: '' });
   };
 
   const breadcrumbItems = useMemo(() => {
-    return [
-      { name: 'Home', url: '/', route: 'home' },
-      { name: title || 'Wholesale Saree Catalogue', url: '/shop', route: 'shop' },
-      ...(category && category !== 'All' ? [{ name: category }] : []),
-      ...(fabric && fabric !== 'All' ? [{ name: fabric }] : []),
-      ...(weave && weave !== 'All' ? [{ name: weave }] : [])
+    const items = [
+      { name: 'Home', url: '/', route: 'home' }
     ];
+
+    if (title && title !== 'Wholesale Catalogue') {
+      items.push({ name: title, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', search: '' } });
+    } else {
+      items.push({ name: 'Wholesale Catalogue', url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
+      if (category && category !== 'All') {
+        items.push({ name: category, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric: 'All', weave: 'All', search: '' } });
+      }
+    }
+
+    if (fabric && fabric !== 'All') {
+      items.push({ name: fabric, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric, weave: 'All', search: '' } });
+    }
+    if (weave && weave !== 'All') {
+      items.push({ name: weave, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric, weave, search: '' } });
+    }
+
+    return items;
   }, [title, category, fabric, weave]);
 
   return (
@@ -223,6 +239,7 @@ export function Catalog({
                   onClick={() => {
                     setCategory(name);
                     setVisibleCount(25);
+                    navigate('catalogue', null, null, { category: name });
                     closeWithAnimation();
                   }}
                 >
@@ -323,22 +340,43 @@ export function Catalog({
         </div>
       </div>
 
-      <StateMessage status={status} error={error} />
+      {status === 'error' && <StateMessage status={status} error={error} />}
       
       <div className="catalog-grid">
-        {products.slice(0, visibleCount).map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            variant={product.variants[0]}
-            navigate={navigate}
-            addToCart={addToCart}
-            toggleFavorite={toggleFavorite}
-            isFavorite={favoriteKeys.has(product.id)}
-            priceAccess={priceAccess}
-            openAuth={openAuth}
-          />
-        ))}
+        {status === 'loading' || isTransitioning ? (
+          Array.from({ length: 12 }).map((_, index) => (
+            <div key={index} className="product-card skeleton-card">
+              <div className="card-media skeleton-media"></div>
+              <div className="product-card-copy">
+                <div className="skeleton-text skeleton-title"></div>
+                <div className="card-info-grid">
+                  <div className="info-left" style={{ border: 'none' }}>
+                    <div className="skeleton-text skeleton-price"></div>
+                  </div>
+                  <div className="info-right"></div>
+                </div>
+                <div className="card-actions-new">
+                  <div className="skeleton-button"></div>
+                  <div className="skeleton-button"></div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          products.slice(0, visibleCount).map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant={product.variants[0]}
+              navigate={navigate}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              isFavorite={favoriteKeys.has(product.id)}
+              priceAccess={priceAccess}
+              openAuth={openAuth}
+            />
+          ))
+        )}
       </div>
       
       {products.length > visibleCount && (
