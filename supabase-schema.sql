@@ -722,3 +722,48 @@ create policy "Allow admin all actions on reviews"
 -- Index for reviews listing
 create index if not exists service_reviews_status_created_idx 
   on public.service_reviews (status, created_at desc);
+
+-------------------------------------------------------------------------------
+-- B2B PRODUCT REVIEWS TABLE
+-------------------------------------------------------------------------------
+
+create table if not exists public.product_reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id text not null,
+  user_id uuid references auth.users(id) on delete set null,
+  reviewer_name text not null,
+  business_name text,
+  rating integer not null check (rating >= 1 and rating <= 5),
+  title text,
+  comment text not null,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.product_reviews enable row level security;
+
+-- Policies
+drop policy if exists "Allow public to view approved product reviews" on public.product_reviews;
+create policy "Allow public to view approved product reviews"
+  on public.product_reviews for select
+  using (status = 'approved');
+
+drop policy if exists "Allow public to insert pending product reviews" on public.product_reviews;
+create policy "Allow public to insert pending product reviews"
+  on public.product_reviews for insert
+  with check (true);
+
+drop policy if exists "Allow admin all actions on product reviews" on public.product_reviews;
+create policy "Allow admin all actions on product reviews"
+  on public.product_reviews for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Index for product reviews
+create index if not exists product_reviews_product_id_status_idx 
+  on public.product_reviews (product_id, status);
+create index if not exists product_reviews_created_idx 
+  on public.product_reviews (created_at desc);
