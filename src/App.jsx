@@ -834,9 +834,11 @@ export default function App({ initialData = {} }) {
       }
     }
 
+    const targetSegment = href.split('/').filter(Boolean)[0] || 'home';
     const targetPath = href.split('?')[0];
+    console.log('Navigation triggered:', { href, targetPath, pathname, targetSegment, nextRoute });
     if (targetPath !== pathname) {
-      setPendingRoute(nextRoute);
+      setPendingRoute(targetSegment);
       // Safety fallback: clear the loading state after 2 seconds if Next.js routing fails or gets stuck
       setTimeout(() => {
         setPendingRoute(null);
@@ -853,7 +855,7 @@ export default function App({ initialData = {} }) {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [router, search, category, fabric, weave]);
+  }, [router, pathname, search, category, fabric, weave]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
