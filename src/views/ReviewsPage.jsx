@@ -517,7 +517,7 @@ export function ReviewsPage({ navigate, user }) {
               </text>
             </svg>
             <div className="reviews-seal-center">
-              <Award size={40} />
+              <Award size={40} strokeWidth={1.5} />
             </div>
           </div>
         </div>
