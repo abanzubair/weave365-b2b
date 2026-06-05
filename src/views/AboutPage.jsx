@@ -19,7 +19,8 @@ import {
   Heart,
   Globe,
   Layers,
-  MapPin
+  MapPin,
+  Linkedin
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
@@ -32,6 +33,8 @@ export function AboutPage({ navigate }) {
 
   const artisanSectionImage = assetSrc(artisanImage);
   const resellerSectionImage = assetSrc(resellerDisplayImage);
+  // TODO: Add Cloudflare R2 link here when ready (e.g. "https://pub-xxx.r2.dev/founder_portrait.png")
+  const founderPortraitImage = "";
 
   const faqs = [
     {
@@ -253,7 +256,10 @@ export function AboutPage({ navigate }) {
                   Determined to redefine the Banarasi trade, Zubair founded Weave 365. By merging authentic handloom curation with a robust direct-to-retailer B2B model, he eliminated middle-party inefficiencies and established strict, laboratory-tested quality checks.
                 </p>
                 <p>
-                  Today, under Zubair's guidance, Weave 365 serves as the reliable supply backbone for over 500+ boutiques globally, proving that traditional craftsmanship and modern digital systems can thrive together. Building a Couture House from Banaras Loom, Translating Banarasi Textile into Couture Fashion.
+                  Today, under Zubair's guidance, Weave 365 serves as the reliable supply backbone for over 500+ boutiques globally, proving that traditional craftsmanship and modern digital systems can thrive together.
+                </p>
+                <p>
+                  Building a Couture House from Banaras Loom, Translating Banarasi Textile into Couture Fashion.
                 </p>
               </div>
 
@@ -261,6 +267,30 @@ export function AboutPage({ navigate }) {
                 <div className="about-founder-info">
                   <span className="about-founder-name">Zubair Ahmad</span>
                   <span className="about-founder-title">Founder & Creative Director, Weave 365</span>
+                  <a 
+                    href="https://www.linkedin.com/in/hellozubair/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="about-founder-linkedin-link"
+                  >
+                    {founderPortraitImage ? (
+                      <div className="about-founder-avatar-wrapper">
+                        <img 
+                          src={founderPortraitImage} 
+                          alt="Zubair Ahmad LinkedIn Profile" 
+                          className="about-founder-avatar"
+                        />
+                        <div className="about-founder-linkedin-badge">
+                          <Linkedin size={10} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="about-founder-linkedin-icon-only">
+                        <Linkedin size={18} />
+                      </div>
+                    )}
+                    <span className="about-founder-linkedin-text">Connect on LinkedIn</span>
+                  </a>
                 </div>
               </div>
             </div>

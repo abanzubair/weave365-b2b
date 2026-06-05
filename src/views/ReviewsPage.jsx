@@ -545,8 +545,8 @@ export function ReviewsPage({ navigate, user }) {
             <span className="reviews-sidebar-large-tag">REVIEWS</span>
           </div>
           <div className="reviews-split-right-narrative">
-            <p>At Weave 365, transparency is the cornerstone of our B2B loom network. We connect boutique owners and textile retailers directly with authentic Varanasi weavers, eliminating distributors and markups.</p>
-            <p>Explore the verified sourcing experiences and quality critiques from our boutique partners across the World, or share your own review to help us maintain the highest wholesale standards.</p>
+            <p>Weave365 connects directly with master weavers in Varanasi. No middlemen, no markup layers just the actual source. The businesses buying through us range from small boutiques to exporters, and they all get the same direct access.</p>
+            <p>Reviews below are from real partners. If you've ordered through Weave365, add yours.</p>
           </div>
         </section>
       </header>
