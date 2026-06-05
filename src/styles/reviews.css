@@ -131,8 +131,13 @@
 }
 
 @keyframes reviews-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* SPLIT INTRO */
@@ -178,7 +183,8 @@
   flex-direction: column;
   gap: 1.25rem;
   color: var(--muted);
-  max-width: 65ch; /* constrained reading width */
+  max-width: 65ch;
+  /* constrained reading width */
 }
 
 @media screen and (min-width: 1900px) {
@@ -640,7 +646,8 @@
   }
 
   .reviews-seal-container {
-    display: none; /* Hide decorative seal on tablet/mobile to avoid collision */
+    display: none;
+    /* Hide decorative seal on tablet/mobile to avoid collision */
   }
 
   .reviews-header-card {
@@ -709,4 +716,304 @@
     margin-top: -0.25rem;
     padding-left: 3.25rem;
   }
+}
+
+/* ==========================================================================
+   Weave 365 Minimalist Luxury B2B Sourcing Reviews
+   ========================================================================== */
+.product-reviews-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 0 var(--site-padding);
+  padding-top: 3rem;
+}
+
+.reviews-minimal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.reviews-minimal-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.reviews-average-score {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.reviews-count-label {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.reviews-write-btn-minimal {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  font-family: var(--font-modern-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.reviews-write-btn-minimal:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.reviews-write-btn-minimal.active {
+  background: var(--cream);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+/* Minimalist form container */
+.reviews-form-container-minimal {
+  max-width: 600px;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.form-title-minimal {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+}
+
+.form-grid-2-minimal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media screen and (max-width: 576px) {
+  .form-grid-2-minimal {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group-minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group-minimal label {
+  font-family: var(--font-modern-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.form-group-minimal input,
+.form-group-minimal textarea {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: border-color 150ms ease;
+}
+
+.form-group-minimal input:focus,
+.form-group-minimal textarea:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.interactive-stars-row-minimal {
+  display: flex;
+  gap: 6px;
+}
+
+.star-rating-btn-minimal {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.interactive-star-minimal {
+  transition: fill 150ms ease;
+}
+
+.star-rating-btn-minimal:hover .interactive-star-minimal {
+  opacity: 0.8;
+}
+
+.captcha-wrapper-minimal {
+  margin-bottom: 20px;
+}
+
+.review-submit-error-minimal {
+  color: #c62828;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.review-submit-btn-minimal {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  font-family: var(--font-modern-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.review-submit-btn-minimal:hover {
+  background: var(--gold-dark);
+}
+
+.review-submit-success-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.success-check-icon {
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+}
+
+.success-title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.success-message {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* Minimalist Feed */
+.reviews-feed-container-minimal {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-item-minimal {
+  border-bottom: 1px solid var(--line);
+  padding: 1.75rem 0;
+}
+
+.review-item-minimal:last-child {
+  border-bottom: none;
+}
+
+.review-item-meta-minimal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-modern-body);
+  font-size: 1rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.reviewer-name-minimal {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.reviewer-business-minimal {
+  font-style: italic;
+}
+
+.review-date-minimal {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.review-item-rating-row-minimal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.review-item-stars-minimal {
+  display: flex;
+  gap: 2px;
+}
+
+.reviewer-badge-minimal {
+  font-family: var(--font-modern-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reviewer-purchase-details-minimal {
+  font-family: var(--font-modern-body);
+  font-size: 0.9rem;
+  color: var(--muted);
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+
+.review-item-title-minimal {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.review-item-comment-minimal {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  line-height: 1.65;
+  margin: 0;
+  text-wrap: pretty;
 }
