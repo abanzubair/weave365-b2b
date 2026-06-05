@@ -847,7 +847,7 @@ export default function App({ initialData = {} }) {
 
     setTimeout(() => {
       router.push(href);
-    }, 10);
+    }, 300);
 
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
