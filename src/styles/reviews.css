@@ -74,7 +74,7 @@
   font-family: var(--font-modern-heading);
   font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.1em;
   color: var(--olive);
   display: block;
   margin-bottom: 0.75rem;
@@ -183,6 +183,8 @@
 
 .reviews-split-right-narrative p {
   margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
 }
 
 /* MAIN SECTION WRAPPER */

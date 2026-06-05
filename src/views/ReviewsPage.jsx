@@ -500,7 +500,7 @@ export function ReviewsPage({ navigate, user }) {
 
       <header className="reviews-page-hero">
         <div className="reviews-hero-header-wrap">
-          <span className="reviews-subtitle">B2B Feedback & Transparency</span>
+          <span className="reviews-subtitle">Happy Buyer's Review & Transparency</span>
           <h1 className="reviews-h1">What People Say About Us</h1>
           <div className="reviews-kicker-line"></div>
         </div>
