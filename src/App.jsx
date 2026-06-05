@@ -836,13 +836,12 @@ export default function App({ initialData = {} }) {
 
     const targetSegment = href.split('/').filter(Boolean)[0] || 'home';
     const targetPath = href.split('?')[0];
-    console.log('Navigation triggered:', { href, targetPath, pathname, targetSegment, nextRoute });
-    if (targetPath !== pathname) {
+    const cleanTargetPath = targetPath.replace(/\/$/, '') || '/';
+    const cleanPathname = pathname.replace(/\/$/, '') || '/';
+
+    console.log('Navigation triggered:', { href, targetPath, pathname, cleanTargetPath, cleanPathname, targetSegment, nextRoute });
+    if (cleanTargetPath !== cleanPathname) {
       setPendingRoute(targetSegment);
-      // Safety fallback: clear the loading state after 2 seconds if Next.js routing fails or gets stuck
-      setTimeout(() => {
-        setPendingRoute(null);
-      }, 2000);
     } else {
       setPendingRoute(null);
     }
