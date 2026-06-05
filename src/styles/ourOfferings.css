@@ -135,7 +135,7 @@
 }
 
 .hero-kicker-luxury {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -190,7 +190,7 @@
   color: #ffffff;
   border: 1px solid transparent;
   padding: 15px 36px;
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.15em;
@@ -283,7 +283,7 @@
 }
 
 .section-kicker-luxury {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -348,7 +348,7 @@
 }
 
 .list-text-luxury h4 {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -415,7 +415,7 @@
 }
 
 .box-location-placeholder {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 10px;
   letter-spacing: 0.25em;
   color: #5c4a3a; /* Darker warm charcoal for readable captions */
@@ -436,7 +436,7 @@
 }
 
 .seal-text-luxury {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -446,7 +446,7 @@
 }
 
 .box-label-caption {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -554,7 +554,7 @@
 }
 
 .stat-label-luxury {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 11px;
   color: #4A3F35; /* Rich dark warm grey for clear labeling */
   text-transform: uppercase;
@@ -578,7 +578,7 @@
 }
 
 .impact-quote-box strong {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
+  font-family: var(--font-modern-heading, 'Manrope', sans-serif);
   font-size: 12px; /* Adjusted size to keep quote block balanced */
   letter-spacing: 0.05em;
   color: #4A3F35; /* Rich dark warm grey for clear labeling */

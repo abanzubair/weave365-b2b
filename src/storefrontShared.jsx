@@ -5,38 +5,6 @@
  * 2. A backward-compatibility import/re-export gateway for extracted visual components.
  */
 import { memo, useMemo, useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  ArrowRight,
-  Award,
-  BadgeCheck,
-  Check,
-  CheckCircle2,
-  Download,
-  Heart,
-  Headphones,
-  Layers,
-  LockKeyhole,
-  Bookmark,
-  Package,
-  PackageCheck,
-  Palette,
-  Share2,
-  ShieldCheck,
-  Shirt,
-  ShoppingBag,
-  ShoppingCart,
-  Sparkles,
-  Tag,
-  Truck,
-  User,
-  ZoomIn,
-  BellRing,
-  X,
-  Menu,
-  ChevronRight,
-  Zap,
-} from 'lucide-react';
 import { storeConfig } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
@@ -160,12 +128,8 @@ export function uniqueProductShareImages(product, variant, fallbackImage) {
     .slice(0, 10);
 }
 
-export function shareImageProxyUrl(imageUrl) {
-  return imageUrl;
-}
-
 export async function fileFromImageUrl(imageUrl, filename) {
-  const response = await fetch(shareImageProxyUrl(imageUrl));
+  const response = await fetch(imageUrl);
   if (!response.ok) throw new Error('Unable to prepare product image');
 
   const blob = await response.blob();

@@ -53,6 +53,7 @@ import { WhatsappIcon } from './components/WhatsappIcon.jsx';
 import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
+import { usePageSeo } from './hooks/usePageSeo.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import SliderCaptcha from './components/SliderCaptcha.jsx';
 import { SharpStar } from './views/ReviewsPage.jsx';
@@ -64,43 +65,6 @@ export function ProductDetailWrapper(props) {
   if (!product) return null;
 
   return <ProductDetail {...props} product={product} isFavorite={isFavorite} />;
-}
-
-function getSeedReviewsForProduct(product) {
-  const fabric = product.fabric || 'fabric';
-  const weave = product.weave || 'traditional';
-  const id = product.id || 'design';
-  const category = (product.category || 'saree').toLowerCase();
-
-  return [
-    {
-      id: `seed-${id}-1`,
-      reviewer_name: 'Aishwarya R.',
-      business_name: 'Vara Boutique, Bangalore',
-      rating: 5,
-      title: `Excellent ${fabric} Quality`,
-      comment: `Sourced this design for our boutique's bridal section. The ${fabric} is absolutely premium with authentic touch, and the ${weave ? weave + ' weave' : 'intricate weaving'} looks stunning in person. Our B2B clients were highly satisfied with the finish.`,
-      created_at: '2026-05-15T10:30:00Z',
-    },
-    {
-      id: `seed-${id}-2`,
-      reviewer_name: 'Meenakshi Iyer',
-      business_name: 'Kanak Fashions, Chennai',
-      rating: 5,
-      title: 'Beautiful Colors & Clean Borders',
-      comment: `The zari details on this ${category} are highly refined. Clean borders, consistent colors across the length, and zero weave flaws. Sourcing from Weave 365 has made our wholesale procurement simple and fast.`,
-      created_at: '2026-04-20T14:15:00Z',
-    },
-    {
-      id: `seed-${id}-3`,
-      reviewer_name: 'Suhasini Rao',
-      business_name: 'Aura Boutique, Hyderabad',
-      rating: 4,
-      title: 'Very Premium B2B Supply',
-      comment: `Weight of this piece is optimal for retail. The hand-feel is luxurious. Sells fast at retail. Highly recommend this for wedding collections. Will definitely purchase more colors from this design catalog.`,
-      created_at: '2026-03-10T11:00:00Z',
-    }
-  ];
 }
 
 export function ProductDetail({
@@ -229,11 +193,6 @@ export function ProductDetail({
     }
   }, [user, priceAccess]);
 
-  // Get seed reviews
-  const seedReviews = useMemo(() => {
-    return product ? getSeedReviewsForProduct(product) : [];
-  }, [product]);
-
   // Combine database reviews with local storage reviews
   const localReviews = useMemo(() => {
     if (typeof window === 'undefined' || !product?.id) return [];
@@ -256,8 +215,8 @@ export function ProductDetail({
         uniqueReviews.push(r);
       }
     }
-    return uniqueReviews.length > 0 ? uniqueReviews : seedReviews;
-  }, [dbReviews, localReviews, seedReviews]);
+    return uniqueReviews;
+  }, [dbReviews, localReviews]);
 
   // Calculate rating stats
   const stats = useMemo(() => {
@@ -411,57 +370,11 @@ export function ProductDetail({
   };
 
   // Dynamic Tab Title, Meta Description & Canonical Link SEO injection for Product Detail page
-  useEffect(() => {
-    if (!product || typeof window === 'undefined') return;
-
-    const originalTitle = document.title;
-    const metaTitle = product.metaTitle || product.title || `${storeConfig.name} Product`;
-    const metaDescription = product.metaDescription || product.summary || product.description || `View ${metaTitle} in the ${storeConfig.name} wholesale catalogue.`;
-
-    document.title = metaTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
-    if (metaDesc) {
-      metaDesc.setAttribute('content', metaDescription);
-    } else {
-      metaDesc = document.createElement('meta');
-      metaDesc.name = 'description';
-      metaDesc.content = metaDescription;
-      document.head.appendChild(metaDesc);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = `https://www.weave365.in/product/${encodeURIComponent(product.id)}`;
-
-    if (canonicalLink) {
-      canonicalLink.setAttribute('href', newCanonical);
-    } else {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = 'canonical';
-      canonicalLink.href = newCanonical;
-      document.head.appendChild(canonicalLink);
-    }
-
-    return () => {
-      document.title = originalTitle;
-      if (metaDesc) {
-        if (originalDesc) {
-          metaDesc.setAttribute('content', originalDesc);
-        } else {
-          metaDesc.remove();
-        }
-      }
-      if (canonicalLink) {
-        if (originalCanonical) {
-          canonicalLink.setAttribute('href', originalCanonical);
-        } else {
-          canonicalLink.remove();
-        }
-      }
-    };
-  }, [product]);
+  usePageSeo({
+    title: product.metaTitle || product.title || `${storeConfig.name} Product`,
+    description: product.metaDescription || product.summary || product.description || `View ${product.metaTitle || product.title} in the ${storeConfig.name} wholesale catalogue.`,
+    canonical: product.id ? `https://www.weave365.in/product/${encodeURIComponent(product.id)}` : undefined
+  });
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
     if (!priceAccess?.isLoggedIn) {
@@ -615,7 +528,7 @@ export function ProductDetail({
     () => [
       ['Description', product.description],
     ],
-    [variant, displayPrice, totalColors, catalogWeight, product.fabric, product.description],
+    [product.description],
   );
 
   const explorationData = useMemo(() => {

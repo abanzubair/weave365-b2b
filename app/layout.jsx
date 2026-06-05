@@ -3,14 +3,8 @@ import { storeConfig } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
 import { 
   Cormorant_Garamond, 
-  Outfit, 
-  Playfair_Display, 
-  Inter, 
   Manrope, 
-  Work_Sans, 
-  Poppins, 
   Cormorant, 
-  Montserrat,
   Marcellus
 } from 'next/font/google';
 
@@ -21,27 +15,6 @@ const cormorantGaramond = Cormorant_Garamond({
   display: 'swap',
 });
 
-const outfit = Outfit({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-outfit-next',
-  display: 'swap',
-});
-
-const playfairDisplay = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-playfair-display-next',
-  display: 'swap',
-});
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-inter-next',
-  display: 'swap',
-});
-
 const manrope = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
@@ -49,31 +22,10 @@ const manrope = Manrope({
   display: 'swap',
 });
 
-const workSans = Work_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-work-sans-next',
-  display: 'swap',
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins-next',
-  display: 'swap',
-});
-
 const cormorant = Cormorant({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-cormorant-next',
-  display: 'swap',
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-montserrat-next',
   display: 'swap',
 });
 
@@ -143,14 +95,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   const fontClasses = [
     cormorantGaramond.variable,
-    outfit.variable,
-    playfairDisplay.variable,
-    inter.variable,
     manrope.variable,
-    workSans.variable,
-    poppins.variable,
     cormorant.variable,
-    montserrat.variable,
     marcellus.variable,
   ].join(' ');
 

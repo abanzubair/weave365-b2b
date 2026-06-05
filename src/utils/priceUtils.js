@@ -85,13 +85,18 @@ export function formatMoney(value) {
 
   const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
 
-  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
-    style: 'currency',
-    currency: currencyCode,
-    maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
-  });
+  // Reuse cached formatter for the same currency to avoid creating objects on every call
+  const cacheKey = `${currencyCode}_${currencyInfo.locale}`;
+  if (!formatMoney._cache) formatMoney._cache = {};
+  if (!formatMoney._cache[cacheKey]) {
+    formatMoney._cache[cacheKey] = new Intl.NumberFormat(currencyInfo.locale, {
+      style: 'currency',
+      currency: currencyCode,
+      maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
+    });
+  }
 
-  return formatter.format(convertedValue);
+  return formatMoney._cache[cacheKey].format(convertedValue);
 }
 
 export function formatWeight(weightInKg) {

@@ -37,13 +37,13 @@ export async function fetchConfigOptions() {
     .slice(0, 50);
 
   const categories = parsed.data
-    .map(row => row['Category'] || row['Category'])
+    .map(row => row['Category'])
     .filter(Boolean)
     .map(s => s.trim())
     .slice(0, 50);
 
   const fabrics = parsed.data
-    .map(row => row['Fabric'] || row['Fabric'])
+    .map(row => row['Fabric'])
     .filter(Boolean)
     .map(s => s.trim())
     .slice(0, 50);

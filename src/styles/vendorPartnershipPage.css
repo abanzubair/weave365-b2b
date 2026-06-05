@@ -2521,7 +2521,7 @@
 .lang-hi,
 .lang-hi * {
   /* Devanagari script legibility optimization */
-  font-family: 'Outfit', 'Inter', 'Noto Sans Devanagari', -apple-system, sans-serif !important;
+  font-family: 'Manrope', 'Noto Sans Devanagari', -apple-system, sans-serif !important;
 }
 
 /* Fallback base weight for all elements in Hindi view is ultra-light */

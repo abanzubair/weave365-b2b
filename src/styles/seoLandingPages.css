@@ -18,7 +18,7 @@
 .seo-landing-page {
   padding-top: 85px;
   background-color: #faf9f5; /* Elegant cream-white luxury background */
-  font-family: var(--font-hero-body, 'Inter', sans-serif);
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
   color: var(--text-color, #1a1a1a);
   overflow-x: hidden;
 }
@@ -81,7 +81,7 @@
 }
 
 .seo-landing-hero h1 {
-  font-family: var(--font-hero-heading, 'Outfit', 'Playfair Display', serif);
+  font-family: var(--font-hero-heading, 'Manrope', serif);
   font-size: clamp(1.9rem, 4.8vw, 2.9rem);
   font-weight: 300;
   line-height: 1.15;

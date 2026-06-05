@@ -6,13 +6,19 @@
  * catalog caching, currency states, and client-side page navigation routing.
  * Houses universal shell items like the top alert bars, navigation headers, sidebar drawers, and the footer.
  */
-import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
+import { DropdownPortal } from './components/DropdownPortal.jsx';
+import { SearchOverlay } from './components/SearchOverlay.jsx';
+import { SiteHeader } from './components/SiteHeader.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { seoCategoryRoutes, seoCategoryMap } from './config.js';
+import { sortByStockDateDesc } from './utils/sortProducts.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
 import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager, CURRENCIES } from './storefrontShared.jsx';
@@ -78,12 +84,7 @@ const slugifyPartner = (name) => {
   return name.toLowerCase().trim().replace(/\s+/g, '-');
 };
 
-const seoCategoryRoutes = {
-  'wholesale-banarasi-sarees': 'Saree',
-  'wholesale-banarasi-suits': 'Suit',
-  'wholesale-banarasi-lehengas': 'Lehenga',
-  'wholesale-banarasi-dupattas': 'Dupatta'
-};
+// seoCategoryRoutes imported from config.js
 
 export default function App({ initialData = {} }) {
   if (typeof window === 'undefined') {
@@ -141,10 +142,6 @@ export default function App({ initialData = {} }) {
   const profileRef = useRef(null);
   const searchRef = useRef(null);
   const currencyRef = useRef(null);
-  const [categoriesPos, setCategoriesPos] = useState({ top: 0, left: 0 });
-  const [partnerNavPos, setPartnerNavPos] = useState({ top: 0, left: 0 });
-  const [profilePos, setProfilePos] = useState({ top: 0, left: 0 });
-  const [currencyPos, setCurrencyPos] = useState({ top: 0, left: 0 });
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
   useLayoutEffect(() => {
@@ -641,14 +638,7 @@ export default function App({ initialData = {} }) {
     });
 
     // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
-    return filtered.sort((a, b) => {
-      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
-      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-      if (dateA !== dateB) {
-        return dateB - dateA;
-      }
-      return b._originalIndex - a._originalIndex;
-    });
+    return sortByStockDateDesc(filtered);
   }, [activeCategory, priceRange, fabric, weave, pricedProducts, searchTerm]);
 
   const productsById = useMemo(
@@ -798,16 +788,7 @@ export default function App({ initialData = {} }) {
       const currentFabric = navOptions.fabric !== undefined ? navOptions.fabric : fabric;
       const currentWeave = navOptions.weave !== undefined ? navOptions.weave : weave;
 
-      const seoCategoryMap = {
-        'saree': 'wholesale-banarasi-sarees',
-        'sarees': 'wholesale-banarasi-sarees',
-        'suit': 'wholesale-banarasi-suits',
-        'suits': 'wholesale-banarasi-suits',
-        'lehenga': 'wholesale-banarasi-lehengas',
-        'lehengas': 'wholesale-banarasi-lehengas',
-        'dupatta': 'wholesale-banarasi-dupattas',
-        'dupattas': 'wholesale-banarasi-dupattas'
-      };
+      // seoCategoryMap imported from config.js
 
       const isCleanCategory = currentCategory && currentCategory !== 'All' && 
                              (!currentSearch || currentSearch.trim() === '') && 
@@ -839,7 +820,7 @@ export default function App({ initialData = {} }) {
     const cleanTargetPath = targetPath.replace(/\/$/, '') || '/';
     const cleanPathname = pathname.replace(/\/$/, '') || '/';
 
-    console.log('Navigation triggered:', { href, targetPath, pathname, cleanTargetPath, cleanPathname, targetSegment, nextRoute });
+
     if (cleanTargetPath !== cleanPathname) {
       setPendingRoute(targetSegment);
     } else {
@@ -1013,14 +994,16 @@ export default function App({ initialData = {} }) {
 
     if (route === 'admin') {
       return (
-        <Admin
-          user={user}
-          buyerProfile={buyerProfile}
-          onProfileChange={setBuyerProfile}
-          openAuth={() => setAuthOpen(true)}
-          blogs={blogs}
-          setBlogs={setBlogs}
-        />
+        <ErrorBoundary>
+          <Admin
+            user={user}
+            buyerProfile={buyerProfile}
+            onProfileChange={setBuyerProfile}
+            openAuth={() => setAuthOpen(true)}
+            blogs={blogs}
+            setBlogs={setBlogs}
+          />
+        </ErrorBoundary>
       );
     }
 
@@ -1122,481 +1105,48 @@ export default function App({ initialData = {} }) {
   return (
     <>
       {!isSharedPage && (
-        <header className={`site-header ${route === 'home' || route === 'about' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
-          <button 
-            className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
-            type="button" 
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
-              <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-bottom" x="9" y="16" width="11" height="1.5" rx="0.75" fill="currentColor" />
-            </svg>
-          </button>
-
-          <a
-            href="/"
-            className="brand"
-            onClick={(e) => {
-              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
-                e.preventDefault();
-                navigate('home');
-              }
-            }}
-          >
-            <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
-          </a>
-          <nav className="main-nav">
-            <AppLink 
-              to="new-arrivals" 
-              className={route === 'new-arrivals' ? 'active' : ''} 
-              navigate={navigate}
-            >
-              NEW ARRIVALS
-            </AppLink>
-            <AppLink 
-              to="wholesale-catalogue" 
-              className={route === 'wholesale-catalogue' ? 'active' : ''} 
-              navigate={navigate}
-            >
-              CATALOGUE
-            </AppLink>
-            <div className="nav-item-dropdown" ref={categoriesRef}>
-              <button
-                className={dropdownOpen === 'categories' ? 'active' : ''}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dropdownOpen !== 'categories' && categoriesRef.current) {
-                    const rect = categoriesRef.current.getBoundingClientRect();
-                    setCategoriesPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
-                  }
-                  setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
-                }}
-              >
-                CATEGORIES <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
-              </button>
-              {dropdownOpen === 'categories' && createPortal(
-                <div 
-                  className="dropdown-menu"
-                  style={{
-                    position: 'fixed',
-                    top: categoriesPos.top,
-                    left: categoriesPos.left,
-                    transform: 'translateX(-50%) translateY(12px)',
-                    zIndex: 10000
-                  }}
-                >
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setCategory(cat);
-                        navigate('catalogue', null, null, { category: cat });
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>,
-                document.body
-              )}
-            </div>
-            <div className="nav-item-dropdown" ref={partnerNavRef}>
-              <button
-                className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label-brands' ? 'active' : ''}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dropdownOpen !== 'partner' && partnerNavRef.current) {
-                    const rect = partnerNavRef.current.getBoundingClientRect();
-                    setPartnerNavPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
-                  }
-                  setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
-                }}
-              >
-                PARTNERS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
-              </button>
-              {dropdownOpen === 'partner' && createPortal(
-                <div 
-                  className="dropdown-menu"
-                  style={{
-                    position: 'fixed',
-                    top: partnerNavPos.top,
-                    left: partnerNavPos.left,
-                    transform: 'translateX(-50%) translateY(12px)',
-                    zIndex: 10000
-                  }}
-                >
-                  {[
-                    { name: 'Sourcing Partners', slug: 'sourcing-partners' },
-                    { name: 'White Label Brands', slug: 'white-label-brands' },
-                  ].map((item) => (
-                    <button
-                      key={item.slug}
-                      onClick={() => {
-                        navigate(item.slug);
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </div>,
-                document.body
-              )}
-            </div>
-            <AppLink 
-              to="about" 
-              className={route === 'about' ? 'active' : ''} 
-              navigate={navigate}
-            >
-              ABOUT
-            </AppLink>
-            <AppLink 
-              to="contact" 
-              className={route === 'contact' ? 'active' : ''} 
-              navigate={navigate}
-            >
-              CONTACT US
-            </AppLink>
-          </nav>
-
-          <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalogue')}>
-            <Search size={20} />
-          </button>
-
-          <div className="header-actions-premium">
-            <button 
-              className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
-              type="button" 
-              onClick={() => setSearchActive(!searchActive)}
-              aria-label="Search"
-            >
-              <Search size={18} strokeWidth={1.5} />
-            </button>
-            
-            <div className="nav-item-dropdown" ref={profileRef}>
-              <button 
-                className={`premium-icon-btn profile-trigger ${dropdownOpen === 'profile' ? 'active' : ''}`}
-                type="button" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dropdownOpen !== 'profile' && profileRef.current) {
-                    const rect = profileRef.current.getBoundingClientRect();
-                    setProfilePos({ top: rect.bottom, left: rect.left + rect.width / 2 });
-                  }
-                  setDropdownOpen(dropdownOpen === 'profile' ? null : 'profile');
-                }}
-                aria-label="Profile"
-              >
-                <User size={18} strokeWidth={1.5} />
-              </button>
-              {dropdownOpen === 'profile' && createPortal(
-                <div 
-                  className="dropdown-menu"
-                  style={{
-                    position: 'fixed',
-                    top: profilePos.top,
-                    left: profilePos.left,
-                    transform: 'translateX(-50%) translateY(12px)',
-                    zIndex: 10000
-                  }}
-                >
-                  {user ? (
-                    <>
-                      {buyerProfile?.full_name && (
-                        <div className="profile-dropdown-greeting">
-                          Hello, {buyerProfile.full_name.split(' ')[0]}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          navigate('account');
-                          setDropdownOpen(null);
-                        }}
-                      >
-                        My Account
-                      </button>
-                      {vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url && (
-                        <button
-                          onClick={() => {
-                            window.open(vendorOnboarding.drive_folder_url, '_blank');
-                            setDropdownOpen(null);
-                          }}
-                          className="premium-product-listing-btn"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontWeight: '600',
-                            color: '#b78646',
-                            transition: 'color 0.2s ease',
-                          }}
-                        >
-                          Product Listing
-                        </button>
-                      )}
-                      {isAdmin && (
-                        <button
-                          onClick={() => {
-                            window.open('/admin', '_blank');
-                            setDropdownOpen(null);
-                          }}
-                        >
-                          Admin Panel
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          navigate('favorites');
-                          setDropdownOpen(null);
-                        }}
-                      >
-                        Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleSignOut();
-                          setDropdownOpen(null);
-                        }}
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setAuthOpen(true);
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      Sign In / Register
-                    </button>
-                  )}
-                </div>,
-                document.body
-              )}
-            </div>
-            
-            {user && (
-              <button 
-                className="premium-icon-btn navbar-logout-btn" 
-                type="button" 
-                onClick={handleSignOut}
-                aria-label="Logout"
-                title="Logout"
-              >
-                <LogOut size={18} strokeWidth={1.5} />
-              </button>
-            )}
-            
-            <button 
-              className="premium-icon-btn cart-btn" 
-              type="button" 
-              onClick={() => setCartOpen(true)}
-              aria-label="Cart"
-            >
-              <ShoppingBag size={18} strokeWidth={1.5} />
-              {cartProducts.length > 0 && <span className="premium-badge">{cartProducts.length}</span>}
-            </button>
-
-            <div className="nav-item-dropdown" ref={currencyRef}>
-              <button 
-                className={`premium-icon-btn navbar-currency-trigger ${dropdownOpen === 'currency' ? 'active' : ''}`}
-                type="button" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dropdownOpen !== 'currency' && currencyRef.current) {
-                    const rect = currencyRef.current.getBoundingClientRect();
-                    setCurrencyPos({ top: rect.bottom, left: rect.left + rect.width / 2 });
-                  }
-                  setDropdownOpen(dropdownOpen === 'currency' ? null : 'currency');
-                }}
-                aria-label="Change Currency"
-              >
-                <span className="navbar-currency-code">{activeCurrency.code}</span>
-                <ChevronDown size={11} className={dropdownOpen === 'currency' ? 'rotate' : ''} />
-              </button>
-              {dropdownOpen === 'currency' && createPortal(
-                <div 
-                  className="dropdown-menu currency-dropdown-menu"
-                  style={{
-                    position: 'fixed',
-                    top: currencyPos.top,
-                    left: currencyPos.left,
-                    transform: 'translateX(-50%) translateY(12px)',
-                    zIndex: 10000
-                  }}
-                >
-                  {CURRENCIES.map((c) => (
-                    <button
-                      key={c.code}
-                      className={c.code === currentCurrency ? 'active' : ''}
-                      onClick={() => {
-                        CurrencyManager.setCurrency(c.code);
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      <span>{c.code}</span>
-                      {c.code === currentCurrency && <div className="active-dot" />}
-                    </button>
-                  ))}
-                </div>,
-                document.body
-              )}
-            </div>
-          </div>
-
-        </header>
+        <SiteHeader
+          route={route}
+          scrolled={scrolled}
+          pastHero={pastHero}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          brandLogoSrc={brandLogoSrc}
+          navigate={navigate}
+          dropdownOpen={dropdownOpen}
+          setDropdownOpen={setDropdownOpen}
+          categoriesRef={categoriesRef}
+          categories={categories}
+          setCategory={setCategory}
+          partnerNavRef={partnerNavRef}
+          searchActive={searchActive}
+          setSearchActive={setSearchActive}
+          profileRef={profileRef}
+          user={user}
+          buyerProfile={buyerProfile}
+          vendorOnboarding={vendorOnboarding}
+          isAdmin={isAdmin}
+          favoritesCount={favoritesCount}
+          handleSignOut={handleSignOut}
+          setAuthOpen={setAuthOpen}
+          setCartOpen={setCartOpen}
+          cartProducts={cartProducts}
+          currencyRef={currencyRef}
+          activeCurrency={activeCurrency}
+          currentCurrency={currentCurrency}
+        />
       )}
 
-      {searchActive && !isSharedPage && (
-        <div className="premium-search-overlay animate-fade-in" onClick={() => { setSearchActive(false); setSearch(''); }}>
-          <div className="premium-search-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="premium-search-inner-wrapper">
-              <div className="premium-search-field-container">
-                <Search size={22} strokeWidth={1.5} className="search-icon-premium" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      setSearchActive(false);
-                      navigate('wholesale-catalogue');
-                    }
-                  }}
-                  placeholder="What are you looking for?"
-                  autoFocus
-                  className="premium-search-input-field"
-                />
-                {search && (
-                  <button className="search-clear-btn" onClick={() => setSearch('')}>
-                    Clear
-                  </button>
-                )}
-                <button 
-                  className="search-modal-close-btn" 
-                  onClick={() => {
-                    setSearchActive(false);
-                    setSearch('');
-                  }}
-                >
-                  <span className="close-text">Close</span> <span className="close-x">✕</span>
-                </button>
-              </div>
-              
-              <div className="premium-search-content-grid">
-                {!search ? (
-                  <div className="search-preset-suggestions animate-fade-in">
-                    <div className="preset-group">
-                      <h3>Trending Saree Fabrics</h3>
-                      <div className="preset-tags">
-                        {['Banarasi', 'Katan Silk', 'Organza', 'Linen', 'Tussar', 'Georgette'].map((tag) => (
-                          <button
-                            key={tag}
-                            className="preset-tag-btn"
-                            onClick={() => setSearch(tag)}
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="preset-group">
-                      <h3>Quick Links</h3>
-                      <ul className="quick-access-list">
-                        <li>
-                          <button onClick={() => { navigate('catalogue'); setSearchActive(false); }}>
-                            <span>Browse All Collections</span>
-                            <ArrowRight size={14} />
-                          </button>
-                        </li>
-                        <li>
-                          <button onClick={() => { navigate('wholesale-partner-program'); setSearchActive(false); }}>
-                            <span>Wholesale & Reseller Partner Program</span>
-                            <ArrowRight size={14} />
-                          </button>
-                        </li>
-                        <li>
-                          <button onClick={() => { scrollToSection('brand-collab'); setSearchActive(false); }}>
-                            <span>Collaborating Brands</span>
-                            <ArrowRight size={14} />
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="premium-search-results-panel">
-                    <div className="results-header">
-                      <span className="results-title">Collections Found</span>
-                      <span className="results-count">{visibleProducts.length} premium products</span>
-                    </div>
-                    
-                    {visibleProducts.length > 0 ? (
-                      <div className="results-split-layout">
-                        <div className="results-products-grid">
-                          {visibleProducts.slice(0, 6).map((product) => {
-                            const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
-                            const image = product.images?.[0] || fallbackProductImage;
-                            return (
-                              <div 
-                                key={product.id}
-                                className="premium-search-result-card animate-scale-up"
-                                onClick={() => {
-                                  navigate('product', product.id);
-                                  setSearch('');
-                                  setSearchActive(false);
-                                }}
-                              >
-                                <div className="result-img-wrapper">
-                                  <img src={image} alt={product.title} loading="lazy" />
-                                  {product.fabric && <span className="result-fabric-badge">{product.fabric}</span>}
-                                </div>
-                                <div className="result-card-info">
-                                  <h4 className="result-product-title">{product.name || product.title}</h4>
-                                  <span className="result-product-price">
-                                    {price != null && price > 0 ? formatMoney(price) : priceNoticeForAccess(priceAccess)}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        {visibleProducts.length > 6 && (
-                          <button 
-                            className="premium-search-view-all-btn" 
-                            onClick={() => {
-                              navigate('catalogue');
-                              setSearchActive(false);
-                            }}
-                          >
-                            View all {visibleProducts.length} premium products
-                            <ArrowRight size={16} />
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="premium-search-no-results-state">
-                        <div className="no-results-icon">🔍</div>
-                        <h3>No match found</h3>
-                        <p>We couldn't find any premium products for "{search}".</p>
-                        <button className="reset-search-btn" onClick={() => setSearch('')}>
-                          Try another query
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      {!isSharedPage && (
+        <SearchOverlay
+          searchActive={searchActive}
+          setSearchActive={setSearchActive}
+          search={search}
+          setSearch={setSearch}
+          navigate={navigate}
+          visibleProducts={visibleProducts}
+          priceAccess={priceAccess}
+        />
       )}
 
       {menuOpen && !isSharedPage && (
@@ -1622,7 +1172,9 @@ export default function App({ initialData = {} }) {
       )}
 
       <main>
-        {routeContent}
+        <ErrorBoundary>
+          {routeContent}
+        </ErrorBoundary>
       </main>
 
       {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}

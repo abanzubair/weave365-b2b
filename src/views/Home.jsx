@@ -5,7 +5,7 @@
  * and search engine optimized text content (Varanasi direct weaver heritage).
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
-import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin, Layers } from 'lucide-react';
+import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin, Layers, Calendar, Clock } from 'lucide-react';
 import { fallbackProductImage, expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
@@ -18,9 +18,10 @@ import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
 import brandCollabImage from '../../assets/brand_collaboration.webp';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
-import { storeConfig } from '../config.js';
+import { storeConfig, seoCategoryMap } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
-import { Calendar, Clock } from 'lucide-react';
+import { sortByStockDateDesc } from '../utils/sortProducts.js';
+import { usePageSeo } from '../hooks/usePageSeo.js';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 
@@ -218,26 +219,7 @@ export function Home({
     return () => clearInterval(interval);
   }, []);
 
-  /*
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowNewHero((prev) => {
-        const next = !prev;
-        if (next) {
-          document.documentElement.classList.add('new-hero-active');
-        } else {
-          document.documentElement.classList.remove('new-hero-active');
-        }
-        return next;
-      });
-    }, 8000); // Toggle slides every 8 seconds to match banner slideshows
 
-    return () => {
-      clearInterval(interval);
-      document.documentElement.classList.remove('new-hero-active');
-    };
-  }, []);
-  */
 
   const desktopBanners = useMemo(() => heroSlides.filter(s => s.type === 'banner'), [heroSlides]);
   const mobileBanners = useMemo(() => heroSlides.filter(s => s.type === 'banner mobile'), [heroSlides]);
@@ -326,71 +308,19 @@ export function Home({
   }, [activeHeroData?.headerColor, activeHeroData?.logoColor, activeHeroData?.navigationColor]);
 
   // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection for Home page
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const originalTitle = document.title;
-    document.title = 'Banarasi Sarees and Suits for Wholesale & Export | Weave 365';
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
-    const newDesc = 'Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.';
-
-    if (metaDesc) {
-      metaDesc.setAttribute('content', newDesc);
-    } else {
-      metaDesc = document.createElement('meta');
-      metaDesc.name = 'description';
-      metaDesc.content = newDesc;
-      document.head.appendChild(metaDesc);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = 'https://www.weave365.in';
-
-    if (canonicalLink) {
-      canonicalLink.setAttribute('href', newCanonical);
-    } else {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = 'canonical';
-      canonicalLink.href = newCanonical;
-      document.head.appendChild(canonicalLink);
-    }
-
-    return () => {
-      document.title = originalTitle;
-      if (metaDesc) {
-        if (originalDesc) {
-          metaDesc.setAttribute('content', originalDesc);
-        } else {
-          metaDesc.remove();
-        }
-      }
-      if (canonicalLink) {
-        if (originalCanonical) {
-          canonicalLink.setAttribute('href', originalCanonical);
-        } else {
-          canonicalLink.remove();
-        }
-      }
-    };
-  }, []);
+  usePageSeo({
+    title: 'Banarasi Sarees and Suits for Wholesale & Export | Weave 365',
+    description: 'Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.',
+    canonical: 'https://www.weave365.in'
+  });
 
   const bestsellers = useMemo(() => {
     const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
     const filtered = productsWithIndex.filter((p) => p.isTopSeller);
     
-    filtered.sort((a, b) => {
-      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
-      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-      if (dateA !== dateB) {
-        return dateB - dateA;
-      }
-      return b._originalIndex - a._originalIndex;
-    });
+    const sorted = sortByStockDateDesc(filtered);
 
-    return filtered.slice(0, 8).map(p => ({
+    return sorted.slice(0, 8).map(p => ({
       product: p,
       image: p.images[0] || fallbackHeroImage,
       variant: p.variants[0]
@@ -404,16 +334,9 @@ export function Home({
       filtered = [...productsWithIndex];
     }
     
-    filtered.sort((a, b) => {
-      const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
-      const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-      if (dateA !== dateB) {
-        return dateB - dateA;
-      }
-      return b._originalIndex - a._originalIndex;
-    });
+    const sorted = sortByStockDateDesc(filtered);
 
-    return filtered.slice(0, 8).map(p => ({
+    return sorted.slice(0, 8).map(p => ({
       product: p,
       image: p.images[0] || fallbackHeroImage,
       variant: p.variants[0]
@@ -619,112 +542,7 @@ export function Home({
           </section>
         </div>
 
-        {/* New Editorial Brand Collaboration Hero Slide (Disabled)
-        <div className={`hero-slide-pane pane-second ${showNewHero ? 'active' : ''}`}>
-          <section className="collab-hero-section">
-            {/* Left Column: Image and side tagline * /}
-            <div className="collab-hero-left">
-              <div className="collab-hero-photo-wrap">
-                <img
-                  src={assetSrc(newBanner2)}
-                  alt="Brand Collaboration Banner"
-                  className="collab-hero-photo"
-                  width={960}
-                  height={1080}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="collab-hero-photo-overlay"></div>
-              </div>
 
-              <div className="collab-vertical-text">
-                CURATE. COLLABORATE. GROW TOGETHER.
-              </div>
-
-              <div className="collab-vertical-badge">
-                <span className="badge-kicker">BRAND</span>
-                <span className="badge-title">COLLABORATION</span>
-                <span className="badge-line"></span>
-              </div>
-
-              <div className="collab-slide-pagination">
-                <span className="slide-num">01</span>
-                <span className="slide-separator">—</span>
-                <span className="slide-total">03</span>
-              </div>
-            </div>
-
-            {/* Right Column: Content segment * /}
-            <div className="collab-hero-right">
-              <div className="collab-right-content">
-                <span className="collab-kicker">COLLABORATE WITH US</span>
-
-                <div className="collab-title-seal-row">
-                  <div className="collab-title" aria-level="2" role="heading">
-                    <span className="collab-title-line-1">Together</span><br />
-                    <span className="collab-title-line-2">in Every</span><br />
-                    <span className="collab-title-line-3">Weave</span>
-                  </div>
-
-                  {/* Elegant rotating gold seal * /}
-                  <div className="rotating-seal-container">
-                    <div className="rotating-seal-wrapper">
-                      <svg viewBox="0 0 100 100" className="rotating-seal-svg">
-                        <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="sealCirclePath" fill="none" />
-                        <text fill="#c69e6a" fontSize="6.2" fontFamily="var(--font-hero-body)" letterSpacing="2.5" fontWeight="600">
-                          <textPath href="#sealCirclePath" startOffset="0%">
-                            BUILD YOUR BRAND • EXPAND YOUR REACH •
-                          </textPath>
-                        </text>
-                      </svg>
-                    </div>
-                    {/* Symmetrical flower icon at the center sits outside wrapper to remain static * /}
-                    <div className="seal-center-emblem">
-                      <svg viewBox="0 0 50 50" className="seal-center-svg">
-                        <g transform="translate(25,25) scale(0.7)" stroke="#c69e6a" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="-3" y="-3" width="6" height="6" transform="rotate(45)" fill="#c69e6a" opacity="0.8" />
-                          <path d="M 0,-6 C 2,-11 5,-14 0,-20 C -5,-14 -2,-11 0,-6 Z" />
-                          <path d="M 0,6 C 2,12 5,14 0,20 C -5,14 -2,12 0,6 Z" />
-                          <path d="M -6,0 C -11,2 -14,5 -20,0 C -14,-5 -11,-2 -6,0 Z" />
-                          <path d="M 6,0 C 11,2 14,5 22,0 C 14,-5 11,-2 6,0 Z" />
-                          <line x1="-5" y1="-5" x2="-9" y2="-9" />
-                          <line x1="5" y1="-5" x2="9" y2="-9" />
-                          <line x1="-5" y1="5" x2="-9" y2="9" />
-                          <line x1="5" y1="5" x2="9" y2="9" />
-                        </g>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="collab-subtitle">
-                  Join hands with India's trusted B2B saree platform and showcase your collections to a growing network of buyers.
-                </p>
-
-                <div className="collab-bottom-row">
-                  <button
-                    className="collab-cta-btn"
-                    onClick={() => navigate('bulk-inquiry')}
-                  >
-                    <span className="cta-btn-text">BECOME A BRAND PARTNER</span>
-                    <ArrowRight size={20} strokeWidth={1.5} />
-                    <span className="cta-btn-line"></span>
-                  </button>
-
-                  <div className="collab-partners-box">
-                    <span className="partners-title">FEATURED PARTNERS</span>
-                    <div className="partners-list">
-                      <span className="partner-name">HOUSE OF PALLU</span>
-                      <span className="partner-name">VEVORA</span>
-                      <span className="partner-more">+12 MORE</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-        */}
       </section>
 
       {dealProducts.length > 0 && (
@@ -789,12 +607,7 @@ export function Home({
         <SectionTitle title="Shop By Category" align="left" />
         <div className="category-grid">
           {homeCategoryNames.map((name, index) => {
-            const seoCategoryMap = {
-              'saree': 'wholesale-banarasi-sarees',
-              'suit': 'wholesale-banarasi-suits',
-              'lehenga': 'wholesale-banarasi-lehengas',
-              'dupatta': 'wholesale-banarasi-dupattas'
-            };
+            // seoCategoryMap imported from config.js
             const targetHref = seoCategoryMap[name.toLowerCase()]
               ? `/${seoCategoryMap[name.toLowerCase()]}`
               : `/wholesale-catalogue?category=${name.toLowerCase()}`;

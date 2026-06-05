@@ -41,7 +41,7 @@
 }
 
 .concierge-narrative-card h2 {
-  font-family: var(--font-hero-heading, 'Outfit', 'Playfair Display', serif);
+  font-family: var(--font-hero-heading, 'Manrope', serif);
   font-size: clamp(1.5rem, 3.2vw, 2.1rem);
   font-weight: 300;
   color: var(--gold-dark, #805d31);

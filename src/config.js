@@ -48,3 +48,29 @@ export const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean);
+
+/**
+ * Maps SEO-friendly URL slugs → category names.
+ * Used to resolve routes like /wholesale-banarasi-sarees into category filters.
+ */
+export const seoCategoryRoutes = {
+  'wholesale-banarasi-sarees': 'Saree',
+  'wholesale-banarasi-suits': 'Suit',
+  'wholesale-banarasi-lehengas': 'Lehenga',
+  'wholesale-banarasi-dupattas': 'Dupatta',
+};
+
+/**
+ * Maps category names → SEO-friendly URL slugs.
+ * Inverse of seoCategoryRoutes, used to build clean URLs during navigation.
+ */
+export const seoCategoryMap = {
+  'saree': 'wholesale-banarasi-sarees',
+  'sarees': 'wholesale-banarasi-sarees',
+  'suit': 'wholesale-banarasi-suits',
+  'suits': 'wholesale-banarasi-suits',
+  'lehenga': 'wholesale-banarasi-lehengas',
+  'lehengas': 'wholesale-banarasi-lehengas',
+  'dupatta': 'wholesale-banarasi-dupattas',
+  'dupattas': 'wholesale-banarasi-dupattas',
+};

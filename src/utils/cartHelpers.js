@@ -130,16 +130,27 @@ export async function persistCart(cart, userId) {
     return;
   }
 
-  await supabase.from('cart_items').delete().eq('user_id', userId);
-  if (!cart.length) return;
-  await supabase.from('cart_items').insert(
-    cart.map((item) => ({
-      user_id: userId,
-      product_group_key: item.productGroupKey,
-      variant_code: item.variantCode,
-      quantity: item.quantity,
-    })),
-  );
+  const variantCodesInCart = cart.map((item) => item.variantCode);
+
+  if (variantCodesInCart.length > 0) {
+    await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId)
+      .not('variant_code', 'in', `(${variantCodesInCart.join(',')})`);
+      
+    await supabase.from('cart_items').upsert(
+      cart.map((item) => ({
+        user_id: userId,
+        product_group_key: item.productGroupKey,
+        variant_code: item.variantCode,
+        quantity: item.quantity,
+      })),
+      { onConflict: 'user_id,variant_code' }
+    );
+  } else {
+    await supabase.from('cart_items').delete().eq('user_id', userId);
+  }
 }
 
 export async function persistFavorites(favorites, userId) {
@@ -148,15 +159,26 @@ export async function persistFavorites(favorites, userId) {
     return;
   }
 
-  await supabase.from('favorites').delete().eq('user_id', userId);
-  if (!favorites.length) return;
-  await supabase.from('favorites').insert(
-    favorites.map((item) => ({
-      user_id: userId,
-      product_group_key: item.productGroupKey,
-      variant_code: item.variantCode,
-    })),
-  );
+  const productKeysInFavorites = favorites.map((item) => item.productGroupKey);
+
+  if (productKeysInFavorites.length > 0) {
+    await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .not('product_group_key', 'in', `(${productKeysInFavorites.join(',')})`);
+
+    await supabase.from('favorites').upsert(
+      favorites.map((item) => ({
+        user_id: userId,
+        product_group_key: item.productGroupKey,
+        variant_code: item.variantCode,
+      })),
+      { onConflict: 'user_id,product_group_key' }
+    );
+  } else {
+    await supabase.from('favorites').delete().eq('user_id', userId);
+  }
 }
 
 export function readLocal(key) {

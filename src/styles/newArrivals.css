@@ -100,7 +100,7 @@
 }
 
 .arrivals-hero-kicker {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.85rem;
   letter-spacing: 0.35em;
   color: var(--color-gold-med);
@@ -118,7 +118,7 @@
 }
 
 .arrivals-hero-title {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 4rem;
   font-weight: 500;
   line-height: 1.1;
@@ -136,7 +136,7 @@
 }
 
 .arrivals-hero-description {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 1.15rem;
   line-height: 1.75;
   color: #bfbdb8;
@@ -168,7 +168,7 @@
 }
 
 .arrivals-stat-value {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 1.8rem;
   font-weight: 600;
   color: #ffffff;
@@ -177,7 +177,7 @@
 }
 
 .arrivals-stat-label {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: #9d9a93;
@@ -245,7 +245,7 @@
   border: 1px solid rgba(198, 158, 106, 0.4);
   padding: 8px 16px;
   border-radius: 30px;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.75rem;
   color: var(--color-gold-light);
   letter-spacing: 0.1em;
@@ -278,7 +278,7 @@
 }
 
 .artisan-kicker {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.8rem;
   color: var(--color-gold-med);
   font-weight: 600;
@@ -288,7 +288,7 @@
 }
 
 .artisan-title {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 2.2rem;
   color: var(--color-charcoal-lux);
   margin: 0 0 16px 0;
@@ -296,7 +296,7 @@
 }
 
 .artisan-desc {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 1rem;
   line-height: 1.65;
   color: #555;
@@ -314,7 +314,7 @@
 .spec-row {
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.92rem;
 }
 
@@ -361,14 +361,14 @@
 }
 
 .journey-header h2 {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 2.2rem;
   color: #ffffff;
   margin-bottom: 12px;
 }
 
 .journey-header p {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 1rem;
   color: #9d9a93;
   max-width: 550px;
@@ -413,7 +413,7 @@
   align-items: center;
   justify-content: center;
   color: var(--color-gold-med);
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 20px;
@@ -430,7 +430,7 @@
 }
 
 .journey-step-title {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 1.25rem;
   font-weight: 500;
   color: #ffffff;
@@ -438,7 +438,7 @@
 }
 
 .journey-step-desc {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.88rem;
   line-height: 1.5;
   color: #9d9a93;
@@ -453,7 +453,7 @@
 }
 
 .arrivals-filter-title {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 1.85rem;
   color: var(--color-charcoal-lux);
   font-weight: 500;
@@ -483,7 +483,7 @@
   border: 1px solid rgba(198, 158, 106, 0.15);
   border-radius: 40px;
   padding: 12px 28px;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.92rem;
   color: var(--color-charcoal-lux);
   cursor: pointer;
@@ -512,7 +512,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.92rem;
   color: #6c6a65;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -569,7 +569,7 @@
   background: var(--color-gold-med);
   color: var(--color-charcoal-lux);
   padding: 6px 12px;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   font-weight: 700;
@@ -586,7 +586,7 @@
 }
 
 .featured-card-subtitle {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.8rem;
   color: var(--color-gold-med);
   text-transform: uppercase;
@@ -596,7 +596,7 @@
 }
 
 .featured-card-title {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 2rem;
   font-weight: 500;
   color: #ffffff;
@@ -605,7 +605,7 @@
 }
 
 .featured-card-description {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.92rem;
   color: #bfbdb8;
   line-height: 1.6;
@@ -625,7 +625,7 @@
 .featured-detail-item {
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.88rem;
 }
 
@@ -653,7 +653,7 @@
 }
 
 .featured-card-price .price-label {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.72rem;
   color: #8e8d88;
   text-transform: uppercase;
@@ -662,14 +662,14 @@
 }
 
 .featured-card-price .price-value {
-  font-family: var(--font-hero-title, "Playfair Display", serif);
+  font-family: var(--font-hero-title, "Marcellus", serif);
   font-size: 1.6rem;
   color: var(--color-gold-light);
   font-weight: 600;
 }
 
 .featured-card-price .price-locked {
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.85rem;
   color: var(--color-gold-med);
   font-weight: 500;
@@ -681,7 +681,7 @@
   border: none;
   border-radius: 4px;
   padding: 12px 24px;
-  font-family: var(--font-hero-body, "Outfit", sans-serif);
+  font-family: var(--font-hero-body, "Manrope", sans-serif);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
