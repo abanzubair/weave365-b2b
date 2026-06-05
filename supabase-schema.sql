@@ -679,3 +679,46 @@ create index if not exists download_logs_user_product_date_idx
 
 -- Migration: Add drive_folder_url to vendor_profiles if it doesn't exist
 alter table public.vendor_profiles add column if not exists drive_folder_url text;
+
+-------------------------------------------------------------------------------
+-- B2B SERVICE & PRODUCT REVIEWS TABLE
+-------------------------------------------------------------------------------
+
+create table if not exists public.service_reviews (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  reviewer_name text not null,
+  business_name text,
+  rating integer not null check (rating >= 1 and rating <= 5),
+  title text,
+  comment text not null,
+  status text default 'approved' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.service_reviews enable row level security;
+
+-- Policies
+drop policy if exists "Allow public to view approved reviews" on public.service_reviews;
+create policy "Allow public to view approved reviews"
+  on public.service_reviews for select
+  using (status = 'approved');
+
+drop policy if exists "Allow authenticated users to insert reviews" on public.service_reviews;
+create policy "Allow authenticated users to insert reviews"
+  on public.service_reviews for insert
+  to authenticated
+  with check (true);
+
+drop policy if exists "Allow admin all actions on reviews" on public.service_reviews;
+create policy "Allow admin all actions on reviews"
+  on public.service_reviews for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Index for reviews listing
+create index if not exists service_reviews_status_created_idx 
+  on public.service_reviews (status, created_at desc);

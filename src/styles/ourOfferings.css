@@ -44,19 +44,20 @@
   font-weight: 500;
   letter-spacing: inherit;
   text-transform: inherit;
-  transition: all 0.3s ease;
+  transition: none;
   padding: 0;
 }
 
 .breadcrumb-link:hover {
-  font-family: var(--font-modern-heading, 'Outfit', sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: var(--gold, #b78646);
-  opacity: 1;
+  color: var(--muted, #6d5946);
+  opacity: 0.6;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  transition: none;
+  transform: none;
 }
 
 .breadcrumb-separator {
@@ -102,8 +103,9 @@
 }
 
 .offerings-hero-section .breadcrumb-link:hover {
-  color: var(--gold-dark, #805d31);
-  opacity: 1;
+  color: var(--muted, #6d5946);
+  opacity: 0.6;
+  transition: none;
 }
 
 .offerings-hero-section .breadcrumb-separator {

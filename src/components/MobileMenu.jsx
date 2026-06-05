@@ -20,6 +20,7 @@ import {
   LogOut,
   Globe,
   Info,
+  Star,
 } from 'lucide-react';
 
 import { storeConfig } from '../config.js';

@@ -1696,12 +1696,20 @@
   padding: 0;
   font: inherit;
   cursor: pointer;
-  transition: color 0.2s ease;
 }
 
 .breadcrumb-link:hover,
-.breadcrumb-link-btn:hover {
-  color: var(--gold-dark);
+.breadcrumb-link-btn:hover,
+.breadcrumb-link:focus,
+.breadcrumb-link-btn:focus,
+.breadcrumb-link:active,
+.breadcrumb-link-btn:active {
+  color: var(--muted);
+  text-decoration: none;
+  background: none;
+  opacity: 1;
+  transition: none;
+  transform: none;
 }
 
 .breadcrumb-separator {

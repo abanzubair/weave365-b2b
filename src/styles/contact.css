@@ -58,11 +58,12 @@
 .contact-breadcrumbs a {
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: none;
 }
 
 .contact-breadcrumbs a:hover {
-  color: var(--gold);
+  color: var(--muted);
+  transition: none;
 }
 
 .contact-breadcrumbs .breadcrumb-divider {

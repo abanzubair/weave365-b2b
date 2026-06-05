@@ -46,12 +46,13 @@
 .seo-breadcrumbs a {
   color: #666;
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none;
   font-weight: 550;
 }
 
 .seo-breadcrumbs a:hover {
-  color: var(--primary-color, #c69e6a);
+  color: #666;
+  transition: none;
 }
 
 .seo-breadcrumbs .chevron {

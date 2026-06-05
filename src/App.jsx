@@ -59,6 +59,7 @@ import { PartnerProgramPage } from './views/PartnerProgramPage.jsx';
 import { BlogList } from './views/BlogList.jsx';
 import { BlogPost } from './views/BlogPost.jsx';
 import { AboutPage } from './views/AboutPage.jsx';
+import { ReviewsPage } from './views/ReviewsPage.jsx';
 import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
 import { ContactPage } from './views/ContactPage.jsx';
 import { OurOfferings } from './views/OurOfferings.jsx';
@@ -1011,6 +1012,8 @@ export default function App({ initialData = {} }) {
     if (route === 'contact') return <ContactPage navigate={navigate} />;
 
     if (route === 'about') return <AboutPage navigate={navigate} />;
+    
+    if (route === 'reviews') return <ReviewsPage navigate={navigate} user={user} />;
 
     if (route === 'early-access') return <EarlyAccessPage navigate={navigate} />;
 

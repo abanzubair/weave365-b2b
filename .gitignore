@@ -27,7 +27,8 @@ qa-playwright.cjs
 split_css.cjs
 CLAUDE.md
 
-skills/
+skills/*
+!skills/impeccable/
 .agents/
 
 # OpenNext & Wrangler

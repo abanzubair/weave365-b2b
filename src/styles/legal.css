@@ -61,11 +61,12 @@
 .legal-breadcrumbs a {
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: none;
 }
 
 .legal-breadcrumbs a:hover {
-  color: var(--gold);
+  color: var(--muted);
+  transition: none;
 }
 
 .legal-breadcrumbs .breadcrumb-divider {

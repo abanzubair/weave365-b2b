@@ -1329,11 +1329,12 @@ button {
   color: var(--muted);
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.25s ease;
+  transition: none;
 }
 
 .breadcrumb button:hover {
-  color: var(--gold-dark);
+  color: var(--muted);
+  transition: none;
 }
 
 .breadcrumb strong {
