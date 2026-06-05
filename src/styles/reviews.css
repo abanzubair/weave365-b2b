@@ -181,6 +181,12 @@
   max-width: 65ch; /* constrained reading width */
 }
 
+@media screen and (min-width: 1900px) {
+  .reviews-split-right-narrative {
+    max-width: 50ch;
+  }
+}
+
 .reviews-split-right-narrative p {
   margin: 0;
   font-size: 1.05rem;
