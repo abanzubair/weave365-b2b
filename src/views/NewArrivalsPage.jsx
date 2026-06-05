@@ -34,6 +34,7 @@ export function NewArrivalsPage({
   favoriteKeys,
   priceAccess,
   openAuth,
+  isTransitioning = false,
 }) {
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -324,19 +325,40 @@ export function NewArrivalsPage({
       <StateMessage status={status} error={error} />
       
       <div className="catalog-grid">
-        {filteredProducts.slice(0, visibleCount).map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            variant={product.variants[0]}
-            navigate={navigate}
-            addToCart={addToCart}
-            toggleFavorite={toggleFavorite}
-            isFavorite={favoriteKeys.has(product.id)}
-            priceAccess={priceAccess}
-            openAuth={openAuth}
-          />
-        ))}
+        {status === 'loading' || isTransitioning ? (
+          Array.from({ length: 12 }).map((_, index) => (
+            <div key={index} className="product-card skeleton-card">
+              <div className="card-media skeleton-media"></div>
+              <div className="product-card-copy">
+                <div className="skeleton-text skeleton-title"></div>
+                <div className="card-info-grid">
+                  <div className="info-left" style={{ border: 'none' }}>
+                    <div className="skeleton-text skeleton-price"></div>
+                  </div>
+                  <div className="info-right"></div>
+                </div>
+                <div className="card-actions-new">
+                  <div className="skeleton-button"></div>
+                  <div className="skeleton-button"></div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          filteredProducts.slice(0, visibleCount).map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant={product.variants[0]}
+              navigate={navigate}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              isFavorite={favoriteKeys.has(product.id)}
+              priceAccess={priceAccess}
+              openAuth={openAuth}
+            />
+          ))
+        )}
       </div>
       
       {filteredProducts.length > visibleCount && (

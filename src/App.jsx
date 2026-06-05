@@ -1051,6 +1051,7 @@ export default function App({ initialData = {} }) {
           favoriteKeys={favoriteKeySet}
           priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
+          isTransitioning={!!pendingRoute}
         />
       );
     }
