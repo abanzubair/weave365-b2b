@@ -49,7 +49,6 @@
 
 .product-skeleton .skeleton-thumb {
   border: none !important;
-  background: transparent !important;
   box-shadow: none !important;
 }
 
@@ -139,13 +138,11 @@
 .product-skeleton .skeleton-swatch {
   border: none !important;
   box-shadow: none !important;
-  background: transparent !important;
 }
 
 .product-skeleton .skeleton-action-btn {
   border: none !important;
   box-shadow: none !important;
-  background: transparent !important;
   padding: 0 !important;
   flex: 1;
   height: 52px;
