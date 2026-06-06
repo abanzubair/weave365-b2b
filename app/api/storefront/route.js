@@ -217,7 +217,9 @@ export async function GET(request) {
         yarnCount: getRowVal(rawRow, 'Yarn Count') || getRowVal(rawRow, 'YarnCount') || '120/120 Double Warp Mulberry Silk',
         weftDensity: getRowVal(rawRow, 'Weft Density') || getRowVal(rawRow, 'WeftDensity') || '80 threads per inch',
         zariComposition: getRowVal(rawRow, 'Zari Composition') || getRowVal(rawRow, 'ZariComposition') || 'Supplementary metallic yarn threads',
-        heritageStory: getRowVal(rawRow, 'Heritage Story') || getRowVal(rawRow, 'HeritageStory') || `Woven by master artisans. The design represents mathematical precision in creating intricate brocade motifs passed down through generations.`
+        heritageStory: getRowVal(rawRow, 'Heritage Story') || getRowVal(rawRow, 'HeritageStory') || `Woven by master artisans. The design represents mathematical precision in creating intricate brocade motifs passed down through generations.`,
+        weave: weaveVal,
+        work: getRowVal(rawRow, 'Work') || 'Zari Work'
       });
     }
 
