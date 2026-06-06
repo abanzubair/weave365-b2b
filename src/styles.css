@@ -33,6 +33,7 @@
 @import './styles/admin.css';
 @import './styles/ourOfferings.css';
 @import './styles/reviews.css';
+@import './styles/productSkeleton.css';
 
 .search-lock {
   overflow: hidden !important;

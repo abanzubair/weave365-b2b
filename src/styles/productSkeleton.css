@@ -1,0 +1,197 @@
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--cream) 25%,
+    var(--surface-muted) 50%,
+    var(--cream) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.6s infinite linear !important;
+  border-radius: 8px;
+  border: none !important;
+}
+
+.product-skeleton {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Breadcrumbs Skeleton */
+.skeleton-breadcrumb {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 28px;
+}
+
+.skeleton-breadcrumb-item {
+  height: 14px;
+  width: 80px;
+}
+
+.skeleton-breadcrumb-item:nth-child(2) {
+  width: 140px;
+}
+
+.skeleton-breadcrumb-item:nth-child(3) {
+  width: 100px;
+}
+
+/* Placeholders inside Weave 365's real containers */
+
+.product-skeleton .skeleton-thumb {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.product-skeleton .skeleton-main-image {
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 20px 48px rgba(36, 25, 18, 0.04);
+}
+
+.product-skeleton .skeleton-spec-label {
+  height: 12px;
+  width: 60px;
+}
+
+.product-skeleton .skeleton-spec-value {
+  height: 18px;
+  width: 110px;
+}
+
+.product-skeleton .skeleton-status-badge {
+  height: 22px;
+  width: 90px;
+  border-radius: 100px;
+}
+
+.product-skeleton .skeleton-title {
+  height: 48px;
+  width: 85%;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.product-skeleton .skeleton-partner-card {
+  height: 46px;
+  width: 200px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.product-skeleton .skeleton-code {
+  height: 16px;
+  width: 140px;
+  margin-bottom: 24px;
+}
+
+.product-skeleton .skeleton-price-box {
+  height: 90px;
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.product-skeleton .skeleton-disclaimer {
+  height: 14px;
+  width: 220px;
+  margin-bottom: 20px;
+}
+
+.product-skeleton .skeleton-tiered-pricing {
+  height: 76px;
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.product-skeleton .quick-facts {
+  border-top: 1px solid rgba(183, 134, 70, 0.1);
+  border-bottom: 1px solid rgba(183, 134, 70, 0.1);
+  padding: 16px 0;
+}
+
+.product-skeleton .skeleton-fact-row {
+  height: 20px;
+  width: 260px;
+}
+
+.product-skeleton .skeleton-variation-title {
+  height: 18px;
+  width: 100px;
+}
+
+.product-skeleton .skeleton-variation-link {
+  height: 16px;
+  width: 80px;
+}
+
+.product-skeleton .skeleton-swatch {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.product-skeleton .skeleton-action-btn {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  flex: 1;
+  height: 52px;
+  border-radius: 10px;
+}
+
+/* Related Section Title */
+.product-skeleton .skeleton-related-title {
+  height: 32px;
+  width: 240px;
+  margin: 0 0 32px;
+}
+
+.product-skeleton .skeleton-product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-skeleton .skeleton-card-media {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 12px;
+}
+
+.product-skeleton .skeleton-card-title {
+  height: 18px;
+  width: 80%;
+}
+
+.product-skeleton .skeleton-card-price {
+  height: 16px;
+  width: 50%;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 820px) {
+  .product-skeleton .skeleton-title {
+    height: 32px !important;
+  }
+
+  .product-skeleton .skeleton-code {
+    height: 14px !important;
+  }
+
+  .product-skeleton .skeleton-action-btn {
+    height: 46px !important;
+  }
+}

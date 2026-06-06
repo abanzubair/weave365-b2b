@@ -62,6 +62,12 @@ export function ProductDetailWrapper(props) {
   const product = props.productsById?.get(props.productId) || props.products[0] || null;
   const isFavorite = product ? props.favoriteKeys.has(product.id) : false;
 
+  useEffect(() => {
+    if (!product && props.onReady) {
+      props.onReady();
+    }
+  }, [product, props.onReady]);
+
   if (!product) return null;
 
   return <ProductDetail {...props} product={product} isFavorite={isFavorite} />;
@@ -95,6 +101,7 @@ export function ProductDetail({
   checkPincode,
   openAuth,
   user,
+  onReady,
 }) {
   const initialColorName = product.colorOptions?.[0]?.name || product.variants[0]?.color || '';
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
@@ -111,6 +118,15 @@ export function ProductDetail({
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [whatsappShareOpen, setWhatsappShareOpen] = useState(false);
   const shareMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (product && onReady) {
+      const timer = setTimeout(() => {
+        onReady();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [product?.id, onReady]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -422,9 +438,8 @@ export function ProductDetail({
   const moqUnitPlural = isSoldAsPc ? 'Pieces' : 'Sets';
   const moqMultiplier = isSoldAsPc ? 1 : totalColors;
 
+  const isSaree = String(product.category || '').toLowerCase() === 'saree';
   const longDescriptionSections = useMemo(() => {
-    const isSaree = String(product.category || '').toLowerCase() === 'saree';
-
     return [
       {
         id: 'fabric',

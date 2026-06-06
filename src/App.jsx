@@ -49,6 +49,7 @@ import { Favorites } from './views/Favorites.jsx';
 
 import { Catalog } from './CatalogPage.jsx';
 import { ProductDetailWrapper } from './ProductPage.jsx';
+import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import { BulkInquiry } from './views/BulkInquiry.jsx';
 import { Admin } from './views/Admin.jsx';
 import { Account } from './views/Account.jsx';
@@ -98,9 +99,14 @@ export default function App({ initialData = {} }) {
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
   const [pendingRoute, setPendingRoute] = useState(null);
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const [isProductPageReady, setIsProductPageReady] = useState(true);
+
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setPendingRoute(null);
+    if (pathname.startsWith('/product/')) {
+      setIsProductPageReady(false);
+    }
   }
   
   const route = pendingRoute || pathSegments[0] || 'home';
@@ -769,6 +775,9 @@ export default function App({ initialData = {} }) {
 
     if (cleanTargetPath !== cleanPathname) {
       setPendingRoute(targetSegment);
+      if (targetSegment === 'product') {
+        setIsProductPageReady(false);
+      }
     } else {
       setPendingRoute(null);
     }
@@ -884,24 +893,31 @@ export default function App({ initialData = {} }) {
     }
 
     if (route === 'product') {
+      const showSkeleton = !!pendingRoute || !isProductPageReady;
       return (
-        <ProductDetailWrapper
-          productId={productId}
-          products={pricedProducts}
-          productsById={productsById}
-          navigate={navigate}
-          addToCart={addToCart}
-          addCartSelections={addCartSelections}
-          toggleFavorite={toggleFavorite}
-          favoriteKeys={favoriteKeySet}
-          priceAccess={priceAccess}
-          openAuth={() => setAuthOpen(true)}
-          pincode={pincode}
-          setPincode={setPincode}
-          codStatus={codStatus}
-          checkPincode={checkPincode}
-          user={user}
-        />
+        <div style={{ position: 'relative', minHeight: '80vh' }}>
+          {showSkeleton && <ProductPageSkeleton />}
+          <div style={{ display: showSkeleton ? 'none' : 'block' }}>
+            <ProductDetailWrapper
+              productId={productId}
+              products={pricedProducts}
+              productsById={productsById}
+              navigate={navigate}
+              addToCart={addToCart}
+              addCartSelections={addCartSelections}
+              toggleFavorite={toggleFavorite}
+              favoriteKeys={favoriteKeySet}
+              priceAccess={priceAccess}
+              openAuth={() => setAuthOpen(true)}
+              pincode={pincode}
+              setPincode={setPincode}
+              codStatus={codStatus}
+              checkPincode={checkPincode}
+              user={user}
+              onReady={() => setIsProductPageReady(true)}
+            />
+          </div>
+        </div>
       );
     }
 
