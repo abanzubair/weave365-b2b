@@ -86,16 +86,17 @@ export function changeCartColor(cart, cartItem, nextColorName) {
   ));
 
   if (existing) {
-    return cart
-      .map((item) => {
+    return cart.reduce((acc, item) => {
+      const isOldItem = item.productGroupKey === cartItem.productGroupKey && item.variantCode === cartItem.variantCode;
+      if (!isOldItem) {
         if (item.productGroupKey === cartItem.productGroupKey && item.variantCode === nextVariantCode) {
-          return { ...item, quantity: item.quantity + cartItem.quantity };
+          acc.push({ ...item, quantity: item.quantity + cartItem.quantity });
+        } else {
+          acc.push(item);
         }
-        return item;
-      })
-      .filter((item) => !(
-        item.productGroupKey === cartItem.productGroupKey && item.variantCode === cartItem.variantCode
-      ));
+      }
+      return acc;
+    }, []);
   }
 
   return cart.map((item) => (

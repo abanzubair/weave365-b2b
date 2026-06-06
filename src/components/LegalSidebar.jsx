@@ -17,7 +17,7 @@ export function LegalSidebar({ activeTab, navigate }) {
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <button type="button"
               key={item.id}
               className={`legal-menu-btn ${activeTab === item.id ? 'active' : ''}`}
               onClick={() => navigate(item.path)}

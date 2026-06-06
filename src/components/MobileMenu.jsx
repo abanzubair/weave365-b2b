@@ -90,14 +90,14 @@ export function MobileMenu({
       <aside className="mobile-menu">
         <div className="mobile-menu-head">
           <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo" style={{ height: 36 }} />
-          <button className="icon-button" onClick={onClose} aria-label="Close menu">
+          <button type="button" className="icon-button" onClick={onClose} aria-label="Close menu">
             <X size={22} />
           </button>
         </div>
 
         <nav className="mobile-menu-nav">
           {/* 1. NEW ARRIVALS */}
-          <button 
+          <button type="button" 
             className="mobile-menu-item" 
             onClick={() => {
               navigate('new-arrivals');
@@ -110,7 +110,7 @@ export function MobileMenu({
           </button>
 
           {/* 2. CATALOGUE */}
-          <button 
+          <button type="button" 
             className="mobile-menu-item" 
             onClick={() => {
               navigate('wholesale-catalogue');
@@ -124,7 +124,7 @@ export function MobileMenu({
 
           {/* 3. CATEGORIES */}
           <div className={`mobile-account-dropdown ${categoriesOpen ? 'is-open' : ''}`}>
-            <button 
+            <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => setCategoriesOpen(!categoriesOpen)}
             >
@@ -136,7 +136,7 @@ export function MobileMenu({
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 {categories.map((cat) => (
-                  <button 
+                  <button type="button" 
                     key={cat} 
                     className="mobile-account-subitem" 
                     onClick={() => {
@@ -156,7 +156,7 @@ export function MobileMenu({
 
           {/* 4. PARTNERS */}
           <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
-            <button 
+            <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => setPartnerOpen(!partnerOpen)}
             >
@@ -171,7 +171,7 @@ export function MobileMenu({
                   { name: 'Sourcing Partners', slug: 'sourcing-partners' },
                   { name: 'White Label Brands', slug: 'white-label-brands' },
                 ].map((item) => (
-                  <button 
+                  <button type="button" 
                     key={item.slug} 
                     className="mobile-account-subitem" 
                     onClick={() => {
@@ -189,7 +189,7 @@ export function MobileMenu({
           </div>
 
           {/* 5. ABOUT */}
-          <button 
+          <button type="button" 
             className="mobile-menu-item" 
             onClick={() => {
               navigate('about');
@@ -202,7 +202,7 @@ export function MobileMenu({
           </button>
 
           {/* 6. CONTACT */}
-          <button 
+          <button type="button" 
             className="mobile-menu-item" 
             onClick={() => {
               navigate('contact');
@@ -220,7 +220,7 @@ export function MobileMenu({
           
           {/* My Account Dropdown */}
           <div className={`mobile-account-dropdown ${accountOpen ? 'is-open' : ''}`}>
-            <button 
+            <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => setAccountOpen(!accountOpen)}
             >
@@ -232,7 +232,7 @@ export function MobileMenu({
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 {accountItems.map((item, idx) => (
-                  <button key={idx} className="mobile-account-subitem" onClick={item.action}>
+                  <button type="button" key={idx} className="mobile-account-subitem" onClick={item.action}>
                     <span className="subitem-icon">{item.icon}</span>
                     <span className="subitem-label">
                       {item.label}
@@ -246,7 +246,7 @@ export function MobileMenu({
 
           {/* Select Currency Dropdown */}
           <div className={`mobile-currency-dropdown ${currencyOpen ? 'is-open' : ''}`}>
-            <button 
+            <button type="button" 
               className="mobile-menu-item mobile-currency-trigger" 
               onClick={() => setCurrencyOpen(!currencyOpen)}
             >
@@ -259,7 +259,7 @@ export function MobileMenu({
               <div className="mobile-currency-expandable-inner">
                 <div className="mobile-currency-grid">
                   {CURRENCIES.map(c => (
-                    <button 
+                    <button type="button" 
                       key={c.code}
                       className={`mobile-currency-btn ${c.code === currentCurrency ? 'active' : ''}`}
                       onClick={() => {

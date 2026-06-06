@@ -50,7 +50,7 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
         <div className="rt-container" style={{ textAlign: 'center', padding: '3rem' }}>
           <h1>Unauthorized</h1>
           <p>Please log in to access your reseller dashboard.</p>
-          <button className="sc-contact-btn" style={{ margin: '2rem auto' }} onClick={() => navigate('home')}>Back to Home</button>
+          <button type="button" className="sc-contact-btn" style={{ margin: '2rem auto' }} onClick={() => navigate('home')}>Back to Home</button>
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
         </div>
         
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button className="sc-contact-btn" style={{ background: 'transparent', color: 'var(--reseller-primary)', border: '1px solid var(--reseller-border)' }} onClick={() => navigate('account')}>
+          <button type="button" className="sc-contact-btn" style={{ background: 'transparent', color: 'var(--reseller-primary)', border: '1px solid var(--reseller-border)' }} onClick={() => navigate('account')}>
             <User size={16} /> Back to Weave 365
           </button>
           {storefront?.custom_domain && (

@@ -3,7 +3,7 @@
  * Purpose: A slide-up mobile sheet / desktop side-drawer that lets buyers compile B2B orders.
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
@@ -37,26 +37,24 @@ export function VariationQuantityDrawer({
       }));
 
     const seen = new Set();
-    return source
-      .map((option, index) => {
-        const name = option.name || `Color ${index + 1}`;
-        const variant = product.variants.find((item) => item.color === option.name) || product.variants[0];
-        const image = option.image || variant?.image || product.images[index] || product.images[0] || fallbackProductImage;
-        const key = `${name}-${image || index}`;
+    return source.reduce((acc, option, index) => {
+      const name = option.name || `Color ${index + 1}`;
+      const variant = product.variants.find((item) => item.color === option.name) || product.variants[0];
+      const image = option.image || variant?.image || product.images[index] || product.images[0] || fallbackProductImage;
+      const key = `${name}-${image || index}`;
 
-        return {
+      if (variant && !seen.has(key)) {
+        seen.add(key);
+        acc.push({
           key,
           name,
           image,
           variant,
           price: customerPrice(variant?.prices || {}, priceAccess),
-        };
-      })
-      .filter((row) => {
-        if (!row.variant || seen.has(row.key)) return false;
-        seen.add(row.key);
-        return true;
-      });
+        });
+      }
+      return acc;
+    }, []);
   }, [colorOptions, priceAccess, product.images, product.variants]);
 
   const [activeKey, setActiveKey] = useState(rows[0]?.key || '');
@@ -68,11 +66,14 @@ export function VariationQuantityDrawer({
     setActiveKey(activeRow?.key || '');
   }, [rows, selectedColorName, selectedImage]);
 
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -82,7 +83,7 @@ export function VariationQuantityDrawer({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.classList.remove('drawer-lock');
     };
-  }, [onClose, open]);
+  }, [open]);
 
   const selectedRow = rows.find((row) => row.key === activeKey) || rows[0];
   const canViewPrices = priceAccess?.canViewPrices !== false;
@@ -91,14 +92,18 @@ export function VariationQuantityDrawer({
     : null;
   const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
   const selectedCartRows = useMemo(
-    () => rows
-      .map((row) => ({
-        variant: row.variant,
-        quantity: quantities[row.key] || 0,
-        colorName: row.name,
-        image: row.image,
-      }))
-      .filter((row) => row.quantity > 0),
+    () => rows.reduce((acc, row) => {
+      const quantity = quantities[row.key] || 0;
+      if (quantity > 0) {
+        acc.push({
+          variant: row.variant,
+          quantity,
+          colorName: row.name,
+          image: row.image,
+        });
+      }
+      return acc;
+    }, []),
     [quantities, rows],
   );
 

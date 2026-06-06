@@ -18,7 +18,7 @@
  * @param {Function} props.openAuth - Trigger callback to display login/registration modal
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
@@ -64,13 +64,17 @@ export function NewArrivalsPage({
     }
   };
 
+  // Stable ref to closeWithAnimation for use inside useEffect
+  const closeRef = useRef(closeWithAnimation);
+  closeRef.current = closeWithAnimation;
+
   // Close dropdown on click outside
   useEffect(() => {
     if (!openDropdown) return;
     
     const handleClickOutside = (event) => {
       if (!event.target.closest('.filter-dropdown')) {
-        closeWithAnimation();
+        closeRef.current();
       }
     };
 
@@ -216,7 +220,7 @@ export function NewArrivalsPage({
         <div className="catalog-header-row">
           <SectionTitle title="New Arrivals" align="left" />
           {hasActiveFilters && (
-            <button className="reset-filters-btn" onClick={resetFilters}>
+            <button type="button" className="reset-filters-btn" onClick={resetFilters}>
               <RotateCcw size={14} /> Reset Filters
             </button>
           )}
@@ -233,7 +237,7 @@ export function NewArrivalsPage({
               placeholder="Search new arrivals..."
             />
             {search && (
-              <button className="clear-search-btn" onClick={() => setSearch('')}>
+              <button type="button" className="clear-search-btn" onClick={() => setSearch('')}>
                 <X size={14} />
               </button>
             )}
@@ -243,7 +247,7 @@ export function NewArrivalsPage({
         <div className="catalog-filters-container">
           {/* Category Dropdown */}
           <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''} ${isClosing && openDropdown === 'category' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('category'); }}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('category'); }}>
               <div className="filter-label-wrap">
                 <label>Category</label>
                 <span>{category}</span>
@@ -252,7 +256,7 @@ export function NewArrivalsPage({
             </button>
             <div className="filter-dropdown-menu">
               {categoriesList.map((name) => (
-                <button
+                <button type="button"
                   key={name}
                   className={category === name ? 'active' : ''}
                   onClick={() => {
@@ -269,7 +273,7 @@ export function NewArrivalsPage({
 
           {priceAccess?.canViewPrices && (
             <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''} ${isClosing && openDropdown === 'price' ? 'closing' : ''}`}>
-              <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
+              <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
                 <div className="filter-label-wrap">
                   <label>Price Range</label>
                   <span>{priceRange}</span>
@@ -278,7 +282,7 @@ export function NewArrivalsPage({
               </button>
               <div className="filter-dropdown-menu">
                 {priceRangesList.map((range) => (
-                  <button
+                  <button type="button"
                     key={range}
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
@@ -296,7 +300,7 @@ export function NewArrivalsPage({
 
           {/* Fabric Dropdown */}
           <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''} ${isClosing && openDropdown === 'fabric' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('fabric'); }}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('fabric'); }}>
               <div className="filter-label-wrap">
                 <label>Fabric</label>
                 <span>{fabric}</span>
@@ -305,7 +309,7 @@ export function NewArrivalsPage({
             </button>
             <div className="filter-dropdown-menu">
               {fabricsList.map((name) => (
-                <button
+                <button type="button"
                   key={name}
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
@@ -363,7 +367,7 @@ export function NewArrivalsPage({
       
       {filteredProducts.length > visibleCount && (
         <div className="load-more-row">
-          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
+          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
             Show more new arrivals
           </button>
         </div>

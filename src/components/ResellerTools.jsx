@@ -127,7 +127,7 @@ export function ResellerTools({ user, buyerProfile }) {
         <div className="rt-header-right">
           {catalogLink && (
             <>
-              <button onClick={copyCatalogLink} className="rt-header-link" title="Copy catalog link">
+              <button type="button" onClick={copyCatalogLink} className="rt-header-link" title="Copy catalog link">
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied!' : 'Copy Link'}
               </button>
@@ -146,7 +146,7 @@ export function ResellerTools({ user, buyerProfile }) {
           { key: 'storefront', icon: Settings, label: 'Settings' },
           { key: 'inquiries', icon: MessageSquare, label: 'Leads' },
         ].map(tab => (
-          <button
+          <button type="button"
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`rt-tab ${activeTab === tab.key ? 'active' : ''}`}
@@ -211,7 +211,7 @@ export function ResellerTools({ user, buyerProfile }) {
                   </div>
                   <div className="rt-link-actions">
                     {share.is_active && (
-                      <button onClick={() => handleDeactivate(share.id)} className="rt-icon-btn danger" title="Remove from catalog">
+                      <button type="button" onClick={() => handleDeactivate(share.id)} className="rt-icon-btn danger" title="Remove from catalog">
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -293,7 +293,7 @@ export function ResellerTools({ user, buyerProfile }) {
                   >
                     <MessageSquare size={14} /> Reply
                   </a>
-                  <button 
+                  <button type="button" 
                     onClick={() => handleDeleteInquiry(inq.id)} 
                     className="rt-icon-btn danger" 
                     title="Delete Lead"

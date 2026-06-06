@@ -161,6 +161,21 @@ const rejectedSamples = [
   "https://images.weave365.in/assets/sample/no/n50.webp"
 ];
 
+// Convert File object to Base64 String
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Handle Drag Over event
+const handleDragOver = (e) => {
+  e.preventDefault();
+};
+
 export function TrustedPartnerRegistrationPage() {
   const heroImage = assetSrc(artisanImage);
   
@@ -351,15 +366,7 @@ export function TrustedPartnerRegistrationPage() {
     }
   }, []);
 
-  // Convert File object to Base64 String
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+
 
   // Handle selected image slot update
   const handleImageChange = async (file, index) => {
@@ -411,10 +418,7 @@ export function TrustedPartnerRegistrationPage() {
     }
   };
 
-  // Handle Drag Over event
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+
 
   // Handle Drop event
   const handleDrop = async (e, index) => {

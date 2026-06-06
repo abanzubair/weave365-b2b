@@ -12,6 +12,27 @@ import { seoLandingPages } from '../data/seoLandingPages.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
 
+const getCollectionTagline = (itemSlug) => {
+  switch (itemSlug) {
+    case 'wholesale-banarasi-sarees':
+      return 'Varanasi Direct Weaver Heritage';
+    case 'katan-silk-sarees':
+      return 'Intricate Twisted Pure Silk weaves';
+    case 'organza-banarasi-sarees':
+      return 'Translucent Sheer Modern Elegance';
+    case 'bridal-banarasi-sarees':
+      return 'Grand Wedding Jaals & Brocades';
+    case 'meenakari-sarees':
+      return 'Exquisite Multi-colored Enamelled Inlays';
+    case 'soft-silk-sarees':
+      return 'Supple Lightweight Versatile Drape';
+    case 'wholesale-saree-supplier-india':
+      return 'Global Export & Bulk Direct Distribution';
+    default:
+      return 'Handcrafted Banarasi Excellence';
+  }
+};
+
 export default function SeoLandingPage({
   slug,
   products = [],
@@ -192,27 +213,6 @@ export default function SeoLandingPage({
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const getCollectionTagline = (itemSlug) => {
-    switch (itemSlug) {
-      case 'wholesale-banarasi-sarees':
-        return 'Varanasi Direct Weaver Heritage';
-      case 'katan-silk-sarees':
-        return 'Intricate Twisted Pure Silk weaves';
-      case 'organza-banarasi-sarees':
-        return 'Translucent Sheer Modern Elegance';
-      case 'bridal-banarasi-sarees':
-        return 'Grand Wedding Jaals & Brocades';
-      case 'meenakari-sarees':
-        return 'Exquisite Multi-colored Enamelled Inlays';
-      case 'soft-silk-sarees':
-        return 'Supple Lightweight Versatile Drape';
-      case 'wholesale-saree-supplier-india':
-        return 'Global Export & Bulk Direct Distribution';
-      default:
-        return 'Handcrafted Banarasi Excellence';
-    }
-  };
-
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
     { name: pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') }
@@ -293,7 +293,7 @@ export default function SeoLandingPage({
             </div>
             {filteredProducts.length > visibleCount && (
               <div className="load-more-row" style={{ marginTop: '4.5rem' }}>
-                <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 16)}>
+                <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 16)}>
                   Show more products
                 </button>
               </div>
@@ -356,7 +356,7 @@ export default function SeoLandingPage({
                 className={`seo-faq-item ${openFaq === idx ? 'active' : ''}`}
                 key={idx}
               >
-                <button
+                <button type="button"
                   className="seo-faq-trigger"
                   onClick={() => toggleFaq(idx)}
                   aria-expanded={openFaq === idx}

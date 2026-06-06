@@ -5,6 +5,11 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 /**
  * Global search overlay with quick links and real-time product results.
  */
+const scrollToSection = (id) => {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
+
 export function SearchOverlay({
   searchActive,
   setSearchActive,
@@ -15,11 +20,6 @@ export function SearchOverlay({
   priceAccess
 }) {
   if (!searchActive) return null;
-
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <div className="premium-search-overlay animate-fade-in" onClick={() => { setSearchActive(false); setSearch(''); }}>
@@ -43,11 +43,11 @@ export function SearchOverlay({
               className="premium-search-input-field"
             />
             {search && (
-              <button className="search-clear-btn" onClick={() => setSearch('')}>
+              <button type="button" className="search-clear-btn" onClick={() => setSearch('')}>
                 Clear
               </button>
             )}
-            <button 
+            <button type="button" 
               className="search-modal-close-btn" 
               onClick={() => {
                 setSearchActive(false);
@@ -65,7 +65,7 @@ export function SearchOverlay({
                   <h3>Trending Saree Fabrics</h3>
                   <div className="preset-tags">
                     {['Banarasi', 'Katan Silk', 'Organza', 'Linen', 'Tussar', 'Georgette'].map((tag) => (
-                      <button
+                      <button type="button"
                         key={tag}
                         className="preset-tag-btn"
                         onClick={() => setSearch(tag)}
@@ -79,19 +79,19 @@ export function SearchOverlay({
                   <h3>Quick Links</h3>
                   <ul className="quick-access-list">
                     <li>
-                      <button onClick={() => { navigate('catalogue'); setSearchActive(false); }}>
+                      <button type="button" onClick={() => { navigate('catalogue'); setSearchActive(false); }}>
                         <span>Browse All Collections</span>
                         <ArrowRight size={14} />
                       </button>
                     </li>
                     <li>
-                      <button onClick={() => { navigate('wholesale-partner-program'); setSearchActive(false); }}>
+                      <button type="button" onClick={() => { navigate('wholesale-partner-program'); setSearchActive(false); }}>
                         <span>Wholesale & Reseller Partner Program</span>
                         <ArrowRight size={14} />
                       </button>
                     </li>
                     <li>
-                      <button onClick={() => { scrollToSection('brand-collab'); setSearchActive(false); }}>
+                      <button type="button" onClick={() => { scrollToSection('brand-collab'); setSearchActive(false); }}>
                         <span>Collaborating Brands</span>
                         <ArrowRight size={14} />
                       </button>
@@ -138,7 +138,7 @@ export function SearchOverlay({
                     </div>
                     
                     {visibleProducts.length > 6 && (
-                      <button 
+                      <button type="button" 
                         className="premium-search-view-all-btn" 
                         onClick={() => {
                           navigate('catalogue');
@@ -155,7 +155,7 @@ export function SearchOverlay({
                     <div className="no-results-icon">🔍</div>
                     <h3>No match found</h3>
                     <p>We couldn't find any premium products for "{search}".</p>
-                    <button className="reset-search-btn" onClick={() => setSearch('')}>
+                    <button type="button" className="reset-search-btn" onClick={() => setSearch('')}>
                       Try another query
                     </button>
                   </div>

@@ -16,11 +16,13 @@ import { ArrowRight, Calendar, Clock, User, Filter, Search, X } from 'lucide-rea
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 
+const slugifyCategory = (cat) => {
+  return cat.toLowerCase().trim().replace(/\s+/g, '-');
+};
+
 export function BlogList({ navigate, blogs = [] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = useMemo(() => {
     const order = [
@@ -48,39 +50,29 @@ export function BlogList({ navigate, blogs = [] }) {
   const pathname = usePathname() || '';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
 
-  const slugifyCategory = (cat) => {
-    return cat.toLowerCase().trim().replace(/\s+/g, '-');
-  };
-
-  // Sync activeCategory and searchQuery with URL path segment or fallback to query parameter
-  useEffect(() => {
-    // 1. Check path segment first (e.g. /blog/category/banarasi-insights)
+  const activeCategory = useMemo(() => {
     if (pathSegments[0] === 'blog' && pathSegments[1] === 'category' && pathSegments[2]) {
       const catSlug = decodeURIComponent(pathSegments[2]).toLowerCase();
       const matched = categories.find(c => slugifyCategory(c) === catSlug);
-      if (matched) {
-        setActiveCategory(matched);
-      }
+      if (matched) return matched;
     } else {
       const catParam = searchParams?.get('category');
       if (catParam) {
         const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
-        if (matched) {
-          setActiveCategory(matched);
-        }
-      } else {
-        setActiveCategory('All');
+        if (matched) return matched;
       }
     }
+    return 'All';
+  }, [pathSegments, categories, searchParams]);
 
-    // Sync search query parameter
-    const searchParam = searchParams?.get('search');
-    if (searchParam) {
-      setSearchQuery(searchParam);
-    } else {
-      setSearchQuery('');
-    }
-  }, [searchParams, categories, pathSegments]);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const searchParam = searchParams?.get('search') || '';
+  const [prevSearchParam, setPrevSearchParam] = useState(searchParam);
+  if (searchParam !== prevSearchParam) {
+    setPrevSearchParam(searchParam);
+    setSearchQuery(searchParam);
+  }
 
   // JSON-LD Schema: Blog index or category CollectionPage + BreadcrumbList
   useEffect(() => {
@@ -286,7 +278,7 @@ export function BlogList({ navigate, blogs = [] }) {
               {searchQuery ? (
                 <>
                   <p>No results matched your search for "{searchQuery}". Try using different keywords or resetting the filters.</p>
-                  <button 
+                  <button type="button" 
                     className="blog-filter-btn active"
                     style={{ marginTop: '1.5rem' }}
                     onClick={() => setSearchQuery('')}
@@ -297,7 +289,7 @@ export function BlogList({ navigate, blogs = [] }) {
               ) : (
                 <>
                   <p>We haven't published any articles in the "{activeCategory}" category yet. Check back soon!</p>
-                  <button 
+                  <button type="button" 
                     className="blog-filter-btn active"
                     onClick={() => handleCategoryChange('All')}
                   >
@@ -323,7 +315,7 @@ export function BlogList({ navigate, blogs = [] }) {
                 className="sidebar-search-input"
               />
               {searchQuery && (
-                <button className="search-clear-btn" onClick={() => setSearchQuery('')}>
+                <button type="button" className="search-clear-btn" onClick={() => setSearchQuery('')}>
                   <X size={14} />
                 </button>
               )}
@@ -333,7 +325,7 @@ export function BlogList({ navigate, blogs = [] }) {
 
             <div className="blog-filters">
               {categories.map((cat) => (
-                <button
+                <button type="button"
                   key={cat}
                   className={`blog-filter-btn ${activeCategory === cat ? 'active' : ''}`}
                   onClick={() => handleCategoryChange(cat)}

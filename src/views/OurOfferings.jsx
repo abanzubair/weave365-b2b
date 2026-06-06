@@ -82,7 +82,7 @@ export function OurOfferings({ navigate, openAuth }) {
         <div className="offerings-hero-content">
           <div className="offerings-breadcrumb-bar">
             <div className="breadcrumb-content">
-              <button onClick={() => navigate('home')} className="breadcrumb-link">
+              <button type="button" onClick={() => navigate('home')} className="breadcrumb-link">
                 <HomeIcon size={13} /> HOME
               </button>
               <ChevronRight size={10} className="breadcrumb-separator" />
@@ -105,7 +105,7 @@ export function OurOfferings({ navigate, openAuth }) {
             </p>
             
             <div className="hero-action-luxury">
-              <button className="minimal-ink-btn" onClick={openAuth}>
+              <button type="button" className="minimal-ink-btn" onClick={openAuth}>
                 Join the Reseller Network <ArrowRight size={16} />
               </button>
             </div>

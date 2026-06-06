@@ -86,7 +86,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
         
         <div className="reseller-modal-header">
           <h2><Share2 size={18} /> Add to Catalog</h2>
-          <button onClick={onClose} className="reseller-modal-close"><X size={18} /></button>
+          <button type="button" onClick={onClose} className="reseller-modal-close"><X size={18} /></button>
         </div>
 
         <div className="reseller-modal-content">
@@ -143,13 +143,13 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
               <div className="reseller-form-group">
                 <label>Pricing Markup</label>
                 <div className="reseller-markup-selector">
-                  <button onClick={() => setMarkupType('percentage')} className={`reseller-markup-btn ${markupType === 'percentage' ? 'active' : ''}`}>
+                  <button type="button" onClick={() => setMarkupType('percentage')} className={`reseller-markup-btn ${markupType === 'percentage' ? 'active' : ''}`}>
                     <Percent size={14} /> Percentage
                   </button>
-                  <button onClick={() => setMarkupType('fixed_amount')} className={`reseller-markup-btn ${markupType === 'fixed_amount' ? 'active' : ''}`}>
+                  <button type="button" onClick={() => setMarkupType('fixed_amount')} className={`reseller-markup-btn ${markupType === 'fixed_amount' ? 'active' : ''}`}>
                     <IndianRupee size={14} /> Fixed
                   </button>
-                  <button onClick={() => setMarkupType('exact_price')} className={`reseller-markup-btn ${markupType === 'exact_price' ? 'active' : ''}`}>
+                  <button type="button" onClick={() => setMarkupType('exact_price')} className={`reseller-markup-btn ${markupType === 'exact_price' ? 'active' : ''}`}>
                     <Calculator size={14} /> Exact
                   </button>
                 </div>
@@ -167,7 +167,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 </p>
               </div>
 
-              <button onClick={handleAdd} disabled={isCreating} className="reseller-btn-primary" style={{ width: '100%' }}>
+              <button type="button" onClick={handleAdd} disabled={isCreating} className="reseller-btn-primary" style={{ width: '100%' }}>
                 {isCreating ? 'Adding…' : `Add to My Catalog — ${formatMoney(calculatedCustomerPrice)}`}
               </button>
             </>
@@ -183,7 +183,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 <label>Your Catalog Link</label>
                 <div className="reseller-copy-row">
                   <input type="text" readOnly value={shareLink} />
-                  <button onClick={copyToClipboard} className="reseller-btn-primary" style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>
+                  <button type="button" onClick={copyToClipboard} className="reseller-btn-primary" style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>
                     {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Copy</>}
                   </button>
                 </div>
@@ -202,7 +202,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 </a>
               </div>
               
-              <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '0.8125rem' }}>
+              <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '0.8125rem' }}>
                 Close
               </button>
             </div>

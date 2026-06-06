@@ -47,6 +47,16 @@ export function ResellerWhatsappShare({
   const [preparedFiles, setPreparedFiles] = useState([]);
   const [isPreparingImages, setIsPreparingImages] = useState(false);
 
+  // Reset image state inline during render when modal reopens (no stale flash)
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setPreparedFiles([]);
+      setIsPreparingImages(true);
+    }
+  }
+
   const isApprovedReseller = priceAccess?.canViewPrices && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale');
   const basePrice = customerPrice(variant?.prices, priceAccess);
   const safeQuantity = Math.max(1, Number(quantity) || 1);
@@ -92,9 +102,12 @@ export function ResellerWhatsappShare({
         ),
       ).then((results) => {
         if (isActive) {
-          const successfulFiles = results
-            .filter((r) => r.status === 'fulfilled')
-            .map((r) => r.value);
+          const successfulFiles = results.reduce((acc, r) => {
+            if (r.status === 'fulfilled') {
+              acc.push(r.value);
+            }
+            return acc;
+          }, []);
           setPreparedFiles(successfulFiles);
           setIsPreparingImages(false);
         }
@@ -186,7 +199,7 @@ export function ResellerWhatsappShare({
   const modal = open ? (
     <div className="modal-backdrop" onClick={handleClose}>
       <div className="reseller-share-modal" onClick={(event) => event.stopPropagation()}>
-        <button className="icon-button modal-close" onClick={handleClose} aria-label="Close reseller share">
+        <button type="button" className="icon-button modal-close" onClick={handleClose} aria-label="Close reseller share">
           <X size={18} />
         </button>
 

@@ -77,7 +77,7 @@ export function SiteHeader({
           CATALOGUE
         </AppLink>
         <div className="nav-item-dropdown" ref={categoriesRef}>
-          <button
+          <button type="button"
             className={dropdownOpen === 'categories' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
@@ -88,7 +88,7 @@ export function SiteHeader({
           </button>
           <DropdownPortal anchorRef={categoriesRef} isOpen={dropdownOpen === 'categories'}>
             {categories.map((cat) => (
-              <button
+              <button type="button"
                 key={cat}
                 onClick={() => {
                   setCategory(cat);
@@ -102,7 +102,7 @@ export function SiteHeader({
           </DropdownPortal>
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
-          <button
+          <button type="button"
             className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label-brands' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
@@ -116,7 +116,7 @@ export function SiteHeader({
               { name: 'Sourcing Partners', slug: 'sourcing-partners' },
               { name: 'White Label Brands', slug: 'white-label-brands' },
             ].map((item) => (
-              <button
+              <button type="button"
                 key={item.slug}
                 onClick={() => {
                   navigate(item.slug);
@@ -178,7 +178,7 @@ export function SiteHeader({
                     Hello, {buyerProfile.full_name.split(' ')[0]}
                   </div>
                 )}
-                <button
+                <button type="button"
                   onClick={() => {
                     navigate('account');
                     setDropdownOpen(null);
@@ -187,7 +187,7 @@ export function SiteHeader({
                   My Account
                 </button>
                 {vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       window.open(vendorOnboarding.drive_folder_url, '_blank');
                       setDropdownOpen(null);
@@ -206,7 +206,7 @@ export function SiteHeader({
                   </button>
                 )}
                 {isAdmin && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       window.open('/admin', '_blank');
                       setDropdownOpen(null);
@@ -215,7 +215,7 @@ export function SiteHeader({
                     Admin Panel
                   </button>
                 )}
-                <button
+                <button type="button"
                   onClick={() => {
                     navigate('favorites');
                     setDropdownOpen(null);
@@ -223,7 +223,7 @@ export function SiteHeader({
                 >
                   Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     handleSignOut();
                     setDropdownOpen(null);
@@ -233,7 +233,7 @@ export function SiteHeader({
                 </button>
               </>
             ) : (
-              <button
+              <button type="button"
                 onClick={() => {
                   setAuthOpen(true);
                   setDropdownOpen(null);
@@ -282,7 +282,7 @@ export function SiteHeader({
           </button>
           <DropdownPortal anchorRef={currencyRef} isOpen={dropdownOpen === 'currency'} className="dropdown-menu currency-dropdown-menu">
             {CURRENCIES.map((c) => (
-              <button
+              <button type="button"
                 key={c.code}
                 className={c.code === currentCurrency ? 'active' : ''}
                 onClick={() => {

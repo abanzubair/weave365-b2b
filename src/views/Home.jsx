@@ -152,6 +152,18 @@ function twoDigit(value) {
   return String(value).padStart(2, '0');
 }
 
+const scrollProductRail = (rowId, direction) => {
+  const rail = document.getElementById(rowId);
+  if (!rail) return;
+
+  const card = rail.querySelector('.product-card, .blog-card');
+  const styles = window.getComputedStyle(rail);
+  const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+  const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
+
+  rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
+};
+
 export function Home({
   products,
   status,
@@ -416,18 +428,6 @@ export function Home({
   const brandCollabSectionImage = assetSrc(brandCollabImage);
   const weaverSectionImage = assetSrc(weaverImage);
 
-  const scrollProductRail = (rowId, direction) => {
-    const rail = document.getElementById(rowId);
-    if (!rail) return;
-
-    const card = rail.querySelector('.product-card, .blog-card');
-    const styles = window.getComputedStyle(rail);
-    const gap = parseFloat(styles.columnGap || styles.gap) || 0;
-    const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
-
-    rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
-  };
-
   const openHeroLink = (link, fallbackRoute) => {
     const target = String(link || fallbackRoute || '').trim();
     if (!target) return;
@@ -523,7 +523,7 @@ export function Home({
             </div>
 
             {/* Scroll Indicator */}
-            <button 
+            <button type="button" 
               className="premium-hero-scroll-btn" 
               onClick={() => {
                 const nextSection = document.querySelector('.deal-section') || document.querySelector('.category-section') || document.querySelector('.section');
@@ -656,7 +656,7 @@ export function Home({
           </div>
           <StateMessage status={status} error={error} />
           <div className="scroll-wrapper">
-            <button
+            <button type="button"
               className="scroll-arrow left"
               onClick={() => scrollProductRail('bestsellers-row', -1)}
               aria-label="Scroll left"
@@ -680,7 +680,7 @@ export function Home({
               ))}
             </div>
 
-            <button
+            <button type="button"
               className="scroll-arrow right"
               onClick={() => scrollProductRail('bestsellers-row', 1)}
               aria-label="Scroll right"
@@ -700,7 +700,7 @@ export function Home({
         </div>
         <StateMessage status={status} error={error} />
         <div className="scroll-wrapper">
-          <button
+          <button type="button"
             className="scroll-arrow left"
             onClick={() => scrollProductRail('new-arrivals-row', -1)}
             aria-label="Scroll left"
@@ -724,7 +724,7 @@ export function Home({
             ))}
           </div>
 
-          <button
+          <button type="button"
             className="scroll-arrow right"
             onClick={() => scrollProductRail('new-arrivals-row', 1)}
             aria-label="Scroll right"
@@ -761,10 +761,10 @@ export function Home({
           <h2>Built for Business. Made for Resellers.</h2>
           <p>Join thousands of retailers who trust {storeConfig.name} wholesale for premium quality sarees.</p>
           <div className="reseller-actions">
-            <button className="gold-button" onClick={() => navigate('bulk-inquiry')}>
+            <button type="button" className="gold-button" onClick={() => navigate('bulk-inquiry')}>
               Bulk Inquiry <ArrowRight size={17} />
             </button>
-            <button className="reseller-link-button" onClick={openAuth}>
+            <button type="button" className="reseller-link-button" onClick={openAuth}>
               Register Now
             </button>
           </div>
@@ -802,7 +802,7 @@ export function Home({
         </div>
 
         <div className="scroll-wrapper blog-scroll-wrapper">
-          <button
+          <button type="button"
             className="scroll-arrow left blog-scroll-arrow"
             onClick={() => scrollProductRail('home-blog-row', -1)}
             aria-label="Scroll left"
@@ -847,7 +847,7 @@ export function Home({
             ))}
           </div>
 
-          <button
+          <button type="button"
             className="scroll-arrow right blog-scroll-arrow"
             onClick={() => scrollProductRail('home-blog-row', 1)}
             aria-label="Scroll right"

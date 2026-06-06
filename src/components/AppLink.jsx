@@ -44,7 +44,7 @@ export function AppLink({
     }
 
     return url;
-  }, [to, productId, shopName, customHref]);
+  }, [to, productId, customHref]);
 
   // 2. Handle Left Click Interception
   const handleClick = (e) => {

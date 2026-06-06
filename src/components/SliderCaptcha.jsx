@@ -13,14 +13,15 @@ export default function SliderCaptcha({ onVerify, isReset }) {
   const handleRef = useRef(null);
   const startXRef = useRef(0);
 
-  // Reset slider state
-  useEffect(() => {
+  // Track isReset to adjust state inline during render
+  const [prevIsReset, setPrevIsReset] = useState(isReset);
+  if (isReset !== prevIsReset) {
+    setPrevIsReset(isReset);
     if (isReset) {
       setSliderPosition(0);
       setIsVerified(false);
-      if (onVerify) onVerify(false);
     }
-  }, [isReset, onVerify]);
+  }
 
   // Event handlers for dragging
   const handleStart = (clientX) => {
@@ -29,7 +30,9 @@ export default function SliderCaptcha({ onVerify, isReset }) {
     startXRef.current = clientX - sliderPosition;
   };
 
-  const handleMove = (clientX) => {
+  // Stable refs for drag handlers (used inside useEffect without re-subscribing)
+  const onMoveRef = useRef(null);
+  onMoveRef.current = (clientX) => {
     if (!isDragging || isVerified || !containerRef.current || !handleRef.current) return;
 
     const containerWidth = containerRef.current.clientWidth;
@@ -49,7 +52,8 @@ export default function SliderCaptcha({ onVerify, isReset }) {
     }
   };
 
-  const handleEnd = () => {
+  const onEndRef = useRef(null);
+  onEndRef.current = () => {
     if (!isDragging) return;
     setIsDragging(false);
     
@@ -63,8 +67,8 @@ export default function SliderCaptcha({ onVerify, isReset }) {
   const onMouseDown = (e) => handleStart(e.clientX);
   
   useEffect(() => {
-    const onMouseMove = (e) => handleMove(e.clientX);
-    const onMouseUp = () => handleEnd();
+    const onMouseMove = (e) => onMoveRef.current(e.clientX);
+    const onMouseUp = () => onEndRef.current();
 
     if (isDragging) {
       window.addEventListener('mousemove', onMouseMove);
@@ -75,7 +79,7 @@ export default function SliderCaptcha({ onVerify, isReset }) {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [isDragging, isVerified, sliderPosition]);
+  }, [isDragging]);
 
   // Touch Listeners (Mobile compatibility)
   const onTouchStart = (e) => {
@@ -86,11 +90,11 @@ export default function SliderCaptcha({ onVerify, isReset }) {
 
   const onTouchMove = (e) => {
     if (e.touches && e.touches[0]) {
-      handleMove(e.touches[0].clientX);
+      onMoveRef.current(e.touches[0].clientX);
     }
   };
 
-  const onTouchEnd = () => handleEnd();
+  const onTouchEnd = () => onEndRef.current();
 
   return (
     <div className="slider-captcha-wrapper">

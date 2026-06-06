@@ -52,7 +52,7 @@ export class ErrorBoundary extends React.Component {
           }}>
             <strong>{this.state.error?.toString()}</strong>
           </div>
-          <button
+          <button type="button"
             onClick={() => window.location.reload()}
             style={{
               display: 'flex',

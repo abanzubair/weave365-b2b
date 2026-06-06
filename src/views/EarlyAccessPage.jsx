@@ -205,7 +205,7 @@ export function EarlyAccessPage({ navigate }) {
       >
         <span className="ea-toast-icon">⚠️</span>
         <span className="ea-toast-message">{toast.message}</span>
-        <button
+        <button type="button"
           className="ea-toast-close"
           onClick={() => setToast({ visible: false, message: '' })}
           aria-label="Dismiss"

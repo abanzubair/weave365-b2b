@@ -3,7 +3,7 @@
  * Purpose: Handles the bulk B2B catalog view, featuring advanced sidebar filters (category, fabric, price ranges),
  * instantaneous text search, custom responsive product grids, and quick order list compilation.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
@@ -101,6 +101,10 @@ export function Catalog({
     }
   };
 
+  // Stable ref to closeWithAnimation for use inside useEffect
+  const closeRef = useRef(closeWithAnimation);
+  closeRef.current = closeWithAnimation;
+
   // Close dropdown when clicking outside
   useEffect(() => {
     if (!openDropdown) return;
@@ -108,7 +112,7 @@ export function Catalog({
     const handleClickOutside = (event) => {
       // If the click is not inside a filter-dropdown, close it
       if (!event.target.closest('.filter-dropdown')) {
-        closeWithAnimation();
+        closeRef.current();
       }
     };
 
@@ -189,7 +193,7 @@ export function Catalog({
             align="left" 
           />
           {hasActiveFilters && (
-            <button className="reset-filters-btn mobile-only-reset" onClick={resetFilters}>
+            <button type="button" className="reset-filters-btn mobile-only-reset" onClick={resetFilters}>
               <RotateCcw size={14} /> Reset Filters
             </button>
           )}
@@ -213,7 +217,7 @@ export function Catalog({
                 placeholder="Search designs, fabrics, codes..."
               />
               {search && (
-                <button className="clear-search-btn" onClick={() => setSearch('')}>
+                <button type="button" className="clear-search-btn" onClick={() => setSearch('')}>
                   <X size={14} />
                 </button>
               )}
@@ -224,7 +228,7 @@ export function Catalog({
         <div className="catalog-filters-container">
           {/* Category Dropdown */}
           <div className={`filter-dropdown ${openDropdown === 'category' ? 'open' : ''} ${isClosing && openDropdown === 'category' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('category'); }}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('category'); }}>
               <div className="filter-label-wrap">
                 <label>Category</label>
                 <span>{category}</span>
@@ -233,7 +237,7 @@ export function Catalog({
             </button>
             <div className="filter-dropdown-menu">
               {categories.map((name) => (
-                <button
+                <button type="button"
                   key={name}
                   className={category === name ? 'active' : ''}
                   onClick={() => {
@@ -251,7 +255,7 @@ export function Catalog({
 
           {priceAccess?.canViewPrices && (
             <div className={`filter-dropdown ${openDropdown === 'price' ? 'open' : ''} ${isClosing && openDropdown === 'price' ? 'closing' : ''}`}>
-              <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
+              <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('price'); }}>
                 <div className="filter-label-wrap">
                   <label>Price Range</label>
                   <span>{priceRange}</span>
@@ -260,7 +264,7 @@ export function Catalog({
               </button>
               <div className="filter-dropdown-menu">
                 {priceRanges.map((range) => (
-                  <button
+                  <button type="button"
                     key={range}
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
@@ -278,7 +282,7 @@ export function Catalog({
 
           {/* Fabric Dropdown */}
           <div className={`filter-dropdown fabric-filter ${openDropdown === 'fabric' ? 'open' : ''} ${isClosing && openDropdown === 'fabric' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('fabric'); }}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('fabric'); }}>
               <div className="filter-label-wrap">
                 <label>Fabric</label>
                 <span>{fabric}</span>
@@ -287,7 +291,7 @@ export function Catalog({
             </button>
             <div className="filter-dropdown-menu">
               {fabrics.map((name) => (
-                <button
+                <button type="button"
                   key={name}
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
@@ -304,7 +308,7 @@ export function Catalog({
  
           {/* Weave Dropdown */}
           <div className={`filter-dropdown weave-filter ${openDropdown === 'weave' ? 'open' : ''} ${isClosing && openDropdown === 'weave' ? 'closing' : ''}`}>
-            <button className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('weave'); }}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('weave'); }}>
               <div className="filter-label-wrap">
                 <label>Weave</label>
                 <span>{weave}</span>
@@ -313,7 +317,7 @@ export function Catalog({
             </button>
             <div className="filter-dropdown-menu">
               {weaves.map((name) => (
-                <button
+                <button type="button"
                   key={name}
                   className={weave === name ? 'active' : ''}
                   onClick={() => {
@@ -329,7 +333,7 @@ export function Catalog({
           </div>
 
           {hasActiveFilters && (
-            <button className="filter-dropdown-trigger reset-filters-trigger desktop-only-reset" onClick={resetFilters}>
+            <button type="button" className="filter-dropdown-trigger reset-filters-trigger desktop-only-reset" onClick={resetFilters}>
               <div className="filter-label-wrap">
                 <label>Reset</label>
                 <span>All Filters</span>
@@ -381,7 +385,7 @@ export function Catalog({
       
       {products.length > visibleCount && (
         <div className="load-more-row">
-          <button className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
+          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
             Show more products
           </button>
         </div>

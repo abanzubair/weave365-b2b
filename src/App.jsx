@@ -8,7 +8,7 @@
  */
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
@@ -97,11 +97,12 @@ export default function App({ initialData = {} }) {
   const pathname = usePathname() || '/';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
   const [pendingRoute, setPendingRoute] = useState(null);
-  
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setPendingRoute(null);
-  }, [pathname]);
-
+  }
+  
   const route = pendingRoute || pathSegments[0] || 'home';
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
 
@@ -115,11 +116,6 @@ export default function App({ initialData = {} }) {
   const [visiblePriceRows, setVisiblePriceRows] = useState([]);
   const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
   const [error, setError] = useState(() => initialData.error || '');
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All');
-  const activeCategory = isSeoCategoryRoute ? seoCategoryRoutes[route] : category;
-  const [fabric, setFabric] = useState('All');
-  const [weave, setWeave] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [authOpen, setAuthOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState('login');
@@ -140,14 +136,7 @@ export default function App({ initialData = {} }) {
   const currencyRef = useRef(null);
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
   const [searchActive, setSearchActive] = useState(false);
-  useLayoutEffect(() => {
-    if (search && searchRef.current && route !== 'wholesale-catalogue') {
-      const rect = searchRef.current.getBoundingClientRect();
-      setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
-    } else if (!search) {
-      setSearchPos({ top: 0, left: 0, width: 0 });
-    }
-  }, [search, route]);
+
 
   const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
   const [blogs, setBlogs] = useState(() => {
@@ -167,6 +156,13 @@ export default function App({ initialData = {} }) {
     buyerProfile?.role === 'admin'
   );
   const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
+  const [prevCanViewPrices, setPrevCanViewPrices] = useState(priceAccess.canViewPrices);
+  if (priceAccess.canViewPrices !== prevCanViewPrices) {
+    setPrevCanViewPrices(priceAccess.canViewPrices);
+    if (!priceAccess.canViewPrices && priceRange !== 'All') {
+      setPriceRange('All');
+    }
+  }
   const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
   const pricedProducts = useMemo(
     () => applyVisiblePricesToProducts(products, visiblePriceMap),
@@ -344,11 +340,7 @@ export default function App({ initialData = {} }) {
     };
   }, [user]);
 
-  useEffect(() => {
-    if (!priceAccess.canViewPrices && priceRange !== 'All') {
-      setPriceRange('All');
-    }
-  }, [priceAccess.canViewPrices, priceRange]);
+
 
   useEffect(() => {
     let isActive = true;
@@ -391,20 +383,7 @@ export default function App({ initialData = {} }) {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [dropdownOpen]);
 
-  useEffect(() => {
-    if (!search) return;
 
-    function handleClickOutside(event) {
-      const isOutsideBox = searchRef.current && !searchRef.current.contains(event.target);
-      const isOutsideSuggestions = !event.target.closest('.search-suggestions');
-      if (isOutsideBox && isOutsideSuggestions) {
-        setSearch('');
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [search]);
 
   useEffect(() => {
     if (searchActive) {
@@ -457,126 +436,100 @@ export default function App({ initialData = {} }) {
     return ['All', ...Array.from(set).sort()];
   }, [pricedProducts, configOptions.weaves]);
 
-  // Sync URL query params to filter states (e.g. ?category=dupatta)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return;
+  const searchParams = useSearchParams();
 
-    const params = new URLSearchParams(window.location.search);
-
-    if (!isSeoCategoryRoute) {
-      const catParam = params.get('category');
-      if (catParam) {
-        const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
-        if (matched && matched !== category) {
-          setCategory(matched);
-        } else if (!matched && catParam.toLowerCase() === 'all' && category !== 'All') {
-          setCategory('All');
-        }
-      } else if (category !== 'All' && !params.has('category')) {
-        setCategory('All');
-      }
+  const category = useMemo(() => {
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    if (isSeoCategoryRoute) return seoCategoryRoutes[route];
+    const catParam = searchParams?.get('category');
+    if (catParam) {
+      const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+      if (matched) return matched;
     }
+    return 'All';
+  }, [route, isSeoCategoryRoute, searchParams, categories]);
 
-    const fabricParam = params.get('fabric');
+  const activeCategory = isSeoCategoryRoute ? seoCategoryRoutes[route] : category;
+
+  const fabric = useMemo(() => {
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    const fabricParam = searchParams?.get('fabric');
     if (fabricParam) {
       const matched = fabrics.find(f => f.toLowerCase() === fabricParam.toLowerCase());
-      if (matched && matched !== fabric) {
-        setFabric(matched);
-      } else if (!matched && fabricParam.toLowerCase() === 'all' && fabric !== 'All') {
-        setFabric('All');
-      }
-    } else if (fabric !== 'All' && !params.has('fabric')) {
-      setFabric('All');
+      if (matched) return matched;
     }
+    return 'All';
+  }, [route, isSeoCategoryRoute, searchParams, fabrics]);
 
-    const weaveParam = params.get('weave');
+  const weave = useMemo(() => {
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    const weaveParam = searchParams?.get('weave');
     if (weaveParam) {
       const matched = weaves.find(w => w.toLowerCase() === weaveParam.toLowerCase());
-      if (matched && matched !== weave) {
-        setWeave(matched);
-      } else if (!matched && weaveParam.toLowerCase() === 'all' && weave !== 'All') {
-        setWeave('All');
-      }
-    } else if (weave !== 'All' && !params.has('weave')) {
-      setWeave('All');
+      if (matched) return matched;
     }
+    return 'All';
+  }, [route, isSeoCategoryRoute, searchParams, weaves]);
 
-    const searchParam = params.get('search');
-    if (searchParam) {
-      if (searchParam !== search) {
-        setSearch(searchParam);
-      }
-    } else if (search && !params.has('search')) {
-      setSearch('');
-    }
-  }, [pathname, route, categories, fabrics, weaves]);
+  const search = useMemo(() => {
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return '';
+    return searchParams?.get('search') || '';
+  }, [route, isSeoCategoryRoute, searchParams]);
 
-  // Sync filter states back to URL query params
-  useEffect(() => {
+  const updateQueryParam = useCallback((name, value, defaultValue = 'All') => {
     if (typeof window === 'undefined') return;
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return;
-
     const params = new URLSearchParams(window.location.search);
-    let changed = false;
-
-    if (!isSeoCategoryRoute) {
-      if (category && category !== 'All') {
-        if (params.get('category') !== category.toLowerCase()) {
-          params.set('category', category.toLowerCase());
-          changed = true;
-        }
-      } else {
-        if (params.has('category')) {
-          params.delete('category');
-          changed = true;
-        }
-      }
-    }
-
-    if (fabric && fabric !== 'All') {
-      if (params.get('fabric') !== fabric.toLowerCase()) {
-        params.set('fabric', fabric.toLowerCase());
-        changed = true;
-      }
+    if (value && value !== defaultValue) {
+      params.set(name, name === 'search' ? value : value.toLowerCase());
     } else {
-      if (params.has('fabric')) {
-        params.delete('fabric');
-        changed = true;
+      params.delete(name);
+    }
+    const newSearch = params.toString();
+    const basePath = isSeoCategoryRoute ? `/${route}` : '/wholesale-catalogue';
+    const newUrl = basePath + (newSearch ? `?${newSearch}` : '');
+    router.replace(newUrl, { scroll: false });
+  }, [router, isSeoCategoryRoute, route]);
+
+  const setCategory = useCallback((val) => {
+    if (isSeoCategoryRoute) return;
+    updateQueryParam('category', val, 'All');
+  }, [updateQueryParam, isSeoCategoryRoute]);
+
+  const setFabric = useCallback((val) => {
+    updateQueryParam('fabric', val, 'All');
+  }, [updateQueryParam]);
+
+  const setWeave = useCallback((val) => {
+    updateQueryParam('weave', val, 'All');
+  }, [updateQueryParam]);
+
+  const setSearch = useCallback((val) => {
+    updateQueryParam('search', val, '');
+  }, [updateQueryParam]);
+
+  useLayoutEffect(() => {
+    if (search && searchRef.current && route !== 'wholesale-catalogue') {
+      const rect = searchRef.current.getBoundingClientRect();
+      setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
+    } else if (!search) {
+      setSearchPos({ top: 0, left: 0, width: 0 });
+    }
+  }, [search, route]);
+
+  useEffect(() => {
+    if (!search) return;
+
+    function handleClickOutside(event) {
+      const isOutsideBox = searchRef.current && !searchRef.current.contains(event.target);
+      const isOutsideSuggestions = !event.target.closest('.search-suggestions');
+      if (isOutsideBox && isOutsideSuggestions) {
+        setSearch('');
       }
     }
 
-    if (weave && weave !== 'All') {
-      if (params.get('weave') !== weave.toLowerCase()) {
-        params.set('weave', weave.toLowerCase());
-        changed = true;
-      }
-    } else {
-      if (params.has('weave')) {
-        params.delete('weave');
-        changed = true;
-      }
-    }
-
-    if (search && search.trim() !== '') {
-      if (params.get('search') !== search) {
-        params.set('search', search);
-        changed = true;
-      }
-    } else {
-      if (params.has('search')) {
-        params.delete('search');
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      const newSearch = params.toString();
-      const basePath = isSeoCategoryRoute ? `/${route}` : '/wholesale-catalogue';
-      const newPath = `${basePath}${newSearch ? '?' + newSearch : ''}`;
-      window.history.replaceState(null, '', newPath);
-    }
-  }, [category, fabric, weave, route, search, isSeoCategoryRoute]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [search, setSearch]);
 
   useEffect(() => {
     if (!user) {
@@ -733,13 +686,14 @@ export default function App({ initialData = {} }) {
 
   const updateQuantity = useCallback((item, quantity) => {
     setCart((currentCart) => {
-      const next = currentCart
-        .map((entry) => (
-          entry.productGroupKey === item.productGroupKey && entry.variantCode === item.variantCode
-            ? { ...entry, quantity }
-            : entry
-        ))
-        .filter((entry) => entry.quantity > 0);
+      const next = currentCart.reduce((acc, entry) => {
+        const matches = entry.productGroupKey === item.productGroupKey && entry.variantCode === item.variantCode;
+        const newQty = matches ? quantity : entry.quantity;
+        if (newQty > 0) {
+          acc.push(matches ? { ...entry, quantity: newQty } : entry);
+        }
+        return acc;
+      }, []);
       if (user) {
         void persistCart(next, user.id);
       }

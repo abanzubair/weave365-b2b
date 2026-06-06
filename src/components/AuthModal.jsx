@@ -222,12 +222,15 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   const [message, setMessage] = useState('');
   const [tempDemoUser, setTempDemoUser] = useState(null);
 
-  useEffect(() => {
+  // Track open prop to reset mode/message inline during render (no stale flash)
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setMode(initialMode);
       setMessage('');
     }
-  }, [open, initialMode]);
+  }
 
   if (!open) return null;
 
@@ -458,7 +461,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   return (
     <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className={`auth-modal ${mode}-mode`}>
-        <button className="icon-button modal-close" onClick={onClose}>
+        <button type="button" className="icon-button modal-close" onClick={onClose}>
           <X />
         </button>
         {user && mode !== 'reset-password' ? (
@@ -485,7 +488,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
             )}
             */}
             {!isSupabaseConfigured && <p className="warning">Demo mode: configure Supabase in .env or .env.local for real login.</p>}
-            <button className="secondary-button icon-label" onClick={logout}>
+            <button type="button" className="secondary-button icon-label" onClick={logout}>
               <LogOut size={18} /> Logout
             </button>
           </>
@@ -505,7 +508,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '16px', lineHeight: 1.5 }}>
                   Once verified, you will be able to log in to access direct factory pricing and live inventory.
                 </p>
-                <button
+                <button type="button"
                   className="secondary-button"
                   style={{ marginTop: '20px', width: '100%' }}
                   onClick={() => {
@@ -526,7 +529,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
                     A verification link has been simulated for <strong>{email}</strong>. In production, the user must click this link to access the platform.
                   </p>
-                  <button
+                  <button type="button"
                     className="primary-button"
                     style={{ marginTop: '16px', width: '100%', background: '#b78646' }}
                     onClick={handleSimulateVerification}
@@ -534,7 +537,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                     Simulate Clicking Verification Link
                   </button>
                 </div>
-                <button
+                <button type="button"
                   className="secondary-button"
                   style={{ marginTop: '20px', width: '100%' }}
                   onClick={() => {
@@ -548,7 +551,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
               </>
             ) : mode === 'forgot-password' ? (
               <>
-                <button
+                <button type="button"
                   className="text-button"
                   onClick={() => { setMode('login'); setMessage(''); }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '4px', fontSize: '13px', color: 'var(--muted)' }}
@@ -585,7 +588,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <div className="auth-success-card">
                     <strong>✓ Demo mode — email simulated</strong>
                     <p>Supabase is not connected. Click below to simulate clicking the reset link from your email.</p>
-                    <button
+                    <button type="button"
                       className="secondary-button"
                       style={{ marginTop: '8px' }}
                       onClick={() => { setMode('reset-password'); setMessage(''); }}
@@ -773,7 +776,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                     {mode === 'login' ? 'Login' : 'Create Account'}
                   </button>
                 </form>
-                <button className="text-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
+                <button type="button" className="text-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
                   {mode === 'login' ? 'Create a new account' : 'Already registered? Login'}
                 </button>
                 {message && <p className="form-message">{message}</p>}

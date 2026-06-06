@@ -151,7 +151,7 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
         
         <div className="alternatives-grid">
           {alternatives.map((alt) => (
-            <button
+            <button type="button"
               key={alt.slug}
               onClick={() => navigate(alt.slug)}
               className="alternative-card"
@@ -168,7 +168,7 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
         </div>
 
         <div className="view-full-catalog-row">
-          <button onClick={() => navigate('wholesale-catalogue')} className="full-catalog-link">
+          <button type="button" onClick={() => navigate('wholesale-catalogue')} className="full-catalog-link">
             <span>View Full Wholesale Catalogue</span>
             <ArrowRight size={16} />
           </button>

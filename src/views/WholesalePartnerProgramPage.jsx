@@ -26,7 +26,7 @@ export function WholesalePartnerProgramPage({ openAuth }) {
             Set your own selling price, share premium Banarasi sarees, suits, fabrics, etc. with your network, and build your own customer base with zero inventory risk or custom bulk options.
           </p>
           <div className="hero-actions">
-            <button className="gold-button" onClick={openAuth}>
+            <button type="button" className="gold-button" onClick={openAuth}>
               Register as Partner <ArrowRight size={18} />
             </button>
             <a href="#how-it-works" className="secondary-button">
@@ -46,7 +46,7 @@ export function WholesalePartnerProgramPage({ openAuth }) {
               To become a certified partner and unlock custom wholesale pricing, you must first register as a partner. This feature will be enabled only after registration and approval by our team.
             </p>
           </div>
-          <button className="notice-cta-button" onClick={openAuth}>
+          <button type="button" className="notice-cta-button" onClick={openAuth}>
             Register Now
           </button>
         </div>
@@ -181,7 +181,7 @@ export function WholesalePartnerProgramPage({ openAuth }) {
       <section className="reseller-final-cta">
         <h2>Ready to build your business?</h2>
         <p>Join our network of successful partners today.</p>
-        <button className="gold-button large" onClick={openAuth}>
+        <button type="button" className="gold-button large" onClick={openAuth}>
           Register as Partner
         </button>
       </section>

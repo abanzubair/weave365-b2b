@@ -113,7 +113,7 @@ export function CartDrawer({
       >
         <div className="drawer-head">
           <h2>Order List</h2>
-          <button className="icon-button" onClick={onClose}>
+          <button type="button" className="icon-button" onClick={onClose}>
             <X />
           </button>
         </div>
@@ -159,9 +159,9 @@ export function CartDrawer({
                     </span>
                   </div>
                   <div className="qty-row">
-                    <button onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
+                    <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item, item.quantity + 1)}>+</button>
+                    <button type="button" onClick={() => updateQuantity(item, item.quantity + 1)}>+</button>
                   </div>
                 </div>
               ))}

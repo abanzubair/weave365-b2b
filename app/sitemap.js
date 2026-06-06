@@ -201,15 +201,18 @@ export default async function sitemap() {
       'banarasi-insights',
       'business-growth',
     ]);
-    dynamicCategoryPages = Array.from(categorySet)
-      .map((cat) => slugifyCategory(cat))
-      .filter((slug) => !staticCatSlugs.has(slug))
-      .map((slug) => ({
-        url: `${siteUrl}/blog/category/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      }));
+    dynamicCategoryPages = Array.from(categorySet).reduce((acc, cat) => {
+      const slug = slugifyCategory(cat);
+      if (!staticCatSlugs.has(slug)) {
+        acc.push({
+          url: `${siteUrl}/blog/category/${slug}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+        });
+      }
+      return acc;
+    }, []);
   } catch (error) {
     console.warn('Sitemap: Failed to fetch blog posts for sitemap:', error.message || error);
   }

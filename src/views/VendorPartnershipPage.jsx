@@ -17,15 +17,15 @@ import { AppLink } from '../components/AppLink.jsx';
 
 const registrationPath = '/weaver-registration';
 
+const openRegistrationPage = () => {
+  window.location.href = registrationPath;
+};
+
 export function VendorPartnershipPage() {
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
     'Hi, I am interested in listing my products on Weave 365. I would like to discuss the vendor partnership program.'
   )}`;
   const vendorSectionImage = assetSrc(artisanImage);
-
-  const openRegistrationPage = () => {
-    window.location.href = registrationPath;
-  };
 
   return (
     <div className="vendor-page-container" style={{ paddingBottom: '60px' }}>

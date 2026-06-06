@@ -331,7 +331,8 @@ async function sendNotificationEmail(reviewData) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${resendApiKey}`
       },
-      body: JSON.stringify(emailBody)
+      body: JSON.stringify(emailBody),
+      cache: 'no-store'
     });
 
     if (!res.ok) {

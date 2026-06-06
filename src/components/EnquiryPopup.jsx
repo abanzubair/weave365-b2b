@@ -13,7 +13,7 @@ export function EnquiryPopup({ open, onClose, whatsappUrl }) {
   const popup = (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="enquiry-popup-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="icon-button modal-close" onClick={onClose} aria-label="Close popup">
+        <button type="button" className="icon-button modal-close" onClick={onClose} aria-label="Close popup">
           <X size={18} />
         </button>
         <h3>Enquiry Sent Successfully</h3>

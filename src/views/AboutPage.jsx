@@ -196,7 +196,7 @@ export function AboutPage({ navigate }) {
 
         <div className="flow-tab-container">
           <div className="flow-tabs" role="tablist">
-            <button 
+            <button type="button" 
               className={`flow-tab-btn ${sourcingMode === 'direct' ? 'active' : ''}`}
               onClick={() => setSourcingMode('direct')}
               role="tab"
@@ -204,7 +204,7 @@ export function AboutPage({ navigate }) {
             >
               <Sparkles size={16} /> Direct Sourcing Model
             </button>
-            <button 
+            <button type="button" 
               className={`flow-tab-btn traditional-tab ${sourcingMode === 'traditional' ? 'active' : ''}`}
               onClick={() => setSourcingMode('traditional')}
               role="tab"

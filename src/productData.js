@@ -30,29 +30,33 @@ export async function fetchConfigOptions() {
     transformHeader: normalizeCsvHeader,
   });
   
-  const priceRanges = parsed.data
-    .map(row => row['Price Range'] || row['PriceRange'])
-    .filter(Boolean)
-    .map(s => s.trim())
-    .slice(0, 50);
+  const priceRanges = [];
+  const categories = [];
+  const fabrics = [];
+  const weaves = [];
 
-  const categories = parsed.data
-    .map(row => row['Category'])
-    .filter(Boolean)
-    .map(s => s.trim())
-    .slice(0, 50);
-
-  const fabrics = parsed.data
-    .map(row => row['Fabric'])
-    .filter(Boolean)
-    .map(s => s.trim())
-    .slice(0, 50);
-
-  const weaves = parsed.data
-    .map(row => row['Weave'] || row['weave'])
-    .filter(Boolean)
-    .map(s => s.trim())
-    .slice(0, 50);
+  for (const row of parsed.data) {
+    const pr = row['Price Range'] || row['PriceRange'];
+    if (pr) {
+      const trimmed = pr.trim();
+      if (trimmed && priceRanges.length < 50) priceRanges.push(trimmed);
+    }
+    const cat = row['Category'];
+    if (cat) {
+      const trimmed = cat.trim();
+      if (trimmed && categories.length < 50) categories.push(trimmed);
+    }
+    const fab = row['Fabric'];
+    if (fab) {
+      const trimmed = fab.trim();
+      if (trimmed && fabrics.length < 50) fabrics.push(trimmed);
+    }
+    const wv = row['Weave'] || row['weave'];
+    if (wv) {
+      const trimmed = wv.trim();
+      if (trimmed && weaves.length < 50) weaves.push(trimmed);
+    }
+  }
 
   return { priceRanges, categories, fabrics, weaves };
 }
@@ -398,7 +402,7 @@ function parseRowMediaAndVariants(row) {
       const variantCode = pv.code || pvCodeInfo.variantCode;
       
       const isExplicitCover = isCoverVariantCode(variantCode);
-      const isDynamicCover = hasSubVariants && !variantCode.includes('-');
+      const isDynamicCover = hasSubVariants && !String(variantCode).includes('-');
       const isCoverVariant = isExplicitCover || isDynamicCover;
 
       // The -0 code is reserved for the cover image, not an orderable color.
@@ -685,49 +689,55 @@ export async function fetchHeroData() {
       transformHeader: normalizeCsvHeader,
     });
 
-    return parsed.data.map((row) => {
+    const heroes = [];
+    for (const row of parsed.data) {
       const imageName = readCsvValue(row, 'Image Name', 'Name');
       const type = normalizeHeroType(readCsvValue(row, 'Type'), imageName);
+      const image = driveImageUrl(readCsvValue(row, 'Image URL', 'Image'));
+      const video = driveVideoUrl(readCsvValue(row, 'Video URL', 'Video'));
 
-      return {
-        imageName,
-        image: driveImageUrl(readCsvValue(row, 'Image URL', 'Image')),
-        video: driveVideoUrl(readCsvValue(row, 'Video URL', 'Video')),
-        title: readCsvValue(row, 'Title', 'Heading'),
-        subtitle: readCsvValue(row, 'Subtitle', 'Subheading'),
-        buttonText: readCsvValue(row, 'Button1 Text', 'Button 1 Text', 'Button Text'),
-        buttonLink: readCsvValue(row, 'Button1 Link', 'Button 1 Link', 'Button Link'),
-        button2Text: readCsvValue(row, 'Button2 Text', 'Button 2 Text'),
-        button2Link: readCsvValue(row, 'Button2 Link', 'Button 2 Link'),
-        type,
-        headingColor: readCsvValue(row, 'Title Color', 'Heading Color'),
-        subheadingColor: readCsvValue(row, 'Subtitle Color', 'Subheading Color'),
-        button1Color: readCsvValue(row, 'Button1 Color', 'Button 1 Color', 'Button Color'),
-        button2Color: readCsvValue(row, 'Button2 Color', 'Button 2 Color'),
-        headerColor: readCsvValue(row, 'Header Color'),
-        accentColor: readCsvValue(row, 'Accent Color'),
-        rightText: readCsvValue(row, 'Right Text', 'Sidebar Text'),
-        rightTextColor: readCsvValue(row, 'Right Text Color', 'Sidebar Text Color'),
-        feature1Title: readCsvValue(row, 'Feature Text1', 'Feature 1 Title', 'Feature 1', 'Feature1'),
-        feature1Desc: readCsvValue(row, 'Feature Para1', 'Feature 1 Para', 'Feature 1 Text', 'Feature 1 Description'),
-        feature2Title: readCsvValue(row, 'Feature Text2', 'Feature 2 Title', 'Feature 2', 'Feature2'),
-        feature2Desc: readCsvValue(row, 'Feature Para2', 'Feature 2 Para', 'Feature 2 Text', 'Feature 2 Description'),
-        feature3Title: readCsvValue(row, 'Feature Text3', 'Feature 3 Title', 'Feature 3', 'Feature3'),
-        feature3Desc: readCsvValue(row, 'Feature Para3', 'Feature 3 Para', 'Feature 3 Text', 'Feature 3 Description'),
-        feature1: readCsvValue(row, 'Feature Text1', 'Feature 1', 'Feature1'),
-        feature2: readCsvValue(row, 'Feature Text2', 'Feature 2', 'Feature2'),
-        feature3: readCsvValue(row, 'Feature Text3', 'Feature 3', 'Feature3'),
-        featureSvgColor: readCsvValue(row, 'Feature SVG Color', 'Feature Icon Color'),
-        featureHeadingColor: readCsvValue(row, 'Feature Heading Color', 'Feature Title Color'),
-        featureTextColor: readCsvValue(row, 'Feature Text Color', 'Feature Description Color'),
-        imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
-        overlayColor: readCsvValue(row, 'Overlay Color'),
-        overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
-        logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
-        navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
-        scrollColor: readCsvValue(row, 'Scroll Color', 'ScrollColor', 'Scroll'),
-      };
-    }).filter(hero => hero.image || hero.video);
+      if (image || video) {
+        heroes.push({
+          imageName,
+          image,
+          video,
+          title: readCsvValue(row, 'Title', 'Heading'),
+          subtitle: readCsvValue(row, 'Subtitle', 'Subheading'),
+          buttonText: readCsvValue(row, 'Button1 Text', 'Button 1 Text', 'Button Text'),
+          buttonLink: readCsvValue(row, 'Button1 Link', 'Button 1 Link', 'Button Link'),
+          button2Text: readCsvValue(row, 'Button2 Text', 'Button 2 Text'),
+          button2Link: readCsvValue(row, 'Button2 Link', 'Button 2 Link'),
+          type,
+          headingColor: readCsvValue(row, 'Title Color', 'Heading Color'),
+          subheadingColor: readCsvValue(row, 'Subtitle Color', 'Subheading Color'),
+          button1Color: readCsvValue(row, 'Button1 Color', 'Button 1 Color', 'Button Color'),
+          button2Color: readCsvValue(row, 'Button2 Color', 'Button 2 Color'),
+          headerColor: readCsvValue(row, 'Header Color'),
+          accentColor: readCsvValue(row, 'Accent Color'),
+          rightText: readCsvValue(row, 'Right Text', 'Sidebar Text'),
+          rightTextColor: readCsvValue(row, 'Right Text Color', 'Sidebar Text Color'),
+          feature1Title: readCsvValue(row, 'Feature Text1', 'Feature 1 Title', 'Feature 1', 'Feature1'),
+          feature1Desc: readCsvValue(row, 'Feature Para1', 'Feature 1 Para', 'Feature 1 Text', 'Feature 1 Description'),
+          feature2Title: readCsvValue(row, 'Feature Text2', 'Feature 2 Title', 'Feature 2', 'Feature2'),
+          feature2Desc: readCsvValue(row, 'Feature Para2', 'Feature 2 Para', 'Feature 2 Text', 'Feature 2 Description'),
+          feature3Title: readCsvValue(row, 'Feature Text3', 'Feature 3 Title', 'Feature 3', 'Feature3'),
+          feature3Desc: readCsvValue(row, 'Feature Para3', 'Feature 3 Para', 'Feature 3 Text', 'Feature 3 Description'),
+          feature1: readCsvValue(row, 'Feature Text1', 'Feature 1', 'Feature1'),
+          feature2: readCsvValue(row, 'Feature Text2', 'Feature 2', 'Feature2'),
+          feature3: readCsvValue(row, 'Feature Text3', 'Feature 3', 'Feature3'),
+          featureSvgColor: readCsvValue(row, 'Feature SVG Color', 'Feature Icon Color'),
+          featureHeadingColor: readCsvValue(row, 'Feature Heading Color', 'Feature Title Color'),
+          featureTextColor: readCsvValue(row, 'Feature Text Color', 'Feature Description Color'),
+          imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
+          overlayColor: readCsvValue(row, 'Overlay Color'),
+          overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
+          logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
+          navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
+          scrollColor: readCsvValue(row, 'Scroll Color', 'ScrollColor', 'Scroll'),
+        });
+      }
+    }
+    return heroes;
   } catch (error) {
     console.error('Error fetching hero data:', error);
     return [];

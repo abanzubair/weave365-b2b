@@ -67,6 +67,18 @@ export function ProductDetailWrapper(props) {
   return <ProductDetail {...props} product={product} isFavorite={isFavorite} />;
 }
 
+const scrollProductRail = (rowId, direction) => {
+  const rail = document.getElementById(rowId);
+  if (!rail) return;
+
+  const card = rail.querySelector('.product-card');
+  const styles = window.getComputedStyle(rail);
+  const gap = parseFloat(styles.columnGap || styles.gap) || 0;
+  const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
+
+  rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
+};
+
 export function ProductDetail({
   product,
   products,
@@ -181,9 +193,11 @@ export function ProductDetail({
     return () => { active = false; };
   }, [product?.id]);
 
-  // Pre-fill reviewer name if user is logged in
-  useEffect(() => {
-    const userObj = user || (priceAccess?.userId ? { id: priceAccess.userId, user_metadata: { full_name: priceAccess.userFullName || '', business_name: priceAccess.businessName || '' } } : null);
+  // Pre-fill reviewer name inline during render if user/priceAccess changes
+  const userObj = user || (priceAccess?.userId ? { id: priceAccess.userId, user_metadata: { full_name: priceAccess.userFullName || '', business_name: priceAccess.businessName || '' } } : null);
+  const [prevUserObj, setPrevUserObj] = useState(userObj);
+  if (userObj !== prevUserObj) {
+    setPrevUserObj(userObj);
     if (userObj) {
       setReviewForm(prev => ({
         ...prev,
@@ -191,7 +205,7 @@ export function ProductDetail({
         business_name: userObj.user_metadata?.business_name || '',
       }));
     }
-  }, [user, priceAccess]);
+  }
 
   // Combine database reviews with local storage reviews
   const localReviews = useMemo(() => {
@@ -202,7 +216,7 @@ export function ProductDetail({
     } catch {
       return [];
     }
-  }, [product?.id, dbReviews]); // reload when dbReviews updates
+  }, [product, dbReviews]); // reload when dbReviews updates
 
   const activeReviews = useMemo(() => {
     const combined = [...localReviews, ...dbReviews];
@@ -462,24 +476,25 @@ export function ProductDetail({
         content: 'Expedited worldwide air cargo shipping. Direct customs clearances and documentation are handled by our export division, providing fast delivery timelines to our global buyers in the USA, UK, UAE, Canada, and Europe.'
       }
     ];
-  }, [product, totalColors, isSoldAsBoth, moqUnit]);
+  }, [product, totalColors, isSoldAsBoth, moqUnit, isSaree]);
 
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
 
     const seen = new Set();
-    return product.variants
-      .map((item) => ({
-        name: item.color,
-        image: item.image,
-      }))
-      .filter((item) => {
-        if (!item.name && !item.image) return false;
-        const key = `${item.name}|${item.image}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+    return product.variants.reduce((acc, item) => {
+      if (item.color || item.image) {
+        const key = `${item.color}|${item.image}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          acc.push({
+            name: item.color,
+            image: item.image,
+          });
+        }
+      }
+      return acc;
+    }, []);
   }, [product.colorOptions, product.variants]);
   const productStatusTags = useMemo(
     () => (product.statusTags || []).filter((tag) => {
@@ -860,7 +875,7 @@ export function ProductDetail({
     } finally {
       setIsDownloading(false);
     }
-  }, [product.images, product.title, priceAccess]);
+  }, [product.id, product.images, product.title, priceAccess]);
 
   const shareProductPage = useCallback(async () => {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.in/product/${product.id}`;
@@ -885,12 +900,14 @@ export function ProductDetail({
     }
   }, [product.id, product.title]);
 
-  useEffect(() => {
+  const [prevProduct, setPrevProduct] = useState(product);
+  if (product !== prevProduct) {
+    setPrevProduct(product);
     setSelectedImage(product.images[0]);
     setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
     setVariantCode(product.variants[0]?.code);
     setVariationDrawerOpen(false);
-  }, [product]);
+  }
 
   useEffect(() => {
     const mainImageElement = mainImageRef.current;
@@ -969,18 +986,6 @@ export function ProductDetail({
     }
   }, [colorOptions, product.colorOptions, product.variants]);
 
-  const scrollProductRail = (rowId, direction) => {
-    const rail = document.getElementById(rowId);
-    if (!rail) return;
-
-    const card = rail.querySelector('.product-card');
-    const styles = window.getComputedStyle(rail);
-    const gap = parseFloat(styles.columnGap || styles.gap) || 0;
-    const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
-
-    rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
-  };
-
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
     { name: 'Wholesale Catalogue', url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } },
@@ -997,7 +1002,7 @@ export function ProductDetail({
           <div className="product-media">
             <div className="vertical-thumbs" style={galleryStyle}>
               {product.images.map((image, index) => (
-                <button
+                <button type="button"
                   key={image}
                   className={selectedImage === image ? 'active' : ''}
                   onClick={() => handleImageChange(image)}
@@ -1014,7 +1019,7 @@ export function ProductDetail({
                 </button>
               ))}
               {product.video && (
-                <button
+                <button type="button"
                   className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
                   onClick={() => setSelectedImage(product.video)}
                 >
@@ -1058,7 +1063,7 @@ export function ProductDetail({
                     height={800}
                     onError={(e) => { e.target.style.opacity = '0'; }}
                   />
-                  <button className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
+                  <button type="button" className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
                     <ZoomIn size={18} />
                   </button>
                 </>
@@ -1119,7 +1124,7 @@ export function ProductDetail({
                 </div>
               </div>
             )}
-            <button className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save for later">
+            <button type="button" className="info-fav" onClick={() => toggleFavorite(product)} aria-label="Save for later">
               <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
             </button>
             <h1 className="product-title-serif">{product.title}</h1>
@@ -1182,7 +1187,7 @@ export function ProductDetail({
                     </div>
                   </div>
                 ) : (
-                  <button className="guest-price-notice" onClick={openAuth}>
+                  <button type="button" className="guest-price-notice" onClick={openAuth}>
                     <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
                   </button>
                 )}
@@ -1430,7 +1435,7 @@ export function ProductDetail({
                 const isOpen = activeAccordion === sec.id;
                 return (
                   <div key={sec.id} className={`accordion-row ${isOpen ? 'open' : ''}`}>
-                    <button
+                    <button type="button"
                       className="accordion-header"
                       onClick={() => setActiveAccordion(isOpen ? null : sec.id)}
                       aria-expanded={isOpen}
@@ -1836,7 +1841,7 @@ export function ProductDetail({
             <SectionTitle title="You May Also Like" align="left" />
           </div>
           <div className="scroll-wrapper">
-            <button
+            <button type="button"
               className="scroll-arrow left"
               onClick={() => scrollProductRail('recommendations-row', -1)}
               aria-label="Scroll left"
@@ -1860,7 +1865,7 @@ export function ProductDetail({
               ))}
             </div>
 
-            <button
+            <button type="button"
               className="scroll-arrow right"
               onClick={() => scrollProductRail('recommendations-row', 1)}
               aria-label="Scroll right"
@@ -1881,7 +1886,7 @@ export function ProductDetail({
 
       {zoomImage && (
         <div className="modal-backdrop" onClick={() => setZoomImage(null)}>
-          <button className="icon-button modal-close" onClick={() => setZoomImage(null)} style={{ background: 'white', zIndex: 10 }}>
+          <button type="button" className="icon-button modal-close" onClick={() => setZoomImage(null)} style={{ background: 'white', zIndex: 10 }}>
             <X />
           </button>
           <img

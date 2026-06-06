@@ -122,11 +122,15 @@ function rowsFromSheetValues(values: string[][]): SheetRow[] {
   const [headers = [], ...rows] = values;
   const normalizedHeaders = headers.map(normalizeHeader);
 
-  return rows
-    .map((row) => Object.fromEntries(
+  return rows.reduce<SheetRow[]>((acc, row) => {
+    const entry = Object.fromEntries(
       normalizedHeaders.map((header, index) => [header, String(row[index] || '').trim()]),
-    ))
-    .filter((row) => row.product_group_key || row.variant_code);
+    );
+    if (entry.product_group_key || entry.variant_code) {
+      acc.push(entry);
+    }
+    return acc;
+  }, []);
 }
 
 function parsePrice(value: string) {
@@ -228,10 +232,15 @@ Deno.serve(async (request) => {
 
     const priceGroup = profile.price_group as 'wholesale' | 'reseller';
     const rows = await fetchPriceRowsFromGoogleSheet();
-    const prices = rows
-      .filter(isActiveRow)
-      .map((row) => priceRowForBuyer(row, priceGroup))
-      .filter((row) => row.product_group_key && row.variant_code && (row.prices.offer || row.prices.mrp));
+    const prices = rows.reduce<ReturnType<typeof priceRowForBuyer>[]>((acc, row) => {
+      if (isActiveRow(row)) {
+        const item = priceRowForBuyer(row, priceGroup);
+        if (item.product_group_key && item.variant_code && (item.prices.offer || item.prices.mrp)) {
+          acc.push(item);
+        }
+      }
+      return acc;
+    }, []);
 
     return jsonResponse({
       prices,

@@ -35,16 +35,24 @@ export function Stat({ icon, value, label }) {
     };
   }, [value]);
 
-  const [count, setCount] = useState(target);
+  const [count, setCount] = useState(0);
+  const [prevTarget, setPrevTarget] = useState(target);
   const [isClient, setIsClient] = useState(false);
   const elementRef = useRef(null);
   const hasAnimated = useRef(false);
 
+  if (target !== prevTarget) {
+    setPrevTarget(target);
+    setCount(0);
+    hasAnimated.current = false;
+  }
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   useEffect(() => {
     if (!hasMatch) return;
-
-    setIsClient(true);
-    setCount(0); // Reset for client-side animation
 
     const observer = new IntersectionObserver(
       ([entry]) => {

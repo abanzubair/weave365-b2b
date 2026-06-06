@@ -397,18 +397,6 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     });
   };
 
-  if (!post) {
-    return (
-      <div className="blog-list-container text-center" style={{ padding: '12rem 5% 8rem' }}>
-        <h1 style={{ fontFamily: "var(--font-hero-heading)", color: "var(--blog-gold-dark)", fontSize: '3rem', marginBottom: '1.5rem' }}>Article Not Found</h1>
-        <p className="blog-list-subtitle" style={{ marginBottom: '3rem' }}>The blog post you are looking for may have been moved or renamed.</p>
-        <AppLink to="blog" className="blog-filter-btn active" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-          Return to Blog List
-        </AppLink>
-      </div>
-    );
-  }
-
   const breadcrumbItems = useMemo(() => {
     if (!post) return [];
     return [
@@ -430,6 +418,18 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.in';
     return `${origin}${post.image.startsWith('/') ? '' : '/'}${post.image}`;
   }, [post]);
+
+  if (!post) {
+    return (
+      <div className="blog-list-container text-center" style={{ padding: '12rem 5% 8rem' }}>
+        <h1 style={{ fontFamily: "var(--font-hero-heading)", color: "var(--blog-gold-dark)", fontSize: '3rem', marginBottom: '1.5rem' }}>Article Not Found</h1>
+        <p className="blog-list-subtitle" style={{ marginBottom: '3rem' }}>The blog post you are looking for may have been moved or renamed.</p>
+        <AppLink to="blog" className="blog-filter-btn active" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          Return to Blog List
+        </AppLink>
+      </div>
+    );
+  }
 
   return (
     <div className="blog-post-page">
@@ -479,7 +479,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
           <div className="blog-post-share-section">
             <span className="share-title">Share this article:</span>
             <div className="share-buttons-container">
-              <button
+              <button type="button"
                 onClick={handleUniversalShare}
                 className={`share-btn universal-share ${copied ? 'copied' : ''}`}
                 title="Share Article"
@@ -509,7 +509,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
               className="sidebar-search-input"
             />
             {searchQuery && (
-              <button className="search-clear-btn" onClick={() => setSearchQuery('')}>
+              <button type="button" className="search-clear-btn" onClick={() => setSearchQuery('')}>
                 <X size={14} />
               </button>
             )}
@@ -628,7 +628,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                 key={index}
                 className={`faq-accordion-item ${openFaqIndex === index ? 'active' : ''}`}
               >
-                <button
+                <button type="button"
                   className="faq-accordion-trigger"
                   onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                 >

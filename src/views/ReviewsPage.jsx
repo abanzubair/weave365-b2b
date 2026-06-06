@@ -284,7 +284,7 @@ export function ReviewsSection({ navigate, user }) {
           </div>
 
           <div className="reviews-cta-container">
-            <button 
+            <button type="button" 
               className={`reviews-write-btn ${showForm ? 'active' : ''}`}
               onClick={() => setShowForm(!showForm)}
             >

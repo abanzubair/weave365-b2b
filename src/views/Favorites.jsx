@@ -12,7 +12,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
       <section className="section empty-page">
         <h1>Login to see your favourite sarees</h1>
         <p>Your saved designs will stay linked to your account.</p>
-        <button className="primary-button" onClick={openAuth}>
+        <button type="button" className="primary-button" onClick={openAuth}>
           Login / Register
         </button>
       </section>
@@ -34,7 +34,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
       <div className="favorites-header">
         <SectionTitle title="Favourite Items" align="left" />
         {products.length > 0 && (
-          <button className="secondary-button add-all-btn" onClick={addAllToCart}>
+          <button type="button" className="secondary-button add-all-btn" onClick={addAllToCart}>
             Add All to Order List
           </button>
         )}

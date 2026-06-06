@@ -59,6 +59,20 @@ export async function OPTIONS() {
   });
 }
 
+const getRowVal = (row, key) => {
+  const foundKey = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
+  return foundKey ? row[foundKey].trim() : '';
+};
+
+const driveImageUrl = (link) => {
+  const val = String(link || '').trim();
+  if (!val) return '';
+  if (val.includes('images.weave365.in') || val.includes('r2.cloudflarestorage.com') || val.includes('supabase.co')) return val;
+  const idMatch = val.match(/\/d\/([^/]+)/) || val.match(/[?&]id=([^&]+)/);
+  if (!idMatch) return val;
+  return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
+};
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -142,7 +156,7 @@ export async function GET(request) {
     } else {
       // Server-side fallback to the public Google Sheet URL
       const fallbackUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
-      const res = await fetch(fallbackUrl);
+      const res = await fetch(fallbackUrl, { next: { revalidate: 60 } });
       csvText = await res.text();
     }
 
@@ -159,20 +173,6 @@ export async function GET(request) {
       skipEmptyLines: true
     });
 
-    const getRowVal = (row, key) => {
-      const foundKey = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
-      return foundKey ? row[foundKey].trim() : '';
-    };
-    
-    const driveImageUrl = (link) => {
-      const val = String(link || '').trim();
-      if (!val) return '';
-      if (val.includes('images.weave365.in') || val.includes('r2.cloudflarestorage.com') || val.includes('supabase.co')) return val;
-      const idMatch = val.match(/\/d\/([^/]+)/) || val.match(/[?&]id=([^&]+)/);
-      if (!idMatch) return val;
-      return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
-    };
-
     const products = [];
     for (const rawRow of parsed.data) {
       const code = getRowVal(rawRow, 'Code');
@@ -182,7 +182,7 @@ export async function GET(request) {
       if (!code && !fabric && !category) continue;
       
       let groupKey = code.replace(/\s+/g, '');
-      if (groupKey.includes('-')) {
+      if (String(groupKey).includes('-')) {
         groupKey = groupKey.split('-')[0];
       } else if (groupKey.length > 6) {
         groupKey = groupKey.slice(0, 6);

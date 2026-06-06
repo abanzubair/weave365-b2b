@@ -55,7 +55,7 @@ export function TopBar({ isHome = false }) {
         ))}
         
         <div className="currency-dropdown-custom" ref={dropdownRef}>
-          <button 
+          <button type="button" 
             className="currency-trigger" 
             onClick={() => setIsOpen(!isOpen)}
             aria-expanded={isOpen}
@@ -72,7 +72,7 @@ export function TopBar({ isHome = false }) {
           {isOpen && (
             <div className="currency-options-panel">
               {CURRENCIES.map(c => (
-                <button 
+                <button type="button" 
                   key={c.code}
                   className={`currency-option ${c.code === currentCurrency ? 'active' : ''}`}
                   onClick={() => {

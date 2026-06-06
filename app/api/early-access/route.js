@@ -25,6 +25,7 @@ export async function POST(request) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(submissionData),
       redirect: 'follow',
+      cache: 'no-store',
     });
 
     const text = await res.text();

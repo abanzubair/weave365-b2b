@@ -122,14 +122,14 @@ export function Account({
 
       {/* Premium Account Tabs for Responsive Mobile Screens */}
       <div className="account-tabs-bar">
-        <button 
+        <button type="button" 
           className={`account-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveTab('orders')}
         >
           <ShoppingBag size={16} />
           <span>Orders ({cartItems.length})</span>
         </button>
-        <button 
+        <button type="button" 
           className={`account-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
           onClick={() => setActiveTab('favorites')}
         >
@@ -137,7 +137,7 @@ export function Account({
           <span>Saved ({favoriteProducts.length})</span>
         </button>
         {priceAccess.resellerDashboardEnabled && (
-          <button 
+          <button type="button" 
             className={`account-tab-btn ${activeTab === 'reseller' ? 'active' : ''}`}
             onClick={() => setActiveTab('reseller')}
           >
@@ -199,7 +199,7 @@ export function Account({
             <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
               <h2 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h2>
               <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
-              <button className="primary-button" onClick={() => navigate('reseller-dashboard')}>
+              <button type="button" className="primary-button" onClick={() => navigate('reseller-dashboard')}>
                 Open Business Center
               </button>
             </div>
