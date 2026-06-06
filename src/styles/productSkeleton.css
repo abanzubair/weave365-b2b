@@ -194,4 +194,8 @@
   .product-skeleton .skeleton-action-btn {
     height: 46px !important;
   }
+
+  .product-specs-card {
+    grid-column: auto !important;
+  }
 }
