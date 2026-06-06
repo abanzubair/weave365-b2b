@@ -98,7 +98,7 @@ export function VendorPartnershipPage() {
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
           >
             <ClipboardCheck size={20} />
-            Apply as Trusted Partner
+            Apply as Weaver Partner
           </AppLink>
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="vendor-btn-whatsapp-large vendor-btn-outline-large">
             <svg viewBox="0 0 448 512" width="20" height="20" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>

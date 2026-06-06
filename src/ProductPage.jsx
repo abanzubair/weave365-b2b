@@ -1156,7 +1156,7 @@ export function ProductDetail({
                 <div className="partner-card-accent-bar" />
                 <Award size={18} className="partner-award-icon" />
                 <div className="partner-card-info">
-                  <span className="partner-label-v2">Trusted Partner</span>
+                  <span className="partner-label-v2">Weaver Partner</span>
                   <span className="partner-dot">•</span>
                   <span className="partner-name-v2">{product.partner}</span>
                 </div>

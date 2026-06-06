@@ -358,7 +358,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
       : '';
     return buildMeta(
       `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
-      `Browse the exclusive saree collection by our trusted partner ${prettyPartnerName} on Weave 365.`,
+      `Browse the exclusive saree collection by our weaver partner ${prettyPartnerName} on Weave 365.`,
       sharedSlug ? `/partner/${encodeURIComponent(sharedSlug)}` : '/partner'
     );
   }

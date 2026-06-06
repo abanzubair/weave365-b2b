@@ -173,8 +173,8 @@ const staticSeoDefaults = [
   {
     path: '/weaver-registration',
     label: 'Weaver Registration',
-    metaTitle: 'Trusted Partner Registration | Weave 365',
-    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a trusted Banarasi saree vendor.',
+    metaTitle: 'Weaver Partner Registration | Weave 365',
+    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a weaver partner.',
   },
   {
     path: '/white-label-brands',
