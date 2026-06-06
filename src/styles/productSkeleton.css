@@ -183,6 +183,7 @@
   .product-skeleton .product-media {
     display: flex !important;
     flex-direction: column !important;
+    align-items: stretch !important;
   }
 
   .product-skeleton .skeleton-title {
@@ -199,5 +200,6 @@
 
   .product-specs-card {
     grid-column: auto !important;
+    width: 100% !important;
   }
 }
