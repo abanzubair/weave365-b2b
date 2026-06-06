@@ -222,7 +222,7 @@ export const ProductCard = memo(function ProductCard({
             <div className="info-right">
               {showMoqBadge && (
                 <div className="info-item">
-                  <ShoppingBag size={15} /> MOQ 1 Set
+                  <ShoppingBag size={15} /> MOQ: 1 Set
                 </div>
               )}
               {showColorBadge && (

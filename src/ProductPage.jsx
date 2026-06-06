@@ -476,9 +476,11 @@ export function ProductDetail({
       {
         id: 'moq',
         label: 'Minimum Order Quantity',
-        content: isSoldAsBoth
-          ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.'
-          : `This product has a low minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`
+        content: priceAccess?.priceGroup === 'wholesale'
+          ? 'This product has a minimum order requirement of just 1 Set. Boutiques can order single sample packages with guaranteed quality.'
+          : (isSoldAsBoth
+            ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.'
+            : `This product has a low minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`)
       },
       {
         id: 'care',
@@ -491,7 +493,7 @@ export function ProductDetail({
         content: 'Expedited worldwide air cargo shipping. Direct customs clearances and documentation are handled by our export division, providing fast delivery timelines to our global buyers in the USA, UK, UAE, Canada, and Europe.'
       }
     ];
-  }, [product, totalColors, isSoldAsBoth, moqUnit, isSaree]);
+  }, [product, totalColors, isSoldAsBoth, moqUnit, isSaree, priceAccess]);
 
   const colorOptions = useMemo(() => {
     if (product.colorOptions?.length) return product.colorOptions;
@@ -1122,7 +1124,7 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`}</span>
+                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? 'MOQ: 1 Set' : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
               </div>
             </div>
           </div>
@@ -1183,7 +1185,9 @@ export function ProductDetail({
                           priceAccess?.priceGroup === 'reseller'
                         ) && (
                           <div className="moq-badge">
-                            {priceAccess?.priceGroup === 'reseller' ? 'Flexible MOQ' : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`)}
+                            {priceAccess?.priceGroup === 'wholesale'
+                              ? 'MOQ: 1 Set'
+                              : (priceAccess?.priceGroup === 'reseller' ? 'Flexible MOQ' : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`))}
                           </div>
                         )}
                       </div>
@@ -1194,7 +1198,7 @@ export function ProductDetail({
                           <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
                           {canViewPrice && (
                             <div className="moq-badge">
-                              {isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`}
+                              MOQ: 1 Set
                             </div>
                           )}
                         </div>
@@ -1412,7 +1416,7 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`}</span>
+                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? 'MOQ: 1 Set' : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
               </div>
             </div>
           </aside>
