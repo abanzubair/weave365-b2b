@@ -5,7 +5,7 @@
  * and direct social links, styled within a luxury, modern visual frame.
  * Embeds crawlable LocalBusiness and Organization schemas for Google Search crawling.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Mail, 
   Phone, 
@@ -36,11 +36,165 @@ function PinterestIcon({ size = 20, className = "" }) {
 }
 
 export function ContactSection({ navigate }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+  const [status, setStatus] = useState('idle'); // idle | submitting | success | error
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus('error');
+      setErrorMessage('Please fill in all required fields.');
+      return;
+    }
+
+    setStatus('submitting');
+    setErrorMessage('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setStatus('error');
+        setErrorMessage(data.error || 'Failed to send message.');
+      }
+    } catch (err) {
+      setStatus('error');
+      setErrorMessage('A network error occurred. Please try again.');
+    }
+  };
+
   return (
     <main className="contact-main">
-        <div className="contact-brand-title">Weave 365</div>
-        <h1 className="contact-h1">Get in touch</h1>
+      <h1 className="contact-h1">Get in touch</h1>
+      
+      <div className="contact-split-layout">
         
+        {/* LEFT COLUMN: CONTACT FORM */}
+        <div className="contact-form-card">
+          <h2 className="contact-section-title">Send a Message</h2>
+          <form onSubmit={handleSubmit} className="contact-form">
+            <div className="form-group-row">
+              <div className="form-group">
+                <label htmlFor="contact-name">Full Name *</label>
+                <input
+                  type="text"
+                  id="contact-name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Your Name"
+                  required
+                  disabled={status === 'submitting'}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="contact-email">Email Address *</label>
+                <input
+                  type="email"
+                  id="contact-email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="name@company.com"
+                  required
+                  disabled={status === 'submitting'}
+                />
+              </div>
+            </div>
+            
+            <div className="form-group-row">
+              <div className="form-group">
+                <label htmlFor="contact-phone">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  id="contact-phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="e.g. +91 99999 99999"
+                  disabled={status === 'submitting'}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="contact-subject">Subject</label>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="How can we help?"
+                  disabled={status === 'submitting'}
+                />
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="contact-message">Your Message *</label>
+              <textarea
+                id="contact-message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Tell us about your sourcing needs, bulk inquiry, or feedback..."
+                rows="4"
+                required
+                disabled={status === 'submitting'}
+              />
+            </div>
+
+            {status === 'success' && (
+              <div className="contact-alert alert-success">
+                Thank you! Your message has been sent successfully. We will get back to you shortly.
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="contact-alert alert-error">
+                {errorMessage || 'Something went wrong. Please try again.'}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="contact-submit-btn"
+              disabled={status === 'submitting'}
+            >
+              {status === 'submitting' ? 'Sending...' : 'Send Message'}
+              <ArrowRight size={16} />
+            </button>
+          </form>
+        </div>
+
+        {/* RIGHT COLUMN: EXISTING CHANNELS & HOURS */}
         <div className="contact-grid">
           
           {/* DIRECT CHANNELS SECTION */}
@@ -151,6 +305,7 @@ export function ContactSection({ navigate }) {
 
         </div>
 
+      </div>
     </main>
   );
 }

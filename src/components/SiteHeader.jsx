@@ -140,7 +140,7 @@ export function SiteHeader({
           className={route === 'contact' ? 'active' : ''} 
           navigate={navigate}
         >
-          CONTACT US
+          CONTACT
         </AppLink>
       </nav>
 

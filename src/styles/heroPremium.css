@@ -562,6 +562,13 @@
   }
 }
 
+/* Laptop Screens (1025px - 1799px) */
+@media (min-width: 1025px) and (max-width: 1799px) {
+  .premium-hero-title {
+    font-size: clamp(40px, 3.2vw, 52px);
+  }
+}
+
 /* ── 24-Inch Monitor & Large Desktop Optimization (≥ 1800px) ── */
 @media (min-width: 1800px) {
   .premium-hero-content {
