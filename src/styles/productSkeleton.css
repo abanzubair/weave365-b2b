@@ -183,6 +183,11 @@
 
 /* Responsive adjustments */
 @media screen and (max-width: 820px) {
+  .product-skeleton .product-media {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   .product-skeleton .skeleton-title {
     height: 32px !important;
   }
