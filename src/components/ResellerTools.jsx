@@ -60,7 +60,7 @@ export function ResellerTools({ user, buyerProfile }) {
     loadData();
   }, [user.id]);
 
-  const catalogLink = storefront?.slug ? `${origin || ''}/s/${storefront.slug}` : null;
+  const catalogLink = storefront?.custom_domain ? `https://${storefront.custom_domain.replace(/\/+$/, '')}` : null;
 
   const copyCatalogLink = () => {
     if (!catalogLink) return;
@@ -321,6 +321,7 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
     whatsapp: storefront?.whatsapp || '',
     logo_url: storefront?.logo_url || '',
     theme_color: storefront?.theme_color || 'theme-classic-luxury',
+    custom_domain: storefront?.custom_domain || '',
   });
 
 
@@ -352,10 +353,12 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
       </div>
       <div className="rt-form-row">
         <label htmlFor="rt-slug">URL Slug</label>
-        <div className="rt-slug-wrap">
-          <span className="rt-slug-prefix">{origin || ''}/s/</span>
-          <input id="rt-slug" type="text" required value={formData.slug} onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="my-store" />
-        </div>
+        <input id="rt-slug" type="text" required value={formData.slug} onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="my-store" />
+        <span className="rt-field-hint">Unique identifier for your storefront (e.g. your-name)</span>
+      </div>
+      <div className="rt-form-row">
+        <label htmlFor="rt-custom-domain">Custom Domain (Optional)</label>
+        <input id="rt-custom-domain" type="text" value={formData.custom_domain} onChange={e => update('custom_domain', e.target.value.trim().toLowerCase().replace(/https?:\/\//, ''))} placeholder="e.g. mystore.com" />
       </div>
       <div className="rt-form-row">
         <label htmlFor="rt-whatsapp">WhatsApp</label>

@@ -77,8 +77,8 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
           <button className="sc-contact-btn" style={{ background: 'transparent', color: 'var(--reseller-primary)', border: '1px solid var(--reseller-border)' }} onClick={() => navigate('account')}>
             <User size={16} /> Back to Weave 365
           </button>
-          {storefront?.slug && (
-            <a href={`/s/${storefront.slug}`} target="_blank" rel="noopener noreferrer" className="sc-contact-btn">
+          {storefront?.custom_domain && (
+            <a href={`https://${storefront.custom_domain.replace(/\/+$/, '')}`} target="_blank" rel="noopener noreferrer" className="sc-contact-btn">
                Visit Store <ExternalLink size={16} />
             </a>
           )}

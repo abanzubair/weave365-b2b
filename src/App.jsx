@@ -56,9 +56,7 @@ import { WholesalePartnerProgramPage } from './views/WholesalePartnerProgramPage
 import { VendorPartnershipPage } from './views/VendorPartnershipPage.jsx';
 import { TrustedPartnerRegistrationPage } from './views/TrustedPartnerRegistrationPage.jsx';
 import { ResellerDashboard } from './views/ResellerDashboard.jsx';
-import { SharedCatalog } from './views/SharedCatalog.jsx';
 
-import { SharedProductPage } from './views/SharedProductPage.jsx';
 import { NewArrivalsPage } from './views/NewArrivalsPage.jsx';
 import SeoLandingPage from './views/SeoLandingPage.jsx';
 import { PartnerProgramPage } from './views/PartnerProgramPage.jsx';
@@ -106,9 +104,7 @@ export default function App({ initialData = {} }) {
 
   const route = pendingRoute || pathSegments[0] || 'home';
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
-  const sharedSlug = route === 's' ? decodeURIComponent(pathSegments[1] || '') : null;
-  const isSharedProduct = route === 's' && pathSegments[2] === 'p';
-  const sharedProductId = isSharedProduct ? decodeURIComponent(pathSegments[3] || '') : null;
+
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
   const blogPostSlug = route === 'blog' && pathSegments[1] !== 'category' ? decodeURIComponent(pathSegments[1] || '') : null;
   const isSeoCategoryRoute = Object.keys(seoCategoryRoutes).includes(route);
@@ -771,10 +767,6 @@ export default function App({ initialData = {} }) {
     let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
       href = `/product/${productId}`;
-    } else if (nextRoute === 'shared-product') {
-      href = `/s/${shopName}/p/${productId}`;
-    } else if (nextRoute === 's') {
-      href = `/s/${shopName}`;
     } else if (nextRoute === 'partner') {
       href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
     } else if (nextRoute === 'blog' && productId) {
@@ -1082,12 +1074,7 @@ export default function App({ initialData = {} }) {
 
     if (route === 'weaver-registration') return <TrustedPartnerRegistrationPage />;
 
-    if (route === 's') {
-      if (isSharedProduct) {
-        return <SharedProductPage products={pricedProducts} slug={sharedSlug} productId={sharedProductId} navigate={navigate} />;
-      }
-      return <SharedCatalog products={pricedProducts} slug={sharedSlug} navigate={navigate} />;
-    }
+
 
 
     if (route === 'blog') {

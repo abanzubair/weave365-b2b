@@ -23,12 +23,15 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
     setOrigin(window.location.origin);
   }, []);
 
+  const [customDomain, setCustomDomain] = useState(null);
+
   // Load the reseller's storefront slug
   useEffect(() => {
     async function loadSlug() {
       const { data } = await resellerService.getStorefront(user.id);
       if (data?.slug) {
         setStoreSlug(data.slug);
+        if (data.custom_domain) setCustomDomain(data.custom_domain);
       } else {
         setNeedsSetup(true);
       }
@@ -47,7 +50,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
     return Math.round(Number(markupValue));
   }, [basePrice, markupType, markupValue]);
 
-  const shareLink = storeSlug ? `${origin || ''}/s/${storeSlug}` : '';
+  const shareLink = customDomain ? `https://${customDomain.replace(/\/+$/, '')}` : '';
 
   const handleAdd = async () => {
     setIsCreating(true);

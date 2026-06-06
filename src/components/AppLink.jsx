@@ -33,10 +33,6 @@ export function AppLink({
       url = '/';
     } else if (to === 'product' && productId) {
       url = `/product/${encodeURIComponent(productId)}`;
-    } else if (to === 'shared-product' && productId && shopName) {
-      url = `/s/${encodeURIComponent(shopName)}/p/${encodeURIComponent(productId)}`;
-    } else if (to === 's' && shopName) {
-      url = `/s/${encodeURIComponent(shopName)}`;
     } else if (to === 'partner' && productId) {
       // Slugify partner name
       const slug = String(productId).toLowerCase().trim().replace(/\s+/g, '-');
