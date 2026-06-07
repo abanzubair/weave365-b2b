@@ -3,6 +3,7 @@ import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
 import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
+import { DemoToggle } from '../utils/demoHelper.js';
 
 export function SiteHeader({
   route,
@@ -149,6 +150,7 @@ export function SiteHeader({
       </button>
 
       <div className="header-actions-premium">
+        <DemoToggle user={user} />
         <button 
           className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
           type="button" 

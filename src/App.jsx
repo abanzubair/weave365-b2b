@@ -35,6 +35,7 @@ import {
 } from './utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser } from './utils/profileHelpers.js';
 import { getBuyerAccess, priceNoticeForAccess } from './utils/buyerAccess.js';
+import { useDemoPriceGroup, overrideDemoPriceAccess } from './utils/demoHelper.js';
 import { applyVisiblePricesToProducts, buildVisiblePriceMap, loadVisiblePrices } from './services/priceService.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { Footer } from './components/Footer.jsx';
@@ -161,7 +162,11 @@ export default function App({ initialData = {} }) {
     (user?.email && adminEmails.includes(String(user.email).toLowerCase())) ||
     buyerProfile?.role === 'admin'
   );
-  const priceAccess = useMemo(() => getBuyerAccess(user, buyerProfile), [buyerProfile, user]);
+  const demoPriceGroup = useDemoPriceGroup(user);
+  const priceAccess = useMemo(() => {
+    const access = getBuyerAccess(user, buyerProfile);
+    return overrideDemoPriceAccess(user, buyerProfile, access);
+  }, [buyerProfile, user, demoPriceGroup]);
   const [prevCanViewPrices, setPrevCanViewPrices] = useState(priceAccess.canViewPrices);
   if (priceAccess.canViewPrices !== prevCanViewPrices) {
     setPrevCanViewPrices(priceAccess.canViewPrices);

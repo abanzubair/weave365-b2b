@@ -27,6 +27,7 @@ import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
+import { DemoToggle } from '../utils/demoHelper.js';
 
 export function MobileMenu({ 
   onClose, 
@@ -217,6 +218,7 @@ export function MobileMenu({
 
         <div className="mobile-menu-bottom-section">
           <div className="mobile-menu-divider" />
+          <DemoToggle user={user} isMobile={true} />
           
           {/* My Account Dropdown */}
           <div className={`mobile-account-dropdown ${accountOpen ? 'is-open' : ''}`}>
