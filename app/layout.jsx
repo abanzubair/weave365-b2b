@@ -1,6 +1,7 @@
 import '../src/styles.css';
 import { storeConfig } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
+import Script from 'next/script';
 import { 
   Cormorant_Garamond, 
   Manrope, 
@@ -105,6 +106,17 @@ export default function RootLayout({ children }) {
     <html lang="en" data-scroll-behavior="smooth" className={fontClasses}>
       <head>
         <SchemaMarkup />
+        {/* Google tag (gtag.js) */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-2S63N2WPVM" />
+        <Script id="google-analytics">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-2S63N2WPVM');
+          `}
+        </Script>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
