@@ -6,16 +6,16 @@
  * founder's quote block, and crawlable SEO structural data.
  */
 import React, { useState } from 'react';
-import { 
-  ChevronDown, 
-  Linkedin, 
-  ShieldCheck, 
-  Scale, 
-  Truck, 
-  Sparkles, 
-  Layers, 
-  Globe, 
-  Percent, 
+import {
+  ChevronDown,
+  Linkedin,
+  ShieldCheck,
+  Scale,
+  Truck,
+  Sparkles,
+  Layers,
+  Globe,
+  Percent,
   ArrowRight,
   TrendingUp,
   AlertCircle
@@ -122,44 +122,51 @@ export function AboutPage({ navigate }) {
   return (
     <div className="about-page-container">
       {/* Dynamic JSON-LD Structured SEO Schema */}
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
 
-      {/* 1. EDITORIAL ASYMMETRIC HERO SECTION */}
-      <header className="about-hero-overhaul">
-        <div className="hero-overhaul-grid">
-          <div className="hero-left-col">
-            <nav className="about-breadcrumbs" aria-label="Breadcrumb">
+      {/* 1. COMPREHENSIVE BRAND STORY (Replaces old Hero) */}
+      <section className="about-section typographic-story" style={{ padding: 'clamp(40px, 6vw, 64px) var(--site-padding)', backgroundColor: 'var(--paper)', borderBottom: '1px solid var(--line)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
+
+          <div className="story-text-block">
+            <nav className="about-breadcrumbs" aria-label="Breadcrumb" style={{ marginBottom: '2rem' }}>
               <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
               <span className="separator">/</span>
               <span className="current">About</span>
             </nav>
-            <h1 className="hero-headline">
-              Sourcing Varanasi’s textiles. Direct and simplified.
-            </h1>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>About Weave 365</h1>
+            <p>Weave 365 is a B2B sourcing platform based in Varanasi. It connects wholesalers, retailers, boutiques, resellers, online stores, designers and exporters, in India and abroad, directly to the weaving hubs and manufacturing networks of the city.</p>
+            <p>The idea is simple: Varanasi produces some of the finest Banarasi sarees, suits, dress materials and textiles in the world. Getting access to them, reliably and at fair wholesale prices, has always been the hard part. Weave 365 handles the coordination, across multiple weavers and fabric grades, so making it easier for buyers to source the right products.</p>
+            <p>The platform covers the full sourcing chain. That means quality inspection at the Varanasi hub, logistics packaging, India and international shipping via DTDC, Delhivery, Blue Dart, DHL and FedEx, with full tracking. Orders start at five pieces, mix-and-match allowed, which makes it practical for smaller boutiques and resellers to test new fabric grades before committing to bulk.</p>
+            <p>The catalog runs across handwoven pure silk, semi-silk, organza, georgette, art silk, blended and faux fabrics, each listing with clear details on fabric, zari, and weave type, and whether the piece is handloom or powerloom. No guesswork about what you're actually buying.</p>
+            <p>For online stores, boutique owners and resellers who want to keep their own branding, Weave 365 also runs a white-label program, custom tags, unmarked packaging, no Weave 365 branding on dispatch.</p>
           </div>
-          <div className="hero-right-col">
-            <p className="hero-description">
-              Weave 365 is a B2B sourcing platform connecting Varanasi weaving networks with retail boutiques and resellers globally. We coordinate production across multiple fabric grades, manage quality verification, and handle shipping logistics.
-            </p>
-            <div className="hero-action-link">
-              <a 
-                href="/wholesale-catalogue" 
-                onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }}
-                className="hero-primary-link"
-              >
-                Browse Catalogue <ArrowRight size={16} />
-              </a>
-            </div>
+
+          <div className="story-text-block">
+            <h2>What Makes Weave 365 Different</h2>
+            <p>Most of the wholesale saree market still runs through multiple middlemen. A buyer or boutique owner in Bengaluru, Mumbai, Kolkata, New York, London or Singapore typically buys from a city trader, who buys from a regional distributor, who bought from someone closer to the weaver. Each hand in the chain adds margin and removes information, you often don't know the actual fabric grade or weave origin until the parcel arrives.</p>
+            <p>Weave 365 pulls sourcing back to Varanasi. The team works directly across 15+ weaving hubs in the city, which means buyers get actual trade prices without paying for layers they don't need. The MOQ of five pieces keeps things accessible, you can sample three fabric grades and two weave styles in a single order, which is genuinely useful when you're building a boutique catalog.</p>
+            <p>There's also the transparency piece. Every listing on the platform specifies material honestly, pure katan silk is listed as that, art silk is listed as that. That distinction matters when your customer is paying for the real thing.</p>
           </div>
+
+          <div className="story-text-block">
+            <h2>About the Founder</h2>
+            <p>Zubair Ahmad is the founder of Weave 365, built on a background in Banarasi saree and textile development and a close understanding of how Varanasi's weaving economy actually works.</p>
+            <p>He started Weave 365 to solve a sourcing problem he saw directly: Varanasi's weavers produce extraordinary cloth, but buyers, especially those outside Varanasi, have had no clean, reliable way to reach them. The supply chain between loom and retailer has historically been long, opaque, and expensive for everyone except the people in the middle.</p>
+            <p>His work sits at an intersection that doesn't have many players: translating Banarasi textile, a craft tradition with serious technical depth, from katan silk to meenakari brocades, into the language of modern wholesale. That means catalog infrastructure, logistics, quality checks, and white-label programs, not just beautiful fabric.</p>
+            <p>He's also exploring what Banarasi weaving looks like when it moves into couture, taking the loom's vocabulary of zari, jamdani, and kimkhwab into fashion contexts beyond the traditional saree format. That part of the work is about building a couture house grounded in Banaras, not borrowing its aesthetic but actually building from inside its making tradition.</p>
+            <p style={{ marginTop: '1.5rem' }}><a href="https://www.linkedin.com/in/hellozubair/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold-dark)', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Linkedin size={16} /> Connect with Zubair on LinkedIn</a></p>
+          </div>
+
         </div>
-      </header>
+      </section>
 
       {/* 2. TRUSTED B2B METRICS GRID */}
       <section className="about-metrics-section">
@@ -196,7 +203,7 @@ export function AboutPage({ navigate }) {
 
         <div className="flow-tab-container">
           <div className="flow-tabs" role="tablist">
-            <button type="button" 
+            <button type="button"
               className={`flow-tab-btn ${sourcingMode === 'direct' ? 'active' : ''}`}
               onClick={() => setSourcingMode('direct')}
               role="tab"
@@ -204,7 +211,7 @@ export function AboutPage({ navigate }) {
             >
               <Sparkles size={16} /> Direct Sourcing Model
             </button>
-            <button type="button" 
+            <button type="button"
               className={`flow-tab-btn traditional-tab ${sourcingMode === 'traditional' ? 'active' : ''}`}
               onClick={() => setSourcingMode('traditional')}
               role="tab"
@@ -224,18 +231,18 @@ export function AboutPage({ navigate }) {
                 <p>Artisans produce sarees based on direct order commitments, ensuring standard wages.</p>
                 <span className="node-stat">Standard Rates</span>
               </div>
-              
+
               <div className="flow-connector"><ArrowRight size={20} /></div>
-              
+
               <div className="flow-node highlight-node">
                 <div className="node-icon-wrapper"><ShieldCheck size={20} /></div>
                 <h4>Weave 365 Platform</h4>
                 <p>Sourcing hub handles order collection, sorting, standard quality checks, and logistics packaging.</p>
                 <span className="node-stat">Flat Sourcing Cost</span>
               </div>
-              
+
               <div className="flow-connector"><ArrowRight size={20} /></div>
-              
+
               <div className="flow-node">
                 <div className="node-icon-wrapper"><Globe size={20} /></div>
                 <h4>Boutique / Reseller</h4>
@@ -292,23 +299,7 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 4. HERITAGE & MODERN LOGISTICS (Pure Typographic Split) */}
-      <section className="about-section about-story-split typographic-story">
-        <div className="story-split-grid">
-          <div className="story-text-block">
-            <h2>Varanasi Textile Heritage</h2>
-            <p>
-              Varanasi is home to a rich history of textile weaving, ranging from traditional handlooms to modern powerlooms. To cater to diverse retail requirements, Weave 365 sources a broad variety of collections. We coordinate with local weaving networks and manufacturing hubs to compile catalogs that cover premium handwoven silks as well as accessible art silk and blended fabrics.
-            </p>
-          </div>
-          <div className="story-text-block">
-            <h2>Sourcing and Logistics</h2>
-            <p>
-              We operate a centralized logistics and coordination hub in Varanasi to streamline wholesale procurement. Our team inspects items for consistency against order details, handles product packaging, and manages shipping logistics, coordinating domestic and international deliveries with reliable express carriers.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* 4. Section Removed (Content merged into Brand Story) */}
 
       {/* 5. B2B STANDARDS GRID */}
       <section className="about-section about-standards">
@@ -344,32 +335,7 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 6. FOUNDER PROFILE Spotlight (Typographic Centered Quote) */}
-      <section className="about-section about-founder typographic-founder">
-        <div className="founder-spotlight-centered">
-          <h2>Vision</h2>
-          <blockquote className="founder-editorial-quote">
-            "Weave 365 connects Varanasi's diverse weaving styles with boutique and retail sourcing needs."
-          </blockquote>
-          <p className="founder-bio-p">
-            Founded by Zubair Ahmad, who has a background in textile development, Weave 365 provides sourcing services, quality checks, and logistics support for global boutiques looking for a wide range of Varanasi textiles.
-          </p>
-          <div className="founder-details-footer-centered">
-            <div className="founder-credentials">
-              <span className="founder-name">Zubair Ahmad</span>
-              <span className="founder-title">Founder & Creative Director</span>
-            </div>
-            <a 
-              href="https://www.linkedin.com/in/hellozubair/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="founder-linkedin-btn"
-            >
-              <Linkedin size={14} /> Connect
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* 6. Section Removed (Founder content moved to Brand Story) */}
 
       {/* 7. FAQ Accordions */}
       <section className="about-section about-faq">
@@ -381,12 +347,12 @@ export function AboutPage({ navigate }) {
 
           <div className="faq-accordion-list-block">
             {faqs.map((faq, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`faq-accordion-card ${activeFaqIndex === index ? 'expanded' : ''}`}
               >
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="faq-question-trigger"
                   onClick={() => toggleFaq(index)}
                   aria-expanded={activeFaqIndex === index ? 'true' : 'false'}
@@ -413,16 +379,16 @@ export function AboutPage({ navigate }) {
             <h2>Sourcing from Varanasi</h2>
             <p>Register on Weave 365 to view our diverse catalogs, trade prices, and shipping logistics across all material grades.</p>
             <div className="about-cta-buttons">
-              <a 
-                href="/wholesale-catalogue" 
+              <a
+                href="/wholesale-catalogue"
                 onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }}
                 className="cta-btn-primary"
               >
                 View Catalogue
               </a>
-              <a 
-                href={whatsappLink} 
-                target="_blank" 
+              <a
+                href={whatsappLink}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="cta-btn-whatsapp"
               >
