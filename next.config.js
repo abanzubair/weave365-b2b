@@ -29,27 +29,6 @@ const nextConfig = {
   ],
   async redirects() {
     return [
-      // Redirect weave365.in to www.weave365.com
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'weave365.in' }],
-        destination: 'https://www.weave365.com/:path*',
-        permanent: true,
-      },
-      // Redirect www.weave365.in to www.weave365.com
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.weave365.in' }],
-        destination: 'https://www.weave365.com/:path*',
-        permanent: true,
-      },
-      // Redirect weave365.com to www.weave365.com
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'weave365.com' }],
-        destination: 'https://www.weave365.com/:path*',
-        permanent: true,
-      },
       {
         source: '/catalog',
         destination: '/wholesale-catalogue',
