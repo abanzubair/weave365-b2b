@@ -28,8 +28,8 @@ import { AppLink } from '../components/AppLink.jsx';
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
 const defaultHero = {
-  image: 'https://images.weave365.in/assets/banner/hero1.webp',
-  mobileImage: 'https://images.weave365.in/assets/banner/hero1m.webp',
+  image: 'https://weave365.in/assets/banner/hero1.webp',
+  mobileImage: 'https://weave365.in/assets/banner/hero1m.webp',
   title: 'Beyond\nBeauty',
   subtitle: 'Bringing You the Elements of Style',
   buttonText: 'Read More',

@@ -33,8 +33,8 @@ export async function GET(request) {
       const decodedUrl = decodeURIComponent(imageUrl);
       decodedImageUrl = decodedUrl;
       
-      if (decodedUrl.includes('images.weave365.in/')) {
-        key = decodedUrl.split('images.weave365.in/')[1];
+      if (decodedUrl.includes('weave365.in/')) {
+        key = decodedUrl.split('weave365.in/')[1];
       } else if (decodedUrl.includes('r2.cloudflarestorage.com/')) {
         // e.g. https://19495a554f7e8aee993d4f48a274a030.r2.cloudflarestorage.com/weave365images/Saree/102001/102001.jpg
         const parts = decodedUrl.split('.r2.cloudflarestorage.com/');

@@ -86,7 +86,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 
     // Handle image proxying and optimization for metadata:
     if (finalImageUrl && finalImageUrl !== defaultImage) {
-      if (finalImageUrl.includes('images.weave365.in') || finalImageUrl.includes('r2.cloudflarestorage.com')) {
+      if (finalImageUrl.includes('weave365.in') || finalImageUrl.includes('r2.cloudflarestorage.com')) {
         // 🚀 Cloudflare R2 images: serve directly through our native edge-bound API endpoint on our main domain
         // This completely bypasses Cloudflare WAF/Bot Fight Mode for WhatsApp crawler bots with zero egress cost
         finalImageUrl = `${siteUrl}/api/image?url=${encodeURIComponent(finalImageUrl)}`;

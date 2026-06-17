@@ -77,7 +77,7 @@ export async function POST(request) {
     }
 
     // Build the public custom domain CDN URL
-    const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://images.weave365.in';
+    const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://weave365.in';
     const publicUrl = `${baseUrl.replace(/\/$/, '')}/${key}`;
 
     return Response.json({
