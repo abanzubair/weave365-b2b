@@ -687,7 +687,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                       </div>
                         <div className="auth-phone-field">
                           <div className="auth-field-label-row">
-                            <span>City & Pincode *</span>
+                            <span>City, State & Pincode *</span>
                           </div>
                           <div className="auth-city-pincode-inputs">
                             <input

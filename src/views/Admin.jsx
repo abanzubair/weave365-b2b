@@ -45,6 +45,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   Clock,
+  Store,
+  UserRound,
 } from 'lucide-react';
 import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -1751,8 +1753,8 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               <MiniBarChart data={monthlyUsers.length ? monthlyUsers : [{ label: 'No data', value: 0 }]} />
               <div className="admin-growth-summary">
                 <span><LineChart size={16} /> Wholesale: {wholesaleProfiles.length}</span>
-                <span>Reseller: {resellerProfiles.length}</span>
-                <span>User: {userProfiles.length}</span>
+                <span><Store size={16} /> Reseller: {resellerProfiles.length}</span>
+                <span><UserRound size={16} /> User: {userProfiles.length}</span>
               </div>
             </article>
 

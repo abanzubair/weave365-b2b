@@ -4089,7 +4089,18 @@ button {
   margin-top: 18px;
 }
 
-.admin-growth-summary span,
+.admin-growth-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .admin-segment-list div {
   padding: 10px 12px;
   border-radius: 8px;
