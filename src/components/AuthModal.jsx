@@ -32,8 +32,9 @@ const FacebookIcon = () => (
 );
 
 const buyerSubtypes = [
-  { value: 'Wholeseller (MOQ 1: Set)', label: 'Wholeseller (MOQ 1: Set)', type: 'wholesale' },
+  { value: 'Wholesaler (MOQ: 1 Set)', label: 'Wholesaler (MOQ: 1 Set)', type: 'wholesale' },
   { value: 'Reseller (MOQ: Flexible)', label: 'Reseller (MOQ: Flexible)', type: 'reseller' },
+  { value: 'User (MOQ: 1 Pc)', label: 'User (MOQ: 1 Pc)', type: 'user' },
 ];
 
 
@@ -213,7 +214,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     whatsapp: '',
     businessName: '',
     buyerType: 'wholesale',
-    buyerSubtype: 'Wholeseller (MOQ 1: Set)',
+    buyerSubtype: 'Wholesaler (MOQ: 1 Set)',
     buyingBehavior: 'instant',
     city: '',
     pincode: '',
@@ -261,7 +262,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
       buyer_type: profile.buyerType,
-      buyer_subtype: profile.buyerSubtype || 'Wholeseller (MOQ 1: Set)',
+      buyer_subtype: profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)',
       buying_behavior: profile.buyingBehavior,
       city: profile.city.trim(),
       pincode: normalizePincodeInput(profile.pincode),
@@ -705,9 +706,9 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                         </div>
                       <div className="auth-field-grid">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type / Segment</span>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type</span>
                           <B2BSegmentDropdown
-                            value={profile.buyerSubtype || 'Wholeseller (MOQ 1: Set)'}
+                            value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
                             onChange={(opt) => {
                               setProfile(current => ({
                                 ...current,

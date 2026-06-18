@@ -52,14 +52,12 @@ import { SharpStar } from './ReviewsPage.jsx';
 import { blogPosts } from '../data/blogPosts.js';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 import { formatMoney } from '../storefrontShared.jsx';
-import { isVaranasiPincode, PRICE_GROUPS } from '../utils/buyerAccess.js';
+import { isVaranasiPincode, PRICE_GROUPS, normalizeBuyerType } from '../utils/buyerAccess.js';
 import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting, syncSheetsToSupabase } from '../productData.js';
 
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
-  { key: 'saved_customer_orders', label: 'Saved Customer Orders' },
-  { key: 'follow_ups', label: 'Follow Ups' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
 ];
@@ -617,12 +615,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [userSortField, setUserSortField] = useState('date'); // 'date' | 'name' | 'order_list' | 'favourites' | 'approval'
   const [userSortOrder, setUserSortOrder] = useState('desc'); // 'asc' | 'desc'
   const [userPageLimit, setUserPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
+  const [userTypeFilter, setUserTypeFilter] = useState('all'); // 'all' | 'wholesale' | 'reseller' | 'user'
   const [enquiryPageLimit, setEnquiryPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
   const [enquirySortField, setEnquirySortField] = useState('date'); // 'date' | 'name' | 'status' | 'items'
   const [enquirySortOrder, setEnquirySortOrder] = useState('desc'); // 'asc' | 'desc'
-  const [followUpPageLimit, setFollowUpPageLimit] = useState('10'); // '10' | '20' | '30' | 'all'
-  const [followUpSortField, setFollowUpSortField] = useState('date'); // 'date' | 'name' | 'title' | 'status'
-  const [followUpSortOrder, setFollowUpSortOrder] = useState('desc'); // 'asc' | 'desc'
+
   const [updatingWhatsapp, setUpdatingWhatsapp] = useState(null);
   const [localStatuses, setLocalStatuses] = useState({}); // { whatsapp: 'approved' | 'rejected' | 'flagged' }
 
@@ -648,7 +645,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           status: statusVal
         })
       });
-      
+
       const resData = await response.json();
       if (response.ok && resData.status === 'success') {
         setLocalStatuses(prev => ({
@@ -695,7 +692,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           drive_folder_url: driveUrl
         })
       });
-      
+
       const resData = await response.json();
       if (response.ok && resData.status === 'success') {
         // Update local state to reflect the change immediately
@@ -1461,59 +1458,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }));
   }
 
-  async function moveToFollowUp(inquiry) {
-    if (!isSupabaseConfigured || !allowed) return;
-
-    const { data: followUp, error: followUpError } = await supabase
-      .from('follow_ups')
-      .insert({
-        buyer_id: inquiry.user_id,
-        title: `Follow up: ${inquiry.buyer_name || 'Buyer'} inquiry`,
-        notes: `Inquiry ID: ${inquiry.id}\nProduct: ${inquiry.variant_code || 'Multiple'}\nMessage: ${inquiry.message || 'No message'}`,
-        status: 'open',
-      })
-      .select()
-      .single();
-
-    if (followUpError) {
-      alert(followUpError.message);
-      return;
-    }
-
-    await updateInquiryStatus(inquiry.id, 'followed_up');
-    
-    setAdminData((current) => ({
-      ...current,
-      optional: {
-        ...current.optional,
-        follow_ups: [followUp, ...(current.optional.follow_ups || [])],
-      },
-    }));
-  }
-
-  async function updateFollowUpStatus(followUpId, status) {
-    if (!isSupabaseConfigured || !allowed) return;
-
-    const { error } = await supabase
-      .from('follow_ups')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', followUpId);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setAdminData((current) => ({
-      ...current,
-      optional: {
-        ...current.optional,
-        follow_ups: current.optional.follow_ups.map((row) =>
-          row.id === followUpId ? { ...row, status } : row
-        ),
-      },
-    }));
-  }
 
   useEffect(() => {
     void loadAdminData();
@@ -1526,16 +1470,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     adminData.profiles.forEach(p => map.set(p.id, p));
     return map;
   }, [adminData.profiles]);
-  const orderRows = adminData.optional.saved_customer_orders || [];
   const enquiryRows = adminData.optional.inquiries || [];
-  const followUpRows = adminData.optional.follow_ups || [];
   const pendingProfiles = adminData.profiles.filter((profile) => profile.approval_status === 'pending');
   const resellerProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'reseller');
   const wholesaleProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'wholesale');
   const monthlyUsers = buildMonthlySeries(adminData.profiles);
 
   const sortedProfiles = useMemo(() => {
-    const profiles = adminData.profiles || [];
+    let profiles = adminData.profiles || [];
+    if (userTypeFilter !== 'all') {
+      profiles = profiles.filter((p) => normalizeBuyerType(p.buyer_type) === userTypeFilter);
+    }
     return [...profiles].sort((a, b) => {
       let valA, valB;
       if (userSortField === 'name') {
@@ -1563,7 +1508,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       if (valA > valB) return userSortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder]);
+  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter]);
 
   const sortedEnquiries = useMemo(() => {
     const enquiries = adminData.optional.inquiries || [];
@@ -1589,31 +1534,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     });
   }, [adminData.optional.inquiries, enquirySortField, enquirySortOrder]);
 
-  const sortedFollowUps = useMemo(() => {
-    const followUps = adminData.optional.follow_ups || [];
-    return [...followUps].sort((a, b) => {
-      let valA, valB;
-      if (followUpSortField === 'name') {
-        const profileA = profileMap.get(a.buyer_id);
-        const profileB = profileMap.get(b.buyer_id);
-        valA = String(profileA?.business_name || profileA?.full_name || '').toLowerCase();
-        valB = String(profileB?.business_name || profileB?.full_name || '').toLowerCase();
-      } else if (followUpSortField === 'status') {
-        valA = String(a.status || 'open').toLowerCase();
-        valB = String(b.status || 'open').toLowerCase();
-      } else if (followUpSortField === 'title') {
-        valA = String(a.title || '').toLowerCase();
-        valB = String(b.title || '').toLowerCase();
-      } else { // 'date'
-        valA = new Date(a.created_at || 0).getTime();
-        valB = new Date(b.created_at || 0).getTime();
-      }
 
-      if (valA < valB) return followUpSortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return followUpSortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [adminData.optional.follow_ups, profileMap, followUpSortField, followUpSortOrder]);
 
   const filteredReviews = useMemo(() => {
     const filtered = partnerApps.reviews.filter(rev => {
@@ -1756,14 +1677,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         >
           <Users size={18} strokeWidth={activeTab === 'pipeline' ? 2.5 : 2} /> Buyer Pipeline
         </button>
-        <button 
+        <button
           type="button"
           onClick={() => setActiveTab('blogs')}
           className={`admin-tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}
         >
           <FileText size={18} strokeWidth={activeTab === 'blogs' ? 2.5 : 2} /> Blog Manager
         </button>
-        <button 
+        <button
           type="button"
           onClick={() => setActiveTab('seo')}
           className={`admin-tab-btn ${activeTab === 'seo' ? 'active' : ''}`}
@@ -1802,9 +1723,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                 </p>
               </div>
             </div>
-            <button 
+            <button
               type="button"
-              onClick={handleManualSync} 
+              onClick={handleManualSync}
               disabled={syncStatus === 'loading'}
               className="admin-sync-btn"
             >
@@ -1818,8 +1739,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <MetricCard icon={ShoppingBag} label="Order List Rows" value={adminData.cartItems.length} hint="Selected products/colors" />
             <MetricCard icon={Heart} label="Favourites" value={adminData.favorites.length} hint="Saved buying intent" />
             <MetricCard icon={MessageSquareText} label="Enquiries" value={enquiryRows.length} hint={adminData.errors.inquiries ? 'Table not connected' : 'Supabase rows'} />
-            <MetricCard icon={PackageCheck} label="Saved Orders" value={orderRows.length} hint={adminData.errors.saved_customer_orders ? 'Table not connected' : 'Supabase rows'} />
-            <MetricCard icon={ClipboardList} label="Follow Ups" value={followUpRows.length} hint={adminData.errors.follow_ups ? 'Table not connected' : 'Supabase rows'} />
           </div>
 
           <div className="admin-dashboard-grid">
@@ -1841,7 +1760,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                 <small>Based on signup profile</small>
               </div>
               <div className="admin-segment-list">
-                <div><strong>{wholesaleProfiles.length}</strong><span>Wholeseller buyers</span></div>
+                <div><strong>{wholesaleProfiles.length}</strong><span>Wholesaler buyers</span></div>
                 <div><strong>{resellerProfiles.length}</strong><span>Reseller buyers</span></div>
                 <div><strong>{pendingProfiles.length}</strong><span>Pending approvals</span></div>
               </div>
@@ -1852,9 +1771,29 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <div className="admin-panel-head admin-panel-head-flex">
               <div>
                 <span><Users size={18} /> Users, Order Lists & Favourites</span>
-                <small>{adminData.profiles.length} registered profile rows</small>
+                <br/>
+                <small>
+                  {userTypeFilter === 'all'
+                    ? `${adminData.profiles.length} registered profile rows`
+                    : `${sortedProfiles.length} of ${adminData.profiles.length} registered profile rows`}
+                </small>
               </div>
               <div className="admin-controls-group">
+                {/* Filter by Type dropdown */}
+                <div className="admin-control-item">
+                  <span className="admin-control-label">Type:</span>
+                  <select
+                    value={userTypeFilter}
+                    onChange={(e) => setUserTypeFilter(e.target.value)}
+                    className="admin-select-input"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="wholesale">Wholesalers</option>
+                    <option value="reseller">Resellers</option>
+                    <option value="user">Users</option>
+                  </select>
+                </div>
+
                 {/* Row display limit dropdown */}
                 <div className="admin-control-item">
                   <span className="admin-control-label">Show:</span>
@@ -1902,56 +1841,67 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               <table className="admin-table">
                 <thead>
                   <tr className="admin-table-sticky-tr">
+                    <th className="admin-table-sticky-th">S.No.</th>
+                    <th className="admin-table-sticky-th">Registered</th>
                     <th className="admin-table-sticky-th">Buyer</th>
-                    <th className="admin-table-sticky-th">Type</th>
-                    <th className="admin-table-sticky-th">Price Group</th>
-                    <th className="admin-table-sticky-th">Behaviour</th>
-                    <th className="admin-table-sticky-th">Approval</th>
+                    <th className="admin-table-sticky-th">Type & Behaviour</th>
                     <th className="admin-table-sticky-th">Order List</th>
                     <th className="admin-table-sticky-th">Favourites</th>
+                    <th className="admin-table-sticky-th">Approval</th>
                     <th className="admin-table-sticky-th">Reseller Dashboard</th>
-                    <th className="admin-table-sticky-th">Contact</th>
                     <th className="admin-table-sticky-th">CRM Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedProfiles.map((profile) => {
+                  {sortedProfiles.map((profile, index) => {
                     const cartRows = userCartMap.get(profile.id) || [];
                     const favoriteRows = userFavoriteMap.get(profile.id) || [];
 
                     return (
                       <tr key={profile.id}>
                         <td>
-                          <strong>{profile.business_name || profile.full_name || 'Unnamed buyer'}</strong>
-                          <span>{profile.email}</span>
-                          <span className="admin-profile-registered-meta">
-                            Registered: {profile.created_at ? new Date(profile.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                          <strong>{index + 1}</strong>
+                        </td>
+                        <td>
+                          <span className="admin-profile-registered-meta" style={{ marginTop: 0 }}>
+                            {profile.created_at ? new Date(profile.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
                           </span>
                         </td>
                         <td>
-                          {profile.buyer_subtype ? (
-                            <span className="admin-buyer-type-container">
-                              <span className="admin-buyer-type-label">{profile.buyer_type}</span>
-                              <small className="admin-buyer-subtype-label">
-                                {profile.buyer_subtype}
-                              </small>
+                          <strong>{profile.business_name || profile.full_name || 'Unnamed buyer'}</strong>
+                          {(profile.city || profile.pincode) && (
+                            <span className="admin-capitalize" style={{ display: 'block', fontSize: '12px', color: 'var(--muted)' }}>
+                              {profile.city || 'No City'}{profile.pincode ? `, ${profile.pincode}` : ''}
+                              {isVaranasiPincode(profile.pincode) && (
+                                <span className="admin-status-hint" style={{ display: 'block', textTransform: 'uppercase', fontWeight: 700, fontSize: '11px', marginTop: '4px' }}>Approval Required</span>
+                              )}
                             </span>
-                          ) : (
-                            profile.buyer_type || 'Not set'
+                          )}
+                          <span style={{ display: 'block', fontSize: '13px' }}>{profile.email}</span>
+                          {profile.whatsapp && (
+                            <span style={{ display: 'block', fontSize: '12px', color: 'var(--primary)', fontWeight: 600 }}>
+                              {profile.whatsapp}
+                            </span>
                           )}
                         </td>
-                        <td>{PRICE_GROUPS[profile.price_group] || 'Pending'}</td>
-                        <td>{profile.buying_behavior || 'Not set'}</td>
-                        <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
+                        <td>
+                          <span className="admin-capitalize" style={{ display: 'block', fontWeight: 600 }}>
+                            {profile.buyer_type || 'Not set'}
+                          </span>
+                          <span className="admin-capitalize" style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                            {profile.buying_behavior || 'Not set'}
+                          </span>
+                        </td>
                         <td>{cartRows.length} row{cartRows.length === 1 ? '' : 's'}</td>
                         <td>{favoriteRows.length}</td>
+                        <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
                         <td>
                           <div className="admin-reseller-dash-cell">
                             <span className={`admin-status ${profile.reseller_dashboard_enabled ? 'approved' : 'pending'}`}>
                               {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
                             </span>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
                               className={`admin-btn-reseller-toggle ${profile.reseller_dashboard_enabled ? 'state-enabled' : 'state-disabled'}`}
                             >
@@ -1960,48 +1910,32 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           </div>
                         </td>
                         <td>
-                          <div className="admin-contact-info">
-                            <strong>{profile.whatsapp || 'No WhatsApp'}</strong>
-                            {profile.city && (
-                              <span className="admin-capitalize" style={{ display: 'block' }}>
-                                {profile.city} {profile.pincode ? `(PIN ${profile.pincode})` : ''}
-                              </span>
-                            )}
-                            {!profile.city && profile.pincode && (
-                              <span style={{ display: 'block' }}>PIN {profile.pincode}</span>
-                            )}
-                            {isVaranasiPincode(profile.pincode) && (
-                              <span className="admin-status-hint" style={{ display: 'block', textTransform: 'uppercase', fontWeight: 700, fontSize: '11px', marginTop: '4px' }}>Approval Required</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
                           <div className="admin-action-stack admin-action-stack-grid">
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => updateBuyerPriceAccess(profile, 'approved', 'wholesale')}
-                              className="admin-crm-btn btn-wholesale"
+                              className={`admin-crm-btn btn-wholesale ${profile.approval_status === 'approved' && profile.price_group === 'wholesale' ? 'active' : ''}`}
                             >
                               Approve Wholesale
                             </button>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => updateBuyerPriceAccess(profile, 'approved', 'reseller')}
-                              className="admin-crm-btn btn-reseller"
+                              className={`admin-crm-btn btn-reseller ${profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'active' : ''}`}
                             >
                               Approve Reseller
                             </button>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => updateBuyerPriceAccess(profile, 'pending', 'pending')}
-                              className="admin-crm-btn btn-hold"
+                              className={`admin-crm-btn btn-hold ${profile.approval_status === 'pending' ? 'active' : ''}`}
                             >
                               Hold
                             </button>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => updateBuyerPriceAccess(profile, 'suspended', 'pending')}
-                              className="admin-crm-btn btn-suspend"
+                              className={`admin-crm-btn btn-suspend ${profile.approval_status === 'suspended' ? 'active' : ''}`}
                             >
                               Suspend
                             </button>
@@ -2023,7 +1957,8 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           <article className="admin-panel">
             <div className="admin-panel-head admin-panel-head-flex">
               <div>
-                <span><MessageSquareText size={18} /> Product & Order List Inquiries</span>
+                <span><MessageSquareText size={18} />Order & Inquiries</span>
+                <br />
                 <small>{enquiryRows.length} total inquiries logged</small>
               </div>
               <div className="admin-controls-group">
@@ -2111,31 +2046,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         </span>
                       </td>
                       <td>
-                        <div className="admin-action-stack admin-action-stack-grid">
-                          {inquiry.status !== 'done' && inquiry.status !== 'followed_up' ? (
-                            <>
-                              <button 
-                                type="button" 
-                                onClick={() => updateInquiryStatus(inquiry.id, 'done')}
-                                className="admin-crm-btn btn-wholesale"
-                              >
-                                Mark Done
-                              </button>
-                              <button 
-                                type="button" 
-                                onClick={() => moveToFollowUp(inquiry)}
-                                className="admin-crm-btn btn-reseller"
-                              >
-                                Move to Follow-ups
-                              </button>
-                            </>
-                          ) : (
-                            <div className="admin-grid-placeholder-span2" /> // Placeholder to maintain visual grid integrity
+                        <div className="admin-action-stack admin-action-stack-flex">
+                          {inquiry.status !== 'done' && (
+                            <button
+                              type="button"
+                              onClick={() => updateInquiryStatus(inquiry.id, 'done')}
+                              className="admin-crm-btn btn-wholesale"
+                            >
+                              Mark Done
+                            </button>
                           )}
                           {inquiry.phone && (
-                            <a 
-                              href={`https://wa.me/${inquiry.phone.replace(/\D/g, '')}`} 
-                              target="_blank" 
+                            <a
+                              href={`https://wa.me/${inquiry.phone.replace(/\D/g, '')}`}
+                              target="_blank"
                               rel="noreferrer"
                               className="admin-crm-whatsapp-btn"
                             >
@@ -2156,174 +2080,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             </div>
           </article>
 
-          <article className="admin-panel">
-            <div className="admin-panel-head admin-panel-head-flex">
-              <div>
-                <span><ClipboardList size={18} /> CRM Follow Ups</span>
-                <small>{followUpRows.length} active follow-up tasks</small>
-              </div>
-              <div className="admin-controls-group">
-                {/* Row display limit dropdown */}
-                <div className="admin-control-item">
-                  <span className="admin-control-label">Show:</span>
-                  <select
-                    value={followUpPageLimit}
-                    onChange={(e) => setFollowUpPageLimit(e.target.value)}
-                    className="admin-select-input"
-                  >
-                    <option value="10">10 Rows</option>
-                    <option value="20">20 Rows</option>
-                    <option value="30">30 Rows</option>
-                    <option value="all">Show All</option>
-                  </select>
-                </div>
-
-                {/* Sort dropdown and order toggle */}
-                <div className="admin-control-item">
-                  <span className="admin-control-label">Sort By:</span>
-                  <select
-                    value={followUpSortField}
-                    onChange={(e) => setFollowUpSortField(e.target.value)}
-                    className="admin-select-input"
-                  >
-                    <option value="date">Date Created</option>
-                    <option value="name">Buyer Name</option>
-                    <option value="title">Task Title</option>
-                    <option value="status">Status</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setFollowUpSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                    className="admin-btn-toggle"
-                    title={followUpSortOrder === 'asc' ? 'Ascending Order' : 'Descending Order'}
-                  >
-                    {followUpSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="admin-table-wrap admin-table-wrap-scroller" style={{
-              maxHeight: followUpPageLimit === 'all' ? 'none' : `${parseInt(followUpPageLimit) * 80 + 50}px`,
-              overflowY: followUpPageLimit === 'all' ? 'visible' : 'auto'
-            }}>
-              <table className="admin-table">
-                <thead>
-                  <tr className="admin-table-sticky-tr">
-                    <th className="admin-table-sticky-th">Created</th>
-                    <th className="admin-table-sticky-th">Buyer</th>
-                    <th className="admin-table-sticky-th">Task / Notes</th>
-                    <th className="admin-table-sticky-th">Status</th>
-                    <th className="admin-table-sticky-th">CRM Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedFollowUps.map((follow) => {
-                    const profile = profileMap.get(follow.buyer_id);
-                    return (
-                      <tr key={follow.id}>
-                        <td className="admin-fs12">
-                          <span className="admin-fs12" style={{ display: 'block', color: 'var(--muted)' }}>
-                            {follow.created_at ? new Date(follow.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
-                          </span>
-                        </td>
-                        <td>
-                          <strong>{profile?.business_name || profile?.full_name || 'Unknown Buyer'}</strong>
-                          <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)' }}>{profile?.email || 'No email'}</span>
-                          {profile?.whatsapp && (
-                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--primary)', fontWeight: 600 }}>WhatsApp: {profile.whatsapp}</span>
-                          )}
-                        </td>
-                        <td>
-                          <strong>{follow.title}</strong>
-                          <p className="admin-follow-up-notes">{follow.notes}</p>
-                        </td>
-                        <td>
-                          <span className={`admin-status ${follow.status || 'open'}`}>
-                            {follow.status || 'open'}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="admin-action-stack admin-action-stack-grid" style={{ minWidth: '240px' }}>
-                            {follow.status !== 'done' ? (
-                              <button 
-                                type="button" 
-                                onClick={() => updateFollowUpStatus(follow.id, 'done')}
-                                className="admin-crm-btn btn-wholesale"
-                                style={{ gridColumn: 'span 2' }}
-                              >
-                                <Check size={12} style={{ marginRight: '4px' }} /> End Enquiry (Done)
-                              </button>
-                            ) : (
-                              <span className="admin-status approved" style={{ gridColumn: 'span 2', textAlign: 'center', display: 'block' }}>✓ Task Completed</span>
-                            )}
-                            {profile?.whatsapp && (
-                              <a 
-                                href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="admin-crm-whatsapp-btn"
-                                style={{ gridColumn: 'span 1', margin: 0, padding: '8px' }}
-                              >
-                                <Phone size={12} style={{ marginRight: '4px' }} /> WhatsApp
-                              </a>
-                            )}
-                            {profile?.whatsapp && (
-                              <a 
-                                href={`tel:${profile.whatsapp.replace(/\D/g, '')}`} 
-                                className="admin-crm-btn btn-reseller"
-                                style={{ gridColumn: 'span 1' }}
-                              >
-                                <Phone size={12} style={{ marginRight: '4px' }} /> Call Buyer
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {followUpRows.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="admin-muted" style={{ textAlign: 'center', padding: '24px' }}>No follow-ups found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <div className="admin-dashboard-grid">
-            {optionalTables.reduce((acc, table) => {
-              if (!['inquiries', 'follow_ups', 'blog_posts', 'page_seo_settings'].includes(table.key)) {
-                const rows = adminData.optional[table.key] || [];
-                const error = adminData.errors[table.key];
-
-                acc.push(
-                  <article className="admin-panel" key={table.key}>
-                    <div className="admin-panel-head">
-                      <span>{table.label}</span>
-                      <small>{error ? 'Setup required' : `${rows.length} rows`}</small>
-                    </div>
-                    {error ? (
-                      <p className="admin-muted">Create the `{table.key}` table and admin RLS policy to show this data.</p>
-                    ) : (
-                      <div className="admin-compact-list">
-                        {rows.slice(0, 6).map((row, index) => (
-                          <div key={row.id || index}>
-                            <strong>{row.title || row.status || row.customer_name || row.buyer_name || `Row ${index + 1}`}</strong>
-                            <span>
-                              {row.total ? formatMoney(Number(row.total)) : row.created_at ? monthKey(row.created_at) : 'Supabase row'}
-                            </span>
-                          </div>
-                        ))}
-                        {rows.length === 0 && <p className="admin-muted">No rows yet.</p>}
-                      </div>
-                    )}
-                  </article>
-                );
-              }
-              return acc;
-            }, [])}
-          </div>
 
           {Object.keys(adminData.errors).filter(k => k !== 'blog_posts').length > 0 && (
             <article className="admin-panel">
@@ -2645,7 +2401,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       ) : activeTab === 'blogs' ? (
         /* ==================== B2B BLOG MANAGER TAB ==================== */
         <div className="admin-blog-manager-tab">
-          
+
           {/* Supabase blog_posts Setup Checklist Alert */}
           {adminData.errors.blog_posts ? (
             <article className="admin-blog-setup-alert">
@@ -2658,13 +2414,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     Supabase Blog Table Required for Dynamic Publishing
                   </h3>
                   <p className="admin-blog-setup-desc">
-                    Your code is ready for dynamic blogging, but the <strong>`blog_posts`</strong> table doesn't exist in your Supabase database yet. 
+                    Your code is ready for dynamic blogging, but the <strong>`blog_posts`</strong> table doesn't exist in your Supabase database yet.
                     Copy and run the SQL below inside your <strong>Supabase Dashboard SQL Editor</strong> to go live.
                   </p>
-                  
+
                   <div className="admin-pos-relative">
                     <pre className="admin-blog-setup-pre">
-{`CREATE TABLE IF NOT EXISTS public.blog_posts (
+                      {`CREATE TABLE IF NOT EXISTS public.blog_posts (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   slug text UNIQUE NOT NULL,
   title text NOT NULL,
@@ -2686,7 +2442,7 @@ ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON public.blog_posts FOR SELECT USING (true);
 CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true);`}
                     </pre>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(`CREATE TABLE IF NOT EXISTS public.blog_posts (
@@ -2717,7 +2473,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       Copy SQL
                     </button>
                   </div>
-                  
+
                   <div className="admin-blog-setup-draft-notice">
                     <span className="admin-blog-setup-dot"></span>
                     <small className="admin-blog-setup-small">
@@ -2742,7 +2498,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               <span><FileText size={18} /> Current Compiled Articles</span>
               <small>{blogs.length} articles total</small>
             </div>
-            
+
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
@@ -2772,23 +2528,23 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                         <td>{post.date}</td>
                         <td>
                           <div className="admin-flex-wrap-gap8">
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => handleEditPost(post)}
                               className="admin-blog-btn-edit"
                             >
                               <Edit size={12} /> Edit
                             </button>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => handleDeleteBlog(post)}
                               className="admin-blog-btn-delete"
                             >
                               <Trash2 size={12} /> Delete
                             </button>
-                            <a 
-                              href={`/blog/${post.slug}`} 
-                              target="_blank" 
+                            <a
+                              href={`/blog/${post.slug}`}
+                              target="_blank"
                               rel="noreferrer"
                               className="admin-blog-btn-live"
                             >
@@ -2809,7 +2565,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
 
           {/* Interactive Split Editor Form & Preview */}
           <div className="admin-editor-split-layout">
-            
+
             {/* The Form Panel */}
             <article className="admin-panel admin-m0">
               <div className="admin-panel-head admin-panel-head-border">
@@ -2824,19 +2580,19 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               </div>
 
               <form onSubmit={handleSaveBlog} className="admin-editor-form">
-                
+
                 {/* Title */}
                 <div className="admin-field-container">
                   <label className="admin-field-label">Article Title *</label>
-                  <input 
-                    type="text" 
-                    value={formTitle} 
+                  <input
+                    type="text"
+                    value={formTitle}
                     onChange={(e) => {
                       setFormTitle(e.target.value);
                       if (!formMetaTitle || formMetaTitle.startsWith(formTitle)) {
                         setFormMetaTitle(`${e.target.value} | Weave 365`);
                       }
-                    }} 
+                    }}
                     placeholder="e.g. Pure Katan Silk vs. Organza: The Master Weaver's Guide"
                     required
                     className="admin-field-input"
@@ -2847,17 +2603,17 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 <div className="admin-slug-row">
                   <div className="admin-field-container-w100">
                     <label className="admin-field-label">URL Slug *</label>
-                    <input 
-                      type="text" 
-                      value={formSlug} 
-                      onChange={(e) => setFormSlug(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formSlug}
+                      onChange={(e) => setFormSlug(e.target.value)}
                       placeholder="e.g. katan-silk-vs-organza"
                       required
                       className="admin-field-input"
                     />
                   </div>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={autoSlugify}
                     className="admin-btn-slug"
                   >
@@ -2869,8 +2625,8 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 <div className="admin-grid-2col">
                   <div className="admin-field-container">
                     <label className="admin-field-label">Category *</label>
-                    <select 
-                      value={formCategory} 
+                    <select
+                      value={formCategory}
                       onChange={(e) => setFormCategory(e.target.value)}
                       className="admin-field-input"
                     >
@@ -2881,13 +2637,13 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       <option value="Custom">Custom / Add New...</option>
                     </select>
                   </div>
-                  
+
                   <div className="admin-field-container">
                     <label className="admin-field-label">Tags</label>
-                    <input 
-                      type="text" 
-                      value={formTag} 
-                      onChange={(e) => setFormTag(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formTag}
+                      onChange={(e) => setFormTag(e.target.value)}
                       placeholder="e.g. Saree Reseller, Wholesale Trends"
                       className="admin-field-input"
                     />
@@ -2898,10 +2654,10 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 {formCategory === 'Custom' && (
                   <div className="admin-field-container-animated">
                     <label className="admin-field-label">Custom Category Name *</label>
-                    <input 
-                      type="text" 
-                      value={formCustomCategory} 
-                      onChange={(e) => setFormCustomCategory(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formCustomCategory}
+                      onChange={(e) => setFormCustomCategory(e.target.value)}
                       placeholder="e.g. Saree Care Guides"
                       required
                       className="admin-field-input"
@@ -2913,29 +2669,29 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 <div className="admin-grid-3col">
                   <div className="admin-field-container">
                     <label className="admin-field-label">Author Name</label>
-                    <input 
-                      type="text" 
-                      value={formAuthor} 
-                      onChange={(e) => setFormAuthor(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formAuthor}
+                      onChange={(e) => setFormAuthor(e.target.value)}
                       className="admin-field-input"
                     />
                   </div>
                   <div className="admin-field-container">
                     <label className="admin-field-label">Read Duration</label>
-                    <input 
-                      type="text" 
-                      value={formReadTime} 
-                      onChange={(e) => setFormReadTime(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formReadTime}
+                      onChange={(e) => setFormReadTime(e.target.value)}
                       placeholder="e.g. 8 Minutes Read"
                       className="admin-field-input"
                     />
                   </div>
                   <div className="admin-field-container">
                     <label className="admin-field-label">Publication Date</label>
-                    <input 
-                      type="text" 
-                      value={formDate} 
-                      onChange={(e) => setFormDate(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formDate}
+                      onChange={(e) => setFormDate(e.target.value)}
                       placeholder="e.g. May 26, 2026"
                       className="admin-field-input"
                     />
@@ -2947,31 +2703,31 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                   <label className="admin-editor-image-title">
                     🖼️ Cover Image Selection
                   </label>
-                  
+
                   <div className="admin-editor-image-options">
                     <label className="admin-radio-label">
-                      <input 
-                        type="radio" 
-                        name="imageInputType" 
-                        checked={formImageInputType === 'file'} 
-                        onChange={() => setFormImageInputType('file')} 
+                      <input
+                        type="radio"
+                        name="imageInputType"
+                        checked={formImageInputType === 'file'}
+                        onChange={() => setFormImageInputType('file')}
                       /> Upload File (Base64 saved)
                     </label>
                     <label className="admin-radio-label">
-                      <input 
-                        type="radio" 
-                        name="imageInputType" 
-                        checked={formImageInputType === 'url'} 
-                        onChange={() => setFormImageInputType('url')} 
+                      <input
+                        type="radio"
+                        name="imageInputType"
+                        checked={formImageInputType === 'url'}
+                        onChange={() => setFormImageInputType('url')}
                       /> Paste Image URL (e.g. Cloudinary)
                     </label>
                   </div>
 
                   {formImageInputType === 'file' ? (
                     <div className="admin-field-container">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
+                      <input
+                        type="file"
+                        accept="image/*"
                         onChange={handleImageFileChange}
                         className="admin-file-input"
                       />
@@ -2980,10 +2736,10 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       </small>
                     </div>
                   ) : (
-                    <input 
-                      type="text" 
-                      value={formImageUrl} 
-                      onChange={(e) => setFormImageUrl(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formImageUrl}
+                      onChange={(e) => setFormImageUrl(e.target.value)}
                       placeholder="Paste your image URL here (e.g. res.cloudinary.com/...)"
                       className="admin-field-input-w100"
                     />
@@ -2993,9 +2749,9 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 {/* Intro Description */}
                 <div className="admin-field-container">
                   <label className="admin-field-label">Short Intro Description *</label>
-                  <textarea 
-                    value={formIntro} 
-                    onChange={(e) => setFormIntro(e.target.value)} 
+                  <textarea
+                    value={formIntro}
+                    onChange={(e) => setFormIntro(e.target.value)}
                     placeholder="Provide a 2-3 sentence executive summary that grabs search readers and highlights your core keywords."
                     required
                     rows="3"
@@ -3011,9 +2767,9 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                       Markdown Editor Active
                     </span>
                   </div>
-                  <textarea 
-                    value={formContent} 
-                    onChange={(e) => setFormContent(e.target.value)} 
+                  <textarea
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
                     placeholder={`Write your dynamic article in Markdown here. Examples:
 ## Use H2 Headers for core topics
 ### Use H3 Headers for detail segments
@@ -3033,8 +2789,8 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <div className="admin-faq-section">
                   <div className="admin-faq-header">
                     <label className="admin-faq-title">❓ B2B Schema FAQ Accordion Builder</label>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={addFaqItem}
                       className="admin-btn-add-faq"
                     >
@@ -3045,25 +2801,25 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   <div className="admin-field-container">
                     {formFaqs.map((faq, index) => (
                       <div key={index} className="admin-faq-item">
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => removeFaqItem(index)}
                           className="admin-btn-delete-faq"
                         >
                           <Trash2 size={16} />
                         </button>
-                        
+
                         <div className="admin-faq-fields">
-                          <input 
-                            type="text" 
-                            value={faq.q} 
-                            onChange={(e) => updateFaqItem(index, 'q', e.target.value)} 
+                          <input
+                            type="text"
+                            value={faq.q}
+                            onChange={(e) => updateFaqItem(index, 'q', e.target.value)}
                             placeholder="Question (e.g. What is the Minimum Order Quantity?)"
                             className="admin-faq-input"
                           />
-                          <textarea 
-                            value={faq.a} 
-                            onChange={(e) => updateFaqItem(index, 'a', e.target.value)} 
+                          <textarea
+                            value={faq.a}
+                            onChange={(e) => updateFaqItem(index, 'a', e.target.value)}
                             placeholder="Answer (e.g. Our MOQ is 12 pieces across colors...)"
                             rows="2"
                             className="admin-faq-textarea"
@@ -3083,7 +2839,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 {/* SEO Metas Section */}
                 <div className="admin-seo-meta-section">
                   <label className="admin-faq-title">🔍 Google SEO Meta Settings</label>
-                  
+
                   <div className="admin-field-container">
                     <div className="admin-flex-between">
                       <label className="admin-field-label">Meta Title Tag</label>
@@ -3091,10 +2847,10 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         {formMetaTitle.length}/60
                       </small>
                     </div>
-                    <input 
-                      type="text" 
-                      value={formMetaTitle} 
-                      onChange={(e) => setFormMetaTitle(e.target.value)} 
+                    <input
+                      type="text"
+                      value={formMetaTitle}
+                      onChange={(e) => setFormMetaTitle(e.target.value)}
                       placeholder="Title shown on search engine tabs (under 60 chars)"
                       className="admin-seo-input"
                     />
@@ -3107,9 +2863,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         {formMetaDescription.length}/155
                       </small>
                     </div>
-                    <textarea 
-                      value={formMetaDescription} 
-                      onChange={(e) => setFormMetaDescription(e.target.value)} 
+                    <textarea
+                      value={formMetaDescription}
+                      onChange={(e) => setFormMetaDescription(e.target.value)}
                       placeholder="Short snippet shown on Google search (under 155 chars)"
                       rows="3"
                       className="admin-seo-textarea"
@@ -3119,15 +2875,15 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                 {/* Save & Reset Actions */}
                 <div className="admin-form-actions">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={resetBlogForm}
                     className="admin-btn-cancel"
                   >
                     Cancel / Reset Form
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmittingBlog || (adminData.errors.blog_posts && formImageInputType === 'file' && !formImageBase64)}
                     className="admin-btn-publish"
                   >
@@ -3148,7 +2904,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
             {/* The Live Previews Panel (Right sticky column) */}
             <aside className="admin-editor-sticky-aside">
-              
+
               {/* Google Search Card Preview */}
               <article className="admin-panel admin-m0">
                 <div className="admin-panel-head">
@@ -3204,8 +2960,8 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       </div>
                       <h3 className="admin-blog-card-title">{formTitle || 'Enter Article Title...'}</h3>
                       <p className="admin-blog-card-desc">{formIntro || 'Enter article intro summary description...'}</p>
-                      
-                      <button 
+
+                      <button
                         type="button"
                         className="read-more-link admin-blog-card-read-more"
                       >
@@ -3226,7 +2982,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
       ) : (
         /* ==================== B2B PARTNER APPLICATIONS TAB ==================== */
         <div className="admin-partners-tab">
-          
+
           {/* Spinner Overlay during status change operations */}
           {updatingWhatsapp && (
             <div className="admin-spinner-overlay">
@@ -3249,9 +3005,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
               </div>
             </div>
             <div className="admin-flex-gap12">
-              <button type="button" 
-                className="secondary-button admin-btn-refresh-partners" 
-                onClick={loadPartnerApplications} 
+              <button type="button"
+                className="secondary-button admin-btn-refresh-partners"
+                onClick={loadPartnerApplications}
                 disabled={partnerApps.loading}
               >
                 <RefreshCw size={14} className={partnerApps.loading ? 'spin' : ''} />
@@ -3262,7 +3018,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
           {/* Mini-Metrics Analytics Panel */}
           <div className="admin-partners-metrics-grid">
-            
+
             {/* Step 1 Reviews Metrics Card */}
             <div className="admin-partner-metric-card">
               <div className="admin-partner-icon-orange">
@@ -3313,8 +3069,8 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <div className="admin-partner-metric-values">
                   <strong className="admin-partner-metric-value">
                     {Math.round(
-                      (partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length / 
-                      Math.max(1, partnerApps.onboardings.length)) * 100
+                      (partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length /
+                        Math.max(1, partnerApps.onboardings.length)) * 100
                     )}%
                   </strong>
                   <span className="admin-partner-status-green">
@@ -3445,11 +3201,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       const currentStatus = localStatuses[cleanWhatsapp] || rev.status || 'pending';
 
                       return (
-                        <tr 
-                          key={rev.id || idx} 
+                        <tr
+                          key={rev.id || idx}
                           style={{
-                            borderLeft: currentStatus.toLowerCase().includes('approv') 
-                              ? '3px solid #16a34a' 
+                            borderLeft: currentStatus.toLowerCase().includes('approv')
+                              ? '3px solid #16a34a'
                               : currentStatus.toLowerCase().includes('reject')
                                 ? '3px solid #dc2626'
                                 : '3px solid #ea580c'
@@ -3460,9 +3216,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           <td>
                             <div className="admin-flex-align-center-gap6">
                               <strong>{appWhatsapp}</strong>
-                              <a 
-                                href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`} 
-                                target="_blank" 
+                              <a
+                                href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`}
+                                target="_blank"
                                 rel="noreferrer"
                                 className="admin-wa-icon-link"
                                 title="Chat on WhatsApp"
@@ -3481,9 +3237,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               {[rev.image1, rev.image2, rev.image3, rev.image4].map((img, i) => {
                                 if (!img) return null;
                                 return (
-                                  <img 
+                                  <img
                                     key={i}
-                                    src={img} 
+                                    src={img}
                                     className="admin-thumbnail-img"
                                     onClick={() => setLightboxImage(img)}
                                     alt="Sample"
@@ -3498,9 +3254,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             </span>
                           </td>
                           <td>
-                            <button 
-                              type="button" 
-                              className="secondary-button admin-btn-inspect" 
+                            <button
+                              type="button"
+                              className="secondary-button admin-btn-inspect"
                               onClick={() => setSelectedReview(rev)}
                             >
                               <Eye size={12} /> Inspect Detail
@@ -3550,11 +3306,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       const matchedProfile = adminData.profiles.find(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === cleanWhatsapp);
 
                       return (
-                        <tr 
+                        <tr
                           key={onb.id || idx}
                           style={{
                             borderLeft: currentStatus.toLowerCase().includes('approv') || currentStatus.toLowerCase().includes('verify')
-                              ? '3px solid #16a34a' 
+                              ? '3px solid #16a34a'
                               : currentStatus.toLowerCase().includes('reject') || currentStatus.toLowerCase().includes('flag')
                                 ? '3px solid #dc2626'
                                 : '3px solid #ea580c'
@@ -3606,9 +3362,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             )}
                           </td>
                           <td>
-                            <button 
-                              type="button" 
-                              className="secondary-button admin-btn-inspect-onboarding" 
+                            <button
+                              type="button"
+                              className="secondary-button admin-btn-inspect-onboarding"
                               onClick={() => setSelectedOnboarding(onb)}
                             >
                               <Eye size={12} /> Inspect Detail
@@ -3640,7 +3396,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             return (
               <div className="admin-modal-overlay">
                 <div className="admin-review-modal">
-                  
+
                   {/* Modal Header */}
                   <div className="admin-modal-header">
                     <div>
@@ -3652,7 +3408,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                   {/* Modal Body */}
                   <div className="admin-modal-body">
-                    
+
                     {/* Information Grid */}
                     <div className="admin-modal-info-grid">
                       <div><strong>WhatsApp Contact</strong>: {appWhatsapp}</div>
@@ -3661,30 +3417,30 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       <div><strong>Target Price Range</strong>: {rev.price_range}</div>
                       <div><strong>Submission Date</strong>: {rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</div>
                       <div>
-                        <strong>Current Status</strong>: 
+                        <strong>Current Status</strong>:
                         <span className={`admin-status ${currentStatus.toLowerCase()} admin-ml6`}>
                           {currentStatus}
                         </span>
                         {activeAgreement && (
-                      <div className="admin-agreement-modal-box">
-                        <div className="admin-flex-align-center-gap12">
-                          <div className="admin-agreement-icon-wrap">
-                            <FileText size={20} />
+                          <div className="admin-agreement-modal-box">
+                            <div className="admin-flex-align-center-gap12">
+                              <div className="admin-agreement-icon-wrap">
+                                <FileText size={20} />
+                              </div>
+                              <div>
+                                <strong className="admin-agreement-title">Signed Merchant Agreement</strong>
+                                <small className="admin-agreement-desc">Electronic copy generated at signature timestamp</small>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="secondary-button admin-btn-view-agreement"
+                              onClick={() => handleViewAgreement(activeAgreement, appWhatsapp)}
+                            >
+                              View Signed Copy 📄
+                            </button>
                           </div>
-                          <div>
-                            <strong className="admin-agreement-title">Signed Merchant Agreement</strong>
-                            <small className="admin-agreement-desc">Electronic copy generated at signature timestamp</small>
-                          </div>
-                        </div>
-                        <button 
-                          type="button"
-                          className="secondary-button admin-btn-view-agreement"
-                          onClick={() => handleViewAgreement(activeAgreement, appWhatsapp)}
-                        >
-                          View Signed Copy 📄
-                        </button>
-                      </div>
-                    )}
+                        )}
                       </div>
                     </div>
 
@@ -3702,9 +3458,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           }
                           return (
                             <div key={i} className="admin-thumbnail-wrapper">
-                              <img 
-                                src={img} 
-                                className="admin-modal-img" 
+                              <img
+                                src={img}
+                                className="admin-modal-img"
                                 onClick={() => setLightboxImage(img)}
                                 alt="Sample"
                               />
@@ -3772,7 +3528,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             return (
               <div className="admin-modal-overlay">
                 <div className="admin-onboarding-modal">
-                  
+
                   {/* Modal Header */}
                   <div className="admin-modal-header-bg">
                     <div>
@@ -3785,10 +3541,10 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                   {/* Modal Body */}
                   <div className="admin-modal-body-split">
-                    
+
                     {/* Left Column: Business & Logistics */}
                     <div className="admin-grid-gap20-align-start">
-                      
+
                       <div>
                         <h4 className="admin-modal-section-title">Company Information</h4>
                         <div className="admin-grid-gap8-fs13">
@@ -3821,7 +3577,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                         <h4 className="admin-modal-section-title">Uploaded Verification Files</h4>
                         <div className="admin-flex-gap12">
                           {onb.id_proof_url ? (
-                            <div 
+                            <div
                               onClick={() => setLightboxImage(onb.id_proof_url)}
                               className="admin-doc-card img-hover-trigger"
                             >
@@ -3836,7 +3592,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           )}
 
                           {onb.cancelled_cheque_url ? (
-                            <div 
+                            <div
                               onClick={() => setLightboxImage(onb.cancelled_cheque_url)}
                               className="admin-doc-card img-hover-trigger"
                             >
@@ -3851,7 +3607,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           )}
 
                           {(activeAgreement || onb) && (
-                            <button 
+                            <button
                               type="button"
                               onClick={() => handleViewAgreement(activeAgreement || { vendor_signed_name: onb.full_name, signed_date: onb.created_at ? onb.created_at.split('T')[0] : new Date().toLocaleDateString('en-IN') }, appWhatsapp)}
                               className="admin-doc-card-agreement img-hover-trigger"
@@ -3868,7 +3624,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
                     {/* Right Column: Bank Details & Supabase Database Integrations */}
                     <div className="admin-grid-gap20-align-start">
-                      
+
                       {/* Bank Details copy card */}
                       <div>
                         <h4 className="admin-modal-section-title">Bank Disbursement Details</h4>
@@ -3959,7 +3715,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               Google Drive Folder Link:
                             </span>
                             <div className="admin-flex-gap8" style={{ display: 'flex', gap: '8px' }}>
-                              <input 
+                              <input
                                 type="text"
                                 className="admin-field-input"
                                 placeholder="Paste Google Drive folder URL here..."
@@ -4002,11 +3758,11 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                                 <div><strong>Active Pricing Group</strong>: <span className="admin-primary-bold">{PRICE_GROUPS[matchedProfile.price_group] || 'None'}</span></div>
                                 <div><strong>Database Account status</strong>: <span className="admin-ink-bold-capitalize">{matchedProfile.approval_status}</span></div>
                               </div>
-                              
+
                               <div className="admin-grid-2col-gap8-mt8">
-                                <button 
+                                <button
                                   type="button"
-                                  className="primary-button admin-btn-disburse-wholesale" 
+                                  className="primary-button admin-btn-disburse-wholesale"
                                   onClick={async () => {
                                     await updateBuyerPriceAccess(matchedProfile, 'approved', 'wholesale');
                                     alert('Applicant approved as a WHOLESALE merchant successfully!');
@@ -4015,9 +3771,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                                 >
                                   Unlock Wholesaler Access
                                 </button>
-                                <button 
+                                <button
                                   type="button"
-                                  className="primary-button admin-btn-disburse-reseller" 
+                                  className="primary-button admin-btn-disburse-reseller"
                                   onClick={async () => {
                                     await updateBuyerPriceAccess(matchedProfile, 'approved', 'reseller');
                                     alert('Applicant approved as a RESELLER merchant successfully!');
@@ -4034,7 +3790,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               <p className="admin-inquiry-notes-p">
                                 This vendor has submitted onboarding details, but hasn't created a login account on Weave365.in yet. Share their signup reminder link:
                               </p>
-                              <a 
+                              <a
                                 href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb[1]}, we have verified your B2B Onboarding application for Weave 365! Please sign up an account at https://www.weave365.in using this WhatsApp number (+91 ${onb[2]}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
                                 target="_blank"
                                 rel="noreferrer"
@@ -4062,13 +3818,13 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
 
           {/* ==================== LIGHTBOX IMAGE ZOOM VIEW OVERLAY ==================== */}
           {lightboxImage && (
-            <div 
+            <div
               onClick={() => setLightboxImage(null)}
               className="admin-lightbox-overlay"
             >
-              <img 
-                src={lightboxImage} 
-                className="admin-lightbox-img" 
+              <img
+                src={lightboxImage}
+                className="admin-lightbox-img"
                 alt="Detailed Zoom View"
               />
             </div>

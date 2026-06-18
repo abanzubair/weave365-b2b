@@ -8,12 +8,15 @@ export const PRICE_GROUPS = {
   wholesale: 'Wholesale Price',
   reseller: 'Reseller Price',
   guest: 'Price',
+  user: 'Price',
 };
 
 const VARANASI_PINCODE_PREFIXES = ['221'];
 
 export function normalizeBuyerType(value) {
-  return value === 'reseller' ? 'reseller' : 'wholesale';
+  if (value === 'reseller') return 'reseller';
+  if (value === 'user') return 'user';
+  return 'wholesale';
 }
 
 export function isVaranasiPincode(value) {
@@ -24,12 +27,13 @@ export function isVaranasiPincode(value) {
 export function applyAutoApprovalToBuyerProfile(profile) {
   const buyerType = normalizeBuyerType(profile?.buyer_type);
   const blockedByPincode = isVaranasiPincode(profile?.pincode);
+  const isUser = profile?.buyer_subtype === 'User (MOQ: 1 Pc)' || buyerType === 'user';
 
   return {
     ...profile,
-    buyer_type: buyerType,
+    buyer_type: isUser ? 'user' : buyerType,
     approval_status: blockedByPincode ? 'pending' : 'approved',
-    price_group: blockedByPincode ? 'pending' : buyerType,
+    price_group: blockedByPincode ? 'pending' : (isUser ? 'guest' : buyerType),
   };
 }
 
@@ -57,7 +61,10 @@ export function getBuyerAccess(user, buyerProfile) {
   }
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
-  const buyerType = normalizeBuyerType(profile.buyer_type);
+  let buyerType = normalizeBuyerType(profile.buyer_type);
+  if (profile.buyer_subtype === 'User (MOQ: 1 Pc)') {
+    buyerType = 'user';
+  }
   const approvalStatus = profile.approval_status || 'pending';
   
   // Geotargeting block check for Varanasi pincodes
@@ -73,12 +80,14 @@ export function getBuyerAccess(user, buyerProfile) {
   let priceGroup = 'guest';
   if (isApproved && !isRestricted) {
     const profilePriceGroup = profile.price_group || profile.buyer_type;
-    if (profilePriceGroup === 'reseller') {
+    if (profile.buyer_subtype === 'User (MOQ: 1 Pc)' || profilePriceGroup === 'user') {
+      priceGroup = 'guest';
+    } else if (profilePriceGroup === 'reseller') {
       priceGroup = 'reseller';
     } else if (profilePriceGroup === 'wholesale') {
       priceGroup = 'wholesale';
     } else {
-      priceGroup = buyerType;
+      priceGroup = buyerType === 'user' ? 'guest' : buyerType;
     }
   }
   

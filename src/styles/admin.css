@@ -243,6 +243,16 @@
   min-width: 220px;
 }
 
+.admin-action-stack-flex {
+  display: flex;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.admin-action-stack-flex > * {
+  flex: 1;
+}
+
 .admin-crm-btn {
   font-size: 11px;
   font-weight: 600;
@@ -297,6 +307,42 @@
 
 .admin-crm-btn.btn-suspend:hover {
   background: rgba(154, 70, 37, 0.12);
+}
+
+.admin-crm-btn.btn-wholesale.active {
+  background: #257744;
+  color: #ffffff;
+  border-color: #257744;
+}
+.admin-crm-btn.btn-wholesale.active:hover {
+  background: #1e6237;
+}
+
+.admin-crm-btn.btn-reseller.active {
+  background: var(--primary, #b78646);
+  color: #ffffff;
+  border-color: var(--primary, #b78646);
+}
+.admin-crm-btn.btn-reseller.active:hover {
+  background: #9c6f35;
+}
+
+.admin-crm-btn.btn-hold.active {
+  background: #57534e;
+  color: #ffffff;
+  border-color: #57534e;
+}
+.admin-crm-btn.btn-hold.active:hover {
+  background: #44403c;
+}
+
+.admin-crm-btn.btn-suspend.active {
+  background: #9a4625;
+  color: #ffffff;
+  border-color: #9a4625;
+}
+.admin-crm-btn.btn-suspend.active:hover {
+  background: #80371a;
 }
 
 /* CRM Action Inquiry WhatsApp Button */
