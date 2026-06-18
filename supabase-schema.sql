@@ -131,7 +131,7 @@ create table if not exists public.page_seo_settings (
 
 update public.profiles
 set buyer_type = 'wholesale'
-where buyer_type is null or buyer_type not in ('wholesale', 'reseller');
+where buyer_type is null or buyer_type not in ('wholesale', 'reseller', 'user');
 
 update public.profiles
 set approval_status = 'pending'
@@ -139,7 +139,7 @@ where approval_status is null or approval_status not in ('pending', 'approved', 
 
 update public.profiles
 set price_group = 'pending'
-where price_group is null or price_group not in ('pending', 'wholesale', 'reseller');
+where price_group is null or price_group not in ('pending', 'wholesale', 'reseller', 'guest');
 
 update public.profiles
 set role = 'customer'
@@ -175,7 +175,11 @@ set search_path = public
 as $$
 begin
   new.updated_at = now();
-  new.buyer_type = case when new.buyer_type = 'reseller' then 'reseller' else 'wholesale' end;
+  new.buyer_type = case 
+    when new.buyer_type = 'reseller' then 'reseller' 
+    when new.buyer_type = 'user' then 'user' 
+    else 'wholesale' 
+  end;
   new.role = coalesce(new.role, 'customer');
 
   if tg_op = 'INSERT' and not public.is_admin() then
@@ -186,7 +190,7 @@ begin
       new.price_group = 'pending';
     else
       new.approval_status = 'approved';
-      new.price_group = new.buyer_type;
+      new.price_group = case when new.buyer_type = 'user' then 'guest' else new.buyer_type end;
     end if;
   end if;
 

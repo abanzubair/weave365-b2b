@@ -4101,6 +4101,8 @@ button {
 
 .admin-segment-list {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .admin-segment-list div {

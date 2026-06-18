@@ -388,6 +388,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       return;
     }
 
+    const redirectUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/`
+      : 'https://www.weave365.com/';
+
     const result =
       mode === 'login'
         ? await supabase.auth.signInWithPassword({ email, password })
@@ -395,6 +399,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           email,
           password,
           options: {
+            emailRedirectTo: redirectUrl,
             data: {
               buyer_profile: buildBuyerProfile(),
             },

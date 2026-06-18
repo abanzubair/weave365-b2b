@@ -1474,6 +1474,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const pendingProfiles = adminData.profiles.filter((profile) => profile.approval_status === 'pending');
   const resellerProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'reseller');
   const wholesaleProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'wholesale');
+  const userProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'user');
   const monthlyUsers = buildMonthlySeries(adminData.profiles);
 
   const sortedProfiles = useMemo(() => {
@@ -1751,6 +1752,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               <div className="admin-growth-summary">
                 <span><LineChart size={16} /> Wholesale: {wholesaleProfiles.length}</span>
                 <span>Reseller: {resellerProfiles.length}</span>
+                <span>User: {userProfiles.length}</span>
               </div>
             </article>
 
@@ -1762,6 +1764,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               <div className="admin-segment-list">
                 <div><strong>{wholesaleProfiles.length}</strong><span>Wholesaler buyers</span></div>
                 <div><strong>{resellerProfiles.length}</strong><span>Reseller buyers</span></div>
+                <div><strong>{userProfiles.length}</strong><span>User buyers</span></div>
                 <div><strong>{pendingProfiles.length}</strong><span>Pending approvals</span></div>
               </div>
             </article>
