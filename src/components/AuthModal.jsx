@@ -5,7 +5,7 @@
  * buyer roles, buying behaviors, and fabric categories) and integrates with Supabase authentication.
  */
 import { useState, useEffect } from 'react';
-import { X, LogOut, ArrowLeft } from 'lucide-react';
+import { X, LogOut, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
@@ -39,8 +39,8 @@ const buyerSubtypes = [
 
 
 const buyingBehaviors = [
-  { value: 'instant', label: 'Ready to buy - I purchase stock immediately' },
-  { value: 'order_basis', label: 'Order basis - I order after customer confirms' },
+  { value: 'instant', label: 'Immediate' },
+  { value: 'order_basis', label: 'Order Basis' },
 ];
 
 const countryCodes = [
@@ -222,6 +222,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   });
   const [message, setMessage] = useState('');
   const [tempDemoUser, setTempDemoUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Track open prop to reset mode/message inline during render (no stale flash)
   const [prevOpen, setPrevOpen] = useState(open);
@@ -230,6 +231,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     if (open) {
       setMode(initialMode);
       setMessage('');
+      setShowPassword(false);
     }
   }
 
@@ -350,7 +352,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       const cleanName = toTitleCaseName(profile.fullName);
       const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
 
-      if (!cleanName || !profile.businessName.trim() || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || profile.interestedCategories.length === 0) {
+      const isBusinessRequired = profile.buyerType !== 'user';
+      const isBusinessValid = !isBusinessRequired || profile.businessName.trim().length > 0;
+
+      if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || profile.interestedCategories.length === 0) {
         setMessage('Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits, and at least one category is required.');
         return;
       }
@@ -611,15 +616,36 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 <form onSubmit={submit}>
                   <label>
                     New Password
-                    <input
-                      value={newPassword}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                      type="password"
-                      autoComplete="new-password"
-                      minLength="6"
-                      placeholder="Minimum 6 characters"
-                      required
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                      <input
+                        value={newPassword}
+                        onChange={(event) => setNewPassword(event.target.value)}
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        minLength="6"
+                        placeholder="Minimum 6 characters"
+                        required
+                        style={{ paddingRight: '40px', width: '100%' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--muted, #78716c)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px',
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </label>
                   <button className="primary-button" type="submit">
                     Update Password
@@ -645,12 +671,12 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                           />
                         </label>
                         <label>
-                          Business Name
+                          {profile.buyerType === 'user' ? 'Business Name (Optional)' : 'Business Name'}
                           <input
                             value={profile.businessName}
                             onChange={(event) => updateProfile('businessName', event.target.value)}
                             autoComplete="organization"
-                            required
+                            required={profile.buyerType !== 'user'}
                           />
                         </label>
                       </div>
@@ -755,14 +781,35 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   </label>
                   <label>
                     Password
-                    <input
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      type="password"
-                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                      minLength="6"
-                      required
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                      <input
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                        minLength="6"
+                        required
+                        style={{ paddingRight: '40px', width: '100%' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--muted, #78716c)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4px',
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
                   </label>
                   {mode === 'login' && (
                     <button
