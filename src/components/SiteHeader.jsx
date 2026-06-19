@@ -114,8 +114,8 @@ export function SiteHeader({
           </button>
           <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'}>
             {[
-              { name: 'Sourcing Partners', slug: 'sourcing-partners' },
               { name: 'White Label Brands', slug: 'white-label-brands' },
+              { name: 'Sourcing Partners', slug: 'sourcing-partners' },
             ].map((item) => (
               <button type="button"
                 key={item.slug}

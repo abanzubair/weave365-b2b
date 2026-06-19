@@ -266,7 +266,7 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
   };
 
   return (
-    <article className="partner-program-page">
+    <article className={`partner-program-page ${type === 'white-label-brands' ? 'theme-olive' : ''}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -288,7 +288,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
 
       <header className="partner-program-hero">
         <div className="partner-program-hero-copy">
-          <span className="partner-program-eyebrow">{page.eyebrow}</span>
           <h1>{page.h1}</h1>
           <p>{page.intro}</p>
           <div className="partner-program-actions">
@@ -335,7 +334,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
 
       <section className="partner-program-seo-copy">
         <div>
-          <span className="partner-program-eyebrow">Banarasi B2B Partner Network</span>
           <h2>{type === 'sourcing-partners' ? 'Direct Varanasi Sourcing Support for Retailers and Export Buyers' : 'Private Label Banarasi Collections for Boutiques and Resellers'}</h2>
         </div>
         <p>{page.seoIntro}</p>

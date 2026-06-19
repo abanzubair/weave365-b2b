@@ -239,7 +239,7 @@ export default function SeoLandingPage({
           <div className="seo-rotating-seal-wrap">
             <svg viewBox="0 0 100 100" className="seo-rotating-seal">
               <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="sealCirclePath" fill="none" />
-              <text fill="#c69e6a" fontSize="6.2" fontFamily="var(--font-hero-body)" letterSpacing="2.8" fontWeight="600">
+              <text fill="#c69e6a" fontSize="6.7" fontFamily="var(--font-hero-body)" letterSpacing="2.6" fontWeight="700">
                 <textPath href="#sealCirclePath" startOffset="0%">
                   AUTHENTIC WEAVES • B2B EXCLUSIVE • DIRECT VARANASI • 
                 </textPath>

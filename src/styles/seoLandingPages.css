@@ -114,8 +114,8 @@
   position: absolute;
   right: 5%;
   top: 0.5rem;
-  width: 90px;
-  height: 90px;
+  width: 110px;
+  height: 110px;
   z-index: 15;
 }
 
@@ -141,8 +141,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   background: var(--gold-dark, #805d31);
   border-radius: 50%;
   display: flex;
@@ -155,8 +155,8 @@
 
 .seo-seal-center svg {
   color: #ffffff;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Asymmetric Split Intro Narrative */
@@ -296,11 +296,6 @@
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.seo-guide-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(128, 93, 49, 0.06);
-  border-color: var(--primary-color, #c69e6a);
-}
 
 .seo-guide-card h3 {
   font-family: var(--font-hero-heading);
@@ -710,18 +705,18 @@
     margin: 0 auto 1.25rem;
     right: auto;
     top: auto;
-    width: 75px;
-    height: 75px;
+    width: 90px;
+    height: 90px;
   }
   
   .seo-seal-center {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
   
   .seo-seal-center svg {
-    width: 11px;
-    height: 11px;
+    width: 14px;
+    height: 14px;
   }
   
   .seo-landing-hero {
