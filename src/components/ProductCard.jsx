@@ -17,7 +17,6 @@ import {
   ShoppingBag,
   User,
   X,
-  Zap,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
@@ -262,17 +261,8 @@ export const ProductCard = memo(function ProductCard({
                 <button type="button" className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
                   <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
                   <div className="item-copy">
-                    <strong>Buy via WhatsApp</strong>
-                    <span>Get assistance & place your order</span>
-                  </div>
-                  <ChevronRight size={18} className="item-chevron" />
-                </button>
-
-                <button type="button" className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
-                  <div className="item-icon zap"><Zap size={20} /></div>
-                  <div className="item-copy">
-                    <strong>Order Now</strong>
-                    <span>Quick checkout via enquiry</span>
+                    <strong>Buy Now</strong>
+                    <span>Place your order on WhatsApp</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -305,7 +295,7 @@ export const ProductCard = memo(function ProductCard({
                     >
                       <div className="item-icon share"><Share2 size={20} /></div>
                       <div className="item-copy">
-                        <strong>WhatsApp Customer</strong>
+                        <strong>Share with Customer</strong>
                         <span>Share with your own markup</span>
                       </div>
                       <ChevronRight size={18} className="item-chevron" />
@@ -315,8 +305,8 @@ export const ProductCard = memo(function ProductCard({
                       <button type="button" className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
                         <div className="item-icon link"><Layers size={20} /></div>
                         <div className="item-copy">
-                          <strong>Catalog Link</strong>
-                          <span>Create white-label customer link</span>
+                          <strong>White-label Link</strong>
+                          <span>Add product to your website</span>
                         </div>
                         <ChevronRight size={18} className="item-chevron" />
                       </button>

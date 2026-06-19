@@ -180,7 +180,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
               </div>
 
               <div className="reseller-form-group">
-                <label>Your Catalog Link</label>
+                <label>Your White-label Link</label>
                 <div className="reseller-copy-row">
                   <input type="text" readOnly value={shareLink} />
                   <button type="button" onClick={copyToClipboard} className="reseller-btn-primary" style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>

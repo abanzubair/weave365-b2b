@@ -161,7 +161,7 @@ export function ResellerTools({ user, buyerProfile }) {
         shares.length === 0 ? (
           <div className="rt-empty">
             <LinkIcon size={20} />
-            <p>No products in your catalog. Use <strong>Catalog Link</strong> on any product to add it.</p>
+            <p>No products in your catalog. Use <strong>White-label Link</strong> on any product to add it.</p>
           </div>
         ) : (
           <div className="rt-shares-container">

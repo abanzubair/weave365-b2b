@@ -67,7 +67,7 @@ const getRowVal = (row, key) => {
 const driveImageUrl = (link) => {
   const val = String(link || '').trim();
   if (!val) return '';
-  if (val.includes('weave365.in') || val.includes('r2.cloudflarestorage.com') || val.includes('supabase.co')) return val;
+  if (val.includes('weave365.in') || val.includes('weave365.com') || val.includes('r2.cloudflarestorage.com') || val.includes('supabase.co')) return val;
   const idMatch = val.match(/\/d\/([^/]+)/) || val.match(/[?&]id=([^&]+)/);
   if (!idMatch) return val;
   return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;

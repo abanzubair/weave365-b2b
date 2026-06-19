@@ -129,7 +129,8 @@ export function uniqueProductShareImages(product, variant, fallbackImage) {
 }
 
 export async function fileFromImageUrl(imageUrl, filename) {
-  const response = await fetch(imageUrl);
+  const fetchUrl = imageUrl.startsWith('http') ? `/api/image?url=${encodeURIComponent(imageUrl)}` : imageUrl;
+  const response = await fetch(fetchUrl);
   if (!response.ok) throw new Error('Unable to prepare product image');
 
   const blob = await response.blob();

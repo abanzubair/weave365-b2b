@@ -593,9 +593,6 @@ export function Home({
                       <span className="price-locked-text">{priceNoticeForAccess(priceAccess)}</span>
                     )}
                   </div>
-                  <AppLink to="product" productId={product.id} className="deal-order-button" navigate={navigate} style={{ textDecoration: 'none' }}>
-                    <ShoppingBag size={16} /> Order Now
-                  </AppLink>
                 </div>
               </article>
             ))}
