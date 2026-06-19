@@ -371,7 +371,7 @@ export function CartDrawer({
                         </div>
                         <div className="qty-row">
                           <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
-                          <span>{item.quantity}</span>
+                          <span>{item.selectedColorName === 'Select Color' ? 0 : item.quantity}</span>
                           <button 
                             type="button" 
                             onClick={() => updateQuantity(item, item.quantity + 1)}
