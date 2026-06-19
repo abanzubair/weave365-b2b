@@ -4,12 +4,12 @@ export default function SchemaMarkup() {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.weave365.in/#organization",
+        "@id": "https://www.weave365.com/#organization",
         name: "Weave 365",
-        url: "https://www.weave365.in",
+        url: "https://www.weave365.com",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.weave365.in/logo.webp",
+          url: "https://www.weave365.com/logo.webp",
           width: 800,
           height: 800,
         },
@@ -45,29 +45,29 @@ export default function SchemaMarkup() {
       },
       {
         "@type": "WebSite",
-        "@id": "https://www.weave365.in/#website",
-        url: "https://www.weave365.in",
+        "@id": "https://www.weave365.com/#website",
+        url: "https://www.weave365.com",
         name: "Weave 365",
         alternateName: ["Weave365", "Weave 365 B2B", "Weave365 B2B"],
         publisher: {
-          "@id": "https://www.weave365.in/#organization",
+          "@id": "https://www.weave365.com/#organization",
         },
         potentialAction: {
           "@type": "SearchAction",
           target: {
             "@type": "EntryPoint",
             urlTemplate:
-              "https://www.weave365.in/wholesale-catalogue?search={search_term_string}",
+              "https://www.weave365.com/wholesale-catalogue?search={search_term_string}",
           },
           "query-input": "required name=search_term_string",
         },
       },
       {
         "@type": "Store",
-        "@id": "https://www.weave365.in/#store",
+        "@id": "https://www.weave365.com/#store",
         name: "Weave 365 Wholesale",
-        url: "https://www.weave365.in",
-        image: "https://www.weave365.in/logo.webp",
+        url: "https://www.weave365.com",
+        image: "https://www.weave365.com/logo.webp",
         description:
           "Wholesale Banarasi sarees, suits, lehengas and ethnic fabrics for B2B buyers, resellers and boutiques across India.",
         priceRange: "₹₹",
@@ -86,22 +86,22 @@ export default function SchemaMarkup() {
             {
               "@type": "OfferCatalog",
               name: "Banarasi Sarees",
-              url: "https://www.weave365.in/wholesale-banarasi-sarees",
+              url: "https://www.weave365.com/wholesale-banarasi-sarees",
             },
             {
               "@type": "OfferCatalog",
               name: "Suits",
-              url: "https://www.weave365.in/wholesale-banarasi-suits",
+              url: "https://www.weave365.com/wholesale-banarasi-suits",
             },
             {
               "@type": "OfferCatalog",
               name: "Lehengas",
-              url: "https://www.weave365.in/wholesale-banarasi-lehengas",
+              url: "https://www.weave365.com/wholesale-banarasi-lehengas",
             },
             {
               "@type": "OfferCatalog",
               name: "Dupattas",
-              url: "https://www.weave365.in/wholesale-banarasi-dupattas",
+              url: "https://www.weave365.com/wholesale-banarasi-dupattas",
             },
           ],
         },

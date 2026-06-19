@@ -37,7 +37,7 @@ const marcellus = Marcellus({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
 
 export const metadata = {
   title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
@@ -89,7 +89,7 @@ export const metadata = {
     },
   },
   icons: {
-    icon: 'https://weave365.in/assets/banner/favicon.svg',
+    icon: 'https://weave365.com/assets/banner/favicon.svg',
   },
 };
 

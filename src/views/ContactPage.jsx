@@ -317,10 +317,10 @@ export function ContactPage({ navigate }) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Weave 365",
-    "image": "https://www.weave365.in/logo.webp",
+    "image": "https://www.weave365.com/logo.webp",
     "email": "weave365@gmail.com",
     "telephone": "+919919101369",
-    "url": "https://www.weave365.in/contact",
+    "url": "https://www.weave365.com/contact",
     "priceRange": "$$$$",
     "address": {
       "@type": "PostalAddress",

@@ -477,7 +477,7 @@ export function ReviewsPage({ navigate, user }) {
 
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = 'https://www.weave365.in/reviews';
+    const newCanonical = 'https://www.weave365.com/reviews';
 
     if (canonicalLink) {
       canonicalLink.setAttribute('href', newCanonical);

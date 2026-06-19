@@ -311,7 +311,7 @@ async function sendNotificationEmail(reviewData) {
             </div>
             
             <div class="cta-box">
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in'}/admin" class="cta-button">Open Admin Dashboard</a>
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com'}/admin" class="cta-button">Open Admin Dashboard</a>
             </div>
           </div>
           <div class="email-footer">

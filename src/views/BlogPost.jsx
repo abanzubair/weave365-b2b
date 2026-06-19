@@ -415,7 +415,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const absoluteImageUrl = useMemo(() => {
     if (!post?.image) return '';
     if (post.image.startsWith('http')) return post.image;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.in';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
     return `${origin}${post.image.startsWith('/') ? '' : '/'}${post.image}`;
   }, [post]);
 

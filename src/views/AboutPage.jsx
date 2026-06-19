@@ -77,7 +77,7 @@ export function AboutPage({ navigate }) {
       "addressRegion": "Uttar Pradesh",
       "addressCountry": "India"
     },
-    "url": "https://www.weave365.in/about",
+    "url": "https://www.weave365.com/about",
     "priceRange": "$$$$",
     "aggregateRating": {
       "@type": "AggregateRating",

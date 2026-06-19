@@ -693,7 +693,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             <input
                               value={profile.city}
                               onChange={(event) => updateProfile('city', event.target.value)}
-                              placeholder="City name"
+                              placeholder="City name, State name"
                               autoComplete="address-level2"
                               required
                             />

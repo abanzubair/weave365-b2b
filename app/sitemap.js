@@ -5,7 +5,7 @@ import { blogPosts } from '../src/data/blogPosts.js';
 
 export const runtime = 'edge';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.in';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
 
 export default async function sitemap() {
   // Static pages

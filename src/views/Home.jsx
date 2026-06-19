@@ -28,8 +28,8 @@ import { AppLink } from '../components/AppLink.jsx';
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
 
 const defaultHero = {
-  image: 'https://weave365.in/assets/banner/hero1.webp',
-  mobileImage: 'https://weave365.in/assets/banner/hero1m.webp',
+  image: 'https://assets.weave365.com/assets/banner/hero1.webp',
+  mobileImage: 'https://assets.weave365.com/assets/banner/hero1m.webp',
   title: 'Beyond\nBeauty',
   subtitle: 'Bringing You the Elements of Style',
   buttonText: 'Read More',
@@ -323,7 +323,7 @@ export function Home({
   usePageSeo({
     title: 'Banarasi Sarees and Suits for Wholesale & Export | Weave 365',
     description: 'Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.',
-    canonical: 'https://www.weave365.in'
+    canonical: 'https://www.weave365.com'
   });
 
   const bestsellers = useMemo(() => {

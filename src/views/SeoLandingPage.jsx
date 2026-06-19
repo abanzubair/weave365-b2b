@@ -136,7 +136,7 @@ export default function SeoLandingPage({
     // Update or create Canonical Link tag
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = `https://www.weave365.in/${pageData.slug}`;
+    const newCanonical = `https://www.weave365.com/${pageData.slug}`;
 
     if (canonicalLink) {
       canonicalLink.setAttribute('href', newCanonical);
@@ -184,13 +184,13 @@ export default function SeoLandingPage({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://www.weave365.in"
+        "item": "https://www.weave365.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": pageData.h1,
-        "item": `https://www.weave365.in/${pageData.slug}`
+        "item": `https://www.weave365.com/${pageData.slug}`
       }
     ]
   };

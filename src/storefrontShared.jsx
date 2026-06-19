@@ -202,7 +202,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const price = customerPrice(variant.prices, priceAccess);
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
-  const productUrl = `https://www.weave365.in/product/${product.id}`;
+  const productUrl = `https://www.weave365.com/product/${product.id}`;
 
   if (isWholesale && canViewPrices && price != null) {
     const isSet = quantity > 1;

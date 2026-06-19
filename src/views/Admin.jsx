@@ -2360,7 +2360,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                 <div className="admin-p20">
                   <div className="admin-serp-preview">
                     <div className="admin-serp-url-row">
-                      <span>https://www.weave365.in</span>
+                      <span>https://www.weave365.com</span>
                       <span className="admin-serp-slug">
                         {normalizeSeoPath(pageSeoPath) === '/' ? '' : normalizeSeoPath(pageSeoPath).replace(/\//g, ' > ')}
                       </span>
@@ -2919,7 +2919,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <div className="admin-p20">
                   <div className="admin-serp-preview">
                     <div className="admin-serp-url-row">
-                      <span>https://www.weave365.in</span>
+                      <span>https://www.weave365.com</span>
                       <span className="admin-serp-slug">› blog › {formSlug || 'your-slug'}</span>
                     </div>
                     <h3 className="admin-serp-title">
@@ -3793,10 +3793,10 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                             <div className="admin-grid-gap10">
                               <span className="admin-status new admin-width-fit">⏳ No Supabase Profile Found</span>
                               <p className="admin-inquiry-notes-p">
-                                This vendor has submitted onboarding details, but hasn't created a login account on Weave365.in yet. Share their signup reminder link:
+                                This vendor has submitted onboarding details, but hasn't created a login account on Weave365.com yet. Share their signup reminder link:
                               </p>
                               <a
-                                href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb[1]}, we have verified your B2B Onboarding application for Weave 365! Please sign up an account at https://www.weave365.in using this WhatsApp number (+91 ${onb[2]}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
+                                href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb[1]}, we have verified your B2B Onboarding application for Weave 365! Please sign up an account at https://www.weave365.com using this WhatsApp number (+91 ${onb[2]}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="primary-button admin-btn-wa-signup"

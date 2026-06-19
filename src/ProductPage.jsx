@@ -403,7 +403,7 @@ export function ProductDetail({
   usePageSeo({
     title: product.metaTitle || product.title || `${storeConfig.name} Product`,
     description: product.metaDescription || product.summary || product.description || `View ${product.metaTitle || product.title} in the ${storeConfig.name} wholesale catalogue.`,
-    canonical: product.id ? `https://www.weave365.in/product/${encodeURIComponent(product.id)}` : undefined
+    canonical: product.id ? `https://www.weave365.com/product/${encodeURIComponent(product.id)}` : undefined
   });
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
@@ -689,7 +689,7 @@ export function ProductDetail({
         "highPrice": (displayPrice ? displayPrice * 1.5 : 8500),
         "offerCount": totalColors || 1,
         "availability": "https://schema.org/InStock",
-        "url": `https://www.weave365.in/product/${product.id}`
+        "url": `https://www.weave365.com/product/${product.id}`
       }
     };
 
@@ -731,19 +731,19 @@ export function ProductDetail({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://www.weave365.in/"
+        "item": "https://www.weave365.com/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Catalogue",
-        "item": "https://www.weave365.in/wholesale-catalogue"
+        "item": "https://www.weave365.com/wholesale-catalogue"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": product.title,
-        "item": `https://www.weave365.in/product/${product.id}`
+        "item": `https://www.weave365.com/product/${product.id}`
       }
     ]
   }), [product]);
@@ -895,7 +895,7 @@ export function ProductDetail({
   }, [product.id, product.images, product.title, priceAccess]);
 
   const shareProductPage = useCallback(async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.in/product/${product.id}`;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.com/product/${product.id}`;
     const shareText = `Check out ${product.title} on Weave 365`;
     if (navigator.share) {
       try {

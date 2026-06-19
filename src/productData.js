@@ -558,7 +558,7 @@ function driveImageUrl(link) {
   if (!value) return '';
 
   // Cloudflare R2 URLs — pass through directly
-  if (value.includes('weave365.in') || value.includes('r2.cloudflarestorage.com')) {
+  if (value.includes('weave365.in') || value.includes('weave365.com') || value.includes('r2.cloudflarestorage.com')) {
     return value;
   }
 
