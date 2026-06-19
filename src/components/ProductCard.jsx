@@ -121,38 +121,12 @@ export const ProductCard = memo(function ProductCard({
     return () => window.removeEventListener('click', handleOutsideClick);
   }, [showOptions, isMobile]);
 
-  async function handleEnquiryClick() {
-    if (enquiryState === 'sending') return;
-    setEnquiryState('sending');
-
-    if (isSupabaseConfigured) {
-      try {
-        await supabase.from('inquiries').insert({
-          user_id: priceAccess?.userId || undefined,
-          email: priceAccess?.userEmail || undefined,
-          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-          phone: priceAccess?.buyerPhone || undefined,
-          pincode: priceAccess?.buyerPincode || undefined,
-          inquiry_type: 'product',
-          status: 'new',
-          product_group_key: String(product.id),
-          variant_code: selectedVariant.code,
-          message: `Enquiry for ${product.title}`,
-          items: [{
-            product_id: product.id,
-            product_title: product.title,
-            variant_code: selectedVariant.code,
-            quantity: 1,
-            priceGroup: priceAccess?.priceGroup || 'pending',
-          }],
-        });
-      } catch (err) {
-        console.error('Failed to log inquiry to Supabase:', err);
-      }
+  function handleEnquiryClick() {
+    if (colorCount > 1) {
+      addToCart(product, selectedVariant, 1, { colorName: 'Select Color' });
+    } else {
+      addToCart(product, selectedVariant, 1);
     }
-
-    setEnquiryState('sent');
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   return (

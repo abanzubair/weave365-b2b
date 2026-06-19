@@ -28,6 +28,7 @@ import {
   parseCartVariantCode,
   upsertCart,
   upsertCartSelections,
+  changeCartColor,
   loadSavedState,
   persistCart,
   persistFavorites,
@@ -734,13 +735,27 @@ export default function App({ initialData = {} }) {
 
   const addCartColor = useCallback((item, color) => {
     if (!color?.name) return;
-    addCartSelections(item.product, [{
-      variant: item.variant,
-      quantity: 1,
-      colorName: color.name,
-      image: color.image,
-    }]);
-  }, [addCartSelections]);
+
+    // Check if there is an item in the cart for this product that has 'Select Color'
+    const unselectedItem = cartProducts.find(
+      (entry) => entry.productGroupKey === item.productGroupKey && entry.selectedColorName === 'Select Color'
+    );
+
+    if (unselectedItem) {
+      setCart((currentCart) => {
+        const next = changeCartColor(currentCart, unselectedItem, color.name);
+        void persistCart(next, user?.id);
+        return next;
+      });
+    } else {
+      addCartSelections(item.product, [{
+        variant: item.variant,
+        quantity: 1,
+        colorName: color.name,
+        image: color.image,
+      }]);
+    }
+  }, [cartProducts, addCartSelections, user]);
 
   const checkPincode = useCallback(() => {
     const serviceable = serviceablePincodes.includes(pincode.trim());

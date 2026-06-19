@@ -5628,6 +5628,50 @@ button {
   background: linear-gradient(135deg, rgba(255, 253, 249, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
 }
 
+/* Color selection warning animations and styling in CartDrawer */
+.unselected-color {
+  border-color: #f59e0b !important;
+  background: rgba(251, 191, 36, 0.04) !important;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.4) !important;
+}
+
+.unselected-color-notice {
+  color: #d97706 !important;
+  font-weight: 700;
+  animation: pulse-warn 2s infinite;
+}
+
+.warning-alert {
+  background: #fef3c7 !important;
+  border: 1px solid #f59e0b !important;
+  color: #92400e !important;
+}
+
+.warning-alert svg {
+  color: #b45309 !important;
+}
+
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shake-anim {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake-anim 0.5s ease-in-out;
+}
+
+.qty-row button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: var(--surface-muted) !important;
+}
+
 
 
 

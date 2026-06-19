@@ -38,6 +38,10 @@ export function CartDrawer({
   const drawerBodyRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const hasUnselectedColors = useMemo(() => {
+    return items.some(item => item.selectedColorName === 'Select Color');
+  }, [items]);
+
   useEffect(() => {
     if (!open) {
       setShowUpiDetails(false);
@@ -108,6 +112,10 @@ export function CartDrawer({
   }, [items]);
 
   async function handleEnquiryClick() {
+    if (hasUnselectedColors) {
+      alert('Please select a color for all items before making an enquiry.');
+      return;
+    }
     if (enquiryState === 'sending' || items.length === 0) return;
     setEnquiryState('sending');
 
@@ -141,6 +149,10 @@ export function CartDrawer({
   }
 
   const handlePaidConfirmClick = () => {
+    if (hasUnselectedColors) {
+      alert('Please select a color for all items before sharing payment.');
+      return;
+    }
     if (enquiryState === 'uploading' || enquiryState === 'sending' || items.length === 0) return;
     fileInputRef.current?.click();
   };
@@ -334,7 +346,7 @@ export function CartDrawer({
 
                   <div className="cart-color-lines">
                     {group.items.map((item) => (
-                      <div className="cart-color-line" key={item.variantCode}>
+                      <div className={`cart-color-line ${item.selectedColorName === 'Select Color' ? 'unselected-color' : ''}`} key={item.variantCode}>
                         <span className="cart-selected-swatch">
                           <img
                             src={item.selectedColorImage || fallbackProductImage}
@@ -344,7 +356,9 @@ export function CartDrawer({
                           />
                         </span>
                         <div className="cart-color-line-copy">
-                          <strong>{item.selectedColorName || 'Selected color'}</strong>
+                          <strong className={item.selectedColorName === 'Select Color' ? 'unselected-color-notice' : ''}>
+                            {item.selectedColorName || 'Selected color'}
+                          </strong>
                           <span>
                             {canViewPrices
                               ? `${formatMoney(customerPrice(item.variant.prices, priceAccess))} / pc`
@@ -354,7 +368,13 @@ export function CartDrawer({
                         <div className="qty-row">
                           <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
                           <span>{item.quantity}</span>
-                          <button type="button" onClick={() => updateQuantity(item, item.quantity + 1)}>+</button>
+                          <button 
+                            type="button" 
+                            onClick={() => updateQuantity(item, item.quantity + 1)}
+                            disabled={item.selectedColorName === 'Select Color'}
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -362,7 +382,7 @@ export function CartDrawer({
 
                   {group.colorOptions.length > 0 && (
                     <div className="cart-color-picker">
-                      <span>Add more colors</span>
+                      <span>{group.selectedColorNames.has('Select Color') ? 'Choose color' : 'Add more colors'}</span>
                       <div className="cart-color-swatch-row">
                         {group.colorOptions.map((color) => (
                           <button
@@ -421,7 +441,18 @@ export function CartDrawer({
             </>
           ) : (
             <>
-              {items.length > 0 && (
+              {hasUnselectedColors && (
+                <div className="cart-info-alert warning-alert animate-shake">
+                  <svg className="alert-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                  <span>Please select a color for all items before making an enquiry.</span>
+                </div>
+              )}
+
+              {items.length > 0 && !hasUnselectedColors && (
                 <div className="cart-info-alert">
                   <svg className="alert-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -433,7 +464,7 @@ export function CartDrawer({
               )}
 
               <div className="cart-action-group">
-                {items.length > 0 && showPayment && (
+                {items.length > 0 && showPayment && !hasUnselectedColors && (
                   <button 
                     type="button"
                     className={`payment-trigger-btn ${showUpiDetails ? 'active' : ''}`}
@@ -444,8 +475,9 @@ export function CartDrawer({
                 )}
                 <button 
                   type="button"
-                  className={`enquiry-submit-btn ${items.length ? '' : 'disabled'}`} 
+                  className={`enquiry-submit-btn ${items.length && !hasUnselectedColors ? '' : 'disabled'}`} 
                   onClick={handleEnquiryClick}
+                  disabled={!items.length || hasUnselectedColors}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff', borderColor: '#128C7E' } : {}}
                 >
                   <WhatsappIcon size={15} /> {enquiryState === 'sent' ? 'Sent' : 'Submit Enquiry'}
