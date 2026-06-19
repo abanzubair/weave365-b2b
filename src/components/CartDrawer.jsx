@@ -348,41 +348,45 @@ export function CartDrawer({
                     </div>
                   </div>
 
-                  <div className="cart-color-lines">
-                    {group.items.map((item) => (
-                      <div className={`cart-color-line ${item.selectedColorName === 'Select Color' ? 'unselected-color' : ''}`} key={item.variantCode}>
-                        <span className="cart-selected-swatch">
-                          <img
-                            src={item.selectedColorImage || fallbackProductImage}
-                            alt={item.selectedColorName || 'Color swatch'}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </span>
-                        <div className="cart-color-line-copy">
-                          <strong className={item.selectedColorName === 'Select Color' ? 'unselected-color-notice' : ''}>
-                            {item.selectedColorName || 'Selected color'}
-                          </strong>
-                          <span>
-                            {canViewPrices
-                              ? `${formatMoney(customerPrice(item.variant.prices, priceAccess))} / pc`
-                              : priceNoticeForAccess(priceAccess)}
-                          </span>
-                        </div>
-                        <div className="qty-row">
-                          <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
-                          <span>{item.selectedColorName === 'Select Color' ? 0 : item.quantity}</span>
-                          <button 
-                            type="button" 
-                            onClick={() => updateQuantity(item, item.quantity + 1)}
-                            disabled={item.selectedColorName === 'Select Color'}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {group.items.some(item => item.selectedColorName !== 'Select Color') && (
+                    <div className="cart-color-lines">
+                      {group.items.map((item) => {
+                        if (item.selectedColorName === 'Select Color') return null;
+                        return (
+                          <div className="cart-color-line" key={item.variantCode}>
+                            <span className="cart-selected-swatch">
+                              <img
+                                src={item.selectedColorImage || fallbackProductImage}
+                                alt={item.selectedColorName || 'Color swatch'}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            </span>
+                            <div className="cart-color-line-copy">
+                              <strong>
+                                {item.selectedColorName || 'Selected color'}
+                              </strong>
+                              <span>
+                                {canViewPrices
+                                  ? `${formatMoney(customerPrice(item.variant.prices, priceAccess))} / pc`
+                                  : priceNoticeForAccess(priceAccess)}
+                              </span>
+                            </div>
+                            <div className="qty-row">
+                              <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
+                              <span>{item.quantity}</span>
+                              <button 
+                                type="button" 
+                                onClick={() => updateQuantity(item, item.quantity + 1)}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {group.colorOptions.length > 0 && (
                     <div className="cart-color-picker">
