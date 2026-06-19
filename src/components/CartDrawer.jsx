@@ -104,11 +104,15 @@ export function CartDrawer({
       groups.set(key, group);
     });
 
-    return Array.from(groups.values()).map((group) => ({
-      ...group,
-      selectedColorNames: new Set(group.items.map((item) => item.selectedColorName).filter(Boolean)),
-      totalQuantity: group.items.reduce((sum, item) => sum + item.quantity, 0),
-    }));
+    return Array.from(groups.values()).map((group) => {
+      const activeItems = group.items.filter((item) => item.selectedColorName && item.selectedColorName !== 'Select Color');
+      return {
+        ...group,
+        selectedColorNames: new Set(group.items.map((item) => item.selectedColorName).filter(Boolean)),
+        totalQuantity: activeItems.reduce((sum, item) => sum + item.quantity, 0),
+        selectedColorsCount: activeItems.length,
+      };
+    });
   }, [items]);
 
   async function handleEnquiryClick() {
@@ -339,7 +343,7 @@ export function CartDrawer({
                       <strong>{group.product.title}</strong>
                       <span className="cart-item-code">{group.variant.code}</span>
                       <span className="cart-group-summary">
-                        {group.items.length} color{group.items.length === 1 ? '' : 's'} selected · {group.totalQuantity} pc
+                        {group.selectedColorsCount} color{group.selectedColorsCount === 1 ? '' : 's'} selected · {group.totalQuantity} pc
                       </span>
                     </div>
                   </div>
