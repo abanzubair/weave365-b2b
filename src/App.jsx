@@ -1003,6 +1003,7 @@ export default function App({ initialData = {} }) {
             openAuth={() => setAuthOpen(true)}
             blogs={blogs}
             setBlogs={setBlogs}
+            products={pricedProducts}
           />
         </ErrorBoundary>
       );

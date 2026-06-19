@@ -53,7 +53,8 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { SharpStar } from './ReviewsPage.jsx';
 import { blogPosts } from '../data/blogPosts.js';
 import { seoLandingPages } from '../data/seoLandingPages.js';
-import { formatMoney } from '../storefrontShared.jsx';
+import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
+import { parseCartVariantCode } from '../utils/cartHelpers.js';
 import { isVaranasiPincode, PRICE_GROUPS, normalizeBuyerType } from '../utils/buyerAccess.js';
 import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting, syncSheetsToSupabase } from '../productData.js';
 
@@ -586,7 +587,7 @@ const handleViewAgreement = (agreement, whatsapp) => {
   }
 };
 
-export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs }) {
+export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [] }) {
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
@@ -608,6 +609,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedOnboarding, setSelectedOnboarding] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [selectedUserList, setSelectedUserList] = useState(null); // { profile, type: 'cart' | 'favorite' }
   const [activeAgreement, setActiveAgreement] = useState(null);
   const [partnerSubTab, setPartnerSubTab] = useState('reviews'); // 'reviews' | 'onboardings'
   const [copyFeedback, setCopyFeedback] = useState({});
@@ -1897,8 +1899,32 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                             {profile.buying_behavior || 'Not set'}
                           </span>
                         </td>
-                        <td>{cartRows.length} row{cartRows.length === 1 ? '' : 's'}</td>
-                        <td>{favoriteRows.length}</td>
+                        <td>
+                          {cartRows.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedUserList({ profile, type: 'cart' })}
+                              className="admin-list-link-btn"
+                            >
+                              {cartRows.length} row{cartRows.length === 1 ? '' : 's'}
+                            </button>
+                          ) : (
+                            <span>0 rows</span>
+                          )}
+                        </td>
+                        <td>
+                          {favoriteRows.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
+                              className="admin-list-link-btn"
+                            >
+                              {favoriteRows.length}
+                            </button>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </td>
                         <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
                         <td>
                           <div className="admin-reseller-dash-cell">
@@ -3821,20 +3847,110 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             );
           })()}
 
-          {/* ==================== LIGHTBOX IMAGE ZOOM VIEW OVERLAY ==================== */}
-          {lightboxImage && (
-            <div
-              onClick={() => setLightboxImage(null)}
-              className="admin-lightbox-overlay"
-            >
-              <img
-                src={lightboxImage}
-                className="admin-lightbox-img"
-                alt="Detailed Zoom View"
-              />
-            </div>
-          )}
+        </div>
+      )}
 
+      {/* ==================== DIALOG MODAL: BUYER SAVED / ORDER LIST INSPECTOR ==================== */}
+      {selectedUserList && (() => {
+        const { profile, type } = selectedUserList;
+        const isCart = type === 'cart';
+        const title = isCart ? 'Order List Items' : 'Favourites Collection';
+        const rows = isCart
+          ? (userCartMap.get(profile.id) || [])
+          : (userFavoriteMap.get(profile.id) || []);
+
+        return (
+          <div className="admin-modal-overlay">
+            <div className="admin-review-modal" style={{ maxWidth: '640px' }}>
+              {/* Modal Header */}
+              <div className="admin-modal-header" style={{ paddingBottom: '16px', marginBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+                <div>
+                  <span className="admin-modal-subtitle">{title}</span>
+                  <h3 className="admin-modal-title" style={{ marginTop: '4px' }}>{profile.business_name || profile.full_name || 'Unnamed buyer'}</h3>
+                  <span className="admin-modal-header-meta" style={{ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }}>
+                    {profile.email} {profile.whatsapp ? `| WhatsApp: ${profile.whatsapp}` : ''}
+                  </span>
+                </div>
+                <button type="button" onClick={() => setSelectedUserList(null)} className="admin-modal-close-btn">×</button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="admin-modal-body" style={{ display: 'grid', gap: '16px' }}>
+                {rows.length === 0 ? (
+                  <p className="admin-muted" style={{ textAlign: 'center', padding: '24px 0' }}>This list is currently empty.</p>
+                ) : (
+                  rows.map((row, idx) => {
+                    const product = products.find(p => p.id === row.product_group_key || p.groupKey === row.product_group_key);
+                    const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
+                    const variant = product?.variants?.find(v => v.code === baseVariantCode);
+                    const colorOptions = product?.colorOptions || [];
+                    const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
+                    const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
+                    const itemImage = selectedColor?.image || variant?.image || product?.images?.[0] || fallbackProductImage;
+                    
+                    const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
+                    const displayCode = row.variant_code || row.variantCode || baseVariantCode || row.product_group_key;
+
+                    return (
+                      <div key={row.id || idx} className="admin-user-item-card">
+                        <img
+                          src={itemImage}
+                          className="admin-user-item-thumb"
+                          alt={itemTitle}
+                          onError={(e) => { e.target.src = fallbackProductImage; }}
+                        />
+                        <div className="admin-user-item-details">
+                          <h4 className="admin-user-item-title">{itemTitle}</h4>
+                          <div className="admin-user-item-meta">
+                            <span>Code: <code>{displayCode}</code></span>
+                            {selectedColorName && (
+                              <span>Color: <strong className="admin-capitalize">{selectedColorName}</strong></span>
+                            )}
+                            {isCart && (
+                              <span className="admin-user-item-qty">Qty: <strong>x{row.quantity || 1}</strong></span>
+                            )}
+                          </div>
+                          {variant?.prices && (
+                            <div className="admin-user-item-price" style={{ marginTop: '4px', fontSize: '13px' }}>
+                              {variant.prices.mrp && (
+                                <span style={{ marginRight: '12px' }}>
+                                  Wholesale: <strong>{formatMoney(variant.prices.mrp)}</strong>
+                                </span>
+                              )}
+                              {variant.prices.b2r && (
+                                <span>
+                                  Reseller: <strong>{formatMoney(variant.prices.b2r)}</strong>
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="admin-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="button" className="secondary-button admin-btn-modal-close" onClick={() => setSelectedUserList(null)}>Close List</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ==================== LIGHTBOX IMAGE ZOOM VIEW OVERLAY ==================== */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          className="admin-lightbox-overlay"
+        >
+          <img
+            src={lightboxImage}
+            className="admin-lightbox-img"
+            alt="Detailed Zoom View"
+          />
         </div>
       )}
     </section>
