@@ -107,6 +107,29 @@ export async function GET(request) {
       );
 
       if (!hasS3Credentials && decodedImageUrl && /^https?:\/\//i.test(decodedImageUrl)) {
+        // To prevent CORS issues when downloading images client-side,
+        // we proxy the image request by fetching it server-side and returning the response bytes.
+        // We only allow proxying requests to our trusted domains to prevent open proxy vulnerability.
+        const isAllowedDomain = 
+          decodedImageUrl.includes('weave365.in') || 
+          decodedImageUrl.includes('weave365.com') || 
+          decodedImageUrl.includes('r2.cloudflarestorage.com');
+        
+        if (isAllowedDomain) {
+          try {
+            const fetchResponse = await fetch(decodedImageUrl);
+            if (fetchResponse.ok) {
+              const buffer = await fetchResponse.arrayBuffer();
+              const headers = new Headers();
+              headers.set('Content-Type', contentType);
+              headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+              headers.set('Access-Control-Allow-Origin', '*');
+              return new Response(buffer, { headers });
+            }
+          } catch (fetchErr) {
+            console.error('[Image Proxy Route Fetch Error]:', fetchErr);
+          }
+        }
         return Response.redirect(decodedImageUrl, 302);
       }
 

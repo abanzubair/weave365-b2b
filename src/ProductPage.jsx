@@ -873,7 +873,9 @@ export function ProductDetail({
 
       const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const promises = product.images.map(async (url, index) => {
-        const response = await fetch(url);
+        // Route requests through our native API proxy to bypass client-side CORS issues
+        const fetchUrl = url.startsWith('http') ? `/api/image?url=${encodeURIComponent(url)}` : url;
+        const response = await fetch(fetchUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const blob = await response.blob();
         const filename = `${safeTitle}-${index + 1}.jpg`;
