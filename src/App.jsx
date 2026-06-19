@@ -68,6 +68,7 @@ import { BlogList } from './views/BlogList.jsx';
 import { BlogPost } from './views/BlogPost.jsx';
 import { AboutPage } from './views/AboutPage.jsx';
 import { ReviewsPage } from './views/ReviewsPage.jsx';
+import { ReviewStrip } from './components/ReviewStrip.jsx';
 import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
 import { ContactPage } from './views/ContactPage.jsx';
 import { OurOfferings } from './views/OurOfferings.jsx';
@@ -820,7 +821,7 @@ export default function App({ initialData = {} }) {
       }
     }
 
-    const targetSegment = href.split('/').filter(Boolean)[0] || 'home';
+    const targetSegment = (href.split('/').filter(Boolean)[0] || 'home').split('?')[0];
     const targetPath = href.split('?')[0];
     const cleanTargetPath = targetPath.replace(/\/$/, '') || '/';
     const cleanPathname = pathname.replace(/\/$/, '') || '/';
@@ -1200,6 +1201,7 @@ export default function App({ initialData = {} }) {
       </main>
 
       {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
+      {!isSharedPage && route === 'home' && <ReviewStrip navigate={navigate} />}
       {!isSharedPage && route !== 'admin' && <Footer navigate={navigate} />}
       {!isSharedPage && (
         <CartDrawer

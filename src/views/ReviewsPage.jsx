@@ -76,6 +76,30 @@ export function ReviewsSection({ navigate, user }) {
   
   // Form state
   const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('write') === 'true') {
+        setShowForm(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showForm && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('write') === 'true') {
+        const timer = setTimeout(() => {
+          const formEl = document.querySelector('.reviews-form-container');
+          if (formEl) {
+            formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [showForm]);
   const [formData, setFormData] = useState({
     reviewer_name: '',
     business_name: '',

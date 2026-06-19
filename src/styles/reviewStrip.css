@@ -1,0 +1,203 @@
+/*
+ * ReviewStrip Stylesheet
+ * Purpose: Styles the premium, glassmorphism-themed review prompt strip on the homepage.
+ */
+
+.review-strip {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+  padding: 56px max(48px, calc((100vw - 1280px) / 2));
+  background: var(--cream); /* Clean luxury cream background */
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.review-strip::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(117, 111, 79, 0.04) 0%, transparent 70%); /* subtle olive accent shape */
+  pointer-events: none;
+}
+
+.review-strip > div {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.review-strip svg.strip-icon {
+  width: 52px;
+  height: 52px;
+  color: var(--gold);
+  stroke-width: 1.5;
+  background: rgba(183, 134, 70, 0.05);
+  border: 1px solid rgba(183, 134, 70, 0.12);
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(183, 134, 70, 0.05);
+  flex-shrink: 0;
+}
+
+.review-strip > div.review-strip-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.review-strip-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.review-strip-kicker {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--olive);
+  margin-bottom: 6px;
+}
+
+.review-strip-title {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 3.5vw, 32px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0 0 10px 0;
+}
+
+.review-strip-description {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.review-strip-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.review-rating-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.review-stars-preview {
+  display: flex;
+  gap: 4px;
+}
+
+.review-stars-preview svg {
+  color: var(--gold);
+  fill: var(--gold);
+}
+
+.review-rating-summary .rating-text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.review-write-btn-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 32px;
+  background: var(--ink); /* Architectural Solid Charcoal Black */
+  color: var(--white) !important;
+  border: 0;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(36, 25, 18, 0.15);
+  cursor: pointer;
+}
+
+.review-write-btn-strip:hover {
+  background: var(--gold); /* Premium Gold accent on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.25);
+  color: var(--white) !important;
+}
+
+/* Mobile & Tablet Responsiveness */
+@media screen and (max-width: 820px) {
+  .review-strip {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px var(--site-padding);
+    text-align: center;
+  }
+
+  .review-strip > div.review-strip-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .review-strip-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .review-strip-title {
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+
+  .review-strip-description {
+    font-size: 14px;
+  }
+
+  .review-strip-actions {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .review-rating-summary {
+    align-items: center;
+  }
+
+  .review-write-btn-strip {
+    width: 100%;
+    max-width: 340px;
+    height: 48px;
+    font-size: 12px;
+  }
+}
