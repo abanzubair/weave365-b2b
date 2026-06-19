@@ -21,6 +21,7 @@ import {
   Globe,
   Info,
   Star,
+  Shield,
 } from 'lucide-react';
 
 import { storeConfig } from '../config.js';
@@ -40,7 +41,8 @@ export function MobileMenu({
   cartCount,
   favoritesCount,
   onSignOut,
-  vendorOnboarding
+  vendorOnboarding,
+  isAdmin
 }) {
   const currentCurrency = useCurrency();
   const [accountOpen, setAccountOpen] = useState(false);
@@ -73,6 +75,16 @@ export function MobileMenu({
         label: 'Product Listing',
         action: () => {
           window.open(vendorOnboarding.drive_folder_url, '_blank');
+          onClose();
+        }
+      }
+    ] : []),
+    ...(isAdmin ? [
+      {
+        icon: <Shield size={18} style={{ color: '#b78646' }} />,
+        label: 'Admin Panel',
+        action: () => {
+          window.open('/admin', '_blank');
           onClose();
         }
       }
@@ -214,6 +226,22 @@ export function MobileMenu({
             <span className="mobile-menu-label">CONTACT</span>
             <ArrowRight size={16} className="mobile-menu-arrow" />
           </button>
+
+          {/* 7. ADMIN PANEL */}
+          {isAdmin && (
+            <button type="button" 
+              className="mobile-menu-item" 
+              onClick={() => {
+                window.open('/admin', '_blank');
+                onClose();
+              }}
+              style={{ borderLeft: '3px solid var(--gold-mid)' }}
+            >
+              <span className="mobile-menu-icon"><Shield size={20} style={{ color: 'var(--gold-mid)' }} /></span>
+              <span className="mobile-menu-label" style={{ color: 'var(--gold-dark)', fontWeight: '700' }}>ADMIN PANEL</span>
+              <ArrowRight size={16} className="mobile-menu-arrow" />
+            </button>
+          )}
         </nav>
 
         <div className="mobile-menu-bottom-section">
