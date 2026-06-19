@@ -145,7 +145,7 @@ export function safeFileName(value) {
 
 
 
-export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) {
+export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
@@ -176,6 +176,10 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) 
       codStatus === 'available' ? 'COD checked: Available' : '',
     ].filter(Boolean);
 
+    if (screenshotUrl) {
+      lines.push('', `Payment Screenshot: ${screenshotUrl}`);
+    }
+
     return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
@@ -194,6 +198,10 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess) 
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);
+
+  if (screenshotUrl) {
+    lines.push('', `Payment Screenshot: ${screenshotUrl}`);
+  }
 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }

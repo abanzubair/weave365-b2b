@@ -482,10 +482,18 @@ export default function App({ initialData = {} }) {
     return 'All';
   }, [route, isSeoCategoryRoute, searchParams, weaves]);
 
-  const search = useMemo(() => {
+  const urlSearch = useMemo(() => {
     if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return '';
     return searchParams?.get('search') || '';
   }, [route, isSeoCategoryRoute, searchParams]);
+
+  const [localSearch, setLocalSearch] = useState(urlSearch);
+
+  useEffect(() => {
+    setLocalSearch(urlSearch);
+  }, [urlSearch]);
+
+  const search = localSearch;
 
   const updateQueryParam = useCallback((name, value, defaultValue = 'All') => {
     if (typeof window === 'undefined') return;
@@ -501,6 +509,16 @@ export default function App({ initialData = {} }) {
     router.replace(newUrl, { scroll: false });
   }, [router, isSeoCategoryRoute, route]);
 
+  useEffect(() => {
+    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return undefined;
+    const timer = setTimeout(() => {
+      if (localSearch !== urlSearch) {
+        updateQueryParam('search', localSearch, '');
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [localSearch, urlSearch, updateQueryParam, route, isSeoCategoryRoute]);
+
   const setCategory = useCallback((val) => {
     if (isSeoCategoryRoute) return;
     updateQueryParam('category', val, 'All');
@@ -515,8 +533,8 @@ export default function App({ initialData = {} }) {
   }, [updateQueryParam]);
 
   const setSearch = useCallback((val) => {
-    updateQueryParam('search', val, '');
-  }, [updateQueryParam]);
+    setLocalSearch(val);
+  }, []);
 
   useLayoutEffect(() => {
     if (search && searchRef.current && route !== 'wholesale-catalogue') {
@@ -561,7 +579,8 @@ export default function App({ initialData = {} }) {
     setFavorites(readLocal(`favorites_${user.id}`));
   }, [user]);
 
-  const searchTerm = useDeferredValue(search.trim().toLowerCase());
+  const deferredSearch = useDeferredValue(localSearch);
+  const searchTerm = useMemo(() => deferredSearch.trim().toLowerCase(), [deferredSearch]);
 
   const visibleProducts = useMemo(() => {
     const productsWithIndex = pricedProducts.map((p, idx) => ({ ...p, _originalIndex: idx }));

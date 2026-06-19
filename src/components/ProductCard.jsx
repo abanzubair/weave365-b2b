@@ -235,43 +235,31 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className={`card-actions-new ${priceAccess?.isLoggedIn !== false ? 'has-reseller-share' : ''}`}>
-          {priceAccess?.isLoggedIn === false ? (
-            <>
-              <button
-                type="button"
-                onClick={handleEnquiryClick}
-                className="order-now-btn"
-                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
-              >
-                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
-              </button>
-              <button type="button"
-                className="add-to-bag-btn options-trigger-btn b2b-price-trigger-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openAuth();
-                }}
-              >
-                <Zap size={16} /> B2B PRICE
-              </button>
-            </>
+          <button
+            type="button"
+            onClick={handleEnquiryClick}
+            className="order-now-btn"
+            style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
+          >
+            <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
+          </button>
+          {!priceAccess || priceAccess.isLoggedIn === false || priceAccess.buyerType === 'user' || priceAccess.priceGroup === 'guest' ? (
+            <button type="button"
+              className="add-to-bag-btn options-trigger-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product, selectedVariant, 1);
+              }}
+            >
+              <ShoppingBag size={16} /> BUY NOW
+            </button>
           ) : (
-            <>
-              <button
-                type="button"
-                onClick={handleEnquiryClick}
-                className="order-now-btn"
-                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
-              >
-                <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'SENT' : 'ENQUIRY'}
-              </button>
-              <button type="button"
-                className="add-to-bag-btn options-trigger-btn"
-                onClick={() => setShowOptions(true)}
-              >
-                <Menu size={16} /> OPTIONS
-              </button>
-            </>
+            <button type="button"
+              className="add-to-bag-btn options-trigger-btn"
+              onClick={() => setShowOptions(true)}
+            >
+              <Menu size={16} /> OPTIONS
+            </button>
           )}
         </div>
       </div>

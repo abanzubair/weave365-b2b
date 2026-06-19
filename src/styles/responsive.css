@@ -159,7 +159,7 @@
   }
 
   .header-actions-premium .favorite-btn,
-  .header-actions-premium .cart-btn {
+  .header-actions-premium .navbar-logout-btn {
     display: none !important;
   }
 

@@ -42,6 +42,7 @@ export const storeConfig = {
   phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',
   whatsapp: process.env.NEXT_PUBLIC_STORE_WHATSAPP || '9919101369',
   minimumOrderValue: Number(process.env.NEXT_PUBLIC_MIN_ORDER_VALUE || 10000),
+  upiId: process.env.NEXT_PUBLIC_STORE_UPI || '9919101369@kotak',
 };
 
 export const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
