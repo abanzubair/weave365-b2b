@@ -390,7 +390,7 @@ export function CartDrawer({
 
                   {group.colorOptions.length > 0 && (
                     <div className="cart-color-picker">
-                      <span>{group.selectedColorNames.has('Select Color') ? 'Choose color' : 'Add more colors'}</span>
+                      <span>{group.selectedColorNames.has('Select Color') ? 'Select Color' : 'Add more colors'}</span>
                       <div className="cart-color-swatch-row">
                         {group.colorOptions.map((color) => (
                           <button
