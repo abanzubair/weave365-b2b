@@ -811,3 +811,49 @@ create trigger touch_addresses_updated_at
 before update on public.addresses
 for each row execute function public.touch_updated_at();
 
+-- Add order tracking columns to the inquiries table
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_carrier text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_number text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_message text;
+
+-- Create secure get_order_tracking database function to fetch tracking data by ID
+CREATE OR REPLACE FUNCTION public.get_order_tracking(order_id uuid)
+RETURNS TABLE (
+  id uuid,
+  buyer_name text,
+  phone text,
+  email text,
+  status text,
+  tracking_carrier text,
+  tracking_number text,
+  tracking_message text,
+  items jsonb,
+  message text,
+  created_at timestamptz,
+  updated_at timestamptz
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    i.id,
+    i.buyer_name,
+    i.phone,
+    i.email,
+    i.status,
+    i.tracking_carrier,
+    i.tracking_number,
+    i.tracking_message,
+    i.items,
+    i.message,
+    i.created_at,
+    i.updated_at
+  FROM public.inquiries i
+  WHERE i.id = order_id;
+END;
+$$;
+
+-- Grant execute permissions to public/anonymous roles
+GRANT EXECUTE ON FUNCTION public.get_order_tracking(uuid) TO anon, authenticated;

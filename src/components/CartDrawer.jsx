@@ -32,6 +32,7 @@ export function CartDrawer({
   checkPincode,
   priceAccess,
   user,
+  navigate,
 }) {
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
@@ -318,26 +319,36 @@ export function CartDrawer({
       const screenshotUrl = uploadData.url;
 
       setEnquiryState('sending');
+      let newInquiryId = null;
       if (isSupabaseConfigured) {
         try {
-          await supabase.from('inquiries').insert({
-            user_id: priceAccess?.userId || undefined,
-            email: priceAccess?.userEmail || undefined,
-            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-            phone: priceAccess?.buyerPhone || undefined,
-            pincode: pincode || priceAccess?.buyerPincode || undefined,
-            inquiry_type: 'cart_payment',
-            status: 'new',
-            message: `Order paid via UPI. Screenshot: ${screenshotUrl}\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
-            items: items.map(item => ({
-              product_id: item.productGroupKey,
-              product_title: item.product.title,
-              variant_code: item.variant.code,
-              color: item.selectedColorName,
-              quantity: item.quantity,
-              price: customerPrice(item.variant.prices, priceAccess),
-            })),
-          });
+          const { data: insertData, error: insertErr } = await supabase
+            .from('inquiries')
+            .insert({
+              user_id: priceAccess?.userId || undefined,
+              email: priceAccess?.userEmail || undefined,
+              buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+              phone: priceAccess?.buyerPhone || undefined,
+              pincode: pincode || priceAccess?.buyerPincode || undefined,
+              inquiry_type: 'cart_payment',
+              status: 'new',
+              message: `Order paid via UPI. Screenshot: ${screenshotUrl}\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
+              items: items.map(item => ({
+                product_id: item.productGroupKey,
+                product_title: item.product.title,
+                variant_code: item.variant.code,
+                color: item.selectedColorName,
+                quantity: item.quantity,
+                price: customerPrice(item.variant.prices, priceAccess),
+              })),
+            })
+            .select('id')
+            .single();
+
+          if (insertErr) throw insertErr;
+          if (insertData?.id) {
+            newInquiryId = insertData.id;
+          }
         } catch (err) {
           console.error('Failed to log payment inquiry to Supabase:', err);
         }
@@ -346,37 +357,57 @@ export function CartDrawer({
       setEnquiryState('sent');
       const paidWhatsappUrl = buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, selectedAddress);
       window.open(paidWhatsappUrl, '_blank', 'noopener,noreferrer');
+
+      if (newInquiryId && navigate) {
+        navigate('order-tracking', newInquiryId);
+        if (onClose) onClose();
+      }
     } catch (err) {
       console.error('Payment screenshot upload error:', err);
       alert('Could not upload screenshot. Opening WhatsApp with order details so you can paste the screenshot manually.');
 
       setEnquiryState('sending');
+      let fallbackInquiryId = null;
       if (isSupabaseConfigured) {
         try {
-          await supabase.from('inquiries').insert({
-            user_id: priceAccess?.userId || undefined,
-            email: priceAccess?.userEmail || undefined,
-            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-            phone: priceAccess?.buyerPhone || undefined,
-            pincode: pincode || priceAccess?.buyerPincode || undefined,
-            inquiry_type: 'cart_payment_fallback',
-            status: 'new',
-            message: `Order checkout via UPI (Screenshot upload failed)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
-            items: items.map(item => ({
-              product_id: item.productGroupKey,
-              product_title: item.product.title,
-              variant_code: item.variant.code,
-              color: item.selectedColorName,
-              quantity: item.quantity,
-              price: customerPrice(item.variant.prices, priceAccess),
-            })),
-          });
+          const { data: insertData, error: insertErr } = await supabase
+            .from('inquiries')
+            .insert({
+              user_id: priceAccess?.userId || undefined,
+              email: priceAccess?.userEmail || undefined,
+              buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+              phone: priceAccess?.buyerPhone || undefined,
+              pincode: pincode || priceAccess?.buyerPincode || undefined,
+              inquiry_type: 'cart_payment_fallback',
+              status: 'new',
+              message: `Order checkout via UPI (Screenshot upload failed)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
+              items: items.map(item => ({
+                product_id: item.productGroupKey,
+                product_title: item.product.title,
+                variant_code: item.variant.code,
+                color: item.selectedColorName,
+                quantity: item.quantity,
+                price: customerPrice(item.variant.prices, priceAccess),
+              })),
+            })
+            .select('id')
+            .single();
+
+          if (insertErr) throw insertErr;
+          if (insertData?.id) {
+            fallbackInquiryId = insertData.id;
+          }
         } catch (sErr) {
           console.error('Fallback Supabase insert failed:', sErr);
         }
       }
       setEnquiryState('sent');
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+
+      if (fallbackInquiryId && navigate) {
+        navigate('order-tracking', fallbackInquiryId);
+        if (onClose) onClose();
+      }
     }
   }
 

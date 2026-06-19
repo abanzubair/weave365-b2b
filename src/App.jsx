@@ -53,6 +53,7 @@ import { Catalog } from './CatalogPage.jsx';
 import { ProductDetailWrapper } from './ProductPage.jsx';
 import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import { BulkInquiry } from './views/BulkInquiry.jsx';
+import OrderTracking from './views/OrderTracking.jsx';
 import { Admin } from './views/Admin.jsx';
 import { Account } from './views/Account.jsx';
 import { WholesalePartnerProgramPage } from './views/WholesalePartnerProgramPage.jsx';
@@ -113,6 +114,7 @@ export default function App({ initialData = {} }) {
   
   const route = pendingRoute || pathSegments[0] || 'home';
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const inquiryId = route === 'order-tracking' ? decodeURIComponent(pathSegments[1] || '') : null;
 
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
   const blogPostSlug = route === 'blog' && pathSegments[1] !== 'category' ? decodeURIComponent(pathSegments[1] || '') : null;
@@ -776,6 +778,8 @@ export default function App({ initialData = {} }) {
     let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
       href = `/product/${productId}`;
+    } else if (nextRoute === 'order-tracking') {
+      href = `/order-tracking/${productId}`;
     } else if (nextRoute === 'partner') {
       href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
     } else if (nextRoute === 'blog' && productId) {
@@ -1003,6 +1007,17 @@ export default function App({ initialData = {} }) {
 
     if (route === 'bulk-inquiry') return <BulkInquiry navigate={navigate} />;
 
+    if (route === 'order-tracking') {
+      return (
+        <OrderTracking
+          inquiryId={inquiryId}
+          products={pricedProducts}
+          navigate={navigate}
+          user={user}
+        />
+      );
+    }
+
     if (route === 'admin') {
       return (
         <ErrorBoundary>
@@ -1200,6 +1215,7 @@ export default function App({ initialData = {} }) {
           checkPincode={checkPincode}
           priceAccess={priceAccess}
           user={user}
+          navigate={navigate}
         />
       )}
       <AuthModal

@@ -34,6 +34,7 @@
 @import './styles/ourOfferings.css';
 @import './styles/reviews.css';
 @import './styles/productSkeleton.css';
+@import './styles/orderTracking.css';
 
 .search-lock {
   overflow: hidden !important;

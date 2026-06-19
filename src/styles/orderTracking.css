@@ -1,0 +1,426 @@
+/* Order Tracking Page Styles */
+
+.order-tracking-container {
+  max-width: 800px;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  color: var(--ink);
+}
+
+.order-tracking-card {
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-tracking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold-light, #bf9258), var(--gold, #b78646));
+}
+
+.order-tracking-title {
+  font-family: var(--font-hero-heading, 'Cormorant Garamond', serif);
+  font-size: 2.25rem;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.order-tracking-subtitle {
+  text-align: center;
+  color: var(--muted, #666);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Manual Lookup Form */
+.lookup-form-wrap {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.lookup-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 0.75rem;
+}
+
+.lookup-input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.lookup-input {
+  flex: 1;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--border, rgba(0,0,0,0.12));
+  border-radius: 8px;
+  background: #fbfbfb;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.lookup-input:focus {
+  border-color: var(--gold, #b78646);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(183, 134, 70, 0.15);
+}
+
+.lookup-btn {
+  background: var(--gold, #b78646);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.lookup-btn:hover {
+  background: var(--gold-dark, #805d31);
+  transform: translateY(-1px);
+}
+
+/* Steps Timeline */
+.tracking-steps-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+  position: relative;
+  padding: 0 1rem;
+}
+
+.tracking-step-line {
+  position: absolute;
+  top: 24px;
+  left: 3rem;
+  right: 3rem;
+  height: 3px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+.tracking-step-line-progress {
+  height: 100%;
+  background: var(--gold, #b78646);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tracking-step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  width: 5rem;
+  cursor: default;
+}
+
+.tracking-step-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  margin-bottom: 0.75rem;
+  transition: all 0.4s ease;
+}
+
+.tracking-step-node.completed .tracking-step-icon-wrap {
+  border-color: var(--gold, #b78646);
+  background: var(--gold, #b78646);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(183, 134, 70, 0.1);
+}
+
+.tracking-step-node.active .tracking-step-icon-wrap {
+  border-color: var(--gold, #b78646);
+  color: #ffffff;
+  background: var(--gold, #b78646);
+  box-shadow: 0 0 0 4px rgba(183, 134, 70, 0.15);
+  animation: pulseGold 2s infinite;
+}
+
+.tracking-step-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #9ca3af;
+  text-align: center;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.tracking-step-node.completed .tracking-step-label,
+.tracking-step-node.active .tracking-step-label {
+  color: var(--gold-dark, #805d31);
+}
+
+@keyframes pulseGold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(183, 134, 70, 0.3);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(183, 134, 70, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(183, 134, 70, 0);
+  }
+}
+
+/* Status Update Panel */
+.status-update-panel {
+  background: #fbfbf9;
+  border: 1px solid rgba(183, 134, 70, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.status-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(183, 134, 70, 0.08);
+  padding-bottom: 0.75rem;
+}
+
+.status-title {
+  font-weight: 700;
+  color: var(--gold-dark, #805d31);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-date {
+  font-size: 0.8rem;
+  color: var(--muted, #666);
+}
+
+.status-message {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+  font-style: italic;
+}
+
+/* Details Grid */
+.tracking-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.details-card {
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  background: #fafafa;
+}
+
+.details-card h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gold-dark, #805d31);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.details-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #444;
+}
+
+.tracking-id-link {
+  color: var(--gold-dark, #805d31);
+  font-weight: 600;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.tracking-id-link:hover {
+  color: var(--gold-light, #bf9258);
+}
+
+/* Items List */
+.tracking-items-section {
+  border-top: 1px solid var(--border, rgba(0,0,0,0.08));
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.tracking-items-title {
+  font-family: var(--font-hero-heading, 'Cormorant Garamond', serif);
+  font-size: 1.5rem;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.tracking-item-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed var(--border, rgba(0,0,0,0.06));
+}
+
+.tracking-item-row:last-child {
+  border-bottom: none;
+}
+
+.tracking-item-img {
+  width: 50px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f5f5f5;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.tracking-item-info {
+  flex: 1;
+}
+
+.tracking-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.25rem;
+}
+
+.tracking-item-meta {
+  font-size: 0.75rem;
+  color: var(--muted, #666);
+}
+
+.tracking-item-meta span {
+  margin-right: 0.75rem;
+}
+
+.tracking-item-price {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gold-dark, #805d31);
+}
+
+/* Action Center */
+.tracking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.btn-whatsapp-support {
+  background: #128C7E;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-whatsapp-support:hover {
+  background: #0b665c;
+  transform: translateY(-1px);
+}
+
+.btn-back-catalog {
+  background: transparent;
+  color: var(--gold-dark, #805d31);
+  border: 1px solid var(--gold, #b78646);
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-back-catalog:hover {
+  background: rgba(183, 134, 70, 0.05);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .tracking-steps-container {
+    padding: 0;
+  }
+  .tracking-step-line {
+    left: 2rem;
+    right: 2rem;
+  }
+  .tracking-step-node {
+    width: 4rem;
+  }
+  .tracking-step-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-width: 2px;
+  }
+  .tracking-step-label {
+    font-size: 0.65rem;
+  }
+  .tracking-details-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .tracking-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-whatsapp-support,
+  .btn-back-catalog {
+    justify-content: center;
+  }
+}

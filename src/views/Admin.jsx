@@ -47,6 +47,8 @@ import {
   Clock,
   Store,
   UserRound,
+  Truck,
+  ExternalLink,
 } from 'lucide-react';
 import { adminEmails } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -59,6 +61,7 @@ import { isVaranasiPincode, PRICE_GROUPS, normalizeBuyerType } from '../utils/bu
 import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting, syncSheetsToSupabase } from '../productData.js';
 
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
+import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'blog_posts', label: 'Blog Posts' },
@@ -594,7 +597,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
   // Tab control
-  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'seo' | 'blogs' | 'reviews' | 'partners'
+  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'tracking' | 'seo' | 'blogs' | 'reviews' | 'partners'
 
   // Reviews moderation state
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -1710,6 +1713,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           className={`admin-tab-btn ${activeTab === 'partners' ? 'active' : ''}`}
         >
           <Award size={18} strokeWidth={activeTab === 'partners' ? 2.5 : 2} /> Vendor Applications
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('tracking')}
+          className={`admin-tab-btn ${activeTab === 'tracking' ? 'active' : ''}`}
+        >
+          <Truck size={18} strokeWidth={activeTab === 'tracking' ? 2.5 : 2} /> Order Tracking
         </button>
       </div>
 
@@ -3010,6 +3020,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
       ) : activeTab === 'reviews' ? (
         /* ==================== REVIEWS MODERATION TAB ==================== */
         <ReviewsModeration reviewsFilter={reviewsFilter} setReviewsFilter={setReviewsFilter} allSiteReviews={allSiteReviews} reviewsLoading={reviewsLoading} reviewsError={reviewsError} loadSiteReviews={loadSiteReviews} reviewActionLoading={reviewActionLoading} handleReviewAction={handleReviewAction} />
+      ) : activeTab === 'tracking' ? (
+        /* ==================== ORDER TRACKING TAB ==================== */
+        <AdminTrackingPanel inquiries={adminData.optional.inquiries} products={products} loadAdminData={loadAdminData} />
       ) : (
         /* ==================== B2B PARTNER APPLICATIONS TAB ==================== */
         <div className="admin-partners-tab">
