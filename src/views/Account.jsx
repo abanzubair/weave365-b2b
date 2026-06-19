@@ -17,11 +17,12 @@
  * @param {Function} props.onSignOut - Callback to end the user session
  */
 
-import { useState } from 'react';
-import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2 } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
+import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 
 function titleCase(value) {
   return String(value || 'pending')
@@ -54,6 +55,170 @@ export function Account({
   onSignOut,
 }) {
   const [activeTab, setActiveTab] = useState('orders');
+
+  const [addresses, setAddresses] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [showAddEditForm, setShowAddEditForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+
+  // Address form fields
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formAddr1, setFormAddr1] = useState('');
+  const [formAddr2, setFormAddr2] = useState('');
+  const [formCity, setFormCity] = useState('');
+  const [formState, setFormState] = useState('');
+  const [formPincode, setFormPincode] = useState('');
+  const [formCountry, setFormCountry] = useState('India');
+  const [isDefault, setIsDefault] = useState(false);
+
+  const normalizePincodeInput = (value) => {
+    return String(value).replace(/\D/g, '').slice(0, 6);
+  };
+
+  const fetchAddresses = async () => {
+    if (!user?.id || !isSupabaseConfigured) return;
+    setAddressLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setAddresses(data || []);
+    } catch (err) {
+      console.error('Error loading addresses:', err);
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'addresses' && user?.id) {
+      fetchAddresses();
+    }
+  }, [activeTab, user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses();
+    }
+  }, [user?.id]);
+
+  const handleStartEdit = (addr) => {
+    setEditingAddress(addr);
+    setFormName(addr.full_name || '');
+    setFormPhone(addr.phone_number || '');
+    setFormAddr1(addr.address_line1 || '');
+    setFormAddr2(addr.address_line2 || '');
+    setFormCity(addr.city || '');
+    setFormState(addr.state || '');
+    setFormPincode(addr.pincode || '');
+    setFormCountry(addr.country || 'India');
+    setIsDefault(addr.is_default || false);
+    setShowAddEditForm(true);
+  };
+
+  const handleSaveAddress = async (e) => {
+    e.preventDefault();
+    if (!user?.id || !isSupabaseConfigured) return;
+
+    const addrData = {
+      full_name: formName.trim(),
+      phone_number: formPhone.trim(),
+      address_line1: formAddr1.trim(),
+      address_line2: formAddr2.trim() || null,
+      city: formCity.trim(),
+      state: formState.trim(),
+      pincode: formPincode.trim(),
+      country: formCountry.trim(),
+      is_default: isDefault,
+    };
+
+    try {
+      if (isDefault) {
+        await supabase
+          .from('addresses')
+          .update({ is_default: false })
+          .eq('user_id', user.id);
+      }
+
+      if (editingAddress) {
+        const { error } = await supabase
+          .from('addresses')
+          .update(addrData)
+          .eq('id', editingAddress.id);
+        if (error) throw error;
+      } else {
+        const isFirst = addresses.length === 0;
+        const { error } = await supabase
+          .from('addresses')
+          .insert({
+            ...addrData,
+            user_id: user.id,
+            is_default: isDefault || isFirst,
+          });
+        if (error) throw error;
+      }
+
+      setShowAddEditForm(false);
+      setEditingAddress(null);
+      await fetchAddresses();
+    } catch (err) {
+      console.error('Failed to save address:', err);
+      alert('Error saving address. Please try again.');
+    }
+  };
+
+  const handleDeleteAddress = async (id) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    if (!isSupabaseConfigured) return;
+
+    try {
+      const target = addresses.find(a => a.id === id);
+      const { error } = await supabase
+        .from('addresses')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+
+      if (target?.is_default && addresses.length > 1) {
+        const remaining = addresses.filter(a => a.id !== id);
+        await supabase
+          .from('addresses')
+          .update({ is_default: true })
+          .eq('id', remaining[0].id);
+      }
+
+      await fetchAddresses();
+    } catch (err) {
+      console.error('Failed to delete address:', err);
+      alert('Error deleting address.');
+    }
+  };
+
+  const handleSetDefault = async (id) => {
+    if (!user?.id || !isSupabaseConfigured) return;
+
+    try {
+      await supabase
+        .from('addresses')
+        .update({ is_default: false })
+        .eq('user_id', user.id);
+
+      const { error } = await supabase
+        .from('addresses')
+        .update({ is_default: true })
+        .eq('id', id);
+      if (error) throw error;
+
+      await fetchAddresses();
+    } catch (err) {
+      console.error('Failed to set default address:', err);
+      alert('Error setting default address.');
+    }
+  };
 
   if (!user) {
     return (
@@ -120,7 +285,7 @@ export function Account({
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />
       </div>
 
-      {/* Premium Account Tabs for Responsive Mobile Screens */}
+      {/* Premium Account Tabs for Responsive Screens */}
       <div className="account-tabs-bar">
         <button type="button" 
           className={`account-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
@@ -135,6 +300,13 @@ export function Account({
         >
           <Heart size={16} />
           <span>Saved ({favoriteProducts.length})</span>
+        </button>
+        <button type="button" 
+          className={`account-tab-btn ${activeTab === 'addresses' ? 'active' : ''}`}
+          onClick={() => setActiveTab('addresses')}
+        >
+          <MapPin size={16} />
+          <span>Addresses ({addresses.length})</span>
         </button>
         {priceAccess.resellerDashboardEnabled && (
           <button type="button" 
@@ -189,6 +361,209 @@ export function Account({
             ))}
             {favoriteProducts.length === 0 && <p className="empty-state">No favourites saved yet.</p>}
           </div>
+        </article>
+
+        <article className="account-panel panel-addresses">
+          <div className="account-panel-head">
+            <span><MapPin size={18} /> My Saved Addresses</span>
+            {!showAddEditForm && (
+              <button 
+                type="button" 
+                onClick={() => {
+                  setEditingAddress(null);
+                  setFormName('');
+                  setFormPhone('');
+                  setFormAddr1('');
+                  setFormAddr2('');
+                  setFormCity('');
+                  setFormState('');
+                  setFormPincode('');
+                  setFormCountry('India');
+                  setIsDefault(false);
+                  setShowAddEditForm(true);
+                }}
+              >
+                + Add Address
+              </button>
+            )}
+          </div>
+
+          {showAddEditForm ? (
+            <form onSubmit={handleSaveAddress} className="account-address-form">
+              <h3>{editingAddress ? 'Edit Address' : 'Add New Address'}</h3>
+              <div className="address-form-grid">
+                <label className="field-label">
+                  Full Name *
+                  <input 
+                    type="text" 
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    required 
+                  />
+                </label>
+                <label className="field-label">
+                  Phone Number *
+                  <input 
+                    type="tel" 
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    required 
+                  />
+                </label>
+                <label className="field-label full-width">
+                  Address Line 1 *
+                  <input 
+                    type="text" 
+                    value={formAddr1}
+                    onChange={(e) => setFormAddr1(e.target.value)}
+                    required 
+                  />
+                </label>
+                <label className="field-label full-width">
+                  Address Line 2 (Optional)
+                  <input 
+                    type="text" 
+                    value={formAddr2}
+                    onChange={(e) => setFormAddr2(e.target.value)}
+                  />
+                </label>
+                <label className="field-label">
+                  City *
+                  <input 
+                    type="text" 
+                    value={formCity}
+                    onChange={(e) => setFormCity(e.target.value)}
+                    required 
+                  />
+                </label>
+                <label className="field-label">
+                  State *
+                  <input 
+                    type="text" 
+                    value={formState}
+                    onChange={(e) => setFormState(e.target.value)}
+                    required 
+                  />
+                </label>
+                <label className="field-label">
+                  Pincode *
+                  <input 
+                    type="text" 
+                    value={formPincode}
+                    onChange={(e) => setFormPincode(normalizePincodeInput(e.target.value))}
+                    required 
+                  />
+                </label>
+                <label className="field-label">
+                  Country *
+                  <input 
+                    type="text" 
+                    value={formCountry}
+                    onChange={(e) => setFormCountry(e.target.value)}
+                    required 
+                  />
+                </label>
+              </div>
+
+              <label className="address-checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  disabled={editingAddress?.is_default}
+                />
+                <span>Set as default delivery address</span>
+              </label>
+
+              <div className="form-actions-row">
+                <button type="submit" className="primary-button">
+                  Save Address
+                </button>
+                <button 
+                  type="button" 
+                  className="secondary-button" 
+                  onClick={() => setShowAddEditForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="account-addresses-list">
+              {addressLoading && <p className="loading-state">Loading addresses...</p>}
+              {!addressLoading && addresses.length === 0 && (
+                <div className="address-empty-state">
+                  <p>You have no saved addresses yet.</p>
+                  <button 
+                    type="button" 
+                    className="primary-button"
+                    onClick={() => {
+                      setEditingAddress(null);
+                      setFormName('');
+                      setFormPhone('');
+                      setFormAddr1('');
+                      setFormAddr2('');
+                      setFormCity('');
+                      setFormState('');
+                      setFormPincode('');
+                      setFormCountry('India');
+                      setIsDefault(false);
+                      setShowAddEditForm(true);
+                    }}
+                  >
+                    Add Your First Address
+                  </button>
+                </div>
+              )}
+              {!addressLoading && addresses.map((addr) => (
+                <div 
+                  key={addr.id} 
+                  className={`account-address-card ${addr.is_default ? 'default' : ''}`}
+                >
+                  <div className="address-card-content">
+                    <div className="address-card-header">
+                      <strong>{addr.full_name}</strong>
+                      {addr.is_default && <span className="default-badge">Default</span>}
+                    </div>
+                    <p className="phone">{addr.phone_number}</p>
+                    <p className="street">
+                      {addr.address_line1}
+                      {addr.address_line2 ? `, ${addr.address_line2}` : ''}
+                    </p>
+                    <p className="location">{addr.city}, {addr.state} - {addr.pincode}</p>
+                    <p className="country">{addr.country}</p>
+                  </div>
+                  <div className="address-card-actions">
+                    <button 
+                      type="button" 
+                      className="edit-btn" 
+                      onClick={() => handleStartEdit(addr)}
+                      title="Edit Address"
+                    >
+                      <Edit size={16} /> Edit
+                    </button>
+                    <button 
+                      type="button" 
+                      className="delete-btn" 
+                      onClick={() => handleDeleteAddress(addr.id)}
+                      title="Delete Address"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                    {!addr.is_default && (
+                      <button 
+                        type="button" 
+                        className="set-default-btn" 
+                        onClick={() => handleSetDefault(addr.id)}
+                      >
+                        Set Default
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </article>
 
         {priceAccess.resellerDashboardEnabled && (

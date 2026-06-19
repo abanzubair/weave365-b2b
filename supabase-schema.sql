@@ -771,3 +771,43 @@ create index if not exists product_reviews_product_id_status_idx
   on public.product_reviews (product_id, status);
 create index if not exists product_reviews_created_idx 
   on public.product_reviews (created_at desc);
+
+-------------------------------------------------------------------------------
+-- B2B CUSTOMER ADDRESSES TABLE
+-------------------------------------------------------------------------------
+
+create table if not exists public.addresses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  full_name text not null,
+  phone_number text not null,
+  address_line1 text not null,
+  address_line2 text,
+  city text not null,
+  state text not null,
+  pincode text not null,
+  country text default 'India',
+  is_default boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.addresses enable row level security;
+
+-- Policies
+drop policy if exists "addresses own or admin" on public.addresses;
+create policy "addresses own or admin"
+  on public.addresses for all
+  to authenticated
+  using ((select auth.uid()) = user_id or public.is_admin())
+  with check ((select auth.uid()) = user_id or public.is_admin());
+
+-- Index
+create index if not exists addresses_user_id_idx on public.addresses (user_id);
+
+drop trigger if exists touch_addresses_updated_at on public.addresses;
+create trigger touch_addresses_updated_at
+before update on public.addresses
+for each row execute function public.touch_updated_at();
+

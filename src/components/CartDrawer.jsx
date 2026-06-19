@@ -31,6 +31,7 @@ export function CartDrawer({
   codStatus,
   checkPincode,
   priceAccess,
+  user,
 }) {
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
@@ -39,6 +40,130 @@ export function CartDrawer({
   const drawerBodyRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // Address flow state
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressStep, setAddressStep] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  // Address form fields
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formAddr1, setFormAddr1] = useState('');
+  const [formAddr2, setFormAddr2] = useState('');
+  const [formCity, setFormCity] = useState('');
+  const [formState, setFormState] = useState('');
+  const [formPincode, setFormPincode] = useState(pincode || '');
+  const [formCountry, setFormCountry] = useState('India');
+  const [saveToAccount, setSaveToAccount] = useState(true);
+
+  // Sync pincode from cart check if available
+  useEffect(() => {
+    if (pincode) {
+      setFormPincode(pincode);
+    }
+  }, [pincode]);
+
+  const fetchAddresses = async () => {
+    if (!user?.id || !isSupabaseConfigured) return;
+    try {
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setAddresses(data || []);
+      const defaultAddr = data?.find(a => a.is_default);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.id);
+        setSelectedAddress(defaultAddr);
+      } else if (data && data.length > 0) {
+        setSelectedAddressId(data[0].id);
+        setSelectedAddress(data[0]);
+      }
+    } catch (err) {
+      console.error('Error fetching addresses:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (open && user?.id) {
+      fetchAddresses();
+    }
+  }, [open, user?.id]);
+
+  const handlePaymentTriggerClick = () => {
+    if (showUpiDetails || addressStep) {
+      setShowUpiDetails(false);
+      setAddressStep(false);
+    } else {
+      setAddressStep(true);
+      if (addresses.length === 0) {
+        setShowAddressForm(true);
+      }
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    if (showAddressForm || addresses.length === 0) {
+      if (!formName.trim() || !formPhone.trim() || !formAddr1.trim() || !formCity.trim() || !formState.trim() || !formPincode.trim()) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      const addrData = {
+        full_name: formName.trim(),
+        phone_number: formPhone.trim(),
+        address_line1: formAddr1.trim(),
+        address_line2: formAddr2.trim() || null,
+        city: formCity.trim(),
+        state: formState.trim(),
+        pincode: formPincode.trim(),
+        country: formCountry.trim() || 'India',
+      };
+
+      if (saveToAccount && user?.id && isSupabaseConfigured) {
+        try {
+          const isFirst = addresses.length === 0;
+          const { data, error } = await supabase
+            .from('addresses')
+            .insert({
+              ...addrData,
+              user_id: user.id,
+              is_default: isFirst,
+            })
+            .select()
+            .single();
+          if (error) throw error;
+
+          setSelectedAddress(data);
+          setSelectedAddressId(data.id);
+          await fetchAddresses();
+        } catch (err) {
+          console.error('Failed to save address:', err);
+          alert('Failed to save address to account, but proceeding with this address.');
+          setSelectedAddress(addrData);
+        }
+      } else {
+        setSelectedAddress(addrData);
+      }
+
+      setShowAddressForm(false);
+    } else {
+      const active = addresses.find(a => a.id === selectedAddressId);
+      if (!active) {
+        alert('Please select a delivery address.');
+        return;
+      }
+      setSelectedAddress(active);
+    }
+
+    setAddressStep(false);
+    setShowUpiDetails(true);
+  };
+
   const hasUnselectedColors = useMemo(() => {
     return items.some(item => item.selectedColorName === 'Select Color');
   }, [items]);
@@ -46,6 +171,8 @@ export function CartDrawer({
   useEffect(() => {
     if (!open) {
       setShowUpiDetails(false);
+      setAddressStep(false);
+      setShowAddressForm(false);
       setEnquiryState('idle');
     }
   }, [open]);
@@ -70,9 +197,10 @@ export function CartDrawer({
       : null,
     [canViewPrices, items, priceAccess],
   );
+
   const whatsappUrl = useMemo(
-    () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess),
-    [codStatus, items, pincode, priceAccess, total],
+    () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, undefined, selectedAddress),
+    [codStatus, items, pincode, priceAccess, total, selectedAddress],
   );
 
   const showPayment = priceAccess?.priceGroup !== 'wholesale' && priceAccess?.buyerType !== 'wholesale';
@@ -88,6 +216,7 @@ export function CartDrawer({
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
   const groupedItems = useMemo(() => {
     const groups = new Map();
 
@@ -199,7 +328,7 @@ export function CartDrawer({
             pincode: pincode || priceAccess?.buyerPincode || undefined,
             inquiry_type: 'cart_payment',
             status: 'new',
-            message: `Order paid via UPI. Screenshot: ${screenshotUrl}`,
+            message: `Order paid via UPI. Screenshot: ${screenshotUrl}\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
             items: items.map(item => ({
               product_id: item.productGroupKey,
               product_title: item.product.title,
@@ -215,7 +344,7 @@ export function CartDrawer({
       }
 
       setEnquiryState('sent');
-      const paidWhatsappUrl = buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl);
+      const paidWhatsappUrl = buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, selectedAddress);
       window.open(paidWhatsappUrl, '_blank', 'noopener,noreferrer');
     } catch (err) {
       console.error('Payment screenshot upload error:', err);
@@ -232,7 +361,7 @@ export function CartDrawer({
             pincode: pincode || priceAccess?.buyerPincode || undefined,
             inquiry_type: 'cart_payment_fallback',
             status: 'new',
-            message: 'Order checkout via UPI (Screenshot upload failed)',
+            message: `Order checkout via UPI (Screenshot upload failed)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
             items: items.map(item => ({
               product_id: item.productGroupKey,
               product_title: item.product.title,
@@ -274,9 +403,12 @@ export function CartDrawer({
               <button 
                 type="button" 
                 className="cart-back-btn" 
-                onClick={() => setShowUpiDetails(false)}
+                onClick={() => {
+                  setShowUpiDetails(false);
+                  setAddressStep(true);
+                }}
               >
-                <ArrowLeft size={16} /> Back to Order List
+                <ArrowLeft size={16} /> Back to Address Selection
               </button>
 
               <div className="upi-payment-header">
@@ -325,6 +457,208 @@ export function CartDrawer({
               >
                 <Zap size={15} /> Pay via GPay / PhonePe / UPI
               </a>
+            </div>
+          ) : addressStep ? (
+            <div className="cart-address-view">
+              <button 
+                type="button" 
+                className="cart-back-btn" 
+                onClick={() => {
+                  setAddressStep(false);
+                  setShowAddressForm(false);
+                }}
+              >
+                <ArrowLeft size={16} /> Back to Order List
+              </button>
+
+              <div className="upi-payment-header">
+                <strong>Delivery Address</strong>
+                <span className="upi-payment-badge">Step 1 of 2</span>
+              </div>
+
+              {showAddressForm || addresses.length === 0 ? (
+                <div className="address-form">
+                  <div className="form-head-row">
+                    <h3>Add Delivery Address</h3>
+                    {addresses.length > 0 && (
+                      <button 
+                        type="button" 
+                        className="text-button" 
+                        onClick={() => setShowAddressForm(false)}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="address-form-grid">
+                    <label className="field-label">
+                      Full Name *
+                      <input 
+                        type="text" 
+                        placeholder="Receiver's name"
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label">
+                      Phone Number *
+                      <input 
+                        type="tel" 
+                        placeholder="10-digit mobile number"
+                        value={formPhone}
+                        onChange={(e) => setFormPhone(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label full-width">
+                      Address Line 1 *
+                      <input 
+                        type="text" 
+                        placeholder="Flat, House no., Building, Company, Apartment"
+                        value={formAddr1}
+                        onChange={(e) => setFormAddr1(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label full-width">
+                      Address Line 2 (Optional)
+                      <input 
+                        type="text" 
+                        placeholder="Area, Street, Sector, Village"
+                        value={formAddr2}
+                        onChange={(e) => setFormAddr2(e.target.value)}
+                      />
+                    </label>
+
+                    <label className="field-label">
+                      City *
+                      <input 
+                        type="text" 
+                        placeholder="City"
+                        value={formCity}
+                        onChange={(e) => setFormCity(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label">
+                      State *
+                      <input 
+                        type="text" 
+                        placeholder="State"
+                        value={formState}
+                        onChange={(e) => setFormState(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label">
+                      Pincode *
+                      <input 
+                        type="text" 
+                        placeholder="6-digit pincode"
+                        value={formPincode}
+                        onChange={(e) => setFormPincode(normalizePincodeInput(e.target.value))}
+                        required
+                      />
+                    </label>
+
+                    <label className="field-label">
+                      Country *
+                      <input 
+                        type="text" 
+                        placeholder="Country"
+                        value={formCountry}
+                        onChange={(e) => setFormCountry(e.target.value)}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {user?.id && (
+                    <label className="address-checkbox-label">
+                      <input 
+                        type="checkbox"
+                        checked={saveToAccount}
+                        onChange={(e) => setSaveToAccount(e.target.checked)}
+                      />
+                      <span>Save this address to my account for future use</span>
+                    </label>
+                  )}
+
+                  <button 
+                    type="button" 
+                    className="primary-button proceed-address-btn"
+                    onClick={handleProceedToPayment}
+                  >
+                    Deliver to this Address <ArrowRight size={18} />
+                  </button>
+                </div>
+              ) : (
+                <div className="address-selector-pane">
+                  <div className="saved-addresses-list">
+                    {addresses.map((addr) => (
+                      <label 
+                        key={addr.id} 
+                        className={`address-selector-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
+                      >
+                        <input 
+                          type="radio" 
+                          name="selected_address" 
+                          checked={selectedAddressId === addr.id}
+                          onChange={() => {
+                            setSelectedAddressId(addr.id);
+                            setSelectedAddress(addr);
+                          }}
+                        />
+                        <div className="address-card-info">
+                          <span className="name-row">
+                            <strong>{addr.full_name}</strong>
+                            {addr.is_default && <span className="default-badge">Default</span>}
+                          </span>
+                          <p className="phone-text">{addr.phone_number}</p>
+                          <p className="address-text">
+                            {addr.address_line1}
+                            {addr.address_line2 ? `, ${addr.address_line2}` : ''}
+                          </p>
+                          <p className="city-text">{addr.city}, {addr.state} - {addr.pincode}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+
+                  <button 
+                    type="button" 
+                    className="secondary-button add-address-trigger-btn"
+                    onClick={() => {
+                      setShowAddressForm(true);
+                      setFormPincode(pincode || '');
+                      setFormName('');
+                      setFormPhone('');
+                      setFormAddr1('');
+                      setFormAddr2('');
+                      setFormCity('');
+                      setFormState('');
+                    }}
+                  >
+                    + Add New Address
+                  </button>
+
+                  <button 
+                    type="button" 
+                    className="primary-button proceed-address-btn"
+                    onClick={handleProceedToPayment}
+                    disabled={!selectedAddressId}
+                  >
+                    Proceed to Payment <ArrowRight size={18} />
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -456,6 +790,15 @@ export function CartDrawer({
                 } <ArrowRight size={18} />
               </button>
             </>
+          ) : addressStep ? (
+            <div className="cart-info-alert">
+              <svg className="alert-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Complete your delivery details to proceed to secure payment.</span>
+            </div>
           ) : (
             <>
               {hasUnselectedColors && (
@@ -484,10 +827,10 @@ export function CartDrawer({
                 {items.length > 0 && showPayment && !hasUnselectedColors && (
                   <button 
                     type="button"
-                    className={`payment-trigger-btn ${showUpiDetails ? 'active' : ''}`}
-                    onClick={() => setShowUpiDetails(prev => !prev)}
+                    className={`payment-trigger-btn ${showUpiDetails || addressStep ? 'active' : ''}`}
+                    onClick={handlePaymentTriggerClick}
                   >
-                    <Zap size={15} /> {showUpiDetails ? 'Hide Payment' : 'Make Payment'}
+                    <Zap size={15} /> {showUpiDetails || addressStep ? 'Hide Payment' : 'Make Payment'}
                   </button>
                 )}
                 <button 

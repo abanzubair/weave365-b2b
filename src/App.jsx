@@ -1199,6 +1199,7 @@ export default function App({ initialData = {} }) {
           codStatus={codStatus}
           checkPincode={checkPincode}
           priceAccess={priceAccess}
+          user={user}
         />
       )}
       <AuthModal

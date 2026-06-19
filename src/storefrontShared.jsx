@@ -145,7 +145,7 @@ export function safeFileName(value) {
 
 
 
-export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl) {
+export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
@@ -176,6 +176,18 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
       codStatus === 'available' ? 'COD checked: Available' : '',
     ].filter(Boolean);
 
+    if (address) {
+      lines.push(
+        '',
+        '*Delivery Address:*',
+        `Name: ${address.full_name}`,
+        `Phone: ${address.phone_number}`,
+        `Address: ${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
+        `City: ${address.city}, State: ${address.state} - ${address.pincode}`,
+        `Country: ${address.country || 'India'}`
+      );
+    }
+
     if (screenshotUrl) {
       lines.push('', `Payment Screenshot: ${screenshotUrl}`);
     }
@@ -198,6 +210,18 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);
+
+  if (address) {
+    lines.push(
+      '',
+      '*Delivery Address:*',
+      `Name: ${address.full_name}`,
+      `Phone: ${address.phone_number}`,
+      `Address: ${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
+      `City: ${address.city}, State: ${address.state} - ${address.pincode}`,
+      `Country: ${address.country || 'India'}`
+    );
+  }
 
   if (screenshotUrl) {
     lines.push('', `Payment Screenshot: ${screenshotUrl}`);
