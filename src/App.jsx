@@ -731,6 +731,16 @@ export default function App({ initialData = {} }) {
       return next;
     });
   }, [user]);
+ 
+  const removeProduct = useCallback((productGroupKey) => {
+    setCart((currentCart) => {
+      const next = currentCart.filter((entry) => entry.productGroupKey !== productGroupKey);
+      if (user) {
+        void persistCart(next, user.id);
+      }
+      return next;
+    });
+  }, [user]);
 
 
   const addCartColor = useCallback((item, color) => {
@@ -1182,6 +1192,7 @@ export default function App({ initialData = {} }) {
           onClose={() => setCartOpen(false)}
           items={cartProducts}
           updateQuantity={updateQuantity}
+          removeProduct={removeProduct}
           addCartColor={addCartColor}
           pincode={pincode}
           setPincode={setPincode}

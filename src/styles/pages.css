@@ -2980,6 +2980,31 @@ button {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fffdf9;
+  position: relative;
+}
+
+.cart-remove-group-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  padding: 0;
+  z-index: 2;
+}
+
+.cart-remove-group-btn:hover {
+  background: rgba(183, 134, 70, 0.1);
+  color: var(--ink);
 }
 
 .cart-product-head {

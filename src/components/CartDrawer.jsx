@@ -24,6 +24,7 @@ export function CartDrawer({
   onClose,
   items,
   updateQuantity,
+  removeProduct,
   addCartColor,
   pincode,
   setPincode,
@@ -330,6 +331,14 @@ export function CartDrawer({
               {items.length === 0 && <p className="empty-state">Order list is empty.</p>}
               {groupedItems.map((group) => (
                 <article className="cart-product-card" key={group.key}>
+                  <button 
+                    type="button" 
+                    className="cart-remove-group-btn" 
+                    onClick={() => removeProduct(group.key)}
+                    aria-label="Remove product"
+                  >
+                    <X size={16} />
+                  </button>
                   <div className="cart-product-head">
                     <img
                       className="cart-product-image"
