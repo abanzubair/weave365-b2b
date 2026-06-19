@@ -129,6 +129,14 @@ export const ProductCard = memo(function ProductCard({
     }
   }
 
+  function handleBuyNowClick() {
+    if (colorCount > 1) {
+      addToCart(product, selectedVariant, 1, { colorName: 'Select Color' });
+    } else {
+      addToCart(product, selectedVariant, 1);
+    }
+  }
+
   return (
     <article className="product-card">
       <div className="card-media">
@@ -222,7 +230,7 @@ export const ProductCard = memo(function ProductCard({
               className="add-to-bag-btn options-trigger-btn"
               onClick={(e) => {
                 e.stopPropagation();
-                addToCart(product, selectedVariant, 1);
+                handleBuyNowClick();
               }}
             >
               <ShoppingBag size={16} /> BUY NOW
@@ -269,7 +277,7 @@ export const ProductCard = memo(function ProductCard({
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button type="button" className="sheet-item" onClick={() => { handleClose(); addToCart(product, selectedVariant, 1); }}>
+                <button type="button" className="sheet-item" onClick={() => { handleClose(); handleBuyNowClick(); }}>
                   <div className="item-icon bag"><ShoppingBag size={20} /></div>
                   <div className="item-copy">
                     <strong>Add to Order List</strong>
