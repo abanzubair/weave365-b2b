@@ -107,14 +107,14 @@ export default function RootLayout({ children }) {
       <head>
         <SchemaMarkup />
         {/* Google tag (gtag.js) */}
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-2S63N2WPVM" />
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L" />
         <Script id="google-analytics">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'G-2S63N2WPVM');
+            gtag('config', 'G-4K369BHS5L');
           `}
         </Script>
         <link rel="preconnect" href="https://res.cloudinary.com" />
