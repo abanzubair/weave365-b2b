@@ -1,5 +1,5 @@
 import App from '../../src/App.jsx';
-import { storeConfig } from '../../src/config.js';
+import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
@@ -16,8 +16,13 @@ function cleanSlug(slug = []) {
 
 function routeFromSlug(slug = []) {
   const clean = cleanSlug(slug);
-  const route = clean[0] || 'home';
-  const isBlogCategory = route === 'blog' && clean[1] === 'category';
+  const rawRoute = clean[0] || 'home';
+  const isBlogCategory = rawRoute === 'blog' && clean[1] === 'category';
+
+  // A route is a product route if it has exactly 2 segments, and rawRoute is not a known non-product route, and it's not a known SEO landing page slug
+  const isProductRoute = clean.length === 2 && !NON_PRODUCT_ROUTES.has(rawRoute) && !seoLandingPages[rawRoute];
+  const route = isProductRoute ? 'product' : rawRoute;
+
   return {
     route,
     productId: route === 'product' ? decodeURIComponent(clean[1] || '') : '',
@@ -209,8 +214,9 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     const image = product.images?.[0];
     const title = product.metaTitle || product.title || `${storeConfig.name} Product`;
     const description = product.metaDescription || product.summary || product.description || `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
+    const catSlug = getProductCategorySlug(product.id, product.category);
 
-    return buildMeta(title, description, `/product/${encodeURIComponent(product.id)}`, image);
+    return buildMeta(title, description, `/${catSlug}/${encodeURIComponent(product.id)}`, image);
   }
 
   if (route === 'contact') {

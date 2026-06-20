@@ -5,7 +5,7 @@
  * 2. A backward-compatibility import/re-export gateway for extracted visual components.
  */
 import { memo, useMemo, useState, useEffect } from 'react';
-import { storeConfig } from './config.js';
+import { storeConfig, getProductCategorySlug } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import {
@@ -151,21 +151,39 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
   if (isWholesale && canViewPrices) {
-    const itemLines = items.map((item) => {
-      const price = customerPrice(item.variant.prices, priceAccess) || 0;
-      const totalColors = item.product.totalColors ?? (item.product.variants?.length || 1);
-      const colorText = item.selectedColorName || item.variant.color || 'Set';
-      const isSet = totalColors > 1;
-      
-      const setQty = isSet ? Math.max(1, Math.round(item.quantity / totalColors)) : item.quantity;
-      const unitLabel = isSet ? (setQty > 1 ? 'Sets' : 'Set') : (setQty > 1 ? 'pcs' : 'pc');
-      const finalPrice = price * item.quantity;
+    const groups = {};
+    items.forEach((item) => {
+      const key = item.productGroupKey;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+    });
+
+    const itemLines = Object.entries(groups).map(([productId, groupItems]) => {
+      const firstItem = groupItems[0];
+      if (!firstItem) return '';
+
+      const setQty = firstItem.quantity;
+      const totalColors = firstItem.product.totalColors ?? (firstItem.product.variants?.length || 1);
+      const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+
+      let baseSetPrice = 0;
+      groupItems.forEach((item) => {
+        baseSetPrice += customerPrice(item.variant.prices, priceAccess) || 0;
+      });
+      if (groupItems.length < totalColors && groupItems.length > 0) {
+        baseSetPrice = (baseSetPrice / groupItems.length) * totalColors;
+      }
+
+      const discountedSetPrice = baseSetPrice * discountFactor;
+      const groupTotalPrice = discountedSetPrice * setQty;
 
       return [
-        `${item.product.title}`,
-        `Code: ${item.variant.code} | Color: ${colorText} | Qty: ${setQty} ${unitLabel} | Price: ${formatMoney(finalPrice)}`
+        `${firstItem.product.title}`,
+        `Code: ${firstItem.variant.code} | Qty: ${setQty} Set${setQty === 1 ? '' : 's'} (${totalColors} colors) | Price: ${formatMoney(groupTotalPrice)} (at ${formatMoney(discountedSetPrice)}/Set)`
       ].join('\n');
-    });
+    }).filter(Boolean);
 
     const lines = [
       `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
@@ -235,7 +253,8 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const price = customerPrice(variant.prices, priceAccess);
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
-  const productUrl = `https://www.weave365.com/product/${product.id}`;
+  const catSlug = getProductCategorySlug(product.id, product.category);
+  const productUrl = `https://www.weave365.com/${catSlug}/${product.id}`;
 
   if (isWholesale && canViewPrices && price != null) {
     const isSet = quantity > 1;

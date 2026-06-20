@@ -3166,5 +3166,37 @@
   color: #ffffff !important;
 }
 
+/* ==================================================
+   J. REGISTRATION TRANSLATION TOGGLE BTN STYLES
+   ================================================== */
+.trusted-registration-page .translate-toggle-btn {
+  border-radius: 8px;
+  background: rgba(117, 111, 79, 0.08);
+  border: 1px solid rgba(117, 111, 79, 0.15);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--olive, #756f4f) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.trusted-registration-page .translate-toggle-btn .tab-translate-icon {
+  color: var(--olive, #756f4f) !important;
+  transition: transform 0.3s ease;
+}
+
+.trusted-registration-page .translate-toggle-btn:hover,
+.trusted-registration-page .translate-toggle-btn:hover .tab-translate-icon {
+  background: var(--olive, #756f4f) !important;
+  color: #ffffff !important;
+  border-color: var(--olive, #756f4f) !important;
+}
+
 
 

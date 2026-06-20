@@ -59,12 +59,20 @@ export function VariationQuantityDrawer({
 
   const [activeKey, setActiveKey] = useState(rows[0]?.key || '');
   const [quantities, setQuantities] = useState(() => buildQuantityMap(rows));
+  const [setQuantityVal, setSetQuantityVal] = useState(1);
 
   useEffect(() => {
-    setQuantities(buildQuantityMap(rows));
+    const isWholesale = priceAccess?.priceGroup === 'wholesale';
+    if (isWholesale) {
+      setSetQuantityVal(1);
+      const initialMap = rows.reduce((map, option) => ({ ...map, [option.key]: 1 }), {});
+      setQuantities(initialMap);
+    } else {
+      setQuantities(buildQuantityMap(rows));
+    }
     const activeRow = rows.find((row) => row.name === selectedColorName || row.image === selectedImage) || rows[0];
     setActiveKey(activeRow?.key || '');
-  }, [rows, selectedColorName, selectedImage]);
+  }, [rows, selectedColorName, selectedImage, priceAccess?.priceGroup]);
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -114,6 +122,18 @@ export function VariationQuantityDrawer({
     }));
   }, []);
 
+  const handleSetQuantityChange = useCallback((nextVal) => {
+    const val = Math.max(0, nextVal);
+    setSetQuantityVal(val);
+    setQuantities((current) => {
+      const next = { ...current };
+      rows.forEach((row) => {
+        next[row.key] = val;
+      });
+      return next;
+    });
+  }, [rows]);
+
   const selectRow = useCallback((row) => {
     setActiveKey(row.key);
     onSelectColor(row.name);
@@ -162,6 +182,34 @@ export function VariationQuantityDrawer({
           </section>
 
           <section className="variation-quantity-section" aria-label="Color quantities">
+            {priceAccess?.priceGroup === 'wholesale' && (
+              <div className="wholesale-set-stepper-container" style={{
+                margin: '0 0 20px 0',
+                padding: '16px',
+                background: '#fcf8f0',
+                borderRadius: '8px',
+                border: '1px solid #ebd3b4',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <strong style={{ fontSize: '15px', color: '#8c6239' }}>Quantity</strong>
+                  <span style={{ fontSize: '12px', color: '#a08060' }}>
+                    1 Set = 1 piece of each color variant ({rows.length} pcs total)
+                  </span>
+                </div>
+                <div className="quantity-stepper" style={{ background: '#fff' }} aria-label="Set quantity">
+                  <button type="button" onClick={() => handleSetQuantityChange(setQuantityVal - 1)} aria-label="Decrease sets">
+                    <Minus size={16} />
+                  </button>
+                  <output style={{ minWidth: '32px', textAlign: 'center', fontWeight: 'bold' }}>{setQuantityVal}</output>
+                  <button type="button" onClick={() => handleSetQuantityChange(setQuantityVal + 1)} aria-label="Increase sets">
+                    <Plus size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
             <h3>Colors</h3>
             <div className="variation-quantity-list">
               {rows.map((row) => {
@@ -179,15 +227,21 @@ export function VariationQuantityDrawer({
                     <span className="variation-row-price">
                       {row.price != null ? formatMoney(row.price) : priceNoticeForAccess(priceAccess)}
                     </span>
-                    <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
-                      <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
-                        <Minus size={16} />
-                      </button>
-                      <output>{quantity}</output>
-                      <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
-                        <Plus size={16} />
-                      </button>
-                    </div>
+                    {priceAccess?.priceGroup === 'wholesale' ? (
+                      <span className="wholesale-qty-display" style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
+                        {quantity} {quantity === 1 ? 'pc' : 'pcs'}
+                      </span>
+                    ) : (
+                      <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
+                        <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
+                          <Minus size={16} />
+                        </button>
+                        <output>{quantity}</output>
+                        <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}

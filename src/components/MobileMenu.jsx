@@ -183,6 +183,7 @@ export function MobileMenu({
                 {[
                   { name: 'Sourcing Partners', slug: 'sourcing-partners' },
                   { name: 'White Label Brands', slug: 'white-label-brands' },
+                  { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
                 ].map((item) => (
                   <button type="button" 
                     key={item.slug} 

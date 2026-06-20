@@ -3044,7 +3044,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
               <div>
                 <h2 className="admin-partners-banner-title">B2B Partner Applications Portal</h2>
                 <p className="admin-partners-banner-desc">
-                  Verify Step 1 product samples, signed payment agreements, and Step 3 onboarding files.
+                  Verify signed merchant agreements and onboarding details for B2B supplier partners.
                 </p>
               </div>
             </div>
@@ -3069,7 +3069,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <Users size={22} />
               </div>
               <div className="admin-flex1">
-                <span className="admin-partner-metric-label">Step 1 Product Reviews</span>
+                <span className="admin-partner-metric-label">Basic Partner Reviews</span>
                 <div className="admin-partner-metric-values">
                   <strong className="admin-partner-metric-value">{partnerApps.reviews.length}</strong>
                   <span className="admin-partner-status-orange">
@@ -3089,7 +3089,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 <Award size={22} />
               </div>
               <div className="admin-flex1">
-                <span className="admin-partner-metric-label">Step 2 & 3 Onboardings</span>
+                <span className="admin-partner-metric-label">Full Partner Onboardings</span>
                 <div className="admin-partner-metric-values">
                   <strong className="admin-partner-metric-value">{partnerApps.onboardings.length}</strong>
                   <span className="admin-partner-status-blue">
@@ -3135,14 +3135,14 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                 onClick={() => setPartnerSubTab('reviews')}
                 className={`admin-partner-subtab-btn ${partnerSubTab === 'reviews' ? 'active' : ''}`}
               >
-                Product Reviews ({filteredReviews.length})
+                Basic Information ({filteredReviews.length})
               </button>
               <button
                 type="button"
                 onClick={() => setPartnerSubTab('onboardings')}
                 className={`admin-partner-subtab-btn ${partnerSubTab === 'onboardings' ? 'active' : ''}`}
               >
-                Onboarding Profiles ({filteredOnboardings.length})
+                Full Onboarding Profiles ({filteredOnboardings.length})
               </button>
             </div>
 
@@ -3220,7 +3220,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
             /* ==================== SUB-TAB: STEP 1 REVIEWS ==================== */
             <article className="admin-panel admin-m0">
               <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-                <span>Step 1 Product Review Submissions</span>
+                <span>Basic Partner Review Submissions</span>
                 <small>{filteredReviews.length} records matching</small>
               </div>
               <div className="admin-table-wrap">
@@ -3233,7 +3233,6 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       <th>Location</th>
                       <th>Categories</th>
                       <th>Target Price Range</th>
-                      <th>Samples</th>
                       <th>Status</th>
                       <th>Inspect & Action</th>
                     </tr>
@@ -3277,22 +3276,6 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                           </td>
                           <td className="admin-fs12">{rev.price_range}</td>
                           <td>
-                            <div className="admin-flex-wrap-gap8">
-                              {[rev.image1, rev.image2, rev.image3, rev.image4].map((img, i) => {
-                                if (!img) return null;
-                                return (
-                                  <img
-                                    key={i}
-                                    src={img}
-                                    className="admin-thumbnail-img"
-                                    onClick={() => setLightboxImage(img)}
-                                    alt="Sample"
-                                  />
-                                );
-                              })}
-                            </div>
-                          </td>
-                          <td>
                             <span className={`admin-status ${currentStatus.toLowerCase()}`}>
                               {currentStatus}
                             </span>
@@ -3311,7 +3294,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                     })}
                     {filteredReviews.length === 0 && (
                       <tr>
-                        <td colSpan="9" className="admin-table-empty-cell">
+                        <td colSpan="8" className="admin-table-empty-cell">
                           No product review applications found matching your query.
                         </td>
                       </tr>
@@ -3444,7 +3427,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   {/* Modal Header */}
                   <div className="admin-modal-header">
                     <div>
-                      <span className="admin-modal-subtitle">Step 1: Product Review Assessment</span>
+                      <span className="admin-modal-subtitle">B2B Partner Basic Assessment</span>
                       <h3 className="admin-modal-title">{rev.full_name}</h3>
                     </div>
                     <button type="button" onClick={() => setSelectedReview(null)} className="admin-modal-close-btn">×</button>
@@ -3488,59 +3471,37 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                       </div>
                     </div>
 
-                    {/* Product Samples Images */}
-                    <div>
-                      <strong className="admin-display-block-mb8">Submitted Product Samples (Exactly 4 Required):</strong>
-                      <div className="admin-grid-4col">
-                        {[rev.image1, rev.image2, rev.image3, rev.image4].map((img, i) => {
-                          if (!img) {
-                            return (
-                              <div key={i} className="admin-thumbnail-placeholder">
-                                Not uploaded
-                              </div>
-                            );
-                          }
-                          return (
-                            <div key={i} className="admin-thumbnail-wrapper">
-                              <img
-                                src={img}
-                                className="admin-modal-img"
-                                onClick={() => setLightboxImage(img)}
-                                alt="Sample"
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    {/* Product Samples Images - Removed for 1-Step Onboarding */}
 
                     {/* Administrative Action Control Panel */}
                     <div className="admin-review-control-panel">
                       <h4 className="admin-review-control-title">Review Status Controls</h4>
                       <p className="admin-review-control-desc">
-                        Approving Step 1 marks their WhatsApp number as "approved" in the Database. This immediately unlocks Step 2 (Payment Terms) and Step 3 (Onboarding Forms) for the applicant.
+                        Approving the application marks the B2B partner as approved for both basic review and full onboarding profile databases.
                       </p>
                       <div className="admin-flex-gap12">
                         <button
                           type="button"
                           className="primary-button admin-btn-approve-review"
                           onClick={async () => {
-                            const success = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
-                            if (success) {
-                              alert('Review approved successfully! Step 2 & 3 are now unlocked for this partner.');
+                            const success1 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
+                            const success2 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
+                            if (success1 || success2) {
+                              alert('Application approved successfully!');
                               setSelectedReview(null);
                             }
                           }}
                         >
-                          Approve Review & Unlock Step 2
+                          Approve Application
                         </button>
                         <button
                           type="button"
                           className="secondary-button admin-btn-reject-review"
                           onClick={async () => {
-                            const success = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'rejected');
-                            if (success) {
-                              alert('Review marked as rejected.');
+                            const success1 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'rejected');
+                            const success2 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'rejected');
+                            if (success1 || success2) {
+                              alert('Application marked as rejected.');
                               setSelectedReview(null);
                             }
                           }}
@@ -3576,7 +3537,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                   {/* Modal Header */}
                   <div className="admin-modal-header-bg">
                     <div>
-                      <span className="admin-modal-subtitle">Step 3 Onboarding Application Detail</span>
+                      <span className="admin-modal-subtitle">Full Onboarding Application Detail</span>
                       <h3 className="admin-modal-title-fs24">{onb.business_name || 'Unnamed Vendor'}</h3>
                       <span className="admin-modal-header-meta">Proprietor: {onb.full_name} | WhatsApp: {onb.whatsapp_number}</span>
                     </div>
@@ -3730,8 +3691,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               type="button"
                               className="primary-button admin-btn-status-approve"
                               onClick={async () => {
-                                const success = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
-                                if (success) alert('Onboarding marked as Approved in database!');
+                                const success1 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
+                                const success2 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
+                                if (success1 || success2) alert('Onboarding profile and basic review marked as Approved in database!');
                               }}
                             >
                               Mark Profile Approved
@@ -3740,8 +3702,9 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
                               type="button"
                               className="secondary-button admin-btn-status-flag"
                               onClick={async () => {
-                                const success = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'flagged');
-                                if (success) alert('Onboarding flagged in database.');
+                                const success1 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'flagged');
+                                const success2 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'flagged');
+                                if (success1 || success2) alert('Onboarding profile and basic review flagged in database.');
                               }}
                             >
                               Flag Application

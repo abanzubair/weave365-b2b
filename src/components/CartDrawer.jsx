@@ -192,12 +192,37 @@ export function CartDrawer({
   }, [showUpiDetails]);
 
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const total = useMemo(
-    () => canViewPrices
-      ? items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0)
-      : null,
-    [canViewPrices, items, priceAccess],
-  );
+  const total = useMemo(() => {
+    if (!canViewPrices) return null;
+    const isWholesale = priceAccess?.priceGroup === 'wholesale';
+
+    if (isWholesale) {
+      const groups = {};
+      items.forEach((item) => {
+        const key = item.productGroupKey;
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push(item);
+      });
+
+      let sum = 0;
+      Object.entries(groups).forEach(([productId, groupItems]) => {
+        const firstItem = groupItems[0];
+        if (!firstItem) return;
+        const setQty = firstItem.quantity;
+        const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+        
+        groupItems.forEach((item) => {
+          const itemPrice = customerPrice(item.variant.prices, priceAccess) || 0;
+          sum += itemPrice * item.quantity * discountFactor;
+        });
+      });
+      return Math.round(sum);
+    } else {
+      return items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
+    }
+  }, [canViewPrices, items, priceAccess]);
 
   const whatsappUrl = useMemo(
     () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, undefined, selectedAddress),
@@ -717,12 +742,29 @@ export function CartDrawer({
                       <strong>{group.product.title}</strong>
                       <span className="cart-item-code">{group.variant.code}</span>
                       <span className="cart-group-summary">
-                        {group.selectedColorsCount} color{group.selectedColorsCount === 1 ? '' : 's'} selected · {group.totalQuantity} pc
+                        {priceAccess?.priceGroup === 'wholesale' ? (
+                          <>
+                            {group.items[0]?.quantity} Set{group.items[0]?.quantity === 1 ? '' : 's'} · {group.totalQuantity} pcs total
+                            {canViewPrices && (() => {
+                              const setQty = group.items[0]?.quantity || 1;
+                              const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+                              const baseSetPrice = customerPrice(group.variant.prices, priceAccess) * (group.product.totalColors || group.product.variants.length || 1);
+                              const discountedSetPrice = baseSetPrice * discountFactor;
+                              return (
+                                <span className="cart-group-set-price" style={{ display: 'block', marginTop: '4px', fontWeight: '500', color: 'var(--ink)' }}>
+                                  {formatMoney(discountedSetPrice)} / Set
+                                </span>
+                              );
+                            })()}
+                          </>
+                        ) : (
+                          `${group.selectedColorsCount} color${group.selectedColorsCount === 1 ? '' : 's'} selected · ${group.totalQuantity} pc`
+                        )}
                       </span>
                     </div>
                   </div>
 
-                  {group.items.some(item => item.selectedColorName !== 'Select Color') && (
+                  {priceAccess?.priceGroup !== 'wholesale' && group.items.some(item => item.selectedColorName !== 'Select Color') && (
                     <div className="cart-color-lines">
                       {group.items.map((item) => {
                         if (item.selectedColorName === 'Select Color') return null;
@@ -746,23 +788,49 @@ export function CartDrawer({
                                   : priceNoticeForAccess(priceAccess)}
                               </span>
                             </div>
-                            <div className="qty-row">
-                              <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
-                              <span>{item.quantity}</span>
-                              <button 
-                                type="button" 
-                                onClick={() => updateQuantity(item, item.quantity + 1)}
-                              >
-                                +
-                              </button>
-                            </div>
+                            {priceAccess?.priceGroup !== 'wholesale' ? (
+                              <div className="qty-row">
+                                <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
+                                <span>{item.quantity}</span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => updateQuantity(item, item.quantity + 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="cart-qty-display-wholesale" style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
+                                {item.quantity} {item.quantity === 1 ? 'pc' : 'pcs'}
+                              </span>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                   )}
 
-                  {group.colorOptions.length > 0 && (
+                  {priceAccess?.priceGroup === 'wholesale' && (
+                    <div className="cart-group-wholesale-stepper" style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '12px',
+                      paddingTop: '12px',
+                      borderTop: '1px solid #f2f2f2'
+                    }}>
+                      <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: '600' }}>
+                        Quantity: {group.items[0]?.quantity} Set{group.items[0]?.quantity === 1 ? '' : 's'}
+                      </span>
+                      <div className="qty-row">
+                        <button type="button" onClick={() => updateQuantity(group.items[0], group.items[0].quantity - 1)}>-</button>
+                        <span>{group.items[0]?.quantity}</span>
+                        <button type="button" onClick={() => updateQuantity(group.items[0], group.items[0].quantity + 1)}>+</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {priceAccess?.priceGroup !== 'wholesale' && group.colorOptions.length > 0 && (
                     <div className="cart-color-picker">
                       <span>{group.selectedColorNames.has('Select Color') ? 'Select Color' : 'Add more colors'}</span>
                       <div className="cart-color-swatch-row">

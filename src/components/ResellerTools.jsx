@@ -18,6 +18,7 @@ import {
   Search
 } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
+import { getProductCategorySlug } from '../config.js';
 
 export function ResellerTools({ user, buyerProfile }) {
   const [activeTab, setActiveTab] = useState('shares');
@@ -267,7 +268,7 @@ export function ResellerTools({ user, buyerProfile }) {
                 </div>
                 <div className="rt-link-actions" style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
                   <a 
-                    href={productId ? `/product/${productId}` : '#'} 
+                    href={productId ? `/${getProductCategorySlug(productId)}/${productId}` : '#'} 
                     target={productId ? "_blank" : "_self"}
                     rel="noopener noreferrer"
                     className="rt-header-link" 

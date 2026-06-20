@@ -1,5 +1,6 @@
 
 import { fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
+import { getProductCategorySlug } from '../src/config.js';
 import { seoLandingPages } from '../src/data/seoLandingPages.js';
 import { blogPosts } from '../src/data/blogPosts.js';
 
@@ -128,7 +129,7 @@ export default async function sitemap() {
 
       // Product detail pages
       productPages = activeProducts.map((product) => ({
-        url: `${siteUrl}/product/${encodeURIComponent(product.id)}`,
+        url: `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${encodeURIComponent(product.id)}`,
         lastModified: product.stockInDate || new Date(),
         changeFrequency: 'weekly',
         priority: 0.7,

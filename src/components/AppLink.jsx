@@ -1,5 +1,6 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { getProductCategorySlug } from '../config.js';
 
 /**
  * AppLink Component
@@ -32,7 +33,7 @@ export function AppLink({
     if (to === 'home') {
       url = '/';
     } else if (to === 'product' && productId) {
-      url = `/product/${encodeURIComponent(productId)}`;
+      url = `/${getProductCategorySlug(productId)}/${encodeURIComponent(productId)}`;
     } else if (to === 'partner' && productId) {
       // Slugify partner name
       const slug = String(productId).toLowerCase().trim().replace(/\s+/g, '-');

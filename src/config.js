@@ -75,3 +75,44 @@ export const seoCategoryMap = {
   'dupatta': 'wholesale-banarasi-dupattas',
   'dupattas': 'wholesale-banarasi-dupattas',
 };
+
+export const NON_PRODUCT_ROUTES = new Set([
+  'home',
+  'product',
+  's',
+  'partner',
+  'blog',
+  'order-tracking',
+  'wholesale-catalogue',
+  'catalogue',
+  'contact',
+  'about',
+  'reviews',
+  'early-access',
+  'disclaimer',
+  'shipping-delivery',
+  'returns-cancellation',
+  'privacy-security',
+  'terms-conditions',
+  'wholesale-partner-program',
+  'bulk-inquiry',
+  'new-arrivals',
+  'sourcing-partners',
+  'white-label-brands',
+  'weaver-registration',
+  'weaver-onboarding',
+  'our-offerings',
+  'admin',
+  'reseller-dashboard'
+]);
+
+export function getProductCategorySlug(productId, productCategory = null) {
+  if (!productId) return 'product';
+  if (productCategory) {
+    return productCategory.toLowerCase().trim();
+  }
+  const firstDigit = String(productId).trim().charAt(0);
+  const catName = categoryCodes[firstDigit];
+  return catName ? catName.toLowerCase().trim() : 'product';
+}
+

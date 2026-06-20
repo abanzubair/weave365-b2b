@@ -31,7 +31,7 @@ import {
   Check,
   Loader,
 } from 'lucide-react';
-import { storeConfig } from './config.js';
+import { storeConfig, getProductCategorySlug } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
 import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 import {
@@ -403,7 +403,7 @@ export function ProductDetail({
   usePageSeo({
     title: product.metaTitle || product.title || `${storeConfig.name} Product`,
     description: product.metaDescription || product.summary || product.description || `View ${product.metaTitle || product.title} in the ${storeConfig.name} wholesale catalogue.`,
-    canonical: product.id ? `https://www.weave365.com/product/${encodeURIComponent(product.id)}` : undefined
+    canonical: product.id ? `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${encodeURIComponent(product.id)}` : undefined
   });
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
@@ -689,7 +689,7 @@ export function ProductDetail({
         "highPrice": (displayPrice ? displayPrice * 1.5 : 8500),
         "offerCount": totalColors || 1,
         "availability": "https://schema.org/InStock",
-        "url": `https://www.weave365.com/product/${product.id}`
+        "url": `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`
       }
     };
 
@@ -743,7 +743,7 @@ export function ProductDetail({
         "@type": "ListItem",
         "position": 3,
         "name": product.title,
-        "item": `https://www.weave365.com/product/${product.id}`
+        "item": `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`
       }
     ]
   }), [product]);
@@ -871,6 +871,29 @@ export function ProductDetail({
       ]);
       const zip = new JSZip();
 
+      // Construct and add the product details text file
+      const isSaree = String(product.category || '').toLowerCase() === 'saree';
+      const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
+      const detailsLines = [
+        `Product Title: ${product.title}`,
+        `Code/SKU: ${variant?.code || 'N/A'}`,
+        `Category: ${product.category || 'N/A'}`,
+        '',
+        `Description:`,
+        product.description || 'No description available.',
+        '',
+        `Specifications:`,
+        `- Fabric: ${product.fabric || 'N/A'}`,
+        `- Weave Technique: ${product.weave || 'N/A'}`,
+        `- Zari / Work: ${product.work || 'N/A'}`,
+        `- Pattern: ${product.pattern || 'N/A'}`,
+        `- Occasion: ${product.occasion || 'N/A'}`,
+        `- Length: ${lengthText}`,
+        '',
+        `Disclaimer: Slight variations in color, fabric, and weaving are possible. Model images are for reference only.`
+      ];
+      zip.file('product-details.txt', detailsLines.join('\n'));
+
       const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const promises = product.images.map(async (url, index) => {
         // Route requests through our native API proxy to bypass client-side CORS issues
@@ -894,10 +917,10 @@ export function ProductDetail({
     } finally {
       setIsDownloading(false);
     }
-  }, [product.id, product.images, product.title, priceAccess]);
+  }, [product.id, product.images, product.title, priceAccess, variant]);
 
   const shareProductPage = useCallback(async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.com/product/${product.id}`;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
     const shareText = `Check out ${product.title} on Weave 365`;
     if (navigator.share) {
       try {

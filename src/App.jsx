@@ -17,7 +17,7 @@ import { DropdownPortal } from './components/DropdownPortal.jsx';
 import { SearchOverlay } from './components/SearchOverlay.jsx';
 import { SiteHeader } from './components/SiteHeader.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
-import { seoCategoryRoutes, seoCategoryMap } from './config.js';
+import { seoCategoryRoutes, seoCategoryMap, NON_PRODUCT_ROUTES, getProductCategorySlug } from './config.js';
 import { sortByStockDateDesc } from './utils/sortProducts.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
@@ -26,6 +26,7 @@ import { assetSrc } from './utils/assetSrc.js';
 
 import {
   parseCartVariantCode,
+  encodeCartVariantCode,
   upsertCart,
   upsertCartSelections,
   changeCartColor,
@@ -87,6 +88,83 @@ const slugifyPartner = (name) => {
   return name.toLowerCase().trim().replace(/\s+/g, '-');
 };
 
+function normalizeWholesaleCart(cart, productsById) {
+  let changed = false;
+  const nextCart = [];
+
+  // Group cart items by product ID
+  const groups = {};
+  cart.forEach(item => {
+    if (!groups[item.productGroupKey]) {
+      groups[item.productGroupKey] = [];
+    }
+    groups[item.productGroupKey].push(item);
+  });
+
+  Object.entries(groups).forEach(([productId, items]) => {
+    const product = productsById.get(productId);
+    if (!product) {
+      nextCart.push(...items);
+      return;
+    }
+
+    // Find the max quantity in this group
+    let maxQty = 0;
+    items.forEach(item => {
+      if (item.quantity > maxQty) maxQty = item.quantity;
+    });
+    if (maxQty <= 0) maxQty = 1;
+
+    const colorOptions = product.colorOptions || [];
+    if (colorOptions.length > 0) {
+      colorOptions.forEach(option => {
+        const variant = product.variants.find(v => v.color === option.name) || product.variants[0];
+        const cartVariantCode = encodeCartVariantCode(variant.code, option.name);
+        const existing = items.find(item => item.variantCode === cartVariantCode);
+        
+        if (!existing) {
+          nextCart.push({
+            productGroupKey: productId,
+            variantCode: cartVariantCode,
+            quantity: maxQty
+          });
+          changed = true;
+        } else {
+          nextCart.push({
+            ...existing,
+            quantity: maxQty
+          });
+          if (existing.quantity !== maxQty) {
+            changed = true;
+          }
+        }
+      });
+    } else {
+      const variant = product.variants[0];
+      const cartVariantCode = encodeCartVariantCode(variant.code);
+      const existing = items.find(item => item.variantCode === cartVariantCode);
+      if (!existing) {
+        nextCart.push({
+          productGroupKey: productId,
+          variantCode: cartVariantCode,
+          quantity: maxQty
+        });
+        changed = true;
+      } else {
+        nextCart.push({
+          ...existing,
+          quantity: maxQty
+        });
+        if (existing.quantity !== maxQty) {
+          changed = true;
+        }
+      }
+    }
+  });
+
+  return { nextCart, changed };
+}
+
 // seoCategoryRoutes imported from config.js
 
 export default function App({ initialData = {} }) {
@@ -105,15 +183,21 @@ export default function App({ initialData = {} }) {
   const [prevPathname, setPrevPathname] = useState(pathname);
   const [isProductPageReady, setIsProductPageReady] = useState(true);
 
+  const isProductPathname = useCallback((path) => {
+    const segments = path.split('/').filter(Boolean);
+    return segments.length === 2 && !NON_PRODUCT_ROUTES.has(segments[0]) && !seoLandingPages[segments[0]];
+  }, []);
+
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setPendingRoute(null);
-    if (pathname.startsWith('/product/')) {
+    if (isProductPathname(pathname)) {
       setIsProductPageReady(false);
     }
   }
   
-  const route = pendingRoute || pathSegments[0] || 'home';
+  const isProductRoute = pathSegments.length === 2 && !NON_PRODUCT_ROUTES.has(pathSegments[0]) && !seoLandingPages[pathSegments[0]];
+  const route = pendingRoute || (isProductRoute ? 'product' : (pathSegments[0] || 'home'));
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
   const inquiryId = route === 'order-tracking' ? decodeURIComponent(pathSegments[1] || '') : null;
 
@@ -182,6 +266,11 @@ export default function App({ initialData = {} }) {
   const pricedProducts = useMemo(
     () => applyVisiblePricesToProducts(products, visiblePriceMap),
     [products, visiblePriceMap],
+  );
+
+  const productsById = useMemo(
+    () => new Map(pricedProducts.map((product) => [product.id, product])),
+    [pricedProducts],
   );
 
   useEffect(() => {
@@ -583,6 +672,56 @@ export default function App({ initialData = {} }) {
     setFavorites(readLocal(`favorites_${user.id}`));
   }, [user]);
 
+  // Normalize wholesale cart items to complete sets
+  useEffect(() => {
+    if (priceAccess?.priceGroup === 'wholesale' && cart.length > 0 && productsById.size > 0) {
+      let needsNormalization = false;
+      
+      const groups = {};
+      cart.forEach(item => {
+        if (!groups[item.productGroupKey]) {
+          groups[item.productGroupKey] = [];
+        }
+        groups[item.productGroupKey].push(item);
+      });
+
+      for (const [productId, items] of Object.entries(groups)) {
+        const product = productsById.get(productId);
+        if (!product) continue;
+
+        let targetQty = items[0]?.quantity || 1;
+        
+        const colorOptions = product.colorOptions || [];
+        if (colorOptions.length > 0) {
+          if (items.length !== colorOptions.length) {
+            needsNormalization = true;
+            break;
+          }
+          const allMatch = items.every(item => item.quantity === targetQty);
+          if (!allMatch) {
+            needsNormalization = true;
+            break;
+          }
+        } else {
+          if (items.length !== 1 || items[0].quantity !== targetQty) {
+            needsNormalization = true;
+            break;
+          }
+        }
+      }
+
+      if (needsNormalization) {
+        setCart((currentCart) => {
+          const { nextCart, changed } = normalizeWholesaleCart(currentCart, productsById);
+          if (changed && user) {
+            void persistCart(nextCart, user.id);
+          }
+          return changed ? nextCart : currentCart;
+        });
+      }
+    }
+  }, [priceAccess?.priceGroup, cart, productsById, user]);
+
   const deferredSearch = useDeferredValue(localSearch);
   const searchTerm = useMemo(() => deferredSearch.trim().toLowerCase(), [deferredSearch]);
 
@@ -624,10 +763,7 @@ export default function App({ initialData = {} }) {
     return sortByStockDateDesc(filtered);
   }, [activeCategory, priceRange, fabric, weave, pricedProducts, searchTerm]);
 
-  const productsById = useMemo(
-    () => new Map(pricedProducts.map((product) => [product.id, product])),
-    [pricedProducts],
-  );
+
 
   const favoriteKeySet = useMemo(
     () => new Set(favorites.map((item) => item.productGroupKey)),
@@ -674,13 +810,33 @@ export default function App({ initialData = {} }) {
       return;
     }
 
+    const isWholesale = priceAccess?.priceGroup === 'wholesale';
+
     setCart((currentCart) => {
-      const next = upsertCart(currentCart, product, variant, quantity, colorSelection);
+      let next;
+      if (isWholesale) {
+        const colorOptions = product.colorOptions || [];
+        const selections = colorOptions.length > 0
+          ? colorOptions.map((option) => {
+              const varItem = product.variants.find((v) => v.color === option.name) || product.variants[0];
+              return {
+                variant: varItem,
+                quantity: quantity,
+                colorName: option.name,
+                image: option.image,
+              };
+            })
+          : [{ variant: product.variants[0], quantity: quantity }];
+        
+        next = upsertCartSelections(currentCart, product, selections);
+      } else {
+        next = upsertCart(currentCart, product, variant, quantity, colorSelection);
+      }
       void persistCart(next, user.id);
       return next;
     });
     setCartOpen(true);
-  }, [user]);
+  }, [user, priceAccess?.priceGroup]);
 
   const addCartSelections = useCallback((product, selections) => {
     const selectedRows = selections.filter((selection) => selection?.variant && selection.quantity > 0);
@@ -720,20 +876,35 @@ export default function App({ initialData = {} }) {
 
   const updateQuantity = useCallback((item, quantity) => {
     setCart((currentCart) => {
-      const next = currentCart.reduce((acc, entry) => {
-        const matches = entry.productGroupKey === item.productGroupKey && entry.variantCode === item.variantCode;
-        const newQty = matches ? quantity : entry.quantity;
-        if (newQty > 0) {
-          acc.push(matches ? { ...entry, quantity: newQty } : entry);
+      const isWholesale = priceAccess?.priceGroup === 'wholesale';
+      let next;
+      if (isWholesale) {
+        if (quantity <= 0) {
+          next = currentCart.filter((entry) => entry.productGroupKey !== item.productGroupKey);
+        } else {
+          next = currentCart.map((entry) => {
+            if (entry.productGroupKey === item.productGroupKey) {
+              return { ...entry, quantity };
+            }
+            return entry;
+          });
         }
-        return acc;
-      }, []);
+      } else {
+        next = currentCart.reduce((acc, entry) => {
+          const matches = entry.productGroupKey === item.productGroupKey && entry.variantCode === item.variantCode;
+          const newQty = matches ? quantity : entry.quantity;
+          if (newQty > 0) {
+            acc.push(matches ? { ...entry, quantity: newQty } : entry);
+          }
+          return acc;
+        }, []);
+      }
       if (user) {
         void persistCart(next, user.id);
       }
       return next;
     });
-  }, [user]);
+  }, [user, priceAccess?.priceGroup]);
  
   const removeProduct = useCallback((productGroupKey) => {
     setCart((currentCart) => {
@@ -778,7 +949,8 @@ export default function App({ initialData = {} }) {
   const navigate = useCallback((nextRoute, productId = null, shopName = null, navOptions = {}) => {
     let href = `/${nextRoute}`;
     if (nextRoute === 'product') {
-      href = `/product/${productId}`;
+      const catSlug = getProductCategorySlug(productId);
+      href = `/${catSlug}/${productId}`;
     } else if (nextRoute === 'order-tracking') {
       href = `/order-tracking/${productId}`;
     } else if (nextRoute === 'partner') {
@@ -821,8 +993,9 @@ export default function App({ initialData = {} }) {
       }
     }
 
-    const targetSegment = (href.split('/').filter(Boolean)[0] || 'home').split('?')[0];
     const targetPath = href.split('?')[0];
+    const isTargetProduct = isProductPathname(targetPath);
+    const targetSegment = isTargetProduct ? 'product' : (href.split('/').filter(Boolean)[0] || 'home').split('?')[0];
     const cleanTargetPath = targetPath.replace(/\/$/, '') || '/';
     const cleanPathname = pathname.replace(/\/$/, '') || '/';
 
