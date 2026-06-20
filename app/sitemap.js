@@ -1,4 +1,5 @@
 
+import { headers } from 'next/headers';
 import { fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
 import { getProductCategorySlug } from '../src/config.js';
 import { seoLandingPages } from '../src/data/seoLandingPages.js';
@@ -6,9 +7,12 @@ import { blogPosts } from '../src/data/blogPosts.js';
 
 export const runtime = 'edge';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
-
 export default async function sitemap() {
+  const headersList = await headers();
+  const host = headersList.get('host') || 'www.weave365.com';
+  const proto = headersList.get('x-forwarded-proto') || 'https';
+  const siteUrl = `${proto}://${host}`;
+
   // Static pages
   const staticPages = [
     {

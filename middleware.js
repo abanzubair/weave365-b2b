@@ -3,6 +3,13 @@ import { NextResponse } from 'next/server';
 export function middleware(request) {
   const url = request.nextUrl.clone();
   const host = request.headers.get('host');
+  const path = url.pathname;
+
+  // Skip redirect for search engine verification/crawling files (robots.txt, sitemap.xml)
+  // to ensure they can be served on their respective domains.
+  if (path === '/robots.txt' || path.includes('sitemap')) {
+    return NextResponse.next();
+  }
 
   if (host === 'weave365.in' || host === 'www.weave365.in' || host === 'weave365.com') {
     url.hostname = 'www.weave365.com';

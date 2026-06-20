@@ -1,7 +1,12 @@
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+import { headers } from 'next/headers';
 
-export default function robots() {
+export default async function robots() {
+  const headersList = await headers();
+  const host = headersList.get('host') || 'www.weave365.com';
+  const proto = headersList.get('x-forwarded-proto') || 'https';
+  const siteUrl = `${proto}://${host}`;
+
   return {
     rules: [
       {
