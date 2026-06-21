@@ -212,7 +212,8 @@ export function CartDrawer({
         const firstItem = groupItems[0];
         if (!firstItem) return;
         const setQty = firstItem.quantity;
-        const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+        const isUnder999 = String(firstItem.product?.category || '').toLowerCase() === 'under 999';
+        const discountFactor = isUnder999 ? 1.0 : (setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0));
 
         groupItems.forEach((item) => {
           const itemPrice = customerPrice(item.variant.prices, priceAccess) || 0;
@@ -751,7 +752,8 @@ export function CartDrawer({
                             {group.items[0]?.quantity} Set{group.items[0]?.quantity === 1 ? '' : 's'} · {group.totalQuantity} pcs total
                             {canViewPrices && (() => {
                               const setQty = group.items[0]?.quantity || 1;
-                              const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+                              const isUnder999 = String(group.product?.category || '').toLowerCase() === 'under 999';
+                              const discountFactor = isUnder999 ? 1.0 : (setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0));
                               const baseSetPrice = customerPrice(group.variant.prices, priceAccess) * (group.product.totalColors || group.product.variants.length || 1);
                               const discountedSetPrice = baseSetPrice * discountFactor;
                               return (

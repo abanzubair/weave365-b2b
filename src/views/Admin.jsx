@@ -202,7 +202,7 @@ const staticSeoDefaults = [
 ];
 
 const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {
-  const pluralName = categoryName.endsWith('s') ? categoryName : `${categoryName}s`;
+  const pluralName = categoryName === 'Under 999' ? categoryName : (categoryName.endsWith('s') ? categoryName : `${categoryName}s`);
   return {
     path: `/${slug}`,
     label: `Category: ${pluralName}`,
@@ -210,6 +210,7 @@ const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, 
     metaDescription: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
   };
 });
+
 
 const defaultSeoPageOptions = [
   ...staticSeoDefaults,

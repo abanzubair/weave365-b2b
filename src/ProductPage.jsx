@@ -429,7 +429,17 @@ export function ProductDetail({
   const displayPrice = useMemo(() => customerPrice(variant.prices, priceAccess), [priceAccess, variant.prices]);
   const canViewPrice = displayPrice != null && displayPrice > 0;
 
-  const pcSetVal = useMemo(() => String(product.raw?.['Pc / Set'] || '').trim().toLowerCase(), [product.raw]);
+  const pcSetVal = useMemo(() => {
+    const rawVal = String(product.raw?.['Pc / Set'] || '').trim().toLowerCase();
+    if (rawVal) return rawVal;
+
+    // Fallback to defaults based on category
+    const category = String(product.category || '').trim().toLowerCase();
+    if (category === 'saree' || category === 'fabric' || category === 'under 999') {
+      return 'pc';
+    }
+    return 'set';
+  }, [product.raw, product.category]);
   const isSoldAsPc = useMemo(() => pcSetVal === 'pc', [pcSetVal]);
   const isSoldAsBoth = useMemo(() => pcSetVal === 'pc, set' || pcSetVal === 'set, pc', [pcSetVal]);
   const isSoldAsSet = useMemo(() => pcSetVal === 'set', [pcSetVal]);
@@ -478,7 +488,7 @@ export function ProductDetail({
         id: 'moq',
         label: 'Minimum Order Quantity',
         content: priceAccess?.priceGroup === 'wholesale'
-          ? 'This product has a minimum order requirement of just 1 Set. Boutiques can order single sample packages with guaranteed quality.'
+          ? `This product has a minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`
           : (isSoldAsBoth
             ? 'Highly flexible MOQ options. You can purchase this design as individual selected pieces or save more by ordering full color matching sets.'
             : `This product has a low minimum order requirement of just 1 ${moqUnit}. Boutiques can order single sample packages with guaranteed quality.`)
@@ -1150,7 +1160,7 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? 'MOQ: 1 Set' : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
               </div>
             </div>
           </div>
@@ -1207,17 +1217,17 @@ export function ProductDetail({
                         <span className="price-value">{formatMoney(displayPrice)}</span>
                         <span className="price-unit">/pc</span>
                         {canViewPrice && (
-                          (priceAccess?.priceGroup === 'wholesale' && totalColors <= 1) ||
+                          (priceAccess?.priceGroup === 'wholesale' && (totalColors <= 1 || isSoldAsPc)) ||
                           priceAccess?.priceGroup === 'reseller'
                         ) && (
                           <div className="moq-badge">
                             {priceAccess?.priceGroup === 'wholesale'
-                              ? 'MOQ: 1 Set'
+                              ? `MOQ: 1 ${moqUnit}`
                               : (priceAccess?.priceGroup === 'reseller' ? 'Flexible MOQ' : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`))}
                           </div>
                         )}
                       </div>
-                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && (
+                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && !isSoldAsPc && (
                         <div className="price-set-block">
                           <span className="price-pipe"></span>
                           <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
@@ -1270,7 +1280,7 @@ export function ProductDetail({
               </div>
             )}
 
-            {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
+            {canViewPrice && priceAccess?.priceGroup === 'wholesale' && String(product.category || '').toLowerCase() !== 'under 999' && (
               <div className="tiered-pricing-card">
                 <div className="tier-column">
                   <div className="tier-label">1 - 4 {isSoldAsBoth ? 'Set' : moqUnit}</div>
@@ -1463,7 +1473,7 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? 'MOQ: 1 Set' : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
               </div>
             </div>
           </aside>
@@ -1977,6 +1987,7 @@ export function ProductDetail({
           setVariationDrawerOpen(false);
         }}
         priceAccess={priceAccess}
+        isSoldAsPc={isSoldAsPc}
       />
 
       <div className={`elegant-toast ${toastMessage ? 'show' : ''}`}>

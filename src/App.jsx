@@ -88,6 +88,14 @@ const slugifyPartner = (name) => {
   return name.toLowerCase().trim().replace(/\s+/g, '-');
 };
 
+function isProductSoldAsPc(product) {
+  if (!product) return false;
+  const pcSetVal = String(product.raw?.['Pc / Set'] || '').trim().toLowerCase();
+  if (pcSetVal) return pcSetVal === 'pc';
+  const category = String(product.category || '').trim().toLowerCase();
+  return category === 'saree' || category === 'fabric' || category === 'under 999';
+}
+
 function normalizeWholesaleCart(cart, productsById) {
   let changed = false;
   const nextCart = [];
@@ -104,6 +112,11 @@ function normalizeWholesaleCart(cart, productsById) {
   Object.entries(groups).forEach(([productId, items]) => {
     const product = productsById.get(productId);
     if (!product) {
+      nextCart.push(...items);
+      return;
+    }
+
+    if (isProductSoldAsPc(product)) {
       nextCart.push(...items);
       return;
     }
@@ -689,6 +702,8 @@ export default function App({ initialData = {} }) {
         const product = productsById.get(productId);
         if (!product) continue;
 
+        if (isProductSoldAsPc(product)) continue;
+
         let targetQty = items[0]?.quantity || 1;
         
         const colorOptions = product.colorOptions || [];
@@ -811,10 +826,11 @@ export default function App({ initialData = {} }) {
     }
 
     const isWholesale = priceAccess?.priceGroup === 'wholesale';
+    const isSoldAsPc = isProductSoldAsPc(product);
 
     setCart((currentCart) => {
       let next;
-      if (isWholesale) {
+      if (isWholesale && !isSoldAsPc) {
         const colorOptions = product.colorOptions || [];
         const selections = colorOptions.length > 0
           ? colorOptions.map((option) => {
@@ -877,8 +893,10 @@ export default function App({ initialData = {} }) {
   const updateQuantity = useCallback((item, quantity) => {
     setCart((currentCart) => {
       const isWholesale = priceAccess?.priceGroup === 'wholesale';
+      const product = productsById.get(item.productGroupKey);
+      const isSoldAsPc = isProductSoldAsPc(product);
       let next;
-      if (isWholesale) {
+      if (isWholesale && !isSoldAsPc) {
         if (quantity <= 0) {
           next = currentCart.filter((entry) => entry.productGroupKey !== item.productGroupKey);
         } else {
@@ -904,7 +922,7 @@ export default function App({ initialData = {} }) {
       }
       return next;
     });
-  }, [user, priceAccess?.priceGroup]);
+  }, [user, priceAccess?.priceGroup, productsById]);
  
   const removeProduct = useCallback((productGroupKey) => {
     setCart((currentCart) => {

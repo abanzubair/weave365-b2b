@@ -166,7 +166,8 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
 
       const setQty = firstItem.quantity;
       const totalColors = firstItem.product.totalColors ?? (firstItem.product.variants?.length || 1);
-      const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
+      const isUnder999 = String(firstItem.product?.category || '').toLowerCase() === 'under 999';
+      const discountFactor = isUnder999 ? 1.0 : (setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0));
 
       let baseSetPrice = 0;
       groupItems.forEach((item) => {
@@ -313,7 +314,27 @@ export function calculateComboDiscount(items, priceAccess) {
     return 0;
   }
 
-  return items.reduce((sum, item) => {
+  const under999Units = [];
+  const otherItems = [];
+
+  items.forEach((item) => {
+    const isUnder999 = String(item.product?.category || '').toLowerCase() === 'under 999';
+    if (isUnder999) {
+      for (let q = 0; q < item.quantity; q++) {
+        under999Units.push(Number(item.product?.comboDiscount || 0));
+      }
+    } else {
+      otherItems.push(item);
+    }
+  });
+
+  let under999Discount = 0;
+  under999Units.sort((a, b) => b - a);
+  for (let i = 0; i < under999Units.length - 1; i += 2) {
+    under999Discount += under999Units[i];
+  }
+
+  const otherDiscount = otherItems.reduce((sum, item) => {
     const discountAmount = Number(item.product?.comboDiscount || 0);
     if (discountAmount > 0) {
       const pairs = Math.floor(item.quantity / 2);
@@ -321,4 +342,6 @@ export function calculateComboDiscount(items, priceAccess) {
     }
     return sum;
   }, 0);
+
+  return under999Discount + otherDiscount;
 }

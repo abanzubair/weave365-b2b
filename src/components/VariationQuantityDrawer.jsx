@@ -27,6 +27,7 @@ export function VariationQuantityDrawer({
   onSelectColor,
   onAddToCart,
   priceAccess,
+  isSoldAsPc = false,
 }) {
   const rows = useMemo(() => {
     const source = colorOptions.length
@@ -63,7 +64,7 @@ export function VariationQuantityDrawer({
 
   useEffect(() => {
     const isWholesale = priceAccess?.priceGroup === 'wholesale';
-    if (isWholesale) {
+    if (isWholesale && !isSoldAsPc) {
       setSetQuantityVal(1);
       const initialMap = rows.reduce((map, option) => ({ ...map, [option.key]: 1 }), {});
       setQuantities(initialMap);
@@ -72,7 +73,7 @@ export function VariationQuantityDrawer({
     }
     const activeRow = rows.find((row) => row.name === selectedColorName || row.image === selectedImage) || rows[0];
     setActiveKey(activeRow?.key || '');
-  }, [rows, selectedColorName, selectedImage, priceAccess?.priceGroup]);
+  }, [rows, selectedColorName, selectedImage, priceAccess?.priceGroup, isSoldAsPc]);
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -182,7 +183,7 @@ export function VariationQuantityDrawer({
           </section>
 
           <section className="variation-quantity-section" aria-label="Color quantities">
-            {priceAccess?.priceGroup === 'wholesale' && (
+            {priceAccess?.priceGroup === 'wholesale' && !isSoldAsPc && (
               <div className="wholesale-set-stepper-container" style={{
                 margin: '0 0 20px 0',
                 padding: '16px',
@@ -227,7 +228,7 @@ export function VariationQuantityDrawer({
                     <span className="variation-row-price">
                       {row.price != null ? formatMoney(row.price) : priceNoticeForAccess(priceAccess)}
                     </span>
-                    {priceAccess?.priceGroup === 'wholesale' ? (
+                    {priceAccess?.priceGroup === 'wholesale' && !isSoldAsPc ? (
                       <span className="wholesale-qty-display" style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
                         {quantity} {quantity === 1 ? 'pc' : 'pcs'}
                       </span>

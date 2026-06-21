@@ -72,6 +72,8 @@ export const seoCategoryRoutes = {
   'wholesale-banarasi-suits': 'Suit',
   'wholesale-banarasi-lehengas': 'Lehenga',
   'wholesale-banarasi-dupattas': 'Dupatta',
+  'wholesale-banarasi-fabrics': 'Fabric',
+  'wholesale-under-999': 'Under 999',
 };
 
 /**
@@ -87,7 +89,12 @@ export const seoCategoryMap = {
   'lehengas': 'wholesale-banarasi-lehengas',
   'dupatta': 'wholesale-banarasi-dupattas',
   'dupattas': 'wholesale-banarasi-dupattas',
+  'fabric': 'wholesale-banarasi-fabrics',
+  'fabrics': 'wholesale-banarasi-fabrics',
+  'under 999': 'wholesale-under-999',
+  'under-999': 'wholesale-under-999',
 };
+
 
 export const NON_PRODUCT_ROUTES = new Set([
   'home',
