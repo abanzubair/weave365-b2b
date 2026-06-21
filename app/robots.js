@@ -1,6 +1,8 @@
 
 import { headers } from 'next/headers';
 
+export const runtime = 'edge';
+
 export default async function robots() {
   const headersList = await headers();
   const host = headersList.get('host') || 'www.weave365.com';
