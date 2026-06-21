@@ -19,7 +19,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2 } from 'lucide-react';
-import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
+import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -231,9 +231,13 @@ export function Account({
     );
   }
 
-  const total = priceAccess.canViewPrices
+  const subtotal = priceAccess.canViewPrices
     ? cartItems.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0)
-    : null;
+    : 0;
+  const discount = priceAccess.canViewPrices
+    ? calculateComboDiscount(cartItems, priceAccess)
+    : 0;
+  const total = priceAccess.canViewPrices ? Math.max(0, subtotal - discount) : null;
 
   const approvalHint = priceAccess.blockedByVaranasiPincode
     ? 'Varanasi pincode requires manual approval'

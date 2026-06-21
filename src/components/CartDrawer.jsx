@@ -13,6 +13,7 @@ import {
   fallbackProductImage,
   formatMoney,
   normalizePincodeInput,
+  calculateComboDiscount,
 } from '../storefrontShared.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { EnquiryPopup } from './EnquiryPopup.jsx';
@@ -192,8 +193,8 @@ export function CartDrawer({
   }, [showUpiDetails]);
 
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const total = useMemo(() => {
-    if (!canViewPrices) return null;
+  const { subtotal, discount, total } = useMemo(() => {
+    if (!canViewPrices) return { subtotal: null, discount: 0, total: null };
     const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
     if (isWholesale) {
@@ -212,15 +213,18 @@ export function CartDrawer({
         if (!firstItem) return;
         const setQty = firstItem.quantity;
         const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
-        
+
         groupItems.forEach((item) => {
           const itemPrice = customerPrice(item.variant.prices, priceAccess) || 0;
           sum += itemPrice * item.quantity * discountFactor;
         });
       });
-      return Math.round(sum);
+      const roundedTotal = Math.round(sum);
+      return { subtotal: roundedTotal, discount: 0, total: roundedTotal };
     } else {
-      return items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
+      const sub = items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
+      const disc = calculateComboDiscount(items, priceAccess);
+      return { subtotal: sub, discount: disc, total: Math.max(0, sub - disc) };
     }
   }, [canViewPrices, items, priceAccess]);
 
@@ -229,7 +233,7 @@ export function CartDrawer({
     [codStatus, items, pincode, priceAccess, total, selectedAddress],
   );
 
-  const showPayment = priceAccess?.priceGroup !== 'wholesale' && priceAccess?.buyerType !== 'wholesale';
+  const showPayment = priceAccess?.priceGroup !== 'wholesale';
   const upiUrl = useMemo(() => {
     if (!showPayment || !total) return '';
     return `upi://pay?pa=${storeConfig.upiId}&pn=${encodeURIComponent(storeConfig.name)}&am=${total}&cu=INR`;
@@ -437,12 +441,12 @@ export function CartDrawer({
   }
 
   return (
-    <div 
-      className={`cart-drawer-shell ${open ? 'open' : ''}`} 
+    <div
+      className={`cart-drawer-shell ${open ? 'open' : ''}`}
       onMouseDown={onClose}
     >
-      <aside 
-        className={`cart-drawer ${open ? 'open' : ''}`} 
+      <aside
+        className={`cart-drawer ${open ? 'open' : ''}`}
         aria-hidden={!open}
         onMouseDown={(e) => e.stopPropagation()}
         style={{ overscrollBehavior: 'contain' }}
@@ -456,9 +460,9 @@ export function CartDrawer({
         <div className="drawer-body" ref={drawerBodyRef}>
           {showUpiDetails ? (
             <div className="cart-upi-view">
-              <button 
-                type="button" 
-                className="cart-back-btn" 
+              <button
+                type="button"
+                className="cart-back-btn"
                 onClick={() => {
                   setShowUpiDetails(false);
                   setAddressStep(true);
@@ -493,8 +497,8 @@ export function CartDrawer({
                   <span>UPI ID</span>
                   <div className="upi-id-copy-wrapper">
                     <strong>{storeConfig.upiId}</strong>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={copyUpiId}
                       className="upi-copy-btn"
                     >
@@ -507,7 +511,7 @@ export function CartDrawer({
                   <strong className="upi-pay-amount">{formatMoney(total)}</strong>
                 </div>
               </div>
-              <a 
+              <a
                 href={upiUrl}
                 className="upi-pay-app-btn"
               >
@@ -516,9 +520,9 @@ export function CartDrawer({
             </div>
           ) : addressStep ? (
             <div className="cart-address-view">
-              <button 
-                type="button" 
-                className="cart-back-btn" 
+              <button
+                type="button"
+                className="cart-back-btn"
                 onClick={() => {
                   setAddressStep(false);
                   setShowAddressForm(false);
@@ -537,21 +541,21 @@ export function CartDrawer({
                   <div className="form-head-row">
                     <h3>Add Delivery Address</h3>
                     {addresses.length > 0 && (
-                      <button 
-                        type="button" 
-                        className="text-button" 
+                      <button
+                        type="button"
+                        className="text-button"
                         onClick={() => setShowAddressForm(false)}
                       >
                         Cancel
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="address-form-grid">
                     <label className="field-label">
                       Full Name *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Receiver's name"
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
@@ -561,8 +565,8 @@ export function CartDrawer({
 
                     <label className="field-label">
                       Phone Number *
-                      <input 
-                        type="tel" 
+                      <input
+                        type="tel"
                         placeholder="10-digit mobile number"
                         value={formPhone}
                         onChange={(e) => setFormPhone(e.target.value)}
@@ -572,8 +576,8 @@ export function CartDrawer({
 
                     <label className="field-label full-width">
                       Address Line 1 *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Flat, House no., Building, Company, Apartment"
                         value={formAddr1}
                         onChange={(e) => setFormAddr1(e.target.value)}
@@ -583,8 +587,8 @@ export function CartDrawer({
 
                     <label className="field-label full-width">
                       Address Line 2 (Optional)
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Area, Street, Sector, Village"
                         value={formAddr2}
                         onChange={(e) => setFormAddr2(e.target.value)}
@@ -593,8 +597,8 @@ export function CartDrawer({
 
                     <label className="field-label">
                       City *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="City"
                         value={formCity}
                         onChange={(e) => setFormCity(e.target.value)}
@@ -604,8 +608,8 @@ export function CartDrawer({
 
                     <label className="field-label">
                       State *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="State"
                         value={formState}
                         onChange={(e) => setFormState(e.target.value)}
@@ -615,8 +619,8 @@ export function CartDrawer({
 
                     <label className="field-label">
                       Pincode *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="6-digit pincode"
                         value={formPincode}
                         onChange={(e) => setFormPincode(normalizePincodeInput(e.target.value))}
@@ -626,8 +630,8 @@ export function CartDrawer({
 
                     <label className="field-label">
                       Country *
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Country"
                         value={formCountry}
                         onChange={(e) => setFormCountry(e.target.value)}
@@ -638,7 +642,7 @@ export function CartDrawer({
 
                   {user?.id && (
                     <label className="address-checkbox-label">
-                      <input 
+                      <input
                         type="checkbox"
                         checked={saveToAccount}
                         onChange={(e) => setSaveToAccount(e.target.checked)}
@@ -647,8 +651,8 @@ export function CartDrawer({
                     </label>
                   )}
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="primary-button proceed-address-btn"
                     onClick={handleProceedToPayment}
                   >
@@ -659,13 +663,13 @@ export function CartDrawer({
                 <div className="address-selector-pane">
                   <div className="saved-addresses-list">
                     {addresses.map((addr) => (
-                      <label 
-                        key={addr.id} 
+                      <label
+                        key={addr.id}
                         className={`address-selector-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
                       >
-                        <input 
-                          type="radio" 
-                          name="selected_address" 
+                        <input
+                          type="radio"
+                          name="selected_address"
                           checked={selectedAddressId === addr.id}
                           onChange={() => {
                             setSelectedAddressId(addr.id);
@@ -688,8 +692,8 @@ export function CartDrawer({
                     ))}
                   </div>
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="secondary-button add-address-trigger-btn"
                     onClick={() => {
                       setShowAddressForm(true);
@@ -705,8 +709,8 @@ export function CartDrawer({
                     + Add New Address
                   </button>
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="primary-button proceed-address-btn"
                     onClick={handleProceedToPayment}
                     disabled={!selectedAddressId}
@@ -721,9 +725,9 @@ export function CartDrawer({
               {items.length === 0 && <p className="empty-state">Order list is empty.</p>}
               {groupedItems.map((group) => (
                 <article className="cart-product-card" key={group.key}>
-                  <button 
-                    type="button" 
-                    className="cart-remove-group-btn" 
+                  <button
+                    type="button"
+                    className="cart-remove-group-btn"
                     onClick={() => removeProduct(group.key)}
                     aria-label="Remove product"
                   >
@@ -792,8 +796,8 @@ export function CartDrawer({
                               <div className="qty-row">
                                 <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)}>-</button>
                                 <span>{item.quantity}</span>
-                                <button 
-                                  type="button" 
+                                <button
+                                  type="button"
                                   onClick={() => updateQuantity(item, item.quantity + 1)}
                                 >
                                   +
@@ -861,11 +865,23 @@ export function CartDrawer({
           )}
         </div>
         <div className="drawer-foot">
+          {discount > 0 && (
+            <div className="cart-price-breakdown" style={{ marginBottom: '12px', borderBottom: '1px dashed #e6e6e6', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--muted)', marginBottom: '6px' }}>
+                <span>Subtotal</span>
+                <span>{formatMoney(subtotal)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--primary-color)', fontWeight: '600' }}>
+                <span>Combo Discount</span>
+                <span>-{formatMoney(discount)}</span>
+              </div>
+            </div>
+          )}
           <div className="total-row">
             <span>Total</span>
             <strong>{total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}</strong>
           </div>
-          
+
           {showUpiDetails ? (
             <>
               <input
@@ -875,7 +891,7 @@ export function CartDrawer({
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
-              <button 
+              <button
                 type="button"
                 className="primary-button paid-confirm-btn"
                 onClick={handlePaidConfirmClick}
@@ -884,8 +900,8 @@ export function CartDrawer({
               >
                 <WhatsappIcon size={20} /> {
                   enquiryState === 'sent' ? 'Payment Shared' :
-                  enquiryState === 'uploading' ? 'Uploading Screenshot...' :
-                  enquiryState === 'sending' ? 'Logging Payment...' : 'Share Payment Screenshot'
+                    enquiryState === 'uploading' ? 'Uploading Screenshot...' :
+                      enquiryState === 'sending' ? 'Logging Payment...' : 'Share Payment Screenshot'
                 } <ArrowRight size={18} />
               </button>
             </>
@@ -924,7 +940,7 @@ export function CartDrawer({
 
               <div className="cart-action-group">
                 {items.length > 0 && showPayment && !hasUnselectedColors && (
-                  <button 
+                  <button
                     type="button"
                     className={`payment-trigger-btn ${showUpiDetails || addressStep ? 'active' : ''}`}
                     onClick={handlePaymentTriggerClick}
@@ -932,9 +948,9 @@ export function CartDrawer({
                     <Zap size={15} /> {showUpiDetails || addressStep ? 'Hide Payment' : 'Make Payment'}
                   </button>
                 )}
-                <button 
+                <button
                   type="button"
-                  className={`enquiry-submit-btn ${items.length && !hasUnselectedColors ? '' : 'disabled'}`} 
+                  className={`enquiry-submit-btn ${items.length && !hasUnselectedColors ? '' : 'disabled'}`}
                   onClick={handleEnquiryClick}
                   disabled={!items.length || hasUnselectedColors}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff', borderColor: '#128C7E' } : {}}

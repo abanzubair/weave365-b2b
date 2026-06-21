@@ -237,6 +237,12 @@ export function parseProductCsv(text) {
         if (price >= 500) return '₹500 \u2013 ₹999';
         return 'Below ₹500';
       })(),
+      comboDiscount: (function() {
+        const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'combo');
+        if (!key) return 0;
+        const val = String(row[key] || '').replace(/[^\d.]/g, '');
+        return val ? Number(val) : 0;
+      })(),
       raw: row,
     };
 

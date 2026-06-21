@@ -214,6 +214,9 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
+  const discount = calculateComboDiscount(items, priceAccess);
+  const subtotal = items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
+
   // Fallback for non-wholesale users
   const lines = [
     `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
@@ -225,6 +228,8 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
       return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity}${priceText}`;
     }),
     '',
+    discount > 0 ? `Subtotal: ${formatMoney(subtotal)}` : '',
+    discount > 0 ? `Combo Discount: -${formatMoney(discount)}` : '',
     canViewPrices && total != null ? `Estimated total: ${formatMoney(total)}` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
@@ -273,8 +278,14 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   }
 
   // Fallback for Guest/Reseller accounts
+  const discount = (!isWholesale && product.comboDiscount > 0) ? Math.floor(quantity / 2) * product.comboDiscount : 0;
+  const subtotal = price * quantity;
+  const finalPrice = subtotal - discount;
+
   const priceText = canViewPrices && price != null
-    ? `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`
+    ? (discount > 0
+        ? `Price: ${formatMoney(price)} /pc | Subtotal: ${formatMoney(subtotal)} | Combo Discount: -${formatMoney(discount)} | Total: ${formatMoney(finalPrice)}`
+        : `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`)
     : '';
 
   const lines = [
@@ -294,4 +305,20 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
 
 export function normalizePincodeInput(value) {
   return String(value).replace(/\D/g, '').slice(0, 6);
+}
+
+export function calculateComboDiscount(items, priceAccess) {
+  if (!items || !items.length) return 0;
+  if (priceAccess?.priceGroup === 'wholesale') {
+    return 0;
+  }
+
+  return items.reduce((sum, item) => {
+    const discountAmount = Number(item.product?.comboDiscount || 0);
+    if (discountAmount > 0) {
+      const pairs = Math.floor(item.quantity / 2);
+      return sum + (pairs * discountAmount);
+    }
+    return sum;
+  }, 0);
 }

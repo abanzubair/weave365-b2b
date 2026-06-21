@@ -43,6 +43,7 @@ import {
   formatWeight,
   normalizePincodeInput,
   useCurrency,
+  calculateComboDiscount,
 } from './storefrontShared.jsx';
 import { Newsletter } from './components/Newsletter.jsx';
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
@@ -1246,6 +1247,27 @@ export function ProductDetail({
               <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
                 <span className="free-shipping-highlight">Excluding GST & Shipping</span>
               </span>
+            )}
+
+            {product.comboDiscount > 0 && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
+              <div className="promo-banner" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginTop: '12px',
+                padding: '10px 14px',
+                background: 'linear-gradient(135deg, #fff9e6 0%, #fff0cc 100%)',
+                borderLeft: '4px solid #b8924a',
+                borderRadius: '0 8px 8px 0',
+                color: '#8a651a',
+                fontSize: '14px',
+                fontWeight: '600',
+                fontFamily: 'var(--font-ui)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+              }}>
+                <Gift size={16} />
+                <span>Special Promo: Buy 2 get ₹{product.comboDiscount} off!</span>
+              </div>
             )}
 
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && (
