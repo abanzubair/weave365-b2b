@@ -15,8 +15,9 @@
  * @param {Function} props.setBlogs - State setter to sync and update the parent blogs catalog after CRUD operations
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
+  ChevronDown,
   BarChart3,
   Bookmark,
   ClipboardList,
@@ -50,7 +51,7 @@ import {
   Truck,
   ExternalLink,
 } from 'lucide-react';
-import { adminEmails } from '../config.js';
+import { adminEmails, seoCategoryRoutes } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { SharpStar } from './ReviewsPage.jsx';
 import { blogPosts } from '../data/blogPosts.js';
@@ -200,6 +201,16 @@ const staticSeoDefaults = [
   },
 ];
 
+const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {
+  const pluralName = categoryName.endsWith('s') ? categoryName : `${categoryName}s`;
+  return {
+    path: `/${slug}`,
+    label: `Category: ${pluralName}`,
+    metaTitle: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
+    metaDescription: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
+  };
+});
+
 const defaultSeoPageOptions = [
   ...staticSeoDefaults,
   ...Object.values(seoLandingPages)
@@ -210,6 +221,7 @@ const defaultSeoPageOptions = [
       metaDescription: page.metaDescription,
     }))
     .sort((a, b) => a.label.localeCompare(b.label)),
+  ...categorySeoDefaults,
 ];
 
 function normalizeSeoPath(path) {
@@ -1016,6 +1028,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [pageSeoRobotsIndex, setPageSeoRobotsIndex] = useState(true);
   const [pageSeoRobotsFollow, setPageSeoRobotsFollow] = useState(true);
   const [isSubmittingPageSeo, setIsSubmittingPageSeo] = useState(false);
+  const [isSeoSelectOpen, setIsSeoSelectOpen] = useState(false);
+  const seoSelectRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (seoSelectRef.current && !seoSelectRef.current.contains(event.target)) {
+        setIsSeoSelectOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const pageSeoRows = useMemo(
     () => (adminData.optional.page_seo_settings || []).map(mapSeoRow),
@@ -2189,19 +2215,42 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               </div>
 
               <form onSubmit={handleSavePageSeo} className="admin-editor-form">
-                <div className="admin-field-container">
+                <div className="admin-field-container admin-seo-select-container" ref={seoSelectRef}>
                   <label className="admin-field-label">Choose Page</label>
-                  <select
-                    value={pageSeoPath}
-                    onChange={(e) => loadPageSeoForm(e.target.value)}
-                    className="admin-field-input"
-                  >
-                    {pageSeoOptions.map((page) => (
-                      <option key={page.path} value={page.path}>
-                        {page.label} ({page.path})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="admin-custom-select-wrapper">
+                    <button
+                      type="button"
+                      className="admin-custom-select-trigger"
+                      onClick={() => setIsSeoSelectOpen(prev => !prev)}
+                    >
+                      <span className="admin-custom-select-value">
+                        {selectedDefaultSeo
+                          ? `${selectedDefaultSeo.label} (${selectedDefaultSeo.path})`
+                          : pageSeoPath || 'Select a page...'}
+                      </span>
+                      <ChevronDown size={16} className={`admin-custom-select-icon ${isSeoSelectOpen ? 'open' : ''}`} />
+                    </button>
+                    {isSeoSelectOpen && (
+                      <div className="admin-custom-select-dropdown">
+                        {pageSeoOptions.map((page) => {
+                          const isActive = normalizeSeoPath(pageSeoPath) === normalizeSeoPath(page.path);
+                          return (
+                            <button
+                              type="button"
+                              key={page.path}
+                              className={`admin-custom-select-option ${isActive ? 'active' : ''}`}
+                              onClick={() => {
+                                loadPageSeoForm(page.path);
+                                setIsSeoSelectOpen(false);
+                              }}
+                            >
+                              {page.label} ({page.path})
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="admin-field-container">

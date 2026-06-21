@@ -14,7 +14,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
 const moneyColumns = {
   mrp: 'B2B',
-  b2r: 'B2R',
+  b2r: 'B2C',
   single: 'D2C',
   cod: 'COD',
   offer: 'Offer',
