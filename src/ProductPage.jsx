@@ -1223,7 +1223,9 @@ export function ProductDetail({
                           <div className="moq-badge">
                             {priceAccess?.priceGroup === 'wholesale'
                               ? `MOQ: 1 ${moqUnit}`
-                              : (priceAccess?.priceGroup === 'reseller' ? 'Flexible MOQ' : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`))}
+                              : (priceAccess?.priceGroup === 'reseller'
+                                  ? (isSoldAsPc ? `MOQ: 1 ${moqUnit}` : 'Flexible MOQ')
+                                  : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`))}
                           </div>
                         )}
                       </div>
