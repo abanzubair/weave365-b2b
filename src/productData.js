@@ -9,7 +9,7 @@
  */
 
 import Papa from 'papaparse';
-import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl } from './config.js';
+import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
 const moneyColumns = {
@@ -62,9 +62,45 @@ export async function fetchConfigOptions() {
 }
 
 export async function fetchProducts() {
-  const text = await fetchSyncedCsv('products', csvUrl, 'products sheet');
+  // Fetch main sheet + all category sheets in parallel
+  const categoryEntries = Object.entries(categoryCsvUrls);
+  const fetchPromises = [
+    fetchSyncedCsv('products', csvUrl, 'products sheet'),
+    ...categoryEntries.map(([catName, catUrl]) => {
+      const supabaseId = 'products_' + catName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      return fetchSyncedCsv(supabaseId, catUrl, `${catName} sheet`, { optional: true });
+    }),
+  ];
 
-  return parseProductCsv(text);
+  const results = await Promise.all(fetchPromises);
+  const mainText = results[0];
+  const categoryTexts = results.slice(1);
+
+  // Parse main sheet products
+  const mainProducts = parseProductCsv(mainText);
+  const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
+
+  // Parse each category sheet and merge (category sheet products win on conflict)
+  for (let i = 0; i < categoryEntries.length; i++) {
+    const csvText = categoryTexts[i];
+    if (!csvText) continue; // Sheet fetch failed or returned empty
+
+    const [categoryName] = categoryEntries[i];
+    try {
+      const categoryProducts = parseProductCsv(csvText);
+      for (const product of categoryProducts) {
+        // Apply the category name from config if the sheet row doesn't specify one
+        if (!product.category || product.category === 'Saree') {
+          product.category = categoryName;
+        }
+        productMap.set(product.groupKey, product);
+      }
+    } catch (err) {
+      console.warn(`[Data] Failed to parse ${categoryName} sheet:`, err.message);
+    }
+  }
+
+  return Array.from(productMap.values());
 }
 
 export function parseProductCsv(text) {
@@ -790,10 +826,17 @@ export async function syncSheetsToSupabase() {
       }
     };
 
-    const [products, hero, config] = await Promise.all([
+    // Fetch main sheets + all category sheets in parallel
+    const categoryEntries = Object.entries(categoryCsvUrls);
+    const categoryFetches = categoryEntries.map(([catName, catUrl]) =>
+      fetchHeroText(catUrl).then(text => ({ catName, text }))
+    );
+
+    const [products, hero, config, ...categoryResults] = await Promise.all([
       fetchText(csvUrl),
       fetchHeroText(heroCsvUrl),
-      fetchText(configCsvUrl)
+      fetchText(configCsvUrl),
+      ...categoryFetches,
     ]);
 
     const timestamp = new Date().toISOString();
@@ -805,6 +848,14 @@ export async function syncSheetsToSupabase() {
 
     if (hero !== null) {
       updates.push({ id: 'hero', csv_data: hero, updated_at: timestamp });
+    }
+
+    // Store each category sheet in Supabase
+    for (const result of categoryResults) {
+      if (result?.text) {
+        const supabaseId = 'products_' + result.catName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        updates.push({ id: supabaseId, csv_data: result.text, updated_at: timestamp });
+      }
     }
 
     const { error } = await supabase.from('sheet_data').upsert(updates);

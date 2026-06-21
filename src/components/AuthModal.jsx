@@ -56,7 +56,7 @@ const countryCodes = [
   { value: '+965', label: 'Kuwait +965' },
 ];
 
-const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Fabric', 'Accessories'];
+const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Fabric', 'Under 999'];
 
 function toTitleCaseName(value) {
   return String(value || '')

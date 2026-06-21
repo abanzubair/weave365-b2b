@@ -25,7 +25,7 @@ import { usePageSeo } from '../hooks/usePageSeo.js';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 
-export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Accessories'];
+export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
 
 const defaultHero = {
   image: 'https://assets.weave365.com/assets/banner/hero1.webp',

@@ -16,6 +16,19 @@ export const heroCsvUrl =
 export const configCsvUrl =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=2140935109&single=true&output=csv';
 
+/**
+ * Category-specific Google Sheets CSV endpoints.
+ * Products from these sheets are fetched in parallel and merged into
+ * the main product list. Add new entries here as you create new category tabs.
+ * The key must match the Category column value expected for those products.
+ */
+export const categoryCsvUrls = {
+  'Under 999': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=464893428&single=true&output=csv',
+  // Add more category sheets as you create them:
+  // 'Suit': 'https://docs.google.com/spreadsheets/d/e/...&gid=XXXXX&single=true&output=csv',
+  // 'Dupatta': '...',
+};
+
 
 export const categoryCodes = {
   1: 'Saree',
@@ -23,7 +36,7 @@ export const categoryCodes = {
   3: 'Dupatta',
   4: 'Lehenga',
   5: 'Fabric',
-  6: 'Accessories',
+  6: 'Under 999',
 };
 
 export const serviceablePincodes = [

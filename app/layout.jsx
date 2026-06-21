@@ -89,7 +89,7 @@ export const metadata = {
     },
   },
   icons: {
-    icon: 'https://weave365.com/assets/banner/favicon.svg',
+    icon: 'https://images.weave365.com/assets/banner/favicon.svg',
   },
 };
 

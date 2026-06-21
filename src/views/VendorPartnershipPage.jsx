@@ -41,7 +41,7 @@ export function VendorPartnershipPage() {
           <p>We are always looking for high-quality products across these categories</p>
         </div>
         <div className="vendor-category-tags">
-          {['Sarees', 'Suits', 'Dupattas', 'Lehengas', 'Fabrics', 'Accessories'].map((cat) => (
+          {['Sarees', 'Suits', 'Dupattas', 'Lehengas', 'Fabrics', 'Under 999'].map((cat) => (
             <span key={cat} className="vendor-category-tag">{cat}</span>
           ))}
         </div>

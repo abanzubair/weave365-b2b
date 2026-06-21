@@ -25,7 +25,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
     { label: 'Wholesale Silk Dupattas', value: 'Dupatta' },
     { label: 'Designer Banarasi Lehengas', value: 'Lehenga' },
     { label: 'Handloom Unstitched Fabrics', value: 'Fabric' },
-    { label: 'Boutique Saree Accessories', value: 'Accessories' }
+    { label: 'Under 999', value: 'Under 999' }
   ];
 
   const guides = [

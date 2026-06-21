@@ -46,7 +46,7 @@ const productCategoriesList = [
   { name: 'Dupatta', emoji: '🧣' },
   { name: 'Lehenga', emoji: '👗' },
   { name: 'Fabric', emoji: '🧵' },
-  { name: 'Accessories', emoji: '✨' }
+  { name: 'Under 999', emoji: '💰' }
 ];
 
 const initialReviewForm = {
@@ -341,7 +341,7 @@ export function TrustedPartnerRegistrationPage() {
       'Dupatta': 'Dupattas',
       'Lehenga': 'Lehengas',
       'Fabric': 'Fabrics',
-      'Accessories': 'Accessories'
+      'Under 999': 'Under 999'
     };
     return cats.map(c => mapper[c] || c);
   };
@@ -1460,7 +1460,7 @@ export function TrustedPartnerRegistrationPage() {
                               { name: 'Dupattas', icon: 'ti-scissors', key: 'catDupattas' },
                               { name: 'Lehengas', icon: 'ti-hanger', key: 'catLehengas' },
                               { name: 'Fabrics', icon: 'ti-palette', key: 'catFabrics' },
-                              { name: 'Accessories', icon: 'ti-sparkles', key: 'catAccessoriesPlural' }
+                              { name: 'Under 999', icon: 'ti-coin', key: 'catUnder999' }
                             ].map((cat) => (
                               <label key={cat.name} className="step3-category-card">
                                 <input type="checkbox" checked={onboardingForm.productCategories.includes(cat.name)} onChange={() => toggleOnboardingCategory(cat.name)} />
