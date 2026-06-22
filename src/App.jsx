@@ -10,7 +10,7 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
-import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts } from './productData.js';
+import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { DropdownPortal } from './components/DropdownPortal.jsx';
@@ -257,6 +257,7 @@ export default function App({ initialData = {} }) {
   const [configOptions, setConfigOptions] = useState(() => (
     initialData.configOptions || { priceRanges: [], categories: [], fabrics: [], weaves: [] }
   ));
+  const [pageSeoSettings, setPageSeoSettings] = useState([]);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const isAdmin = Boolean(
@@ -343,6 +344,15 @@ export default function App({ initialData = {} }) {
         });
       })
       .catch(console.error);
+
+    if (isSupabaseConfigured) {
+      fetchSupabasePageSeoSettings()
+        .then((settings) => {
+          if (!isActive) return;
+          setPageSeoSettings(settings);
+        })
+        .catch(console.error);
+    }
 
     return () => {
       isActive = false;
@@ -1133,6 +1143,7 @@ export default function App({ initialData = {} }) {
           priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
           isTransitioning={!!pendingRoute}
+          pageSeoSettings={pageSeoSettings}
         />
       );
     }

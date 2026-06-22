@@ -1,5 +1,5 @@
 import App from '../../src/App.jsx';
-import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug } from '../../src/config.js';
+import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRoutes } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
@@ -175,6 +175,18 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
       pageData.metaTitle,
       pageData.metaDescription,
       `/${pageData.slug}`
+    );
+  }
+
+  // Dynamic Category Routing Metadata
+  const isSeoCategoryRoute = Object.keys(seoCategoryRoutes).includes(route);
+  if (isSeoCategoryRoute) {
+    const categoryName = seoCategoryRoutes[route];
+    const pluralName = categoryName === 'Under 999' ? categoryName : (categoryName.endsWith('s') ? categoryName : `${categoryName}s`);
+    return buildMeta(
+      `Wholesale Banarasi ${pluralName} Online | Weave 365`,
+      `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
+      `/${route}`
     );
   }
 

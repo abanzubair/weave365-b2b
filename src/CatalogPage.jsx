@@ -10,6 +10,8 @@ import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
+import { usePageSeo } from './hooks/usePageSeo.js';
+import { seoCategoryMap } from './config.js';
 
 export function Catalog({
   title,
@@ -37,10 +39,66 @@ export function Catalog({
   priceAccess,
   openAuth,
   isTransitioning = false,
+  pageSeoSettings = [],
 }) {
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
+
+  // Calculate dynamic SEO values for Catalog
+  const seoConfig = useMemo(() => {
+    let seoTitle = title || "Wholesale Saree & Suit Catalogue | Weave 365";
+    let seoDesc = "Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.";
+    let seoCanonical = "/wholesale-catalogue";
+
+    if (search && search.trim() !== '') {
+      seoTitle = `Wholesale Banarasi Sarees matching "${search}" | Weave 365`;
+      seoDesc = `Explore wholesale Banarasi sarees matching "${search}" at direct-from-weaver wholesale prices with flexible MOQ for resellers and boutiques.`;
+      seoCanonical = `/wholesale-catalogue?search=${encodeURIComponent(search)}`;
+    } else if (category && category !== 'All') {
+      const pluralCategory = category === 'Under 999' ? category : (category.endsWith('s') ? category : `${category}s`);
+      seoTitle = `Wholesale Banarasi ${pluralCategory} Online | Weave 365`;
+      seoDesc = `Buy handwoven premium Banarasi ${category.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`;
+      
+      const cleanSlug = seoCategoryMap[category.toLowerCase()];
+      if (cleanSlug) {
+        seoCanonical = `/${cleanSlug}`;
+      } else {
+        seoCanonical = `/wholesale-catalogue?category=${encodeURIComponent(category)}`;
+      }
+    } else if (fabric && fabric !== 'All') {
+      const prettyFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
+      seoTitle = `Pure ${prettyFabric} Silk Banarasi Sarees Wholesale | Weave 365`;
+      seoDesc = `Discover handwoven pure ${prettyFabric} Banarasi sarees at wholesale prices. Certified quality checks and worldwide shipping for boutique owners.`;
+      seoCanonical = `/wholesale-catalogue?fabric=${encodeURIComponent(fabric)}`;
+    }
+
+    return {
+      title: seoTitle,
+      description: seoDesc,
+      canonical: seoCanonical
+    };
+  }, [title, category, fabric, search]);
+
+  const override = useMemo(() => {
+    if (!pageSeoSettings || pageSeoSettings.length === 0) return null;
+    const path = seoConfig.canonical;
+    const normalized = path.split('?')[0];
+    return pageSeoSettings.find(setting => setting.path === normalized);
+  }, [pageSeoSettings, seoConfig.canonical]);
+
+  const finalSeoConfig = useMemo(() => {
+    if (override) {
+      return {
+        title: override.metaTitle || seoConfig.title,
+        description: override.metaDescription || seoConfig.description,
+        canonical: override.canonicalPath || seoConfig.canonical
+      };
+    }
+    return seoConfig;
+  }, [override, seoConfig]);
+
+  usePageSeo(finalSeoConfig);
 
   // Google JSON-LD BreadcrumbList Schema injection
   useEffect(() => {
