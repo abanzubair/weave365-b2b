@@ -23,6 +23,7 @@ import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
+import { checkProductPriceInRange } from '../storefrontShared.jsx';
 
 export function NewArrivalsPage({
   products = [],
@@ -166,7 +167,7 @@ export function NewArrivalsPage({
 
       // Price Filter (only if buyer is logged in / has price access)
       if (priceAccess?.canViewPrices && priceRange !== 'All') {
-        if (product.priceRange !== priceRange) return false;
+        if (!checkProductPriceInRange(product, priceRange, priceAccess)) return false;
       }
 
       // Search Query Filter

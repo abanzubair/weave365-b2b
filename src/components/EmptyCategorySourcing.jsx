@@ -14,7 +14,7 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
     if (!quantity || !contact) return;
 
     const whatsappLines = [
-      `Hello ${storeConfig.name}, I want to make a Bespoke Sourcing Enquiry.`,
+      `Hello ${storeConfig.name}, I want to make a Sourcing Enquiry.`,
       '',
       `Category: ${categoryName}`,
       `Quantity Needed: ${quantity}`,

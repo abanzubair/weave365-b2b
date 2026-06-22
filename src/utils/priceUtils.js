@@ -115,3 +115,57 @@ export function parsePositiveNumber(value) {
   const num = Number(value);
   return num > 0 ? num : 0;
 }
+
+export function checkProductPriceInRange(product, priceRangeStr, priceAccess) {
+  if (!priceRangeStr || priceRangeStr.toLowerCase() === 'all') {
+    return true;
+  }
+
+  // Get active price if user has price access
+  let price = 0;
+  if (priceAccess?.canViewPrices !== false && product.variants && product.variants[0]) {
+    price = priceForBuyer(product.variants[0].prices, priceAccess);
+  }
+  
+  // Fallback to mrp (B2B price) if price is not found or not authorized (to maintain consistent categorization)
+  if (price == null || Number.isNaN(price) || price === 0) {
+    if (product.variants && product.variants[0] && product.variants[0].prices) {
+      price = Number(product.variants[0].prices.mrp) || 0;
+    }
+  }
+
+  // If still no price, check if string matches
+  if (!price) {
+    return !!(product.priceRange && product.priceRange.trim() === priceRangeStr.trim());
+  }
+
+  // Parse the priceRangeStr to get limits
+  const clean = priceRangeStr.replace(/[₹$,\s]/g, '').replace(/–/g, '-');
+  
+  let min = 0;
+  let max = Infinity;
+
+  if (clean.includes('+') || clean.toLowerCase().includes('above')) {
+    min = parseFloat(clean.replace(/[^\d.]/g, ''));
+  } else if (clean.toLowerCase().includes('below') || clean.toLowerCase().includes('under')) {
+    max = parseFloat(clean.replace(/[^\d.]/g, ''));
+  } else {
+    const parts = clean.split('-');
+    if (parts.length === 2) {
+      min = parseFloat(parts[0].replace(/[^\d.]/g, ''));
+      max = parseFloat(parts[1].replace(/[^\d.]/g, ''));
+    } else {
+      const num = parseFloat(clean.replace(/[^\d.]/g, ''));
+      if (!isNaN(num)) {
+        min = num;
+        max = num;
+      }
+    }
+  }
+
+  // Apply a 50 rupee buffer at the boundaries
+  const minWithBuffer = Math.max(0, min - 50);
+  const maxWithBuffer = max === Infinity ? Infinity : max + 50;
+
+  return price >= minWithBuffer && price <= maxWithBuffer;
+}

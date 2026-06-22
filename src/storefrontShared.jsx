@@ -15,7 +15,8 @@ import {
   formatMoney,
   formatWeight,
   customerPrice,
-  parsePositiveNumber
+  parsePositiveNumber,
+  checkProductPriceInRange
 } from './utils/priceUtils.js';
 
 export {
@@ -26,6 +27,7 @@ export {
   formatWeight,
   customerPrice,
   parsePositiveNumber,
+  checkProductPriceInRange,
   priceForBuyer,
   priceNoticeForAccess
 };

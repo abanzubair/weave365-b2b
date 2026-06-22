@@ -21,7 +21,7 @@ import { seoCategoryRoutes, seoCategoryMap, NON_PRODUCT_ROUTES, getProductCatego
 import { sortByStockDateDesc } from './utils/sortProducts.js';
 import { adminEmails, serviceablePincodes, storeConfig } from './config.js';
 import brandLogo from '../assets/Weave365.svg';
-import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager, CURRENCIES } from './storefrontShared.jsx';
+import { fallbackProductImage, formatMoney, customerPrice, useCurrency, CurrencyManager, CURRENCIES, checkProductPriceInRange } from './storefrontShared.jsx';
 import { assetSrc } from './utils/assetSrc.js';
 
 import {
@@ -775,8 +775,7 @@ export default function App({ initialData = {} }) {
         (activeCategory === 'Bestsellers' && product.isTopSeller) ||
         product.fabric === activeCategory ||
         product.category === activeCategory;
-      const matchesPrice = priceRange === 'All' ||
-        (product.priceRange && product.priceRange.trim() === priceRange.trim());
+      const matchesPrice = checkProductPriceInRange(product, priceRange, priceAccess);
       const matchesFabric = fabric === 'All' ||
         (product.fabric && product.fabric.trim() === fabric.trim());
       const matchesWeave = weave === 'All' ||
@@ -786,7 +785,7 @@ export default function App({ initialData = {} }) {
 
     // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
     return sortByStockDateDesc(filtered);
-  }, [activeCategory, priceRange, fabric, weave, pricedProducts, searchTerm]);
+  }, [activeCategory, priceRange, fabric, weave, pricedProducts, searchTerm, priceAccess]);
 
 
 
