@@ -91,16 +91,12 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: '/favicon.svg',
+        url: 'https://assets.weave365.com/assets/banner/favicon.svg',
         type: 'image/svg+xml',
       },
-      {
-        url: '/favicon.ico',
-        sizes: 'any',
-      },
     ],
-    shortcut: '/favicon.ico',
-    apple: '/favicon.svg',
+    shortcut: 'https://assets.weave365.com/assets/banner/favicon.svg',
+    apple: 'https://assets.weave365.com/assets/banner/favicon.svg',
   },
 };
 
