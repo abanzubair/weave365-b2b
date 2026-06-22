@@ -50,9 +50,17 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: #fff;
+  background: rgba(183, 134, 70, 0.6); /* Fallback translucent theme gold background */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+}
+
+/* Custom & Promotional Tags (e.g., Buy 2 get... or discount tags) */
+.status-badge[class*="tag-buy-"],
+.status-badge[class*="tag-combo-"],
+.status-badge[class*="tag-promo-"] {
+  background: #9e8cc4; /* Soft Purple/Lavender for promotions */
 }
 
 /* Updated Saturated Palette */
