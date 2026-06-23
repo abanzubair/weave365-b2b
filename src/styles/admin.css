@@ -12,6 +12,9 @@
   padding: 6px;
   margin-bottom: 36px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 75px;
+  z-index: 100;
 }
 
 .admin-tab-btn {
@@ -233,6 +236,70 @@
 
 .admin-btn-reseller-toggle.state-disabled:hover {
   background: rgba(183, 134, 70, 0.18);
+}
+
+/* CRM Action Dropdown Selector */
+.admin-crm-select {
+  padding: 8px 25px 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body, sans-serif);
+  transition: all 0.2s ease;
+  width: 100%;
+  border: 1px solid transparent;
+  outline: none;
+}
+
+.admin-crm-select.approved-wholesale {
+  background: rgba(37, 119, 68, 0.1);
+  color: #257744;
+  border-color: rgba(37, 119, 68, 0.25);
+}
+
+.admin-crm-select.approved-wholesale:hover {
+  background: rgba(37, 119, 68, 0.15);
+}
+
+.admin-crm-select.approved-reseller {
+  background: rgba(183, 134, 70, 0.1);
+  color: var(--primary, #b78646);
+  border-color: rgba(183, 134, 70, 0.25);
+}
+
+.admin-crm-select.approved-reseller:hover {
+  background: rgba(183, 134, 70, 0.15);
+}
+
+.admin-crm-select.approved-user {
+  background: rgba(37, 78, 119, 0.1);
+  color: #254e77;
+  border-color: rgba(37, 78, 119, 0.25);
+}
+
+.admin-crm-select.approved-user:hover {
+  background: rgba(37, 78, 119, 0.15);
+}
+
+.admin-crm-select.pending {
+  background: rgba(120, 113, 108, 0.08);
+  color: #57534e;
+  border-color: rgba(120, 113, 108, 0.2);
+}
+
+.admin-crm-select.pending:hover {
+  background: rgba(120, 113, 108, 0.12);
+}
+
+.admin-crm-select.suspended {
+  background: rgba(154, 70, 37, 0.08);
+  color: #9a4625;
+  border-color: rgba(154, 70, 37, 0.2);
+}
+
+.admin-crm-select.suspended:hover {
+  background: rgba(154, 70, 37, 0.12);
 }
 
 /* CRM Action Stack Upgrade */
@@ -2374,7 +2441,7 @@
 .admin-page {
   max-width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: visible;
   min-width: 0;
 }
 
@@ -2418,6 +2485,9 @@
     max-width: 100%;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    position: sticky !important;
+    top: 64px !important;
+    z-index: 100 !important;
   }
 
   .admin-tabs-bar::-webkit-scrollbar {

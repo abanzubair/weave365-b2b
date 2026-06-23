@@ -604,6 +604,14 @@ const handleViewAgreement = (agreement, whatsapp) => {
   }
 };
 
+const getCrmDropdownClass = (statusVal) => {
+  if (statusVal === 'approved-wholesale') return 'admin-crm-select approved-wholesale';
+  if (statusVal === 'approved-reseller') return 'admin-crm-select approved-reseller';
+  if (statusVal === 'approved-user') return 'admin-crm-select approved-user';
+  if (statusVal === 'suspended') return 'admin-crm-select suspended';
+  return 'admin-crm-select pending';
+};
+
 export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [] }) {
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
@@ -1897,6 +1905,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     <th className="admin-table-sticky-th">Registered</th>
                     <th className="admin-table-sticky-th">Buyer</th>
                     <th className="admin-table-sticky-th">Type & Behaviour</th>
+                    <th className="admin-table-sticky-th">Interested Categories</th>
                     <th className="admin-table-sticky-th">Order List</th>
                     <th className="admin-table-sticky-th">Favourites</th>
                     <th className="admin-table-sticky-th">Approval</th>
@@ -1908,11 +1917,18 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                   {sortedProfiles.map((profile, index) => {
                     const cartRows = userCartMap.get(profile.id) || [];
                     const favoriteRows = userFavoriteMap.get(profile.id) || [];
+                    
+                    const currentStatusVal = 
+                      profile.approval_status === 'approved' && profile.price_group === 'wholesale' ? 'approved-wholesale' :
+                      profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'approved-reseller' :
+                      profile.approval_status === 'approved' && profile.price_group === 'user' ? 'approved-user' :
+                      profile.approval_status === 'pending' ? 'pending' :
+                      profile.approval_status === 'suspended' ? 'suspended' : 'pending';
 
                     return (
                       <tr key={profile.id}>
                         <td>
-                          <strong>{index + 1}</strong>
+                          <strong>{sortedProfiles.length - index}</strong>
                         </td>
                         <td>
                           <span className="admin-profile-registered-meta" style={{ marginTop: 0 }}>
@@ -1929,11 +1945,21 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                               )}
                             </span>
                           )}
-                          <span style={{ display: 'block', fontSize: '13px' }}>{profile.email}</span>
+                          <a
+                            href={`mailto:${profile.email}`}
+                            style={{ display: 'block', fontSize: '13px', color: 'var(--muted)', textDecoration: 'underline', cursor: 'pointer' }}
+                          >
+                            {profile.email}
+                          </a>
                           {profile.whatsapp && (
-                            <span style={{ display: 'block', fontSize: '12px', color: 'var(--primary)', fontWeight: 600 }}>
+                            <a
+                              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ display: 'block', fontSize: '12px', color: 'var(--primary)', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', marginTop: '2px' }}
+                            >
                               {profile.whatsapp}
-                            </span>
+                            </a>
                           )}
                         </td>
                         <td>
@@ -1943,6 +1969,19 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           <span className="admin-capitalize" style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
                             {profile.buying_behavior || 'Not set'}
                           </span>
+                        </td>
+                        <td>
+                          {profile.interested_categories && Array.isArray(profile.interested_categories) && profile.interested_categories.length > 0 ? (
+                            <div className="admin-flex-wrap-gap8">
+                              {profile.interested_categories.map((cat, catIdx) => (
+                                <span key={catIdx} className="admin-status new" style={{ fontSize: '11px', padding: '3px 6px', fontWeight: 'bold' }}>
+                                  {cat}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="admin-doc-card-muted">-</span>
+                          )}
                         </td>
                         <td>
                           {cartRows.length > 0 ? (
@@ -1986,43 +2025,37 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           </div>
                         </td>
                         <td>
-                          <div className="admin-action-stack admin-action-stack-grid">
-                            <button
-                              type="button"
-                              onClick={() => updateBuyerPriceAccess(profile, 'approved', 'wholesale')}
-                              className={`admin-crm-btn btn-wholesale ${profile.approval_status === 'approved' && profile.price_group === 'wholesale' ? 'active' : ''}`}
-                            >
-                              Approve Wholesale
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateBuyerPriceAccess(profile, 'approved', 'reseller')}
-                              className={`admin-crm-btn btn-reseller ${profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'active' : ''}`}
-                            >
-                              Approve Reseller
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateBuyerPriceAccess(profile, 'pending', 'pending')}
-                              className={`admin-crm-btn btn-hold ${profile.approval_status === 'pending' ? 'active' : ''}`}
-                            >
-                              Hold
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateBuyerPriceAccess(profile, 'suspended', 'pending')}
-                              className={`admin-crm-btn btn-suspend ${profile.approval_status === 'suspended' ? 'active' : ''}`}
-                            >
-                              Suspend
-                            </button>
-                          </div>
+                          <select
+                            value={currentStatusVal}
+                            onChange={async (e) => {
+                              const val = e.target.value;
+                              if (val === 'approved-wholesale') {
+                                await updateBuyerPriceAccess(profile, 'approved', 'wholesale');
+                              } else if (val === 'approved-reseller') {
+                                await updateBuyerPriceAccess(profile, 'approved', 'reseller');
+                              } else if (val === 'approved-user') {
+                                await updateBuyerPriceAccess(profile, 'approved', 'user');
+                              } else if (val === 'pending') {
+                                await updateBuyerPriceAccess(profile, 'pending', 'pending');
+                              } else if (val === 'suspended') {
+                                await updateBuyerPriceAccess(profile, 'suspended', 'pending');
+                              }
+                            }}
+                            className={getCrmDropdownClass(currentStatusVal)}
+                          >
+                            <option value="approved-wholesale">Wholesale</option>
+                            <option value="approved-reseller">Reseller</option>
+                            <option value="approved-user">User</option>
+                            <option value="pending">Hold</option>
+                            <option value="suspended">Suspend</option>
+                          </select>
                         </td>
                       </tr>
                     );
                   })}
                   {sortedProfiles.length === 0 && (
                     <tr>
-                      <td colSpan="9">No profiles found yet.</td>
+                      <td colSpan="10">No profiles found yet.</td>
                     </tr>
                   )}
                 </tbody>
