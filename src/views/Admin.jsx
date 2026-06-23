@@ -884,15 +884,25 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     return behavior.charAt(0).toUpperCase() + behavior.slice(1);
   };
 
+  const toTitleCase = (str) => {
+    if (!str) return '';
+    return String(str)
+      .trim()
+      .replace(/\s+/g, ' ')
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const handleCopyUserDetails = (profile) => {
     const categoriesStr = Array.isArray(profile.interested_categories)
       ? profile.interested_categories.join(', ')
       : '';
 
     const row = [
-      profile.full_name || '',
-      profile.business_name || '',
-      `${profile.city || ''}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
+      toTitleCase(profile.full_name),
+      toTitleCase(profile.business_name),
+      `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
       profile.email || '',
       profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
       categoriesStr,
@@ -919,9 +929,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         ? profile.interested_categories.join(', ')
         : '';
       return [
-        profile.full_name || '',
-        profile.business_name || '',
-        `${profile.city || ''}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
+        toTitleCase(profile.full_name),
+        toTitleCase(profile.business_name),
+        `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
         categoriesStr,
