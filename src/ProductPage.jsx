@@ -451,7 +451,8 @@ export function ProductDetail({
 
   const isSaree = String(product.category || '').toLowerCase() === 'saree';
   const longDescriptionSections = useMemo(() => {
-    return [
+    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+    const sections = [
       {
         id: 'fabric',
         label: 'Fabric Details',
@@ -504,6 +505,10 @@ export function ProductDetail({
         content: 'Expedited worldwide air cargo shipping. Direct customs clearances and documentation are handled by our export division, providing fast delivery timelines to our global buyers in the USA, UK, UAE, Canada, and Europe.'
       }
     ];
+    if (isUnder999) {
+      return sections.filter(sec => sec.id !== 'moq');
+    }
+    return sections;
   }, [product, totalColors, isSoldAsBoth, moqUnit, isSaree, priceAccess]);
 
   const colorOptions = useMemo(() => {
@@ -526,12 +531,14 @@ export function ProductDetail({
   }, [product.colorOptions, product.variants]);
   const productStatusTags = useMemo(
     () => (product.statusTags || []).filter((tag) => {
+      const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
       if (tag.key === 'bestseller') return false;
+      if (tag.key === 'low-moq' && isUnder999) return false;
       if (!canViewPrice && tag.key === 'low-moq') return false;
       if (tag.key === 'low-moq' && priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) return false;
       return true;
     }),
-    [product.statusTags, canViewPrice, priceAccess],
+    [product.statusTags, canViewPrice, priceAccess, product.category],
   );
   const related = useMemo(() => {
     const others = products.filter((item) => item.id !== product.id);
@@ -759,10 +766,9 @@ export function ProductDetail({
     ]
   }), [product]);
 
-  const faqSchema = useMemo(() => ({
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
+  const faqSchema = useMemo(() => {
+    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+    const questions = [
       {
         "@type": "Question",
         "name": "What is the Minimum Order Quantity (MOQ) for wholesale?",
@@ -795,8 +801,14 @@ export function ProductDetail({
           "text": "Yes, we ship worldwide to over 50 countries, including the USA, UK, Canada, UAE, and Australia. We handle complete B2B customs documentation and provide competitive air and sea freight rates."
         }
       }
-    ]
-  }), []);
+    ];
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": isUnder999 ? questions.filter((q) => !q.name.includes('MOQ')) : questions
+    };
+  }, [product.category]);
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
     [galleryHeight],
@@ -1160,7 +1172,9 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                {String(product.category || '').toLowerCase() !== 'under 999' && (
+                  <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                )}
               </div>
             </div>
           </div>
@@ -1216,7 +1230,7 @@ export function ProductDetail({
                       <div className="price-piece-block">
                         <span className="price-value">{formatMoney(displayPrice)}</span>
                         <span className="price-unit">/pc</span>
-                        {canViewPrice && (
+                        {canViewPrice && String(product.category || '').toLowerCase() !== 'under 999' && (
                           (priceAccess?.priceGroup === 'wholesale' && (totalColors <= 1 || isSoldAsPc)) ||
                           priceAccess?.priceGroup === 'reseller'
                         ) && (
@@ -1234,7 +1248,7 @@ export function ProductDetail({
                           <span className="price-pipe"></span>
                           <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
                           <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
-                          {canViewPrice && (
+                          {canViewPrice && String(product.category || '').toLowerCase() !== 'under 999' && (
                             <div className="moq-badge">
                               MOQ: 1 Set
                             </div>
@@ -1475,7 +1489,9 @@ export function ProductDetail({
               <div className="card-footer-badges">
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                {String(product.category || '').toLowerCase() !== 'under 999' && (
+                  <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                )}
               </div>
             </div>
           </aside>

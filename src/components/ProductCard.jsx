@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   User,
   X,
+  Zap,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
@@ -77,17 +78,21 @@ export const ProductCard = memo(function ProductCard({
   const [isMobile, setIsMobile] = useState(false);
 
   const filteredStatusTags = useMemo(() => {
+    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
     return (product.statusTags || []).filter((tag) => {
       if (tag.key === 'bestseller') return false;
+      if (tag.key === 'low-moq' && isUnder999) return false;
       if (!canViewPrice && tag.key === 'low-moq') return false;
       if (tag.key === 'low-moq' && priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) return false;
       return true;
     });
-  }, [product.statusTags, canViewPrice, priceAccess]);
+  }, [product.statusTags, canViewPrice, priceAccess, product.category]);
 
-  const showMoqBadge = priceAccess?.priceGroup === 'wholesale';
+  const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+  const showMoqBadge = priceAccess?.priceGroup === 'wholesale' && !isUnder999;
+  const showReadyStockBadge = isUnder999;
   const showColorBadge = colorCount > 1;
-  const showRightInfo = showMoqBadge || showColorBadge;
+  const showRightInfo = showMoqBadge || showColorBadge || showReadyStockBadge;
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -204,6 +209,11 @@ export const ProductCard = memo(function ProductCard({
               {showMoqBadge && (
                 <div className="info-item">
                   <ShoppingBag size={15} /> MOQ: 1 Set
+                </div>
+              )}
+              {showReadyStockBadge && (
+                <div className="info-item">
+                  <Zap size={15} /> Ready Stock
                 </div>
               )}
               {showColorBadge && (

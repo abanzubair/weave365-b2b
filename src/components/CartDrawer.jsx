@@ -5,7 +5,7 @@
  * PAN India delivery pincode check status, and dynamic WhatsApp checkouts.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, ArrowRight, ArrowLeft, Plus, Zap } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
   customerPrice,
@@ -947,7 +947,7 @@ export function CartDrawer({
                     className={`payment-trigger-btn ${showUpiDetails || addressStep ? 'active' : ''}`}
                     onClick={handlePaymentTriggerClick}
                   >
-                    <Zap size={15} /> {showUpiDetails || addressStep ? 'Hide Payment' : 'Make Payment'}
+                    <CreditCard size={15} /> {showUpiDetails || addressStep ? 'Hide Payment' : 'Make Payment'}
                   </button>
                 )}
                 <button
