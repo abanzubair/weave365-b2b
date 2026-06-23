@@ -5257,8 +5257,7 @@ button {
   margin-top: 64px;
   padding: 64px 48px;
   background: linear-gradient(180deg, rgba(255, 253, 249, 0.6) 0%, rgba(251, 246, 238, 0.4) 100%);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 16px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -5653,12 +5652,6 @@ button {
 /* Quick Fact Weave Alignment */
 .quick-fact-weave svg {
   color: var(--gold-mid) !important;
-}
-
-/* Highlights Grid Enhancement for Weave card - Minimal */
-.premium-weave-highlight {
-  border: 1px solid rgba(183, 134, 70, 0.18) !important;
-  background: linear-gradient(135deg, rgba(255, 253, 249, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
 }
 
 /* Color selection warning animations and styling in CartDrawer */
