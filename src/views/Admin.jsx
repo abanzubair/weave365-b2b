@@ -2016,7 +2016,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     <th className="admin-table-sticky-th">Order List</th>
                     <th className="admin-table-sticky-th">Favourites</th>
                     <th className="admin-table-sticky-th">Approval</th>
-                    <th className="admin-table-sticky-th">Reseller Dashboard</th>
+                    <th className="admin-table-sticky-th">Dashboard</th>
                     <th className="admin-table-sticky-th">Action</th>
                   </tr>
                 </thead>
