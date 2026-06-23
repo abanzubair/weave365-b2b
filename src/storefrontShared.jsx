@@ -148,7 +148,7 @@ export function safeFileName(value) {
 
 
 
-export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address) {
+export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address, isPayment = false) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
@@ -202,11 +202,13 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     }).filter(Boolean);
 
     const lines = [
-      `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
+      isPayment 
+        ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
+        : `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
       '',
       itemLines.join('\n\n'),
       '',
-      total != null ? `Estimated total: ${formatMoney(total)} (Excluding GST & Shipping)` : '',
+      total != null ? `Total: ${formatMoney(total)} (Excluding GST & Shipping)` : '',
       pincode ? `Pincode: ${pincode}` : '',
       codStatus === 'available' ? 'COD checked: Available' : '',
     ].filter(Boolean);
@@ -235,7 +237,9 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
 
   // Fallback for non-wholesale users
   const lines = [
-    `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
+    isPayment 
+      ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
+      : `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
     '',
     ...items.map((item) => {
       const price = customerPrice(item.variant.prices, priceAccess);
@@ -246,7 +250,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     '',
     discount > 0 ? `Subtotal: ${formatMoney(subtotal)}` : '',
     discount > 0 ? `Combo Discount: -${formatMoney(discount)}` : '',
-    canViewPrices && total != null ? `Estimated total: ${formatMoney(total)}` : '',
+    canViewPrices && total != null ? `Total: ${formatMoney(total)}` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean);

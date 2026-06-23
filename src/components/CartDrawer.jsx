@@ -40,7 +40,6 @@ export function CartDrawer({
   const [copied, setCopied] = useState(false);
   const [showUpiDetails, setShowUpiDetails] = useState(false);
   const drawerBodyRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   // Address flow state
   const [addresses, setAddresses] = useState([]);
@@ -234,6 +233,11 @@ export function CartDrawer({
     [codStatus, items, pincode, priceAccess, total, selectedAddress],
   );
 
+  const paidWhatsappUrl = useMemo(
+    () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, undefined, selectedAddress, true),
+    [codStatus, items, pincode, priceAccess, total, selectedAddress],
+  );
+
   const showPayment = priceAccess?.priceGroup !== 'wholesale';
   const upiUrl = useMemo(() => {
     if (!showPayment || !total) return '';
@@ -313,133 +317,58 @@ export function CartDrawer({
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
-  const handlePaidConfirmClick = () => {
+  const handlePaidConfirmClick = async () => {
     if (hasUnselectedColors) {
       alert('Please select a color for all items before sharing payment.');
       return;
     }
-    if (enquiryState === 'uploading' || enquiryState === 'sending' || items.length === 0) return;
-    fileInputRef.current?.click();
-  };
+    if (enquiryState === 'sending' || items.length === 0) return;
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    setEnquiryState('sending');
+    let newInquiryId = null;
 
-    setEnquiryState('uploading');
+    if (isSupabaseConfigured) {
+      try {
+        const { data: insertData, error: insertErr } = await supabase
+          .from('inquiries')
+          .insert({
+            user_id: priceAccess?.userId || undefined,
+            email: priceAccess?.userEmail || undefined,
+            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+            phone: priceAccess?.buyerPhone || undefined,
+            pincode: pincode || priceAccess?.buyerPincode || undefined,
+            inquiry_type: 'cart_payment',
+            status: 'new',
+            message: `Order paid via UPI. (User is sharing payment screenshot on WhatsApp)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
+            items: items.map(item => ({
+              product_id: item.productGroupKey,
+              product_title: item.product.title,
+              variant_code: item.variant.code,
+              color: item.selectedColorName,
+              quantity: item.quantity,
+              price: customerPrice(item.variant.prices, priceAccess),
+            })),
+          })
+          .select('id')
+          .single();
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const uploadRes = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error('Screenshot upload failed');
-      }
-
-      const uploadData = await uploadRes.json();
-      if (uploadData.status !== 'success' || !uploadData.url) {
-        throw new Error(uploadData.error || 'Failed to retrieve uploaded image URL');
-      }
-
-      const screenshotUrl = uploadData.url;
-
-      setEnquiryState('sending');
-      let newInquiryId = null;
-      if (isSupabaseConfigured) {
-        try {
-          const { data: insertData, error: insertErr } = await supabase
-            .from('inquiries')
-            .insert({
-              user_id: priceAccess?.userId || undefined,
-              email: priceAccess?.userEmail || undefined,
-              buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-              phone: priceAccess?.buyerPhone || undefined,
-              pincode: pincode || priceAccess?.buyerPincode || undefined,
-              inquiry_type: 'cart_payment',
-              status: 'new',
-              message: `Order paid via UPI. Screenshot: ${screenshotUrl}\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
-              items: items.map(item => ({
-                product_id: item.productGroupKey,
-                product_title: item.product.title,
-                variant_code: item.variant.code,
-                color: item.selectedColorName,
-                quantity: item.quantity,
-                price: customerPrice(item.variant.prices, priceAccess),
-              })),
-            })
-            .select('id')
-            .single();
-
-          if (insertErr) throw insertErr;
-          if (insertData?.id) {
-            newInquiryId = insertData.id;
-          }
-        } catch (err) {
-          console.error('Failed to log payment inquiry to Supabase:', err);
+        if (insertErr) throw insertErr;
+        if (insertData?.id) {
+          newInquiryId = insertData.id;
         }
-      }
-
-      setEnquiryState('sent');
-      const paidWhatsappUrl = buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, selectedAddress);
-      window.open(paidWhatsappUrl, '_blank', 'noopener,noreferrer');
-
-      if (newInquiryId && navigate) {
-        navigate('order-tracking', newInquiryId);
-        if (onClose) onClose();
-      }
-    } catch (err) {
-      console.error('Payment screenshot upload error:', err);
-      alert('Could not upload screenshot. Opening WhatsApp with order details so you can paste the screenshot manually.');
-
-      setEnquiryState('sending');
-      let fallbackInquiryId = null;
-      if (isSupabaseConfigured) {
-        try {
-          const { data: insertData, error: insertErr } = await supabase
-            .from('inquiries')
-            .insert({
-              user_id: priceAccess?.userId || undefined,
-              email: priceAccess?.userEmail || undefined,
-              buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-              phone: priceAccess?.buyerPhone || undefined,
-              pincode: pincode || priceAccess?.buyerPincode || undefined,
-              inquiry_type: 'cart_payment_fallback',
-              status: 'new',
-              message: `Order checkout via UPI (Screenshot upload failed)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
-              items: items.map(item => ({
-                product_id: item.productGroupKey,
-                product_title: item.product.title,
-                variant_code: item.variant.code,
-                color: item.selectedColorName,
-                quantity: item.quantity,
-                price: customerPrice(item.variant.prices, priceAccess),
-              })),
-            })
-            .select('id')
-            .single();
-
-          if (insertErr) throw insertErr;
-          if (insertData?.id) {
-            fallbackInquiryId = insertData.id;
-          }
-        } catch (sErr) {
-          console.error('Fallback Supabase insert failed:', sErr);
-        }
-      }
-      setEnquiryState('sent');
-      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-
-      if (fallbackInquiryId && navigate) {
-        navigate('order-tracking', fallbackInquiryId);
-        if (onClose) onClose();
+      } catch (err) {
+        console.error('Failed to log payment inquiry to Supabase:', err);
       }
     }
-  }
+
+    setEnquiryState('sent');
+    window.open(paidWhatsappUrl, '_blank', 'noopener,noreferrer');
+
+    if (newInquiryId && navigate) {
+      navigate('order-tracking', newInquiryId);
+      if (onClose) onClose();
+    }
+  };
 
   return (
     <div
@@ -892,28 +821,18 @@ export function CartDrawer({
           </div>
 
           {showUpiDetails ? (
-            <>
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-              />
-              <button
-                type="button"
-                className="primary-button paid-confirm-btn"
-                onClick={handlePaidConfirmClick}
-                disabled={enquiryState === 'uploading' || enquiryState === 'sending'}
-                style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff', borderColor: '#128C7E' } : {}}
-              >
-                <WhatsappIcon size={20} /> {
-                  enquiryState === 'sent' ? 'Payment Shared' :
-                    enquiryState === 'uploading' ? 'Uploading Screenshot...' :
-                      enquiryState === 'sending' ? 'Logging Payment...' : 'Share Payment Screenshot'
-                } <ArrowRight size={18} />
-              </button>
-            </>
+            <button
+              type="button"
+              className="primary-button paid-confirm-btn"
+              onClick={handlePaidConfirmClick}
+              disabled={enquiryState === 'sending'}
+              style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff', borderColor: '#128C7E' } : {}}
+            >
+              <WhatsappIcon size={20} /> {
+                enquiryState === 'sent' ? 'Payment Shared' :
+                  enquiryState === 'sending' ? 'Opening WhatsApp...' : 'Share Payment Screenshot'
+              } <ArrowRight size={18} />
+            </button>
           ) : addressStep ? (
             <div className="cart-info-alert">
               <svg className="alert-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -936,7 +855,7 @@ export function CartDrawer({
                 </div>
               )}
 
-              {items.length > 0 && !hasUnselectedColors && (
+              {items.length > 0 && !hasUnselectedColors && priceAccess?.priceGroup === 'wholesale' && (
                 <div className="cart-info-alert">
                   <svg className="alert-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>

@@ -48,6 +48,14 @@ export default function OrderTracking({ inquiryId, products = [], navigate, user
           return;
         }
 
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(inquiryId.trim())) {
+          setError('Invalid order tracking ID format. Please verify your ID or contact support.');
+          setOrder(null);
+          setLoading(false);
+          return;
+        }
+
         // Use the secure RPC function to get order tracking by ID
         const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
           order_id: inquiryId
