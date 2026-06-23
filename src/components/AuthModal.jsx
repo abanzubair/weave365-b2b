@@ -726,7 +726,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             </select>
                             <input
                               value={profile.whatsapp}
-                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
+                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10))}
                               inputMode="numeric"
                               autoComplete="tel-national"
                               placeholder="xxxxxxxxxx"

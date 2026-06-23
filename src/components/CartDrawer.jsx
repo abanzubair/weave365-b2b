@@ -749,11 +749,18 @@ export function CartDrawer({
                       <span className="cart-group-summary">
                         {priceAccess?.priceGroup === 'wholesale' ? (
                           <>
-                            {group.items[0]?.quantity} Set{group.items[0]?.quantity === 1 ? '' : 's'} · {group.totalQuantity} pcs total
-                            {canViewPrices && (() => {
-                              const setQty = group.items[0]?.quantity || 1;
+                            {(() => {
                               const isUnder999 = String(group.product?.category || '').toLowerCase() === 'under 999';
-                              const discountFactor = isUnder999 ? 1.0 : (setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0));
+                              if (isUnder999) {
+                                return `${group.totalQuantity} pc${group.totalQuantity === 1 ? '' : 's'} total`;
+                              }
+                              return `${group.items[0]?.quantity} Set${group.items[0]?.quantity === 1 ? '' : 's'} · ${group.totalQuantity} pcs total`;
+                            })()}
+                            {canViewPrices && (() => {
+                              const isUnder999 = String(group.product?.category || '').toLowerCase() === 'under 999';
+                              if (isUnder999) return null;
+                              const setQty = group.items[0]?.quantity || 1;
+                              const discountFactor = setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0);
                               const baseSetPrice = customerPrice(group.variant.prices, priceAccess) * (group.product.totalColors || group.product.variants.length || 1);
                               const discountedSetPrice = baseSetPrice * discountFactor;
                               return (

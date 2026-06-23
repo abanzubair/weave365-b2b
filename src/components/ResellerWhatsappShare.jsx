@@ -219,7 +219,7 @@ export function ResellerWhatsappShare({
             <strong>{formatMoney(customerPriceValue)} / pc</strong>
           </div>
           <div>
-            <span>Set total</span>
+            <span>{String(product?.category || '').toLowerCase() === 'under 999' ? 'Total' : 'Set total'}</span>
             <strong>{formatMoney(customerPriceValue * safeQuantity)}</strong>
           </div>
         </div>

@@ -182,6 +182,19 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
       const discountedSetPrice = baseSetPrice * discountFactor;
       const groupTotalPrice = discountedSetPrice * setQty;
 
+      if (isUnder999) {
+        const totalPcs = groupItems.reduce((sum, item) => sum + item.quantity, 0);
+        let groupTotalPricePcs = 0;
+        groupItems.forEach((item) => {
+          groupTotalPricePcs += (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity;
+        });
+        const details = groupItems.map(item => `${item.selectedColorName}: ${item.quantity}pc`).join(', ');
+        return [
+          `${firstItem.product.title}`,
+          `Code: ${firstItem.variant.code} | Qty: ${totalPcs} pc${totalPcs === 1 ? '' : 's'} (${details}) | Price: ${formatMoney(groupTotalPricePcs)}`
+        ].join('\n');
+      }
+
       return [
         `${firstItem.product.title}`,
         `Code: ${firstItem.variant.code} | Qty: ${setQty} Set${setQty === 1 ? '' : 's'} (${totalColors} colors) | Price: ${formatMoney(groupTotalPrice)} (at ${formatMoney(discountedSetPrice)}/Set)`
@@ -265,7 +278,8 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const productUrl = `https://www.weave365.com/${catSlug}/${product.id}`;
 
   if (isWholesale && canViewPrices && price != null) {
-    const isSet = quantity > 1;
+    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+    const isSet = quantity > 1 && !isUnder999;
     const unitLabel = isSet ? 'Set' : 'pc';
     const finalPrice = isSet ? price * quantity : price;
 
@@ -273,14 +287,16 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
       `Hello ${storeConfig.name},`,
       `I want to buy this catalog: `,
       `${product.title}`,
-      `Code: ${variant.code} | Color: ${quantity}`,
-      `Quant: 1 ${unitLabel} | price : ${formatMoney(finalPrice)} (Excluding GST & Shipping)`
+      isUnder999
+        ? `Code: ${variant.code} | Quant: 1 pc | price : ${formatMoney(price)} (Excluding GST & Shipping)`
+        : `Code: ${variant.code} | Color: ${quantity}\nQuant: 1 ${unitLabel} | price : ${formatMoney(finalPrice)} (Excluding GST & Shipping)`
     ];
     lines.push('', `Product Link: ${productUrl}`);
     return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
   // Fallback for Guest/Reseller accounts
+  const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
   const discount = (!isWholesale && product.comboDiscount > 0) ? Math.floor(quantity / 2) * product.comboDiscount : 0;
   const subtotal = price * quantity;
   const finalPrice = subtotal - discount;
@@ -288,14 +304,18 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const priceText = canViewPrices && price != null
     ? (discount > 0
         ? `Price: ${formatMoney(price)} /pc | Subtotal: ${formatMoney(subtotal)} | Combo Discount: -${formatMoney(discount)} | Total: ${formatMoney(finalPrice)}`
-        : `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`)
+        : (isUnder999
+            ? `Price: ${formatMoney(price)} /pc`
+            : `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`))
     : '';
 
   const lines = [
     `Hello ${storeConfig.name},`,
     `I want to buy this catalog:`,
     `${product.title}`,
-    `Code: ${variant.code} | Color: ${quantity}`,
+    isUnder999
+      ? `Code: ${variant.code} | Quant: ${quantity} pc`
+      : `Code: ${variant.code} | Color: ${quantity}`,
     priceText,
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',

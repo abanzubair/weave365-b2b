@@ -191,7 +191,7 @@ export const ProductCard = memo(function ProductCard({
             {!isPriceLocked ? (
               <>
                 <strong>{formatMoney(basePrice)} {priceAccess?.priceGroup === 'wholesale' && <span>/pc</span>}</strong>
-                {priceAccess?.priceGroup === 'wholesale' && (
+                {priceAccess?.priceGroup === 'wholesale' && !isUnder999 && (
                   <small>{formatMoney(setPrice)} /set</small>
                 )}
               </>

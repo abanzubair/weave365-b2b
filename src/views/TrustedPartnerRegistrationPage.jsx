@@ -876,7 +876,7 @@ export function TrustedPartnerRegistrationPage() {
                         type="tel"
                         value={reviewForm.whatsapp}
                         onChange={(e) => {
-                          const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          const raw = e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10);
                           setReviewForm((prev) => ({ ...prev, whatsapp: raw }));
                         }}
                         placeholder={t('whatsappPlaceholder')}
@@ -1358,7 +1358,7 @@ export function TrustedPartnerRegistrationPage() {
                               <input 
                                 type="tel" 
                                 value={onboardingForm.whatsapp} 
-                                onChange={(e) => setOnboardingForm(prev => ({ ...prev, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 10) }))} 
+                                onChange={(e) => setOnboardingForm(prev => ({ ...prev, whatsapp: e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10) }))} 
                                 placeholder={t('whatsappPlaceholder')} 
                                 required 
                                 className="tel-input-field" 
@@ -1378,7 +1378,7 @@ export function TrustedPartnerRegistrationPage() {
                               <input 
                                 type="tel" 
                                 value={onboardingForm.alternateContact} 
-                                onChange={(e) => setOnboardingForm(prev => ({ ...prev, alternateContact: e.target.value.replace(/\D/g, '').slice(0, 10) }))} 
+                                onChange={(e) => setOnboardingForm(prev => ({ ...prev, alternateContact: e.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10) }))} 
                                 placeholder={t('whatsappPlaceholder')} 
                                 className="tel-input-field" 
                               />

@@ -774,7 +774,9 @@ export function ProductDetail({
         "name": "What is the Minimum Order Quantity (MOQ) for wholesale?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
+          "text": isUnder999
+            ? "For retailers and boutique owners, our MOQ starts at just 1 piece. This allows you to test our premium Banarasi collection with minimal upfront capital."
+            : "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
         }
       },
       {
@@ -814,39 +816,12 @@ export function ProductDetail({
     [galleryHeight],
   );
 
-  async function handleEnquiryClick() {
-    if (enquiryState === 'sending') return;
-    setEnquiryState('sending');
-
-    if (isSupabaseConfigured) {
-      try {
-        await supabase.from('inquiries').insert({
-          user_id: priceAccess?.userId || undefined,
-          email: priceAccess?.userEmail || undefined,
-          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-          phone: priceAccess?.buyerPhone || undefined,
-          pincode: priceAccess?.buyerPincode || undefined,
-          inquiry_type: 'product',
-          status: 'new',
-          product_group_key: String(product.id),
-          variant_code: variant.code,
-          message: `Enquiry for ${product.title}`,
-          items: [{
-            product_id: product.id,
-            product_title: product.title,
-            variant_code: variant.code,
-            quantity: moqMultiplier,
-            priceGroup: priceAccess?.priceGroup || 'pending',
-          }],
-        });
-      } catch (err) {
-        console.error('Failed to log inquiry to Supabase:', err);
-      }
+  function handleEnquiryClick() {
+    if (totalColors > 1) {
+      addToCart(product, variant, 1, { colorName: 'Select Color' });
+    } else {
+      addToCart(product, variant, 1);
     }
-
-    setEnquiryState('sent');
-    const whatsappUrl = buildSingleProductWhatsappUrl(product, variant, moqMultiplier, pincode, codStatus, priceAccess);
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   const downloadImagesAsZip = useCallback(async () => {
@@ -1243,12 +1218,12 @@ export function ProductDetail({
                           </div>
                         )}
                       </div>
-                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && !isSoldAsPc && (
+                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && !isSoldAsPc && String(product.category || '').toLowerCase() !== 'under 999' && (
                         <div className="price-set-block">
                           <span className="price-pipe"></span>
                           <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
                           <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
-                          {canViewPrice && String(product.category || '').toLowerCase() !== 'under 999' && (
+                          {canViewPrice && (
                             <div className="moq-badge">
                               MOQ: 1 Set
                             </div>
@@ -1273,27 +1248,6 @@ export function ProductDetail({
               <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
                 <span className="free-shipping-highlight">Excluding GST & Shipping</span>
               </span>
-            )}
-
-            {product.comboDiscount > 0 && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
-              <div className="promo-banner" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginTop: '12px',
-                padding: '10px 14px',
-                background: 'linear-gradient(135deg, #fff9e6 0%, #fff0cc 100%)',
-                borderLeft: '4px solid #b8924a',
-                borderRadius: '0 8px 8px 0',
-                color: '#8a651a',
-                fontSize: '14px',
-                fontWeight: '600',
-                fontFamily: 'var(--font-ui)',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-              }}>
-                <Gift size={16} />
-                <span>Special Promo: Buy 2 get ₹{product.comboDiscount} off!</span>
-              </div>
             )}
 
             {canViewPrice && priceAccess?.priceGroup === 'wholesale' && String(product.category || '').toLowerCase() !== 'under 999' && (
@@ -1334,9 +1288,11 @@ export function ProductDetail({
             )}
 
             <div className="quick-facts">
-              <span>
-                <Layers size={22} />Colors in a set: <strong>{totalColors}</strong>
-              </span>
+              {String(product.category || '').toLowerCase() !== 'under 999' && (
+                <span>
+                  <Layers size={22} />Colors in a set: <strong>{totalColors}</strong>
+                </span>
+              )}
               <span>
                 <ShoppingBag size={22} /> Weight per piece: <strong>{formatWeight(singleWeight)}</strong>
               </span>
@@ -1703,7 +1659,9 @@ export function ProductDetail({
             {[
               {
                 question: "What is the Minimum Order Quantity (MOQ) for wholesale?",
-                answer: "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
+                answer: String(product.category || '').toLowerCase() === 'under 999'
+                  ? "For retailers and boutique owners, our MOQ starts at just 1 piece. This allows you to test our premium Banarasi collection with minimal upfront capital."
+                  : "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
               },
               {
                 question: "Are these Banarasi sarees authentically sourced?",

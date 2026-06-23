@@ -41,16 +41,16 @@ const defaultHero = {
 
 const defaultHeroFeatures = [
   {
-    title: 'Experts in Colour',
-    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
+    title: 'Wholesale Ready',
+    text: 'Made For resellers, boutique, and exporters.',
   },
   {
-    title: 'Eternal Desire',
-    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
+    title: 'White Label',
+    text: 'Share catalogues without our branding.',
   },
   {
-    title: 'Feel Beautiful',
-    text: 'Lorem ipsum dolor sit amet, elit, sed do eiusmod tempor incididunt',
+    title: 'WhatsApp Sharing',
+    text: 'Easily share catalogues with customers.',
   },
 ];
 
@@ -472,7 +472,8 @@ export function Home({
                     {renderHeroLines(heroTitle)}
                   </div>
                   <p className="premium-hero-subtitle">
-                    {isMobile ? renderHeroSubtitle(heroRightText) : renderHeroSubtitle(heroSubtitle)}
+                    <span className="hero-subtitle-desktop">{renderHeroSubtitle(heroSubtitle)}</span>
+                    <span className="hero-subtitle-mobile">{renderHeroSubtitle(heroRightText)}</span>
                   </p>
                 </div>
 

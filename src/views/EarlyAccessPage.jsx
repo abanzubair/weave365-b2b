@@ -86,8 +86,8 @@ export function EarlyAccessPage({ navigate }) {
   };
 
   const handleWhatsappChange = (value) => {
-    // Keep only digits (no '+' allowed) and remove any auto formatting/+91 injection
-    const raw = value.replace(/\D/g, '');
+    // Keep only digits (no '+' allowed) and remove any auto formatting/+91 injection, and prevent starting with 0
+    const raw = value.replace(/\D/g, '').replace(/^0+/, '');
     updateField('whatsappNumber', raw);
   };
 
