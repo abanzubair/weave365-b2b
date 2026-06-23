@@ -867,6 +867,77 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }, 2000);
   };
 
+  const getBuyerTypeLabel = (type) => {
+    if (!type) return '';
+    const lower = type.toLowerCase();
+    if (lower === 'wholesale') return 'Wholesaler';
+    if (lower === 'reseller') return 'Reseller';
+    if (lower === 'user') return 'User';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  const getBuyingBehaviorLabel = (behavior) => {
+    if (!behavior) return '';
+    const lower = behavior.toLowerCase();
+    if (lower === 'instant') return 'Immediate';
+    if (lower === 'order_basis') return 'Order Basis';
+    return behavior.charAt(0).toUpperCase() + behavior.slice(1);
+  };
+
+  const handleCopyUserDetails = (profile) => {
+    const categoriesStr = Array.isArray(profile.interested_categories)
+      ? profile.interested_categories.join(', ')
+      : '';
+
+    const row = [
+      profile.full_name || '',
+      profile.business_name || '',
+      `${profile.city || ''}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
+      profile.email || '',
+      profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+      categoriesStr,
+      getBuyerTypeLabel(profile.buyer_type),
+      getBuyingBehaviorLabel(profile.buying_behavior)
+    ].join('\t');
+
+    navigator.clipboard.writeText(row);
+
+    setCopyFeedback(prev => ({ ...prev, [profile.id]: true }));
+    setTimeout(() => {
+      setCopyFeedback(prev => ({ ...prev, [profile.id]: false }));
+    }, 2000);
+  };
+
+  const handleCopyAllUserDetails = () => {
+    if (!sortedProfiles || sortedProfiles.length === 0) {
+      alert('No user records available to copy.');
+      return;
+    }
+
+    const rows = sortedProfiles.map(profile => {
+      const categoriesStr = Array.isArray(profile.interested_categories)
+        ? profile.interested_categories.join(', ')
+        : '';
+      return [
+        profile.full_name || '',
+        profile.business_name || '',
+        `${profile.city || ''}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
+        profile.email || '',
+        profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        categoriesStr,
+        getBuyerTypeLabel(profile.buyer_type),
+        getBuyingBehaviorLabel(profile.buying_behavior)
+      ].join('\t');
+    });
+
+    navigator.clipboard.writeText(rows.join('\n'));
+
+    setCopyFeedback(prev => ({ ...prev, allUsers: true }));
+    setTimeout(() => {
+      setCopyFeedback(prev => ({ ...prev, allUsers: false }));
+    }, 2000);
+  };
+
 
 
   const handleExportCSV = () => {
@@ -1892,6 +1963,32 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     {userSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
                   </button>
                 </div>
+
+                {/* Copy All Users Details */}
+                <div className="admin-control-item">
+                  <button
+                    type="button"
+                    onClick={handleCopyAllUserDetails}
+                    className="admin-btn-toggle"
+                    style={{
+                      background: 'rgba(183, 134, 70, 0.1)',
+                      border: '1px solid rgba(183, 134, 70, 0.3)',
+                      color: '#b78646',
+                      fontWeight: '600',
+                      padding: '5px 12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      height: '34px',
+                    }}
+                  >
+                    <Copy size={13} />
+                    {copyFeedback.allUsers ? 'Copied All!' : 'Copy All Details'}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="admin-table-wrap admin-table-wrap-scroller" style={{
@@ -1931,8 +2028,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           <strong>{sortedProfiles.length - index}</strong>
                         </td>
                         <td>
-                          <span className="admin-profile-registered-meta" style={{ marginTop: 0 }}>
-                            {profile.created_at ? new Date(profile.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                          <span className="admin-profile-registered-meta" style={{ marginTop: 0, fontSize: '13px', color: 'var(--ink)' }}>
+                            {profile.created_at ? (
+                              <>
+                                <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: '500' }}>
+                                  {new Date(profile.created_at).toLocaleString('en-IN', { dateStyle: 'medium' })}
+                                </span>
+                                <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                                  {new Date(profile.created_at).toLocaleString('en-IN', { timeStyle: 'short' }).toLowerCase()}
+                                </span>
+                              </>
+                            ) : 'N/A'}
                           </span>
                         </td>
                         <td>
@@ -1961,6 +2067,31 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                               {profile.whatsapp}
                             </a>
                           )}
+                          <div style={{ marginTop: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyUserDetails(profile)}
+                              className="admin-copy-user-btn"
+                              title="Copy details in Excel/TSV format"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                background: 'rgba(183, 134, 70, 0.1)',
+                                border: '1px solid rgba(183, 134, 70, 0.3)',
+                                color: '#b78646',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <Copy size={11} />
+                              {copyFeedback[profile.id] ? 'Copied!' : 'Copy Details'}
+                            </button>
+                          </div>
                         </td>
                         <td>
                           <span className="admin-capitalize" style={{ display: 'block', fontWeight: 600 }}>
