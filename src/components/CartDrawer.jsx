@@ -330,14 +330,14 @@ export function CartDrawer({
     if (isSupabaseConfigured) {
       try {
         const { data: insertData, error: insertErr } = await supabase
-          .from('inquiries')
+          .from('orders')
           .insert({
             user_id: priceAccess?.userId || undefined,
             email: priceAccess?.userEmail || undefined,
             buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+            business_name: priceAccess?.businessName || undefined,
             phone: priceAccess?.buyerPhone || undefined,
             pincode: pincode || priceAccess?.buyerPincode || undefined,
-            inquiry_type: 'cart_payment',
             status: 'new',
             message: `Order paid via UPI. (User is sharing payment screenshot on WhatsApp)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
             items: items.map(item => ({
@@ -357,7 +357,7 @@ export function CartDrawer({
           newInquiryId = insertData.id;
         }
       } catch (err) {
-        console.error('Failed to log payment inquiry to Supabase:', err);
+        console.error('Failed to log payment order to Supabase:', err);
       }
     }
 

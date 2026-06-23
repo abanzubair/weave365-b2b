@@ -65,6 +65,7 @@ import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
+  { key: 'orders', label: 'Orders' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
 ];
@@ -1471,8 +1472,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   async function updateInquiryStatus(inquiryId, status) {
     if (!isSupabaseConfigured || !allowed) return;
 
+    const isOrder = (adminData.optional.orders || []).some(row => row.id === inquiryId);
+    const sourceTable = isOrder ? 'orders' : 'inquiries';
+
     const { error } = await supabase
-      .from('inquiries')
+      .from(sourceTable)
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', inquiryId);
 
@@ -1485,7 +1489,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       ...current,
       optional: {
         ...current.optional,
-        inquiries: current.optional.inquiries.map((row) =>
+        [sourceTable]: (current.optional[sourceTable] || []).map((row) =>
           row.id === inquiryId ? { ...row, status } : row
         ),
       },
@@ -1504,7 +1508,12 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     adminData.profiles.forEach(p => map.set(p.id, p));
     return map;
   }, [adminData.profiles]);
-  const enquiryRows = adminData.optional.inquiries || [];
+  const enquiryRows = useMemo(() => {
+    const inquiries = (adminData.optional.inquiries || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
+    const orders = (adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' }));
+    return [...inquiries, ...orders];
+  }, [adminData.optional.inquiries, adminData.optional.orders]);
+
   const pendingProfiles = adminData.profiles.filter((profile) => profile.approval_status === 'pending');
   const resellerProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'reseller');
   const wholesaleProfiles = adminData.profiles.filter((profile) => profile.buyer_type === 'wholesale');
@@ -1546,8 +1555,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter]);
 
   const sortedEnquiries = useMemo(() => {
-    const enquiries = adminData.optional.inquiries || [];
-    return [...enquiries].sort((a, b) => {
+    return [...enquiryRows].sort((a, b) => {
       let valA, valB;
       if (enquirySortField === 'name') {
         valA = String(a.buyer_name || '').toLowerCase();
@@ -1567,7 +1575,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       if (valA > valB) return enquirySortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [adminData.optional.inquiries, enquirySortField, enquirySortOrder]);
+  }, [enquiryRows, enquirySortField, enquirySortOrder]);
 
 
 
@@ -3072,7 +3080,7 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
         <ReviewsModeration reviewsFilter={reviewsFilter} setReviewsFilter={setReviewsFilter} allSiteReviews={allSiteReviews} reviewsLoading={reviewsLoading} reviewsError={reviewsError} loadSiteReviews={loadSiteReviews} reviewActionLoading={reviewActionLoading} handleReviewAction={handleReviewAction} />
       ) : activeTab === 'tracking' ? (
         /* ==================== ORDER TRACKING TAB ==================== */
-        <AdminTrackingPanel inquiries={adminData.optional.inquiries} products={products} loadAdminData={loadAdminData} />
+        <AdminTrackingPanel inquiries={enquiryRows} products={products} loadAdminData={loadAdminData} />
       ) : (
         /* ==================== B2B PARTNER APPLICATIONS TAB ==================== */
         <div className="admin-partners-tab">

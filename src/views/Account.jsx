@@ -30,6 +30,26 @@ function titleCase(value) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function getStatusBadgeStyle(status) {
+  const s = String(status || 'new').toLowerCase();
+  switch (s) {
+    case 'delivered':
+    case 'done':
+      return { backgroundColor: '#eafaf1', color: '#2e7d32', border: '1px solid rgba(46, 125, 50, 0.2)' };
+    case 'dispatched':
+      return { backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid rgba(21, 101, 192, 0.2)' };
+    case 'verified':
+    case 'processing':
+    case 'active':
+      return { backgroundColor: '#fff8e1', color: '#b78646', border: '1px solid rgba(183, 134, 70, 0.2)' };
+    case 'cancelled':
+    case 'rejected':
+      return { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid rgba(198, 40, 40, 0.2)' };
+    default:
+      return { backgroundColor: '#f5f5f5', color: '#616161', border: '1px solid rgba(97, 97, 97, 0.2)' };
+  }
+}
+
 function AccountSummaryCard({ icon: Icon, label, value, hint }) {
   return (
     <article className="account-summary-card">
@@ -60,6 +80,10 @@ export function Account({
   const [addressLoading, setAddressLoading] = useState(false);
   const [showAddEditForm, setShowAddEditForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+
+  // Placed orders state
+  const [placedOrders, setPlacedOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   // Address form fields
   const [formName, setFormName] = useState('');
@@ -94,15 +118,43 @@ export function Account({
     }
   };
 
+  const fetchPlacedOrders = async () => {
+    if (!user?.id || !isSupabaseConfigured) return;
+    setOrdersLoading(true);
+    try {
+      const [ordersRes, inquiriesRes] = await Promise.all([
+        supabase.from('orders').select('*').eq('user_id', user.id),
+        supabase.from('inquiries').select('*').eq('user_id', user.id)
+      ]);
+      if (ordersRes.error) throw ordersRes.error;
+      if (inquiriesRes.error) throw inquiriesRes.error;
+
+      const combined = [
+        ...(ordersRes.data || []).map(o => ({ ...o, _sourceTable: 'orders' })),
+        ...(inquiriesRes.data || []).map(i => ({ ...i, _sourceTable: 'inquiries' }))
+      ];
+
+      combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setPlacedOrders(combined);
+    } catch (err) {
+      console.error('Error loading placed orders:', err);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'addresses' && user?.id) {
       fetchAddresses();
+    } else if (activeTab === 'orders' && user?.id) {
+      fetchPlacedOrders();
     }
   }, [activeTab, user?.id]);
 
   useEffect(() => {
     if (user?.id) {
       fetchAddresses();
+      fetchPlacedOrders();
     }
   }, [user?.id]);
 
@@ -296,7 +348,7 @@ export function Account({
           onClick={() => setActiveTab('orders')}
         >
           <ShoppingBag size={16} />
-          <span>Orders ({cartItems.length})</span>
+          <span>Orders ({placedOrders.length})</span>
         </button>
         <button type="button" 
           className={`account-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
@@ -326,10 +378,12 @@ export function Account({
       <div className={`account-dashboard-grid tab-active-${activeTab}`}>
         <article className="account-panel panel-orders">
           <div className="account-panel-head">
-            <span><ShoppingBag size={18} /> My Order List</span>
-            <button type="button" onClick={() => navigate('wholesale-catalogue')}>Add items</button>
+            <span><ShoppingBag size={18} /> B2B Shopping Cart (Draft Order)</span>
+            {cartItems.length > 0 && (
+              <button type="button" onClick={() => navigate('wholesale-catalogue')}>Continue Sourcing</button>
+            )}
           </div>
-          <div className="account-list">
+          <div className="account-list" style={{ marginBottom: '2.5rem' }}>
             {cartItems.slice(0, 5).map((item) => (
               <div className="account-list-row" key={item.variantCode}>
                 <img src={item.selectedColorImage || item.product.images[0] || fallbackProductImage} alt={`${item.product.title} – ${item.selectedColorName || item.variant.code}`} loading="lazy" />
@@ -344,7 +398,128 @@ export function Account({
                 </div>
               </div>
             ))}
-            {cartItems.length === 0 && <p className="empty-state">Your order list is empty.</p>}
+            {cartItems.length === 0 && (
+              <p className="empty-state" style={{ padding: '20px', textAlign: 'center', background: 'var(--bg-light)', borderRadius: '8px', color: 'var(--muted)' }}>
+                Your cart is empty.
+              </p>
+            )}
+          </div>
+
+          <div className="account-panel-head" style={{ borderTop: '1px solid var(--line)', paddingTop: '2rem', marginTop: '2rem' }}>
+            <span><History size={18} /> Placed Orders (Order History)</span>
+          </div>
+
+          <div className="account-list">
+            {ordersLoading ? (
+              <p className="loading-state" style={{ padding: '20px', textAlign: 'center', color: 'var(--muted)' }}>Loading your orders...</p>
+            ) : placedOrders.length === 0 ? (
+              <p className="empty-state" style={{ padding: '20px', textAlign: 'center', background: 'var(--bg-light)', borderRadius: '8px', color: 'var(--muted)' }}>
+                No orders placed yet.
+              </p>
+            ) : (
+              <div className="placed-orders-grid" style={{ display: 'grid', gap: '16px' }}>
+                {placedOrders.map((order) => {
+                  const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+                  const statusStyle = getStatusBadgeStyle(order.status);
+                  const orderTotal = order.items && Array.isArray(order.items)
+                    ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                    : 0;
+
+                  return (
+                    <div 
+                      key={order.id} 
+                      className="placed-order-card"
+                      style={{ 
+                        border: '1px solid var(--line)', 
+                        borderRadius: '8px', 
+                        padding: '16px', 
+                        background: 'var(--surface-soft)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                          <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Tracking ID</span>
+                          <code style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold-dark)' }}>{order.id}</code>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Date Placed</span>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{orderDate}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                        <div>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
+                            <span 
+                              style={{ 
+                                ...statusStyle, 
+                                fontSize: '10px', 
+                                fontWeight: 800, 
+                                padding: '4px 10px', 
+                                borderRadius: '20px', 
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em'
+                              }}
+                            >
+                              {order.status || 'new'}
+                            </span>
+                            {order.pincode && (
+                              <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                                Pincode: <strong>{order.pincode}</strong>
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div style={{ display: 'grid', gap: '6px' }}>
+                            {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
+                              <div key={idx} style={{ fontSize: '13px', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--gold)', display: 'inline-block' }}></span>
+                                <span>
+                                  <strong>{item.product_title || 'Premium Banarasi Saree'}</strong>
+                                  {item.color && <span style={{ color: 'var(--muted)' }}> · Color: {item.color}</span>}
+                                  {` x ${item.quantity || 1}`}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right', display: 'grid', gap: '8px', justifyItems: 'end' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Amount</span>
+                            <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>
+                              {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                            </strong>
+                          </div>
+                          <button 
+                            type="button" 
+                            className="primary-button" 
+                            onClick={() => navigate('order-tracking', order.id)}
+                            style={{ 
+                              padding: '6px 14px', 
+                              fontSize: '12px', 
+                              minHeight: 0, 
+                              height: 'auto',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              width: 'fit-content'
+                            }}
+                          >
+                            Track Order
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </article>
 

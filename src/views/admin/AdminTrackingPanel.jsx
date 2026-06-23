@@ -82,8 +82,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
         return;
       }
 
+      const sourceTable = selectedInquiry._sourceTable || 'inquiries';
       const { error } = await supabase
-        .from('inquiries')
+        .from(sourceTable)
         .update({
           status: formStatus,
           tracking_carrier: formCarrier.trim() || null,
@@ -122,9 +123,13 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   const filteredInquiries = useMemo(() => {
     let result = [...inquiries];
 
-    // Filter by type: 'orders' only displays payment checkouts
+    // Filter by type: 'orders' displays payment checkouts (both new orders and older inquiry checkouts)
     if (typeFilter === 'orders') {
-      result = result.filter(i => i.inquiry_type === 'cart_payment' || i.inquiry_type === 'cart_payment_fallback');
+      result = result.filter(i => 
+        i._sourceTable === 'orders' || 
+        i.inquiry_type === 'cart_payment' || 
+        i.inquiry_type === 'cart_payment_fallback'
+      );
     }
 
     // Filter by status

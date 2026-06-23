@@ -816,7 +816,68 @@ ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_carrier text;
 ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_number text;
 ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_message text;
 
--- Create secure get_order_tracking database function to fetch tracking data by ID
+-- -------------------------------------------------------------------------------
+-- B2B PAID ORDERS TABLE
+-- -------------------------------------------------------------------------------
+
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  items jsonb default '[]'::jsonb,
+  message text,
+  buyer_name text,
+  business_name text,
+  phone text,
+  email text,
+  pincode text,
+  status text default 'new',
+  tracking_carrier text,
+  tracking_number text,
+  tracking_message text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.orders enable row level security;
+
+-- Policies
+drop policy if exists "orders own select or admin" on public.orders;
+create policy "orders own select or admin"
+  on public.orders for select
+  to authenticated
+  using ((select auth.uid()) = user_id or public.is_admin());
+
+drop policy if exists "orders own insert or admin" on public.orders;
+create policy "orders own insert or admin"
+  on public.orders for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id or public.is_admin());
+
+drop policy if exists "orders admin update" on public.orders;
+create policy "orders admin update"
+  on public.orders for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "orders admin delete" on public.orders;
+create policy "orders admin delete"
+  on public.orders for delete
+  to authenticated
+  using (public.is_admin());
+
+-- Indices
+create index if not exists orders_user_id_idx on public.orders (user_id);
+create index if not exists orders_status_idx on public.orders (status);
+
+-- Trigger for updated_at
+drop trigger if exists touch_orders_updated_at on public.orders;
+create trigger touch_orders_updated_at
+before update on public.orders
+for each row execute function public.touch_updated_at();
+
+-- Create secure get_order_tracking database function to fetch tracking data by ID from both inquiries and orders
 CREATE OR REPLACE FUNCTION public.get_order_tracking(order_id uuid)
 RETURNS TABLE (
   id uuid,
@@ -837,6 +898,22 @@ SECURITY DEFINER
 AS $$
 BEGIN
   RETURN QUERY
+  SELECT 
+    o.id,
+    o.buyer_name,
+    o.phone,
+    o.email,
+    o.status,
+    o.tracking_carrier,
+    o.tracking_number,
+    o.tracking_message,
+    o.items,
+    o.message,
+    o.created_at,
+    o.updated_at
+  FROM public.orders o
+  WHERE o.id = order_id
+  UNION ALL
   SELECT 
     i.id,
     i.buyer_name,
