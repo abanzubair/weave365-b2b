@@ -2112,13 +2112,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                         </td>
                         <td>
                           {profile.interested_categories && Array.isArray(profile.interested_categories) && profile.interested_categories.length > 0 ? (
-                            <div className="admin-flex-wrap-gap8">
-                              {profile.interested_categories.map((cat, catIdx) => (
-                                <span key={catIdx} className="admin-status new" style={{ fontSize: '11px', padding: '3px 6px', fontWeight: 'bold' }}>
-                                  {cat}
-                                </span>
-                              ))}
-                            </div>
+                            <span style={{ fontSize: '13px', color: '#000000' }}>
+                              {profile.interested_categories.join(', ')}
+                            </span>
                           ) : (
                             <span className="admin-doc-card-muted">-</span>
                           )}
