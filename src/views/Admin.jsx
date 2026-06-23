@@ -2052,17 +2052,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                           </span>
                         </td>
                         <td>
-                          {profile.business_name ? (
+                          {profile.full_name ? (
                             <>
-                              <strong className="admin-capitalize">{profile.business_name}</strong>
-                              {profile.full_name && (
-                                <span className="admin-capitalize" style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginTop: '2px' }}>
-                                  {profile.full_name}
+                              <strong className="admin-capitalize">{profile.full_name}</strong>
+                              {profile.business_name && (
+                                <span className="admin-capitalize" style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--muted)', marginTop: '2px' }}>
+                                  {profile.business_name}
                                 </span>
                               )}
                             </>
                           ) : (
-                            <strong className="admin-capitalize">{profile.full_name || 'Unnamed buyer'}</strong>
+                            <strong className="admin-capitalize">{profile.business_name || 'Unnamed buyer'}</strong>
                           )}
                           {(profile.city || profile.pincode) && (
                             <span className="admin-capitalize" style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
