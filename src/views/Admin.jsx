@@ -2087,15 +2087,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                background: 'rgba(183, 134, 70, 0.1)',
-                                border: '1px solid rgba(183, 134, 70, 0.3)',
-                                color: '#b78646',
+                                background: 'none',
+                                border: 'none',
+                                color: '#000000',
                                 cursor: 'pointer',
                                 fontSize: '11px',
-                                fontWeight: '600',
-                                padding: '3px 8px',
-                                borderRadius: '4px',
-                                transition: 'all 0.2s',
+                                fontWeight: '500',
+                                padding: 0,
+                                textDecoration: 'underline',
                               }}
                             >
                               <Copy size={11} />
