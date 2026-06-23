@@ -2017,7 +2017,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                     <th className="admin-table-sticky-th">Favourites</th>
                     <th className="admin-table-sticky-th">Approval</th>
                     <th className="admin-table-sticky-th">Reseller Dashboard</th>
-                    <th className="admin-table-sticky-th">CRM Action</th>
+                    <th className="admin-table-sticky-th">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2156,16 +2156,25 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                             <span>0</span>
                           )}
                         </td>
-                        <td><span className={`admin-status ${profile.approval_status || 'pending'}`}>{profile.approval_status || 'pending'}</span></td>
+                        <td><span className="admin-capitalize" style={{ fontSize: '13px', color: '#000000' }}>{profile.approval_status || 'pending'}</span></td>
                         <td>
-                          <div className="admin-reseller-dash-cell">
-                            <span className={`admin-status ${profile.reseller_dashboard_enabled ? 'approved' : 'pending'}`}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '13px', color: '#000000' }}>
                               {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
                             </span>
                             <button
                               type="button"
                               onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                              className={`admin-btn-reseller-toggle ${profile.reseller_dashboard_enabled ? 'state-enabled' : 'state-disabled'}`}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#000000',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                padding: 0,
+                                textDecoration: 'underline',
+                              }}
                             >
                               {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
                             </button>
@@ -2188,7 +2197,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                                 await updateBuyerPriceAccess(profile, 'suspended', 'pending');
                               }
                             }}
-                            className={getCrmDropdownClass(currentStatusVal)}
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '13px',
+                              color: '#000000',
+                              background: '#ffffff',
+                              border: '1px solid var(--border, #eadbc8)',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              outline: 'none',
+                              fontFamily: 'var(--font-body, sans-serif)',
+                            }}
                           >
                             <option value="approved-wholesale">Wholesale</option>
                             <option value="approved-reseller">Reseller</option>
