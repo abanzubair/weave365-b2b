@@ -74,6 +74,7 @@ export const seoCategoryRoutes = {
   'wholesale-banarasi-dupattas': 'Dupatta',
   'wholesale-banarasi-fabrics': 'Fabric',
   'wholesale-under-999': 'Under 999',
+  'under-999': 'Under 999',
 };
 
 /**
@@ -91,8 +92,8 @@ export const seoCategoryMap = {
   'dupattas': 'wholesale-banarasi-dupattas',
   'fabric': 'wholesale-banarasi-fabrics',
   'fabrics': 'wholesale-banarasi-fabrics',
-  'under 999': 'wholesale-under-999',
-  'under-999': 'wholesale-under-999',
+  'under 999': 'under-999',
+  'under-999': 'under-999',
 };
 
 
@@ -128,11 +129,16 @@ export const NON_PRODUCT_ROUTES = new Set([
 
 export function getProductCategorySlug(productId, productCategory = null) {
   if (!productId) return 'product';
+  let catName = 'product';
   if (productCategory) {
-    return productCategory.toLowerCase().trim();
+    catName = productCategory.toLowerCase().trim();
+  } else {
+    const firstDigit = String(productId).trim().charAt(0);
+    const resolvedName = categoryCodes[firstDigit];
+    if (resolvedName) {
+      catName = resolvedName.toLowerCase().trim();
+    }
   }
-  const firstDigit = String(productId).trim().charAt(0);
-  const catName = categoryCodes[firstDigit];
-  return catName ? catName.toLowerCase().trim() : 'product';
+  return catName.replace(/\s+/g, '-');
 }
 

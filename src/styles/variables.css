@@ -63,6 +63,9 @@ html {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum";
+  -webkit-font-feature-settings: "lnum";
+  -moz-font-feature-settings: "lnum";
   margin-top: 0;
   margin-bottom: 0.5em;
   font-weight: 600;

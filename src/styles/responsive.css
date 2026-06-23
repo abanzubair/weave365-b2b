@@ -377,6 +377,10 @@
   .why-band .section-title h2 {
     font-family: var(--font-heading);
     /* Cormorant Garamond */
+    font-variant-numeric: lining-nums;
+    font-feature-settings: "lnum";
+    -webkit-font-feature-settings: "lnum";
+    -moz-font-feature-settings: "lnum";
     font-size: 32px;
     font-weight: 600;
     letter-spacing: 0.02em;
