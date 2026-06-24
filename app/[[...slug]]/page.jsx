@@ -4,7 +4,7 @@ import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPost
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900; // Cache and revalidate at most every 15 minutes
 export const runtime = 'edge';
 
 const defaultConfigOptions = { priceRanges: [], categories: [], fabrics: [], weaves: [] };
