@@ -295,7 +295,8 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   // Custom parser to translate simple markdown body blocks into beautiful styled JSX elements
   const parseContentBlocks = (rawContent) => {
     if (!rawContent) return null;
-    const blocks = rawContent.split('\n\n');
+    const normalized = rawContent.replace(/\r\n/g, '\n');
+    const blocks = normalized.split('\n\n');
 
     return blocks.map((block, idx) => {
       const trimmed = block.trim();

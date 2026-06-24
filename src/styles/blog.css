@@ -476,7 +476,8 @@
 
 /* Drop Caps Styling */
 .article-rich-text>p:first-of-type {
-  margin-bottom: -0.95rem;
+  display: flow-root;
+  margin-bottom: 1.75rem;
 }
 
 .article-rich-text>p:first-of-type::first-letter {
