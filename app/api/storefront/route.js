@@ -143,85 +143,136 @@ export async function GET(request) {
       shareItemsMap.set(item.product_group_key, item);
     }
 
-    // 3. Load Master Product CSV
-    let csvText = '';
-    const { data: sheetData } = await supabase
+    // 3. Load Master Product CSV & Category CSVs
+    const csvTexts = [];
+    const { data: sheets } = await supabase
       .from('sheet_data')
-      .select('csv_data')
-      .eq('id', 'products')
-      .maybeSingle();
+      .select('id, csv_data');
     
-    if (sheetData && sheetData.csv_data) {
-      csvText = sheetData.csv_data;
-    } else {
-      // Server-side fallback to the public Google Sheet URL
-      const fallbackUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
+    if (sheets && sheets.length > 0) {
+      // Find the main products sheet
+      const mainSheet = sheets.find(s => s.id === 'products');
+      if (mainSheet && mainSheet.csv_data) {
+        csvTexts.push({ id: 'products', text: mainSheet.csv_data });
+      }
+      
+      // Find all category products sheets
+      const categorySheets = sheets.filter(s => s.id !== 'products' && s.id.startsWith('products_'));
+      for (const catSheet of categorySheets) {
+        if (catSheet.csv_data) {
+          csvTexts.push({ id: catSheet.id, text: catSheet.csv_data });
+        }
+      }
+    }
+    
+    // Fallback if main products sheet is missing or database fetch failed
+    if (csvTexts.length === 0) {
+      const fallbackUrl = process.env.GOOGLE_SHEET_PRODUCTS_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
       const res = await fetch(fallbackUrl, { next: { revalidate: 60 } });
-      csvText = await res.text();
+      const mainText = await res.text();
+      if (mainText) {
+        csvTexts.push({ id: 'products', text: mainText });
+      }
+      
+      // Fallback for "Under 999" category sheet
+      const fallbackUnder999Url = process.env.GOOGLE_SHEET_UNDER_999_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=464893428&single=true&output=csv';
+      const under999Res = await fetch(fallbackUnder999Url, { next: { revalidate: 60 } });
+      const under999Text = await under999Res.text();
+      if (under999Text) {
+        csvTexts.push({ id: 'products_under_999', text: under999Text });
+      }
     }
 
-    if (!csvText) {
+    if (csvTexts.length === 0) {
       return new Response(JSON.stringify({ error: 'Catalog data empty' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    // 4. Parse CSV & Filter Catalog Products
-    const parsed = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true
+    // 4. Parse CSVs & Filter Catalog Products
+    const productsMap = new Map();
+    
+    // Sort so main sheet 'products' is processed first, category sheets overwrite on conflict
+    const sortedCsvs = [...csvTexts].sort((a, b) => {
+      if (a.id === 'products') return -1;
+      if (b.id === 'products') return 1;
+      return 0;
     });
 
-    const products = [];
-    for (const rawRow of parsed.data) {
-      const code = getRowVal(rawRow, 'Code');
-      const category = getRowVal(rawRow, 'Category') || 'Saree';
-      const fabric = getRowVal(rawRow, 'Fabric');
-      
-      if (!code && !fabric && !category) continue;
-      
-      let groupKey = code.replace(/\s+/g, '');
-      if (String(groupKey).includes('-')) {
-        groupKey = groupKey.split('-')[0];
-      } else if (groupKey.length > 6) {
-        groupKey = groupKey.slice(0, 6);
-      }
-      
-      if (!shareItemsMap.has(groupKey)) continue;
-      
-      const shareItem = shareItemsMap.get(groupKey);
-      const imagesRaw = getRowVal(rawRow, 'Product Images') || getRowVal(rawRow, 'Product Link') || getRowVal(rawRow, 'Color') || '';
-      const imageUrls = imagesRaw.split('|').map(s => s.trim()).filter(Boolean);
-      const coverImage = driveImageUrl(getRowVal(rawRow, 'Cover Image') || getRowVal(rawRow, 'Cover') || imageUrls[0] || '');
-      const uniqueImages = Array.from(new Set([coverImage, ...imageUrls.map(driveImageUrl)].filter(Boolean)));
-      
-      const fabricVal = fabric || 'Pure Silk';
-      const weaveVal = getRowVal(rawRow, 'Weave') || 'Handloom';
-      const customPrice = Number(shareItem.customer_price);
-      
-      // Build D2C-safe product details (EXCLUDING COST, SUPPLIER, VID, etc.)
-      products.push({
-        id: parseInt(groupKey) || 0,
-        title: shareItem.custom_title || getRowVal(rawRow, 'Name') || getRowVal(rawRow, 'Product Name') || getRowVal(rawRow, 'Title') || `${fabricVal} ${category}`,
-        fabric: fabricVal,
-        price: customPrice,
-        formattedPrice: `₹${customPrice.toLocaleString('en-IN')}`,
-        description: shareItem.custom_description || getRowVal(rawRow, 'Description') || getRowVal(rawRow, 'Summary') || `An exquisite hand-loomed premium ${fabricVal} ${category} celebrating timeless craftsmanship.`,
-        tag: getRowVal(rawRow, 'Tag') || getRowVal(rawRow, 'Status') || 'Exclusive',
-        image: uniqueImages[0] || 'assets/hero_saree_banner.png',
-        images: uniqueImages.length > 0 ? uniqueImages : ['assets/hero_saree_banner.png'],
-        origin: getRowVal(rawRow, 'Origin') || (weaveVal.toLowerCase().includes('kanchipuram') ? 'Kanchipuram, Tamil Nadu' : 'Varanasi, Uttar Pradesh'),
-        weaveTime: getRowVal(rawRow, 'Weave Time') || getRowVal(rawRow, 'WeaveTime') || '30 Days',
-        zariType: getRowVal(rawRow, 'Zari Type') || getRowVal(rawRow, 'ZariType') || getRowVal(rawRow, 'Purity') || 'Tested Zari',
-        yarnCount: getRowVal(rawRow, 'Yarn Count') || getRowVal(rawRow, 'YarnCount') || '120/120 Double Warp Mulberry Silk',
-        weftDensity: getRowVal(rawRow, 'Weft Density') || getRowVal(rawRow, 'WeftDensity') || '80 threads per inch',
-        zariComposition: getRowVal(rawRow, 'Zari Composition') || getRowVal(rawRow, 'ZariComposition') || 'Supplementary metallic yarn threads',
-        heritageStory: getRowVal(rawRow, 'Heritage Story') || getRowVal(rawRow, 'HeritageStory') || `Woven by master artisans. The design represents mathematical precision in creating intricate brocade motifs passed down through generations.`,
-        weave: weaveVal,
-        work: getRowVal(rawRow, 'Work') || 'Zari Work'
+    for (const csvInfo of sortedCsvs) {
+      const parsed = Papa.parse(csvInfo.text, {
+        header: true,
+        skipEmptyLines: true
       });
+
+      for (const rawRow of parsed.data) {
+        const code = getRowVal(rawRow, 'Code');
+        const category = getRowVal(rawRow, 'Category') || 'Saree';
+        const fabric = getRowVal(rawRow, 'Fabric');
+        
+        if (!code && !fabric && !category) continue;
+        
+        let groupKey = code.replace(/\s+/g, '');
+        if (String(groupKey).includes('-')) {
+          groupKey = groupKey.split('-')[0];
+        } else if (groupKey.length > 6) {
+          groupKey = groupKey.slice(0, 6);
+        }
+        
+        if (!shareItemsMap.has(groupKey)) continue;
+        
+        const shareItem = shareItemsMap.get(groupKey);
+        const imagesRaw = getRowVal(rawRow, 'Product Images') || getRowVal(rawRow, 'Product Link') || getRowVal(rawRow, 'Color') || '';
+        const imageUrls = imagesRaw.split('|').map(s => s.trim()).filter(Boolean);
+        const coverImage = driveImageUrl(getRowVal(rawRow, 'Cover Image') || getRowVal(rawRow, 'Cover') || imageUrls[0] || '');
+        const uniqueImages = Array.from(new Set([coverImage, ...imageUrls.map(driveImageUrl)].filter(Boolean)));
+        
+        const fabricVal = fabric || 'Pure Silk';
+        const weaveVal = getRowVal(rawRow, 'Weave') || 'Handloom';
+        const customPrice = Number(shareItem.customer_price);
+        
+        // Resolve category from sheet name fallback
+        let resolvedCategory = category;
+        if (csvInfo.id === 'products_under_999' && (!category || category === 'Saree')) {
+          resolvedCategory = 'Under 999';
+        }
+        
+        const existing = productsMap.get(groupKey);
+        const imagesList = uniqueImages.length > 0 ? uniqueImages : ['assets/hero_saree_banner.png'];
+        
+        if (existing) {
+          existing.images = Array.from(new Set([...existing.images, ...imagesList]));
+          if ((existing.image === 'assets/hero_saree_banner.png' || !existing.image) && uniqueImages.length > 0) {
+            existing.image = uniqueImages[0];
+          }
+        } else {
+          // Build D2C-safe product details (EXCLUDING COST, SUPPLIER, VID, etc.)
+          productsMap.set(groupKey, {
+            id: parseInt(groupKey) || 0,
+            title: shareItem.custom_title || getRowVal(rawRow, 'Name') || getRowVal(rawRow, 'Product Name') || getRowVal(rawRow, 'Title') || `${fabricVal} ${resolvedCategory}`,
+            fabric: fabricVal,
+            price: customPrice,
+            formattedPrice: `₹${customPrice.toLocaleString('en-IN')}`,
+            description: shareItem.custom_description || getRowVal(rawRow, 'Description') || getRowVal(rawRow, 'Summary') || `An exquisite hand-loomed premium ${fabricVal} ${resolvedCategory} celebrating timeless craftsmanship.`,
+            tag: getRowVal(rawRow, 'Tag') || getRowVal(rawRow, 'Status') || 'Exclusive',
+            image: uniqueImages[0] || 'assets/hero_saree_banner.png',
+            images: imagesList,
+            origin: getRowVal(rawRow, 'Origin') || (weaveVal.toLowerCase().includes('kanchipuram') ? 'Kanchipuram, Tamil Nadu' : 'Varanasi, Uttar Pradesh'),
+            weaveTime: getRowVal(rawRow, 'Weave Time') || getRowVal(rawRow, 'WeaveTime') || '30 Days',
+            zariType: getRowVal(rawRow, 'Zari Type') || getRowVal(rawRow, 'ZariType') || getRowVal(rawRow, 'Purity') || 'Tested Zari',
+            yarnCount: getRowVal(rawRow, 'Yarn Count') || getRowVal(rawRow, 'YarnCount') || '120/120 Double Warp Mulberry Silk',
+            weftDensity: getRowVal(rawRow, 'Weft Density') || getRowVal(rawRow, 'WeftDensity') || '80 threads per inch',
+            zariComposition: getRowVal(rawRow, 'Zari Composition') || getRowVal(rawRow, 'ZariComposition') || 'Supplementary metallic yarn threads',
+            heritageStory: getRowVal(rawRow, 'Heritage Story') || getRowVal(rawRow, 'HeritageStory') || `Woven by master artisans. The design represents mathematical precision in creating intricate brocade motifs passed down through generations.`,
+            weave: weaveVal,
+            work: getRowVal(rawRow, 'Work') || 'Zari Work'
+          });
+        }
+      }
     }
+
+    const products = Array.from(productsMap.values());
 
     return new Response(JSON.stringify({ storefront, products }), {
       status: 200,
@@ -247,7 +298,7 @@ export async function POST(request) {
         reseller_id: payload.reseller_id,
         share_id: payload.share_id || null,
         customer_name: payload.customer_name,
-        customer_phone: payload.customer_phone,
+        customer_phone: payload.customer_phone || 'N/A',
         items: payload.items || [],
         customer_total: payload.customer_total,
       })

@@ -7,14 +7,11 @@
  * @module config
  */
 
-export const csvUrl =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
+export const csvUrl = process.env.GOOGLE_SHEET_PRODUCTS_URL;
 
-export const heroCsvUrl =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0sRjHxpdyuxJ6KsXmnEKnakC8ryFTDSSZozFRhfXPfI82PYYQqDlk2fNPBMptKit3hVXEAdxeagLq/pub?gid=0&single=true&output=csv';
+export const heroCsvUrl = process.env.GOOGLE_SHEET_HERO_URL;
 
-export const configCsvUrl =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=2140935109&single=true&output=csv';
+export const configCsvUrl = process.env.GOOGLE_SHEET_CONFIG_URL;
 
 /**
  * Category-specific Google Sheets CSV endpoints.
@@ -23,7 +20,7 @@ export const configCsvUrl =
  * The key must match the Category column value expected for those products.
  */
 export const categoryCsvUrls = {
-  'Under 999': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=464893428&single=true&output=csv',
+  'Under 999': process.env.GOOGLE_SHEET_UNDER_999_URL,
   // Add more category sheets as you create them:
   // 'Suit': 'https://docs.google.com/spreadsheets/d/e/...&gid=XXXXX&single=true&output=csv',
   // 'Dupatta': '...',
