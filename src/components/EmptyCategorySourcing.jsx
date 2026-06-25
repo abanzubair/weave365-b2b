@@ -111,7 +111,7 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
                 type="text"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
-                placeholder="e.g., +91 9919101369, boutique@example.com"
+                placeholder="e.g., +91 9876543210, boutique@example.com"
                 required
                 className="sourcing-input"
               />
