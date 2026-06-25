@@ -11,6 +11,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import SliderCaptcha from '../components/SliderCaptcha.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
+import { siteUrl } from '../config.js';
 
 export function SharpStar({ size = 24, fill = 'none', stroke = 'currentColor', strokeWidth = 2, className = '' }) {
   return (
@@ -501,7 +502,7 @@ export function ReviewsPage({ navigate, user }) {
 
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = 'https://www.weave365.com/reviews';
+    const newCanonical = `${siteUrl}/reviews`;
 
     if (canonicalLink) {
       canonicalLink.setAttribute('href', newCanonical);

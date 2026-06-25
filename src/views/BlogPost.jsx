@@ -16,6 +16,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Copy, Check, Share2 } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
+import { siteUrl } from '../config.js';
 
 const slugifyCategory = (cat) => {
   if (!cat) return '';
@@ -416,7 +417,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const absoluteImageUrl = useMemo(() => {
     if (!post?.image) return '';
     if (post.image.startsWith('http')) return post.image;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : siteUrl;
     return `${origin}${post.image.startsWith('/') ? '' : '/'}${post.image}`;
   }, [post]);
 

@@ -31,7 +31,7 @@ import {
   Check,
   Loader,
 } from 'lucide-react';
-import { storeConfig, getProductCategorySlug } from './config.js';
+import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
 import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 import {
@@ -404,7 +404,7 @@ export function ProductDetail({
   usePageSeo({
     title: product.metaTitle || product.title || `${storeConfig.name} Product`,
     description: product.metaDescription || product.summary || product.description || `View ${product.metaTitle || product.title} in the ${storeConfig.name} wholesale catalogue.`,
-    canonical: product.id ? `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${encodeURIComponent(product.id)}` : undefined
+    canonical: product.id ? `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${encodeURIComponent(product.id)}` : undefined
   });
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
@@ -687,130 +687,6 @@ export function ProductDetail({
     };
   }, [product, products]);
 
-  const productSchema = useMemo(() => {
-    const schema = {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": product.title,
-      "image": product.images || [],
-      "description": product.description || `Elegant handwoven Banarasi saree styled in ${product.fabric || 'pure silk'}. Sourced directly from Varanasi.`,
-      "sku": product.id || variant.code,
-      "mpn": variant.code,
-      "brand": {
-        "@type": "Brand",
-        "name": "Weave 365"
-      },
-      "offers": {
-        "@type": "AggregateOffer",
-        "priceCurrency": "INR",
-        "lowPrice": displayPrice || 2500,
-        "highPrice": (displayPrice ? displayPrice * 1.5 : 8500),
-        "offerCount": totalColors || 1,
-        "availability": "https://schema.org/InStock",
-        "url": `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`
-      }
-    };
-
-    if (activeReviews && activeReviews.length > 0) {
-      schema.aggregateRating = {
-        "@type": "AggregateRating",
-        "ratingValue": stats.avg,
-        "reviewCount": stats.count,
-        "bestRating": "5",
-        "worstRating": "1"
-      };
-
-      schema.review = activeReviews.map((r) => ({
-        "@type": "Review",
-        "author": {
-          "@type": "Person",
-          "name": r.reviewer_name
-        },
-        "datePublished": r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-        "reviewBody": r.comment,
-        "name": r.title || "Product Review",
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": String(r.rating || 5),
-          "bestRating": "5",
-          "worstRating": "1"
-        }
-      }));
-    }
-
-    return schema;
-  }, [product, variant, displayPrice, totalColors, activeReviews, stats]);
-
-  const breadcrumbSchema = useMemo(() => ({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://www.weave365.com/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Catalogue",
-        "item": "https://www.weave365.com/wholesale-catalogue"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": product.title,
-        "item": `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`
-      }
-    ]
-  }), [product]);
-
-  const faqSchema = useMemo(() => {
-    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
-    const questions = [
-      {
-        "@type": "Question",
-        "name": "What is the Minimum Order Quantity (MOQ) for wholesale?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": isUnder999
-            ? "For retailers and boutique owners, our MOQ starts at just 1 piece. This allows you to test our premium Banarasi collection with minimal upfront capital."
-            : "For retailers and boutique owners, our MOQ starts at just 1 set (which typically contains all available color variants of the design). This allows you to test our premium Banarasi collection with minimal upfront capital."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Are these Banarasi sarees authentically sourced?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, all Weave 365 sarees and suits are crafted directly in Varanasi by expert weavers. We use premium pure katan silk, organza, and georgette with authentic gold and silver zari work, preserving the heritage weaving tradition."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Do you support resellers, boutiques, and dropshipping?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely! We support boutiques, resellers, and global export partners. Registered resellers get access to our white-labeled marketing toolkit, live catalog links, and dedicated support for direct boutique dispatch."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is international shipping available for wholesale orders?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, we ship worldwide to over 50 countries, including the USA, UK, Canada, UAE, and Australia. We handle complete B2B customs documentation and provide competitive air and sea freight rates."
-        }
-      }
-    ];
-
-    return {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": isUnder999 ? questions.filter((q) => !q.name.includes('MOQ')) : questions
-    };
-  }, [product.category]);
   const galleryStyle = useMemo(
     () => (galleryHeight ? { '--gallery-height': `${galleryHeight}px` } : undefined),
     [galleryHeight],
@@ -918,7 +794,7 @@ export function ProductDetail({
   }, [product.id, product.images, product.title, priceAccess, variant]);
 
   const shareProductPage = useCallback(async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.weave365.com/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
     const shareText = `Check out ${product.title} on Weave 365`;
     if (navigator.share) {
       try {
@@ -1995,9 +1871,6 @@ export function ProductDetail({
         />
       )}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema).replace(/</g, '\\u003c') }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c') }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c') }} />
     </>
   );
 }

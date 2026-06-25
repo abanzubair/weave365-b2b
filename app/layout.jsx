@@ -1,5 +1,5 @@
 import '../src/styles.css';
-import { storeConfig } from '../src/config.js';
+import { storeConfig, siteUrl } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
 import Script from 'next/script';
 import { 
@@ -37,7 +37,6 @@ const marcellus = Marcellus({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
 
 export const metadata = {
   title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",

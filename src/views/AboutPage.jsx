@@ -20,7 +20,7 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
-import { storeConfig } from '../config.js';
+import { storeConfig, siteUrl } from '../config.js';
 import { WhatsappIcon } from '../storefrontShared.jsx';
 
 export function AboutPage({ navigate }) {
@@ -77,7 +77,7 @@ export function AboutPage({ navigate }) {
       "addressRegion": "Uttar Pradesh",
       "addressCountry": "India"
     },
-    "url": "https://www.weave365.com/about",
+    "url": `${siteUrl}/about`,
     "priceRange": "$$$$",
     "aggregateRating": {
       "@type": "AggregateRating",

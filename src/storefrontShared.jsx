@@ -5,7 +5,7 @@
  * 2. A backward-compatibility import/re-export gateway for extracted visual components.
  */
 import { memo, useMemo, useState, useEffect } from 'react';
-import { storeConfig, getProductCategorySlug } from './config.js';
+import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import {
@@ -279,7 +279,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
   const catSlug = getProductCategorySlug(product.id, product.category);
-  const productUrl = `https://www.weave365.com/${catSlug}/${product.id}`;
+  const productUrl = `${siteUrl}/${catSlug}/${product.id}`;
 
   if (isWholesale && canViewPrices && price != null) {
     const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';

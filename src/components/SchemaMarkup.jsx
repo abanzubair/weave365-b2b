@@ -1,15 +1,17 @@
+import { siteUrl } from '../config.js';
+
 export default function SchemaMarkup() {
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.weave365.com/#organization",
+        "@id": `${siteUrl}/#organization`,
         name: "Weave 365",
-        url: "https://www.weave365.com",
+        url: siteUrl,
         logo: {
           "@type": "ImageObject",
-          url: "https://www.weave365.com/logo.webp",
+          url: `${siteUrl}/logo.webp`,
           width: 800,
           height: 800,
         },
@@ -45,29 +47,29 @@ export default function SchemaMarkup() {
       },
       {
         "@type": "WebSite",
-        "@id": "https://www.weave365.com/#website",
-        url: "https://www.weave365.com",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
         name: "Weave 365",
         alternateName: ["Weave365", "Weave 365 B2B", "Weave365 B2B"],
         publisher: {
-          "@id": "https://www.weave365.com/#organization",
+          "@id": `${siteUrl}/#organization`,
         },
         potentialAction: {
           "@type": "SearchAction",
           target: {
             "@type": "EntryPoint",
             urlTemplate:
-              "https://www.weave365.com/wholesale-catalogue?search={search_term_string}",
+              `${siteUrl}/wholesale-catalogue?search={search_term_string}`,
           },
           "query-input": "required name=search_term_string",
         },
       },
       {
         "@type": "Store",
-        "@id": "https://www.weave365.com/#store",
+        "@id": `${siteUrl}/#store`,
         name: "Weave 365 Wholesale",
-        url: "https://www.weave365.com",
-        image: "https://www.weave365.com/logo.webp",
+        url: siteUrl,
+        image: `${siteUrl}/logo.webp`,
         description:
           "Wholesale Banarasi sarees, suits, lehengas and ethnic fabrics for B2B buyers, resellers and boutiques across India.",
         priceRange: "₹₹",
@@ -86,22 +88,22 @@ export default function SchemaMarkup() {
             {
               "@type": "OfferCatalog",
               name: "Banarasi Sarees",
-              url: "https://www.weave365.com/wholesale-banarasi-sarees",
+              url: `${siteUrl}/wholesale-banarasi-sarees`,
             },
             {
               "@type": "OfferCatalog",
               name: "Suits",
-              url: "https://www.weave365.com/wholesale-banarasi-suits",
+              url: `${siteUrl}/wholesale-banarasi-suits`,
             },
             {
               "@type": "OfferCatalog",
               name: "Lehengas",
-              url: "https://www.weave365.com/wholesale-banarasi-lehengas",
+              url: `${siteUrl}/wholesale-banarasi-lehengas`,
             },
             {
               "@type": "OfferCatalog",
               name: "Dupattas",
-              url: "https://www.weave365.com/wholesale-banarasi-dupattas",
+              url: `${siteUrl}/wholesale-banarasi-dupattas`,
             },
           ],
         },

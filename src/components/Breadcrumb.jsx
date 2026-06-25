@@ -1,4 +1,5 @@
 import React from 'react';
+import { siteUrl } from '../config.js';
 
 /**
  * Premium Breadcrumb navigation component with integrated JSON-LD schema.
@@ -10,7 +11,7 @@ import React from 'react';
 export default function Breadcrumb({ items, navigate }) {
   if (!items || items.length === 0) return null;
 
-  const siteUrl = 'https://www.weave365.com';
+
 
   // Construct structured data schema
   const schemaData = {

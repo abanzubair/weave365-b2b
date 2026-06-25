@@ -139,3 +139,6 @@ export function getProductCategorySlug(productId, productCategory = null) {
   return catName.replace(/\s+/g, '-');
 }
 
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+
+

@@ -10,6 +10,7 @@ import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import { siteUrl } from '../config.js';
 import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
 
 const getCollectionTagline = (itemSlug) => {
@@ -136,7 +137,7 @@ export default function SeoLandingPage({
     // Update or create Canonical Link tag
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
-    const newCanonical = `https://www.weave365.com/${pageData.slug}`;
+    const newCanonical = `${siteUrl}/${pageData.slug}`;
 
     if (canonicalLink) {
       canonicalLink.setAttribute('href', newCanonical);
@@ -184,13 +185,13 @@ export default function SeoLandingPage({
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://www.weave365.com"
+        "item": siteUrl
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": pageData.h1,
-        "item": `https://www.weave365.com/${pageData.slug}`
+        "item": `${siteUrl}/${pageData.slug}`
       }
     ]
   };

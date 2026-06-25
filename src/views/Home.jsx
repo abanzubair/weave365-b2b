@@ -18,7 +18,7 @@ import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
 import brandCollabImage from '../../assets/brand_collaboration.webp';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
-import { storeConfig, seoCategoryMap } from '../config.js';
+import { storeConfig, seoCategoryMap, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
@@ -323,7 +323,7 @@ export function Home({
   usePageSeo({
     title: 'Banarasi Sarees and Suits for Wholesale & Export | Weave 365',
     description: 'Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.',
-    canonical: 'https://www.weave365.com'
+    canonical: siteUrl
   });
 
   const bestsellers = useMemo(() => {

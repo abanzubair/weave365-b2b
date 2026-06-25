@@ -18,6 +18,7 @@ import {
   ExternalLink,
   ChevronRight
 } from 'lucide-react';
+import { siteUrl } from '../config.js';
 import { storeConfig } from '../config.js';
 
 function PinterestIcon({ size = 20, className = "" }) {
@@ -317,10 +318,10 @@ export function ContactPage({ navigate }) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Weave 365",
-    "image": "https://www.weave365.com/logo.webp",
+    "image": `${siteUrl}/logo.webp`,
     "email": "weave365@gmail.com",
     "telephone": "+919919101369",
-    "url": "https://www.weave365.com/contact",
+    "url": `${siteUrl}/contact`,
     "priceRange": "$$$$",
     "address": {
       "@type": "PostalAddress",

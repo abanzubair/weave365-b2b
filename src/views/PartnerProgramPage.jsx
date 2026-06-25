@@ -26,7 +26,7 @@ import {
   Truck,
   Users,
 } from 'lucide-react';
-
+import { siteUrl } from '../config.js';
 const partnerPages = {
   'sourcing-partners': {
     slug: 'sourcing-partners',
@@ -219,7 +219,7 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
   const page = partnerPages[type] || partnerPages['sourcing-partners'];
   const alternateType = type === 'sourcing-partners' ? 'white-label-brands' : 'sourcing-partners';
   const alternatePage = partnerPages[alternateType];
-  const pageUrl = `https://www.weave365.com/${page.slug}`;
+  const pageUrl = `${siteUrl}/${page.slug}`;
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -228,7 +228,7 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://www.weave365.com',
+        item: siteUrl,
       },
       {
         '@type': 'ListItem',
@@ -246,7 +246,7 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
     provider: {
       '@type': 'Organization',
       name: 'Weave 365',
-      url: 'https://www.weave365.com',
+      url: siteUrl,
     },
     areaServed: ['India', 'United States', 'United Kingdom', 'United Arab Emirates', 'Canada', 'Australia'],
     serviceType: type === 'sourcing-partners' ? 'Banarasi textile sourcing partnership' : 'White label Banarasi ethnic wear program',
