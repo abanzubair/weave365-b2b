@@ -42,7 +42,19 @@ export async function POST(request) {
       throw new Error('Supabase configurations are missing on the server.');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const authHeader = request.headers.get('Authorization') || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+
+    const clientOptions = {};
+    if (token && supabaseKey === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      clientOptions.global = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey, clientOptions);
 
     // 2. Verify administrator email credentials (env list or Supabase profiles table)
     const adminEmailsList = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
@@ -53,18 +65,33 @@ export async function POST(request) {
     const cleanEmail = String(email).trim().toLowerCase();
     let isAuthorized = adminEmailsList.includes(cleanEmail);
 
-    if (!isAuthorized) {
-      // Query profiles table to check if this user has admin role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('email', cleanEmail)
-        .maybeSingle();
+    if (!isAuthorized && token) {
+      try {
+        const { data: { user: authUser }, error: authUserError } = await supabase.auth.getUser(token);
 
-      if (profileError) {
-        console.error('Error fetching profile from Supabase for sync auth:', profileError);
-      } else if (profile?.role === 'admin') {
-        isAuthorized = true;
+        if (!authUserError && authUser && authUser.email) {
+          const verifiedEmail = authUser.email.trim().toLowerCase();
+
+          if (verifiedEmail === cleanEmail) {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', authUser.id)
+              .maybeSingle();
+
+            if (profileError) {
+              console.error('Error fetching profile from Supabase for sync auth:', profileError);
+            } else if (profile?.role === 'admin') {
+              isAuthorized = true;
+            }
+          } else {
+            console.warn('Sync authorization warning: requested email does not match verified JWT email.');
+          }
+        } else if (authUserError) {
+          console.error('Error verifying user token in sync API:', authUserError);
+        }
+      } catch (err) {
+        console.error('Unexpected token verification error in sync API:', err);
       }
     }
 

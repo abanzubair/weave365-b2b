@@ -1449,10 +1449,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     if (!isSupabaseConfigured || !allowed || syncStatus === 'loading') return;
     setSyncStatus('loading');
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || '';
+
       const response = await fetch('/api/admin/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ email: user?.email }),
       });
