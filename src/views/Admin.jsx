@@ -1454,7 +1454,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: user?.email }),
       });
       const data = await response.json();
       if (!response.ok) {
