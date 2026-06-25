@@ -120,7 +120,7 @@ function seoOverrideForPath(pageSeoSettings, canonicalPath) {
   return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === normalized);
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', newestProductImage = null, pageSeoSettings = []) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', defaultPageImage = null, pageSeoSettings = []) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const override = seoOverrideForPath(pageSeoSettings, canonicalPath);
     const finalTitle = override?.metaTitle || title;
@@ -128,7 +128,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     const finalCanonicalPath = override?.canonicalPath || canonicalPath;
     const url = `${siteUrl}${finalCanonicalPath === '/' ? '' : finalCanonicalPath}`;
     const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
-    let finalImageUrl = override?.imageUrl || imageUrl || defaultImage;
+    let finalImageUrl = override?.imageUrl || imageUrl || defaultPageImage || defaultImage;
 
     // Ensure image URL is absolute
     if (finalImageUrl && finalImageUrl.startsWith('/')) {
@@ -432,6 +432,49 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
   };
 }
 
+function getFirstImageOnPage(route, data, searchParams) {
+  if (!data) return null;
+
+  // 1. Home page -> First Hero slide image
+  if (route === 'home') {
+    return data.heroSlides?.[0]?.image || null;
+  }
+
+  // 2. Category pages (SEO category routes)
+  const isSeoCategoryRoute = Object.keys(seoCategoryRoutes).includes(route);
+  if (isSeoCategoryRoute) {
+    const categoryName = seoCategoryRoutes[route];
+    const firstProduct = data.products?.find(p => p.category === categoryName && !p.isArchived);
+    return firstProduct?.images?.[0] || null;
+  }
+
+  // 3. Catalogue page
+  if (route === 'wholesale-catalogue') {
+    const category = searchParams?.category;
+    const fabric = searchParams?.fabric;
+    let filtered = data.products?.filter(p => !p.isArchived) || [];
+    if (category && category !== 'all') {
+      filtered = filtered.filter(p => p.category?.toLowerCase() === category.toLowerCase());
+    }
+    if (fabric && fabric !== 'all') {
+      filtered = filtered.filter(p => p.fabric?.toLowerCase() === fabric.toLowerCase());
+    }
+    return filtered[0]?.images?.[0] || data.products?.[0]?.images?.[0] || null;
+  }
+
+  // 4. New Arrivals page
+  if (route === 'new-arrivals') {
+    let filtered = data.products?.filter(p => p.isNew && !p.isArchived) || [];
+    if (filtered.length === 0) {
+      filtered = data.products?.filter(p => !p.isArchived) || [];
+    }
+    return filtered[0]?.images?.[0] || null;
+  }
+
+  // 5. Generic fallback -> first product image in catalog
+  return data.products?.[0]?.images?.[0] || null;
+}
+
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
@@ -444,10 +487,20 @@ export async function generateMetadata({ params, searchParams }) {
   const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(slug);
   let product = null;
   let dbPosts = [];
-  let newestProductImage = null;
+  let defaultPageImage = null;
   const pageSeoSettings = await fetchSupabasePageSeoSettings();
 
-  if ((route === 'product' && productId) || (route === 'blog' && blogPostSlug) || route === 'new-arrivals') {
+  const needsData = [
+    'home',
+    'product',
+    'blog',
+    'new-arrivals',
+    'wholesale-catalogue',
+    's',
+    'partner'
+  ].includes(route) || Object.keys(seoCategoryRoutes).includes(route);
+
+  if (needsData) {
     const data = await getInitialData();
     if (productId) {
       product = data.products.find((item) => item.id === productId);
@@ -492,12 +545,14 @@ export async function generateMetadata({ params, searchParams }) {
       }
 
       if (filtered.length > 0) {
-        newestProductImage = filtered[0].images?.[0] || null;
+        defaultPageImage = filtered[0].images?.[0] || null;
       }
+    } else {
+      defaultPageImage = getFirstImageOnPage(route, data, resolvedSearchParams);
     }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, newestProductImage, pageSeoSettings);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, defaultPageImage, pageSeoSettings);
 }
 
 function generateProductSchemas(product, activeReviews = []) {
