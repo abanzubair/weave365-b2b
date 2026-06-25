@@ -71,7 +71,6 @@ export const seoCategoryRoutes = {
   'wholesale-banarasi-dupattas': 'Dupatta',
   'wholesale-banarasi-fabrics': 'Fabric',
   'wholesale-under-999': 'Under 999',
-  'under-999': 'Under 999',
 };
 
 /**
@@ -89,8 +88,8 @@ export const seoCategoryMap = {
   'dupattas': 'wholesale-banarasi-dupattas',
   'fabric': 'wholesale-banarasi-fabrics',
   'fabrics': 'wholesale-banarasi-fabrics',
-  'under 999': 'under-999',
-  'under-999': 'under-999',
+  'under 999': 'wholesale-under-999',
+  'under-999': 'wholesale-under-999',
 };
 
 
@@ -136,7 +135,9 @@ export function getProductCategorySlug(productId, productCategory = null) {
       catName = resolvedName.toLowerCase().trim();
     }
   }
-  return catName.replace(/\s+/g, '-');
+  const slug = catName.replace(/\s+/g, '-');
+  if (slug === 'under-999') return 'wholesale-under-999';
+  return slug;
 }
 
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
