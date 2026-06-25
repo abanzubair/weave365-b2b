@@ -318,7 +318,7 @@ export function ContactPage({ navigate }) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Weave 365",
-    "image": `${siteUrl}/logo.webp`,
+    "image": "https://assets.weave365.com/assets/banner/favicon.svg",
     "email": "weave365@gmail.com",
     "telephone": "+919919101369",
     "url": `${siteUrl}/contact`,

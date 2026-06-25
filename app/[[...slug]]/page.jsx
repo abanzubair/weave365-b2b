@@ -127,7 +127,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     const finalDescription = override?.metaDescription || description;
     const finalCanonicalPath = override?.canonicalPath || canonicalPath;
     const url = `${siteUrl}${finalCanonicalPath === '/' ? '' : finalCanonicalPath}`;
-    const defaultImage = `${siteUrl}/logo.webp`; // Fallback image if needed
+    const defaultImage = "https://assets.weave365.com/assets/banner/favicon.svg"; // Fallback image if needed
     let finalImageUrl = override?.imageUrl || imageUrl || defaultPageImage || defaultImage;
 
     // Ensure image URL is absolute
