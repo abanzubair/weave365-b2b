@@ -59,7 +59,7 @@ import { seoLandingPages } from '../data/seoLandingPages.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
 import { parseCartVariantCode } from '../utils/cartHelpers.js';
 import { isVaranasiPincode, PRICE_GROUPS, normalizeBuyerType } from '../utils/buyerAccess.js';
-import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting, syncSheetsToSupabase } from '../productData.js';
+import { saveSupabaseBlogPost, fetchSupabaseBlogPosts, saveSupabasePageSeoSetting } from '../productData.js';
 
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
@@ -1449,7 +1449,17 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     if (!isSupabaseConfigured || !allowed || syncStatus === 'loading') return;
     setSyncStatus('loading');
     try {
-      await syncSheetsToSupabase();
+      const response = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Server sync request failed.');
+      }
       alert('Successfully synced Google Sheets to Supabase!');
       await loadAdminData();
     } catch (err) {
