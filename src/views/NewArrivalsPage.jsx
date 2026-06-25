@@ -37,9 +37,20 @@ export function NewArrivalsPage({
   openAuth,
   isTransitioning = false,
 }) {
+  const getPageSize = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 820) {
+      return 26;
+    }
+    return 25;
+  };
+
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    setVisibleCount(getPageSize());
+  }, []);
 
   // Filter States
   const [category, setCategory] = useState('All');
@@ -204,7 +215,7 @@ export function NewArrivalsPage({
     setFabric('All');
     setPriceRange('All');
     setSearch('');
-    setVisibleCount(25);
+    setVisibleCount(getPageSize());
   };
 
   return (
@@ -262,7 +273,7 @@ export function NewArrivalsPage({
                   className={category === name ? 'active' : ''}
                   onClick={() => {
                     setCategory(name);
-                    setVisibleCount(25);
+                    setVisibleCount(getPageSize());
                     closeWithAnimation();
                   }}
                 >
@@ -288,7 +299,7 @@ export function NewArrivalsPage({
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
                       setPriceRange(range);
-                      setVisibleCount(25);
+                      setVisibleCount(getPageSize());
                       closeWithAnimation();
                     }}
                   >
@@ -315,7 +326,7 @@ export function NewArrivalsPage({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
-                    setVisibleCount(25);
+                    setVisibleCount(getPageSize());
                     closeWithAnimation();
                   }}
                 >
@@ -368,7 +379,7 @@ export function NewArrivalsPage({
       
       {filteredProducts.length > visibleCount && (
         <div className="load-more-row">
-          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
+          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + getPageSize())}>
             Show more new arrivals
           </button>
         </div>

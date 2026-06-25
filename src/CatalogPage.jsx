@@ -41,9 +41,20 @@ export function Catalog({
   isTransitioning = false,
   pageSeoSettings = [],
 }) {
+  const getPageSize = () => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 820) {
+      return 26;
+    }
+    return 25;
+  };
+
   const [visibleCount, setVisibleCount] = useState(25);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    setVisibleCount(getPageSize());
+  }, []);
 
   // Calculate dynamic SEO values for Catalog
   const seoConfig = useMemo(() => {
@@ -200,7 +211,7 @@ export function Catalog({
     setWeave('All');
     setPriceRange('All');
     if (setSearch) setSearch('');
-    setVisibleCount(25);
+    setVisibleCount(getPageSize());
     navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', search: '' });
   };
 
@@ -300,7 +311,7 @@ export function Catalog({
                   className={category === name ? 'active' : ''}
                   onClick={() => {
                     setCategory(name);
-                    setVisibleCount(25);
+                    setVisibleCount(getPageSize());
                     navigate('catalogue', null, null, { category: name });
                     closeWithAnimation();
                   }}
@@ -327,7 +338,7 @@ export function Catalog({
                     className={priceRange === range ? 'active' : ''}
                     onClick={() => {
                       setPriceRange(range);
-                      setVisibleCount(25);
+                      setVisibleCount(getPageSize());
                       closeWithAnimation();
                     }}
                   >
@@ -354,7 +365,7 @@ export function Catalog({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
-                    setVisibleCount(25);
+                    setVisibleCount(getPageSize());
                     closeWithAnimation();
                   }}
                 >
@@ -380,7 +391,7 @@ export function Catalog({
                   className={weave === name ? 'active' : ''}
                   onClick={() => {
                     setWeave(name);
-                    setVisibleCount(25);
+                    setVisibleCount(getPageSize());
                     closeWithAnimation();
                   }}
                 >
@@ -443,7 +454,7 @@ export function Catalog({
       
       {products.length > visibleCount && (
         <div className="load-more-row">
-          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
+          <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + getPageSize())}>
             Show more products
           </button>
         </div>
