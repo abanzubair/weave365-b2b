@@ -181,6 +181,14 @@ export async function GET(request) {
       if (under999Text) {
         csvTexts.push({ id: 'products_under_999', text: under999Text });
       }
+
+      // Fallback for "Suit" category sheet
+      const fallbackSuitUrl = process.env.GOOGLE_SHEET_SUIT_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=1506466857&single=true&output=csv';
+      const suitRes = await fetch(fallbackSuitUrl, { next: { revalidate: 60 } });
+      const suitText = await suitRes.text();
+      if (suitText) {
+        csvTexts.push({ id: 'products_suit', text: suitText });
+      }
     }
 
     if (csvTexts.length === 0) {
@@ -236,6 +244,8 @@ export async function GET(request) {
         let resolvedCategory = category;
         if (csvInfo.id === 'products_under_999' && (!category || category === 'Saree')) {
           resolvedCategory = 'Under 999';
+        } else if (csvInfo.id === 'products_suit' && (!category || category === 'Saree')) {
+          resolvedCategory = 'Suit';
         }
         
         const existing = productsMap.get(groupKey);

@@ -21,8 +21,8 @@ export const configCsvUrl = process.env.GOOGLE_SHEET_CONFIG_URL;
  */
 export const categoryCsvUrls = {
   'Under 999': process.env.GOOGLE_SHEET_UNDER_999_URL,
+  'Suit': process.env.GOOGLE_SHEET_SUIT_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=1506466857&single=true&output=csv',
   // Add more category sheets as you create them:
-  // 'Suit': 'https://docs.google.com/spreadsheets/d/e/...&gid=XXXXX&single=true&output=csv',
   // 'Dupatta': '...',
 };
 
