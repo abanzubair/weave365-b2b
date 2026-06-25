@@ -200,6 +200,94 @@
   right: 12px;
 }
 
+/* Premium Zoom Lightbox styles */
+.zoom-backdrop {
+  background: rgba(0, 0, 0, 0.9) !important;
+  user-select: none;
+}
+
+.zoom-modal-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.zoom-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10002;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.zoom-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.zoom-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.zoom-nav-btn.prev {
+  left: 24px;
+}
+
+.zoom-nav-btn.next {
+  right: 24px;
+}
+
+.zoom-close-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.zoom-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.08);
+}
+
+@media (max-width: 768px) {
+  .zoom-nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .zoom-nav-btn.prev {
+    left: 12px;
+  }
+  .zoom-nav-btn.next {
+    right: 12px;
+  }
+  .zoom-nav-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 /* UPI Payment Styles in Cart Drawer */
 .cart-upi-payment {
   margin-top: 14px;

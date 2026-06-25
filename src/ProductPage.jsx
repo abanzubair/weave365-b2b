@@ -141,6 +141,33 @@ export function ProductDetail({
     };
   }, []);
 
+  useEffect(() => {
+    if (!zoomImage) return;
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setZoomImage(null);
+      } else if (event.key === 'ArrowRight' || event.key === 'Right') {
+        const currentIndex = product.images.indexOf(zoomImage);
+        if (currentIndex !== -1 && product.images.length > 1) {
+          const nextIdx = (currentIndex + 1) % product.images.length;
+          setZoomImage(product.images[nextIdx]);
+        }
+      } else if (event.key === 'ArrowLeft' || event.key === 'Left') {
+        const currentIndex = product.images.indexOf(zoomImage);
+        if (currentIndex !== -1 && product.images.length > 1) {
+          const prevIdx = (currentIndex - 1 + product.images.length) % product.images.length;
+          setZoomImage(product.images[prevIdx]);
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [zoomImage, product.images]);
+
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [activeAccordion, setActiveAccordion] = useState(null);
   const toggleFaq = (index) => setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -1816,14 +1843,50 @@ export function ProductDetail({
       <Newsletter />
 
       {zoomImage && (
-        <div className="modal-backdrop" onClick={() => setZoomImage(null)}>
-          <button type="button" className="icon-button modal-close" onClick={() => setZoomImage(null)} style={{ background: 'white', zIndex: 10 }}>
-            <X />
+        <div className="modal-backdrop zoom-backdrop" onClick={() => setZoomImage(null)}>
+          <button type="button" className="icon-button modal-close zoom-close-btn" onClick={() => setZoomImage(null)}>
+            <X size={24} />
           </button>
+
+          {product.images && product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="zoom-nav-btn prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const currentIndex = product.images.indexOf(zoomImage);
+                  if (currentIndex !== -1) {
+                    const prevIdx = (currentIndex - 1 + product.images.length) % product.images.length;
+                    setZoomImage(product.images[prevIdx]);
+                  }
+                }}
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={36} />
+              </button>
+              <button
+                type="button"
+                className="zoom-nav-btn next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const currentIndex = product.images.indexOf(zoomImage);
+                  if (currentIndex !== -1) {
+                    const nextIdx = (currentIndex + 1) % product.images.length;
+                    setZoomImage(product.images[nextIdx]);
+                  }
+                }}
+                aria-label="Next image"
+              >
+                <ChevronRight size={36} />
+              </button>
+            </>
+          )}
+
           <img
             src={zoomImage}
             alt="Zoomed view"
-            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+            className="zoom-modal-img"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
