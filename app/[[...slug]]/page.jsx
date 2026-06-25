@@ -3,6 +3,7 @@ import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRou
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
+import { notFound } from 'next/navigation';
 
 export const revalidate = 900; // Cache and revalidate at most every 15 minutes
 export const runtime = 'edge';
@@ -12,6 +13,51 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
 
 function cleanSlug(slug = []) {
   return Array.isArray(slug) ? slug : [];
+}
+
+function isRouteStructureValid(slug) {
+  const clean = cleanSlug(slug);
+  const rawRoute = clean[0] || 'home';
+
+  // 1. Path too deep
+  if (clean.length > 3) {
+    return false;
+  }
+
+  // 2. Blog category: /blog/category/[category]
+  if (clean.length === 3) {
+    return rawRoute === 'blog' && clean[1] === 'category' && Boolean(clean[2]);
+  }
+
+  // 3. Segment length is 2
+  if (clean.length === 2) {
+    if (rawRoute === 'blog') {
+      return clean[1] !== 'category';
+    }
+    if (rawRoute === 's' || rawRoute === 'partner' || rawRoute === 'order-tracking') {
+      return true;
+    }
+    // Product route /[category-slug]/[productId]
+    const isProductRoute = !NON_PRODUCT_ROUTES.has(rawRoute) && !seoLandingPages[rawRoute];
+    return isProductRoute;
+  }
+
+  // 4. Segment length is 1
+  if (clean.length === 1) {
+    if (rawRoute === 'product') {
+      return false; // /product is not a valid endpoint on its own
+    }
+    return (
+      NON_PRODUCT_ROUTES.has(rawRoute) ||
+      Object.keys(seoCategoryRoutes).includes(rawRoute) ||
+      Boolean(seoLandingPages[rawRoute]) ||
+      rawRoute === 'favorites' ||
+      rawRoute === 'account'
+    );
+  }
+
+  // Segment length is 0 (home page)
+  return true;
 }
 
 function routeFromSlug(slug = []) {
@@ -389,7 +435,13 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(resolvedParams?.slug);
+  const slug = resolvedParams?.slug || [];
+
+  if (!isRouteStructureValid(slug)) {
+    notFound();
+  }
+
+  const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(slug);
   let product = null;
   let dbPosts = [];
   let newestProductImage = null;
@@ -399,9 +451,17 @@ export async function generateMetadata({ params, searchParams }) {
     const data = await getInitialData();
     if (productId) {
       product = data.products.find((item) => item.id === productId);
+      if (!product) {
+        notFound();
+      }
     }
     if (blogPostSlug) {
       dbPosts = data.dbPosts || [];
+      const postExists = dbPosts.some((p) => p.slug === blogPostSlug) || 
+                         blogPosts.some((p) => p.slug === blogPostSlug);
+      if (!postExists) {
+        notFound();
+      }
     }
     if (route === 'new-arrivals' && data.products) {
       const productsWithIndex = data.products.map((p, idx) => ({ ...p, _originalIndex: idx }));
@@ -440,8 +500,31 @@ export async function generateMetadata({ params, searchParams }) {
   return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, newestProductImage, pageSeoSettings);
 }
 
-export default async function CatchAllPage() {
+export default async function CatchAllPage({ params }) {
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug || [];
+
+  if (!isRouteStructureValid(slug)) {
+    notFound();
+  }
+
+  const { route, productId, blogPostSlug } = routeFromSlug(slug);
   const initialData = await getInitialData();
+
+  if (route === 'product' && productId) {
+    const productExists = (initialData.products || []).some((item) => item.id === productId);
+    if (!productExists) {
+      notFound();
+    }
+  }
+
+  if (route === 'blog' && blogPostSlug) {
+    const postExists = (initialData.dbPosts || []).some((p) => p.slug === blogPostSlug) || 
+                       blogPosts.some((p) => p.slug === blogPostSlug);
+    if (!postExists) {
+      notFound();
+    }
+  }
 
   return <App initialData={initialData} />;
 }
