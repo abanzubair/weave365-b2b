@@ -34,21 +34,7 @@ export async function POST(request) {
       });
     }
 
-    // 1. Verify administrator email credentials
-    const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean);
-
-    const cleanEmail = String(email).trim().toLowerCase();
-    if (!adminEmails.includes(cleanEmail)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized administrative access.' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-
-    // 2. Initialize Supabase Client securely
+    // 1. Initialize Supabase Client securely
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -57,6 +43,37 @@ export async function POST(request) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // 2. Verify administrator email credentials (env list or Supabase profiles table)
+    const adminEmailsList = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    let isAuthorized = adminEmailsList.includes(cleanEmail);
+
+    if (!isAuthorized) {
+      // Query profiles table to check if this user has admin role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error fetching profile from Supabase for sync auth:', profileError);
+      } else if (profile?.role === 'admin') {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      return new Response(JSON.stringify({ error: 'Unauthorized administrative access.' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
 
     // 3. Define Google Sheets endpoints with secure server-only fallbacks
     const csvUrl = process.env.GOOGLE_SHEET_PRODUCTS_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv';
