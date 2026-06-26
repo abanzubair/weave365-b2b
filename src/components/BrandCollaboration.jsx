@@ -89,7 +89,7 @@ export function BrandCollaboration({ imageUrl, weaverImageUrl, navigate }) {
             >
               <div className="brand-cta-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px', textAlign: 'left' }}>
                 <span className="cta-label" style={{ fontSize: '20px', fontWeight: '600' }}>Apply for Brand Showcase</span>
-                <span className="cta-subtext" style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: '500' }}>List your label on our curated B2B marketplace</span>
+                <span className="cta-subtext" style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: '500' }}>List your label on our curated B2B marketplace</span>
               </div>
               <div className="cta-arrow-circle" style={{ marginLeft: '16px' }}>
                 <ChevronRight size={20} />
