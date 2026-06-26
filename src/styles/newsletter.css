@@ -34,17 +34,25 @@
   gap: 20px;
 }
 
-.newsletter svg {
+.newsletter .newsletter-bell-wrapper {
   width: 52px;
   height: 52px;
-  color: var(--gold);
-  stroke-width: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(183, 134, 70, 0.05);
   border: 1px solid rgba(183, 134, 70, 0.12);
-  padding: 12px;
   border-radius: 50%;
   box-shadow: 0 4px 15px rgba(183, 134, 70, 0.05);
   flex-shrink: 0;
+}
+
+.newsletter .newsletter-bell-wrapper svg {
+  width: 24px;
+  height: 24px;
+  color: var(--gold);
+  stroke-width: 1.5;
+  display: block;
 }
 
 .newsletter strong {

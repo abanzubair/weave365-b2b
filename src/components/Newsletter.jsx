@@ -22,7 +22,9 @@ export function Newsletter() {
   return (
     <section className="newsletter">
       <div>
-        <BellRing />
+        <span className="newsletter-bell-wrapper">
+          <BellRing />
+        </span>
         <span>
           <strong>Stay Updated</strong>
           Sign up for our newsletter and get updates on new arrivals, exclusive offers and more.
