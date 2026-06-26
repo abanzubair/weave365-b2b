@@ -39,7 +39,7 @@ const SEED_REVIEWS = [
     business_name: 'Varun Tex, Hyderabad',
     rating: 5,
     title: 'Real Katan Silk Sourcing',
-    comment: 'Real katan silk is easy to spot. Your hand knows the weight immediately, and the gold zari work on these pieces holds up under scrutiny. Our customers started noticing the difference within a few weeks of switching to Weave365. Sales roughly doubled since we started sourcing direct from their Varanasi weavers. Not complicated.',
+    comment: 'Real katan silk is easy to spot. The weight and gold zari work on these pieces hold up under close scrutiny. Our customers love the quality, and our sales have steadily grown since sourcing direct from Varanasi weavers.',
     created_at: '2026-05-10T12:00:00Z',
   },
   {
@@ -48,7 +48,7 @@ const SEED_REVIEWS = [
     business_name: 'The Silk Route, Bangalore',
     rating: 5,
     title: 'Straightforward Wholesale Pricing',
-    comment: "We've been using Weave365 as our main wholesale source for a while now. The tiered pricing is straightforward. No hidden math, which makes it easier to price for retail without guessing. The WhatsApp cart flow works cleanly too, no back and forth over quantities.",
+    comment: "We've been using Weave365 as our main source. The tiered pricing is transparent, and the WhatsApp checkout flow works cleanly without any back and forth over quantities.",
     created_at: '2026-04-28T09:30:00Z',
   },
   {
@@ -57,7 +57,7 @@ const SEED_REVIEWS = [
     business_name: 'Kiran Fashions, Surat',
     rating: 5,
     title: 'Secure Transit & Packaging',
-    comment: "Transit damage used to be a real headache with premium sarees. Weave365 packs things properly. No theatrical promises, just bubble wrap that actually does its job. Delivery to Bangalore has been on time consistently. Their white label program is worth looking into if you're scaling.",
+    comment: "Transit damage used to be a real headache. Weave365 packs everything securely, and deliveries have been consistently on time. Highly recommend their wholesale channel.",
     created_at: '2026-04-15T15:45:00Z',
   },
   {
@@ -66,7 +66,7 @@ const SEED_REVIEWS = [
     business_name: 'Meenakshi Sarees, Delhi',
     rating: 5,
     title: 'Efficient Catalog Downloader',
-    comment: "Downloading high res photos to pass along to sub resellers takes maybe two minutes now. Support picks up on WhatsApp fast, which matters when you're in the middle of confirming an order. Hoping they add more bridal organza options soon. That's where our demand is sitting right now.",
+    comment: "Downloading high-res photos for our resellers takes minutes. Support responds quickly on WhatsApp, which is crucial when confirming client orders.",
     created_at: '2026-03-22T11:15:00Z',
   }
 ];
