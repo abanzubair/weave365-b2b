@@ -89,10 +89,9 @@
 }
 
 .growth-cta {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   padding: 14px 28px;
   background: var(--surface-soft);
   color: var(--ink);
@@ -101,7 +100,6 @@
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
-  max-width: 480px;
   border: 1px solid rgba(183, 134, 70, 0.2);
   box-shadow: 0 6px 15px rgba(117, 111, 79, 0.04);
 }
@@ -114,7 +112,7 @@
 
 .growth-label {
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.02em;
@@ -123,7 +121,7 @@
 
 .growth-subtext {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 14px;
   opacity: 0.8;
   font-weight: 500;
   color: var(--muted);
