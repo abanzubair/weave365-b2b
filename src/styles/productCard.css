@@ -340,9 +340,9 @@
   gap: 6px;
   height: 34px;
   border-radius: 6px;
-  border: 0;
-  background: #bf9257;
-  color: #fff;
+  border: 1.5px solid rgba(18, 140, 126, 0.15) !important;
+  background: rgba(18, 140, 126, 0.06) !important;
+  color: #128C7E !important;
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -366,9 +366,9 @@
 }
 
 .order-now-btn:hover {
-  background: #a67c45;
+  background: rgba(18, 140, 126, 0.12) !important;
+  border-color: #128C7E !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(191, 146, 87, 0.28);
 }
 
 .reseller-share-trigger {
