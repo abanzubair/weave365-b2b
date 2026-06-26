@@ -250,7 +250,7 @@
 
 .partner-program-seo-copy p {
   margin: 0;
-  font-size: 0.96rem;
+  font-size: clamp(0.96rem, 1.6vw, 1.08rem);
   line-height: 1.72;
   color: #3d342d;
 }
@@ -429,17 +429,55 @@
   flex: 0 0 auto;
 }
 
-.partner-program-faq .seo-faq-item.active .seo-faq-content {
-  max-height: 260px;
+.partner-program-faq .seo-faq-item {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(198, 158, 106, 0.15);
+  padding: 2.2rem;
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01), 0 8px 24px rgba(128, 93, 49, 0.02);
+  overflow: hidden;
 }
 
-.partner-program-faq-static {
+.partner-program-faq .seo-faq-item.active {
+  border-color: rgba(198, 158, 106, 0.22);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01), 0 8px 24px rgba(128, 93, 49, 0.02);
+}
+
+
+.partner-program-faq .seo-faq-trigger {
+  padding: 0;
+  margin-bottom: 0.85rem;
+  background: none;
+  border: none;
   cursor: default;
 }
 
-.partner-program-faq-static h3 {
+.partner-program-faq .seo-faq-trigger h3 {
+  font-family: var(--font-heading); /* Cormorant Garamond */
+  font-size: 1.28rem;
+  font-weight: 600;
+  color: var(--ink, #1a1a1a);
+  line-height: 1.35;
   padding-right: 0;
 }
+
+.partner-program-faq .seo-faq-content {
+  max-height: none !important;
+}
+
+.partner-program-faq .seo-faq-answer {
+  padding: 0;
+  border-top: none;
+}
+
+.partner-program-faq .seo-faq-answer p {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--muted, #555555);
+  margin: 0;
+}
+
 
 @media (max-width: 991px) {
   .partner-program-hero,
@@ -760,6 +798,32 @@
 
 .partner-program-page.theme-olive .seo-faq-answer {
   border-top-color: rgba(117, 111, 79, 0.06);
+}
+
+/* Olive Theme Specific Overrides for static FAQs */
+.partner-program-page.theme-olive .partner-program-faq .seo-faq-item {
+  background: #ffffff;
+  border-color: rgba(117, 111, 79, 0.16);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01), 0 8px 24px rgba(88, 83, 58, 0.02);
+}
+
+.partner-program-page.theme-olive .partner-program-faq .seo-faq-item.active {
+  border-color: rgba(117, 111, 79, 0.22);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01), 0 8px 24px rgba(88, 83, 58, 0.02);
+}
+
+
+.partner-program-page.theme-olive .partner-program-faq .seo-faq-item:hover {
+  border-color: rgba(117, 111, 79, 0.35);
+  box-shadow: 0 12px 32px rgba(88, 83, 58, 0.08);
+}
+
+.partner-program-page.theme-olive .partner-program-faq .seo-faq-trigger h3 {
+  color: var(--gold-dark);
+}
+
+.partner-program-page.theme-olive .partner-program-faq .seo-faq-answer p {
+  color: #5b594e;
 }
 
 @media (max-width: 768px) {

@@ -452,19 +452,19 @@
 
 .seo-faq-item {
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid rgba(198, 158, 106, 0.15);
   overflow: hidden;
   transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .seo-faq-item:hover {
-  border-color: var(--primary-color, #c69e6a);
+  border-color: rgba(198, 158, 106, 0.4);
 }
 
 .seo-faq-item.active {
-  border-color: var(--gold-dark, #805d31);
-  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.03);
+  border-color: rgba(198, 158, 106, 0.35);
+  box-shadow: 0 10px 30px rgba(128, 93, 49, 0.05);
 }
 
 .seo-faq-trigger {

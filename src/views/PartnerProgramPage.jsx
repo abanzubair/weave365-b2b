@@ -424,7 +424,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
         <div className="partner-program-section-head centered">
           <Store size={22} />
           <div>
-            <span>Explore Sourcing Categories</span>
             <h2>Related Banarasi Wholesale Pages</h2>
           </div>
         </div>
