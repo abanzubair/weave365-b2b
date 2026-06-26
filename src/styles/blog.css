@@ -1,12 +1,12 @@
 /* Weave 365 B2B Blog Premium Stylesheets - Luxury Editorial Style */
 
 :root {
-  --blog-gold-light: #bf9258;
-  --blog-gold: #b78646;
-  --blog-gold-dark: #805d31;
+  --blog-gold-light: var(--surface-accent, #cbd5e1);
+  --blog-gold: var(--olive, #64748b);
+  --blog-gold-dark: var(--brown-800, #1e293b);
   --blog-dark: #121212;
   --blog-light-grey: #f7f7f8;
-  --blog-border-color: rgba(183, 134, 70, 0.2);
+  --blog-border-color: var(--line, #e2e8f0);
   --blog-transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
