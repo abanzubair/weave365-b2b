@@ -2,7 +2,8 @@
  * @file EarlyAccessPage.jsx
  * @description Early access request form for boutique owners, retailers, and resellers.
  * Collects name, whatsapp number, business type, buying budget, city/pincode, and online store presence.
- * Form submits data to a Google Sheets API endpoint for team review.
+ * Form submits data to `/api/early-access` which saves it to the Supabase `early_access_submissions` table.
+ * Submissions can be reviewed and actioned from the Admin panel → Early Access tab.
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';

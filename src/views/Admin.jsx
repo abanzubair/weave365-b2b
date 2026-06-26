@@ -50,6 +50,7 @@ import {
   UserRound,
   Truck,
   ExternalLink,
+  Inbox,
 } from 'lucide-react';
 import { adminEmails, seoCategoryRoutes } from '../config.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -619,7 +620,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
   // Tab control
-  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'tracking' | 'seo' | 'blogs' | 'reviews' | 'partners'
+  const [activeTab, setActiveTab] = useState('pipeline'); // 'pipeline' | 'tracking' | 'seo' | 'blogs' | 'reviews' | 'partners' | 'early-access'
 
   // Reviews moderation state
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -628,6 +629,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [reviewsError, setReviewsError] = useState('');
   const [reviewsFilter, setReviewsFilter] = useState('pending'); // 'pending' | 'approved' | 'all'
   const [reviewActionLoading, setReviewActionLoading] = useState(null);
+
+  // Early Access submissions state
+  const [earlyAccessSubmissions, setEarlyAccessSubmissions] = useState([]);
+  const [earlyAccessLoading, setEarlyAccessLoading] = useState(false);
+  const [earlyAccessError, setEarlyAccessError] = useState('');
+  const [earlyAccessSearch, setEarlyAccessSearch] = useState('');
+  const [earlyAccessStatusFilter, setEarlyAccessStatusFilter] = useState('all'); // 'all' | 'pending_review' | 'approved' | 'rejected'
+  const [earlyAccessActionLoading, setEarlyAccessActionLoading] = useState(null);
 
   // B2B Partner Onboarding sheets data
   const [partnerApps, setPartnerApps] = useState({ reviews: [], onboardings: [], loading: false, error: null });
@@ -784,7 +793,50 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     if (activeTab === 'reviews' && allowed) {
       void loadSiteReviews();
     }
+    if (activeTab === 'early-access' && allowed) {
+      void loadEarlyAccessSubmissions();
+    }
   }, [activeTab, allowed]);
+
+  // Load all early access form submissions from Supabase
+  async function loadEarlyAccessSubmissions() {
+    setEarlyAccessLoading(true);
+    setEarlyAccessError('');
+    try {
+      const res = await fetch('/api/early-access');
+      const json = await res.json();
+      if (json.status === 'error') throw new Error(json.error);
+      setEarlyAccessSubmissions(json.data || []);
+    } catch (err) {
+      console.error('[Admin] loadEarlyAccessSubmissions error:', err);
+      setEarlyAccessError(err.message || 'Failed to load early access submissions.');
+    } finally {
+      setEarlyAccessLoading(false);
+    }
+  }
+
+  // Update the status of an early access submission
+  async function handleEarlyAccessStatusChange(submissionId, newStatus) {
+    setEarlyAccessActionLoading(submissionId);
+    try {
+      const res = await fetch('/api/early-access', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: submissionId, status: newStatus }),
+      });
+      const json = await res.json();
+      if (json.status === 'error') throw new Error(json.error);
+      // Optimistic local update
+      setEarlyAccessSubmissions(prev =>
+        prev.map(s => s.id === submissionId ? { ...s, status: newStatus } : s)
+      );
+    } catch (err) {
+      console.error('[Admin] handleEarlyAccessStatusChange error:', err);
+      setEarlyAccessError(err.message || 'Failed to update status.');
+    } finally {
+      setEarlyAccessActionLoading(null);
+    }
+  }
 
   // Load all site reviews from Supabase for moderation
   async function loadSiteReviews() {
@@ -1814,8 +1866,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         </button>
       </div>
 
-      {/* Luxury Tabs Bar */}
-      <div className="admin-tabs-bar">
+      {/* Sticky Tabs Bar Wrapper — full-width opaque backdrop prevents content bleed-through on scroll */}
+      <div className="admin-tabs-sticky-wrap">
+        <div className="admin-tabs-container">
+          <div className="admin-tabs-bar">
         <button
           type="button"
           onClick={() => setActiveTab('pipeline')}
@@ -1859,6 +1913,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         >
           <Truck size={18} strokeWidth={activeTab === 'tracking' ? 2.5 : 2} /> Order Tracking
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('early-access')}
+          className={`admin-tab-btn ${activeTab === 'early-access' ? 'active' : ''}`}
+        >
+          <Inbox size={18} strokeWidth={activeTab === 'early-access' ? 2.5 : 2} /> Early Access
+          {earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 && (
+            <span className="admin-tab-badge">
+              {earlyAccessSubmissions.filter(s => s.status === 'pending_review').length}
+            </span>
+          )}
+        </button>
+          </div>
+        </div>
       </div>
 
       {activeTab === 'pipeline' ? (
@@ -3294,6 +3362,218 @@ Use [Internal link label](/katan-silk-sarees) to link back to collections`}
       ) : activeTab === 'tracking' ? (
         /* ==================== ORDER TRACKING TAB ==================== */
         <AdminTrackingPanel inquiries={enquiryRows} products={products} loadAdminData={loadAdminData} />
+      ) : activeTab === 'early-access' ? (
+        /* ==================== EARLY ACCESS SUBMISSIONS TAB ==================== */
+        <div className="admin-early-access-tab">
+          <div className="admin-ea-header">
+            <div className="admin-ea-header-left">
+              <Inbox size={22} className="admin-ea-header-icon" />
+              <div>
+                <h2 className="admin-ea-title">Early Access Requests</h2>
+                <p className="admin-ea-subtitle">
+                  {earlyAccessSubmissions.length} total &bull; {earlyAccessSubmissions.filter(s => s.status === 'pending_review').length} pending review
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="admin-ea-refresh-btn"
+              onClick={() => loadEarlyAccessSubmissions()}
+              disabled={earlyAccessLoading}
+              title="Refresh submissions"
+            >
+              <RefreshCw size={16} className={earlyAccessLoading ? 'spin' : ''} />
+              {earlyAccessLoading ? 'Loading…' : 'Refresh'}
+            </button>
+          </div>
+
+          {/* Filters row */}
+          <div className="admin-ea-filters">
+            <div className="admin-ea-search-wrap">
+              <Search size={15} className="admin-ea-search-icon" />
+              <input
+                type="search"
+                className="admin-ea-search-input"
+                placeholder="Search by name, WhatsApp, city…"
+                value={earlyAccessSearch}
+                onChange={e => setEarlyAccessSearch(e.target.value)}
+              />
+            </div>
+            <div className="admin-ea-status-filter">
+              {['all', 'pending_review', 'approved', 'rejected'].map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`admin-ea-filter-btn ${earlyAccessStatusFilter === s ? 'active' : ''}`}
+                  onClick={() => setEarlyAccessStatusFilter(s)}
+                >
+                  {s === 'all' ? 'All' : s === 'pending_review' ? 'Pending' : s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {earlyAccessError && (
+            <div className="admin-ea-error">
+              <AlertTriangle size={16} />
+              {earlyAccessError}
+            </div>
+          )}
+
+          {earlyAccessLoading ? (
+            <div className="admin-ea-loading">
+              <RefreshCw size={28} className="spin" />
+              <span>Loading submissions…</span>
+            </div>
+          ) : (() => {
+            const query = earlyAccessSearch.toLowerCase().trim();
+            const filtered = earlyAccessSubmissions.filter(s => {
+              const matchesStatus = earlyAccessStatusFilter === 'all' || s.status === earlyAccessStatusFilter;
+              const matchesSearch = !query ||
+                (s.full_name || '').toLowerCase().includes(query) ||
+                (s.whatsapp_number || '').includes(query) ||
+                (s.city || '').toLowerCase().includes(query) ||
+                (s.buyer_type || '').toLowerCase().includes(query);
+              return matchesStatus && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+              return (
+                <div className="admin-ea-empty">
+                  <Inbox size={40} opacity={0.25} />
+                  <p>No submissions match your filter.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="admin-table-wrap-scroller">
+                <table className="admin-table admin-ea-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Name</th>
+                      <th>WhatsApp</th>
+                      <th>Buyer Type</th>
+                      <th>Budget / Month</th>
+                      <th>Preference</th>
+                      <th>City &amp; Pincode</th>
+                      <th>Store Link</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(sub => {
+                      const isActioning = earlyAccessActionLoading === sub.id;
+                      const dateStr = sub.submitted_at
+                        ? new Date(sub.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })
+                        : '—';
+                      const statusClass =
+                        sub.status === 'approved' ? 'ea-status-approved' :
+                        sub.status === 'rejected' ? 'ea-status-rejected' :
+                        'ea-status-pending';
+                      return (
+                        <tr key={sub.id} className={`admin-ea-row ${isActioning ? 'admin-ea-row-loading' : ''}`}>
+                          <td>
+                            <span className="admin-ea-date">{dateStr}</span>
+                          </td>
+                          <td>
+                            <strong className="admin-ea-name">{sub.full_name || '—'}</strong>
+                          </td>
+                          <td>
+                            {sub.whatsapp_number ? (
+                              <a
+                                href={`https://wa.me/${sub.whatsapp_number}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="admin-ea-whatsapp-link"
+                              >
+                                <Phone size={13} />
+                                {sub.whatsapp_number}
+                              </a>
+                            ) : '—'}
+                          </td>
+                          <td>{sub.buyer_type || '—'}</td>
+                          <td>{sub.monthly_budget || '—'}</td>
+                          <td>
+                            <span className="admin-ea-pref">
+                              {sub.buying_preference === 'Ready to buy (immediately)' ? '✅ Ready to buy' :
+                               sub.buying_preference === 'Order basis (after confirmation)' ? '📋 Order basis' :
+                               sub.buying_preference || '—'}
+                            </span>
+                          </td>
+                          <td>
+                            {sub.city && <span>{sub.city}</span>}
+                            {sub.pincode && <span className="admin-ea-pincode"> — {sub.pincode}</span>}
+                            {!sub.city && !sub.pincode && '—'}
+                          </td>
+                          <td>
+                            {sub.store_link && sub.store_link !== 'None provided' ? (
+                              <a
+                                href={sub.store_link.startsWith('http') ? sub.store_link : `https://${sub.store_link}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="admin-ea-store-link"
+                              >
+                                <ExternalLink size={12} /> View
+                              </a>
+                            ) : <span className="admin-ea-no-link">None</span>}
+                          </td>
+                          <td>
+                            <span className={`admin-ea-status-badge ${statusClass}`}>
+                              {sub.status === 'pending_review' ? 'Pending' :
+                               sub.status === 'approved' ? 'Approved' :
+                               sub.status === 'rejected' ? 'Rejected' :
+                               sub.status || '—'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="admin-ea-actions">
+                              {sub.status !== 'approved' && (
+                                <button
+                                  type="button"
+                                  className="admin-ea-btn admin-ea-btn-approve"
+                                  disabled={isActioning}
+                                  onClick={() => handleEarlyAccessStatusChange(sub.id, 'approved')}
+                                  title="Approve"
+                                >
+                                  <Check size={13} /> Approve
+                                </button>
+                              )}
+                              {sub.status !== 'rejected' && (
+                                <button
+                                  type="button"
+                                  className="admin-ea-btn admin-ea-btn-reject"
+                                  disabled={isActioning}
+                                  onClick={() => handleEarlyAccessStatusChange(sub.id, 'rejected')}
+                                  title="Reject"
+                                >
+                                  <AlertTriangle size={13} /> Reject
+                                </button>
+                              )}
+                              {(sub.status === 'approved' || sub.status === 'rejected') && (
+                                <button
+                                  type="button"
+                                  className="admin-ea-btn admin-ea-btn-reset"
+                                  disabled={isActioning}
+                                  onClick={() => handleEarlyAccessStatusChange(sub.id, 'pending_review')}
+                                  title="Reset to Pending"
+                                >
+                                  <RefreshCw size={13} /> Reset
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+        </div>
       ) : (
         /* ==================== B2B PARTNER APPLICATIONS TAB ==================== */
         <div className="admin-partners-tab">
