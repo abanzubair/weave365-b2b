@@ -2283,39 +2283,43 @@ button {
 }
 
 .catalog-add-button {
-  background: var(--gold-dark);
-  color: var(--white);
-  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.15);
+  background: rgba(191, 146, 87, 0.06);
+  color: #bf9257;
+  border: 1.5px solid rgba(191, 146, 87, 0.15);
+  box-shadow: none;
 }
 
 .catalog-add-button:hover {
-  background: var(--gold-mid);
+  background: rgba(191, 146, 87, 0.12);
+  border-color: #bf9257;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.25);
-  color: var(--white);
+  box-shadow: 0 4px 12px rgba(191, 146, 87, 0.1);
+  color: #bf9257;
 }
 
 .catalog-add-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(128, 93, 49, 0.2);
+  box-shadow: none;
 }
 
 .whatsapp-button {
-  background: #0B4C3E; /* Solid luxury pine emerald green */
-  color: var(--white);
-  box-shadow: 0 4px 12px rgba(11, 76, 62, 0.12);
+  background: rgba(18, 140, 126, 0.06);
+  color: #128C7E;
+  border: 1.5px solid rgba(18, 140, 126, 0.15);
+  box-shadow: none;
 }
 
 .whatsapp-button:hover {
-  background: #0E604F;
+  background: rgba(18, 140, 126, 0.12);
+  border-color: #128C7E;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(11, 76, 62, 0.22);
-  color: var(--white);
+  box-shadow: 0 4px 12px rgba(18, 140, 126, 0.1);
+  color: #128C7E;
 }
 
 .whatsapp-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(11, 76, 62, 0.15);
+  box-shadow: none;
 }
 
 .secondary-action-btn {
