@@ -8,7 +8,7 @@
 /* Sourcing Partners Default Page Theme Overrides */
 .partner-program-page:not(.theme-olive) {
   --primary-color: var(--gold, #b78646);
-  --gold-dark: var(--brown-900, #171717);
+  --gold-dark: #805d31;
 }
 
 .partner-program-breadcrumbs {
@@ -457,7 +457,7 @@
   font-family: var(--font-heading); /* Cormorant Garamond */
   font-size: 1.28rem;
   font-weight: 600;
-  color: var(--ink, #1a1a1a);
+  color: var(--gold-dark, #805d31);
   line-height: 1.35;
   padding-right: 0;
 }
