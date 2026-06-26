@@ -12,6 +12,7 @@ import SliderCaptcha from '../components/SliderCaptcha.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { siteUrl } from '../config.js';
+import { Testimonials } from '../components/ui/testimonials-columns-1.jsx';
 
 export function SharpStar({ size = 24, fill = 'none', stroke = 'currentColor', strokeWidth = 2, className = '' }) {
   return (
@@ -425,6 +426,10 @@ export function ReviewsSection({ navigate, user }) {
       </div>
 
       <StateMessage status={status} error={error} />
+
+      {status === 'ready' && reviews.length > 0 && (
+        <Testimonials testimonials={reviews} />
+      )}
 
       {status === 'ready' && reviews.length > 0 && (
         <div className="reviews-feed-container">
