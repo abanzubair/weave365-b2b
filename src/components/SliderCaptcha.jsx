@@ -113,7 +113,7 @@ export default function SliderCaptcha({ onVerify, isReset }) {
         {/* Progress Fill Indicator */}
         <div 
           className="slider-captcha-fill"
-          style={{ width: `${sliderPosition + 22}px` }}
+          style={{ width: `${sliderPosition + 36}px` }}
         />
 
         {/* Shimmer Hint Text */}
@@ -243,10 +243,10 @@ export default function SliderCaptcha({ onVerify, isReset }) {
         .slider-captcha-handle {
           position: absolute;
           left: 4px;
-          width: 44px;
+          width: 72px;
           height: 44px;
           background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-mid) 100%);
-          border-radius: 50%;
+          border-radius: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
