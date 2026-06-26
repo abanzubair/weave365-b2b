@@ -403,7 +403,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
         <div className="partner-program-section-head centered">
           <Handshake size={22} />
           <div>
-            <span>Simple Difference</span>
             <h2>Sourcing Partner vs White Label Brand</h2>
           </div>
         </div>
