@@ -17,7 +17,7 @@
 
 .seo-landing-page {
   padding-top: 85px;
-  background-color: #faf9f5; /* Elegant cream-white luxury background */
+  background-color: #ffffff; /* Elegant cream-white luxury background */
   font-family: var(--font-hero-body, 'Manrope', sans-serif);
   color: var(--text-color, #1a1a1a);
   overflow-x: hidden;
@@ -248,7 +248,7 @@
 
 /* Premium Visual Step Counters (Buyer's Guide) */
 .seo-guide-section {
-  background-color: #f6f3eb; /* Extra premium warm cream background */
+  background-color: #f5f5f5; /* Extra premium warm cream background */
   padding: 4.5rem 5%;
   border-top: 1px solid rgba(198, 158, 106, 0.12);
   border-bottom: 1px solid rgba(198, 158, 106, 0.12);
@@ -352,7 +352,7 @@
 /* Asymmetric Sticky FAQ Layout */
 .seo-faq-section {
   padding: 4.5rem 5%;
-  background-color: #faf9f5;
+  background-color: #ffffff;
 }
 
 .seo-faq-split-container {
@@ -540,7 +540,7 @@
 
 /* Magazine-Style Related Collections Cross-linking Grid */
 .seo-crosslinks-section {
-  background-color: #f6f3eb;
+  background-color: #f5f5f5;
   padding: 4.5rem 5%;
   border-top: 1px solid rgba(198, 158, 106, 0.12);
 }
