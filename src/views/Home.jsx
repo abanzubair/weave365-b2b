@@ -784,7 +784,6 @@ export function Home({
       <section className="home-blog-section">
         <div className="home-blog-header">
           <div className="home-blog-header-left">
-            <span>Corporate Intelligence & Craft Heritage</span>
             <h2>Insights from Banaras Looms</h2>
           </div>
           <div className="home-blog-header-right">
