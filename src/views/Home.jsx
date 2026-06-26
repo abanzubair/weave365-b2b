@@ -736,7 +736,7 @@ export function Home({
         <div>
           <SectionTitle title="Why Choose Us?" align="left" />
           <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <AppLink to="about" className="primary-button compact" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <AppLink to="about" className="primary-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             Know More
           </AppLink>
         </div>
