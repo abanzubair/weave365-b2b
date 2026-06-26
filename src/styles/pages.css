@@ -388,10 +388,11 @@ button {
 }
 
 .secondary-button:hover {
-  background: var(--gold-dark);
-  color: #fff;
+  background: rgba(128, 93, 49, 0.06);
+  border-color: var(--gold);
+  color: var(--gold);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.25);
+  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.08);
 }
 
 .gold-button:hover {
