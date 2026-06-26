@@ -6,7 +6,7 @@
 
 .early-access-page-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fbf6ee 0%, #faf2e8 50%, #fbf6ee 100%);
+  background: linear-gradient(135deg, var(--cream) 0%, var(--surface-soft) 50%, var(--cream) 100%);
   display: flex;
   justify-content: center;
   align-items: center;

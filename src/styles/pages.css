@@ -2979,7 +2979,7 @@ button {
   margin-bottom: 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fffdf9;
+  background: var(--surface);
   position: relative;
 }
 

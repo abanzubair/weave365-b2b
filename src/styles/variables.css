@@ -7,25 +7,25 @@
   --font-modern-body: var(--font-manrope-next), 'Manrope', sans-serif;
   --font-ui: var(--font-manrope-next), 'Manrope', sans-serif;
   --font-footer: var(--font-manrope-next), 'Manrope', sans-serif;
-  --ink: #241912;
-  --muted: #6d5946;
-  --line: #eadbc8;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #e2e8f0;
   --paper: #ffffff;
-  --cream: #fbf6ee;
-  --surface: #fffdf9;
-  --surface-soft: #faf2e8;
-  --surface-muted: #f3e7d8;
-  --surface-accent: #ead7bd;
-  --surface-strong: #d9bd95;
+  --cream: #f8fafc;
+  --surface: #ffffff;
+  --surface-soft: #f1f5f9;
+  --surface-muted: #e2e8f0;
+  --surface-accent: #cbd5e1;
+  --surface-strong: #94a3b8;
   --gold: #b78646;
   --gold-dark: #805d31;
   --gold-mid: #926b38;
   --gold-light: #bf9258;
   --gold-soft: #c69e6a;
   --gold-pale: #cdaa7c;
-  --brown-900: #1f140d;
-  --brown-800: #3f2b1d;
-  --olive: #756f4f;
+  --brown-900: #0f172a;
+  --brown-800: #1e293b;
+  --olive: #64748b;
 
   /* Premium Redesign Tokens */
   --premium-navy: #0F172A;
