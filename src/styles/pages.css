@@ -349,12 +349,21 @@ button {
   letter-spacing: 0.2px;
   text-transform: uppercase;
   text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .primary-button {
   border: 1px solid var(--brown-900);
   background: var(--brown-900);
   color: #fff;
+}
+
+.primary-button:hover {
+  background: var(--brown-800);
+  border-color: var(--brown-800);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .hero-actions .primary-button {
@@ -364,10 +373,38 @@ button {
   font-weight: 600;
 }
 
+.hero-actions .primary-button:hover {
+  background: var(--hero-btn-color, var(--gold));
+  color: #fff;
+  border-color: var(--hero-btn-color, var(--gold));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(183, 134, 70, 0.25);
+}
+
 .secondary-button {
   border: 1px solid var(--gold-dark);
   background: transparent;
   color: var(--gold-dark);
+}
+
+.secondary-button:hover {
+  background: var(--gold-dark);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.25);
+}
+
+.gold-button:hover {
+  background: var(--gold-dark);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(183, 134, 70, 0.25);
+}
+
+.center-button:hover {
+  background: var(--brown-800);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .compact {
