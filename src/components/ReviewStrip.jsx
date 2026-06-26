@@ -15,7 +15,9 @@ export function ReviewStrip({ navigate }) {
   return (
     <section className="review-strip">
       <div className="review-strip-content">
-        <MessageSquare className="strip-icon" />
+        <span className="strip-icon-wrapper">
+          <MessageSquare className="strip-icon" />
+        </span>
         <div className="review-strip-text">
           <span className="review-strip-kicker">What People Say About Us</span>
           <h2 className="review-strip-title">Share Your Sourcing Experience</h2>

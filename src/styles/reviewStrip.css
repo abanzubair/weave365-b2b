@@ -33,18 +33,25 @@
   gap: 20px;
 }
 
+.review-strip .strip-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(115, 109, 82, 0.06);
+  border: 1px solid rgba(115, 109, 82, 0.15);
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(115, 109, 82, 0.04);
+  flex-shrink: 0;
+}
+
 .review-strip svg.strip-icon {
-  box-sizing: content-box;
   width: 24px;
   height: 24px;
   color: var(--olive);
   stroke-width: 1.5;
-  background: rgba(115, 109, 82, 0.06);
-  border: 1px solid rgba(115, 109, 82, 0.15);
-  padding: 13px;
-  border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(115, 109, 82, 0.04);
-  flex-shrink: 0;
+  display: block;
 }
 
 .review-strip > div.review-strip-content {
