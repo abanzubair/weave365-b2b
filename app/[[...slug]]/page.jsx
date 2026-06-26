@@ -370,7 +370,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
       'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
       'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
       '/new-arrivals',
-      newestProductImage
+      defaultPageImage
     );
   }
 
