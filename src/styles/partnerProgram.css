@@ -812,12 +812,6 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01), 0 8px 24px rgba(88, 83, 58, 0.02);
 }
 
-
-.partner-program-page.theme-olive .partner-program-faq .seo-faq-item:hover {
-  border-color: rgba(117, 111, 79, 0.35);
-  box-shadow: 0 12px 32px rgba(88, 83, 58, 0.08);
-}
-
 .partner-program-page.theme-olive .partner-program-faq .seo-faq-trigger h3 {
   color: var(--gold-dark);
 }
