@@ -36,3 +36,6 @@ skills/*
 
 # Scratch & Debug folders
 scratch/
+
+# Supabase
+supabase/.temp/

@@ -24,6 +24,7 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.16",
     "esbuild": "^0.25.0",
+    "supabase": "^2.108.0",
     "wrangler": "^4.93.0"
   }
 }
