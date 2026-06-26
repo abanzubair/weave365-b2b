@@ -176,7 +176,7 @@
 .section-header h2 {
   font-family: var(--font-heading);
   font-size: 36px;
-  color: var(--ink);
+  color: var(--heading);
   margin-bottom: 16px;
 }
 
@@ -235,7 +235,7 @@
 .step-card h3 {
   font-family: var(--font-heading);
   font-size: 25px;
-  color: var(--ink);
+  color: var(--heading);
   margin-bottom: 12px;
   position: relative;
   z-index: 1;
@@ -310,7 +310,7 @@
 .benefits-content h2 {
   font-family: var(--font-heading);
   font-size: 40px;
-  color: var(--ink);
+  color: var(--heading);
   margin-bottom: 40px;
 }
 
@@ -339,7 +339,7 @@
   display: block;
   font-family: var(--font-heading);
   font-size: 22px;
-  color: var(--ink);
+  color: var(--heading);
   margin-bottom: 8px;
 }
 

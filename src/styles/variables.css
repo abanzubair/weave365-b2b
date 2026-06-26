@@ -7,7 +7,8 @@
   --font-modern-body: var(--font-manrope-next), 'Manrope', sans-serif;
   --font-ui: var(--font-manrope-next), 'Manrope', sans-serif;
   --font-footer: var(--font-manrope-next), 'Manrope', sans-serif;
-  --ink: #0f172a;
+  --ink: #020617;
+  --heading: #000000;
   --muted: #475569;
   --line: #e2e8f0;
   --paper: #ffffff;
@@ -42,9 +43,6 @@
   
   /* Fluid Tokens */
   --site-padding: clamp(24px, 4vw, 80px);
-  
-  /* Fluid Tokens */
-  --site-padding: clamp(24px, 4vw, 80px);
   --section-gap: clamp(40px, 6vw, 100px);
   --h1-size: clamp(48px, 6vw, 100px);
   --h2-size: clamp(34px, 4.5vw, 64px);
@@ -69,7 +67,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0.5em;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--heading);
   line-height: 1.2;
   overflow-wrap: break-word;
 }

@@ -932,7 +932,7 @@
 .faq-accordion-trigger span {
   font-family: var(--font-hero-heading, 'Cinzel', serif);
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--blog-dark);
   padding-right: 1.5rem;
 }
