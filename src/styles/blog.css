@@ -5,8 +5,8 @@
   --blog-gold: var(--gold, #b78646);
   --blog-gold-dark: var(--gold-dark, #805d31);
   --blog-dark: #121212;
-  --blog-light-grey: var(--cream, #FAF9F6);
-  --blog-border-color: var(--line, #eae4d8);
+  --blog-light-grey: var(--cream, #fafafa);
+  --blog-border-color: var(--line, #e5e5e5);
   --blog-transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
