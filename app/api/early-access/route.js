@@ -30,6 +30,21 @@ export async function POST(request) {
 
     const text = await res.text();
 
+    if (!res.ok) {
+      return Response.json(
+        { status: 'error', error: `Google Sheets API returned status ${res.status}` },
+        { status: res.status }
+      );
+    }
+
+    // Google Apps Script redirects to a Google Login HTML page if permission is private
+    if (text.includes('<!DOCTYPE html>') || text.includes('<html') || text.includes('You need access')) {
+      return Response.json(
+        { status: 'error', error: 'Google Apps Script deployment is set to private. Please check permissions and redeploy as "Anyone".' },
+        { status: 403 }
+      );
+    }
+
     let data;
     try {
       data = JSON.parse(text);
