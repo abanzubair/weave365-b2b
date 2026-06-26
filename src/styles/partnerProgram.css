@@ -13,13 +13,13 @@
 
 .partner-program-breadcrumbs {
   font-size: 0.78rem;
-  color: #59554a;
+  color: var(--muted, #555555);
   padding-top: 0.5rem;
   padding-bottom: 0.25rem;
 }
 
 .partner-program-breadcrumbs a {
-  color: #59554a;
+  color: var(--muted, #555555);
 }
 
 .partner-program-breadcrumbs .chevron {
@@ -86,7 +86,7 @@
   max-width: 700px;
   font-size: clamp(0.96rem, 1.6vw, 1.08rem);
   line-height: 1.72;
-  color: #3a332b;
+  color: var(--muted, #555555);
 }
 
 .partner-program-actions {
@@ -309,7 +309,7 @@
   align-items: start;
   font-size: 0.92rem;
   line-height: 1.45;
-  color: #3c342d;
+  color: var(--ink, #1a1a1a);
 }
 
 .partner-program-list-panel li svg {
@@ -352,7 +352,7 @@
 .partner-program-table-row div {
   padding: 1rem 1.2rem;
   font-size: 0.92rem;
-  color: #3c342d;
+  color: var(--ink, #1a1a1a);
 }
 
 .partner-program-table-row div + div {
@@ -382,7 +382,7 @@
   background: #ffffff;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #44382f;
+  color: var(--ink, #1a1a1a);
 }
 
 .partner-program-related {
