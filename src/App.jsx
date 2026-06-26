@@ -361,7 +361,7 @@ export default function App({ initialData = {} }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'history' in window) {
-      window.history.scrollRestoration = 'manual';
+      window.history.scrollRestoration = 'auto';
     }
 
     const updateScrolled = () => {
