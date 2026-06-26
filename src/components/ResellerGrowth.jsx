@@ -53,7 +53,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
                 <span className="growth-subtext">Start your wholesale journey today</span>
               </div>
               <div className="growth-action">
-                <ChevronRight size={28} className="arrow-icon" />
+                <ChevronRight size={20} className="arrow-icon" />
               </div>
             </AppLink>
           </div>
