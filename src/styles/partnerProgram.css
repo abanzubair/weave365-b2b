@@ -7,8 +7,8 @@
 
 /* Sourcing Partners Default Page Theme Overrides */
 .partner-program-page:not(.theme-olive) {
-  --primary-color: var(--gold-mid, #926b38);
-  --gold-dark: #805d31;
+  --primary-color: var(--gold, #b78646);
+  --gold-dark: var(--brown-900, #171717);
 }
 
 .partner-program-breadcrumbs {
