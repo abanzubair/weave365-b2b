@@ -344,7 +344,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
           <div className="partner-program-section-head">
             <ClipboardCheck size={22} />
             <div>
-              <span>Operational Scope</span>
               <h2>Responsibilities</h2>
             </div>
           </div>
@@ -362,7 +361,6 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
           <div className="partner-program-section-head">
             <BadgeCheck size={22} />
             <div>
-              <span>Success Standards</span>
               <h2>Accountability</h2>
             </div>
           </div>
