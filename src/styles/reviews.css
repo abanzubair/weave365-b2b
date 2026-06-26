@@ -1061,7 +1061,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-  max-height: 520px;
+  max-height: 720px;
   overflow: hidden;
   position: relative;
   /* Top and bottom gradient mask to fade out moving reviews */
