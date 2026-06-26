@@ -44,14 +44,14 @@
   margin-inline: auto;
 }
 
-.hero-actions {
+.reseller-page-container .hero-actions {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
 }
 
-.gold-button {
+.reseller-page-container .gold-button {
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -67,18 +67,18 @@
   transition: all 0.3s ease;
 }
 
-.gold-button.large {
+.reseller-page-container .gold-button.large {
   padding: 20px 40px;
   font-size: 18px;
 }
 
-.gold-button:hover {
+.reseller-page-container .gold-button:hover {
   background: var(--gold-dark);
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(183, 134, 70, 0.2);
 }
 
-.secondary-button {
+.reseller-page-container .secondary-button {
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -94,7 +94,7 @@
   transition: all 0.3s ease;
 }
 
-.secondary-button:hover {
+.reseller-page-container .secondary-button:hover {
   background: var(--surface-soft);
   border-color: var(--gold-soft);
 }
@@ -108,7 +108,7 @@
   z-index: 10;
 }
 
-.notice-card {
+.reseller-page-container .notice-card {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -119,16 +119,16 @@
   border: 1px solid var(--gold-pale);
 }
 
-.notice-icon {
+.reseller-page-container .notice-icon {
   color: var(--gold);
   flex-shrink: 0;
 }
 
-.notice-text {
+.reseller-page-container .notice-text {
   flex-grow: 1;
 }
 
-.notice-text strong {
+.reseller-page-container .notice-text strong {
   display: block;
   font-family: var(--font-heading);
   font-size: 26px;
@@ -136,14 +136,14 @@
   color: var(--ink);
 }
 
-.notice-text p {
+.reseller-page-container .notice-text p {
   color: var(--muted);
   font-size: 17px;
   line-height: 1.5;
   margin: 0;
 }
 
-.notice-cta-button {
+.reseller-page-container .notice-cta-button {
   background: var(--surface-soft);
   color: var(--ink);
   border: 1px solid var(--line);
@@ -155,7 +155,7 @@
   flex-shrink: 0;
 }
 
-.notice-cta-button:hover {
+.reseller-page-container .notice-cta-button:hover {
   background: var(--gold-pale);
   color: var(--gold-dark);
   border-color: var(--gold-soft);
@@ -168,19 +168,19 @@
   margin: 0 auto;
 }
 
-.section-header {
+.reseller-page-container .section-header {
   text-align: center;
   margin-bottom: 60px;
 }
 
-.section-header h2 {
+.reseller-page-container .section-header h2 {
   font-family: var(--font-heading);
   font-size: 36px;
   color: var(--heading);
   margin-bottom: 16px;
 }
 
-.section-header p {
+.reseller-page-container .section-header p {
   font-size: 18px;
   color: var(--muted);
 }
@@ -459,19 +459,19 @@
     margin: 0 0 26px;
   }
 
-  .hero-actions {
+  .reseller-page-container .hero-actions {
     align-items: stretch;
     gap: 12px;
   }
 
-  .gold-button,
-  .secondary-button {
+  .reseller-page-container .gold-button,
+  .reseller-page-container .secondary-button {
     min-height: 52px;
     padding: 14px 18px;
     font-size: 15px;
   }
 
-  .gold-button.large {
+  .reseller-page-container .gold-button.large {
     width: 100%;
     max-width: 340px;
     justify-content: center;
@@ -484,7 +484,7 @@
     margin: -24px auto 44px;
   }
 
-  .notice-card {
+  .reseller-page-container .notice-card {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr);
     align-items: flex-start;
@@ -495,7 +495,7 @@
     box-shadow: 0 14px 32px rgba(0,0,0,0.06);
   }
 
-  .notice-icon {
+  .reseller-page-container .notice-icon {
     width: 40px;
     height: 40px;
     padding: 8px;
@@ -503,17 +503,17 @@
     background: var(--gold-pale);
   }
 
-  .notice-text strong {
+  .reseller-page-container .notice-text strong {
     font-size: 20px;
     margin-bottom: 6px;
   }
 
-  .notice-text p {
+  .reseller-page-container .notice-text p {
     font-size: 14px;
     line-height: 1.5;
   }
 
-  .notice-cta-button {
+  .reseller-page-container .notice-cta-button {
     grid-column: 1 / -1;
     width: 100%;
     min-height: 38px;
@@ -524,19 +524,19 @@
     padding: 38px 16px 54px;
   }
 
-  .section-header {
+  .reseller-page-container .section-header {
     text-align: left;
     margin-bottom: 24px;
   }
 
-  .section-header h2,
-  .social-content h2 {
+  .reseller-page-container .section-header h2,
+  .reseller-page-container .social-content h2 {
     font-size: 28px;
     margin-bottom: 10px;
   }
 
-  .section-header p,
-  .social-content p {
+  .reseller-page-container .section-header p,
+  .reseller-page-container .social-content p {
     font-size: 15px;
     line-height: 1.55;
   }
