@@ -74,7 +74,16 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status'); // optional: 'pending_review' | 'approved' | 'rejected'
 
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[early-access API GET] Error: SUPABASE_SERVICE_ROLE_KEY is not configured on the server.');
+      return Response.json({
+        status: 'error',
+        error: 'SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Please add it to your environment variables/secrets in your hosting dashboard.'
+      }, { status: 500 });
+    }
+
     const supabase = getSupabase();
+
 
     let query = supabase
       .from('early_access_submissions')
@@ -108,7 +117,16 @@ export async function PATCH(request) {
       return Response.json({ status: 'error', error: 'id and status are required.' }, { status: 400 });
     }
 
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[early-access API PATCH] Error: SUPABASE_SERVICE_ROLE_KEY is not configured on the server.');
+      return Response.json({
+        status: 'error',
+        error: 'SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Please add it to your environment variables/secrets in your hosting dashboard.'
+      }, { status: 500 });
+    }
+
     const supabase = getSupabase();
+
 
     const { data, error } = await supabase
       .from('early_access_submissions')
