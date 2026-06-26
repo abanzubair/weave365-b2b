@@ -425,7 +425,7 @@ export function ReviewsSection({ navigate, user }) {
         )}
       </div>
 
-      <StateMessage status={status} error={error} />
+      <StateMessage status={status} error={error} message="Loading live reviews..." />
 
       {status === 'ready' && reviews.length > 0 && (
         <Testimonials testimonials={reviews} />
