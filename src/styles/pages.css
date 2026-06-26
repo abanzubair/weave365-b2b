@@ -2778,7 +2778,7 @@ button {
   display: inline-flex;
   padding: 7px 12px;
   border-radius: 999px;
-  background: var(--surface-accent);
+  background: rgba(183, 134, 70, 0.12);
   color: var(--gold-dark);
   font-family: var(--font-footer);
   font-size: 12px;
