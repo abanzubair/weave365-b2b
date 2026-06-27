@@ -80,9 +80,6 @@ import { ReturnsCancellationPage } from './views/ReturnsCancellationPage.jsx';
 import { PrivacySecurityPage } from './views/PrivacySecurityPage.jsx';
 import { TermsConditionsPage } from './views/TermsConditionsPage.jsx';
 
-import { seoLandingPages } from './data/seoLandingPages.js';
-
-
 const slugifyPartner = (name) => {
   if (!name) return '';
   return name.toLowerCase().trim().replace(/\s+/g, '-');
@@ -196,10 +193,36 @@ export default function App({ initialData = {} }) {
   const [prevPathname, setPrevPathname] = useState(pathname);
   const [isProductPageReady, setIsProductPageReady] = useState(true);
 
+  const [landingPages, setLandingPages] = useState(() => {
+    let pages = initialData.landingPages || [];
+    if (pages.length === 0) {
+      pages = Object.entries(seoLandingPages).map(([slug, page]) => ({
+        slug,
+        metaTitle: page.metaTitle,
+        metaDescription: page.metaDescription,
+        ogTitle: page.ogTitle || page.metaTitle,
+        ogDescription: page.ogDescription || page.metaDescription,
+        imageUrl: page.imageUrl,
+        canonicalPath: page.canonicalPath || ('/' + slug),
+        robotsIndex: page.robotsIndex !== false,
+        robotsFollow: page.robotsFollow !== false,
+        h1: page.h1,
+        introTitle: page.introTitle,
+        introText: page.introText,
+        buyerGuideTitle: page.buyerGuideTitle,
+        buyerGuideSections: page.buyerGuideSections || [],
+        faqs: page.faqs || [],
+        filter: page.filter || {}
+      }));
+    }
+    return pages;
+  });
+
   const isProductPathname = useCallback((path) => {
     const segments = path.split('/').filter(Boolean);
-    return segments.length === 2 && !NON_PRODUCT_ROUTES.has(segments[0]) && !seoLandingPages[segments[0]];
-  }, []);
+    const isLanding = landingPages.some(p => p.slug === segments[0]);
+    return segments.length === 2 && !NON_PRODUCT_ROUTES.has(segments[0]) && !isLanding;
+  }, [landingPages]);
 
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
@@ -209,7 +232,8 @@ export default function App({ initialData = {} }) {
     }
   }
   
-  const isProductRoute = pathSegments.length === 2 && !NON_PRODUCT_ROUTES.has(pathSegments[0]) && !seoLandingPages[pathSegments[0]];
+  const isLandingPage = landingPages.some(p => p.slug === pathSegments[0]);
+  const isProductRoute = pathSegments.length === 2 && !NON_PRODUCT_ROUTES.has(pathSegments[0]) && !isLandingPage;
   const route = pendingRoute || (isProductRoute ? 'product' : (pathSegments[0] || 'home'));
   const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
   const inquiryId = route === 'order-tracking' ? decodeURIComponent(pathSegments[1] || '') : null;
@@ -1234,6 +1258,8 @@ export default function App({ initialData = {} }) {
             blogs={blogs}
             setBlogs={setBlogs}
             products={pricedProducts}
+            landingPages={landingPages}
+            setLandingPages={setLandingPages}
           />
         </ErrorBoundary>
       );
@@ -1275,10 +1301,12 @@ export default function App({ initialData = {} }) {
       return <PartnerProgramPage type={route} navigate={navigate} />;
     }
 
-    if (seoLandingPages[route]) {
+    const matchedLandingPage = landingPages.find(p => p.slug === route);
+    if (matchedLandingPage) {
       return (
         <SeoLandingPage
           slug={route}
+          pageData={matchedLandingPage}
           products={pricedProducts}
           status={status}
           error={error}
@@ -1288,6 +1316,7 @@ export default function App({ initialData = {} }) {
           favoriteKeys={favoriteKeySet}
           priceAccess={priceAccess}
           openAuth={() => setAuthOpen(true)}
+          landingPages={landingPages}
         />
       );
     }

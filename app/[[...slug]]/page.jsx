@@ -1,6 +1,6 @@
 import App from '../../src/App.jsx';
 import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRoutes, siteUrl } from '../../src/config.js';
-import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from '../../src/productData.js';
+import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSupabaseLandingPages } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 import { notFound } from 'next/navigation';
@@ -15,9 +15,31 @@ function cleanSlug(slug = []) {
   return Array.isArray(slug) ? slug : [];
 }
 
-function isRouteStructureValid(slug) {
+function getStaticLandingPagesFallback() {
+  return Object.entries(seoLandingPages).map(([slug, page]) => ({
+    slug,
+    metaTitle: page.metaTitle,
+    metaDescription: page.metaDescription,
+    ogTitle: page.ogTitle || page.metaTitle,
+    ogDescription: page.ogDescription || page.metaDescription,
+    imageUrl: page.imageUrl,
+    canonicalPath: page.canonicalPath || ('/' + slug),
+    robotsIndex: page.robotsIndex !== false,
+    robotsFollow: page.robotsFollow !== false,
+    h1: page.h1,
+    introTitle: page.introTitle,
+    introText: page.introText,
+    buyerGuideTitle: page.buyerGuideTitle,
+    buyerGuideSections: page.buyerGuideSections || [],
+    faqs: page.faqs || [],
+    filter: page.filter || {}
+  }));
+}
+
+function isRouteStructureValid(slug, landingPages = []) {
   const clean = cleanSlug(slug);
   const rawRoute = clean[0] || 'home';
+  const activeLandingPages = landingPages.length > 0 ? landingPages : getStaticLandingPagesFallback();
 
   // 1. Path too deep
   if (clean.length > 3) {
@@ -38,7 +60,8 @@ function isRouteStructureValid(slug) {
       return true;
     }
     // Product route /[category-slug]/[productId]
-    const isProductRoute = !NON_PRODUCT_ROUTES.has(rawRoute) && !seoLandingPages[rawRoute];
+    const isLandingPage = activeLandingPages.some(p => p.slug === rawRoute);
+    const isProductRoute = !NON_PRODUCT_ROUTES.has(rawRoute) && !isLandingPage;
     return isProductRoute;
   }
 
@@ -47,10 +70,11 @@ function isRouteStructureValid(slug) {
     if (rawRoute === 'product') {
       return false; // /product is not a valid endpoint on its own
     }
+    const isLandingPage = activeLandingPages.some(p => p.slug === rawRoute);
     return (
       NON_PRODUCT_ROUTES.has(rawRoute) ||
       Object.keys(seoCategoryRoutes).includes(rawRoute) ||
-      Boolean(seoLandingPages[rawRoute]) ||
+      isLandingPage ||
       rawRoute === 'favorites' ||
       rawRoute === 'account'
     );
@@ -60,13 +84,15 @@ function isRouteStructureValid(slug) {
   return true;
 }
 
-function routeFromSlug(slug = []) {
+function routeFromSlug(slug = [], landingPages = []) {
   const clean = cleanSlug(slug);
   const rawRoute = clean[0] || 'home';
   const isBlogCategory = rawRoute === 'blog' && clean[1] === 'category';
+  const activeLandingPages = landingPages.length > 0 ? landingPages : getStaticLandingPagesFallback();
 
   // A route is a product route if it has exactly 2 segments, and rawRoute is not a known non-product route, and it's not a known SEO landing page slug
-  const isProductRoute = clean.length === 2 && !NON_PRODUCT_ROUTES.has(rawRoute) && !seoLandingPages[rawRoute];
+  const isLandingPage = activeLandingPages.some(p => p.slug === rawRoute);
+  const isProductRoute = clean.length === 2 && !NON_PRODUCT_ROUTES.has(rawRoute) && !isLandingPage;
   const route = isProductRoute ? 'product' : rawRoute;
 
   return {
@@ -83,17 +109,24 @@ function toSerializable(value) {
 }
 
 async function getInitialData() {
-  const [productsResult, heroResult, configResult, blogsResult] = await Promise.allSettled([
+  const [productsResult, heroResult, configResult, blogsResult, landingPagesResult] = await Promise.allSettled([
     fetchProducts(),
     fetchHeroData(),
     fetchConfigOptions(),
     fetchSupabaseBlogPosts(),
+    fetchSupabaseLandingPages(),
   ]);
 
   const products = productsResult.status === 'fulfilled' ? productsResult.value : [];
   const heroSlides = heroResult.status === 'fulfilled' ? heroResult.value : [];
   const configOptions = configResult.status === 'fulfilled' ? configResult.value : defaultConfigOptions;
   const dbPosts = blogsResult.status === 'fulfilled' ? blogsResult.value : [];
+  
+  let landingPages = landingPagesResult.status === 'fulfilled' ? landingPagesResult.value : [];
+  if (landingPages.length === 0) {
+    landingPages = getStaticLandingPagesFallback();
+  }
+
   const productError = productsResult.status === 'rejected' ? productsResult.reason : null;
 
   return toSerializable({
@@ -102,6 +135,7 @@ async function getInitialData() {
     heroSlides,
     configOptions,
     dbPosts,
+    landingPages,
     status: productError ? 'error' : 'ready',
     error: productError?.message || '',
   });
@@ -120,7 +154,7 @@ function seoOverrideForPath(pageSeoSettings, canonicalPath) {
   return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === normalized);
 }
 
-function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', defaultPageImage = null, pageSeoSettings = []) {
+function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams = {}, dbPosts = [], blogCategorySlug = '', defaultPageImage = null, pageSeoSettings = [], landingPages = []) {
   const buildMeta = (title, description, canonicalPath, imageUrl, extraOg = {}) => {
     const override = seoOverrideForPath(pageSeoSettings, canonicalPath);
     const finalTitle = override?.metaTitle || title;
@@ -215,12 +249,13 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
   }
 
   // Intercept new custom premium SEO landing pages
-  if (seoLandingPages[route]) {
-    const pageData = seoLandingPages[route];
+  const landingPageData = landingPages.find(p => p.slug === route);
+  if (landingPageData) {
     return buildMeta(
-      pageData.metaTitle,
-      pageData.metaDescription,
-      `/${pageData.slug}`
+      landingPageData.metaTitle,
+      landingPageData.metaDescription,
+      `/${landingPageData.slug}`,
+      landingPageData.imageUrl
     );
   }
 
@@ -480,16 +515,20 @@ export async function generateMetadata({ params, searchParams }) {
   const resolvedSearchParams = await searchParams;
   const slug = resolvedParams?.slug || [];
 
-  if (!isRouteStructureValid(slug)) {
+  const landingPages = await fetchSupabaseLandingPages();
+  const activeLandingPages = landingPages.length > 0 ? landingPages : getStaticLandingPagesFallback();
+
+  if (!isRouteStructureValid(slug, activeLandingPages)) {
     notFound();
   }
 
-  const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(slug);
+  const { route, productId, sharedSlug, blogPostSlug, blogCategorySlug } = routeFromSlug(slug, activeLandingPages);
   let product = null;
   let dbPosts = [];
   let defaultPageImage = null;
   const pageSeoSettings = await fetchSupabasePageSeoSettings();
 
+  const isLandingPage = activeLandingPages.some(p => p.slug === route);
   const needsData = [
     'home',
     'product',
@@ -498,7 +537,7 @@ export async function generateMetadata({ params, searchParams }) {
     'wholesale-catalogue',
     's',
     'partner'
-  ].includes(route) || Object.keys(seoCategoryRoutes).includes(route);
+  ].includes(route) || Object.keys(seoCategoryRoutes).includes(route) || isLandingPage;
 
   if (needsData) {
     const data = await getInitialData();
@@ -552,7 +591,7 @@ export async function generateMetadata({ params, searchParams }) {
     }
   }
 
-  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, defaultPageImage, pageSeoSettings);
+  return metadataForRoute(route, product, sharedSlug, blogPostSlug, resolvedSearchParams, dbPosts, blogCategorySlug, defaultPageImage, pageSeoSettings, activeLandingPages);
 }
 
 function generateProductSchemas(product, activeReviews = []) {
@@ -668,12 +707,14 @@ export default async function CatchAllPage({ params }) {
   const resolvedParams = await params;
   const slug = resolvedParams?.slug || [];
 
-  if (!isRouteStructureValid(slug)) {
+  const initialData = await getInitialData();
+  const landingPages = initialData.landingPages || [];
+
+  if (!isRouteStructureValid(slug, landingPages)) {
     notFound();
   }
 
-  const { route, productId, blogPostSlug } = routeFromSlug(slug);
-  const initialData = await getInitialData();
+  const { route, productId, blogPostSlug } = routeFromSlug(slug, landingPages);
 
   let product = null;
   let activeReviews = [];
@@ -713,6 +754,23 @@ export default async function CatchAllPage({ params }) {
 
   const schemas = product ? generateProductSchemas(product, activeReviews) : null;
 
+  const landingPageData = landingPages.find(p => p.slug === route);
+  let landingPageFaqSchema = null;
+  if (landingPageData && landingPageData.faqs && landingPageData.faqs.length > 0) {
+    landingPageFaqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": landingPageData.faqs.map((faq) => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.a
+        }
+      }))
+    };
+  }
+
   return (
     <>
       {schemas?.productSchema && (
@@ -726,6 +784,13 @@ export default async function CatchAllPage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas.faqSchema).replace(/</g, '\\u003c') }}
+        />
+      )}
+
+      {landingPageFaqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(landingPageFaqSchema).replace(/</g, '\\u003c') }}
         />
       )}
       <App initialData={initialData} />

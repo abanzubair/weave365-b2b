@@ -4565,3 +4565,59 @@
 .spin-icon {
   animation: admin-spin 1s linear infinite;
 }
+
+/* Custom Sub-Tab Navigation for SEO Landing Page Builder */
+.admin-sub-tab-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+.admin-sub-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #4b5563;
+  font-weight: 500;
+  font-size: 14.5px;
+  padding: 12px 20px;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.admin-sub-tab-btn:hover {
+  color: #111827;
+  border-bottom-color: #d1d5db;
+}
+
+.admin-sub-tab-btn.active {
+  color: #10b981;
+  border-bottom-color: #10b981;
+  font-weight: 600;
+}
+
+.admin-btn-secondary-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent;
+  color: #10b981;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.admin-btn-secondary-outline:hover {
+  background: rgba(16, 185, 129, 0.05);
+  color: #059669;
+  border-color: #059669;
+}

@@ -1016,3 +1016,93 @@ export async function saveSupabaseBlogPost(post) {
   if (error) throw error;
   return data;
 }
+
+export async function fetchSupabaseLandingPages() {
+  if (!isSupabaseConfigured) return [];
+  try {
+    const { data, error } = await supabase
+      .from('landing_pages')
+      .select('*')
+      .order('slug', { ascending: true });
+    if (error) {
+      console.warn('Unable to select from landing_pages:', error.message);
+      return [];
+    }
+    return (data || []).map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      metaTitle: row.meta_title || '',
+      metaDescription: row.meta_description || '',
+      ogTitle: row.og_title || '',
+      ogDescription: row.og_description || '',
+      imageUrl: row.image_url || '',
+      canonicalPath: row.canonical_path || '',
+      robotsIndex: row.robots_index !== false,
+      robotsFollow: row.robots_follow !== false,
+      h1: row.h1 || '',
+      introTitle: row.intro_title || '',
+      introText: row.intro_text || '',
+      buyerGuideTitle: row.buyer_guide_title || '',
+      buyerGuideSections: row.buyer_guide_sections || [],
+      faqs: row.faqs || [],
+      filter: row.filter || {},
+      updatedAt: row.updated_at,
+    }));
+  } catch (err) {
+    console.error('Error fetching Supabase landing pages:', err);
+    return [];
+  }
+}
+
+export async function saveSupabaseLandingPage(page) {
+  if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
+
+  const now = new Date().toISOString();
+  const row = {
+    slug: page.slug,
+    meta_title: page.metaTitle,
+    meta_description: page.metaDescription,
+    og_title: page.ogTitle || page.metaTitle,
+    og_description: page.ogDescription || page.metaDescription,
+    image_url: page.imageUrl || null,
+    canonical_path: page.canonicalPath || ('/' + page.slug),
+    robots_index: page.robotsIndex !== false,
+    robots_follow: page.robotsFollow !== false,
+    h1: page.h1,
+    intro_title: page.introTitle || '',
+    intro_text: page.introText || '',
+    buyer_guide_title: page.buyerGuideTitle || '',
+    buyer_guide_sections: page.buyerGuideSections || [],
+    faqs: page.faqs || [],
+    filter: page.filter || {},
+    updated_at: now,
+  };
+
+  if (page.id) {
+    row.id = page.id;
+  } else {
+    row.created_at = now;
+  }
+
+  const { data, error } = await supabase
+    .from('landing_pages')
+    .upsert(row, { onConflict: 'slug' })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteSupabaseLandingPage(slug) {
+  if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
+
+  const { data, error } = await supabase
+    .from('landing_pages')
+    .delete()
+    .eq('slug', slug)
+    .select();
+
+  if (error) throw error;
+  return data;
+}

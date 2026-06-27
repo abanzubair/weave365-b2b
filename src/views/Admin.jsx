@@ -25,6 +25,7 @@ import {
   Compass,
   ChevronLeft,
   ChevronRight,
+  Layers,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -34,6 +35,7 @@ import DashboardOverview from './admin/DashboardOverview.jsx';
 import BuyerPipeline from './admin/BuyerPipeline.jsx';
 import BlogManager from './admin/BlogManager.jsx';
 import SeoSettings from './admin/SeoSettings.jsx';
+import PageBuilder from './admin/PageBuilder.jsx';
 import VendorApplications from './admin/VendorApplications.jsx';
 import EarlyAccessManager from './admin/EarlyAccessManager.jsx';
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
@@ -66,7 +68,7 @@ const emptyAdminData = {
   errors: {},
 };
 
-export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [] }) {
+export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [], landingPages = [], setLandingPages }) {
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
@@ -502,6 +504,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Settings', icon: Search, badge: null },
+        { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Links', icon: Compass, badge: null },
       ],
     },
@@ -598,18 +601,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           ))}
         </nav>
 
-        {/* Sidebar Footer User Info Badge */}
-        <div className="admin-sidebar-footer">
-          <div className="admin-footer-avatar-wrap">
-            <img src={buyerProfile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80'} alt="Admin Avatar" className="admin-footer-avatar" />
-          </div>
-          {!isSidebarMinimized && (
-            <div className="admin-footer-user-details">
-              <span className="admin-user-title">{userName}</span>
-              <span className="admin-user-sub">{user.email}</span>
-            </div>
-          )}
-        </div>
       </aside>
 
       {/* 2. Main content area */}
@@ -654,6 +645,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <SeoSettings
               adminData={adminData}
               loadAdminData={loadAdminData}
+            />
+          )}
+
+          {activeTab === 'builder' && (
+            <PageBuilder
+              landingPages={landingPages}
+              setLandingPages={setLandingPages}
+              adminData={adminData}
             />
           )}
 

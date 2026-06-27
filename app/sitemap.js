@@ -1,8 +1,7 @@
 
 import { headers } from 'next/headers';
-import { fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
+import { fetchProducts, fetchSupabaseBlogPosts, fetchSupabaseLandingPages } from '../src/productData.js';
 import { getProductCategorySlug } from '../src/config.js';
-import { seoLandingPages } from '../src/data/seoLandingPages.js';
 import { blogPosts } from '../src/data/blogPosts.js';
 
 export const runtime = 'edge';
@@ -114,9 +113,16 @@ export default async function sitemap() {
     },
   ];
 
-  // Dynamic landing pages from SEO repository
-  const seoLandingSitemaps = Object.keys(seoLandingPages).map((slug) => ({
-    url: `${siteUrl}/${slug}`,
+  // Dynamic landing pages from Supabase
+  let activeLandingPages = [];
+  try {
+    activeLandingPages = await fetchSupabaseLandingPages();
+  } catch (err) {
+    console.warn('Sitemap: Failed to fetch Supabase landing pages:', err.message);
+  }
+
+  const seoLandingSitemaps = activeLandingPages.map((page) => ({
+    url: `${siteUrl}/${page.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.85,

@@ -934,3 +934,36 @@ $$;
 
 -- Grant execute permissions to public/anonymous roles
 GRANT EXECUTE ON FUNCTION public.get_order_tracking(uuid) TO anon, authenticated;
+
+-- Create landing_pages table to manage dynamic collection pages and SEO content
+CREATE TABLE IF NOT EXISTS public.landing_pages (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug text UNIQUE NOT NULL,
+  meta_title text NOT NULL,
+  meta_description text NOT NULL,
+  og_title text,
+  og_description text,
+  image_url text,
+  canonical_path text,
+  robots_index boolean DEFAULT true,
+  robots_follow boolean DEFAULT true,
+  h1 text NOT NULL,
+  intro_title text,
+  intro_text text,
+  buyer_guide_title text,
+  buyer_guide_sections jsonb DEFAULT '[]'::jsonb, -- Array of { title, content }
+  faqs jsonb DEFAULT '[]'::jsonb,                 -- Array of { q, a }
+  filter jsonb DEFAULT '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.landing_pages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "landing pages public read" ON public.landing_pages;
+CREATE POLICY "landing pages public read" ON public.landing_pages 
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "landing pages admin all" ON public.landing_pages;
+CREATE POLICY "landing pages admin all" ON public.landing_pages 
+  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());

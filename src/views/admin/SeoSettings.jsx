@@ -5,11 +5,8 @@ import {
   Check,
   Upload,
   RefreshCw,
-  Copy,
-  Search,
 } from 'lucide-react';
 import { seoCategoryRoutes } from '../../config.js';
-import { seoLandingPages } from '../../data/seoLandingPages.js';
 import { saveSupabasePageSeoSetting } from '../../productData.js';
 import {
   normalizeSeoPath,
@@ -158,19 +155,6 @@ const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, 
   };
 });
 
-const defaultSeoPageOptions = [
-  ...staticSeoDefaults,
-  ...Object.values(seoLandingPages)
-    .map((page) => ({
-      path: `/${page.slug}`,
-      label: page.h1 || page.slug,
-      metaTitle: page.metaTitle,
-      metaDescription: page.metaDescription,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label)),
-  ...categorySeoDefaults,
-];
-
 export default function SeoSettings({
   adminData,
   loadAdminData,
@@ -206,6 +190,13 @@ export default function SeoSettings({
     [adminData.optional.page_seo_settings],
   );
 
+  const defaultSeoPageOptions = useMemo(() => {
+    return [
+      ...staticSeoDefaults,
+      ...categorySeoDefaults,
+    ].sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
   const pageSeoOptions = useMemo(() => {
     const options = new Map(defaultSeoPageOptions.map((item) => [normalizeSeoPath(item.path), item]));
     return Array.from(options.values()).sort((a, b) => {
@@ -213,7 +204,7 @@ export default function SeoSettings({
       if (b.path === '/') return 1;
       return (a.label || '').localeCompare(b.label || '');
     });
-  }, []);
+  }, [defaultSeoPageOptions]);
 
   const selectedDefaultSeo = useMemo(() => {
     const normalized = normalizeSeoPath(pageSeoPath);
@@ -280,8 +271,8 @@ export default function SeoSettings({
         path: normalizedPath,
         metaTitle: pageSeoMetaTitle.trim(),
         metaDescription: pageSeoMetaDescription.trim(),
-        ogTitle: pageSeoOgTitle.trim(),
-        ogDescription: pageSeoOgDescription.trim(),
+        ogTitle: pageSeoOgTitle.trim() || pageSeoMetaTitle.trim(),
+        ogDescription: pageSeoOgDescription.trim() || pageSeoMetaDescription.trim(),
         imageUrl: pageSeoImageUrl.trim(),
         canonicalPath: normalizedPath,
         robotsIndex: pageSeoRobotsIndex,
@@ -458,7 +449,7 @@ export default function SeoSettings({
                   onChange={(e) => {
                     setPageSeoMetaTitle(e.target.value);
                     if (!pageSeoOgTitle || pageSeoOgTitle === pageSeoMetaTitle) {
-                      pageSeoOgTitle === pageSeoMetaTitle && setPageSeoOgTitle(e.target.value);
+                      setPageSeoOgTitle(e.target.value);
                     }
                   }}
                   placeholder="Wholesale Banarasi Sarees Online | Weave 365"
@@ -479,7 +470,7 @@ export default function SeoSettings({
                   onChange={(e) => {
                     setPageSeoMetaDescription(e.target.value);
                     if (!pageSeoOgDescription || pageSeoOgDescription === pageSeoMetaDescription) {
-                      pageSeoOgDescription === pageSeoMetaDescription && setPageSeoOgDescription(e.target.value);
+                      setPageSeoOgDescription(e.target.value);
                     }
                   }}
                   placeholder="Short snippet shown on Google search results."
@@ -567,9 +558,9 @@ export default function SeoSettings({
 
         <aside className="admin-editor-sticky-aside">
           <article className="admin-panel admin-m0">
-            <div className="admin-panel-head">
-              <span>Google SERP Preview</span>
-              <small>Real-time Google rendering</small>
+            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
+              <span style={{ fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap' }}>SERP Preview</span>
+              <small style={{ whiteSpace: 'nowrap', color: '#6b7280', margin: 0 }}>Real-time rendering</small>
             </div>
             <div className="admin-p20">
               <div className="admin-serp-preview">
@@ -580,13 +571,13 @@ export default function SeoSettings({
                   </span>
                 </div>
                 <h3 className="admin-serp-title">
-                  {pageSeoMetaTitle || 'Enter a page title...'}
+                  {pageSeoMetaTitle || currentSeoMeta.title || 'Enter a page title...'}
                 </h3>
                 <p className="admin-serp-desc">
                   <span className="admin-serp-date">
                     {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} -
                   </span>
-                  {pageSeoMetaDescription || 'Start typing a page description...'}
+                  {pageSeoMetaDescription || currentSeoMeta.description || 'Start typing a page description...'}
                 </p>
               </div>
             </div>

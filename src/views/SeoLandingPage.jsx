@@ -8,7 +8,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, Award } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
-import { seoLandingPages } from '../data/seoLandingPages.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { siteUrl } from '../config.js';
 import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
@@ -36,6 +35,7 @@ const getCollectionTagline = (itemSlug) => {
 
 export default function SeoLandingPage({
   slug,
+  pageData,
   products = [],
   status = 'ready',
   error = '',
@@ -45,56 +45,47 @@ export default function SeoLandingPage({
   favoriteKeys = new Set(),
   priceAccess,
   openAuth,
+  landingPages = [],
 }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [visibleCount, setVisibleCount] = useState(16);
 
-  const pageData = useMemo(() => {
-    return seoLandingPages[slug] || null;
-  }, [slug]);
-
-  // Filter products dynamically based on matching collection criteria
+  // Filter products dynamically based on matching collection criteria configured in the database/JSON
   const filteredProducts = useMemo(() => {
     if (!pageData) return [];
+    
+    const filter = pageData.filter || {};
     
     return products.filter((product) => {
       if (product.isArchived) return false;
       
-      const currentSlug = pageData.slug;
+      // Dynamic category check
+      if (filter.category && product.category?.toLowerCase() !== filter.category.toLowerCase()) {
+        return false;
+      }
       
-      if (currentSlug === 'wholesale-banarasi-sarees') {
-        return product.category === 'Saree';
+      // Dynamic fabric check (substring match)
+      if (filter.fabric && !product.fabric?.toLowerCase().includes(filter.fabric.toLowerCase())) {
+        return false;
       }
-      if (currentSlug === 'katan-silk-sarees') {
-        return product.fabric === 'Katan Silk';
+      
+      // Dynamic work check (substring match)
+      if (filter.work && !product.work?.toLowerCase().includes(filter.work.toLowerCase())) {
+        return false;
       }
-      if (currentSlug === 'organza-banarasi-sarees') {
-        return product.fabric === 'Organza';
-      }
-      if (currentSlug === 'bridal-banarasi-sarees') {
-        const text = [product.title, product.work, product.category, product.fabric]
+      
+      // Dynamic keywords search check
+      if (filter.search) {
+        const searchLower = filter.search.toLowerCase();
+        const text = [product.title, product.fabric, product.work, product.category, product.pattern]
           .filter(Boolean)
           .join(' ')
           .toLowerCase();
-        return (
-          product.fabric === 'Katan Silk' &&
-          (text.includes('bridal') || text.includes('zari') || text.includes('gold') || text.includes('wedding') || text.includes('heavy'))
-        );
+        if (!text.includes(searchLower)) {
+          return false;
+        }
       }
-      if (currentSlug === 'meenakari-sarees') {
-        const text = [product.title, product.work, product.fabric]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        return text.includes('meena') || text.includes('meenakari');
-      }
-      if (currentSlug === 'soft-silk-sarees') {
-        const text = (product.fabric || '').toLowerCase();
-        return text.includes('soft') || text.includes('blend') || text.includes('art');
-      }
-      if (currentSlug === 'wholesale-saree-supplier-india') {
-        return product.category === 'Saree' || product.isTopSeller;
-      }
+      
       return true;
     });
   }, [products, pageData]);
@@ -109,7 +100,7 @@ export default function SeoLandingPage({
     if (currentSlug === 'meenakari-sarees') return 'MEENA';
     if (currentSlug === 'soft-silk-sarees') return 'SOFT';
     if (currentSlug === 'wholesale-saree-supplier-india') return 'INDIA';
-    return 'SOURCE';
+    return (currentSlug.split('-')[0] || 'SOURCE').toUpperCase();
   }, [pageData]);
 
   // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection
@@ -383,7 +374,7 @@ export default function SeoLandingPage({
         <div className="seo-crosslinks-container">
           <h2>Explore Sourcing Collections</h2>
           <div className="seo-crosslinks-grid">
-            {Object.values(seoLandingPages).map((item) => (
+            {landingPages.map((item) => (
               <a
                 key={item.slug}
                 href={`/${item.slug}`}
