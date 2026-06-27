@@ -361,12 +361,12 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
           <table className="admin-table">
             <thead>
               <tr>
-                <th>S.No.</th>
-                <th>Article</th>
+                <th style={{ width: '50px' }}>S.No.</th>
+                <th className="admin-col-article">Article</th>
                 <th>Category</th>
-                <th>Read Time</th>
-                <th>Date</th>
-                <th>CRM & Editor Action</th>
+                <th style={{ width: '110px' }}>Read Time</th>
+                <th style={{ width: '100px' }}>Date</th>
+                <th className="admin-col-actions">Editor Action</th>
               </tr>
             </thead>
             <tbody>
@@ -374,7 +374,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 return (
                   <tr key={post.slug}>
                     <td>{blogs.length - index}</td>
-                    <td><strong>{post.title}</strong></td>
+                    <td className="admin-col-article"><strong>{post.title}</strong></td>
                     <td>
                       <span className="admin-blog-item-category">
                         {post.category || 'Wholesale Guides'}
@@ -382,8 +382,8 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                     </td>
                     <td>{post.readTime || post.read_time}</td>
                     <td>{post.date}</td>
-                    <td>
-                      <div className="admin-flex-wrap-gap8">
+                    <td className="admin-col-actions">
+                      <div className="admin-blog-actions-nowrap">
                         <button
                           type="button"
                           onClick={() => handleEditPost(post)}

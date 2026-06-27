@@ -1332,6 +1332,22 @@
   background: #f9fafb;
   border-color: #9ca3af;
 }
+.admin-col-article {
+  max-width: 380px;
+  width: 35%;
+  word-wrap: break-word;
+}
+.admin-col-actions {
+  width: 250px;
+  min-width: 250px;
+  white-space: nowrap;
+}
+.admin-blog-actions-nowrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
 
 /* Editor Split Layout */
 .admin-anchor-height1 {
