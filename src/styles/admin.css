@@ -1333,9 +1333,24 @@
   border-color: #9ca3af;
 }
 .admin-col-article {
-  max-width: 380px;
-  width: 35%;
+  width: 45%;
+  max-width: 480px;
   word-wrap: break-word;
+}
+.admin-col-category {
+  width: 160px;
+  min-width: 150px;
+  white-space: nowrap;
+}
+.admin-col-readtime {
+  width: 140px;
+  min-width: 130px;
+  white-space: nowrap;
+}
+.admin-col-date {
+  width: 120px;
+  min-width: 110px;
+  white-space: nowrap;
 }
 .admin-col-actions {
   width: 250px;

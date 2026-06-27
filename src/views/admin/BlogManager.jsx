@@ -363,9 +363,9 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
               <tr>
                 <th style={{ width: '50px' }}>S.No.</th>
                 <th className="admin-col-article">Article</th>
-                <th>Category</th>
-                <th style={{ width: '110px' }}>Read Time</th>
-                <th style={{ width: '100px' }}>Date</th>
+                <th className="admin-col-category">Category</th>
+                <th className="admin-col-readtime">Read Time</th>
+                <th className="admin-col-date">Date</th>
                 <th className="admin-col-actions">Editor Action</th>
               </tr>
             </thead>
@@ -375,13 +375,13 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                   <tr key={post.slug}>
                     <td>{blogs.length - index}</td>
                     <td className="admin-col-article"><strong>{post.title}</strong></td>
-                    <td>
+                    <td className="admin-col-category">
                       <span className="admin-blog-item-category">
                         {post.category || 'Wholesale Guides'}
                       </span>
                     </td>
-                    <td>{post.readTime || post.read_time}</td>
-                    <td>{post.date}</td>
+                    <td className="admin-col-readtime">{post.readTime || post.read_time}</td>
+                    <td className="admin-col-date">{post.date}</td>
                     <td className="admin-col-actions">
                       <div className="admin-blog-actions-nowrap">
                         <button
