@@ -22,6 +22,9 @@ import {
   Sun,
   ChevronDown,
   Menu,
+  Compass,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -35,6 +38,7 @@ import VendorApplications from './admin/VendorApplications.jsx';
 import EarlyAccessManager from './admin/EarlyAccessManager.jsx';
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
+import DirectoryManager from './admin/DirectoryManager.jsx';
 
 import { storeConfig } from '../config.js';
 
@@ -93,8 +97,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [lightboxImage, setLightboxImage] = useState(null);
   const [selectedUserList, setSelectedUserList] = useState(null);
 
-  // Sidebar toggled for responsive viewports
+  // Sidebar toggled for responsive viewports & minimize option
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
   // API Call: Fetch all admin database tables
   async function loadAdminData() {
@@ -489,14 +494,15 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       title: 'General',
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
-        { key: 'pipeline', label: 'Buyer Pipeline', icon: Users, badge: null },
+        { key: 'pipeline', label: 'Customers', icon: Users, badge: null },
       ],
     },
     {
-      title: 'Catalog',
+      title: 'Page Settings',
       items: [
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Settings', icon: Search, badge: null },
+        { key: 'directory', label: 'Internal Links', icon: Compass, badge: null },
       ],
     },
     {
@@ -550,13 +556,23 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   return (
     <section className="admin-layout-container">
       {/* 1. Sidebar Panel */}
-      <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'}`}>
-
+      <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''}`}>
+        <div className="admin-sidebar-header">
+          {!isSidebarMinimized && <span className="admin-sidebar-brand-text">Navigation</span>}
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={() => setIsSidebarMinimized(prev => !prev)}
+            title={isSidebarMinimized ? 'Expand Sidebar' : 'Minimize Sidebar'}
+          >
+            {isSidebarMinimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        </div>
 
         <nav className="admin-sidebar-menu-wrapper">
           {sidebarSections.map((section) => (
             <div key={section.title} className="sidebar-group-section">
-              <span className="sidebar-group-title">{section.title}</span>
+              {!isSidebarMinimized && <span className="sidebar-group-title">{section.title}</span>}
               <div className="admin-sidebar-menu">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -567,12 +583,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
                       type="button"
                       className={`admin-sidebar-item ${isActive ? 'active' : ''}`}
                       onClick={() => setActiveTab(item.key)}
+                      title={isSidebarMinimized ? item.label : undefined}
                     >
                       <span className="admin-sidebar-item-content">
                         <Icon size={18} />
-                        <span>{item.label}</span>
+                        {!isSidebarMinimized && <span>{item.label}</span>}
                       </span>
-                      {item.badge && <span className="admin-sidebar-badge">{item.badge}</span>}
+                      {!isSidebarMinimized && item.badge && <span className="admin-sidebar-badge">{item.badge}</span>}
                     </button>
                   );
                 })}
@@ -586,11 +603,12 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           <div className="admin-footer-avatar-wrap">
             <img src={buyerProfile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=80&h=80&q=80'} alt="Admin Avatar" className="admin-footer-avatar" />
           </div>
-          <div className="admin-footer-user-details">
-            <span className="admin-user-title">{userName}</span>
-            <span className="admin-user-sub">{user.email}</span>
-          </div>
-          <ChevronDown size={14} className="admin-footer-chevron" />
+          {!isSidebarMinimized && (
+            <div className="admin-footer-user-details">
+              <span className="admin-user-title">{userName}</span>
+              <span className="admin-user-sub">{user.email}</span>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -603,6 +621,8 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               updateInquiryStatus={updateInquiryStatus}
               loadAdminData={loadAdminData}
               setSelectedUserList={setSelectedUserList}
+              handleManualSync={handleManualSync}
+              syncStatus={syncStatus}
             />
           )}
 
@@ -635,6 +655,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               adminData={adminData}
               loadAdminData={loadAdminData}
             />
+          )}
+
+          {activeTab === 'directory' && (
+            <DirectoryManager />
           )}
 
           {activeTab === 'reviews' && (

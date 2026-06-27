@@ -9,8 +9,9 @@ import {
   Users,
   MessageSquareText,
   Copy,
+  ExternalLink,
 } from 'lucide-react';
-import { adminEmails } from '../../config.js';
+import { adminEmails, getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
@@ -406,24 +407,24 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
     : (userFavoriteMap.get(profile.id) || []);
 
   return createPortal(
-    <div className="admin-modal-overlay">
-      <div className="admin-review-modal" style={{ maxWidth: '640px' }}>
+    <div className="admin-modal-overlay" onClick={() => setSelectedUserList(null)}>
+      <div className="admin-review-modal admin-user-list-modal" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
-        <div className="admin-modal-header" style={{ paddingBottom: '16px', marginBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+        <div className="admin-modal-header">
           <div>
             <span className="admin-modal-subtitle">{title}</span>
-            <h3 className="admin-modal-title" style={{ marginTop: '4px' }}>{profile.business_name || profile.full_name || 'Unnamed buyer'}</h3>
-            <span className="admin-modal-header-meta" style={{ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }}>
+            <h3 className="admin-modal-title">{profile.business_name || profile.full_name || 'Unnamed buyer'}</h3>
+            <span className="admin-modal-header-meta">
               {profile.email} {profile.whatsapp ? ` | WhatsApp: ${profile.whatsapp}` : ''}
             </span>
           </div>
-          <button type="button" onClick={() => setSelectedUserList(null)} className="admin-modal-close-btn">×</button>
+          <button type="button" onClick={() => setSelectedUserList(null)} className="admin-modal-close-btn" aria-label="Close modal">×</button>
         </div>
 
         {/* Modal Body */}
-        <div className="admin-modal-body" style={{ display: 'grid', gap: '16px', maxHeight: '400px', overflowY: 'auto' }}>
+        <div className="admin-modal-body">
           {rows.length === 0 ? (
-            <p className="admin-muted" style={{ textAlign: 'center', padding: '24px 0' }}>This list is currently empty.</p>
+            <p className="admin-modal-empty">This list is currently empty.</p>
           ) : (
             rows.map((row, idx) => {
               const product = products.find(p => p.id === row.product_group_key || p.groupKey === row.product_group_key);
@@ -437,49 +438,60 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
               const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
               const displayCode = row.variant_code || row.variantCode || baseVariantCode || row.product_group_key;
 
+              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'wholesale-catalogue';
+              const pId = row.product_group_key || product?.id || product?.groupKey;
+              const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+
               return (
-                <div key={row.id || idx} className="admin-user-item-card">
-                  <img
-                    src={itemImage}
-                    className="admin-user-item-thumb"
-                    alt={itemTitle}
-                    onError={(e) => { e.target.src = fallbackProductImage; }}
-                  />
-                  <div className="admin-user-item-details">
-                    <h4 className="admin-user-item-title">{itemTitle}</h4>
-                    <div className="admin-user-item-meta">
-                      <span>Code: <code>{displayCode}</code></span>
-                      {selectedColorName && (
-                        <span>Color: <strong className="admin-capitalize">{selectedColorName}</strong></span>
-                      )}
-                      {isCart && (
-                        <span className="admin-user-item-qty">Qty: <strong>x{row.quantity || 1}</strong></span>
-                      )}
-                    </div>
-                    {variant?.prices && (
-                      <div className="admin-user-item-price" style={{ marginTop: '4px', fontSize: '13px' }}>
-                        {variant.prices.mrp && (
-                          <span style={{ marginRight: '12px' }}>
-                            Wholesale: <strong>{formatMoney(variant.prices.mrp)}</strong>
-                          </span>
+                <a
+                  key={row.id || idx}
+                  href={productUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="admin-user-item-card-link"
+                  title="Click to open product page in new tab"
+                >
+                  <div className="admin-user-item-card">
+                    <img
+                      src={itemImage}
+                      className="admin-user-item-thumb"
+                      alt={itemTitle}
+                      onError={(e) => { e.target.src = fallbackProductImage; }}
+                    />
+                    <div className="admin-user-item-details">
+                      <div className="admin-user-item-header-row">
+                        <h4 className="admin-user-item-title">{itemTitle}</h4>
+                        <ExternalLink size={16} className="admin-item-ext-icon" />
+                      </div>
+                      <div className="admin-user-item-meta">
+                        <span className="admin-item-code">Code: <code>{displayCode}</code></span>
+                        {selectedColorName && (
+                          <span className="admin-item-color">Color: <strong className="admin-capitalize">{selectedColorName}</strong></span>
                         )}
-                        {variant.prices.b2r && (
-                          <span>
-                            Reseller: <strong>{formatMoney(variant.prices.b2r)}</strong>
-                          </span>
+                        {isCart && (
+                          <span className="admin-user-item-qty">Qty: <strong>x{row.quantity || 1}</strong></span>
                         )}
                       </div>
-                    )}
+                      {variant?.prices && (
+                        <div className="admin-user-item-price">
+                          {variant.prices.mrp && (
+                            <span className="price-tag">
+                              Wholesale: <strong>{formatMoney(variant.prices.mrp)}</strong>
+                            </span>
+                          )}
+                          {variant.prices.b2r && (
+                            <span className="price-tag">
+                              Reseller: <strong>{formatMoney(variant.prices.b2r)}</strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </a>
               );
             })
           )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="admin-modal-footer" style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="button" className="secondary-button admin-btn-modal-close" onClick={() => setSelectedUserList(null)}>Close List</button>
         </div>
       </div>
     </div>,

@@ -42,7 +42,7 @@ export default function BuyerPipeline({
   const [userSortField, setUserSortField] = useState('date');
   const [userSortOrder, setUserSortOrder] = useState('desc');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [copyFeedback, setCopyFeedback] = useState({});
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
@@ -312,13 +312,13 @@ export default function BuyerPipeline({
               {displayedProfiles.map((profile, index) => {
                 const cartRows = userCartMap.get(profile.id) || [];
                 const favoriteRows = userFavoriteMap.get(profile.id) || [];
-                
-                const currentStatusVal = 
+
+                const currentStatusVal =
                   profile.approval_status === 'approved' && profile.price_group === 'wholesale' ? 'approved-wholesale' :
-                  profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'approved-reseller' :
-                  profile.approval_status === 'approved' && profile.price_group === 'user' ? 'approved-user' :
-                  profile.approval_status === 'pending' ? 'pending' :
-                  profile.approval_status === 'suspended' ? 'suspended' : 'pending';
+                    profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'approved-reseller' :
+                      profile.approval_status === 'approved' && profile.price_group === 'user' ? 'approved-user' :
+                        profile.approval_status === 'pending' ? 'pending' :
+                          profile.approval_status === 'suspended' ? 'suspended' : 'pending';
 
                 return (
                   <tr key={profile.id}>
@@ -371,30 +371,26 @@ export default function BuyerPipeline({
                       )}
                     </td>
                     <td>
-                      {cartRows.length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedUserList({ profile, type: 'cart' })}
-                          className="admin-list-link-btn"
-                        >
-                          {cartRows.length} rows
-                        </button>
-                      ) : (
-                        <span className="pipeline-muted">0</span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUserList({ profile, type: 'cart' })}
+                        className={`admin-list-link-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
+                        disabled={cartRows.length === 0}
+                      >
+                        <ShoppingBag size={13} />
+                        <span>{cartRows.length} {cartRows.length === 1 ? 'row' : 'rows'}</span>
+                      </button>
                     </td>
                     <td>
-                      {favoriteRows.length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
-                          className="admin-list-link-btn"
-                        >
-                          {favoriteRows.length} items
-                        </button>
-                      ) : (
-                        <span className="pipeline-muted">0</span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
+                        className={`admin-list-link-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
+                        disabled={favoriteRows.length === 0}
+                      >
+                        <Heart size={13} />
+                        <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'item' : 'items'}</span>
+                      </button>
                     </td>
                     <td>
                       <span className={`admin-badge-status status-${String(profile.approval_status || 'pending').toLowerCase().trim().replace(/[^a-z0-9]/g, '-')}`}>
@@ -402,14 +398,14 @@ export default function BuyerPipeline({
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className="reseller-dashboard-cell">
                         <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
                           {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
                         </span>
                         <button
                           type="button"
                           onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                          className="admin-action-link-btn"
+                          className={`admin-action-link-btn ${profile.reseller_dashboard_enabled ? 'btn-disable' : 'btn-enable'}`}
                         >
                           {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
                         </button>

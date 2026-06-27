@@ -19,6 +19,8 @@ export default function DashboardOverview({
   updateInquiryStatus,
   loadAdminData,
   setSelectedUserList,
+  handleManualSync,
+  syncStatus,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -526,7 +528,17 @@ export default function DashboardOverview({
 
   return (
     <div className="dashboard-overview-container">
-      <h1 className="dashtar-title">Dashboard Overview</h1>
+      <div className="dashboard-overview-header">
+        <h1 className="dashtar-title">Dashboard Overview</h1>
+        <button
+          type="button"
+          className="pipeline-header-btn"
+          onClick={handleManualSync}
+          disabled={syncStatus === 'loading'}
+        >
+          <RefreshCw size={14} className={syncStatus === 'loading' ? 'spin-icon' : ''} /> {syncStatus === 'loading' ? 'Syncing...' : 'Sync Google Sheet'}
+        </button>
+      </div>
 
       {/* 1. 5 Gradient Metric Cards Row (Dynamically calculated) */}
       <div className="dashtar-gradient-grid">

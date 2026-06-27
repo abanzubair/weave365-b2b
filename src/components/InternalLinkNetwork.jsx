@@ -1,156 +1,154 @@
 /**
  * @file InternalLinkNetwork.jsx
- * @description A premium B2B Sourcing and Heritage Directory component rendered at the bottom
- * of the page. It maps the internal linking network to establish strong search engine crawlability and
- * topical authority, linking custom collections, product categories, educational guides, and B2B services.
+ * @description A fully customizable B2B Sourcing and Heritage Directory component rendered at the bottom
+ * of the page. Maps the internal linking network dynamically based on Admin Panel configuration to establish
+ * topical authority and SEO crawlability for search engines like Google.
  */
 
-import React from 'react';
-import { Compass, Grid, BookOpen, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  Compass,
+  Grid,
+  BookOpen,
+  Briefcase,
+  Layers,
+  ShoppingBag,
+  Tag,
+  Globe,
+  Link as LinkIcon,
+  FileText,
+  Sparkles,
+  Star,
+  Award,
+  HelpCircle,
+  Package
+} from 'lucide-react';
+import {
+  getDirectoryConfigLocal,
+  fetchDirectoryConfigRemote,
+  DIRECTORY_UPDATED_EVENT
+} from '../utils/directoryService.js';
+
+const ICON_MAP = {
+  Compass,
+  Grid,
+  BookOpen,
+  Briefcase,
+  Layers,
+  ShoppingBag,
+  Tag,
+  Globe,
+  Link: LinkIcon,
+  FileText,
+  Sparkles,
+  Star,
+  Award,
+  HelpCircle,
+  Package
+};
+
+export function DynamicIcon({ name, size = 18, className = 'col-icon' }) {
+  const IconComp = ICON_MAP[name] || Compass;
+  return <IconComp size={size} className={className} />;
+}
 
 export function InternalLinkNetwork({ navigate, setCategory }) {
-  const collections = [
-    { label: 'Wholesale Banarasi Sarees', path: '/wholesale-banarasi-sarees', route: 'wholesale-banarasi-sarees' },
-    { label: 'Pure Katan Silk Sarees', path: '/katan-silk-sarees', route: 'katan-silk-sarees' },
-    { label: 'Organza Banarasi Sarees', path: '/organza-banarasi-sarees', route: 'organza-banarasi-sarees' },
-    { label: 'Bridal Banarasi Sarees', path: '/bridal-banarasi-sarees', route: 'bridal-banarasi-sarees' },
-    { label: 'Banarasi Meenakari Sarees', path: '/meenakari-sarees', route: 'meenakari-sarees' },
-    { label: 'Soft Silk Banarasi Sarees', path: '/soft-silk-sarees', route: 'soft-silk-sarees' },
-    { label: 'Wholesale Saree Supplier India', path: '/wholesale-saree-supplier-india', route: 'wholesale-saree-supplier-india' }
-  ];
+  const [config, setConfig] = useState(getDirectoryConfigLocal());
 
-  const categories = [
-    { label: 'Wholesale Saree Catalog', value: 'Saree' },
-    { label: 'Wholesale Suit Catalog', value: 'Suit' },
-    { label: 'Wholesale Silk Dupattas', value: 'Dupatta' },
-    { label: 'Designer Banarasi Lehengas', value: 'Lehenga' },
-    { label: 'Handloom Unstitched Fabrics', value: 'Fabric' },
-    { label: 'Under 999', value: 'Under 999' }
-  ];
+  useEffect(() => {
+    // 1. Fetch remote config synchronously/async on mount to update live
+    void fetchDirectoryConfigRemote().then(remoteData => {
+      if (remoteData) setConfig(remoteData);
+    });
 
-  const guides = [
-    { label: 'Fabric Guide: Katan vs Organza', path: '/blog/difference-katan-silk-and-organza-saree', slug: 'difference-katan-silk-and-organza-saree' },
-    { label: 'Saree Reselling Business Blueprint', path: '/blog/how-to-start-saree-reselling-business', slug: 'how-to-start-saree-reselling-business' },
-    { label: 'Boutique Wholesale Sourcing Guide', path: '/blog/wholesale-saree-buying-guide-boutiques', slug: 'wholesale-saree-buying-guide-boutiques' }
-  ];
+    // 2. Listen for Admin Panel instant updates
+    const handleUpdate = (e) => {
+      if (e.detail) {
+        setConfig(e.detail);
+      } else {
+        setConfig(getDirectoryConfigLocal());
+      }
+    };
 
-  const services = [
-    { label: 'Wholesale & Reseller Partner Program', path: '/wholesale-partner-program', route: 'wholesale-partner-program' },
-    { label: 'Weaver Partnership Program', path: '/weaver-onboarding', route: 'weaver-onboarding' },
-    { label: 'Bulk Sourcing & Custom Catalog', path: '/bulk-inquiry', route: 'bulk-inquiry' },
-    { label: 'Varanasi Brand Story & Heritage', path: '/about', route: 'about' },
-    { label: 'B2B Insights & Sourcing Blog', path: '/blog', route: 'blog' }
-  ];
+    window.addEventListener(DIRECTORY_UPDATED_EVENT, handleUpdate);
+    return () => {
+      window.removeEventListener(DIRECTORY_UPDATED_EVENT, handleUpdate);
+    };
+  }, []);
 
-  const handleLinkClick = (e, targetRoute, param = null) => {
-    e.preventDefault();
+  const getHref = (link) => {
+    if (link.path) return link.path;
+    if (link.type === 'category') return `/wholesale-catalogue?category=${encodeURIComponent(link.target || '')}`;
+    if (link.type === 'blog-guide') return `/blog/${link.target || ''}`;
+    if (link.type === 'custom_url') return link.target || link.path || '#';
+    return link.target ? (link.target.startsWith('/') ? link.target : `/${link.target}`) : '#';
+  };
+
+  const handleLinkClick = (e, link) => {
+    // Allow middle click, Cmd+Click, Ctrl+Click to open in new tab naturally for SEO & UX
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+
+    const targetRoute = link.type;
+    const param = link.target;
+
     if (targetRoute === 'category' && setCategory) {
+      e.preventDefault();
       setCategory(param);
       navigate('wholesale-catalogue');
     } else if (targetRoute === 'blog-guide') {
+      e.preventDefault();
       navigate('blog', param);
+    } else if (targetRoute === 'custom_url') {
+      if (link.path && link.path.startsWith('http')) {
+        // Let normal browser link navigation handle external URLs
+        return;
+      }
+      e.preventDefault();
+      if (link.path) window.location.href = link.path;
     } else {
-      navigate(targetRoute);
+      e.preventDefault();
+      navigate(param || link.path || 'home');
     }
   };
 
   return (
-    <section className="internal-link-network" aria-label="B2B Directory">
+    <section className="internal-link-network" aria-label="B2B Sourcing & Heritage Directory">
       <div className="directory-container">
-        <div className="directory-header">
-          <span className="directory-kicker">WEAVE365 B2B DIRECTORY</span>
-          <h2 className="directory-title">Sourcing & Craft Heritage Network</h2>
-          <div className="directory-divider"></div>
-        </div>
+        {config.title && (
+          <div className="directory-header">
+            {config.kicker && <span className="directory-kicker">{config.kicker}</span>}
+            <h2 className="directory-title">{config.title}</h2>
+            <div className="directory-divider"></div>
+          </div>
+        )}
 
         <div className="directory-grid">
-          {/* Column 1: Sourcing Collections */}
-          <div className="directory-col">
-            <div className="col-header">
-              <Compass className="col-icon" size={18} />
-              <h3>Premium Collections</h3>
+          {config.columns && config.columns.map((col, colIdx) => (
+            <div className="directory-col" key={col.id || colIdx}>
+              <div className="col-header">
+                <DynamicIcon name={col.icon} size={18} />
+                <h3>{col.title}</h3>
+              </div>
+              <nav aria-label={`${col.title} Directory`}>
+                <ul>
+                  {col.links && col.links.map((item, idx) => {
+                    const href = getHref(item);
+                    return (
+                      <li key={idx}>
+                        <a
+                          href={href}
+                          onClick={(e) => handleLinkClick(e, item)}
+                          title={item.label}
+                        >
+                          {item.label}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
             </div>
-            <nav aria-label="Collections Directory">
-              <ul>
-                {collections.map((item, idx) => (
-                  <li key={idx}>
-                    <a
-                      href={item.path}
-                      onClick={(e) => handleLinkClick(e, item.route)}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-
-          {/* Column 2: Product Categories */}
-          <div className="directory-col">
-            <div className="col-header">
-              <Grid className="col-icon" size={18} />
-              <h3>Product Categories</h3>
-            </div>
-            <nav aria-label="Categories Directory">
-              <ul>
-                {categories.map((item, idx) => (
-                  <li key={idx}>
-                    <a
-                      href={`/wholesale-catalogue?category=${item.value}`}
-                      onClick={(e) => handleLinkClick(e, 'category', item.value)}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-
-          {/* Column 3: Educational Guides */}
-          <div className="directory-col">
-            <div className="col-header">
-              <BookOpen className="col-icon" size={18} />
-              <h3>Educational Guides</h3>
-            </div>
-            <nav aria-label="Educational Guides Directory">
-              <ul>
-                {guides.map((item, idx) => (
-                  <li key={idx}>
-                    <a
-                      href={item.path}
-                      onClick={(e) => handleLinkClick(e, 'blog-guide', item.slug)}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-
-          {/* Column 4: B2B Services & Hubs */}
-          <div className="directory-col">
-            <div className="col-header">
-              <Briefcase className="col-icon" size={18} />
-              <h3>B2B Sourcing Hubs</h3>
-            </div>
-            <nav aria-label="Sourcing Hubs Directory">
-              <ul>
-                {services.map((item, idx) => (
-                  <li key={idx}>
-                    <a
-                      href={item.path}
-                      onClick={(e) => handleLinkClick(e, item.route)}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
+          ))}
         </div>
       </div>
     </section>
