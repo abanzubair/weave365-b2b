@@ -376,8 +376,8 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                     <td>{blogs.length - index}</td>
                     <td><strong>{post.title}</strong></td>
                     <td>
-                      <span className="card-category-badge admin-blog-item-category">
-                        {post.category}
+                      <span className="admin-blog-item-category">
+                        {post.category || 'Wholesale Guides'}
                       </span>
                     </td>
                     <td>{post.readTime || post.read_time}</td>
