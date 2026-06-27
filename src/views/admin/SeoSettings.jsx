@@ -5,6 +5,7 @@ import {
   Check,
   Upload,
   RefreshCw,
+  Copy,
 } from 'lucide-react';
 import { seoCategoryRoutes } from '../../config.js';
 import { saveSupabasePageSeoSetting } from '../../productData.js';
