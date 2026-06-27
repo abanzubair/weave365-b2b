@@ -551,7 +551,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     <section className="admin-layout-container">
       {/* 1. Sidebar Panel */}
       <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'}`}>
-
+        <div className="admin-sidebar-brand-wrapper">
+          <div className="admin-sidebar-brand">
+            <h2>Weave365 Admin</h2>
+          </div>
+        </div>
 
         <nav className="admin-sidebar-menu-wrapper">
           {sidebarSections.map((section) => (
