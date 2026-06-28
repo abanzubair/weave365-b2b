@@ -337,7 +337,7 @@ export function CartDrawer({
     }
 
     setEnquiryState('sent');
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    setEnquiryPopupOpen(true);
   }
 
   const handlePaidConfirmClick = async () => {

@@ -16,7 +16,10 @@ export function EnquiryPopup({ open, onClose, whatsappUrl }) {
         <button type="button" className="icon-button modal-close" onClick={onClose} aria-label="Close popup">
           <X size={18} />
         </button>
-        <h3>Enquiry Sent Successfully</h3>
+        <h3>Enquiry Submitted</h3>
+        <p>
+          Thank you! Your B2B wholesale enquiry has been recorded. To receive an instant response and prioritize your order processing, connect directly with our support team on WhatsApp.
+        </p>
         <div className="enquiry-popup-actions">
           <a
             href={whatsappUrl}
@@ -25,7 +28,7 @@ export function EnquiryPopup({ open, onClose, whatsappUrl }) {
             className="whatsapp-action-btn"
             onClick={onClose}
           >
-            <WhatsappIcon size={18} /> Open WhatsApp Chat
+            <WhatsappIcon size={18} /> Connect on WhatsApp
           </a>
         </div>
       </div>

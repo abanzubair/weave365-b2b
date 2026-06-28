@@ -506,7 +506,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       ],
     },
     {
-      title: 'Page Settings',
+      title: 'Settings',
       items: [
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Settings', icon: Search, badge: null },
