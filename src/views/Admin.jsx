@@ -41,6 +41,7 @@ import EarlyAccessManager from './admin/EarlyAccessManager.jsx';
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 import DirectoryManager from './admin/DirectoryManager.jsx';
+import EnquiresManager from './admin/EnquiresManager.jsx';
 
 import { storeConfig } from '../config.js';
 
@@ -486,6 +487,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     if (activeTab === 'early-access' && allowed) {
       void loadEarlyAccessSubmissions();
     }
+    if (activeTab === 'enquires' && allowed) {
+      void loadAdminData();
+    }
   }, [activeTab, allowed]);
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
@@ -515,6 +519,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
         { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: null },
         { key: 'early-access', label: 'Early Access', icon: Inbox, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
+        { key: 'enquires', label: 'Enquires', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
       ],
     },
   ];
@@ -708,6 +713,13 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               loadEarlyAccessSubmissions={loadEarlyAccessSubmissions}
               handleEarlyAccessStatusChange={handleEarlyAccessStatusChange}
               earlyAccessActionLoading={earlyAccessActionLoading}
+            />
+          )}
+
+          {activeTab === 'enquires' && (
+            <EnquiresManager
+              adminData={adminData}
+              loadAdminData={loadAdminData}
             />
           )}
         </div>
