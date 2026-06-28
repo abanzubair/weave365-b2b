@@ -19,6 +19,15 @@ import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';
 
+function getWhatsappUrl(rawPhone) {
+  if (!rawPhone) return '#';
+  const cleaned = String(rawPhone).replace(/\D/g, '');
+  if (cleaned.length === 10) {
+    return `https://wa.me/91${cleaned}`;
+  }
+  return `https://wa.me/${cleaned}`;
+}
+
 export default function EnquiresManager({
   adminData,
   loadAdminData,
@@ -237,7 +246,12 @@ export default function EnquiresManager({
 
                 <div className="admin-enquiry-contact-links">
                   {phone && (
-                    <a href={`tel:${phone}`} className="admin-enquiry-link">
+                    <a
+                      href={getWhatsappUrl(phone)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-enquiry-link"
+                    >
                       <Phone size={13} />
                       <span>{phone}</span>
                     </a>
@@ -334,7 +348,19 @@ function EnquiryItemsModal({ isOpen, onClose, enquiry, products }) {
             <span className="admin-modal-subtitle">Enquired Items</span>
             <h3 className="admin-modal-title">{enquiry.buyer_name || enquiry.name || 'Unnamed buyer'}</h3>
             <span className="admin-modal-header-meta">
-              {enquiry.business_name || enquiry.company || 'Individual / Direct'} &bull; Phone: {enquiry.phone || enquiry.whatsapp || 'N/A'}
+              {enquiry.business_name || enquiry.company || 'Individual / Direct'} &bull; Phone:{' '}
+              {enquiry.phone || enquiry.whatsapp ? (
+                <a
+                  href={getWhatsappUrl(enquiry.phone || enquiry.whatsapp)}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: '#0284c7', textDecoration: 'underline' }}
+                >
+                  {enquiry.phone || enquiry.whatsapp}
+                </a>
+              ) : (
+                'N/A'
+              )}
             </span>
           </div>
           <button type="button" onClick={onClose} className="admin-modal-close-btn" aria-label="Close modal">×</button>
