@@ -158,20 +158,16 @@ export async function POST(request) {
             <div style="background-color: #faf8f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px;">
               <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280; width: 130px; font-weight: 600;">Customer Name</td>
-                  <td style="padding: 6px 0; color: #111827;">${buyer_name || 'Guest Buyer'}</td>
+                  <td style="padding: 0; line-height: 1.25; color: #111827;">${buyer_name || 'Guest Buyer'}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Phone Number</td>
-                  <td style="padding: 6px 0; color: #111827;">${phone || 'N/A'}</td>
+                  <td style="padding: 0; line-height: 1.25; color: #111827;">${phone || 'N/A'}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Email Address</td>
-                  <td style="padding: 6px 0; color: #111827;">${email || 'N/A'}</td>
+                  <td style="padding: 0; line-height: 1.25; color: #111827;">${email || 'N/A'}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Pincode</td>
-                  <td style="padding: 6px 0; color: #111827;">${pincode || 'N/A'}</td>
+                  <td style="padding: 0; line-height: 1.25; color: #111827;">${pincode || 'N/A'}</td>
                 </tr>
               </table>
             </div>
