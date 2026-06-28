@@ -123,7 +123,7 @@ export default function EnquiresManager({
           />
         </div>
         <div className="admin-ea-status-filter">
-          {['all', 'new', 'pending', 'contacted', 'completed'].map((s) => (
+          {['all', 'new', 'contacted', 'completed'].map((s) => (
             <button
               key={s}
               type="button"
