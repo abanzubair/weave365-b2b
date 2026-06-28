@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  UserPlus,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -501,6 +502,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
         { key: 'pipeline', label: 'Customers', icon: Users, badge: null },
+        { key: 'enquires', label: 'Enquires', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
       ],
     },
     {
@@ -518,8 +520,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
         { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
         { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: null },
-        { key: 'early-access', label: 'Early Access', icon: Inbox, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
-        { key: 'enquires', label: 'Enquires', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
+        { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
       ],
     },
   ];
