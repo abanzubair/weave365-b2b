@@ -122,19 +122,6 @@ export function MobileMenu({
             <ArrowRight size={16} className="mobile-menu-arrow" />
           </button>
 
-          {/* 2. CATALOGUE */}
-          <button type="button" 
-            className="mobile-menu-item" 
-            onClick={() => {
-              navigate('wholesale-catalogue');
-              onClose();
-            }}
-          >
-            <span className="mobile-menu-icon"><Store size={20} /></span>
-            <span className="mobile-menu-label">CATALOGUE</span>
-            <ArrowRight size={16} className="mobile-menu-arrow" />
-          </button>
-
           {/* 3. CATEGORIES */}
           <div className={`mobile-account-dropdown ${categoriesOpen ? 'is-open' : ''}`}>
             <button type="button" 

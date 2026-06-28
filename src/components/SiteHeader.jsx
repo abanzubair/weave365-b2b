@@ -70,13 +70,6 @@ export function SiteHeader({
         >
           NEW ARRIVALS
         </AppLink>
-        <AppLink 
-          to="wholesale-catalogue" 
-          className={route === 'wholesale-catalogue' ? 'active' : ''} 
-          navigate={navigate}
-        >
-          CATALOGUE
-        </AppLink>
         <div className="nav-item-dropdown" ref={categoriesRef}>
           <button type="button"
             className={dropdownOpen === 'categories' ? 'active' : ''}
