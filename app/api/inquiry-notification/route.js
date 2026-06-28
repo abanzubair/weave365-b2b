@@ -48,13 +48,13 @@ export async function POST(request) {
       `;
     }
 
-    const emailSubject = `🛍️ New B2B Wholesale Enquiry: ${buyer_name}`;
+    const emailSubject = `🛍️ Enquiry: ${buyer_name}`;
     const emailBodyHtml = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>New B2B Wholesale Enquiry</title>
+        <title>Enquiry</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -151,10 +151,6 @@ export async function POST(request) {
       </head>
       <body>
         <div class="email-container">
-          <div class="email-header">
-            <h1>Weave 365 B2B</h1>
-            <p>New Wholesale Customer Enquiry</p>
-          </div>
           
           <div class="email-body">
             <div class="section-title">Customer Contact Details</div>
