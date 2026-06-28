@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard } from 'lucide-react';
-import { storeConfig } from '../config.js';
+import { storeConfig, getProductCategorySlug } from '../config.js';
 import {
   customerPrice,
   buildWhatsappUrl,
@@ -290,14 +290,21 @@ export function CartDrawer({
 
     if (isSupabaseConfigured) {
       try {
-        const enquiryItems = items.map(item => ({
-          product_id: item.productGroupKey,
-          product_title: item.product.title,
-          variant_code: item.variant.code,
-          color: item.selectedColorName,
-          quantity: item.quantity,
-          price: customerPrice(item.variant.prices, priceAccess),
-        }));
+        const enquiryItems = items.map(item => {
+          const categorySlug = item.product ? getProductCategorySlug(item.product.id || item.product.groupKey, item.product.category) : 'wholesale-catalogue';
+          const pId = item.productGroupKey || item.product?.id || item.product?.groupKey;
+          const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+
+          return {
+            product_id: item.productGroupKey,
+            product_title: item.product.title,
+            variant_code: item.variant.code,
+            color: item.selectedColorName,
+            quantity: item.quantity,
+            price: customerPrice(item.variant.prices, priceAccess),
+            product_url: productUrl,
+          };
+        });
 
         await supabase.from('inquiries').insert({
           user_id: priceAccess?.userId || undefined,

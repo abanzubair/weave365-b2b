@@ -20,16 +20,18 @@ export async function POST(request) {
     // Format the items into an HTML table for the email
     let itemsTableRowsHtml = '';
     if (Array.isArray(items) && items.length > 0) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
       itemsTableRowsHtml = items.map((item, idx) => {
         const qty = Number(item.quantity) || 1;
         const priceStr = item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : 'N/A';
         const lineTotalStr = item.price ? `₹${(Number(item.price) * qty).toLocaleString('en-IN')}` : 'N/A';
+        const fullUrl = item.product_url && item.product_url !== '#' ? `${siteUrl}${item.product_url}` : null;
 
         return `
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${idx + 1}</td>
             <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-              <strong>${item.product_title || 'General Product'}</strong>
+              ${fullUrl ? `<a href="${fullUrl}" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: 700;">${item.product_title || 'General Product'}</a>` : `<strong>${item.product_title || 'General Product'}</strong>`}
               <br/><span style="font-size: 11px; color: #6b7280;">Color: ${item.color || 'Standard'} | Code: ${item.variant_code || 'N/A'}</span>
             </td>
             <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${qty}</td>
