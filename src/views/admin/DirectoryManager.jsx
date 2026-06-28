@@ -5,7 +5,7 @@
  * and persistent saving to Supabase and local storage.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Compass,
   Plus,
@@ -23,7 +23,8 @@ import {
   getDirectoryConfigLocal,
   saveDirectoryConfig,
   resetDirectoryConfig,
-  DIRECTORY_TABLE_SQL
+  DIRECTORY_TABLE_SQL,
+  DEFAULT_DIRECTORY_CONFIG
 } from '../../utils/directoryService.js';
 
 const AVAILABLE_ICONS = [
@@ -40,10 +41,14 @@ const LINK_TYPES = [
 ];
 
 export default function DirectoryManager() {
-  const [config, setConfig] = useState(getDirectoryConfigLocal());
+  const [config, setConfig] = useState(DEFAULT_DIRECTORY_CONFIG);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
   const [showSqlModal, setShowSqlModal] = useState(false);
+
+  useEffect(() => {
+    setConfig(getDirectoryConfigLocal());
+  }, []);
 
   const showFeedback = (type, text) => {
     setMessage({ type, text });

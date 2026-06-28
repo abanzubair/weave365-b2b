@@ -1,5 +1,5 @@
 .partner-program-page {
-  padding-top: 85px;
+  padding-top: 0;
   background: #ffffff;
   color: var(--text-color, #1a1a1a);
   overflow-x: hidden;
@@ -498,7 +498,7 @@
 
 @media (max-width: 768px) {
   .partner-program-page {
-    padding-top: 75px;
+    padding-top: 0;
   }
 
   .partner-program-hero {

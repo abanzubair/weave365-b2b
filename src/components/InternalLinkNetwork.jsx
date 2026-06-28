@@ -26,7 +26,8 @@ import {
 import {
   getDirectoryConfigLocal,
   fetchDirectoryConfigRemote,
-  DIRECTORY_UPDATED_EVENT
+  DIRECTORY_UPDATED_EVENT,
+  DEFAULT_DIRECTORY_CONFIG
 } from '../utils/directoryService.js';
 
 const ICON_MAP = {
@@ -53,15 +54,21 @@ export function DynamicIcon({ name, size = 18, className = 'col-icon' }) {
 }
 
 export function InternalLinkNetwork({ navigate, setCategory }) {
-  const [config, setConfig] = useState(getDirectoryConfigLocal());
+  const [config, setConfig] = useState(DEFAULT_DIRECTORY_CONFIG);
 
   useEffect(() => {
-    // 1. Fetch remote config synchronously/async on mount to update live
+    // 1. Load local config first for instant cache display
+    const cached = getDirectoryConfigLocal();
+    if (cached) {
+      setConfig(cached);
+    }
+
+    // 2. Fetch remote config synchronously/async on mount to update live
     void fetchDirectoryConfigRemote().then(remoteData => {
       if (remoteData) setConfig(remoteData);
     });
 
-    // 2. Listen for Admin Panel instant updates
+    // 3. Listen for Admin Panel instant updates
     const handleUpdate = (e) => {
       if (e.detail) {
         setConfig(e.detail);

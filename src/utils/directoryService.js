@@ -82,6 +82,9 @@ CREATE POLICY "directory settings admin modify" ON public.site_directory_setting
  * Loads current directory configuration synchronously from localStorage or default.
  */
 export function getDirectoryConfigLocal() {
+  if (typeof window === 'undefined') {
+    return DEFAULT_DIRECTORY_CONFIG;
+  }
   try {
     const cached = localStorage.getItem(DIRECTORY_STORAGE_KEY);
     if (cached) {

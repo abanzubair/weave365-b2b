@@ -5,7 +5,7 @@
  * and high-end aesthetic designs to drive B2B traffic and boutique reseller conversions.
  */
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, Award } from 'lucide-react';
+import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
@@ -48,7 +48,7 @@ export default function SeoLandingPage({
   landingPages = [],
 }) {
   const [openFaq, setOpenFaq] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(16);
+  const [visibleCount, setVisibleCount] = useState(25);
 
   // Filter products dynamically based on matching collection criteria configured in the database/JSON
   const filteredProducts = useMemo(() => {
@@ -59,30 +59,50 @@ export default function SeoLandingPage({
     return products.filter((product) => {
       if (product.isArchived) return false;
       
-      // Dynamic category check
-      if (filter.category && product.category?.toLowerCase() !== filter.category.toLowerCase()) {
-        return false;
+      // Dynamic category check (supports comma-separated categories)
+      if (filter.category) {
+        const categories = filter.category.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+        if (categories.length > 0) {
+          const prodCat = product.category?.toLowerCase();
+          if (!prodCat || !categories.some((cat) => prodCat === cat)) {
+            return false;
+          }
+        }
       }
       
-      // Dynamic fabric check (substring match)
-      if (filter.fabric && !product.fabric?.toLowerCase().includes(filter.fabric.toLowerCase())) {
-        return false;
+      // Dynamic fabric check (substring match for comma-separated fabrics)
+      if (filter.fabric) {
+        const fabrics = filter.fabric.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+        if (fabrics.length > 0) {
+          const prodFabric = product.fabric?.toLowerCase();
+          if (!prodFabric || !fabrics.some((fab) => prodFabric.includes(fab))) {
+            return false;
+          }
+        }
       }
       
-      // Dynamic work check (substring match)
-      if (filter.work && !product.work?.toLowerCase().includes(filter.work.toLowerCase())) {
-        return false;
+      // Dynamic work check (substring match for comma-separated work types)
+      if (filter.work) {
+        const works = filter.work.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+        if (works.length > 0) {
+          const prodWork = product.work?.toLowerCase();
+          if (!prodWork || !works.some((w) => prodWork.includes(w))) {
+            return false;
+          }
+        }
       }
       
-      // Dynamic keywords search check
+      // Dynamic keywords search check (supports comma-separated search queries)
       if (filter.search) {
-        const searchLower = filter.search.toLowerCase();
-        const text = [product.title, product.fabric, product.work, product.category, product.pattern]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-        if (!text.includes(searchLower)) {
-          return false;
+        const keywords = filter.search.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+        if (keywords.length > 0) {
+          const text = [product.title, product.fabric, product.work, product.category, product.pattern]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          if (!keywords.some((kw) => text.includes(kw))) {
+            return false;
+          }
         }
       }
       
@@ -90,18 +110,6 @@ export default function SeoLandingPage({
     });
   }, [products, pageData]);
 
-  const collectionTextBadge = useMemo(() => {
-    if (!pageData) return 'SOURCE';
-    const currentSlug = pageData.slug;
-    if (currentSlug === 'wholesale-banarasi-sarees') return 'HERITAGE';
-    if (currentSlug === 'katan-silk-sarees') return 'KATAN';
-    if (currentSlug === 'organza-banarasi-sarees') return 'ORGANZA';
-    if (currentSlug === 'bridal-banarasi-sarees') return 'BRIDAL';
-    if (currentSlug === 'meenakari-sarees') return 'MEENA';
-    if (currentSlug === 'soft-silk-sarees') return 'SOFT';
-    if (currentSlug === 'wholesale-saree-supplier-india') return 'INDIA';
-    return (currentSlug.split('-')[0] || 'SOURCE').toUpperCase();
-  }, [pageData]);
 
   // Dynamic Browser Tab Title, Meta Description & Canonical Link SEO injection
   useEffect(() => {
@@ -225,30 +233,8 @@ export default function SeoLandingPage({
           <h1>{pageData.h1}</h1>
           <div className="seo-kicker-line"></div>
         </div>
-
-        {/* Elegant Rotating Gold Seal SVG */}
-        <div className="seo-seal-container" aria-hidden="true">
-          <div className="seo-rotating-seal-wrap">
-            <svg viewBox="0 0 100 100" className="seo-rotating-seal">
-              <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="sealCirclePath" fill="none" />
-              <text fill="#c69e6a" fontSize="6.7" fontFamily="var(--font-hero-body)" letterSpacing="2.6" fontWeight="700">
-                <textPath href="#sealCirclePath" startOffset="0%">
-                  AUTHENTIC WEAVES • B2B EXCLUSIVE • DIRECT VARANASI • 
-                </textPath>
-              </text>
-            </svg>
-            <div className="seo-seal-center">
-              <Award size={20} />
-            </div>
-          </div>
-        </div>
-
         {/* Asymmetric Split Intro Narrative */}
         <section className="seo-split-intro">
-          <div className="seo-split-left-sidebar">
-            <span className="seo-sidebar-large-tag">{collectionTextBadge}</span>
-            <span className="seo-sidebar-badge">B2B Verified</span>
-          </div>
           <div className="seo-split-right-narrative">
             {pageData.introText.split('\n\n').map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
@@ -258,7 +244,7 @@ export default function SeoLandingPage({
       </header>
 
       {/* Sourcing Product Grid */}
-      <section className="section" style={{ backgroundColor: '#ffffff', padding: '5rem 5% 6rem' }}>
+      <section className="section" style={{ backgroundColor: '#ffffff', padding: '0' }}>
         <div className="seo-catalog-title-wrapper">
           <h2>Explore B2B Wholesale {pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</h2>
           <span className="seo-catalog-subtitle">Real-time artisan inventory with secure international shipping support</span>
@@ -268,7 +254,7 @@ export default function SeoLandingPage({
 
         {status === 'ready' && filteredProducts.length > 0 && (
           <>
-            <div className="catalog-grid" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            <div className="catalog-grid" style={{ maxWidth: '100%', margin: '0 auto' }}>
               {filteredProducts.slice(0, visibleCount).map((product) => (
                 <ProductCard
                   key={product.id}
@@ -285,7 +271,7 @@ export default function SeoLandingPage({
             </div>
             {filteredProducts.length > visibleCount && (
               <div className="load-more-row" style={{ marginTop: '4.5rem' }}>
-                <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 16)}>
+                <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
                   Show more products
                 </button>
               </div>
