@@ -19,12 +19,14 @@ export async function POST(request) {
 
     // Format the items into an HTML table for the email
     let itemsTableRowsHtml = '';
+    let grandTotal = 0;
     if (Array.isArray(items) && items.length > 0) {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
       itemsTableRowsHtml = items.map((item, idx) => {
         const qty = Number(item.quantity) || 1;
-        const priceStr = item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : 'N/A';
-        const lineTotalStr = item.price ? `₹${(Number(item.price) * qty).toLocaleString('en-IN')}` : 'N/A';
+        const priceVal = Number(item.price) || 0;
+        grandTotal += priceVal * qty;
+        const priceStr = item.price ? `₹${priceVal.toLocaleString('en-IN')}` : 'N/A';
         const fullUrl = item.product_url && item.product_url !== '#' ? `${siteUrl}${item.product_url}` : null;
 
         return `
@@ -36,14 +38,13 @@ export async function POST(request) {
             </td>
             <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${qty}</td>
             <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">${priceStr}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;"><strong>${lineTotalStr}</strong></td>
           </tr>
         `;
       }).join('');
     } else {
       itemsTableRowsHtml = `
         <tr>
-          <td colspan="5" style="padding: 15px; text-align: center; color: #6b7280;">No items in cart details.</td>
+          <td colspan="4" style="padding: 15px; text-align: center; color: #6b7280;">No items in cart details.</td>
         </tr>
       `;
     }
@@ -153,29 +154,26 @@ export async function POST(request) {
         <div class="email-container">
           
           <div class="email-body">
-            <div class="section-title">Customer Contact Details</div>
-            <div class="info-grid">
-              <div class="field-group">
-                <div class="field-label">Customer Name</div>
-                <div class="field-value">${buyer_name || 'Guest Buyer'}</div>
-              </div>
-              <div class="field-group">
-                <div class="field-label">Phone Number</div>
-                <div class="field-value">${phone || 'N/A'}</div>
-              </div>
-              <div class="field-group">
-                <div class="field-label">Email Address</div>
-                <div class="field-value">${email || 'N/A'}</div>
-              </div>
-              <div class="field-group">
-                <div class="field-label">Pincode</div>
-                <div class="field-value">${pincode || 'N/A'}</div>
-              </div>
-            </div>
-
-            <div class="field-group" style="margin-top: 10px;">
-              <div class="field-label">Enquiry Message / Notes</div>
-              <div class="field-value" style="background-color: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">${message || 'No additional message.'}</div>
+            <div class="section-title">Customer Details</div>
+            <div style="background-color: #faf8f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; width: 130px; font-weight: 600;">Customer Name</td>
+                  <td style="padding: 6px 0; color: #111827;">${buyer_name || 'Guest Buyer'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Phone Number</td>
+                  <td style="padding: 6px 0; color: #111827;">${phone || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Email Address</td>
+                  <td style="padding: 6px 0; color: #111827;">${email || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Pincode</td>
+                  <td style="padding: 6px 0; color: #111827;">${pincode || 'N/A'}</td>
+                </tr>
+              </table>
             </div>
 
             <div class="section-title">Enquired Items List</div>
@@ -183,20 +181,21 @@ export async function POST(request) {
               <thead>
                 <tr>
                   <th style="width: 5%;">#</th>
-                  <th style="width: 55%;">Product details</th>
-                  <th style="width: 10%; text-align: center;">Qty</th>
-                  <th style="width: 15%; text-align: right;">Unit Price</th>
-                  <th style="width: 15%; text-align: right;">Total</th>
+                  <th style="width: 60%;">Product details</th>
+                  <th style="width: 15%; text-align: center;">Qty</th>
+                  <th style="width: 20%; text-align: right;">Unit Price</th>
                 </tr>
               </thead>
               <tbody>
                 ${itemsTableRowsHtml}
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="padding: 12px 10px; text-align: right; font-weight: 700; border-top: 2px solid #e2e8f0; font-size: 15px;">Grand Total:</td>
+                  <td style="padding: 12px 10px; text-align: right; font-weight: 700; border-top: 2px solid #e2e8f0; font-size: 15px; color: #111827;">₹${grandTotal.toLocaleString('en-IN')}</td>
+                </tr>
+              </tfoot>
             </table>
-          </div>
-          
-          <div class="email-footer">
-            This is an automated notification from your Weave 365 B2B Wholesale Portal.
           </div>
         </div>
       </body>
