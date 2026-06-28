@@ -720,6 +720,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <EnquiresManager
               adminData={adminData}
               loadAdminData={loadAdminData}
+              products={products}
             />
           )}
         </div>

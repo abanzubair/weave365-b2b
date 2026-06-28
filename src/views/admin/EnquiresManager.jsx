@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Inbox,
   RefreshCw,
@@ -11,17 +12,30 @@ import {
   CheckCircle,
   Clock,
   Trash2,
+  ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient.js';
+import { parseCartVariantCode } from '../../utils/cartHelpers.js';
+import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
+import { getProductCategorySlug } from '../../config.js';
 
 export default function EnquiresManager({
   adminData,
   loadAdminData,
+  products = [],
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState(null);
   const [localMessage, setLocalMessage] = useState(null);
+  const [selectedEnquiryForItems, setSelectedEnquiryForItems] = useState(null);
+
+  const handleCardClick = (e, item) => {
+    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) {
+      return;
+    }
+    setSelectedEnquiryForItems(item);
+  };
 
   // Retrieve the inquiries data from adminData.optional
   const inquiresData = useMemo(() => {
@@ -187,7 +201,12 @@ export default function EnquiresManager({
               : 'Unknown Date';
 
             return (
-              <div key={item.id} className={`admin-enquiry-card status-${status}`}>
+              <div
+                key={item.id}
+                className={`admin-enquiry-card status-${status}`}
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => handleCardClick(e, item)}
+              >
                 <div className="admin-enquiry-header">
                   <div className="admin-enquiry-buyer-info">
                     <h4>{buyerName}</h4>
@@ -269,6 +288,124 @@ export default function EnquiresManager({
           })}
         </div>
       )}
+
+      <EnquiryItemsModal
+        isOpen={!!selectedEnquiryForItems}
+        onClose={() => setSelectedEnquiryForItems(null)}
+        enquiry={selectedEnquiryForItems}
+        products={products}
+      />
     </div>
+  );
+}
+
+function EnquiryItemsModal({ isOpen, onClose, enquiry, products }) {
+  if (!isOpen || !enquiry) return null;
+
+  let itemsList = [];
+  if (Array.isArray(enquiry.items) && enquiry.items.length > 0) {
+    itemsList = enquiry.items;
+  } else if (typeof enquiry.items === 'string') {
+    try {
+      itemsList = JSON.parse(enquiry.items);
+    } catch (e) {}
+  }
+
+  // Fallback to inquiry level product if items array is empty
+  if (!Array.isArray(itemsList) || itemsList.length === 0) {
+    const productKey = enquiry.product_group_key || enquiry.productGroupKey;
+    if (productKey || enquiry.variant_code) {
+      itemsList = [
+        {
+          product_group_key: productKey,
+          variant_code: enquiry.variant_code,
+          color: 'Assorted',
+          quantity: 1,
+        },
+      ];
+    }
+  }
+
+  return createPortal(
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <div className="admin-user-list-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-modal-header">
+          <div>
+            <span className="admin-modal-subtitle">Enquired Items</span>
+            <h3 className="admin-modal-title">{enquiry.buyer_name || enquiry.name || 'Unnamed buyer'}</h3>
+            <span className="admin-modal-header-meta">
+              {enquiry.business_name || enquiry.company || 'Individual / Direct'} &bull; Phone: {enquiry.phone || enquiry.whatsapp || 'N/A'}
+            </span>
+          </div>
+          <button type="button" onClick={onClose} className="admin-modal-close-btn" aria-label="Close modal">×</button>
+        </div>
+
+        <div className="admin-modal-body" style={{ maxHeight: '450px', overflowY: 'auto' }}>
+          {itemsList.length === 0 ? (
+            <p className="admin-modal-empty">No items recorded for this enquiry.</p>
+          ) : (
+            itemsList.map((row, idx) => {
+              const productKey = row.product_group_key || enquiry.product_group_key;
+              const product = products.find(p => p.id === productKey || p.groupKey === productKey);
+              
+              const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
+              const variant = product?.variants?.find(v => v.code === baseVariantCode);
+              const colorOptions = product?.colorOptions || [];
+              const selectedColorName = colorName || row.color || variant?.color || colorOptions[0]?.name || '';
+              const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
+              const itemImage = selectedColor?.image || variant?.image || product?.images?.[0] || fallbackProductImage;
+              
+              const itemTitle = product?.title || `Product Design Code: ${productKey || 'N/A'}`;
+              const displayCode = row.variant_code || row.variantCode || baseVariantCode || productKey || 'N/A';
+
+              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'wholesale-catalogue';
+              const pId = productKey || product?.id || product?.groupKey;
+              const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+
+              return (
+                <a
+                  key={row.id || idx}
+                  href={productUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="admin-user-item-card-link"
+                  title="Click to open product page in new tab"
+                >
+                  <div className="admin-user-item-card">
+                    <img
+                      src={itemImage}
+                      className="admin-user-item-thumb"
+                      alt={itemTitle}
+                      onError={(e) => { e.target.src = fallbackProductImage; }}
+                    />
+                    <div className="admin-user-item-details">
+                      <div className="admin-user-item-header-row">
+                        <h4 className="admin-user-item-title">{itemTitle}</h4>
+                        <ExternalLink size={16} className="admin-item-ext-icon" style={{ marginLeft: 'auto' }} />
+                      </div>
+                      <div className="admin-user-item-meta">
+                        <span className="admin-item-code">Code: <code>{displayCode}</code></span>
+                        {selectedColorName && (
+                          <span className="admin-item-color">Color: <strong className="admin-capitalize">{selectedColorName}</strong></span>
+                        )}
+                        <span className="admin-user-item-qty">Qty: <strong>x{row.quantity || 1}</strong></span>
+                      </div>
+                      {row.price && (
+                        <div className="admin-user-item-price">
+                          <span className="price-tag">
+                            Price: <strong>{formatMoney(row.price)}</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
