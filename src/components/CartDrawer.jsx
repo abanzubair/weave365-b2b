@@ -290,6 +290,15 @@ export function CartDrawer({
 
     if (isSupabaseConfigured) {
       try {
+        const enquiryItems = items.map(item => ({
+          product_id: item.productGroupKey,
+          product_title: item.product.title,
+          variant_code: item.variant.code,
+          color: item.selectedColorName,
+          quantity: item.quantity,
+          price: customerPrice(item.variant.prices, priceAccess),
+        }));
+
         await supabase.from('inquiries').insert({
           user_id: priceAccess?.userId || undefined,
           email: priceAccess?.userEmail || undefined,
@@ -299,15 +308,22 @@ export function CartDrawer({
           inquiry_type: 'cart',
           status: 'new',
           message: `Enquiry for ${items.length} items in cart`,
-          items: items.map(item => ({
-            product_id: item.productGroupKey,
-            product_title: item.product.title,
-            variant_code: item.variant.code,
-            color: item.selectedColorName,
-            quantity: item.quantity,
-            price: customerPrice(item.variant.prices, priceAccess),
-          })),
+          items: enquiryItems,
         });
+
+        // Send email alert via Resend API endpoint
+        fetch('/api/inquiry-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+            email: priceAccess?.userEmail || undefined,
+            phone: priceAccess?.buyerPhone || undefined,
+            pincode: pincode || priceAccess?.buyerPincode || undefined,
+            message: `Enquiry for ${items.length} items in cart`,
+            items: enquiryItems,
+          }),
+        }).catch(err => console.error('Failed to send inquiry email notification:', err));
       } catch (err) {
         console.error('Failed to log inquiry to Supabase:', err);
       }
