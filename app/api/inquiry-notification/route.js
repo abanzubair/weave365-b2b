@@ -197,7 +197,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${resendApiKey}`
       },
       body: JSON.stringify({
-        from: `${buyer_name || 'Weave365 B2B'} <${fromEmail}>`,
+        from: `Weave365 B2B <${fromEmail}>`,
         to: targetEmail,
         reply_to: email || undefined,
         subject: emailSubject,
