@@ -18,6 +18,7 @@ import { supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';
+import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
 
 function getWhatsappUrl(rawPhone) {
   if (!rawPhone) return '#';
@@ -26,6 +27,89 @@ function getWhatsappUrl(rawPhone) {
     return `https://wa.me/91${cleaned}`;
   }
   return `https://wa.me/${cleaned}`;
+}
+
+function generateWhatsAppInquiryMsg(enquiry, products) {
+  const buyerName = enquiry.buyer_name || enquiry.name || 'Customer';
+  
+  let itemsList = [];
+  if (Array.isArray(enquiry.items) && enquiry.items.length > 0) {
+    itemsList = enquiry.items;
+  } else if (typeof enquiry.items === 'string') {
+    try {
+      itemsList = JSON.parse(enquiry.items);
+    } catch (e) {}
+  }
+
+  if (!Array.isArray(itemsList) || itemsList.length === 0) {
+    const productKey = enquiry.product_group_key || enquiry.productGroupKey;
+    if (productKey || enquiry.variant_code) {
+      itemsList = [
+        {
+          product_group_key: productKey,
+          variant_code: enquiry.variant_code,
+          color: 'Assorted',
+          quantity: 1,
+        },
+      ];
+    }
+  }
+
+  let itemsText = '';
+  let totalAmt = 0;
+  let hasPrice = false;
+
+  itemsList.forEach((row, idx) => {
+    const productKey = row.product_group_key || enquiry.product_group_key;
+    const product = products.find(p => p.id === productKey || p.groupKey === productKey);
+    
+    const searchCode = row.variant_code || row.variantCode;
+    let matchedProduct = product;
+    let resolvedKey = productKey;
+    if (!matchedProduct && searchCode) {
+      matchedProduct = products.find(p => 
+        (p.variants || []).some(v => v.code === searchCode) ||
+        p.id === searchCode ||
+        p.groupKey === searchCode
+      );
+      if (matchedProduct) {
+        resolvedKey = matchedProduct.id || matchedProduct.groupKey;
+      }
+    }
+
+    const { baseVariantCode, colorName } = parseCartVariantCode(searchCode || '');
+    const variant = matchedProduct?.variants?.find(v => v.code === baseVariantCode);
+    const colorOptions = matchedProduct?.colorOptions || [];
+    const selectedColorName = colorName || row.color || variant?.color || colorOptions[0]?.name || '';
+    
+    const itemTitle = matchedProduct?.title || `Product Design Code: ${resolvedKey || 'N/A'}`;
+    const displayCode = searchCode || baseVariantCode || resolvedKey || 'N/A';
+    const qty = Number(row.quantity) || 1;
+
+    let unitPrice = 0;
+    if (row.price !== undefined && row.price !== null) {
+      unitPrice = Number(row.price);
+      hasPrice = true;
+    }
+
+    const lineTotal = unitPrice * qty;
+    totalAmt += lineTotal;
+
+    itemsText += `${idx + 1}. ${itemTitle}\n   Code: ${displayCode} | Color: ${selectedColorName} | Qty: ${qty}`;
+    if (unitPrice > 0) {
+      itemsText += ` | Price: ₹${unitPrice.toLocaleString('en-IN')}`;
+    }
+    itemsText += '\n\n';
+  });
+
+  let msg = `Dear ${buyerName},\nThank you for your enquiry.\n\nWe are happy to inform you that all the items you enquired about are available:\n\n${itemsText}`;
+  
+  if (hasPrice && totalAmt > 0) {
+    msg += `Total Amount: ₹${totalAmt.toLocaleString('en-IN')}\n\n`;
+  }
+  
+  msg += `Kindly confirm your order so we can proceed further.\n\nThank you,\nTeam Weave 365`;
+  return msg;
 }
 
 export default function EnquiresManager({
@@ -271,7 +355,25 @@ export default function EnquiresManager({
                 </div>
 
                 <div className="admin-enquiry-actions-bar">
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {phone && (
+                      <a
+                        href={`${getWhatsappUrl(phone)}?text=${encodeURIComponent(generateWhatsAppInquiryMsg(item, products))}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="admin-enquiry-btn-action"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          backgroundColor: '#128C7E',
+                          color: '#fff',
+                          border: 'none',
+                        }}
+                      >
+                        <WhatsappIcon size={14} /> Send WhatsApp Msg
+                      </a>
+                    )}
                     {status !== 'contacted' && (
                       <button
                         type="button"
