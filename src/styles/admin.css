@@ -195,7 +195,7 @@
 
 .admin-sidebar-badge {
   background-color: #ef4444;
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
