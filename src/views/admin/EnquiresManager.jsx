@@ -345,10 +345,22 @@ function EnquiryItemsModal({ isOpen, onClose, enquiry, products }) {
             <p className="admin-modal-empty">No items recorded for this enquiry.</p>
           ) : (
             itemsList.map((row, idx) => {
-              const productKey = row.product_group_key || enquiry.product_group_key;
-              const product = products.find(p => p.id === productKey || p.groupKey === productKey);
+              let productKey = row.product_group_key || row.productGroupKey || enquiry.product_group_key || enquiry.productGroupKey;
+              let product = products.find(p => p.id === productKey || p.groupKey === productKey);
               
-              const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
+              const searchCode = row.variant_code || row.variantCode;
+              if (!product && searchCode) {
+                product = products.find(p => 
+                  (p.variants || []).some(v => v.code === searchCode) ||
+                  p.id === searchCode ||
+                  p.groupKey === searchCode
+                );
+                if (product) {
+                  productKey = product.id || product.groupKey;
+                }
+              }
+
+              const { baseVariantCode, colorName } = parseCartVariantCode(searchCode || '');
               const variant = product?.variants?.find(v => v.code === baseVariantCode);
               const colorOptions = product?.colorOptions || [];
               const selectedColorName = colorName || row.color || variant?.color || colorOptions[0]?.name || '';
@@ -356,7 +368,7 @@ function EnquiryItemsModal({ isOpen, onClose, enquiry, products }) {
               const itemImage = selectedColor?.image || variant?.image || product?.images?.[0] || fallbackProductImage;
               
               const itemTitle = product?.title || `Product Design Code: ${productKey || 'N/A'}`;
-              const displayCode = row.variant_code || row.variantCode || baseVariantCode || productKey || 'N/A';
+              const displayCode = searchCode || baseVariantCode || productKey || 'N/A';
 
               const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'wholesale-catalogue';
               const pId = productKey || product?.id || product?.groupKey;
