@@ -232,19 +232,27 @@ export default function EnquiresManager({
                 </div>
 
                 <div className="admin-enquiry-actions-bar">
-                  <div className="admin-enquiry-status-select-wrap">
-                    <span className="admin-enquiry-select-label">Set Status:</span>
-                    <select
-                      value={status}
-                      disabled={actionLoading === item.id}
-                      onChange={(e) => updateStatus(item.id, e.target.value)}
-                      className="admin-enquiry-select"
-                    >
-                      <option value="new">New</option>
-                      <option value="pending">Pending</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="completed">Completed</option>
-                    </select>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {status !== 'contacted' && (
+                      <button
+                        type="button"
+                        disabled={actionLoading === item.id}
+                        onClick={() => updateStatus(item.id, 'contacted')}
+                        className="admin-enquiry-btn-action btn-contacted"
+                      >
+                        Contacted
+                      </button>
+                    )}
+                    {status !== 'completed' && (
+                      <button
+                        type="button"
+                        disabled={actionLoading === item.id}
+                        onClick={() => updateStatus(item.id, 'completed')}
+                        className="admin-enquiry-btn-action btn-completed"
+                      >
+                        Completed
+                      </button>
+                    )}
                   </div>
                   <button
                     type="button"
