@@ -43,7 +43,7 @@
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  background: #25D366;
+  background: #128C7E;
   color: #fff;
   border: 0;
   border-radius: 8px;
@@ -51,11 +51,13 @@
   font-weight: 700;
   text-decoration: none;
   transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(18, 140, 126, 0.2);
 }
 
 .whatsapp-action-btn:hover {
-  background: #128C7E;
+  background: #0b5e54;
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(11, 94, 84, 0.3);
 }
 
 @keyframes modalScaleUp {

@@ -54,7 +54,7 @@ export default function EnquiresManager({
   // Clean / search matching logic
   const query = searchQuery.toLowerCase().trim();
   const filtered = useMemo(() => {
-    return inquiresData.filter((row) => {
+    const list = inquiresData.filter((row) => {
       const matchesStatus = statusFilter === 'all' || (row.status || '').toLowerCase() === statusFilter.toLowerCase();
       const matchesSearch = !query ||
         (row.buyer_name || row.name || '').toLowerCase().includes(query) ||
@@ -63,6 +63,12 @@ export default function EnquiresManager({
         (row.phone || '').includes(query) ||
         (row.message || row.notes || '').toLowerCase().includes(query);
       return matchesStatus && matchesSearch;
+    });
+
+    return list.sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return timeB - timeA;
     });
   }, [inquiresData, statusFilter, query]);
 
