@@ -168,7 +168,7 @@ export default function EnquiresManager({
           <p>No enquiries found matching filters.</p>
         </div>
       ) : (
-        <div className="admin-ea-submissions-list">
+        <div className="admin-enquiries-list">
           {filtered.map((item) => {
             const buyerName = item.buyer_name || item.name || 'Unknown Buyer';
             const businessName = item.business_name || item.company || 'Individual / Direct';
@@ -187,80 +187,58 @@ export default function EnquiresManager({
               : 'Unknown Date';
 
             return (
-              <div key={item.id} className="admin-ea-card">
-                <div className="admin-ea-card-main">
-                  <div className="admin-ea-card-row">
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '1rem', color: '#1a1715', fontWeight: '600' }}>{buyerName}</h4>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#5f6368', fontSize: '0.85rem', marginTop: '4px' }}>
-                        <Building size={13} />
-                        <span>{businessName}</span>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span className={`admin-review-status-badge status-badge-${status}`} style={{
-                        textTransform: 'uppercase',
-                        fontWeight: '700',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.5px'
-                      }}>
-                        {status}
-                      </span>
-                      <div style={{ fontSize: '0.75rem', color: '#80868b', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', justifyContent: 'flex-end' }}>
-                        <Calendar size={12} />
-                        <span>{dateStr}</span>
-                      </div>
+              <div key={item.id} className={`admin-enquiry-card status-${status}`}>
+                <div className="admin-enquiry-header">
+                  <div className="admin-enquiry-buyer-info">
+                    <h4>{buyerName}</h4>
+                    <div className="admin-enquiry-meta-item" style={{ marginTop: '4px' }}>
+                      <Building size={13} />
+                      <span>{businessName}</span>
                     </div>
                   </div>
-
-                  <div style={{ margin: '12px 0 8px 0', padding: '10px 14px', backgroundColor: '#f8f9fa', borderRadius: '6px', borderLeft: '3px solid #c69e6a', fontSize: '0.875rem', color: '#3c4043' }}>
-                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg}</p>
-                    {item.pincode && (
-                      <div style={{ fontSize: '0.75rem', color: '#80868b', marginTop: '6px' }}>
-                        <strong>Pincode:</strong> {item.pincode}
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '0.85rem', color: '#5f6368', marginTop: '8px' }}>
-                    {phone && (
-                      <a href={`tel:${phone}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#1a73e8', textDecoration: 'none' }}>
-                        <Phone size={13} />
-                        <span>{phone}</span>
-                      </a>
-                    )}
-                    {email && (
-                      <a href={`mailto:${email}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#1a73e8', textDecoration: 'none' }}>
-                        <Mail size={13} />
-                        <span>{email}</span>
-                      </a>
-                    )}
+                  <div className="admin-enquiry-right-meta">
+                    <span className={`admin-enquiry-status-badge badge-${status}`}>
+                      {status}
+                    </span>
+                    <div className="admin-enquiry-meta-item">
+                      <Calendar size={12} />
+                      <span>{dateStr}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="admin-ea-card-actions" style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  gap: '8px',
-                  borderTop: '1px solid #f1f3f4',
-                  paddingTop: '12px',
-                  marginTop: '12px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#80868b' }}>Set Status:</span>
+                <div className="admin-enquiry-message-box">
+                  <p className="admin-enquiry-message-text">{msg}</p>
+                  {item.pincode && (
+                    <span className="admin-enquiry-pincode">
+                      <strong>Pincode:</strong> {item.pincode}
+                    </span>
+                  )}
+                </div>
+
+                <div className="admin-enquiry-contact-links">
+                  {phone && (
+                    <a href={`tel:${phone}`} className="admin-enquiry-link">
+                      <Phone size={13} />
+                      <span>{phone}</span>
+                    </a>
+                  )}
+                  {email && (
+                    <a href={`mailto:${email}`} className="admin-enquiry-link">
+                      <Mail size={13} />
+                      <span>{email}</span>
+                    </a>
+                  )}
+                </div>
+
+                <div className="admin-enquiry-actions-bar">
+                  <div className="admin-enquiry-status-select-wrap">
+                    <span className="admin-enquiry-select-label">Set Status:</span>
                     <select
                       value={status}
                       disabled={actionLoading === item.id}
                       onChange={(e) => updateStatus(item.id, e.target.value)}
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        border: '1px solid #dadce0',
-                        fontSize: '0.85rem',
-                        backgroundColor: '#fff',
-                        cursor: 'pointer'
-                      }}
+                      className="admin-enquiry-select"
                     >
                       <option value="new">New</option>
                       <option value="pending">Pending</option>
@@ -273,17 +251,7 @@ export default function EnquiresManager({
                     title="Delete Enquiry"
                     disabled={actionLoading === item.id}
                     onClick={() => handleDelete(item.id)}
-                    style={{
-                      padding: '6px',
-                      border: 'none',
-                      backgroundColor: 'transparent',
-                      color: '#d93025',
-                      cursor: 'pointer',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    className="admin-enquiry-delete-btn"
                   >
                     <Trash2 size={16} />
                   </button>
