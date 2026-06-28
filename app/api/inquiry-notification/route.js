@@ -156,12 +156,24 @@ export async function POST(request) {
           <div class="email-body">
             <div class="section-title">Customer Details</div>
             <div style="background-color: #faf8f6; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px;">
-              <div style="font-size: 14px; line-height: 1.2; color: #111827;">
-                <div style="margin: 0;">${buyer_name || 'Guest Buyer'}</div>
-                <div style="margin: 0;">${phone || 'N/A'}</div>
-                <div style="margin: 0;">${email || 'N/A'}</div>
-                <div style="margin: 0;">${pincode || 'N/A'}</div>
-              </div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; width: 130px; font-weight: 600;">Customer Name</td>
+                  <td style="padding: 6px 0; color: #111827;">${buyer_name || 'Guest Buyer'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Phone Number</td>
+                  <td style="padding: 6px 0; color: #111827;">${phone || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Email Address</td>
+                  <td style="padding: 6px 0; color: #111827;">${email || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; color: #6b7280; font-weight: 600;">Pincode</td>
+                  <td style="padding: 6px 0; color: #111827;">${pincode || 'N/A'}</td>
+                </tr>
+              </table>
             </div>
 
             <div class="section-title">Enquired Items List</div>
@@ -179,7 +191,7 @@ export async function POST(request) {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3" style="padding: 12px 10px; text-align: right; font-weight: 700; border-top: 2px solid #e2e8f0; font-size: 15px;">Grand Total:</td>
+                  <td colspan="3" style="padding: 12px 10px; text-align: right; font-weight: 700; border-top: 2px solid #e2e8f0; font-size: 15px;">Total:</td>
                   <td style="padding: 12px 10px; text-align: right; font-weight: 700; border-top: 2px solid #e2e8f0; font-size: 15px; color: #111827;">₹${grandTotal.toLocaleString('en-IN')}</td>
                 </tr>
               </tfoot>
@@ -197,7 +209,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${resendApiKey}`
       },
       body: JSON.stringify({
-        from: `Weave365 B2B <${fromEmail}>`,
+        from: `Weave365 <${fromEmail}>`,
         to: targetEmail,
         reply_to: email || undefined,
         subject: emailSubject,
