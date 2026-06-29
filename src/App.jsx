@@ -778,6 +778,31 @@ export default function App({ initialData = {} }) {
     const productsWithIndex = pricedProducts.map((p, idx) => ({ ...p, _originalIndex: idx }));
     const filtered = productsWithIndex.filter((product) => {
       const variantCodes = (product.variants || []).map((v) => v.code).join(' ');
+
+      // Collect all possible color names
+      const colorOptionNames = (product.colorOptions || []).map((c) => c.name);
+      const variantColors = (product.variants || []).map((v) => v.color);
+      const csvColors = [
+        product.raw?.Color,
+        product.raw?.Col,
+        product.raw?.Colors,
+        product.raw?.['Colors Name List']
+      ];
+      const allColors = [...colorOptionNames, ...variantColors, ...csvColors]
+        .filter(Boolean)
+        .map((c) => String(c).trim())
+        .join(' ');
+
+      // Include weave details along with search helpers
+      const weaveText = product.weave
+        ? `${product.weave} ${product.weave} weave ${product.weave} weave type`
+        : '';
+
+      // Include purity details along with search helpers
+      const purityText = product.purity
+        ? `${product.purity} ${product.purity} purity ${product.purity} quality`
+        : '';
+
       const text = [
         product.title,
         product.fabric,
@@ -786,13 +811,19 @@ export default function App({ initialData = {} }) {
         product.category,
         product.groupKey,
         product.partner,
-        product.weave,
+        weaveText,
+        purityText,
+        allColors,
         variantCodes,
       ]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
-      const matchesSearch = text.includes(searchTerm);
+
+      // Token-based matching (every word in the query must match)
+      const searchTerms = searchTerm.split(/\s+/).filter(Boolean);
+      const matchesSearch = searchTerms.every((term) => text.includes(term));
+
       const matchesCategory =
         activeCategory === 'All' ||
         (activeCategory === 'New Arrivals' && product.isNew) ||

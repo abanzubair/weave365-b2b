@@ -225,7 +225,7 @@ export function ProductDetail({
           }
         }
       } catch (err) {
-        console.error('Error loading product reviews:', err);
+        console.error('Error loading product reviews:', err.message || err);
         if (active) {
           setDbReviews([]);
           setReviewsStatus('ready'); // fallback to seeds gracefully

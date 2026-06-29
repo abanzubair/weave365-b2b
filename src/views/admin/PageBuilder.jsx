@@ -631,7 +631,7 @@ export default function PageBuilder({
         <article className="admin-panel admin-m0">
           <div className="admin-panel-head">
             <span>Dynamic Custom Pages</span>
-            <small>{landingPages.length} rows</small>
+            <small>{landingPages.length} pages</small>
           </div>
           <div className="admin-seo-page-list" style={{ maxHeight: '350px', overflowY: 'auto' }}>
             {landingPages.map((page) => (

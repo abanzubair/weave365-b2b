@@ -967,3 +967,45 @@ CREATE POLICY "landing pages public read" ON public.landing_pages
 DROP POLICY IF EXISTS "landing pages admin all" ON public.landing_pages;
 CREATE POLICY "landing pages admin all" ON public.landing_pages 
   FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-------------------------------------------------------------------------------
+-- PRODUCT REVIEWS
+-------------------------------------------------------------------------------
+
+create table if not exists public.product_reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id text not null,
+  reviewer_name text not null,
+  business_name text default 'B2B Client',
+  rating integer not null check (rating >= 1 and rating <= 5),
+  title text default 'Product Review',
+  comment text not null,
+  status text not null default 'pending',
+  user_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.product_reviews enable row level security;
+
+-- Read policy (Approved reviews are visible to all)
+drop policy if exists "product reviews public read" on public.product_reviews;
+create policy "product reviews public read"
+  on public.product_reviews for select
+  to anon, authenticated
+  using (status = 'approved');
+
+-- Insert policy (Guests and authenticated users can insert reviews)
+drop policy if exists "product reviews insert access" on public.product_reviews;
+create policy "product reviews insert access"
+  on public.product_reviews for insert
+  to anon, authenticated
+  with check (true);
+
+-- Admin policy (Full CRUD access for administrators)
+drop policy if exists "product reviews admin all" on public.product_reviews;
+create policy "product reviews admin all"
+  on public.product_reviews for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
