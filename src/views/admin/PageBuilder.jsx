@@ -215,15 +215,46 @@ export default function PageBuilder({
           {/* URL Slug Field */}
           <div className="admin-field-container">
             <label className="admin-field-label">URL Slug *</label>
-            <input
-              type="text"
-              value={builderSlug}
-              onChange={(e) => setBuilderSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-_]/g, ''))}
-              placeholder="chanderi-suit-fabrics"
-              required
-              disabled={Boolean(builderPageId)}
-              className="admin-field-input"
-            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={builderSlug}
+                onChange={(e) => setBuilderSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-_]/g, ''))}
+                placeholder="chanderi-suit-fabrics"
+                required
+                disabled={Boolean(builderPageId)}
+                className="admin-field-input"
+                style={{ flex: 1 }}
+              />
+              {!builderPageId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!builderMetaTitle.trim()) {
+                      alert('Please enter a Meta Title Tag first.');
+                      return;
+                    }
+                    // Strip common brand suffix (e.g., "| Weave 365" or "- Weave 365" or ": Weave 365")
+                    let baseText = builderMetaTitle;
+                    const suffixIndex = baseText.search(/\s*[|:-]\s*(weave\s*365|weave365)/i);
+                    if (suffixIndex !== -1) {
+                      baseText = baseText.substring(0, suffixIndex);
+                    }
+                    const clean = baseText
+                      .trim()
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .replace(/[^a-z0-9-_]/g, '')
+                      .replace(/-+/g, '-');
+                    setBuilderSlug(clean);
+                  }}
+                  className="admin-btn-secondary-outline"
+                  style={{ whiteSpace: 'nowrap', padding: '0 12px' }}
+                >
+                  Auto-Generate
+                </button>
+              )}
+            </div>
             <small className="admin-doc-card-muted">Unique route segment (letters, numbers, and dashes). E.g. /katan-silk-sarees to katan-silk-sarees</small>
           </div>
 
