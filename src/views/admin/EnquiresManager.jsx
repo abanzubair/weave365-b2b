@@ -17,7 +17,7 @@ import {
 import { supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
-import { getProductCategorySlug } from '../../config.js';
+import { getProductCategorySlug, siteUrl } from '../../config.js';
 import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
 
 function getWhatsappUrl(rawPhone) {
@@ -99,6 +99,11 @@ function generateWhatsAppInquiryMsg(enquiry, products) {
     if (unitPrice > 0) {
       itemsText += ` | Price: ₹${unitPrice.toLocaleString('en-IN')}`;
     }
+    if (matchedProduct) {
+      const categorySlug = getProductCategorySlug(matchedProduct.id || matchedProduct.groupKey, matchedProduct.category);
+      const productUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(matchedProduct.id || matchedProduct.groupKey)}`;
+      itemsText += `\n   Link: ${productUrl}`;
+    }
     itemsText += '\n\n';
   });
 
@@ -116,6 +121,7 @@ export default function EnquiresManager({
   adminData,
   loadAdminData,
   products = [],
+  loading = false,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -217,10 +223,10 @@ export default function EnquiresManager({
           type="button"
           className="admin-ea-refresh-btn"
           onClick={() => loadAdminData()}
-          disabled={adminData.loading}
+          disabled={loading}
         >
-          <RefreshCw size={16} className={adminData.loading ? 'spin' : ''} />
-          {adminData.loading ? 'Loading…' : 'Refresh'}
+          <RefreshCw size={16} className={loading ? 'spin' : ''} />
+          {loading ? 'Loading…' : 'Refresh'}
         </button>
       </div>
 
@@ -361,17 +367,9 @@ export default function EnquiresManager({
                         href={`${getWhatsappUrl(phone)}?text=${encodeURIComponent(generateWhatsAppInquiryMsg(item, products))}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="admin-enquiry-btn-action"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          backgroundColor: '#128C7E',
-                          color: '#fff',
-                          border: 'none',
-                        }}
+                        className="admin-enquiry-btn-action btn-whatsapp"
                       >
-                        <WhatsappIcon size={14} /> Send WhatsApp Msg
+                        <WhatsappIcon size={14} /> WhatsApp
                       </a>
                     )}
                     {status !== 'contacted' && (

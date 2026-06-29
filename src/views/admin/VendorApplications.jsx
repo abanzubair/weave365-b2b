@@ -319,9 +319,9 @@ export default function VendorApplications({
             <ClipboardList size={26} />
           </div>
           <div>
-            <h2 className="admin-partners-banner-title">B2B Partner Applications Portal</h2>
+            <h2 className="admin-partners-banner-title">Partner Applications Portal</h2>
             <p className="admin-partners-banner-desc">
-              Verify signed merchant agreements and onboarding details for B2B supplier partners.
+              Verify signed merchant agreements and onboarding details for supplier partners.
             </p>
           </div>
         </div>

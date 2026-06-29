@@ -949,6 +949,7 @@
   margin: 0 0 14px;
   font-size: 15px;
   text-transform: uppercase;
+  font-family: var(--font-hero-heading);
 }
 
 .footer p {
@@ -970,6 +971,8 @@
   font-size: 15px;
   line-height: 1.7;
   text-decoration: none;
+  font-family: var(--font-hero-body);
+  font-weight: 500;
 }
 .footer-bottom {
   grid-column: 1 / -1;

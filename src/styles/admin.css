@@ -4803,6 +4803,10 @@
 }
 
 .admin-enquiry-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 0.78rem;
@@ -4811,6 +4815,19 @@
   border: 1px solid transparent;
   transition: all 0.15s ease;
   outline: none;
+  text-decoration: none;
+}
+
+.admin-enquiry-btn-action.btn-whatsapp {
+  background: #eafaf1;
+  color: #128c7e;
+  border-color: #b4e8cd;
+}
+
+.admin-enquiry-btn-action.btn-whatsapp:hover {
+  background: #d4f3e3;
+  border-color: #8edba3;
+  color: #075e54;
 }
 
 .admin-enquiry-btn-action.btn-contacted {

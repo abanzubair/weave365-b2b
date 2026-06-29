@@ -722,6 +722,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               adminData={adminData}
               loadAdminData={loadAdminData}
               products={products}
+              loading={status === 'loading'}
             />
           )}
         </div>
