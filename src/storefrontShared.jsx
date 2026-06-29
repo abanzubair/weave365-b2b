@@ -115,7 +115,7 @@ export function buildCustomerProductMessage({ product, variant, quantity, select
 }
 
 export function buildWhatsappShareUrl(message) {
-  return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
 export function uniqueProductShareImages(product, variant, fallbackImage) {
