@@ -1,5 +1,11 @@
 import { create } from 'zustand';
 
+const resolveArrayUpdate = (nextValue, currentValue) => {
+  const currentArray = Array.isArray(currentValue) ? currentValue : [];
+  const resolved = typeof nextValue === 'function' ? nextValue(currentArray) : nextValue;
+  return Array.isArray(resolved) ? resolved : [];
+};
+
 export const useStorefront = create((set) => ({
   // Auth & Profile State
   user: null,
@@ -24,8 +30,8 @@ export const useStorefront = create((set) => ({
   // Cart & Favorites State
   cart: [],
   favorites: [],
-  setCart: (cart) => set({ cart }),
-  setFavorites: (favorites) => set({ favorites }),
+  setCart: (cart) => set((state) => ({ cart: resolveArrayUpdate(cart, state.cart) })),
+  setFavorites: (favorites) => set((state) => ({ favorites: resolveArrayUpdate(favorites, state.favorites) })),
 
   // Product Catalogue Data Cache (for fast loading and global sync)
   products: [],
