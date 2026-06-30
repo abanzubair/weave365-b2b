@@ -204,7 +204,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
           index: override.robotsIndex !== false,
           follow: override.robotsFollow !== false,
         },
-      } : undefined,
+      } : extraOg.robots,
     };
   };
 
@@ -310,6 +310,16 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     const catSlug = getProductCategorySlug(product.id, product.category);
 
     return buildMeta(title, description, `/${catSlug}/${encodeURIComponent(product.id)}`, image);
+  }
+
+  if (route === 'admin') {
+    return buildMeta(
+      'Admin Portal | Weave 365',
+      'Administrative portal for Weave 365. Manage products, blogs, reviews, and vendors.',
+      '/admin',
+      null,
+      { robots: { index: false, follow: false } }
+    );
   }
 
   if (route === 'contact') {
