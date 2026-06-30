@@ -22,6 +22,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   allowedDevOrigins: [
     'localhost',
     'localhost:3000',
