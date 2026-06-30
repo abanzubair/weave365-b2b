@@ -39,7 +39,6 @@ import {
 import { loadProfileForUser, syncProfileFromUser } from './utils/profileHelpers.js';
 import { getBuyerAccess, priceNoticeForAccess } from './utils/buyerAccess.js';
 import { useDemoPriceGroup, overrideDemoPriceAccess } from './utils/demoHelper.js';
-import { applyVisiblePricesToProducts, buildVisiblePriceMap, loadVisiblePrices } from './services/priceService.js';
 import { RouteFallback } from './components/RouteFallback.jsx';
 import { Footer } from './components/Footer.jsx';
 import { InternalLinkNetwork } from './components/InternalLinkNetwork.jsx';
@@ -248,7 +247,6 @@ export default function App({ initialData = {} }) {
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
   const [products, setProducts] = useState(() => initialData.products || []);
-  const [visiblePriceRows, setVisiblePriceRows] = useState([]);
   const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
   const [error, setError] = useState(() => initialData.error || '');
   const [priceRange, setPriceRange] = useState('All');
@@ -308,10 +306,9 @@ export default function App({ initialData = {} }) {
       setPriceRange('All');
     }
   }
-  const visiblePriceMap = useMemo(() => buildVisiblePriceMap(visiblePriceRows), [visiblePriceRows]);
   const pricedProducts = useMemo(
-    () => applyVisiblePricesToProducts(products, visiblePriceMap),
-    [products, visiblePriceMap],
+    () => (Array.isArray(products) ? products : []),
+    [products],
   );
 
   const productsById = useMemo(
@@ -498,37 +495,6 @@ export default function App({ initialData = {} }) {
       isActive = false;
     };
   }, [user]);
-
-
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function hydrateVisiblePrices() {
-      if (!priceAccess.canViewPrices || priceAccess.priceGroup === 'guest') {
-        setVisiblePriceRows([]);
-        return;
-      }
-
-      const { prices, error } = await loadVisiblePrices();
-      if (!isActive) return;
-
-      if (error) {
-        console.warn('Unable to load approved Google Sheet prices:', error.message || error);
-        setVisiblePriceRows([]);
-        return;
-      }
-
-      setVisiblePriceRows(prices);
-    }
-
-    void hydrateVisiblePrices();
-
-    return () => {
-      isActive = false;
-    };
-  }, [priceAccess.canViewPrices, priceAccess.priceGroup, user?.id]);
-
   useEffect(() => {
     if (!dropdownOpen) return undefined;
 
