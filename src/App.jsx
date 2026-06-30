@@ -47,6 +47,7 @@ import { MobileMenu } from './components/MobileMenu.jsx';
 import { AppLink } from './components/AppLink.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
+import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
 
 // Eagerly loaded components for fast rendering above the fold
