@@ -5,6 +5,7 @@
  * and links to bulk enquiry or reseller markup WhatsApp share modals.
  */
 import { memo, useMemo, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import {
   Bookmark,
@@ -145,13 +146,12 @@ export const ProductCard = memo(function ProductCard({
     <article className="product-card">
       <div className="card-media">
         <AppLink to="product" productId={product.id} className="image-button" navigate={navigate}>
-          <img
+          <Image
             src={image}
             alt={descriptiveAlt}
             width={360}
             height={480}
             loading="lazy"
-            decoding="async"
             onError={(e) => { e.target.style.opacity = '0'; }}
           />
           {filteredStatusTags && filteredStatusTags.length > 0 && (

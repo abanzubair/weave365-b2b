@@ -20,7 +20,8 @@
     "next": "^16.2.6",
     "papaparse": "^5.5.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.16",

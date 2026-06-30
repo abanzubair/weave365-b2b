@@ -19,6 +19,9 @@ const localIPs = getLocalIPs();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    unoptimized: true,
+  },
   allowedDevOrigins: [
     'localhost',
     'localhost:3000',

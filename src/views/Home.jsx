@@ -5,6 +5,7 @@
  * and search engine optimized text content (Varanasi direct weaver heritage).
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
+import Image from 'next/image';
 import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin, Layers, Calendar, Clock } from 'lucide-react';
 import { fallbackProductImage, expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
@@ -449,18 +450,26 @@ export function Home({
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
           <section className="premium-hero" style={heroStyle}>
             {/* Full-bleed Background Picture */}
-            <picture className="premium-hero-bg-picture">
-              <source media="(max-width: 820px)" srcSet={heroMobileImage} />
-              <img
+            <div className="premium-hero-bg-picture">
+              <Image
                 src={heroImage}
                 alt={activeHeroData?.title || 'Wholesale Banarasi Sarees and Suits Weave 365'}
-                className="premium-hero-bg-img"
-                fetchPriority="high"
-                decoding="async"
-                width={1920}
-                height={1080}
+                fill
+                priority
+                className="premium-hero-bg-img desktop-hero-image"
+                sizes="100vw"
+                style={{ objectFit: 'cover' }}
               />
-            </picture>
+              <Image
+                src={heroMobileImage}
+                alt={activeHeroData?.title || 'Wholesale Banarasi Sarees and Suits Weave 365'}
+                fill
+                priority
+                className="premium-hero-bg-img mobile-hero-image"
+                sizes="100vw"
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
 
             {/* Dark gradient overlay for text readability */}
             <div className="premium-hero-overlay"></div>

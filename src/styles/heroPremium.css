@@ -1491,3 +1491,19 @@
   }
 }
 
+.desktop-hero-image {
+  display: block !important;
+}
+.mobile-hero-image {
+  display: none !important;
+}
+
+@media (max-width: 820px) {
+  .desktop-hero-image {
+    display: none !important;
+  }
+  .mobile-hero-image {
+    display: block !important;
+  }
+}
+

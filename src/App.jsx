@@ -6,7 +6,7 @@
  * catalog caching, currency states, and client-side page navigation routing.
  * Houses universal shell items like the top alert bars, navigation headers, sidebar drawers, and the footer.
  */
-import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
@@ -46,39 +46,40 @@ import { MobileMenu } from './components/MobileMenu.jsx';
 import { AppLink } from './components/AppLink.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
+import { useStorefront } from './store/useStorefront.js';
+
+// Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
-import { Favorites } from './views/Favorites.jsx';
-
-
-import { Catalog } from './CatalogPage.jsx';
-import { ProductDetailWrapper } from './ProductPage.jsx';
-import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
-import { BulkInquiry } from './views/BulkInquiry.jsx';
-import OrderTracking from './views/OrderTracking.jsx';
-import { Admin } from './views/Admin.jsx';
-import { Account } from './views/Account.jsx';
-import { WholesalePartnerProgramPage } from './views/WholesalePartnerProgramPage.jsx';
-import { VendorPartnershipPage } from './views/VendorPartnershipPage.jsx';
-import { TrustedPartnerRegistrationPage } from './views/TrustedPartnerRegistrationPage.jsx';
-import { ResellerDashboard } from './views/ResellerDashboard.jsx';
-
-import { NewArrivalsPage } from './views/NewArrivalsPage.jsx';
-import SeoLandingPage from './views/SeoLandingPage.jsx';
-import { PartnerProgramPage } from './views/PartnerProgramPage.jsx';
-import { BlogList } from './views/BlogList.jsx';
-import { BlogPost } from './views/BlogPost.jsx';
-import { AboutPage } from './views/AboutPage.jsx';
-import { ReviewsPage } from './views/ReviewsPage.jsx';
 import { ReviewStrip } from './components/ReviewStrip.jsx';
-import { EarlyAccessPage } from './views/EarlyAccessPage.jsx';
-import { ContactPage } from './views/ContactPage.jsx';
-import { OurOfferings } from './views/OurOfferings.jsx';
-import { NotFoundPage } from './views/NotFoundPage.jsx';
-import { DisclaimerPage } from './views/DisclaimerPage.jsx';
-import { ShippingDeliveryPage } from './views/ShippingDeliveryPage.jsx';
-import { ReturnsCancellationPage } from './views/ReturnsCancellationPage.jsx';
-import { PrivacySecurityPage } from './views/PrivacySecurityPage.jsx';
-import { TermsConditionsPage } from './views/TermsConditionsPage.jsx';
+
+// Dynamically split (lazy-loaded) page views
+const Catalog = lazy(() => import('./CatalogPage.jsx').then(m => ({ default: m.Catalog })));
+const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then(m => ({ default: m.ProductDetailWrapper })));
+const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then(m => ({ default: m.BulkInquiry })));
+const OrderTracking = lazy(() => import('./views/OrderTracking.jsx').then(m => ({ default: m.OrderTracking })));
+const Admin = lazy(() => import('./views/Admin.jsx').then(m => ({ default: m.Admin })));
+const Account = lazy(() => import('./views/Account.jsx').then(m => ({ default: m.Account })));
+const WholesalePartnerProgramPage = lazy(() => import('./views/WholesalePartnerProgramPage.jsx').then(m => ({ default: m.WholesalePartnerProgramPage })));
+const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then(m => ({ default: m.VendorPartnershipPage })));
+const TrustedPartnerRegistrationPage = lazy(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => ({ default: m.TrustedPartnerRegistrationPage })));
+const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })));
+const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
+const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
+const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
+const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
+const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
+const AboutPage = lazy(() => import('./views/AboutPage.jsx').then(m => ({ default: m.AboutPage })));
+const ReviewsPage = lazy(() => import('./views/ReviewsPage.jsx').then(m => ({ default: m.ReviewsPage })));
+const EarlyAccessPage = lazy(() => import('./views/EarlyAccessPage.jsx').then(m => ({ default: m.EarlyAccessPage })));
+const ContactPage = lazy(() => import('./views/ContactPage.jsx').then(m => ({ default: m.ContactPage })));
+const OurOfferings = lazy(() => import('./views/OurOfferings.jsx').then(m => ({ default: m.OurOfferings })));
+const NotFoundPage = lazy(() => import('./views/NotFoundPage.jsx').then(m => ({ default: m.NotFoundPage })));
+const DisclaimerPage = lazy(() => import('./views/DisclaimerPage.jsx').then(m => ({ default: m.DisclaimerPage })));
+const ShippingDeliveryPage = lazy(() => import('./views/ShippingDeliveryPage.jsx').then(m => ({ default: m.ShippingDeliveryPage })));
+const ReturnsCancellationPage = lazy(() => import('./views/ReturnsCancellationPage.jsx').then(m => ({ default: m.ReturnsCancellationPage })));
+const PrivacySecurityPage = lazy(() => import('./views/PrivacySecurityPage.jsx').then(m => ({ default: m.PrivacySecurityPage })));
+const TermsConditionsPage = lazy(() => import('./views/TermsConditionsPage.jsx').then(m => ({ default: m.TermsConditionsPage })));
+const Favorites = lazy(() => import('./views/Favorites.jsx').then(m => ({ default: m.Favorites })));
 
 const slugifyPartner = (name) => {
   if (!name) return '';
@@ -249,15 +250,21 @@ export default function App({ initialData = {} }) {
   const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
   const [error, setError] = useState(() => initialData.error || '');
   const [priceRange, setPriceRange] = useState('All');
-  const [authOpen, setAuthOpen] = useState(false);
-  const [authInitialMode, setAuthInitialMode] = useState('login');
-  const [cartOpen, setCartOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [buyerProfile, setBuyerProfile] = useState(null);
-  const [vendorOnboarding, setVendorOnboarding] = useState(null);
-  const [cart, setCart] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+
+  // Lifted dynamic global states using Zustand storefront store
+  const {
+    user, setUser,
+    buyerProfile, setBuyerProfile,
+    vendorOnboarding, setVendorOnboarding,
+    authOpen, setAuthOpen,
+    authInitialMode, setAuthInitialMode,
+    cartOpen, setCartOpen,
+    menuOpen, setMenuOpen,
+    searchActive, setSearchActive,
+    cart, setCart,
+    favorites, setFavorites,
+  } = useStorefront();
+
   const [pincode, setPincode] = useState('');
   const [codStatus, setCodStatus] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -267,7 +274,6 @@ export default function App({ initialData = {} }) {
   const searchRef = useRef(null);
   const currencyRef = useRef(null);
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
-  const [searchActive, setSearchActive] = useState(false);
 
 
   const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
@@ -1091,21 +1097,13 @@ export default function App({ initialData = {} }) {
       setPendingRoute(null);
     }
 
-    setTimeout(() => {
-      router.push(href);
-    }, 300);
+    router.push(href);
 
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [router, pathname, search, category, fabric, weave]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.__appNavigate = navigate;
-    }
-  }, [navigate]);
 
   const handleSignOut = useCallback(async () => {
     if (isSupabaseConfigured) {
@@ -1460,7 +1458,9 @@ export default function App({ initialData = {} }) {
 
       <main>
         <ErrorBoundary>
-          {routeContent}
+          <Suspense fallback={<RouteFallback />}>
+            {routeContent}
+          </Suspense>
         </ErrorBoundary>
       </main>
 
