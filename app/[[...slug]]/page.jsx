@@ -543,7 +543,7 @@ export async function generateMetadata({ params, searchParams }) {
     const data = await getInitialData();
     if (productId) {
       product = data.products.find((item) => item.id === productId);
-      if (!product) {
+      if (!product || product.isArchived) {
         notFound();
       }
     }
@@ -721,7 +721,7 @@ export default async function CatchAllPage({ params }) {
 
   if (route === 'product' && productId) {
     product = (initialData.products || []).find((item) => item.id === productId);
-    if (!product) {
+    if (!product || product.isArchived) {
       notFound();
     }
     

@@ -328,7 +328,7 @@ export function Home({
 
   const bestsellers = useMemo(() => {
     const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
-    const filtered = productsWithIndex.filter((p) => p.isTopSeller);
+    const filtered = productsWithIndex.filter((p) => p.isTopSeller && !p.isArchived);
     
     const sorted = sortByStockDateDesc(filtered);
 
@@ -341,9 +341,9 @@ export function Home({
 
   const arrivals = useMemo(() => {
     const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
-    let filtered = productsWithIndex.filter(p => p.isNew);
+    let filtered = productsWithIndex.filter(p => p.isNew && !p.isArchived);
     if (filtered.length === 0) {
-      filtered = [...productsWithIndex];
+      filtered = productsWithIndex.filter(p => !p.isArchived);
     }
     
     const sorted = sortByStockDateDesc(filtered);
@@ -358,6 +358,7 @@ export function Home({
   const dealProducts = useMemo(() => {
     const discountedProducts = products
       .map((product) => {
+        if (product.isArchived) return null;
         const variant = product.variants?.[0];
         const mrp = variant?.prices?.mrp;
         const offer = variant?.prices?.offer;
