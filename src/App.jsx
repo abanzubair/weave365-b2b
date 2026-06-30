@@ -9,6 +9,7 @@
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
@@ -52,17 +53,17 @@ import { useStorefront } from './store/useStorefront.js';
 import { Home, homeCategoryNames } from './views/Home.jsx';
 import { ReviewStrip } from './components/ReviewStrip.jsx';
 
-// Dynamically split (lazy-loaded) page views
+// Dynamically split (lazy-loaded or dynamic client-side only) page views
 const Catalog = lazy(() => import('./CatalogPage.jsx').then(m => ({ default: m.Catalog })));
 const ProductDetailWrapper = lazy(() => import('./ProductPage.jsx').then(m => ({ default: m.ProductDetailWrapper })));
 const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then(m => ({ default: m.BulkInquiry })));
-const OrderTracking = lazy(() => import('./views/OrderTracking.jsx').then(m => ({ default: m.OrderTracking })));
-const Admin = lazy(() => import('./views/Admin.jsx').then(m => ({ default: m.Admin })));
-const Account = lazy(() => import('./views/Account.jsx').then(m => ({ default: m.Account })));
+const OrderTracking = dynamic(() => import('./views/OrderTracking.jsx').then(m => m.OrderTracking), { ssr: false });
+const Admin = dynamic(() => import('./views/Admin.jsx').then(m => m.Admin), { ssr: false });
+const Account = dynamic(() => import('./views/Account.jsx').then(m => m.Account), { ssr: false });
 const WholesalePartnerProgramPage = lazy(() => import('./views/WholesalePartnerProgramPage.jsx').then(m => ({ default: m.WholesalePartnerProgramPage })));
 const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then(m => ({ default: m.VendorPartnershipPage })));
-const TrustedPartnerRegistrationPage = lazy(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => ({ default: m.TrustedPartnerRegistrationPage })));
-const ResellerDashboard = lazy(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })));
+const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => m.TrustedPartnerRegistrationPage), { ssr: false });
+const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => m.ResellerDashboard), { ssr: false });
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
@@ -70,16 +71,16 @@ const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default:
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
 const AboutPage = lazy(() => import('./views/AboutPage.jsx').then(m => ({ default: m.AboutPage })));
 const ReviewsPage = lazy(() => import('./views/ReviewsPage.jsx').then(m => ({ default: m.ReviewsPage })));
-const EarlyAccessPage = lazy(() => import('./views/EarlyAccessPage.jsx').then(m => ({ default: m.EarlyAccessPage })));
+const EarlyAccessPage = dynamic(() => import('./views/EarlyAccessPage.jsx').then(m => m.EarlyAccessPage), { ssr: false });
 const ContactPage = lazy(() => import('./views/ContactPage.jsx').then(m => ({ default: m.ContactPage })));
-const OurOfferings = lazy(() => import('./views/OurOfferings.jsx').then(m => ({ default: m.OurOfferings })));
-const NotFoundPage = lazy(() => import('./views/NotFoundPage.jsx').then(m => ({ default: m.NotFoundPage })));
-const DisclaimerPage = lazy(() => import('./views/DisclaimerPage.jsx').then(m => ({ default: m.DisclaimerPage })));
-const ShippingDeliveryPage = lazy(() => import('./views/ShippingDeliveryPage.jsx').then(m => ({ default: m.ShippingDeliveryPage })));
-const ReturnsCancellationPage = lazy(() => import('./views/ReturnsCancellationPage.jsx').then(m => ({ default: m.ReturnsCancellationPage })));
-const PrivacySecurityPage = lazy(() => import('./views/PrivacySecurityPage.jsx').then(m => ({ default: m.PrivacySecurityPage })));
-const TermsConditionsPage = lazy(() => import('./views/TermsConditionsPage.jsx').then(m => ({ default: m.TermsConditionsPage })));
-const Favorites = lazy(() => import('./views/Favorites.jsx').then(m => ({ default: m.Favorites })));
+const OurOfferings = dynamic(() => import('./views/OurOfferings.jsx').then(m => m.OurOfferings), { ssr: false });
+const NotFoundPage = dynamic(() => import('./views/NotFoundPage.jsx').then(m => m.NotFoundPage), { ssr: false });
+const DisclaimerPage = dynamic(() => import('./views/DisclaimerPage.jsx').then(m => m.DisclaimerPage), { ssr: false });
+const ShippingDeliveryPage = dynamic(() => import('./views/ShippingDeliveryPage.jsx').then(m => m.ShippingDeliveryPage), { ssr: false });
+const ReturnsCancellationPage = dynamic(() => import('./views/ReturnsCancellationPage.jsx').then(m => m.ReturnsCancellationPage), { ssr: false });
+const PrivacySecurityPage = dynamic(() => import('./views/PrivacySecurityPage.jsx').then(m => m.PrivacySecurityPage), { ssr: false });
+const TermsConditionsPage = dynamic(() => import('./views/TermsConditionsPage.jsx').then(m => m.TermsConditionsPage), { ssr: false });
+const Favorites = dynamic(() => import('./views/Favorites.jsx').then(m => m.Favorites), { ssr: false });
 
 const slugifyPartner = (name) => {
   if (!name) return '';
