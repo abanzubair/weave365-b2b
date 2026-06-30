@@ -55,6 +55,9 @@ export const metadata = {
   alternates: {
     canonical: siteUrl,
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   openGraph: {
     title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
     description:

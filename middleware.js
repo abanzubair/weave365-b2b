@@ -5,13 +5,17 @@ export function middleware(request) {
   const host = request.headers.get('host');
   const path = url.pathname;
 
-  // Skip redirect for search engine verification/crawling files (robots.txt, sitemap.xml)
+  // Skip redirect for search engine verification/crawling files (robots.txt, sitemap.xml, google verification files)
   // to ensure they can be served on their respective domains.
-  if (path === '/robots.txt' || path.includes('sitemap')) {
+  if (
+    path === '/robots.txt' || 
+    path.includes('sitemap') || 
+    (path.startsWith('/google') && path.endsWith('.html'))
+  ) {
     return NextResponse.next();
   }
 
-  if (host === 'weave365.in' || host === 'www.weave365.in' || host === 'weave365.com') {
+  if (host === 'weave365.com') {
     url.hostname = 'www.weave365.com';
     url.port = ''; // Remove port for canonical production redirects
     url.protocol = 'https:';
