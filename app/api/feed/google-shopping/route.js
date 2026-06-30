@@ -35,6 +35,13 @@ export async function GET() {
       
       const availability = product.isOutOfStock ? 'out_of_stock' : 'in_stock';
       const brandName = storeConfig.name || 'Weave 365';
+      const color = variant.color || product.colorOptions?.[0]?.name || 'multicolor';
+      const size = String(product.category || '').toLowerCase() === 'saree' ? '6.3m' : 'one size';
+      const weight = Number(product.weight) || 0.8;
+      
+      const googleCategory = String(product.category || '').toLowerCase() === 'saree'
+        ? 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees'
+        : 'Apparel & Accessories > Clothing';
 
       itemsXml += `
     <item>
@@ -47,6 +54,12 @@ export async function GET() {
       <g:price>${displayPrice} INR</g:price>
       <g:brand>${escapeXml(brandName)}</g:brand>
       <g:condition>new</g:condition>
+      <g:age_group>adult</g:age_group>
+      <g:gender>female</g:gender>
+      <g:color>${escapeXml(color)}</g:color>
+      <g:size>${escapeXml(size)}</g:size>
+      <g:shipping_weight>${weight} kg</g:shipping_weight>
+      <g:google_product_category>${escapeXml(googleCategory)}</g:google_product_category>
     </item>`;
     }
 
