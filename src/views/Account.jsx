@@ -450,7 +450,7 @@ export function Account({
           onClick={() => setActiveTab('influencer')}
         >
           <UserRound size={16} />
-          <span>Influencer Center</span>
+          <span>Affiliates</span>
         </button>
       </div>
 
@@ -842,7 +842,7 @@ export function Account({
         {activeTab === 'influencer' && (
           <article className="account-panel panel-influencer" style={{ gridColumn: 'span 2' }}>
             <div className="account-panel-head" style={{ marginBottom: '1.5rem' }}>
-              <span><UserRound size={18} /> Influencer Affiliate Program</span>
+              <span><UserRound size={18} /> Weave 365 Affiliate Program</span>
             </div>
 
             {influencerLoading ? (
@@ -853,9 +853,9 @@ export function Account({
             ) : !influencerProfile ? (
               /* Application Form */
               <div style={{ maxWidth: '500px', margin: '1.5rem auto' }}>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>Join the Influencer Partner Program</h2>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>Join the Weave 365 Affiliate Partner Program</h2>
                 <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '2rem', lineHeight: '1.5', textAlign: 'center' }}>
-                  Share your love for authentic Banarasi sarees with your audience and earn a commission on every referred wholesale order or client inquiry!
+                  Share Banarasi collection (saree, suit and more) with your audience and earn 10% commission on every order!
                 </p>
 
                 <form onSubmit={handleApplyInfluencer} style={{ display: 'grid', gap: '20px' }}>
