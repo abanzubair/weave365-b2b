@@ -23,7 +23,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';
 
-export default function OrderTracking({ inquiryId, products = [], navigate, user }) {
+export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [searchId, setSearchId] = useState('');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
