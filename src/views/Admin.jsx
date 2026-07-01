@@ -43,6 +43,7 @@ import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 import DirectoryManager from './admin/DirectoryManager.jsx';
 import EnquiresManager from './admin/EnquiresManager.jsx';
+import InfluencerManager from './admin/InfluencerManager.jsx';
 
 import { storeConfig } from '../config.js';
 
@@ -60,6 +61,7 @@ const optionalTables = [
   { key: 'orders', label: 'Orders' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
+  { key: 'influencer_profiles', label: 'Influencer Profiles' },
 ];
 
 const emptyAdminData = {
@@ -521,6 +523,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
         { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: null },
         { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
+        { key: 'influencers', label: 'Influencers', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
       ],
     },
   ];
@@ -715,6 +718,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               handleEarlyAccessStatusChange={handleEarlyAccessStatusChange}
               earlyAccessActionLoading={earlyAccessActionLoading}
             />
+          )}
+
+          {activeTab === 'influencers' && (
+            <InfluencerManager />
           )}
 
           {activeTab === 'enquires' && (

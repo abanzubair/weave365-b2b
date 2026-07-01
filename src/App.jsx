@@ -48,6 +48,7 @@ import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
+import { validateReferralCode } from './utils/influencerHelpers.js';
 
 // Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
@@ -189,11 +190,48 @@ export default function App({ initialData = {} }) {
     return CURRENCIES.find(c => c.code === currentCurrency) || CURRENCIES[0];
   }, [currentCurrency]);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const pathname = usePathname() || '/';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
   const [pendingRoute, setPendingRoute] = useState(null);
   const [prevPathname, setPrevPathname] = useState(pathname);
   const [isProductPageReady, setIsProductPageReady] = useState(true);
+
+  // Influencer link detection & click tracking
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkReferral = async () => {
+      const ref = searchParams?.get('ref') || searchParams?.get('influencer');
+      if (ref) {
+        const code = ref.trim().toUpperCase();
+        const influencer = await validateReferralCode(code);
+        if (influencer) {
+          localStorage.setItem('influencer_ref', code);
+          console.log('[Referral] Stored active referral code:', code);
+
+          // Log click if not already logged in this session
+          const sessionKey = 'logged_ref_click_' + code;
+          if (!sessionStorage.getItem(sessionKey)) {
+            try {
+              const { error } = await supabase.from('influencer_clicks').insert({
+                influencer_id: influencer.id,
+                user_agent: navigator.userAgent,
+                referrer: document.referrer || null
+              });
+              if (!error) {
+                sessionStorage.setItem(sessionKey, '1');
+                console.log('[Referral] Logged click for influencer:', code);
+              }
+            } catch (err) {
+              console.error('[Referral] Failed to log click:', err);
+            }
+          }
+        }
+      }
+    };
+    void checkReferral();
+  }, [searchParams]);
 
   const [landingPages, setLandingPages] = useState(() => {
     let pages = initialData.landingPages || [];
@@ -560,8 +598,6 @@ export default function App({ initialData = {} }) {
     });
     return ['All', ...Array.from(set).sort()];
   }, [pricedProducts, configOptions.weaves]);
-
-  const searchParams = useSearchParams();
 
   const category = useMemo(() => {
     if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';

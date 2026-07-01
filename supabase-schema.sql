@@ -1009,3 +1009,110 @@ create policy "product reviews admin all"
   to authenticated
   using (public.is_admin())
   with check (public.is_admin());
+
+-------------------------------------------------------------------------------
+-- B2B INFLUENCER & AFFILIATE PROGRAM TABLES
+-------------------------------------------------------------------------------
+
+-- 1. Influencer Profiles
+create table if not exists public.influencer_profiles (
+  id uuid primary key references public.profiles(id) on delete cascade,
+  referral_code text unique not null,
+  commission_percentage numeric not null default 10.0 check (commission_percentage >= 0 and commission_percentage <= 100),
+  payment_details jsonb default '{}'::jsonb,
+  is_approved boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 2. Influencer Landing Click Logs
+create table if not exists public.influencer_clicks (
+  id uuid primary key default gen_random_uuid(),
+  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
+  user_agent text,
+  referrer text,
+  created_at timestamptz default now()
+);
+
+-- 3. Influencer Sales Referrals
+create table if not exists public.influencer_referrals (
+  id uuid primary key default gen_random_uuid(),
+  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
+  order_id uuid references public.orders(id) on delete set null,
+  inquiry_id uuid references public.inquiries(id) on delete set null,
+  buyer_id uuid references public.profiles(id) on delete set null,
+  buyer_name text,
+  items jsonb default '[]'::jsonb,
+  sale_amount numeric not null default 0,
+  commission_amount numeric not null default 0,
+  status text default 'pending' check (status in ('pending', 'paid', 'cancelled')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Indices
+create index if not exists influencer_profiles_code_idx on public.influencer_profiles (lower(referral_code));
+create index if not exists influencer_clicks_influencer_id_idx on public.influencer_clicks (influencer_id);
+create index if not exists influencer_referrals_influencer_id_idx on public.influencer_referrals (influencer_id);
+
+-- Enable RLS
+alter table public.influencer_profiles enable row level security;
+alter table public.influencer_clicks enable row level security;
+alter table public.influencer_referrals enable row level security;
+
+-- Policies: Influencer Profiles
+drop policy if exists "Anyone can select influencer profiles" on public.influencer_profiles;
+create policy "Anyone can select influencer profiles"
+  on public.influencer_profiles for select
+  using (true);
+
+drop policy if exists "Users can insert own influencer profile" on public.influencer_profiles;
+create policy "Users can insert own influencer profile"
+  on public.influencer_profiles for insert
+  to authenticated
+  with check ((select auth.uid()) = id);
+
+drop policy if exists "Users can update own influencer profile" on public.influencer_profiles;
+create policy "Users can update own influencer profile"
+  on public.influencer_profiles for update
+  to authenticated
+  using ((select auth.uid()) = id)
+  with check ((select auth.uid()) = id);
+
+drop policy if exists "Admin manage all influencer profiles" on public.influencer_profiles;
+create policy "Admin manage all influencer profiles"
+  on public.influencer_profiles for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Policies: Influencer Clicks
+drop policy if exists "Anyone can insert clicks" on public.influencer_clicks;
+create policy "Anyone can insert clicks"
+  on public.influencer_clicks for insert
+  with check (true);
+
+drop policy if exists "Influencers can select own clicks" on public.influencer_clicks;
+create policy "Influencers can select own clicks"
+  on public.influencer_clicks for select
+  to authenticated
+  using ((select auth.uid()) = influencer_id or public.is_admin());
+
+-- Policies: Influencer Referrals
+drop policy if exists "Anyone can insert referrals" on public.influencer_referrals;
+create policy "Anyone can insert referrals"
+  on public.influencer_referrals for insert
+  with check (true);
+
+drop policy if exists "Influencers can select own referrals" on public.influencer_referrals;
+create policy "Influencers can select own referrals"
+  on public.influencer_referrals for select
+  to authenticated
+  using ((select auth.uid()) = influencer_id or public.is_admin());
+
+drop policy if exists "Admin manage all referrals" on public.influencer_referrals;
+create policy "Admin manage all referrals"
+  on public.influencer_referrals for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());

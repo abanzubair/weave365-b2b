@@ -18,11 +18,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2 } from 'lucide-react';
+import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
 
 function titleCase(value) {
   return String(value || 'pending')
@@ -84,6 +85,74 @@ export function Account({
   // Placed orders state
   const [placedOrders, setPlacedOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+
+  // Influencer Program State
+  const [influencerProfile, setInfluencerProfile] = useState(null);
+  const [influencerLoading, setInfluencerLoading] = useState(false);
+  const [influencerStats, setInfluencerStats] = useState({ clicks: 0, referrals: [] });
+
+  // Application Form State
+  const [infFormCode, setInfFormCode] = useState('');
+  const [infFormPayoutMethod, setInfFormPayoutMethod] = useState('upi');
+  const [infFormUpiId, setInfFormUpiId] = useState('');
+  const [infFormBankName, setInfFormBankName] = useState('');
+  const [infFormAccountNo, setInfFormAccountNo] = useState('');
+  const [infFormIfsc, setInfFormIfsc] = useState('');
+  const [infFormSubmitting, setInfFormSubmitting] = useState(false);
+  const [infFormError, setInfFormError] = useState('');
+
+  const fetchInfluencerData = async () => {
+    if (!user?.id || !isSupabaseConfigured) return;
+    setInfluencerLoading(true);
+    try {
+      const stats = await fetchInfluencerStats(user.id);
+      setInfluencerProfile(stats.profile);
+      setInfluencerStats({
+        clicks: stats.clicks,
+        referrals: stats.referrals
+      });
+      // prefill referral code form with full name slug if empty
+      if (!stats.profile && !infFormCode) {
+        const name = buyerProfile?.full_name || buyerProfile?.business_name || '';
+        if (name) {
+          const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '');
+          setInfFormCode(slug.toUpperCase().slice(0, 10));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading influencer data:', err);
+    } finally {
+      setInfluencerLoading(false);
+    }
+  };
+
+  const handleApplyInfluencer = async (e) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    if (!infFormCode || infFormCode.length < 3) {
+      setInfFormError('Referral code must be at least 3 characters.');
+      return;
+    }
+    setInfFormSubmitting(true);
+    setInfFormError('');
+    try {
+      const paymentDetails = infFormPayoutMethod === 'upi' 
+        ? { payout_method: 'upi', upi_id: infFormUpiId }
+        : { payout_method: 'bank', bank_name: infFormBankName, account_number: infFormAccountNo, ifsc: infFormIfsc };
+
+      const { data, error: applyErr } = await applyAsInfluencer(user.id, infFormCode, paymentDetails);
+      if (applyErr) {
+        setInfFormError(applyErr.message || 'Failed to submit application.');
+      } else {
+        await fetchInfluencerData();
+      }
+    } catch (err) {
+      console.error('Apply influencer error:', err);
+      setInfFormError(err.message || 'Error occurred while applying.');
+    } finally {
+      setInfFormSubmitting(false);
+    }
+  };
 
   // Address form fields
   const [formName, setFormName] = useState('');
@@ -148,6 +217,8 @@ export function Account({
       fetchAddresses();
     } else if (activeTab === 'orders' && user?.id) {
       fetchPlacedOrders();
+    } else if (activeTab === 'influencer' && user?.id) {
+      fetchInfluencerData();
     }
   }, [activeTab, user?.id]);
 
@@ -155,6 +226,7 @@ export function Account({
     if (user?.id) {
       fetchAddresses();
       fetchPlacedOrders();
+      fetchInfluencerData();
     }
   }, [user?.id]);
 
@@ -373,6 +445,13 @@ export function Account({
             <span>Business Center</span>
           </button>
         )}
+        <button type="button" 
+          className={`account-tab-btn ${activeTab === 'influencer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('influencer')}
+        >
+          <UserRound size={16} />
+          <span>Influencer Center</span>
+        </button>
       </div>
 
       <div className={`account-dashboard-grid tab-active-${activeTab}`}>
@@ -757,6 +836,320 @@ export function Account({
                 Open Business Center
               </button>
             </div>
+          </article>
+        )}
+
+        {activeTab === 'influencer' && (
+          <article className="account-panel panel-influencer" style={{ gridColumn: 'span 2' }}>
+            <div className="account-panel-head" style={{ marginBottom: '1.5rem' }}>
+              <span><UserRound size={18} /> Influencer Affiliate Program</span>
+            </div>
+
+            {influencerLoading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>
+                <RefreshCw size={24} className="spin" style={{ margin: '0 auto 10px' }} />
+                <p>Loading influencer dashboard...</p>
+              </div>
+            ) : !influencerProfile ? (
+              /* Application Form */
+              <div style={{ maxWidth: '500px', margin: '1.5rem auto' }}>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>Join the Influencer Partner Program</h2>
+                <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '2rem', lineHeight: '1.5', textAlign: 'center' }}>
+                  Share your love for authentic Banarasi sarees with your audience and earn a commission on every referred wholesale order or client inquiry!
+                </p>
+
+                <form onSubmit={handleApplyInfluencer} style={{ display: 'grid', gap: '20px' }}>
+                  <div style={{ background: 'rgba(183, 134, 70, 0.08)', border: '1px solid rgba(183, 134, 70, 0.25)', borderRadius: '8px', padding: '14px', fontSize: '0.85rem', color: 'var(--gold-dark)', display: 'flex', gap: '8px', alignItems: 'flex-start', lineHeight: '1.4' }}>
+                    <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div>
+                      <strong>Important Notice:</strong> Commissions are tracked once a customer completes checkout. However, funds will only be credited to your account and eligible for payout after the customer receives the products and the return/exchange window has successfully expired.
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Desired Referral Code *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. FASHION10"
+                      value={infFormCode}
+                      onChange={e => setInfFormCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                      required
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', transition: 'border-color 0.2s' }}
+                    />
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(183,134,70,0.06)', padding: '6px 12px', borderRadius: '20px', border: '1px dashed rgba(183,134,70,0.3)', marginTop: '10px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--gold-dark)' }}>
+                      <span>Referral Link:</span>
+                      <code>weave365.com/?ref={infFormCode || 'YOUR_CODE'}</code>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Payout Method *</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setInfFormPayoutMethod('upi')}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          padding: '14px',
+                          borderRadius: '8px',
+                          border: infFormPayoutMethod === 'upi' ? '2px solid var(--gold-dark)' : '1px solid var(--line)',
+                          background: infFormPayoutMethod === 'upi' ? 'rgba(183,134,70,0.04)' : 'var(--white)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: infFormPayoutMethod === 'upi' ? 'var(--gold-dark)' : 'var(--ink)' }}>UPI ID</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>username@bank</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setInfFormPayoutMethod('bank')}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          padding: '14px',
+                          borderRadius: '8px',
+                          border: infFormPayoutMethod === 'bank' ? '2px solid var(--gold-dark)' : '1px solid var(--line)',
+                          background: infFormPayoutMethod === 'bank' ? 'rgba(183,134,70,0.04)' : 'var(--white)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: infFormPayoutMethod === 'bank' ? 'var(--gold-dark)' : 'var(--ink)' }}>Bank Transfer</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Wire Account Details</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {infFormPayoutMethod === 'upi' ? (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>UPI ID *</label>
+                      <input
+                        type="text"
+                        placeholder="username@bank"
+                        value={infFormUpiId}
+                        onChange={e => setInfFormUpiId(e.target.value)}
+                        required
+                        style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gap: '14px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Bank Name *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. HDFC Bank"
+                          value={infFormBankName}
+                          onChange={e => setInfFormBankName(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Account Number *</label>
+                        <input
+                          type="text"
+                          placeholder="Enter account number"
+                          value={infFormAccountNo}
+                          onChange={e => setInfFormAccountNo(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>IFSC Code *</label>
+                        <input
+                          type="text"
+                          placeholder="Enter 11-digit IFSC code"
+                          value={infFormIfsc}
+                          onChange={e => setInfFormIfsc(e.target.value.toUpperCase())}
+                          required
+                          style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {infFormError && (
+                    <p style={{ color: '#C62828', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center' }}>{infFormError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="primary-button"
+                    disabled={infFormSubmitting}
+                    style={{ width: '100%', padding: '12px', marginTop: '8px', fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}
+                  >
+                    {infFormSubmitting ? 'Submitting Application…' : 'SUBMIT APPLICATION'}
+                  </button>
+                </form>
+              </div>
+            ) : !influencerProfile.is_approved ? (
+              /* Pending Status Review Screen */
+              <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', border: '1px solid #FFE8E1', borderRadius: '8px', background: '#FFFDF9', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--gold-dark)', marginBottom: '0.5rem' }}>Application Under Review</h2>
+                <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: '1.5' }}>
+                  Your application for the referral code <strong style={{ color: 'var(--text-dark)' }}>{influencerProfile.referral_code}</strong> has been received!
+                  We are validating your profile details. You will receive a WhatsApp message once your profile is approved.
+                </p>
+                <div style={{ display: 'inline-block', border: '1px solid var(--line)', borderRadius: '6px', padding: '12px 20px', background: 'var(--surface-soft)', marginTop: '1.5rem', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--muted)', display: 'block' }}>Submitted Payout Details:</span>
+                  {influencerProfile.payment_details?.payout_method === 'upi' ? (
+                    <strong>UPI ID: {influencerProfile.payment_details?.upi_id}</strong>
+                  ) : (
+                    <strong>Bank Wire to Account ...{influencerProfile.payment_details?.account_number?.slice(-4)}</strong>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Active Influencer Dashboard */
+              <div style={{ display: 'grid', gap: '24px' }}>
+                {/* 1. Stats Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Visitors</span>
+                    <strong style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>{influencerStats.clicks}</strong>
+                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Unique Clickthroughs</small>
+                  </div>
+                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Conversions</span>
+                    <strong style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>{influencerStats.referrals.filter(r => r.status !== 'cancelled').length}</strong>
+                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Orders / Inquiries</small>
+                  </div>
+                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Commission Earned</span>
+                    <strong style={{ fontSize: '1.5rem', color: 'var(--gold-dark)' }}>
+                      {formatMoney(
+                        influencerStats.referrals
+                          .filter(r => r.status !== 'cancelled')
+                          .reduce((sum, r) => sum + (Number(r.commission_amount) || 0), 0)
+                      )}
+                    </strong>
+                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Rate: {influencerProfile.commission_percentage}%</small>
+                  </div>
+                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Settled Payouts</span>
+                    <strong style={{ fontSize: '1.5rem', color: '#2E7D32' }}>
+                      {formatMoney(
+                        influencerStats.referrals
+                          .filter(r => r.status === 'paid')
+                          .reduce((sum, r) => sum + (Number(r.commission_amount) || 0), 0)
+                      )}
+                    </strong>
+                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>
+                      Pending: {formatMoney(
+                        influencerStats.referrals
+                          .filter(r => r.status === 'pending')
+                          .reduce((sum, r) => sum + (Number(r.commission_amount) || 0), 0)
+                      )}
+                    </small>
+                  </div>
+                </div>
+
+                {/* 2. Link Sharing Section */}
+                <div style={{ padding: '1.5rem', border: '1px solid var(--line)', borderRadius: '8px', background: 'var(--surface)' }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.5rem' }}>Your Unique Referral Link</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '1rem' }}>
+                    Copy this link and share it in your social media bio, YouTube descriptions, or Instagram posts. When a business clicks your link and places a wholesale order, you get paid!
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      readOnly
+                      value={typeof window !== 'undefined' ? `${window.location.origin}/?ref=${influencerProfile.referral_code}` : ''}
+                      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.85rem', background: 'var(--bg-light)', color: 'var(--text-dark)', fontWeight: 600 }}
+                      onClick={e => e.target.select()}
+                    />
+                    <button
+                      type="button"
+                      className="primary-button"
+                      style={{ padding: '0 16px', whiteSpace: 'nowrap' }}
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          navigator.clipboard.writeText(`${window.location.origin}/?ref=${influencerProfile.referral_code}`);
+                          alert('Link copied to clipboard!');
+                        }
+                      }}
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Conversion Transactions Log */}
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem' }}>Referred Conversion History</h3>
+                  {influencerStats.referrals.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed var(--line)', borderRadius: '8px', color: 'var(--muted)' }}>
+                      No referred orders recorded yet. Share your link to start earning!
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: '8px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                        <thead>
+                          <tr style={{ background: 'var(--surface-soft)', borderBottom: '1px solid var(--line)' }}>
+                            <th style={{ padding: '10px 12px' }}>Date</th>
+                            <th style={{ padding: '10px 12px' }}>Reference</th>
+                            <th style={{ padding: '10px 12px' }}>Buyer Name</th>
+                            <th style={{ padding: '10px 12px' }}>Order Total</th>
+                            <th style={{ padding: '10px 12px' }}>My Commission</th>
+                            <th style={{ padding: '10px 12px' }}>Payout Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {influencerStats.referrals.map(ref => {
+                            const dateStr = new Date(ref.created_at).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            });
+                            
+                            let statusBg = '#F5F5F5';
+                            let statusColor = '#616161';
+                            if (ref.status === 'paid') {
+                              statusBg = '#EAFAF1';
+                              statusColor = '#2E7D32';
+                            } else if (ref.status === 'cancelled') {
+                              statusBg = '#FFEBEE';
+                              statusColor = '#C62828';
+                            } else if (ref.status === 'pending') {
+                              statusBg = '#FFF8E1';
+                              statusColor = '#B78646';
+                            }
+
+                            return (
+                              <tr key={ref.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                                <td style={{ padding: '10px 12px' }}>{dateStr}</td>
+                                <td style={{ padding: '10px 12px' }}><code style={{ fontSize: '11px' }}>{ref.order_id || ref.inquiry_id || 'N/A'}</code></td>
+                                <td style={{ padding: '10px 12px' }}>{ref.buyer_name || 'Guest Buyer'}</td>
+                                <td style={{ padding: '10px 12px', fontWeight: 600 }}>{formatMoney(ref.sale_amount)}</td>
+                                <td style={{ padding: '10px 12px', fontWeight: 700, color: 'var(--gold-dark)' }}>{formatMoney(ref.commission_amount)}</td>
+                                <td style={{ padding: '10px 12px' }}>
+                                  <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, background: statusBg, color: statusColor }}>
+                                    {ref.status.toUpperCase()}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </article>
         )}
       </div>

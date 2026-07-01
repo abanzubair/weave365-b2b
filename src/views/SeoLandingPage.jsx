@@ -270,7 +270,7 @@ export default function SeoLandingPage({
               ))}
             </div>
             {filteredProducts.length > visibleCount && (
-              <div className="load-more-row" style={{ marginTop: '4.5rem' }}>
+              <div className="load-more-row">
                 <button type="button" className="secondary-button" onClick={() => setVisibleCount(prev => prev + 25)}>
                   Show more products
                 </button>

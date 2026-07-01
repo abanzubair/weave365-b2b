@@ -3741,6 +3741,10 @@ button {
   display: block !important;
 }
 
+.account-dashboard-grid.tab-active-influencer .panel-influencer {
+  display: block !important;
+}
+
 .panel-reseller {
   grid-column: 1 / -1;
   margin-top: 8px;

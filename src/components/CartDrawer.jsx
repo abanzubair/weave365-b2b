@@ -19,6 +19,7 @@ import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { EnquiryPopup } from './EnquiryPopup.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+import { recordReferral } from '../utils/influencerHelpers.js';
 
 export function CartDrawer({
   open,
@@ -306,17 +307,34 @@ export function CartDrawer({
           };
         });
 
-        await supabase.from('inquiries').insert({
-          user_id: priceAccess?.userId || undefined,
-          email: priceAccess?.userEmail || undefined,
-          buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-          phone: priceAccess?.buyerPhone || undefined,
-          pincode: pincode || priceAccess?.buyerPincode || undefined,
-          inquiry_type: 'cart',
-          status: 'new',
-          message: `Enquiry for ${items.length} items in cart`,
-          items: enquiryItems,
-        });
+        const { data: inquiryData, error: inquiryErr } = await supabase
+          .from('inquiries')
+          .insert({
+            user_id: priceAccess?.userId || undefined,
+            email: priceAccess?.userEmail || undefined,
+            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
+            phone: priceAccess?.buyerPhone || undefined,
+            pincode: pincode || priceAccess?.buyerPincode || undefined,
+            inquiry_type: 'cart',
+            status: 'new',
+            message: `Enquiry for ${items.length} items in cart`,
+            items: enquiryItems,
+          })
+          .select('id')
+          .single();
+
+        if (inquiryErr) throw inquiryErr;
+
+        if (inquiryData?.id) {
+          const saleAmount = items.reduce((sum, it) => sum + (Number(customerPrice(it.variant.prices, priceAccess)) || 0) * (Number(it.quantity) || 1), 0);
+          void recordReferral({
+            inquiryId: inquiryData.id,
+            buyerId: priceAccess?.userId || null,
+            buyerName: priceAccess?.buyerName || 'Guest Buyer',
+            items: enquiryItems,
+            saleAmount: saleAmount,
+          });
+        }
 
         // Send email alert via Resend API endpoint
         fetch('/api/inquiry-notification', {
@@ -378,6 +396,24 @@ export function CartDrawer({
         if (insertErr) throw insertErr;
         if (insertData?.id) {
           newInquiryId = insertData.id;
+
+          const orderItems = items.map(item => ({
+            product_id: item.productGroupKey,
+            product_title: item.product.title,
+            variant_code: item.variant.code,
+            color: item.selectedColorName,
+            quantity: item.quantity,
+            price: customerPrice(item.variant.prices, priceAccess),
+          }));
+          const saleAmount = items.reduce((sum, it) => sum + (Number(customerPrice(it.variant.prices, priceAccess)) || 0) * (Number(it.quantity) || 1), 0);
+
+          void recordReferral({
+            orderId: newInquiryId,
+            buyerId: priceAccess?.userId || null,
+            buyerName: priceAccess?.buyerName || 'Guest Buyer',
+            items: orderItems,
+            saleAmount: saleAmount,
+          });
         }
       } catch (err) {
         console.error('Failed to log payment order to Supabase:', err);
