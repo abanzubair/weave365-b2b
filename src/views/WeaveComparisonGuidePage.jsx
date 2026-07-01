@@ -67,7 +67,7 @@ export function WeaveComparisonGuidePage({ navigate }) {
         <span className="kicker">{pageData.introTitle || "Weave Comparison"}</span>
         <h1>{pageData.h1 || "Handloom vs Semi Handloom vs Powerloom, What is the Real Difference"}</h1>
         <div className="divider"></div>
-        <p className="tagline">Know your fabric before you buy</p>
+        <p className="tagline">Know your Banarasi Saree before you buy</p>
       </header>
 
       <main className="weave-guide-layout">
@@ -161,7 +161,7 @@ export function WeaveComparisonGuidePage({ navigate }) {
         {/* Sourcing Sorter / Checklist Steps */}
         {pageData.buyerGuideSections && (
           <section className="weave-steps-section" aria-label="Quality Checks">
-            <h2>{pageData.buyerGuideTitle || "How We Check Handloom, Semi Handloom and Powerloom Fabric"}</h2>
+            <h2>{pageData.buyerGuideTitle || "How We Check Handloom, Semi Handloom and Powerloom Saree"}</h2>
             <span className="section-subtitle">Varanasi's direct-weaver B2B sourcing checks for boutiques worldwide</span>
             <div className="weave-steps-grid">
               {pageData.buyerGuideSections.map((step, idx) => (

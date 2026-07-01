@@ -549,7 +549,7 @@
   .weave-comparison-image-column {
     flex: 0 0 100%;
     width: 100%;
-    max-width: 280px;
+    max-width: 380px;
     margin: 0 auto;
   }
   .weave-comparison-image-wrap {
