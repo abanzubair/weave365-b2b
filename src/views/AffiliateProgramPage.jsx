@@ -54,7 +54,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
     {
       num: '4',
       icon: Coins,
-      title: 'Earn uoto 15% Commission',
+      title: 'Earn upto 15% Commission',
       desc: 'Receive direct payouts via UPI or bank wire transfer on all successful checkouts referred by you.'
     }
   ];
