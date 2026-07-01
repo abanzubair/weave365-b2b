@@ -134,8 +134,8 @@
 }
 
 .weave-comparison-image-column {
-  flex: 0 0 33%;
-  width: 33%;
+  flex: 0 0 24%;
+  width: 24%;
 }
 
 .weave-comparison-image-wrap {
@@ -509,8 +509,8 @@
     padding: 0;
   }
   .weave-comparison-image-column {
-    flex: 0 0 38%;
-    width: 38%;
+    flex: 0 0 30%;
+    width: 30%;
   }
   .weave-comparison-text-column h2 {
     font-size: 1.7rem;
@@ -549,7 +549,7 @@
   .weave-comparison-image-column {
     flex: 0 0 100%;
     width: 100%;
-    max-width: 340px;
+    max-width: 280px;
     margin: 0 auto;
   }
   .weave-comparison-image-wrap {
