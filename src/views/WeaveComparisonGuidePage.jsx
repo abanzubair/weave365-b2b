@@ -86,7 +86,6 @@ export function WeaveComparisonGuidePage({ navigate }) {
                 <div className="weave-comparison-image-column">
                   <div className="weave-comparison-image-wrap">
                     <img src={sec.image} alt={sec.title} loading="lazy" />
-                    <span className="weave-comparison-badge">{sec.badge || "Fabric Guide"}</span>
                   </div>
                 </div>
                 <div className="weave-comparison-text-column">
