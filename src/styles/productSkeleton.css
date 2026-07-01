@@ -1,23 +1,36 @@
-@keyframes skeleton-shimmer {
+@keyframes skeleton-shimmer-gpu {
   0% {
-    background-position: -200% 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: 200% 0;
+    transform: translateX(100%);
   }
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--cream) 25%,
-    var(--surface-muted) 50%,
-    var(--cream) 75%
-  ) !important;
-  background-size: 200% 100% !important;
-  animation: skeleton-shimmer 1.6s infinite linear !important;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-soft, #f5f5f5) !important;
   border-radius: 8px;
   border: none !important;
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 30%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-shimmer-gpu 1.6s infinite linear !important;
 }
 
 .product-skeleton {
