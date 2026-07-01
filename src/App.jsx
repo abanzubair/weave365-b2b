@@ -1177,86 +1177,77 @@ export default function App({ initialData = {} }) {
           ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` 
           : 'Wholesale Catalogue';
 
-      const showSkeleton = !!pendingRoute;
-
       return (
-        <div style={{ position: 'relative', minHeight: '80vh' }}>
-          {showSkeleton && (
-            <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
-              <div className="catalog-toolbar" style={{ border: 'none', marginBottom: '20px' }}>
-                <div className="catalog-header-row" style={{ marginBottom: '20px' }}>
-                  <div className="skeleton-text" style={{ width: '250px', height: '36px', margin: 0 }}></div>
-                </div>
-                <div className="catalog-filters-container" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
-                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
-                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
-                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
-                </div>
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <div className="catalog-toolbar" style={{ border: 'none', marginBottom: '20px' }}>
+              <div className="catalog-header-row" style={{ marginBottom: '20px' }}>
+                <div className="skeleton-text" style={{ width: '250px', height: '36px', margin: 0 }}></div>
               </div>
-              <CatalogPageSkeleton count={8} wrap={true} />
+              <div className="catalog-filters-container" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+              </div>
             </div>
-          )}
-          <div style={{ display: showSkeleton ? 'none' : 'block' }}>
-            <Catalog
-              title={catalogTitle}
-              products={partnerFilteredProducts}
-              status={status}
-              error={error}
-              categories={categories}
-              category={activeCategory}
-              setCategory={setCategory}
-              fabrics={fabrics}
-              fabric={fabric}
-              setFabric={setFabric}
-              weaves={weaves}
-              weave={weave}
-              setWeave={setWeave}
-              priceRanges={priceRanges}
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-              search={search}
-              setSearch={setSearch}
-              navigate={navigate}
-              addToCart={addToCart}
-              toggleFavorite={toggleFavorite}
-              favoriteKeys={favoriteKeySet}
-              priceAccess={priceAccess}
-              openAuth={() => setAuthOpen(true)}
-              isTransitioning={!!pendingRoute}
-              pageSeoSettings={pageSeoSettings}
-            />
+            <CatalogPageSkeleton count={8} wrap={true} />
           </div>
-        </div>
+        }>
+          <Catalog
+            title={catalogTitle}
+            products={partnerFilteredProducts}
+            status={status}
+            error={error}
+            categories={categories}
+            category={activeCategory}
+            setCategory={setCategory}
+            fabrics={fabrics}
+            fabric={fabric}
+            setFabric={setFabric}
+            weaves={weaves}
+            weave={weave}
+            setWeave={setWeave}
+            priceRanges={priceRanges}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            search={search}
+            setSearch={setSearch}
+            navigate={navigate}
+            addToCart={addToCart}
+            toggleFavorite={toggleFavorite}
+            favoriteKeys={favoriteKeySet}
+            priceAccess={priceAccess}
+            openAuth={() => setAuthOpen(true)}
+            isTransitioning={false}
+            pageSeoSettings={pageSeoSettings}
+          />
+        </Suspense>
       );
     }
 
     if (route === 'product') {
-      const showSkeleton = !!pendingRoute || !isProductPageReady;
       return (
-        <div style={{ position: 'relative', minHeight: '80vh' }}>
-          {showSkeleton && <ProductPageSkeleton />}
-          <div style={{ display: showSkeleton ? 'none' : 'block' }}>
-            <ProductDetailWrapper
-              productId={productId}
-              products={pricedProducts}
-              productsById={productsById}
-              navigate={navigate}
-              addToCart={addToCart}
-              addCartSelections={addCartSelections}
-              toggleFavorite={toggleFavorite}
-              favoriteKeys={favoriteKeySet}
-              priceAccess={priceAccess}
-              openAuth={() => setAuthOpen(true)}
-              pincode={pincode}
-              setPincode={setPincode}
-              codStatus={codStatus}
-              checkPincode={checkPincode}
-              user={user}
-              onReady={() => setIsProductPageReady(true)}
-            />
-          </div>
-        </div>
+        <Suspense fallback={<ProductPageSkeleton />}>
+          <ProductDetailWrapper
+            productId={productId}
+            products={pricedProducts}
+            productsById={productsById}
+            navigate={navigate}
+            addToCart={addToCart}
+            addCartSelections={addCartSelections}
+            toggleFavorite={toggleFavorite}
+            favoriteKeys={favoriteKeySet}
+            priceAccess={priceAccess}
+            openAuth={() => setAuthOpen(true)}
+            pincode={pincode}
+            setPincode={setPincode}
+            codStatus={codStatus}
+            checkPincode={checkPincode}
+            user={user}
+            onReady={() => {}}
+          />
+        </Suspense>
       );
     }
 
@@ -1344,18 +1335,24 @@ export default function App({ initialData = {} }) {
 
     if (route === 'new-arrivals') {
       return (
-        <NewArrivalsPage
-          products={pricedProducts}
-          status={status}
-          error={error}
-          navigate={navigate}
-          addToCart={addToCart}
-          toggleFavorite={toggleFavorite}
-          favoriteKeys={favoriteKeySet}
-          priceAccess={priceAccess}
-          openAuth={() => setAuthOpen(true)}
-          isTransitioning={!!pendingRoute}
-        />
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={12} wrap={true} />
+          </div>
+        }>
+          <NewArrivalsPage
+            products={pricedProducts}
+            status={status}
+            error={error}
+            navigate={navigate}
+            addToCart={addToCart}
+            toggleFavorite={toggleFavorite}
+            favoriteKeys={favoriteKeySet}
+            priceAccess={priceAccess}
+            openAuth={() => setAuthOpen(true)}
+            isTransitioning={false}
+          />
+        </Suspense>
       );
     }
 
@@ -1366,20 +1363,26 @@ export default function App({ initialData = {} }) {
     const matchedLandingPage = landingPages.find(p => p.slug === route);
     if (matchedLandingPage) {
       return (
-        <SeoLandingPage
-          slug={route}
-          pageData={matchedLandingPage}
-          products={pricedProducts}
-          status={status}
-          error={error}
-          navigate={navigate}
-          addToCart={addToCart}
-          toggleFavorite={toggleFavorite}
-          favoriteKeys={favoriteKeySet}
-          priceAccess={priceAccess}
-          openAuth={() => setAuthOpen(true)}
-          landingPages={landingPages}
-        />
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={12} wrap={true} />
+          </div>
+        }>
+          <SeoLandingPage
+            slug={route}
+            pageData={matchedLandingPage}
+            products={pricedProducts}
+            status={status}
+            error={error}
+            navigate={navigate}
+            addToCart={addToCart}
+            toggleFavorite={toggleFavorite}
+            favoriteKeys={favoriteKeySet}
+            priceAccess={priceAccess}
+            openAuth={() => setAuthOpen(true)}
+            landingPages={landingPages}
+          />
+        </Suspense>
       );
     }
 
