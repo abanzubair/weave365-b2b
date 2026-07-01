@@ -144,6 +144,36 @@ const staticSeoDefaults = [
     metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
     metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
   },
+  {
+    path: '/reviews',
+    label: 'Reviews',
+    metaTitle: 'Customer Reviews & Boutique Feedback | Weave 365',
+    metaDescription: 'Read reviews and testimonials from registered boutique owners, retail partners, and saree resellers about their sourcing experience with Weave 365.',
+  },
+  {
+    path: '/our-offerings',
+    label: 'Our Offerings',
+    metaTitle: 'B2B Sourcing Services & Weaver Network | Weave 365',
+    metaDescription: 'Discover our complete range of B2B offerings: custom catalog curation, quality checks, artisan direct pricing, and worldwide logistics for boutique owners.',
+  },
+  {
+    path: '/affiliate-program',
+    label: 'Affiliate Program',
+    metaTitle: 'B2B Saree Affiliate Program | Earn Commissions | Weave 365',
+    metaDescription: 'Join the Weave 365 B2B Affiliate Program. Refer boutique owners and retail store owners to our wholesale Banarasi saree platform and earn attractive commissions.',
+  },
+  {
+    path: '/order-tracking',
+    label: 'Order Tracking',
+    metaTitle: 'Track Wholesale Orders & Cargo Shipments | Weave 365',
+    metaDescription: 'Real-time updates on your wholesale saree order, weaver verification checks, packaging status, and international custom tracking.',
+  },
+  {
+    path: '/reseller-dashboard',
+    label: 'Reseller Dashboard',
+    metaTitle: 'B2B Reseller Portal & Catalog Manager | Weave 365',
+    metaDescription: 'Manage your client catalog links, WhatsApp product assets, customized pricing markups, and order pipelines from your reseller panel.',
+  },
 ];
 
 const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {

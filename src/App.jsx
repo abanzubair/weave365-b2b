@@ -1264,6 +1264,7 @@ export default function App({ initialData = {} }) {
           updateQuantity={updateQuantity}
           addToCart={addToCart}
           onSignOut={handleSignOut}
+          initialTab={searchParams?.get('tab')}
         />
       );
     }
@@ -1315,7 +1316,7 @@ export default function App({ initialData = {} }) {
     }
 
     if (route === 'affiliate-program') {
-      return <AffiliateProgramPage navigate={navigate} openAuth={() => setAuthOpen(true)} />;
+      return <AffiliateProgramPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />;
     }
 
     if (route === 'new-arrivals') {

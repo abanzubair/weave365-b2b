@@ -118,14 +118,7 @@
   border-radius: 12px;
   padding: 30px;
   position: relative;
-  transition: all 0.3s ease;
   height: 100%;
-}
-
-.affiliate-step-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--gold);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .affiliate-step-num {
@@ -185,8 +178,8 @@
 
 .affiliate-benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .affiliate-benefit-card {
@@ -194,9 +187,12 @@
   border-radius: 12px;
   padding: 24px;
   display: flex;
+  flex-direction: column;
   gap: 16px;
   border: 1px solid var(--line);
 }
+
+
 
 .affiliate-benefit-icon-box {
   width: 48px;
@@ -211,13 +207,13 @@
 }
 
 .affiliate-benefit-details h3 {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .affiliate-benefit-details p {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--muted);
   line-height: 1.5;
 }
@@ -246,16 +242,17 @@
 }
 
 .affiliate-alert-content h4 {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .affiliate-alert-content p {
+  margin: 1px;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--ink);
 }
 
 /* FAQ Section */
@@ -296,7 +293,7 @@
 }
 
 .affiliate-faq-trigger h3 {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--ink);
   margin: 0;
@@ -330,6 +327,12 @@
   color: var(--muted);
 }
 
+@media (max-width: 1024px) {
+  .affiliate-benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .affiliate-hero-section {
     padding: 60px 20px 40px;
@@ -339,6 +342,9 @@
   }
   .affiliate-benefits-section {
     padding: 50px 20px;
+  }
+  .affiliate-benefits-grid {
+    grid-template-columns: 1fr;
   }
   .affiliate-faq-section {
     padding: 50px 20px;

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import '../styles/affiliateProgramPage.css';
 
-export function AffiliateProgramPage({ navigate, openAuth }) {
+export function AffiliateProgramPage({ user, navigate, openAuth }) {
   const [openFaq, setOpenFaq] = useState(null);
 
   const toggleFaq = (index) => {
@@ -54,8 +54,8 @@ export function AffiliateProgramPage({ navigate, openAuth }) {
     {
       num: '4',
       icon: Coins,
-      title: 'Earn 10% Commission',
-      desc: 'Receive direct payouts via UPI or bank wire transfer on all successful wholesale checkouts referred by you.'
+      title: 'Earn uoto 15% Commission',
+      desc: 'Receive direct payouts via UPI or bank wire transfer on all successful checkouts referred by you.'
     }
   ];
 
@@ -67,7 +67,7 @@ export function AffiliateProgramPage({ navigate, openAuth }) {
     },
     {
       icon: TrendingUp,
-      title: 'Lucrative 10% Share',
+      title: 'Lucrative 15% Share',
       desc: 'Enjoy a premium double-digit commission rate on every single order value. Since B2B bulk orders are typically large, your earnings per referral scale quickly.'
     },
     {
@@ -89,7 +89,7 @@ export function AffiliateProgramPage({ navigate, openAuth }) {
     },
     {
       q: 'What is the standard commission structure?',
-      a: 'We offer a flat 10% commission on the final order transaction amount (excluding tax and shipping fees) for every successful bulk order placed by a customer referred by you.'
+      a: 'We offer upto 15% commission on the final order transaction amount (excluding tax and shipping fees) for every successful bulk order placed by a customer referred by you.'
     },
     {
       q: 'When do I receive my payouts?',
@@ -113,7 +113,7 @@ export function AffiliateProgramPage({ navigate, openAuth }) {
           <span className="affiliate-hero-kicker">Weave 365 Affiliates</span>
           <h1 className="affiliate-hero-title">
             Share Heritage Weaves, <br />
-            <span>Earn 10% Commission</span>
+            <span>Earn upto 15% Commission</span>
           </h1>
           <p className="affiliate-hero-description">
             Promote authentic Banarasi sarees, suits, lhenga and fabrics directly from Varanasi. Earn premium commission payouts on referred purchases with zero investment.
@@ -121,7 +121,13 @@ export function AffiliateProgramPage({ navigate, openAuth }) {
           <button 
             type="button" 
             className="affiliate-hero-action" 
-            onClick={openAuth}
+            onClick={() => {
+              if (user) {
+                navigate('account?tab=influencer');
+              } else {
+                openAuth();
+              }
+            }}
           >
             <span>Register as Partner</span>
             <ArrowRight size={18} />
