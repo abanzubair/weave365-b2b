@@ -33,7 +33,7 @@ const getCollectionTagline = (itemSlug) => {
   }
 };
 
-export default function SeoLandingPage({
+export function SeoLandingPage({
   slug,
   pageData,
   products = [],

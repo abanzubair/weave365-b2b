@@ -66,7 +66,7 @@ const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.j
 const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => m.TrustedPartnerRegistrationPage), { ssr: false });
 const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => m.ResellerDashboard), { ssr: false });
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
-const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx'));
+const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
