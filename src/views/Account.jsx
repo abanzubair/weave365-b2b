@@ -847,7 +847,7 @@ export function Account({
         )}
 
         {activeTab === 'influencer' && (
-          <article className="account-panel panel-influencer" style={{ gridColumn: 'span 2' }}>
+          <article className="account-panel panel-influencer">
             <div className="account-panel-head" style={{ marginBottom: '1.5rem' }}>
               <span><UserRound size={18} /> Weave 365 Affiliate Program</span>
             </div>
@@ -1021,40 +1021,40 @@ export function Account({
               </div>
             ) : (
               /* Active Influencer Dashboard */
-              <div style={{ display: 'grid', gap: '24px' }}>
+              <div style={{ display: 'grid', gap: '24px', minWidth: 0, width: '100%' }}>
                 {/* 1. Stats Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Visitors</span>
-                    <strong style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>{influencerStats.clicks}</strong>
-                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Unique Clickthroughs</small>
+                <div className="influencer-stats-grid">
+                  <div className="influencer-stats-card">
+                    <span>Total Visitors</span>
+                    <strong style={{ color: 'var(--text-dark)' }}>{influencerStats.clicks}</strong>
+                    <small>Unique Clickthroughs</small>
                   </div>
-                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Conversions</span>
-                    <strong style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>{influencerStats.referrals.filter(r => r.status !== 'cancelled').length}</strong>
-                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Orders</small>
+                  <div className="influencer-stats-card">
+                    <span>Total Conversions</span>
+                    <strong style={{ color: 'var(--text-dark)' }}>{influencerStats.referrals.filter(r => r.status !== 'cancelled').length}</strong>
+                    <small>Orders</small>
                   </div>
-                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Commission Earned</span>
-                    <strong style={{ fontSize: '1.5rem', color: 'var(--gold-dark)' }}>
+                  <div className="influencer-stats-card">
+                    <span>Commission Earned</span>
+                    <strong style={{ color: 'var(--gold-dark)' }}>
                       {formatMoney(
                         influencerStats.referrals
                           .filter(r => r.status !== 'cancelled')
                           .reduce((sum, r) => sum + (Number(r.commission_amount) || 0), 0)
                       )}
                     </strong>
-                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Rate: {influencerProfile.commission_percentage}%</small>
+                    <small>Rate: {influencerProfile.commission_percentage}%</small>
                   </div>
-                  <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Settled Payouts</span>
-                    <strong style={{ fontSize: '1.5rem', color: '#2E7D32' }}>
+                  <div className="influencer-stats-card">
+                    <span>Settled Payouts</span>
+                    <strong style={{ color: '#2E7D32' }}>
                       {formatMoney(
                         influencerStats.referrals
                           .filter(r => r.status === 'paid')
                           .reduce((sum, r) => sum + (Number(r.commission_amount) || 0), 0)
                       )}
                     </strong>
-                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>
+                    <small>
                       Pending: {formatMoney(
                         influencerStats.referrals
                           .filter(r => r.status === 'pending')
@@ -1065,17 +1065,17 @@ export function Account({
                 </div>
 
                 {/* 2. Link Sharing Section */}
-                <div style={{ padding: '1.5rem', border: '1px solid var(--line)', borderRadius: '8px', background: 'var(--surface)' }}>
+                <div className="influencer-link-section" style={{ padding: '1.5rem', border: '1px solid var(--line)', borderRadius: '8px', background: 'var(--surface)' }}>
                   <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.5rem' }}>Your Unique Referral Link</h3>
                   <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '1rem' }}>
                     Copy this link and share it in your social media bio, YouTube descriptions, or Instagram posts. When a business clicks your link and places a wholesale order, you get paid!
                   </p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="influencer-share-row">
                     <input
                       type="text"
                       readOnly
                       value={typeof window !== 'undefined' ? `${window.location.origin}/?ref=${influencerProfile.referral_code}` : ''}
-                      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.85rem', background: 'var(--bg-light)', color: 'var(--text-dark)', fontWeight: 600 }}
+                      style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '0.85rem', background: 'var(--bg-light)', color: 'var(--text-dark)', fontWeight: 600, width: '100%', boxSizing: 'border-box', minWidth: 0 }}
                       onClick={e => e.target.select()}
                     />
                     <button
@@ -1102,8 +1102,8 @@ export function Account({
                       No referred orders recorded yet. Share your link to start earning!
                     </div>
                   ) : (
-                    <div style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                    <div className="influencer-history-wrapper" style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: '8px', width: '100%', minWidth: 0 }}>
+                      <table className="influencer-history-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                         <thead>
                           <tr style={{ background: 'var(--surface-soft)', borderBottom: '1px solid var(--line)' }}>
                             <th style={{ padding: '10px 12px' }}>Date</th>
@@ -1137,12 +1137,12 @@ export function Account({
 
                             return (
                               <tr key={ref.id} style={{ borderBottom: '1px solid var(--line)' }}>
-                                <td style={{ padding: '10px 12px' }}>{dateStr}</td>
-                                <td style={{ padding: '10px 12px' }}><code style={{ fontSize: '11px' }}>{ref.order_id || ref.inquiry_id || 'N/A'}</code></td>
-                                <td style={{ padding: '10px 12px' }}>{ref.buyer_name || 'Guest Buyer'}</td>
-                                <td style={{ padding: '10px 12px', fontWeight: 600 }}>{formatMoney(ref.sale_amount)}</td>
-                                <td style={{ padding: '10px 12px', fontWeight: 700, color: 'var(--gold-dark)' }}>{formatMoney(ref.commission_amount)}</td>
-                                <td style={{ padding: '10px 12px' }}>
+                                <td data-label="Date" style={{ padding: '10px 12px' }}>{dateStr}</td>
+                                <td data-label="Reference" style={{ padding: '10px 12px' }}><code style={{ fontSize: '11px' }}>{ref.order_id || ref.inquiry_id || 'N/A'}</code></td>
+                                <td data-label="Buyer" style={{ padding: '10px 12px' }}>{ref.buyer_name || 'Guest Buyer'}</td>
+                                <td data-label="Order Total" style={{ padding: '10px 12px', fontWeight: 600 }}>{formatMoney(ref.sale_amount)}</td>
+                                <td data-label="Commission" style={{ padding: '10px 12px', fontWeight: 700, color: 'var(--gold-dark)' }}>{formatMoney(ref.commission_amount)}</td>
+                                <td data-label="Status" style={{ padding: '10px 12px' }}>
                                   <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, background: statusBg, color: statusColor }}>
                                     {ref.status.toUpperCase()}
                                   </span>

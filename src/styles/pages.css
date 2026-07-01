@@ -3745,9 +3745,55 @@ button {
   display: block !important;
 }
 
+.influencer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.influencer-stats-card {
+  padding: 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.influencer-stats-card span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.influencer-stats-card strong {
+  display: block;
+  font-size: 1.5rem;
+  margin: 4px 0;
+}
+
+.influencer-stats-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.influencer-share-row {
+  display: flex;
+  gap: 8px;
+}
+
 .panel-reseller {
   grid-column: 1 / -1;
   margin-top: 8px;
+}
+
+.panel-influencer {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .account-panel {
@@ -3943,6 +3989,150 @@ button {
   .account-qty-controls {
     grid-column: 2 !important;
     margin-top: 8px !important;
+  }
+
+  .influencer-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .influencer-stats-card {
+    padding: 12px;
+  }
+
+  .influencer-stats-card span {
+    font-size: 0.68rem;
+  }
+
+  .influencer-stats-card strong {
+    font-size: 1.25rem;
+  }
+
+  .influencer-stats-card small {
+    font-size: 10px;
+  }
+
+  .influencer-share-row {
+    flex-direction: column;
+  }
+
+  .influencer-share-row button {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  /* Referral link section — constrain text */
+  .influencer-link-section {
+    padding: 1rem !important;
+  }
+
+  .influencer-link-section p {
+    font-size: 0.75rem !important;
+  }
+
+  /* Table → mobile card layout */
+  .influencer-history-wrapper {
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  .influencer-history-table thead {
+    display: none;
+  }
+
+  .influencer-history-table {
+    border: none !important;
+  }
+
+  .influencer-history-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .influencer-history-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 0;
+    border: 1px solid var(--line) !important;
+    border-radius: 12px;
+    background: var(--surface-soft);
+    overflow: hidden;
+  }
+
+  .influencer-history-table td {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 14px !important;
+    border: none !important;
+    font-size: 0.82rem;
+  }
+
+  .influencer-history-table td::before {
+    content: attr(data-label);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* — Row 1: Date + Status header band — */
+  .influencer-history-table td[data-label="Date"] {
+    order: 1;
+    font-weight: 700;
+    font-size: 0.85rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line) !important;
+  }
+  .influencer-history-table td[data-label="Date"]::before {
+    display: none;
+  }
+
+  .influencer-history-table td[data-label="Status"] {
+    order: 2;
+    align-items: flex-end;
+    justify-content: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line) !important;
+  }
+  .influencer-history-table td[data-label="Status"]::before {
+    display: none;
+  }
+
+  /* — Row 2: Buyer + Reference — */
+  .influencer-history-table td[data-label="Buyer"] {
+    order: 3;
+    padding-top: 12px !important;
+  }
+
+  .influencer-history-table td[data-label="Reference"] {
+    order: 4;
+    padding-top: 12px !important;
+  }
+
+  /* — Row 3: Financial summary — */
+  .influencer-history-table td[data-label="Order Total"] {
+    order: 5;
+    border-top: 1px solid var(--line) !important;
+    padding-top: 12px !important;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .influencer-history-table td[data-label="Commission"] {
+    order: 6;
+    border-top: 1px solid var(--line) !important;
+    padding-top: 12px !important;
+    font-size: 0.95rem;
+  }
+
+  .influencer-history-table td code {
+    word-break: break-all;
+    font-size: 10px !important;
+    color: var(--muted);
   }
 }
 
