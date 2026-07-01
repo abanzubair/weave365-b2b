@@ -32,7 +32,8 @@ function getStaticLandingPagesFallback() {
     buyerGuideTitle: page.buyerGuideTitle,
     buyerGuideSections: page.buyerGuideSections || [],
     faqs: page.faqs || [],
-    filter: page.filter || {}
+    filter: page.filter || {},
+    comparisonSections: page.comparisonSections || []
   }));
 }
 

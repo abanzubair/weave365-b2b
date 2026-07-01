@@ -11,6 +11,7 @@
 import Papa from 'papaparse';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
+import { seoLandingPages } from './data/seoLandingPages.js';
 
 const moneyColumns = {
   mrp: 'B2B',
@@ -1018,7 +1019,33 @@ export async function saveSupabaseBlogPost(post) {
 }
 
 export async function fetchSupabaseLandingPages() {
-  if (!isSupabaseConfigured) return [];
+  const staticPages = Object.entries(seoLandingPages).map(([slug, page]) => ({
+    slug,
+    metaTitle: page.metaTitle,
+    metaDescription: page.metaDescription,
+    ogTitle: page.ogTitle || page.metaTitle,
+    ogDescription: page.ogDescription || page.metaDescription,
+    imageUrl: page.imageUrl,
+    canonicalPath: page.canonicalPath || ('/' + slug),
+    robotsIndex: page.robotsIndex !== false,
+    robotsFollow: page.robotsFollow !== false,
+    h1: page.h1,
+    introTitle: page.introTitle,
+    introText: page.introText,
+    buyerGuideTitle: page.buyerGuideTitle,
+    buyerGuideSections: page.buyerGuideSections || [],
+    faqs: page.faqs || [],
+    filter: page.filter || {},
+    comparisonSections: page.comparisonSections || []
+  }));
+
+  const pagesMap = new Map();
+  staticPages.forEach(p => pagesMap.set(p.slug, p));
+
+  if (!isSupabaseConfigured) {
+    return Array.from(pagesMap.values());
+  }
+
   try {
     const { data, error } = await supabase
       .from('landing_pages')
@@ -1026,9 +1053,10 @@ export async function fetchSupabaseLandingPages() {
       .order('slug', { ascending: true });
     if (error) {
       console.warn('Unable to select from landing_pages:', error.message);
-      return [];
+      return Array.from(pagesMap.values());
     }
-    return (data || []).map((row) => ({
+
+    const dbPages = (data || []).map((row) => ({
       id: row.id,
       slug: row.slug,
       metaTitle: row.meta_title || '',
@@ -1046,11 +1074,15 @@ export async function fetchSupabaseLandingPages() {
       buyerGuideSections: row.buyer_guide_sections || [],
       faqs: row.faqs || [],
       filter: row.filter || {},
+      comparisonSections: row.comparison_sections || row.comparisonSections || [],
       updatedAt: row.updated_at,
     }));
+
+    dbPages.forEach(p => pagesMap.set(p.slug, p));
+    return Array.from(pagesMap.values());
   } catch (err) {
-    console.error('Error fetching Supabase landing pages:', err);
-    return [];
+    console.error('Failed to fetch dynamic landing pages:', err);
+    return Array.from(pagesMap.values());
   }
 }
 

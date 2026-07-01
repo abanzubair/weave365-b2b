@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from './productData.js';
 import { blogPosts } from './data/blogPosts.js';
+import { seoLandingPages } from './data/seoLandingPages.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { DropdownPortal } from './components/DropdownPortal.jsx';
 import { SearchOverlay } from './components/SearchOverlay.jsx';
@@ -68,6 +69,7 @@ const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPart
 const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })), { ssr: false });
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
+const WeaveComparisonGuidePage = lazy(() => import('./views/WeaveComparisonGuidePage.jsx').then(m => ({ default: m.WeaveComparisonGuidePage })));
 const AffiliateProgramPage = lazy(() => import('./views/AffiliateProgramPage.jsx').then(m => ({ default: m.AffiliateProgramPage })));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
@@ -254,7 +256,8 @@ export default function App({ initialData = {} }) {
         buyerGuideTitle: page.buyerGuideTitle,
         buyerGuideSections: page.buyerGuideSections || [],
         faqs: page.faqs || [],
-        filter: page.filter || {}
+        filter: page.filter || {},
+        comparisonSections: page.comparisonSections || []
       }));
     }
     return pages;
@@ -1352,6 +1355,18 @@ export default function App({ initialData = {} }) {
             openAuth={() => setAuthOpen(true)}
             isTransitioning={false}
           />
+        </Suspense>
+      );
+    }
+
+    if (route === 'handloom-vs-semi-handloom-vs-powerloom-guide') {
+      return (
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={4} wrap={true} />
+          </div>
+        }>
+          <WeaveComparisonGuidePage navigate={navigate} />
         </Suspense>
       );
     }

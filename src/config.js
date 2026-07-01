@@ -121,7 +121,8 @@ export const NON_PRODUCT_ROUTES = new Set([
   'our-offerings',
   'admin',
   'reseller-dashboard',
-  'affiliate-program'
+  'affiliate-program',
+  'handloom-vs-semi-handloom-vs-powerloom-guide'
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {

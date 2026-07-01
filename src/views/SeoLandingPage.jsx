@@ -28,6 +28,8 @@ const getCollectionTagline = (itemSlug) => {
       return 'Supple Lightweight Versatile Drape';
     case 'wholesale-saree-supplier-india':
       return 'Global Export & Bulk Direct Distribution';
+    case 'handloom-vs-semi-handloom-vs-powerloom-guide':
+      return 'Know your fabric before you buy';
     default:
       return 'Handcrafted Banarasi Excellence';
   }
@@ -242,6 +244,30 @@ export function SeoLandingPage({
           </div>
         </section>
       </header>
+
+      {/* Custom Weave Comparison Grid */}
+      {pageData.comparisonSections && pageData.comparisonSections.length > 0 && (
+        <section className="seo-comparison-section">
+          <div className="seo-comparison-grid">
+            {pageData.comparisonSections.map((sec, index) => (
+              <article className="seo-comparison-card" key={index}>
+                <div className="seo-comparison-image-wrapper">
+                  <img 
+                    src={sec.image} 
+                    alt={sec.title} 
+                    loading="lazy"
+                  />
+                  <span className="badge-luxury">{sec.badge || 'Weave Detail'}</span>
+                </div>
+                <div className="seo-comparison-card-content">
+                  <h3>{sec.title}</h3>
+                  <p>{sec.content}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Sourcing Product Grid */}
       <section className="section" style={{ backgroundColor: '#ffffff', padding: '0' }}>
