@@ -234,10 +234,9 @@ export default function InfluencerManager() {
         </button>
       </div>
 
-      {/* 2. Stats Dashboard Cards */}
       <div className="admin-dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ padding: '10px', borderRadius: '50%', background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold-dark)' }}>
+          <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0, background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold-dark)' }}>
             <Users size={20} />
           </div>
           <div>
@@ -248,7 +247,7 @@ export default function InfluencerManager() {
         </div>
 
         <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ padding: '10px', borderRadius: '50%', background: 'rgba(38, 166, 154, 0.1)', color: '#26A69A' }}>
+          <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0, background: 'rgba(38, 166, 154, 0.1)', color: '#26A69A' }}>
             <TrendingUp size={20} />
           </div>
           <div>
@@ -258,7 +257,7 @@ export default function InfluencerManager() {
         </div>
 
         <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ padding: '10px', borderRadius: '50%', background: 'rgba(21, 101, 192, 0.1)', color: '#1565C0' }}>
+          <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0, background: 'rgba(21, 101, 192, 0.1)', color: '#1565C0' }}>
             <DollarSign size={20} />
           </div>
           <div>
@@ -268,7 +267,7 @@ export default function InfluencerManager() {
         </div>
 
         <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ padding: '10px', borderRadius: '50%', background: 'rgba(198, 40, 40, 0.1)', color: '#C62828' }}>
+          <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0, background: 'rgba(198, 40, 40, 0.1)', color: '#C62828' }}>
             <CreditCard size={20} />
           </div>
           <div>
