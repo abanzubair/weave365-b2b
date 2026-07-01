@@ -47,6 +47,7 @@ import { AppLink } from './components/AppLink.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
+import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
 import { validateReferralCode } from './utils/influencerHelpers.js';
 
@@ -1176,35 +1177,57 @@ export default function App({ initialData = {} }) {
           ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` 
           : 'Wholesale Catalogue';
 
+      const showSkeleton = !!pendingRoute;
+
       return (
-        <Catalog
-          title={catalogTitle}
-          products={partnerFilteredProducts}
-          status={status}
-          error={error}
-          categories={categories}
-          category={activeCategory}
-          setCategory={setCategory}
-          fabrics={fabrics}
-          fabric={fabric}
-          setFabric={setFabric}
-          weaves={weaves}
-          weave={weave}
-          setWeave={setWeave}
-          priceRanges={priceRanges}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          search={search}
-          setSearch={setSearch}
-          navigate={navigate}
-          addToCart={addToCart}
-          toggleFavorite={toggleFavorite}
-          favoriteKeys={favoriteKeySet}
-          priceAccess={priceAccess}
-          openAuth={() => setAuthOpen(true)}
-          isTransitioning={!!pendingRoute}
-          pageSeoSettings={pageSeoSettings}
-        />
+        <div style={{ position: 'relative', minHeight: '80vh' }}>
+          {showSkeleton && (
+            <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+              <div className="catalog-toolbar" style={{ border: 'none', marginBottom: '20px' }}>
+                <div className="catalog-header-row" style={{ marginBottom: '20px' }}>
+                  <div className="skeleton-text" style={{ width: '250px', height: '36px', margin: 0 }}></div>
+                </div>
+                <div className="catalog-filters-container" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                  <div className="skeleton-text" style={{ width: '120px', height: '40px', margin: 0 }}></div>
+                </div>
+              </div>
+              <CatalogPageSkeleton count={8} wrap={true} />
+            </div>
+          )}
+          <div style={{ display: showSkeleton ? 'none' : 'block' }}>
+            <Catalog
+              title={catalogTitle}
+              products={partnerFilteredProducts}
+              status={status}
+              error={error}
+              categories={categories}
+              category={activeCategory}
+              setCategory={setCategory}
+              fabrics={fabrics}
+              fabric={fabric}
+              setFabric={setFabric}
+              weaves={weaves}
+              weave={weave}
+              setWeave={setWeave}
+              priceRanges={priceRanges}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              search={search}
+              setSearch={setSearch}
+              navigate={navigate}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              favoriteKeys={favoriteKeySet}
+              priceAccess={priceAccess}
+              openAuth={() => setAuthOpen(true)}
+              isTransitioning={!!pendingRoute}
+              pageSeoSettings={pageSeoSettings}
+            />
+          </div>
+        </div>
       );
     }
 

@@ -23,6 +23,7 @@ import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
+import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import { checkProductPriceInRange } from '../storefrontShared.jsx';
 
 export function NewArrivalsPage({
@@ -342,24 +343,7 @@ export function NewArrivalsPage({
       
       <div className="catalog-grid">
         {status === 'loading' || isTransitioning ? (
-          Array.from({ length: 12 }).map((_, index) => (
-            <div key={index} className="product-card skeleton-card">
-              <div className="card-media skeleton-media"></div>
-              <div className="product-card-copy">
-                <div className="skeleton-text skeleton-title"></div>
-                <div className="card-info-grid">
-                  <div className="info-left" style={{ border: 'none' }}>
-                    <div className="skeleton-text skeleton-price"></div>
-                  </div>
-                  <div className="info-right"></div>
-                </div>
-                <div className="card-actions-new">
-                  <div className="skeleton-button"></div>
-                  <div className="skeleton-button"></div>
-                </div>
-              </div>
-            </div>
-          ))
+          <CatalogPageSkeleton count={12} wrap={false} />
         ) : (
           filteredProducts.slice(0, visibleCount).map((product) => (
             <ProductCard
