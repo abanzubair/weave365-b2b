@@ -75,7 +75,7 @@
 .directory-col h3 {
   font-family: var(--font-hero-heading);
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gold-dark);
   margin: 0;
 }
