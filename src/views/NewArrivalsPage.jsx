@@ -338,7 +338,7 @@ export function NewArrivalsPage({
         </div>
       </div>
 
-      <StateMessage status={status} error={error} />
+      {status === 'error' && <StateMessage status={status} error={error} />}
       
       <div className="catalog-grid">
         {status === 'loading' || isTransitioning ? (
