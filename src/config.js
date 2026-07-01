@@ -120,7 +120,8 @@ export const NON_PRODUCT_ROUTES = new Set([
   'weaver-onboarding',
   'our-offerings',
   'admin',
-  'reseller-dashboard'
+  'reseller-dashboard',
+  'affiliate-program'
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {

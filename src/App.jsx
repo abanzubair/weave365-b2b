@@ -67,6 +67,7 @@ const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPart
 const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })), { ssr: false });
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
+const AffiliateProgramPage = lazy(() => import('./views/AffiliateProgramPage.jsx').then(m => ({ default: m.AffiliateProgramPage })));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
@@ -1311,6 +1312,10 @@ export default function App({ initialData = {} }) {
     if (route === 'wholesale-partner-program') {
 
       return <WholesalePartnerProgramPage openAuth={() => setAuthOpen(true)} />;
+    }
+
+    if (route === 'affiliate-program') {
+      return <AffiliateProgramPage navigate={navigate} openAuth={() => setAuthOpen(true)} />;
     }
 
     if (route === 'new-arrivals') {

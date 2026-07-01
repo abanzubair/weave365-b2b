@@ -51,6 +51,12 @@ export default async function sitemap() {
       priority: 0.6,
     },
     {
+      url: `${siteUrl}/affiliate-program`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
       url: `${siteUrl}/sourcing-partners`,
       lastModified: new Date(),
       changeFrequency: 'monthly',

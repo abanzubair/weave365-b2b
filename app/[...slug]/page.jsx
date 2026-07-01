@@ -402,6 +402,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
+  if (route === 'affiliate-program') {
+    return buildMeta(
+      'Affiliate Partner Program | Earn 10% Commission | Weave 365',
+      'Join the Weave 365 Affiliate Partner Program. Share premium Banarasi collections (saree, suit, and fabrics) and earn 10% commission on every wholesale order.',
+      '/affiliate-program'
+    );
+  }
+
   if (route === 'bulk-inquiry') {
     return buildMeta(
       'Banarasi Saree Wholesale Bulk Inquiry & Sourcing | Weave 365',

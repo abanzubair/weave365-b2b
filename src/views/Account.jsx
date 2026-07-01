@@ -1025,7 +1025,7 @@ export function Account({
                   <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Conversions</span>
                     <strong style={{ fontSize: '1.5rem', color: 'var(--text-dark)' }}>{influencerStats.referrals.filter(r => r.status !== 'cancelled').length}</strong>
-                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Orders / Inquiries</small>
+                    <small style={{ display: 'block', color: 'var(--muted)', fontSize: '11px', marginTop: '4px' }}>Orders</small>
                   </div>
                   <div style={{ padding: '16px', background: 'var(--surface-soft)', border: '1px solid var(--line)', borderRadius: '8px' }}>
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>Commission Earned</span>
