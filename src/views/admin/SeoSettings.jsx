@@ -162,18 +162,6 @@ const staticSeoDefaults = [
     metaTitle: 'B2B Saree Affiliate Program | Earn Commissions | Weave 365',
     metaDescription: 'Join the Weave 365 B2B Affiliate Program. Refer boutique owners and retail store owners to our wholesale Banarasi saree platform and earn attractive commissions.',
   },
-  {
-    path: '/order-tracking',
-    label: 'Order Tracking',
-    metaTitle: 'Track Wholesale Orders & Cargo Shipments | Weave 365',
-    metaDescription: 'Real-time updates on your wholesale saree order, weaver verification checks, packaging status, and international custom tracking.',
-  },
-  {
-    path: '/reseller-dashboard',
-    label: 'Reseller Dashboard',
-    metaTitle: 'B2B Reseller Portal & Catalog Manager | Weave 365',
-    metaDescription: 'Manage your client catalog links, WhatsApp product assets, customized pricing markups, and order pipelines from your reseller panel.',
-  },
 ];
 
 const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {
