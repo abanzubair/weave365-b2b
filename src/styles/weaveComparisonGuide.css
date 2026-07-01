@@ -12,7 +12,7 @@
   background-color: var(--editorial-bg);
   color: var(--editorial-text);
   font-family: var(--font-body, 'Inter', sans-serif);
-  padding: 20px 5% 5px;
+  padding: 20px 8% 5px;
   max-width: 100%;
   margin: 0 auto;
 }
@@ -673,6 +673,9 @@
 
 /* Large display adjustment (e.g. 24 inch 1080p monitors at 1920px wide) */
 @media (min-width: 1200px) {
+  .weave-guide-container {
+    padding: 20px 5% 5px;
+  }
   .weave-guide-hero,
   .weave-guide-layout,
   .weave-matrix-section,
