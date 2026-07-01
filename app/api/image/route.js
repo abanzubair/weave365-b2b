@@ -1,22 +1,9 @@
 import { getRequestContext } from '@cloudflare/next-on-pages';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'edge';
 
-let s3ClientInstance = null;
-function getS3Client() {
-  if (!s3ClientInstance) {
-    s3ClientInstance = new S3Client({
-      region: 'auto',
-      endpoint: process.env.R2_ENDPOINT,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-      },
-    });
-  }
-  return s3ClientInstance;
-}
+// Reference the global uploads map initialized in the upload route or initialize it here
+globalThis.__localUploads = globalThis.__localUploads || new Map();
 
 export async function GET(request) {
   try {
@@ -64,13 +51,6 @@ export async function GET(request) {
       return new Response('Missing image key or URL parameter', { status: 400 });
     }
 
-    let context = null;
-    try {
-      context = getRequestContext();
-    } catch (e) {
-      console.warn('[Image Proxy Route] getRequestContext() not available, utilizing S3 SDK fallback.');
-    }
-
     // Detect Content-Type from file extension
     const ext = key.split('.').pop()?.toLowerCase() || '';
     const mimeTypes = {
@@ -83,6 +63,13 @@ export async function GET(request) {
       'ico': 'image/x-icon',
     };
     const contentType = mimeTypes[ext] || 'image/jpeg';
+
+    let context = null;
+    try {
+      context = getRequestContext();
+    } catch (e) {
+      // getRequestContext not available
+    }
 
     if (context && context.env && context.env.R2_BUCKET) {
       // 🚀 Native R2 binding fetch (Cloudflare Pages Production environment)
@@ -99,17 +86,19 @@ export async function GET(request) {
 
       return new Response(object.body, { headers });
     } else {
-      // ⚙️ S3 client fetch (Local Next.js dev server fallback environment)
-      const hasS3Credentials = Boolean(
-        process.env.R2_ENDPOINT &&
-        process.env.R2_ACCESS_KEY_ID &&
-        process.env.R2_SECRET_ACCESS_KEY
-      );
+      // ⚙️ Local development fallback
+      // Check in-memory uploads first
+      const localFile = globalThis.__localUploads.get(key);
+      if (localFile) {
+        const headers = new Headers();
+        headers.set('Content-Type', localFile.type || contentType);
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+        headers.set('Access-Control-Allow-Origin', '*');
+        return new Response(localFile.buffer, { headers });
+      }
 
-      if (!hasS3Credentials && decodedImageUrl && /^https?:\/\//i.test(decodedImageUrl)) {
-        // To prevent CORS issues when downloading images client-side,
-        // we proxy the image request by fetching it server-side and returning the response bytes.
-        // We only allow proxying requests to our trusted domains to prevent open proxy vulnerability.
+      // Fallback to fetch from public URL if it is a remote image URL
+      if (decodedImageUrl && /^https?:\/\//i.test(decodedImageUrl)) {
         const isAllowedDomain = 
           decodedImageUrl.includes('weave365.in') || 
           decodedImageUrl.includes('weave365.com') || 
@@ -133,23 +122,24 @@ export async function GET(request) {
         return Response.redirect(decodedImageUrl, 302);
       }
 
-      const s3 = getS3Client();
-      const bucketName = process.env.R2_BUCKET_NAME || 'weave365images';
+      // Fallback: If we only have key, we can try fetching from the default public bucket endpoint
+      const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://assets.weave365.com';
+      const cdnUrl = `${baseUrl.replace(/\/$/, '')}/${key}`;
+      try {
+        const fetchResponse = await fetch(cdnUrl);
+        if (fetchResponse.ok) {
+          const buffer = await fetchResponse.arrayBuffer();
+          const headers = new Headers();
+          headers.set('Content-Type', contentType);
+          headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+          headers.set('Access-Control-Allow-Origin', '*');
+          return new Response(buffer, { headers });
+        }
+      } catch (err) {
+        console.error('[Image Proxy Route Fallback Fetch Error]:', err);
+      }
 
-      const response = await s3.send(
-        new GetObjectCommand({
-          Bucket: bucketName,
-          Key: key,
-        })
-      );
-
-      const bytes = await response.Body.transformToByteArray();
-      const headers = new Headers();
-      headers.set('Content-Type', contentType);
-      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-      headers.set('Access-Control-Allow-Origin', '*');
-
-      return new Response(bytes, { headers });
+      return new Response('Image not found', { status: 404 });
     }
   } catch (err) {
     console.error('[Image Proxy API Route Error]:', err);

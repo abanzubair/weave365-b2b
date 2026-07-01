@@ -11,12 +11,10 @@
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1051.0",
     "@supabase/supabase-js": "^2.75.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
-    "motion": "^12.42.0",
     "next": "^16.2.6",
     "papaparse": "^5.5.3",
     "react": "^19.0.0",

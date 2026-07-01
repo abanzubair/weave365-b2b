@@ -1,23 +1,9 @@
 import { getRequestContext } from '@cloudflare/next-on-pages';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'edge';
 
-// S3-compatible client fallback for local development or non-Cloudflare edge runtimes
-let s3ClientInstance = null;
-function getS3Client() {
-  if (!s3ClientInstance) {
-    s3ClientInstance = new S3Client({
-      region: 'auto',
-      endpoint: process.env.R2_ENDPOINT,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-      },
-    });
-  }
-  return s3ClientInstance;
-}
+// Global in-memory cache for local development upload testing without S3 credentials or R2 bindings
+globalThis.__localUploads = globalThis.__localUploads || new Map();
 
 export async function POST(request) {
   try {
@@ -48,7 +34,7 @@ export async function POST(request) {
     try {
       context = getRequestContext();
     } catch (e) {
-      console.warn('[Upload Route] getRequestContext() not available, utilizing S3 SDK fallback.');
+      console.warn('[Upload Route] getRequestContext() not available, using in-memory mock upload.');
     }
 
     if (context && context.env && context.env.R2_BUCKET) {
@@ -61,30 +47,24 @@ export async function POST(request) {
       });
       isBindingUsed = true;
     } else {
-      // ⚙️ S3 client upload (Local Next.js dev server environment)
-      const s3 = getS3Client();
-      const bucketName = process.env.R2_BUCKET_NAME || 'weave365-assets';
-
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: bucketName,
-          Key: key,
-          Body: new Uint8Array(buffer),
-          ContentType: file.type || 'image/jpeg',
-          CacheControl: 'public, max-age=31536000, immutable',
-        })
-      );
+      // ⚙️ Local development in-memory storage fallback
+      globalThis.__localUploads.set(key, {
+        buffer: new Uint8Array(buffer),
+        type: file.type || 'image/jpeg'
+      });
     }
 
     // Build the public custom domain CDN URL
     const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://assets.weave365.com';
-    const publicUrl = `${baseUrl.replace(/\/$/, '')}/${key}`;
+    const publicUrl = isBindingUsed 
+      ? `${baseUrl.replace(/\/$/, '')}/${key}`
+      : `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/image?key=${key}`;
 
     return Response.json({
       status: 'success',
       url: publicUrl,
       key,
-      via: isBindingUsed ? 'r2-binding' : 's3-fallback',
+      via: isBindingUsed ? 'r2-binding' : 'local-in-memory',
     });
   } catch (err) {
     console.error('[Upload API Route Error]:', err);
