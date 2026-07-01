@@ -673,10 +673,13 @@
 
 /* Large display adjustment (e.g. 24 inch 1080p monitors at 1920px wide) */
 @media (min-width: 1600px) {
-  .weave-guide-hero,
   .weave-guide-layout,
   .weave-matrix-section,
   .weave-guide-breadcrumb {
     max-width: 1350px;
+  }
+
+  .weave-guide-hero{
+    max-width: 1100px;
   }
 }
