@@ -1527,7 +1527,7 @@ export default function App({ initialData = {} }) {
 
       {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
       {!isSharedPage && route === 'home' && <ReviewStrip navigate={navigate} />}
-      {!isSharedPage && route !== 'admin' && <Footer navigate={navigate} />}
+      {!isSharedPage && route !== 'admin' && <Footer navigate={navigate} scrollToSection={scrollToSection} />}
       {!isSharedPage && (
         <CartDrawer
           open={cartOpen}

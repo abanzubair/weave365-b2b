@@ -44,7 +44,7 @@ function PinterestIcon({ size = 16, className = "" }) {
   );
 }
 
-export function Footer({ navigate }) {
+export function Footer({ navigate, scrollToSection }) {
   const handleLinkClick = (e, to, productId = null, shopName = null) => {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
       return;
@@ -102,7 +102,21 @@ export function Footer({ navigate }) {
         <a href={`tel:${storeConfig.phone}`}><Phone size={16} /> {storeConfig.phone}</a>
         <a href={`mailto:${storeConfig.email}`}><Mail size={16} /> {storeConfig.email}</a>
         <a href="#working-hours"><Clock size={16} /> Mon - Sat (10AM - 6PM)</a>
-        <a href="#collaboration" className="footer-link"><Handshake size={16} /> Collaboration</a>
+        <a
+          href="/#brand-collab"
+          className="footer-link"
+          onClick={(e) => {
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+            e.preventDefault();
+            if (scrollToSection) {
+              scrollToSection('brand-collab');
+            } else {
+              navigate('home');
+            }
+          }}
+        >
+          <Handshake size={16} /> Collaboration
+        </a>
         <a
           href="/weaver-onboarding"
           className="footer-link"
