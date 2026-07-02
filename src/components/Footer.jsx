@@ -5,7 +5,7 @@
  */
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
-import { Github, Instagram, Youtube, Facebook, Phone, Mail, Clock, UserPlus, Handshake } from 'lucide-react';
+import { Github, Instagram, Youtube, Facebook, Phone, Mail, UserPlus, Handshake, Coins } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
 
 function LinkedInIcon({ size = 16, className = "" }) {
@@ -101,7 +101,13 @@ export function Footer({ navigate, scrollToSection }) {
         <h3>Get In Touch</h3>
         <a href={`tel:${storeConfig.phone}`}><Phone size={16} /> {storeConfig.phone}</a>
         <a href={`mailto:${storeConfig.email}`}><Mail size={16} /> {storeConfig.email}</a>
-        <a href="#working-hours"><Clock size={16} /> Mon - Sat (10AM - 6PM)</a>
+        <a
+          href="/affiliate-program"
+          className="footer-link"
+          onClick={(e) => handleLinkClick(e, 'affiliate-program')}
+        >
+          <Coins size={16} /> Affiliate Program
+        </a>
         <a
           href="/#brand-collab"
           className="footer-link"
