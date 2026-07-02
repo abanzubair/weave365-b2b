@@ -68,7 +68,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
     {
       icon: TrendingUp,
       title: 'Lucrative 15% Share',
-      desc: 'Enjoy a premium double-digit commission rate on every single order value. Since B2B bulk orders are typically large, your earnings per referral scale quickly.'
+      desc: 'Enjoy a premium double-digit commission rate on every single order value. Since bulk orders are typically large, your earnings per referral scale quickly.'
     },
     {
       icon: Award,
@@ -110,13 +110,13 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
       {/* 1. Hero Section */}
       <section className="affiliate-hero-section">
         <div className="affiliate-hero-content">
-          <span className="affiliate-hero-kicker">Weave 365 Affiliates</span>
+          <span className="affiliate-hero-kicker">Weave 365 Affiliates Program</span>
           <h1 className="affiliate-hero-title">
             Share Heritage Weaves, <br />
             <span>Earn upto 15% Commission</span>
           </h1>
           <p className="affiliate-hero-description">
-            Promote authentic Banarasi sarees, suits, lhenga and fabrics directly from Varanasi. Earn premium commission payouts on referred purchases with zero investment.
+            Promote authentic Banarasi sarees, suits, lhenga and more directly from Varanasi. Earn premium commission payouts on referred purchases with zero investment.
           </p>
           <button 
             type="button" 
@@ -191,7 +191,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
               <div className="affiliate-alert-content">
                 <h4>Important Payout Clearance Terms</h4>
                 <p>
-                  Because we ship large wholesale bundles at near-manufacturing margins, all affiliate commission credits are finalized only when the customer payment is verified, the cargo is safely delivered, and the client return eligibility window has fully passed.
+                  Because we ship large wholesale bundles at near-manufacturing margins, all affiliate commission credits are finalized only when the customer payment is verified, the courier is safely delivered, and the client return eligibility window has fully passed.
                 </p>
               </div>
             </div>

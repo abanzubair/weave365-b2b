@@ -827,7 +827,21 @@ export function ProductDetail({
   }, [product.id, product.images, product.title, priceAccess, variant]);
 
   const shareProductPage = useCallback(async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
+    let shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
+    if (typeof window !== 'undefined') {
+      const refCode = localStorage.getItem('influencer_ref');
+      if (refCode) {
+        try {
+          const urlObj = new URL(shareUrl);
+          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer')) {
+            urlObj.searchParams.set('ref', refCode);
+            shareUrl = urlObj.toString();
+          }
+        } catch (e) {
+          console.error('[Share] Invalid share URL format:', e);
+        }
+      }
+    }
     const shareText = `Check out ${product.title} on Weave 365`;
     if (navigator.share) {
       try {
@@ -847,7 +861,7 @@ export function ProductDetail({
         alert('Sharing is not supported on this device.');
       }
     }
-  }, [product.id, product.title]);
+  }, [product.id, product.title, product.category]);
 
   const [prevProduct, setPrevProduct] = useState(product);
   if (product !== prevProduct) {

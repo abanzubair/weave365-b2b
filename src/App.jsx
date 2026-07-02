@@ -238,6 +238,23 @@ export default function App({ initialData = {} }) {
     void checkReferral();
   }, [searchParams]);
 
+  // Keep the browser address bar synchronized with the active referral code if stored in localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const refCode = localStorage.getItem('influencer_ref');
+    if (refCode) {
+      try {
+        const url = new URL(window.location.href);
+        if (!url.searchParams.has('ref') && !url.searchParams.has('influencer')) {
+          url.searchParams.set('ref', refCode);
+          window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+        }
+      } catch (err) {
+        console.error('[Referral] Failed to synchronize URL:', err);
+      }
+    }
+  }, [pathname, searchParams]);
+
   const [landingPages, setLandingPages] = useState(() => {
     let pages = initialData.landingPages || [];
     if (pages.length === 0) {
@@ -505,6 +522,21 @@ export default function App({ initialData = {} }) {
       const { profile } = await loadProfileForUser(user);
       if (isActive) {
         setBuyerProfile(profile);
+
+        if (isSupabaseConfigured) {
+          supabase
+            .from('influencer_profiles')
+            .select('referral_code, is_approved')
+            .eq('id', user.id)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
+                localStorage.setItem('influencer_ref', data.referral_code.trim().toUpperCase());
+                console.log('[Referral] Stored logged-in user referral code:', data.referral_code);
+              }
+            })
+            .catch(err => console.error('[Referral] Error fetching influencer profile:', err));
+        }
         
         if (isSupabaseConfigured && profile?.whatsapp_number) {
           const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
@@ -1125,6 +1157,9 @@ export default function App({ initialData = {} }) {
     } else {
       localStorage.removeItem('sareeva_user');
       setUser(null);
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('influencer_ref');
     }
     navigate('home');
   }, [navigate]);

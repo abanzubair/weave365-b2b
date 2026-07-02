@@ -36,10 +36,25 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   };
 
   const handleUniversalShare = async () => {
+    let shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    if (typeof window !== 'undefined') {
+      const refCode = localStorage.getItem('influencer_ref');
+      if (refCode) {
+        try {
+          const urlObj = new URL(shareUrl);
+          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer')) {
+            urlObj.searchParams.set('ref', refCode);
+            shareUrl = urlObj.toString();
+          }
+        } catch (e) {
+          console.error('[Share] Invalid share URL format:', e);
+        }
+      }
+    }
     const shareData = {
       title: post?.title,
       text: post?.intro || `Check out this article on Weave365`,
-      url: typeof window !== 'undefined' ? window.location.href : '',
+      url: shareUrl,
     };
 
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -50,7 +65,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       }
     } else {
       if (typeof window !== 'undefined') {
-        navigator.clipboard.writeText(window.location.href);
+        navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
