@@ -14,7 +14,7 @@ import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
 
 const getCollectionTagline = (itemSlug) => {
   switch (itemSlug) {
-    case 'wholesale-banarasi-sarees':
+    case 'banarasi-sarees':
       return 'Varanasi Direct Weaver Heritage';
     case 'katan-silk-sarees':
       return 'Intricate Twisted Pure Silk weaves';

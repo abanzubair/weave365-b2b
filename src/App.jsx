@@ -1213,7 +1213,7 @@ export default function App({ initialData = {} }) {
         ? activeCategory 
         : (activeCategory.endsWith('s') ? activeCategory : `${activeCategory}s`);
       const catalogTitle = isSeoCategoryRoute 
-        ? `Wholesale Banarasi ${pluralCategory}`
+        ? `Banarasi ${pluralCategory}`
         : route === 'partner' 
           ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` 
           : 'Wholesale Catalogue';

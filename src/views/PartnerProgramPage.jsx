@@ -206,7 +206,7 @@ const differenceRows = [
 ];
 
 const relatedSourcingLinks = [
-  { label: 'Wholesale Banarasi Sarees', slug: 'wholesale-banarasi-sarees' },
+  { label: 'Banarasi Sarees', slug: 'banarasi-sarees' },
   { label: 'Katan Silk Sarees', slug: 'katan-silk-sarees' },
   { label: 'Organza Banarasi Sarees', slug: 'organza-banarasi-sarees' },
   { label: 'Bridal Banarasi Sarees', slug: 'bridal-banarasi-sarees' },

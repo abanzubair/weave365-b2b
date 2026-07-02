@@ -88,22 +88,22 @@ export default function SchemaMarkup() {
             {
               "@type": "OfferCatalog",
               name: "Banarasi Sarees",
-              url: `${siteUrl}/wholesale-banarasi-sarees`,
+              url: `${siteUrl}/banarasi-sarees`,
             },
             {
               "@type": "OfferCatalog",
               name: "Suits",
-              url: `${siteUrl}/wholesale-banarasi-suits`,
+              url: `${siteUrl}/banarasi-suits`,
             },
             {
               "@type": "OfferCatalog",
               name: "Lehengas",
-              url: `${siteUrl}/wholesale-banarasi-lehengas`,
+              url: `${siteUrl}/banarasi-lehengas`,
             },
             {
               "@type": "OfferCatalog",
               name: "Dupattas",
-              url: `${siteUrl}/wholesale-banarasi-dupattas`,
+              url: `${siteUrl}/banarasi-dupattas`,
             },
           ],
         },

@@ -19,7 +19,7 @@ export const DEFAULT_DIRECTORY_CONFIG = {
       title: 'Premium Collections',
       icon: 'Compass',
       links: [
-        { label: 'Wholesale Banarasi Sarees', type: 'route', target: 'wholesale-banarasi-sarees', path: '/wholesale-banarasi-sarees' },
+        { label: 'Banarasi Sarees', type: 'route', target: 'banarasi-sarees', path: '/banarasi-sarees' },
         { label: 'Pure Katan Silk Sarees', type: 'route', target: 'katan-silk-sarees', path: '/katan-silk-sarees' },
         { label: 'Organza Banarasi Sarees', type: 'route', target: 'organza-banarasi-sarees', path: '/organza-banarasi-sarees' },
         { label: 'Bridal Banarasi Sarees', type: 'route', target: 'bridal-banarasi-sarees', path: '/bridal-banarasi-sarees' },

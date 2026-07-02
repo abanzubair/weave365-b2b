@@ -1349,7 +1349,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
   backdrop-filter: blur(20px) saturate(1.8) !important;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03) !important;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 40%, transparent) !important;
+  border-bottom: none !important;
 }
 
 /* Logo: normal at top */

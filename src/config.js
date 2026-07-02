@@ -62,15 +62,15 @@ export const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
 
 /**
  * Maps SEO-friendly URL slugs → category names.
- * Used to resolve routes like /wholesale-banarasi-sarees into category filters.
+ * Used to resolve routes like /banarasi-sarees into category filters.
  */
 export const seoCategoryRoutes = {
-  'wholesale-banarasi-sarees': 'Saree',
-  'wholesale-banarasi-suits': 'Suit',
-  'wholesale-banarasi-lehengas': 'Lehenga',
-  'wholesale-banarasi-dupattas': 'Dupatta',
-  'wholesale-banarasi-fabrics': 'Fabric',
-  'wholesale-under-999': 'Under 999',
+  'banarasi-sarees': 'Saree',
+  'banarasi-suits': 'Suit',
+  'banarasi-lehengas': 'Lehenga',
+  'banarasi-dupattas': 'Dupatta',
+  'banarasi-fabrics': 'Fabric',
+  'under-999': 'Under 999',
 };
 
 /**
@@ -78,18 +78,18 @@ export const seoCategoryRoutes = {
  * Inverse of seoCategoryRoutes, used to build clean URLs during navigation.
  */
 export const seoCategoryMap = {
-  'saree': 'wholesale-banarasi-sarees',
-  'sarees': 'wholesale-banarasi-sarees',
-  'suit': 'wholesale-banarasi-suits',
-  'suits': 'wholesale-banarasi-suits',
-  'lehenga': 'wholesale-banarasi-lehengas',
-  'lehengas': 'wholesale-banarasi-lehengas',
-  'dupatta': 'wholesale-banarasi-dupattas',
-  'dupattas': 'wholesale-banarasi-dupattas',
-  'fabric': 'wholesale-banarasi-fabrics',
-  'fabrics': 'wholesale-banarasi-fabrics',
-  'under 999': 'wholesale-under-999',
-  'under-999': 'wholesale-under-999',
+  'saree': 'banarasi-sarees',
+  'sarees': 'banarasi-sarees',
+  'suit': 'banarasi-suits',
+  'suits': 'banarasi-suits',
+  'lehenga': 'banarasi-lehengas',
+  'lehengas': 'banarasi-lehengas',
+  'dupatta': 'banarasi-dupattas',
+  'dupattas': 'banarasi-dupattas',
+  'fabric': 'banarasi-fabrics',
+  'fabrics': 'banarasi-fabrics',
+  'under 999': 'under-999',
+  'under-999': 'under-999',
 };
 
 
@@ -138,7 +138,6 @@ export function getProductCategorySlug(productId, productCategory = null) {
     }
   }
   const slug = catName.replace(/\s+/g, '-');
-  if (slug === 'under-999') return 'wholesale-under-999';
   return slug;
 }
 
