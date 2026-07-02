@@ -434,10 +434,6 @@ export default function App({ initialData = {} }) {
   }, [hasInitialData]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'history' in window) {
-      window.history.scrollRestoration = 'auto';
-    }
-
     const updateScrolled = () => {
       const scrollPos = window.scrollY || document.scrollingElement?.scrollTop || 0;
       setScrolled(scrollPos > 20);
@@ -1112,11 +1108,11 @@ export default function App({ initialData = {} }) {
       setPendingProductId(null);
     }
 
-    router.push(href);
+    router.push(href, { scroll: false });
 
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     }
   }, [router, pathname, search, category, fabric, weave]);
 

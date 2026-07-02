@@ -77,9 +77,9 @@ export function AppLink({
     if (navFn) {
       navFn(to, productId, shopName, navOptions);
     } else {
-      router.push(resolvedHref);
+      router.push(resolvedHref, { scroll: false });
       if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
       }
     }
   };
