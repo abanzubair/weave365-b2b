@@ -21,87 +21,37 @@ const moneyColumns = {
   offer: 'Offer',
 };
 
-export async function fetchConfigOptions() {
-  const text = await fetchSyncedCsv('config', configCsvUrl, 'config sheet', { optional: true });
-  if (!text) return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
-
-  const parsed = Papa.parse(text, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: normalizeCsvHeader,
-  });
-  
-  const priceRanges = [];
-  const categories = [];
-  const fabrics = [];
-  const weaves = [];
-
-  for (const row of parsed.data) {
-    const pr = row['Price Range'] || row['PriceRange'];
-    if (pr) {
-      const trimmed = pr.trim();
-      if (trimmed && priceRanges.length < 50) priceRanges.push(trimmed);
-    }
-    const cat = row['Category'];
-    if (cat) {
-      const trimmed = cat.trim();
-      if (trimmed && categories.length < 50) categories.push(trimmed);
-    }
-    const fab = row['Fabric'];
-    if (fab) {
-      const trimmed = fab.trim();
-      if (trimmed && fabrics.length < 50) fabrics.push(trimmed);
-    }
-    const wv = row['Weave'] || row['weave'];
-    if (wv) {
-      const trimmed = wv.trim();
-      if (trimmed && weaves.length < 50) weaves.push(trimmed);
+async function fetchSyncedJson(id) {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from('sheet_data')
+        .select('csv_data')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      if (data?.csv_data) {
+        return JSON.parse(data.csv_data);
+      }
+    } catch (err) {
+      console.warn(`[Data] Supabase JSON ${id} unavailable:`, err.message);
     }
   }
+  return null;
+}
 
-  return { priceRanges, categories, fabrics, weaves };
+export async function fetchConfigOptions() {
+  const cachedJson = await fetchSyncedJson('config_json');
+  if (cachedJson) return cachedJson;
+  return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
 }
 
 export async function fetchProducts() {
-  // Fetch main sheet + all category sheets in parallel
-  const categoryEntries = Object.entries(categoryCsvUrls);
-  const fetchPromises = [
-    fetchSyncedCsv('products', csvUrl, 'products sheet'),
-    ...categoryEntries.map(([catName, catUrl]) => {
-      const supabaseId = 'products_' + catName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      return fetchSyncedCsv(supabaseId, catUrl, `${catName} sheet`, { optional: true });
-    }),
-  ];
-
-  const results = await Promise.all(fetchPromises);
-  const mainText = results[0];
-  const categoryTexts = results.slice(1);
-
-  // Parse main sheet products
-  const mainProducts = parseProductCsv(mainText);
-  const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
-
-  // Parse each category sheet and merge (category sheet products win on conflict)
-  for (let i = 0; i < categoryEntries.length; i++) {
-    const csvText = categoryTexts[i];
-    if (!csvText) continue; // Sheet fetch failed or returned empty
-
-    const [categoryName] = categoryEntries[i];
-    try {
-      const categoryProducts = parseProductCsv(csvText);
-      for (const product of categoryProducts) {
-        // Apply the category name from config if the sheet row doesn't specify one
-        if (!product.category || product.category === 'Saree') {
-          product.category = categoryName;
-        }
-        productMap.set(product.groupKey, product);
-      }
-    } catch (err) {
-      console.warn(`[Data] Failed to parse ${categoryName} sheet:`, err.message);
-    }
+  const cachedJson = await fetchSyncedJson('products_json');
+  if (cachedJson && Array.isArray(cachedJson)) {
+    return cachedJson;
   }
-
-  return Array.from(productMap.values());
+  return [];
 }
 
 export function parseProductCsv(text) {
@@ -692,102 +642,12 @@ function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
 
-async function fetchPublicCsvText(url, label, { optional = false } = {}) {
-  try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.text();
-  } catch (err) {
-    console.warn(`[Data] Public ${label} fetch failed:`, err.message);
-    if (optional) return '';
-    throw new Error(`Unable to load ${label}.`);
-  }
-}
-
-async function fetchSyncedCsv(id, url, label, { optional = false } = {}) {
-  if (isSupabaseConfigured) {
-    try {
-      await autoSyncIfNeeded();
-      const { data, error } = await supabase
-        .from('sheet_data')
-        .select('csv_data')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      if (data?.csv_data) return data.csv_data;
-    } catch (err) {
-      console.warn(`[Data] Supabase ${label} unavailable, using public sheet fallback:`, err.message);
-    }
-  }
-
-  return fetchPublicCsvText(url, label, { optional });
-}
-
 export async function fetchHeroData() {
-  try {
-    const text = await fetchSyncedCsv('hero', heroCsvUrl, 'hero sheet', { optional: true });
-    if (!text) return [];
-
-    const parsed = Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-      transformHeader: normalizeCsvHeader,
-    });
-
-    const heroes = [];
-    for (const row of parsed.data) {
-      const imageName = readCsvValue(row, 'Image Name', 'Name');
-      const type = normalizeHeroType(readCsvValue(row, 'Type'), imageName);
-      const image = driveImageUrl(readCsvValue(row, 'Image URL', 'Image'));
-      const video = driveVideoUrl(readCsvValue(row, 'Video URL', 'Video'));
-
-      if (image || video) {
-        heroes.push({
-          imageName,
-          image,
-          video,
-          title: readCsvValue(row, 'Title', 'Heading'),
-          subtitle: readCsvValue(row, 'Subtitle', 'Subheading'),
-          buttonText: readCsvValue(row, 'Button1 Text', 'Button 1 Text', 'Button Text'),
-          buttonLink: readCsvValue(row, 'Button1 Link', 'Button 1 Link', 'Button Link'),
-          button2Text: readCsvValue(row, 'Button2 Text', 'Button 2 Text'),
-          button2Link: readCsvValue(row, 'Button2 Link', 'Button 2 Link'),
-          type,
-          headingColor: readCsvValue(row, 'Title Color', 'Heading Color'),
-          subheadingColor: readCsvValue(row, 'Subtitle Color', 'Subheading Color'),
-          button1Color: readCsvValue(row, 'Button1 Color', 'Button 1 Color', 'Button Color'),
-          button2Color: readCsvValue(row, 'Button2 Color', 'Button 2 Color'),
-          headerColor: readCsvValue(row, 'Header Color'),
-          accentColor: readCsvValue(row, 'Accent Color'),
-          rightText: readCsvValue(row, 'Right Text', 'Sidebar Text'),
-          rightTextColor: readCsvValue(row, 'Right Text Color', 'Sidebar Text Color'),
-          feature1Title: readCsvValue(row, 'Feature Text1', 'Feature 1 Title', 'Feature 1', 'Feature1'),
-          feature1Desc: readCsvValue(row, 'Feature Para1', 'Feature 1 Para', 'Feature 1 Text', 'Feature 1 Description'),
-          feature2Title: readCsvValue(row, 'Feature Text2', 'Feature 2 Title', 'Feature 2', 'Feature2'),
-          feature2Desc: readCsvValue(row, 'Feature Para2', 'Feature 2 Para', 'Feature 2 Text', 'Feature 2 Description'),
-          feature3Title: readCsvValue(row, 'Feature Text3', 'Feature 3 Title', 'Feature 3', 'Feature3'),
-          feature3Desc: readCsvValue(row, 'Feature Para3', 'Feature 3 Para', 'Feature 3 Text', 'Feature 3 Description'),
-          feature1: readCsvValue(row, 'Feature Text1', 'Feature 1', 'Feature1'),
-          feature2: readCsvValue(row, 'Feature Text2', 'Feature 2', 'Feature2'),
-          feature3: readCsvValue(row, 'Feature Text3', 'Feature 3', 'Feature3'),
-          featureSvgColor: readCsvValue(row, 'Feature SVG Color', 'Feature Icon Color'),
-          featureHeadingColor: readCsvValue(row, 'Feature Heading Color', 'Feature Title Color'),
-          featureTextColor: readCsvValue(row, 'Feature Text Color', 'Feature Description Color'),
-          imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
-          overlayColor: readCsvValue(row, 'Overlay Color'),
-          overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
-          logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
-          navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
-          scrollColor: readCsvValue(row, 'Scroll Color', 'ScrollColor', 'Scroll'),
-        });
-      }
-    }
-    return heroes;
-  } catch (error) {
-    console.error('Error fetching hero data:', error);
-    return [];
+  const cachedJson = await fetchSyncedJson('hero_json');
+  if (cachedJson && Array.isArray(cachedJson)) {
+    return cachedJson;
   }
+  return [];
 }
 
 let isSyncing = false;
@@ -813,8 +673,9 @@ export async function autoSyncIfNeeded() {
   }
 }
 
-export async function syncSheetsToSupabase() {
-  if (!isSupabaseConfigured || isSyncing) return;
+export async function syncSheetsToSupabase(supabaseOverride = null) {
+  const db = supabaseOverride || supabase;
+  if (!db || isSyncing) return;
   isSyncing = true;
   
   try {
@@ -850,6 +711,134 @@ export async function syncSheetsToSupabase() {
     ]);
 
     const timestamp = new Date().toISOString();
+
+    // 1. Parse products CSV to JSON
+    let parsedProductsJson = null;
+    try {
+      const mainProducts = parseProductCsv(products);
+      const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
+
+      for (const result of categoryResults) {
+        if (result?.text) {
+          try {
+            const categoryProducts = parseProductCsv(result.text);
+            for (const product of categoryProducts) {
+              if (!product.category || product.category === 'Saree') {
+                product.category = result.catName;
+              }
+              productMap.set(product.groupKey, product);
+            }
+          } catch (err) {
+            console.warn(`[Sync] Failed to parse ${result.catName} category:`, err.message);
+          }
+        }
+      }
+      parsedProductsJson = JSON.stringify(Array.from(productMap.values()));
+    } catch (err) {
+      console.error('[Sync] Error parsing products CSV during sync:', err);
+    }
+
+    // 2. Parse config CSV to JSON
+    let parsedConfigJson = null;
+    try {
+      const parsedConfig = Papa.parse(config, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: normalizeCsvHeader,
+      });
+      const priceRanges = [];
+      const categories = [];
+      const fabrics = [];
+      const weaves = [];
+      for (const row of parsedConfig.data) {
+        const pr = row['Price Range'] || row['PriceRange'];
+        if (pr) {
+          const trimmed = pr.trim();
+          if (trimmed && priceRanges.length < 50) priceRanges.push(trimmed);
+        }
+        const cat = row['Category'];
+        if (cat) {
+          const trimmed = cat.trim();
+          if (trimmed && categories.length < 50) categories.push(trimmed);
+        }
+        const fab = row['Fabric'];
+        if (fab) {
+          const trimmed = fab.trim();
+          if (trimmed && fabrics.length < 50) fabrics.push(trimmed);
+        }
+        const wv = row['Weave'] || row['weave'];
+        if (wv) {
+          const trimmed = wv.trim();
+          if (trimmed && weaves.length < 50) weaves.push(trimmed);
+        }
+      }
+      parsedConfigJson = JSON.stringify({ priceRanges, categories, fabrics, weaves });
+    } catch (err) {
+      console.error('[Sync] Error parsing config CSV during sync:', err);
+    }
+
+    // 3. Parse hero CSV to JSON
+    let parsedHeroJson = null;
+    if (hero !== null) {
+      try {
+        const parsedHero = Papa.parse(hero, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: normalizeCsvHeader,
+        });
+        const heroes = [];
+        for (const row of parsedHero.data) {
+          const imageName = readCsvValue(row, 'Image Name', 'Name');
+          const type = normalizeHeroType(readCsvValue(row, 'Type'), imageName);
+          const image = driveImageUrl(readCsvValue(row, 'Image URL', 'Image'));
+          const video = driveVideoUrl(readCsvValue(row, 'Video URL', 'Video'));
+
+          if (image || video) {
+            heroes.push({
+              imageName,
+              image,
+              video,
+              title: readCsvValue(row, 'Title', 'Heading'),
+              subtitle: readCsvValue(row, 'Subtitle', 'Subheading'),
+              buttonText: readCsvValue(row, 'Button1 Text', 'Button 1 Text', 'Button Text'),
+              buttonLink: readCsvValue(row, 'Button1 Link', 'Button 1 Link', 'Button Link'),
+              button2Text: readCsvValue(row, 'Button2 Text', 'Button 2 Text'),
+              button2Link: readCsvValue(row, 'Button2 Link', 'Button 2 Link'),
+              type,
+              headingColor: readCsvValue(row, 'Title Color', 'Heading Color'),
+              subheadingColor: readCsvValue(row, 'Subtitle Color', 'Subheading Color'),
+              button1Color: readCsvValue(row, 'Button1 Color', 'Button 1 Color', 'Button Color'),
+              button2Color: readCsvValue(row, 'Button2 Color', 'Button 2 Color'),
+              headerColor: readCsvValue(row, 'Header Color'),
+              accentColor: readCsvValue(row, 'Accent Color'),
+              rightText: readCsvValue(row, 'Right Text', 'Sidebar Text'),
+              rightTextColor: readCsvValue(row, 'Right Text Color', 'Sidebar Text Color'),
+              feature1Title: readCsvValue(row, 'Feature Text1', 'Feature 1 Title', 'Feature 1', 'Feature1'),
+              feature1Desc: readCsvValue(row, 'Feature Para1', 'Feature 1 Para', 'Feature 1 Text', 'Feature 1 Description'),
+              feature2Title: readCsvValue(row, 'Feature Text2', 'Feature 2 Title', 'Feature 2', 'Feature2'),
+              feature2Desc: readCsvValue(row, 'Feature Para2', 'Feature 2 Para', 'Feature 2 Text', 'Feature 2 Description'),
+              feature3Title: readCsvValue(row, 'Feature Text3', 'Feature 3 Title', 'Feature 3', 'Feature3'),
+              feature3Desc: readCsvValue(row, 'Feature Para3', 'Feature 3 Para', 'Feature 3 Text', 'Feature 3 Description'),
+              feature1: readCsvValue(row, 'Feature Text1', 'Feature 1', 'Feature1'),
+              feature2: readCsvValue(row, 'Feature Text2', 'Feature 2', 'Feature2'),
+              feature3: readCsvValue(row, 'Feature Text3', 'Feature 3', 'Feature3'),
+              featureSvgColor: readCsvValue(row, 'Feature SVG Color', 'Feature Icon Color'),
+              featureHeadingColor: readCsvValue(row, 'Feature Heading Color', 'Feature Title Color'),
+              featureTextColor: readCsvValue(row, 'Feature Text Color', 'Feature Description Color'),
+              imagePosition: readCsvValue(row, 'Image Position', 'Background Position'),
+              overlayColor: readCsvValue(row, 'Overlay Color'),
+              overlayOpacity: readCsvValue(row, 'Overlay Opacity'),
+              logoColor: readCsvValue(row, 'Logo', 'Logo Color'),
+              navigationColor: readCsvValue(row, 'Navigation', 'Navigation Color', 'Nav Color'),
+              scrollColor: readCsvValue(row, 'Scroll Color', 'ScrollColor', 'Scroll'),
+            });
+          }
+        }
+        parsedHeroJson = JSON.stringify(heroes);
+      } catch (err) {
+        console.error('[Sync] Error parsing hero CSV during sync:', err);
+      }
+    }
     
     const updates = [
       { id: 'products', csv_data: products, updated_at: timestamp },
@@ -868,10 +857,21 @@ export async function syncSheetsToSupabase() {
       }
     }
 
-    const { error } = await supabase.from('sheet_data').upsert(updates);
+    // Upsert parsed JSON values for high-speed read operations
+    if (parsedProductsJson) {
+      updates.push({ id: 'products_json', csv_data: parsedProductsJson, updated_at: timestamp });
+    }
+    if (parsedConfigJson) {
+      updates.push({ id: 'config_json', csv_data: parsedConfigJson, updated_at: timestamp });
+    }
+    if (parsedHeroJson) {
+      updates.push({ id: 'hero_json', csv_data: parsedHeroJson, updated_at: timestamp });
+    }
+
+    const { error } = await db.from('sheet_data').upsert(updates);
     if (error) throw error;
     
-    console.log('Successfully synced sheets to Supabase at', timestamp);
+    console.log('Successfully synced sheets and parsed JSON to Supabase at', timestamp);
   } catch (err) {
     console.error('Manual sync failed:', err);
     throw err;

@@ -1,4 +1,5 @@
 import App from '../../src/App.jsx';
+import { cache } from 'react';
 import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRoutes, siteUrl } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSupabaseLandingPages } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
@@ -109,7 +110,7 @@ function toSerializable(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-async function getInitialData() {
+const getInitialData = cache(async () => {
   const [productsResult, heroResult, configResult, blogsResult, landingPagesResult] = await Promise.allSettled([
     fetchProducts(),
     fetchHeroData(),
@@ -140,7 +141,7 @@ async function getInitialData() {
     status: productError ? 'error' : 'ready',
     error: productError?.message || '',
   });
-}
+});
 
 function normalizeSeoPath(path) {
   const cleaned = String(path || '/').trim();
