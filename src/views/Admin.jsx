@@ -490,13 +490,29 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     if (activeTab === 'early-access' && allowed) {
       void loadEarlyAccessSubmissions();
     }
-    if (activeTab === 'enquires' && allowed) {
+    if ((activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
       void loadAdminData();
     }
   }, [activeTab, allowed]);
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
+
+  const enquiryRows = useMemo(() => {
+    return (adminData.optional.inquiries || [])
+      .map(i => ({ ...i, _sourceTable: 'inquiries' }))
+      .concat((adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' })));
+  }, [adminData.optional.inquiries, adminData.optional.orders]);
+
+  const newOrdersCount = useMemo(() => {
+    return enquiryRows.filter(i => {
+      const isOrder = i._sourceTable === 'orders' || 
+                      i.inquiry_type === 'cart_payment' || 
+                      i.inquiry_type === 'cart_payment_fallback';
+      const isNew = (i.status || 'new').toLowerCase() === 'new';
+      return isOrder && isNew;
+    }).length;
+  }, [enquiryRows]);
 
   const sidebarSections = [
     {
@@ -521,7 +537,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
         { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
-        { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: null },
+        { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
         { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
         { key: 'influencers', label: 'Influencers', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
       ],
@@ -559,8 +575,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     );
   }
 
-  const enquiryRows = (adminData.optional.inquiries || []).map(i => ({ ...i, _sourceTable: 'inquiries' }))
-    .concat((adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' })));
+
 
   const userName = user?.email ? user.email.split('@')[0] : 'admin';
   const notificationCount = pendingReviews.length + earlyAccessSubmissions.filter(s => s.status === 'pending_review').length;
