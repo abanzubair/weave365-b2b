@@ -198,6 +198,7 @@ export default function App({ initialData = {} }) {
   const pathname = usePathname() || '/';
   const pathSegments = useMemo(() => pathname.split('/').filter(Boolean), [pathname]);
   const [pendingRoute, setPendingRoute] = useState(null);
+  const [pendingProductId, setPendingProductId] = useState(null);
   const [prevPathname, setPrevPathname] = useState(pathname);
   const [isProductPageReady, setIsProductPageReady] = useState(true);
 
@@ -272,6 +273,7 @@ export default function App({ initialData = {} }) {
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setPendingRoute(null);
+    setPendingProductId(null);
     if (isProductPathname(pathname)) {
       setIsProductPageReady(false);
     }
@@ -280,7 +282,7 @@ export default function App({ initialData = {} }) {
   const isLandingPage = landingPages.some(p => p.slug === pathSegments[0]);
   const isProductRoute = pathSegments.length === 2 && !NON_PRODUCT_ROUTES.has(pathSegments[0]) && !isLandingPage;
   const route = pendingRoute || (isProductRoute ? 'product' : (pathSegments[0] || 'home'));
-  const productId = route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null;
+  const productId = pendingProductId || (route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null);
   const inquiryId = route === 'order-tracking' ? decodeURIComponent(pathSegments[1] || '') : null;
 
   const partnerName = route === 'partner' ? decodeURIComponent(pathSegments[1] || '') : null;
@@ -1101,9 +1103,13 @@ export default function App({ initialData = {} }) {
       setPendingRoute(targetSegment);
       if (targetSegment === 'product') {
         setIsProductPageReady(false);
+        setPendingProductId(productId);
+      } else {
+        setPendingProductId(null);
       }
     } else {
       setPendingRoute(null);
+      setPendingProductId(null);
     }
 
     router.push(href);
@@ -1232,24 +1238,28 @@ export default function App({ initialData = {} }) {
     if (route === 'product') {
       return (
         <Suspense fallback={<ProductPageSkeleton />}>
-          <ProductDetailWrapper
-            productId={productId}
-            products={pricedProducts}
-            productsById={productsById}
-            navigate={navigate}
-            addToCart={addToCart}
-            addCartSelections={addCartSelections}
-            toggleFavorite={toggleFavorite}
-            favoriteKeys={favoriteKeySet}
-            priceAccess={priceAccess}
-            openAuth={() => setAuthOpen(true)}
-            pincode={pincode}
-            setPincode={setPincode}
-            codStatus={codStatus}
-            checkPincode={checkPincode}
-            user={user}
-            onReady={() => {}}
-          />
+          {!isProductPageReady && <ProductPageSkeleton />}
+          <div style={{ display: isProductPageReady ? 'block' : 'none' }}>
+            <ProductDetailWrapper
+              key={productId}
+              productId={productId}
+              products={pricedProducts}
+              productsById={productsById}
+              navigate={navigate}
+              addToCart={addToCart}
+              addCartSelections={addCartSelections}
+              toggleFavorite={toggleFavorite}
+              favoriteKeys={favoriteKeySet}
+              priceAccess={priceAccess}
+              openAuth={() => setAuthOpen(true)}
+              pincode={pincode}
+              setPincode={setPincode}
+              codStatus={codStatus}
+              checkPincode={checkPincode}
+              user={user}
+              onReady={() => setIsProductPageReady(true)}
+            />
+          </div>
         </Suspense>
       );
     }
