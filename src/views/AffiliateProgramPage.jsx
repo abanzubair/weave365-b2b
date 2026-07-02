@@ -112,7 +112,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
         <div className="affiliate-hero-content">
           <span className="affiliate-hero-kicker">Weave 365 Affiliates Program</span>
           <h1 className="affiliate-hero-title">
-            Share Heritage Weaves, <br />
+            Turn Your Network into <br /> an Earning Channel
             <span>Earn upto 15% Commission</span>
           </h1>
           <p className="affiliate-hero-description">

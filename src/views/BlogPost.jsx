@@ -17,6 +17,7 @@ import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';
+import { getStoredReferralCode } from '../utils/influencerHelpers.js';
 
 const slugifyCategory = (cat) => {
   if (!cat) return '';
@@ -38,7 +39,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const handleUniversalShare = async () => {
     let shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     if (typeof window !== 'undefined') {
-      const refCode = localStorage.getItem('influencer_ref');
+      const refCode = getStoredReferralCode();
       if (refCode) {
         try {
           const urlObj = new URL(shareUrl);

@@ -5,7 +5,7 @@
  * buyer roles, buying behaviors, and fabric categories) and integrates with Supabase authentication.
  */
 import { useState, useEffect } from 'react';
-import { X, LogOut, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { X, LogOut, ArrowLeft, Eye, EyeOff, Mail, Lock, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
@@ -472,32 +472,14 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   return (
     <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className={`auth-modal ${mode}-mode`}>
+
         <button type="button" className="icon-button modal-close" onClick={onClose}>
-          <X />
+          <X size={18} />
         </button>
         {user && mode !== 'reset-password' ? (
           <>
             <h2>Your Account</h2>
             <p>{user.email || 'Demo account'}</p>
-            {/* Welcome Card Deactivated
-            {userProfile.buyer_type && (
-              <div className="account-profile-card">
-                <span>{userProfile.price_group === 'reseller' ? 'Reseller Price' : 'Wholesale Price'}</span>
-                <strong>{userProfile.business_name || userProfile.full_name}</strong>
-                <small>
-                  {userProfile.buying_behavior === 'order_basis' ? 'Order Basis' : 'Instant Buying'}
-                  {userProfile.pincode ? ` · Pincode ${userProfile.pincode}` : ''}
-                </small>
-                <small>
-                  {userProfile.approval_status === 'approved'
-                    ? 'Price access approved'
-                    : isVaranasiPincode(userProfile.pincode)
-                      ? 'Varanasi pincode: admin approval required'
-                      : 'Approval pending'}
-                </small>
-              </div>
-            )}
-            */}
             {!isSupabaseConfigured && <p className="warning">Demo mode: configure Supabase in .env or .env.local for real login.</p>}
             <button type="button" className="secondary-button icon-label" onClick={logout}>
               <LogOut size={18} /> Logout
@@ -513,7 +495,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                     ✉️ Check your inbox
                   </strong>
                   <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
-                    We have sent a verification link to <strong>{email}</strong>Please confirm your email address to activate your account.
+                    We have sent a verification link to <strong>{email}</strong>. Please confirm your email address to activate your account.
                   </p>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '16px', lineHeight: 1.5 }}>
@@ -574,9 +556,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   Enter the email address associated with your account and we'll send you a link to reset your password.
                 </p>
                 <form onSubmit={submit}>
-                  <label>
+                  <label className="auth-label-styled">
                     Email
                     <input
+                      className="auth-input-styled"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       type="email"
@@ -619,10 +602,11 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   Choose a strong new password for your account.
                 </p>
                 <form onSubmit={submit}>
-                  <label>
+                  <label className="auth-label-styled">
                     New Password
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
                       <input
+                        className="auth-input-styled"
                         value={newPassword}
                         onChange={(event) => setNewPassword(event.target.value)}
                         type={showPassword ? 'text' : 'password'}
@@ -660,37 +644,129 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
               </>
             ) : (
               <>
-                <h2>{mode === 'login' ? 'Login' : 'Register'}</h2>
+                <div className="auth-header" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
+                    {mode === 'login' ? 'Welcome back' : 'Create account'} 
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
+                    {mode === 'login' ? 'Login to continue your journey' : 'Access premium factory pricing & live inventory'}
+                  </p>
+                </div>
+
                 <form onSubmit={submit}>
-                  {mode === 'register' && (
-                    <>
-                      <div className="auth-field-grid">
-                        <label>
+                  {mode === 'register' ? (
+                    <div className="auth-register-columns">
+                      <div className="auth-column">
+                        <label className="auth-label-styled">
                           Full Name
                           <input
+                            className="auth-input-styled"
                             value={profile.fullName}
                             onChange={(event) => updateProfile('fullName', event.target.value)}
                             onBlur={(event) => updateProfile('fullName', toTitleCaseName(event.target.value))}
                             autoComplete="name"
+                            placeholder="Enter your full name"
                             required
                           />
                         </label>
-                        <label>
+                        <label className="auth-label-styled">
                           {profile.buyerType === 'user' ? 'Business Name (Optional)' : 'Business Name'}
                           <input
+                            className="auth-input-styled"
                             value={profile.businessName}
                             onChange={(event) => updateProfile('businessName', event.target.value)}
                             autoComplete="organization"
+                            placeholder="Enter your business name"
                             required={profile.buyerType !== 'user'}
                           />
                         </label>
+                        <div className="auth-phone-field">
+                          <div className="auth-field-label-row">
+                            <span>WhatsApp Number</span>
+                            <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                          </div>
+                          <div>
+                            <select
+                              className="auth-input-styled"
+                              value={profile.countryCode}
+                              onChange={(event) => updateProfile('countryCode', event.target.value)}
+                              aria-label="Country code"
+                              required
+                              style={{ paddingRight: '24px' }}
+                            >
+                              {countryCodes.map((item) => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                              ))}
+                            </select>
+                            <input
+                              className="auth-input-styled"
+                              value={profile.whatsapp}
+                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/D/g, '').replace(/^0+/, '').slice(0, 10))}
+                              inputMode="numeric"
+                              autoComplete="tel-national"
+                              placeholder="xxxxxxxxxx"
+                              pattern="[0-9]{10}"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <label className="auth-label-styled">
+                          Email
+                          <input
+                            className="auth-input-styled"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            type="email"
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            required
+                          />
+                        </label>
+                        <label className="auth-label-styled">
+                          Password
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                            <input
+                              className="auth-input-styled"
+                              value={password}
+                              onChange={(event) => setPassword(event.target.value)}
+                              type={showPassword ? 'text' : 'password'}
+                              autoComplete="new-password"
+                              minLength="6"
+                              placeholder="Minimum 6 characters"
+                              required
+                              style={{ paddingRight: '40px', width: '100%' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(prev => !prev)}
+                              style={{
+                                position: 'absolute',
+                                right: '10px',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--muted, #78716c)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '4px',
+                              }}
+                            >
+                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                        </label>
                       </div>
+
+                      <div className="auth-column">
                         <div className="auth-phone-field">
                           <div className="auth-field-label-row">
                             <span>City, State & Pincode *</span>
                           </div>
                           <div className="auth-city-pincode-inputs">
                             <input
+                              className="auth-input-styled"
                               value={profile.city}
                               onChange={(event) => updateProfile('city', event.target.value)}
                               placeholder="City name, State name"
@@ -698,6 +774,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                               required
                             />
                             <input
+                              className="auth-input-styled"
                               value={profile.pincode}
                               onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
                               inputMode="numeric"
@@ -708,34 +785,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                           </div>
                           <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
                         </div>
-                        <div className="auth-phone-field">
-                          <div className="auth-field-label-row">
-                            <span>WhatsApp Number</span>
-                            <small>Format: {profile.countryCode} xxxxxxxxxx</small>
-                          </div>
-                          <div>
-                            <select
-                              value={profile.countryCode}
-                              onChange={(event) => updateProfile('countryCode', event.target.value)}
-                              aria-label="Country code"
-                              required
-                            >
-                              {countryCodes.map((item) => (
-                                <option key={item.value} value={item.value}>{item.label}</option>
-                              ))}
-                            </select>
-                            <input
-                              value={profile.whatsapp}
-                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10))}
-                              inputMode="numeric"
-                              autoComplete="tel-national"
-                              placeholder="xxxxxxxxxx"
-                              pattern="[0-9]{10}"
-                              required
-                            />
-                          </div>
-                        </div>
-                      <div className="auth-field-grid">
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type</span>
                           <B2BSegmentDropdown
@@ -749,6 +799,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             }}
                           />
                         </div>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
                           <BuyingBehaviorDropdown
@@ -756,83 +807,124 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             onChange={(value) => updateProfile('buyingBehavior', value)}
                           />
                         </div>
+
+                        <fieldset className="auth-category-fieldset">
+                          <legend>Interested Categories</legend>
+                          <div>
+                            {categoryOptions.map((category) => (
+                              <label key={category}>
+                                <input
+                                  type="checkbox"
+                                  checked={profile.interestedCategories.includes(category)}
+                                  onChange={() => toggleCategory(category)}
+                                />
+                                <span>{category}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
                       </div>
-                      <fieldset className="auth-category-fieldset">
-                        <legend>Interested Categories</legend>
-                        <div>
-                          {categoryOptions.map((category) => (
-                            <label key={category}>
-                              <input
-                                type="checkbox"
-                                checked={profile.interestedCategories.includes(category)}
-                                onChange={() => toggleCategory(category)}
-                              />
-                              <span>{category}</span>
-                            </label>
-                          ))}
+                    </div>
+                  ) : (
+                    <>
+                      <label className="auth-label-styled">
+                        Email
+                        <div className="auth-input-wrapper">
+                          <Mail className="auth-input-icon" size={18} />
+                          <input
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            type="email"
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            required
+                          />
                         </div>
-                      </fieldset>
+                      </label>
+                      <label className="auth-label-styled">
+                        Password
+                        <div className="auth-input-wrapper">
+                          <Lock className="auth-input-icon" size={18} />
+                          <input
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="current-password"
+                            minLength="6"
+                            placeholder="Enter your password"
+                            required
+                            style={{ paddingRight: '48px' }}
+                          />
+                          <button
+                            type="button"
+                            className="auth-password-toggle"
+                            onClick={() => setShowPassword(prev => !prev)}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </label>
+                      <div className="auth-options-row">
+                        <label className="auth-remember-label">
+                          <input
+                            type="checkbox"
+                            className="auth-checkbox"
+                            checked={profile.rememberMe || false}
+                            onChange={(e) => updateProfile('rememberMe', e.target.checked)}
+                          />
+                          <span>Remember me</span>
+                        </label>
+                        <button
+                          type="button"
+                          className="auth-forgot-btn"
+                          onClick={() => { setMode('forgot-password'); setMessage(''); }}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
                     </>
                   )}
-                  <label>
-                    Email
-                    <input
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      type="email"
-                      autoComplete="email"
-                      required
-                    />
-                  </label>
-                  <label>
-                    Password
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <input
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                        minLength="6"
-                        required
-                        style={{ paddingRight: '40px', width: '100%' }}
-                      />
+                  {mode === 'register' ? (
+                    <div className="auth-actions-row-buttons" style={{ marginTop: '16px' }}>
+                      <button className="auth-primary-submit-btn" type="submit">
+                        Create Account <ArrowRight size={16} />
+                      </button>
                       <button
                         type="button"
-                        onClick={() => setShowPassword(prev => !prev)}
-                        style={{
-                          position: 'absolute',
-                          right: '10px',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--muted, #78716c)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '4px',
-                        }}
+                        className="auth-secondary-outline-btn"
+                        onClick={() => setMode('login')}
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        Already registered? Login
                       </button>
                     </div>
-                  </label>
-                  {mode === 'login' && (
-                    <button
-                      type="button"
-                      className="text-button auth-forgot-link"
-                      onClick={() => { setMode('forgot-password'); setMessage(''); }}
-                    >
-                      Forgot password?
+                  ) : (
+                    <button className="auth-primary-submit-btn" type="submit" style={{ marginTop: '8px' }}>
+                      Login <ArrowRight size={16} />
                     </button>
                   )}
-                  <button className="primary-button" type="submit">
-                    {mode === 'login' ? 'Login' : 'Create Account'}
-                  </button>
                 </form>
-                <button type="button" className="text-button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
-                  {mode === 'login' ? 'Create a new account' : 'Already registered? Login'}
-                </button>
-                {message && <p className="form-message">{message}</p>}
+
+                {mode === 'login' && (
+                  <>
+                    <div className="auth-divider">
+                      <span>OR</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="auth-secondary-outline-btn"
+                      onClick={() => setMode('register')}
+                    >
+                      <UserPlus size={18} className="btn-icon" />
+                      Create a new account
+                    </button>
+                  </>
+                )}
+
+                <div className="auth-footer-secure">
+                  <ShieldCheck size={16} />
+                  <span>Your information is secure with us</span>
+                </div>
+                {message && <p className="form-message" style={{ marginTop: '12px', textAlign: 'center' }}>{message}</p>}
               </>
             )}
           </>

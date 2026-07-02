@@ -55,6 +55,7 @@ import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { usePageSeo } from './hooks/usePageSeo.js';
+import { getStoredReferralCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import SliderCaptcha from './components/SliderCaptcha.jsx';
 import { SharpStar } from './views/ReviewsPage.jsx';
@@ -829,7 +830,7 @@ export function ProductDetail({
   const shareProductPage = useCallback(async () => {
     let shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
     if (typeof window !== 'undefined') {
-      const refCode = localStorage.getItem('influencer_ref');
+      const refCode = getStoredReferralCode();
       if (refCode) {
         try {
           const urlObj = new URL(shareUrl);

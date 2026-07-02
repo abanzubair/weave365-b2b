@@ -142,7 +142,7 @@ export async function fetchInfluencerStats(userId) {
 export async function recordReferral({ orderId, inquiryId, buyerId, buyerName, items, saleAmount }) {
   if (typeof window === 'undefined' || !isSupabaseConfigured) return;
 
-  const refCode = localStorage.getItem('influencer_ref');
+  const refCode = getStoredReferralCode();
   if (!refCode) return;
 
   try {
@@ -180,4 +180,61 @@ export async function recordReferral({ orderId, inquiryId, buyerId, buyerName, i
   } catch (err) {
     console.error('[Referral] Exception while recording referral:', err);
   }
+}
+
+/**
+ * Sets the active referral code in localStorage with a 30-day expiration window.
+ * @param {string} code 
+ */
+export function setStoredReferralCode(code) {
+  if (typeof window === 'undefined' || !code) return;
+  const expirationTime = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+  const payload = {
+    code: code.trim().toUpperCase(),
+    expiresAt: expirationTime
+  };
+  localStorage.setItem('influencer_ref_data', JSON.stringify(payload));
+  localStorage.setItem('influencer_ref', code.trim().toUpperCase());
+}
+
+/**
+ * Retrieves the active referral code if it exists and has not expired.
+ * Clears it if it has expired.
+ * @returns {string|null} The referral code or null.
+ */
+export function getStoredReferralCode() {
+  if (typeof window === 'undefined') return null;
+  
+  const rawData = localStorage.getItem('influencer_ref_data');
+  if (!rawData) {
+    // Check if legacy key is present but no metadata exists
+    return localStorage.getItem('influencer_ref');
+  }
+  
+  try {
+    const payload = JSON.parse(rawData);
+    if (payload && payload.expiresAt) {
+      if (Date.now() > payload.expiresAt) {
+        // Expired! Clear both keys
+        localStorage.removeItem('influencer_ref_data');
+        localStorage.removeItem('influencer_ref');
+        console.log('[Referral] Stored referral code has expired and was cleared.');
+        return null;
+      }
+      return payload.code;
+    }
+  } catch (e) {
+    console.error('[Referral] Error parsing stored referral data:', e);
+  }
+  
+  return localStorage.getItem('influencer_ref');
+}
+
+/**
+ * Clears the active referral code from localStorage.
+ */
+export function clearStoredReferralCode() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('influencer_ref_data');
+  localStorage.removeItem('influencer_ref');
 }

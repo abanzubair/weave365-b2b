@@ -53,8 +53,8 @@
   line-height: 1.6;
   color: var(--muted);
   margin-bottom: 35px;
-  max-width: 700px;
-  margin-inline: auto;
+  max-width: 750px;
+  margin-inline: auto;  
 }
 
 .affiliate-hero-action {

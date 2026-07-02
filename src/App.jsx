@@ -50,7 +50,7 @@ import { CartDrawer } from './components/CartDrawer.jsx';
 import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
-import { validateReferralCode } from './utils/influencerHelpers.js';
+import { validateReferralCode, setStoredReferralCode, getStoredReferralCode, clearStoredReferralCode } from './utils/influencerHelpers.js';
 
 // Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
@@ -212,7 +212,7 @@ export default function App({ initialData = {} }) {
         const code = ref.trim().toUpperCase();
         const influencer = await validateReferralCode(code);
         if (influencer) {
-          localStorage.setItem('influencer_ref', code);
+          setStoredReferralCode(code);
           console.log('[Referral] Stored active referral code:', code);
 
           // Log click if not already logged in this session
@@ -241,7 +241,7 @@ export default function App({ initialData = {} }) {
   // Keep the browser address bar synchronized with the active referral code if stored in localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const refCode = localStorage.getItem('influencer_ref');
+    const refCode = getStoredReferralCode();
     if (refCode) {
       try {
         const url = new URL(window.location.href);
@@ -531,7 +531,7 @@ export default function App({ initialData = {} }) {
             .maybeSingle()
             .then(({ data }) => {
               if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
-                localStorage.setItem('influencer_ref', data.referral_code.trim().toUpperCase());
+                setStoredReferralCode(data.referral_code.trim().toUpperCase());
                 console.log('[Referral] Stored logged-in user referral code:', data.referral_code);
               }
             })
@@ -1158,9 +1158,7 @@ export default function App({ initialData = {} }) {
       localStorage.removeItem('sareeva_user');
       setUser(null);
     }
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('influencer_ref');
-    }
+    clearStoredReferralCode();
     navigate('home');
   }, [navigate]);
 

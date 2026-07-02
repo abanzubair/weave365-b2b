@@ -3339,6 +3339,264 @@ button {
   font-size: 13px;
   line-height: 1.5;
 }
+.auth-register-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.auth-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-register-columns .auth-phone-field > div {
+  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
+}
+
+@media (max-width: 640px) {
+  .auth-register-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.auth-modal {
+  border-radius: 12px !important;
+  padding: 40px !important;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.08) !important;
+  width: min(390px, 100%) !important;
+  overflow-x: hidden !important;
+}
+
+.auth-modal.register-mode {
+  width: min(720px, 100%) !important;
+}
+
+.auth-modal .modal-close {
+  top: 24px !important;
+  right: 24px !important;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FAF8F5;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.auth-modal .modal-close:hover {
+  background: #EAE6E1;
+}
+
+.auth-label-styled {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: none;
+}
+
+.auth-input-styled {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid #EAE6E1 !important;
+  background: #FAF8F5 !important;
+  color: var(--ink) !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-input-styled:focus {
+  border-color: var(--gold) !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(183, 134, 70, 0.08) !important;
+  outline: none !important;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth-input-wrapper input {
+  padding-left: 46px !important;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--gold);
+  pointer-events: none;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.auth-password-toggle:hover {
+  color: var(--ink);
+}
+
+.auth-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.auth-modal .auth-remember-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.auth-checkbox {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: var(--ink) !important;
+  cursor: pointer;
+}
+
+.auth-forgot-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-btn:hover {
+  color: var(--gold-dark);
+}
+
+.auth-actions-row-buttons {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.auth-primary-submit-btn {
+  width: 100%;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #1F1A17;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.auth-primary-submit-btn:hover {
+  background: #332B27;
+  transform: translateY(-1px);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #EAE6E1;
+}
+
+.auth-divider::before {
+  margin-right: 16px;
+}
+
+.auth-divider::after {
+  margin-left: 16px;
+}
+
+.auth-secondary-outline-btn {
+  width: 100%;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.auth-secondary-outline-btn:hover {
+  background: rgba(183, 134, 70, 0.04);
+  border-color: var(--gold-dark);
+}
+
+.auth-secondary-outline-btn .btn-icon {
+  color: var(--gold);
+}
+
+.auth-footer-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.auth-footer-secure svg {
+  color: var(--gold);
+}
+
+.modal-backdrop {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
 
 .auth-field-grid {
   display: grid;
@@ -3353,7 +3611,7 @@ button {
 
 .auth-modal .auth-phone-field > div.auth-city-pincode-inputs {
   display: grid;
-  grid-template-columns: 1.8fr 1.2fr;
+  grid-template-columns: 1.8fr 1.2fr !important;
   gap: 10px;
 }
 
@@ -3378,6 +3636,11 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 12px;
+}
+
+.auth-field-label-row span {
+  white-space: nowrap;
 }
 
 .auth-phone-field>div {
@@ -3463,13 +3726,13 @@ button {
 
 .auth-category-fieldset>div {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
 }
 
 .auth-category-fieldset label {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 7px;
   min-height: 0;
   padding: 0;
@@ -3479,13 +3742,15 @@ button {
   color: var(--ink);
   font-size: 13px;
   font-weight: 700;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .auth-category-fieldset input {
   width: 14px;
   height: 14px;
   min-height: 0;
-  margin: 0;
+  margin: 2px 0 0 0;
   accent-color: var(--ink);
 }
 
@@ -4138,7 +4403,7 @@ button {
 
 @media (max-width: 640px) {
   .auth-modal {
-    padding: 26px 20px;
+    padding: 24px 16px !important;
   }
 
   .auth-field-grid,
@@ -4146,9 +4411,13 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .auth-phone-field>div,
-  .auth-category-fieldset>div {
+  .auth-phone-field>div {
     grid-template-columns: 1fr;
+  }
+
+  .auth-actions-row-buttons {
+    flex-direction: column;
+    gap: 12px;
   }
 }
 
