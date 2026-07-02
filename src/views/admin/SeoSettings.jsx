@@ -159,8 +159,8 @@ const staticSeoDefaults = [
   {
     path: '/affiliate-program',
     label: 'Affiliate Program',
-    metaTitle: 'B2B Saree Affiliate Program | Earn Commissions | Weave 365',
-    metaDescription: 'Join the Weave 365 B2B Affiliate Program. Refer boutique owners and retail store owners to our wholesale Banarasi saree platform and earn attractive commissions.',
+    metaTitle: 'Saree Affiliate Program | Earn Commissions | Weave 365',
+    metaDescription: 'Join the Weave 365 Affiliate Program. Refer boutique owners and retail store owners to our Banarasi saree platform and earn attractive commissions.',
   },
 ];
 

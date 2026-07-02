@@ -405,8 +405,8 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 
   if (route === 'affiliate-program') {
     return buildMeta(
-      'Affiliate Partner Program | Earn 10% Commission | Weave 365',
-      'Join the Weave 365 Affiliate Partner Program. Share premium Banarasi collections (saree, suit, and fabrics) and earn 10% commission on every wholesale order.',
+      'Affiliate Partner Program | Earn Upto 15% Commission | Weave 365',
+      'Join the Weave 365 Affiliate Partner Program. Share premium Banarasi collections (saree, suit, and more) and earn 15% commission on every order.',
       '/affiliate-program'
     );
   }
