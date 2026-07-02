@@ -96,13 +96,19 @@ export function SeoLandingPage({
       
       // Dynamic keywords search check (supports comma-separated search queries)
       if (filter.search) {
-        const keywords = filter.search.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-        if (keywords.length > 0) {
-          const text = [product.title, product.fabric, product.work, product.category, product.pattern, product.weave, product.purity, product.subtitle, product.description]
+        const keywordPhrases = filter.search.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+        if (keywordPhrases.length > 0) {
+          const text = [product.title, product.fabric, product.work, product.category, product.pattern, product.weave, product.purity, product.subtitle, product.occasion]
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
-          if (!keywords.some((kw) => text.includes(kw))) {
+          
+          const matches = keywordPhrases.some((phrase) => {
+            const terms = phrase.split(/\s+/).filter(Boolean);
+            return terms.every((term) => text.includes(term));
+          });
+
+          if (!matches) {
             return false;
           }
         }

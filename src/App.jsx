@@ -828,6 +828,9 @@ export default function App({ initialData = {} }) {
         purityText,
         allColors,
         variantCodes,
+        product.pattern,
+        product.style,
+        product.subCategory,
       ]
         .filter(Boolean)
         .join(' ')

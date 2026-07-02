@@ -185,18 +185,37 @@ export function NewArrivalsPage({
       // Search Query Filter
       if (search && search.trim() !== '') {
         const query = search.toLowerCase().trim();
+        const searchTerms = query.split(/\s+/).filter(Boolean);
+
         const codeText = product.id ? String(product.id).toLowerCase() : '';
         const titleText = product.title ? String(product.title).toLowerCase() : '';
-        const descText = product.description ? String(product.description).toLowerCase() : '';
         const fabricText = product.fabric ? String(product.fabric).toLowerCase() : '';
         const workText = product.work ? String(product.work).toLowerCase() : '';
-        
-        const matches = 
-          codeText.includes(query) ||
-          titleText.includes(query) ||
-          descText.includes(query) ||
-          fabricText.includes(query) ||
-          workText.includes(query);
+        const occasionText = product.occasion ? String(product.occasion).toLowerCase() : '';
+        const categoryText = product.category ? String(product.category).toLowerCase() : '';
+        const weaveText = product.weave ? String(product.weave).toLowerCase() : '';
+        const purityText = product.purity ? String(product.purity).toLowerCase() : '';
+        const partnerText = product.partner ? String(product.partner).toLowerCase() : '';
+        const patternText = product.pattern ? String(product.pattern).toLowerCase() : '';
+        const styleText = product.style ? String(product.style).toLowerCase() : '';
+        const subCategoryText = product.subCategory ? String(product.subCategory).toLowerCase() : '';
+
+        const text = [
+          codeText,
+          titleText,
+          fabricText,
+          workText,
+          occasionText,
+          categoryText,
+          weaveText,
+          purityText,
+          partnerText,
+          patternText,
+          styleText,
+          subCategoryText,
+        ].filter(Boolean).join(' ');
+
+        const matches = searchTerms.every((term) => text.includes(term));
 
         if (!matches) return false;
       }
