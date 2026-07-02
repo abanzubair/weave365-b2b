@@ -1036,7 +1036,9 @@ export async function fetchSupabaseLandingPages() {
     buyerGuideSections: page.buyerGuideSections || [],
     faqs: page.faqs || [],
     filter: page.filter || {},
-    comparisonSections: page.comparisonSections || []
+    comparisonSections: page.comparisonSections || [],
+    catalogTitle: page.catalogTitle || '',
+    catalogSubtitle: page.catalogSubtitle || ''
   }));
 
   const pagesMap = new Map();
@@ -1075,6 +1077,8 @@ export async function fetchSupabaseLandingPages() {
       faqs: row.faqs || [],
       filter: row.filter || {},
       comparisonSections: row.comparison_sections || row.comparisonSections || [],
+      catalogTitle: row.catalog_title || '',
+      catalogSubtitle: row.catalog_subtitle || '',
       updatedAt: row.updated_at,
     }));
 
@@ -1107,6 +1111,8 @@ export async function saveSupabaseLandingPage(page) {
     buyer_guide_sections: page.buyerGuideSections || [],
     faqs: page.faqs || [],
     filter: page.filter || {},
+    catalog_title: page.catalogTitle || null,
+    catalog_subtitle: page.catalogSubtitle || null,
     updated_at: now,
   };
 

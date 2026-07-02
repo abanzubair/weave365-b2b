@@ -278,8 +278,13 @@ export function SeoLandingPage({
       {/* Sourcing Product Grid */}
       <section className="section" style={{ backgroundColor: '#ffffff', padding: '0' }}>
         <div className="seo-catalog-title-wrapper">
-          <h2>Explore B2B Wholesale {pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</h2>
-          <span className="seo-catalog-subtitle">Real-time artisan inventory with secure international shipping support</span>
+          <h2>
+            {pageData.catalogTitle || 
+              `Explore B2B Wholesale ${pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`}
+          </h2>
+          <span className="seo-catalog-subtitle">
+            {pageData.catalogSubtitle || 'Real-time artisan inventory with secure international shipping support'}
+          </span>
         </div>
 
         <StateMessage status={status} error={error} />

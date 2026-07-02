@@ -29,6 +29,8 @@ export default function PageBuilder({
   const [builderBuyerGuideSections, setBuilderBuyerGuideSections] = useState([]);
   const [builderFaqs, setBuilderFaqs] = useState([]);
   const [builderFilter, setBuilderFilter] = useState({ category: '', fabric: '', work: '', search: '' });
+  const [builderCatalogTitle, setBuilderCatalogTitle] = useState('');
+  const [builderCatalogSubtitle, setBuilderCatalogSubtitle] = useState('');
   const [isSavingBuilder, setIsSavingBuilder] = useState(false);
   const [isDeletingBuilder, setIsDeletingBuilder] = useState(false);
 
@@ -47,6 +49,8 @@ export default function PageBuilder({
       setBuilderH1('');
       setBuilderIntroTitle('');
       setBuilderIntroText('');
+      setBuilderCatalogTitle('');
+      setBuilderCatalogSubtitle('');
       setBuilderBuyerGuideTitle('');
       setBuilderBuyerGuideSections([]);
       setBuilderFaqs([]);
@@ -66,6 +70,8 @@ export default function PageBuilder({
     setBuilderH1(page.h1 || '');
     setBuilderIntroTitle(page.introTitle || '');
     setBuilderIntroText(page.introText || '');
+    setBuilderCatalogTitle(page.catalogTitle || '');
+    setBuilderCatalogSubtitle(page.catalogSubtitle || '');
     setBuilderBuyerGuideTitle(page.buyerGuideTitle || '');
     setBuilderBuyerGuideSections(page.buyerGuideSections || []);
     setBuilderFaqs(page.faqs || []);
@@ -140,7 +146,9 @@ export default function PageBuilder({
           fabric: builderFilter.fabric.trim() || undefined,
           work: builderFilter.work.trim() || undefined,
           search: builderFilter.search.trim() || undefined,
-        }
+        },
+        catalogTitle: builderCatalogTitle.trim(),
+        catalogSubtitle: builderCatalogSubtitle.trim(),
       });
       alert('Custom dynamic page saved successfully!');
       
@@ -343,6 +351,39 @@ export default function PageBuilder({
                 rows="6"
                 className="admin-field-textarea"
               />
+            </div>
+          </div>
+
+          {/* Catalog Section Headers */}
+          <div className="admin-seo-meta-section">
+            <label className="admin-faq-title">Catalog Section Headers</label>
+            
+            <div className="admin-field-container">
+              <label className="admin-field-label">Catalog Section Heading (Optional)</label>
+              <input
+                type="text"
+                value={builderCatalogTitle}
+                onChange={(e) => setBuilderCatalogTitle(e.target.value)}
+                placeholder="e.g. Explore B2B Wholesale Banarasi Katan Silk Saree For Wedding"
+                className="admin-field-input"
+              />
+              <small className="admin-doc-card-muted">
+                If left blank, defaults to "Explore B2B Wholesale [Page Title]"
+              </small>
+            </div>
+
+            <div className="admin-field-container" style={{ margin: 0 }}>
+              <label className="admin-field-label">Catalog Section Subtitle (Optional)</label>
+              <input
+                type="text"
+                value={builderCatalogSubtitle}
+                onChange={(e) => setBuilderCatalogSubtitle(e.target.value)}
+                placeholder="e.g. Real-time artisan inventory with secure international shipping support"
+                className="admin-field-input"
+              />
+              <small className="admin-doc-card-muted">
+                If left blank, defaults to "Real-time artisan inventory with secure international shipping support"
+              </small>
             </div>
           </div>
 

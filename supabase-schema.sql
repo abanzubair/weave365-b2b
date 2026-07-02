@@ -954,9 +954,14 @@ CREATE TABLE IF NOT EXISTS public.landing_pages (
   buyer_guide_sections jsonb DEFAULT '[]'::jsonb, -- Array of { title, content }
   faqs jsonb DEFAULT '[]'::jsonb,                 -- Array of { q, a }
   filter jsonb DEFAULT '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
+  catalog_title text,
+  catalog_subtitle text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_title text;
+ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_subtitle text;
 
 ALTER TABLE public.landing_pages ENABLE ROW LEVEL SECURITY;
 
