@@ -568,7 +568,13 @@ export function ProductDetail({
     [product.statusTags, canViewPrice, priceAccess, product.category],
   );
   const related = useMemo(() => {
-    const others = products.filter((item) => item.id !== product.id);
+    let others = products.filter((item) => item.id !== product.id && item.category === product.category);
+    
+    // Fall back to all products if the same-category list is too small (e.g. less than 5)
+    if (others.length < 5) {
+      others = products.filter((item) => item.id !== product.id);
+    }
+
     const productPattern = product.pattern?.trim().toLowerCase();
     const productFabric = product.fabric?.trim().toLowerCase();
 
@@ -590,7 +596,7 @@ export function ProductDetail({
 
     // Tier 3: fallback — any other products
     return others.slice(0, 5);
-  }, [product.id, product.pattern, product.fabric, products]);
+  }, [product.id, product.pattern, product.fabric, product.category, products]);
   const recommendationItems = useMemo(
     () =>
       related.length
