@@ -21,7 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { storeConfig, siteUrl } from '../config.js';
-import { WhatsappIcon } from '../storefrontShared.jsx';
+import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 
 export function AboutPage({ navigate }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);

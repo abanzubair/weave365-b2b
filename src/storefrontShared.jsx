@@ -31,28 +31,7 @@ export {
   priceForBuyer,
   priceNoticeForAccess
 };
-import { ResellerShareModal } from './components/ResellerShareModal.jsx';
-import { WhatsappIcon } from './components/WhatsappIcon.jsx';
-import { SectionTitle } from './components/SectionTitle.jsx';
-import { StateMessage } from './components/StateMessage.jsx';
-import { Newsletter } from './components/Newsletter.jsx';
-import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
-import { ProductCard } from './components/ProductCard.jsx';
-import { PriceLine } from './components/PriceLine.jsx';
-import { ResellerWhatsappShare } from './components/ResellerWhatsappShare.jsx';
-import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 
-export {
-  WhatsappIcon,
-  SectionTitle,
-  StateMessage,
-  Newsletter,
-  ProductTrustStrip,
-  ProductCard,
-  PriceLine,
-  ResellerWhatsappShare,
-  EnquiryPopup
-};
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 

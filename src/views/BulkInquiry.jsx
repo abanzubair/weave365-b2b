@@ -16,7 +16,8 @@ import {
   Truck,
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
-import { normalizePincodeInput, WhatsappIcon } from '../storefrontShared.jsx';
+import { normalizePincodeInput } from '../storefrontShared.jsx';
+import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 
 const initialInquiry = {
   name: '',
