@@ -98,7 +98,7 @@ export function SeoLandingPage({
       if (filter.search) {
         const keywords = filter.search.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
         if (keywords.length > 0) {
-          const text = [product.title, product.fabric, product.work, product.category, product.pattern]
+          const text = [product.title, product.fabric, product.work, product.category, product.pattern, product.weave, product.purity, product.subtitle, product.description]
             .filter(Boolean)
             .join(' ')
             .toLowerCase();
