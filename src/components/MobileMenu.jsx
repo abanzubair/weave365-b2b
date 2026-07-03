@@ -30,6 +30,19 @@ import { assetSrc } from '../utils/assetSrc.js';
 import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
 
+const pluralizeCategory = (cat) => {
+  if (!cat) return '';
+  const lower = cat.toLowerCase();
+  if (lower === 'under 999') return cat;
+  if (lower === 'saree') return 'Sarees';
+  if (lower === 'suit') return 'Suits';
+  if (lower === 'lehenga') return 'Lehengas';
+  if (lower === 'dupatta') return 'Dupattas';
+  if (lower === 'fabric') return 'Fabrics';
+  if (lower.endsWith('s')) return cat;
+  return cat + 's';
+};
+
 export function MobileMenu({ 
   onClose, 
   navigate, 
@@ -75,16 +88,6 @@ export function MobileMenu({
         label: 'Product Listing',
         action: () => {
           window.open(vendorOnboarding.drive_folder_url, '_blank');
-          onClose();
-        }
-      }
-    ] : []),
-    ...(isAdmin ? [
-      {
-        icon: <Shield size={18} style={{ color: '#b78646' }} />,
-        label: 'Admin Panel',
-        action: () => {
-          window.open('/admin', '_blank');
           onClose();
         }
       }
@@ -146,7 +149,7 @@ export function MobileMenu({
                     }}
                   >
                     <span className="subitem-label" style={{ paddingLeft: '8px' }}>
-                      {cat}
+                      {pluralizeCategory(cat)}
                     </span>
                   </button>
                 ))}

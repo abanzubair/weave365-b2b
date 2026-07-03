@@ -5,6 +5,19 @@ import { storeConfig } from '../config.js';
 import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
 
+export const pluralizeCategory = (cat) => {
+  if (!cat) return '';
+  const lower = cat.toLowerCase();
+  if (lower === 'under 999') return cat;
+  if (lower === 'saree') return 'Sarees';
+  if (lower === 'suit') return 'Suits';
+  if (lower === 'lehenga') return 'Lehengas';
+  if (lower === 'dupatta') return 'Dupattas';
+  if (lower === 'fabric') return 'Fabrics';
+  if (lower.endsWith('s')) return cat;
+  return cat + 's';
+};
+
 export function SiteHeader({
   route,
   scrolled,
@@ -90,7 +103,7 @@ export function SiteHeader({
                   setDropdownOpen(null);
                 }}
               >
-                {cat}
+                {pluralizeCategory(cat)}
               </button>
             ))}
           </DropdownPortal>

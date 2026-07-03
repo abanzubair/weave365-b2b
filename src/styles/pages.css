@@ -6640,6 +6640,57 @@ button {
   margin-top: 14px;
 }
 
+/* Auth Loading States */
+.auth-primary-submit-btn:disabled {
+  background: #4a423e !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.8;
+}
+
+.primary-button:disabled {
+  background: var(--muted) !important;
+  border-color: var(--muted) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.8;
+}
+
+.auth-secondary-outline-btn:disabled {
+  border-color: var(--line) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  background: transparent !important;
+}
+
+.auth-input-styled:disabled,
+.auth-input-wrapper input:disabled {
+  background: #f0edea !important;
+  color: var(--muted) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  border-color: #e5dfd9 !important;
+}
+
+.auth-spinner {
+  animation: auth-rotate 1s linear infinite;
+}
+
+@keyframes auth-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 
 
 

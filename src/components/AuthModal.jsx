@@ -5,7 +5,7 @@
  * buyer roles, buying behaviors, and fabric categories) and integrates with Supabase authentication.
  */
 import { useState, useEffect } from 'react';
-import { X, LogOut, ArrowLeft, Eye, EyeOff, Mail, Lock, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
+import { X, LogOut, ArrowLeft, Eye, EyeOff, Mail, Lock, ShieldCheck, ArrowRight, UserPlus, Loader2, AlertCircle } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
@@ -203,6 +203,44 @@ function BuyingBehaviorDropdown({ value, onChange }) {
   );
 }
 
+function ErrorAlert({ message }) {
+  if (!message) return null;
+  
+  const isEmailNotConfirmed = String(message).toLowerCase().includes('email not confirmed') || 
+                              String(message).toLowerCase().includes('confirm your email') ||
+                              String(message).toLowerCase().includes('email confirmation');
+
+  return (
+    <div 
+      className="auth-error-alert" 
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '10px',
+        padding: '12px 14px',
+        border: '1px solid rgba(201, 74, 41, 0.25)',
+        borderRadius: '8px',
+        background: 'rgba(201, 74, 41, 0.05)',
+        color: '#c94a29',
+        fontSize: '13.5px',
+        lineHeight: '1.5',
+        marginTop: '14px',
+        textAlign: 'left',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}
+    >
+      <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+      <div>
+        <strong style={{ display: 'block', fontWeight: '800', marginBottom: '2px', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px' }}>
+          {isEmailNotConfirmed ? 'Verification Required' : 'Submission Error'}
+        </strong>
+        <span style={{ fontWeight: '500' }}>{message}</span>
+      </div>
+    </div>
+  );
+}
+
 export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyerProfile, initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState('');
@@ -223,6 +261,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   const [message, setMessage] = useState('');
   const [tempDemoUser, setTempDemoUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Track open prop to reset mode/message inline during render (no stale flash)
   const [prevOpen, setPrevOpen] = useState(open);
@@ -232,6 +271,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       setMode(initialMode);
       setMessage('');
       setShowPassword(false);
+      setLoading(false);
     }
   }
 
@@ -338,105 +378,121 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
 
   async function submit(event) {
     event.preventDefault();
+    if (loading) return;
     setMessage('');
+    setLoading(true);
 
-    if (mode === 'forgot-password') {
-      return handleForgotPassword(event);
-    }
-
-    if (mode === 'reset-password') {
-      return handleResetPassword(event);
-    }
-
-    if (mode === 'register') {
-      const cleanName = toTitleCaseName(profile.fullName);
-      const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-
-      const isBusinessRequired = profile.buyerType !== 'user';
-      const isBusinessValid = !isBusinessRequired || profile.businessName.trim().length > 0;
-
-      if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || profile.interestedCategories.length === 0) {
-        setMessage('Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits, and at least one category is required.');
+    try {
+      if (mode === 'forgot-password') {
+        await handleForgotPassword(event);
+        setLoading(false);
         return;
       }
 
-      setProfile((current) => ({
-        ...current,
-        fullName: cleanName,
-        whatsapp: cleanWhatsapp,
-      }));
-    }
-
-    if (!isSupabaseConfigured) {
-      const demoProfile = mode === 'register' ? buildBuyerProfile() : {};
-      const demoUser = {
-        id: email || 'demo-user',
-        email: email || 'demo@sareeva.local',
-        user_metadata: { buyer_profile: demoProfile },
-      };
-
-      if (mode === 'register') {
-        // Enforce email verification check for new registers in Demo Mode
-        setTempDemoUser(demoUser);
-        setMessage('demo-verification-sent');
-      } else {
-        localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
-        setUser(demoUser);
-        if (setBuyerProfile) setBuyerProfile(demoProfile);
-        onClose();
+      if (mode === 'reset-password') {
+        await handleResetPassword(event);
+        setLoading(false);
+        return;
       }
-      return;
-    }
 
-    const redirectUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/`
-      : 'https://www.weave365.com/';
-
-    const result =
-      mode === 'login'
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              buyer_profile: buildBuyerProfile(),
-            },
-          },
-        });
-
-    if (result.error) {
-      setMessage(result.error.message);
-    } else {
       if (mode === 'register') {
-        // Enforce verification: check if session exists (if email confirmation is turned off in Supabase, session is returned immediately)
-        if (!result.data.session) {
-          // No session means they must confirm their email first!
-          // Bypassing setUser(result.data.user) so they are NOT auto-logged in!
-          setMessage('verification-email-sent');
+        const cleanName = toTitleCaseName(profile.fullName);
+        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+
+        const isBusinessRequired = profile.buyerType !== 'user';
+        const isBusinessValid = !isBusinessRequired || profile.businessName.trim().length > 0;
+
+        if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || profile.interestedCategories.length === 0) {
+          setMessage('Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits, and at least one category is required.');
+          setLoading(false);
+          return;
+        }
+
+        setProfile((current) => ({
+          ...current,
+          fullName: cleanName,
+          whatsapp: cleanWhatsapp,
+        }));
+      }
+
+      if (!isSupabaseConfigured) {
+        const demoProfile = mode === 'register' ? buildBuyerProfile() : {};
+        const demoUser = {
+          id: email || 'demo-user',
+          email: email || 'demo@sareeva.local',
+          user_metadata: { buyer_profile: demoProfile },
+        };
+
+        if (mode === 'register') {
+          // Enforce email verification check for new registers in Demo Mode
+          setTempDemoUser(demoUser);
+          setMessage('demo-verification-sent');
         } else {
-          // If Supabase has email verification disabled, it signs them in and returns a session immediately.
+          localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
+          setUser(demoUser);
+          if (setBuyerProfile) setBuyerProfile(demoProfile);
+          onClose();
+        }
+        setLoading(false);
+        return;
+      }
+
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/`
+        : 'https://www.weave365.com/';
+
+      const result =
+        mode === 'login'
+          ? await supabase.auth.signInWithPassword({ email, password })
+          : await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                buyer_profile: buildBuyerProfile(),
+              },
+            },
+          });
+
+      if (result.error) {
+        setMessage(result.error.message);
+        setLoading(false);
+      } else {
+        if (mode === 'register') {
+          // Enforce verification: check if session exists (if email confirmation is turned off in Supabase, session is returned immediately)
+          if (!result.data.session) {
+            // No session means they must confirm their email first!
+            // Bypassing setUser(result.data.user) so they are NOT auto-logged in!
+            setMessage('verification-email-sent');
+            setLoading(false);
+          } else {
+            // If Supabase has email verification disabled, it signs them in and returns a session immediately.
+            if (result.data.user) {
+              setUser(result.data.user);
+            }
+            const profileResult = await syncProfileFromUser(result.data.user);
+            if (profileResult.error) {
+              setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
+              setLoading(false);
+              return;
+            }
+            setMessage('Registered and logged in successfully.');
+            setTimeout(() => {
+              onClose();
+            }, 1000);
+          }
+        } else {
+          // Login mode: log them in normally.
           if (result.data.user) {
             setUser(result.data.user);
           }
-          const profileResult = await syncProfileFromUser(result.data.user);
-          if (profileResult.error) {
-            setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
-            return;
-          }
-          setMessage('Registered and logged in successfully.');
-          setTimeout(() => {
-            onClose();
-          }, 1000);
+          onClose();
         }
-      } else {
-        // Login mode: log them in normally.
-        if (result.data.user) {
-          setUser(result.data.user);
-        }
-        onClose();
       }
+    } catch (err) {
+      setMessage(err.message || 'An unexpected error occurred.');
+      setLoading(false);
     }
   }
 
@@ -489,49 +545,73 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
           <>
             {message === 'verification-email-sent' ? (
               <>
-                <h2>Verify Your Email</h2>
-                <div className="auth-success-card" style={{ marginTop: '16px' }}>
-                  <strong style={{ color: '#b78646', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
-                    ✉️ Check your inbox
-                  </strong>
-                  <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
-                    We have sent a verification link to <strong>{email}</strong>. Please confirm your email address to activate your account.
+                <div className="auth-header" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
+                    Verify Your Email
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
+                    Check your inbox to activate your account
                   </p>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '16px', lineHeight: 1.5 }}>
+
+                <div className="auth-success-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '24px 16px', gap: '12px', marginTop: '8px', border: '1px solid rgba(183, 134, 70, 0.15)', borderRadius: '12px', background: 'rgba(183, 134, 70, 0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold)' }}>
+                    <Mail size={22} />
+                  </div>
+                  <strong style={{ color: 'var(--ink)', fontSize: '16px', fontWeight: '700' }}>
+                    Check your inbox
+                  </strong>
+                  <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--muted)', lineHeight: 1.6 }}>
+                    We have sent a verification link to <strong style={{ color: 'var(--ink)', wordBreak: 'break-all' }}>{email}</strong>. Please confirm your email address to activate your account.
+                  </p>
+                </div>
+                <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '20px', textAlign: 'center', lineHeight: 1.5 }}>
                   Once verified, you will be able to log in to access direct factory pricing and live inventory.
                 </p>
                 <button type="button"
-                  className="secondary-button"
+                  className="auth-primary-submit-btn"
                   style={{ marginTop: '20px', width: '100%' }}
                   onClick={() => {
                     setMode('login');
                     setMessage('');
                   }}
                 >
-                  Back to Login
+                  Back to Login <ArrowRight size={16} />
                 </button>
               </>
             ) : message === 'demo-verification-sent' ? (
               <>
-                <h2>Verify Your Email</h2>
-                <div className="auth-success-card" style={{ marginTop: '16px' }}>
-                  <strong style={{ color: '#b78646', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
-                    ✉️ Verification simulated
+                <div className="auth-header" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
+                    Verify Your Email
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
+                    Demo Mode — Verification Simulated
+                  </p>
+                </div>
+
+                <div className="auth-success-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '24px 16px', gap: '12px', marginTop: '8px', border: '1px solid rgba(183, 134, 70, 0.15)', borderRadius: '12px', background: 'rgba(183, 134, 70, 0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold)' }}>
+                    <Mail size={22} />
+                  </div>
+                  <strong style={{ color: 'var(--ink)', fontSize: '16px', fontWeight: '700' }}>
+                    Verification Simulated
                   </strong>
-                  <p style={{ marginTop: '8px', fontSize: '13.5px', lineHeight: 1.6 }}>
-                    A verification link has been simulated for <strong>{email}</strong>. In production, the user must click this link to access the platform.
+                  <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '4px' }}>
+                    A verification link has been simulated for <strong style={{ color: 'var(--ink)', wordBreak: 'break-all' }}>{email}</strong>. In production, the user must click this link to access the platform.
                   </p>
                   <button type="button"
                     className="primary-button"
-                    style={{ marginTop: '16px', width: '100%', background: '#b78646' }}
+                    style={{ width: '100%', background: 'var(--gold)', borderColor: 'var(--gold)', color: '#fff', fontWeight: '700' }}
                     onClick={handleSimulateVerification}
                   >
-                    Simulate Clicking Verification Link
+                    Simulate Verification Link Click
                   </button>
                 </div>
                 <button type="button"
-                  className="secondary-button"
+                  className="auth-primary-submit-btn"
                   style={{ marginTop: '20px', width: '100%' }}
                   onClick={() => {
                     setMode('login');
@@ -539,7 +619,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                     setTempDemoUser(null);
                   }}
                 >
-                  Back to Login
+                  Back to Login <ArrowRight size={16} />
                 </button>
               </>
             ) : mode === 'forgot-password' ? (
@@ -548,6 +628,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   className="text-button"
                   onClick={() => { setMode('login'); setMessage(''); }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '4px', fontSize: '13px', color: 'var(--muted)' }}
+                  disabled={loading}
                 >
                   <ArrowLeft size={14} /> Back to Login
                 </button>
@@ -556,21 +637,29 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   Enter the email address associated with your account and we'll send you a link to reset your password.
                 </p>
                 <form onSubmit={submit}>
-                  <label className="auth-label-styled">
-                    Email
-                    <input
-                      className="auth-input-styled"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@example.com"
-                      required
-                    />
-                  </label>
-                  <button className="primary-button" type="submit">
-                    Send Reset Link
-                  </button>
+                  <fieldset disabled={loading} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
+                    <label className="auth-label-styled">
+                      Email
+                      <input
+                        className="auth-input-styled"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </label>
+                    <button className="primary-button" type="submit">
+                      {loading ? (
+                        <>
+                          <Loader2 size={16} className="auth-spinner" /> Sending...
+                        </>
+                      ) : (
+                        'Send Reset Link'
+                      )}
+                    </button>
+                  </fieldset>
                 </form>
                 {message === 'reset-link-sent' && (
                   <div className="auth-success-card">
@@ -592,7 +681,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   </div>
                 )}
                 {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && (
-                  <p className="form-message">{message}</p>
+                  <ErrorAlert message={message} />
                 )}
               </>
             ) : mode === 'reset-password' ? (
@@ -602,45 +691,53 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   Choose a strong new password for your account.
                 </p>
                 <form onSubmit={submit}>
-                  <label className="auth-label-styled">
-                    New Password
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <input
-                        className="auth-input-styled"
-                        value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="new-password"
-                        minLength="6"
-                        placeholder="Minimum 6 characters"
-                        required
-                        style={{ paddingRight: '40px', width: '100%' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(prev => !prev)}
-                        style={{
-                          position: 'absolute',
-                          right: '10px',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--muted, #78716c)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '4px',
-                        }}
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </label>
-                  <button className="primary-button" type="submit">
-                    Update Password
-                  </button>
+                  <fieldset disabled={loading} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
+                    <label className="auth-label-styled">
+                      New Password
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <input
+                          className="auth-input-styled"
+                          value={newPassword}
+                          onChange={(event) => setNewPassword(event.target.value)}
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
+                          minLength="6"
+                          placeholder="Minimum 6 characters"
+                          required
+                          style={{ paddingRight: '40px', width: '100%' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(prev => !prev)}
+                          style={{
+                            position: 'absolute',
+                            right: '10px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--muted, #78716c)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '4px',
+                          }}
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </label>
+                    <button className="primary-button" type="submit">
+                      {loading ? (
+                        <>
+                          <Loader2 size={16} className="auth-spinner" /> Updating...
+                        </>
+                      ) : (
+                        'Update Password'
+                      )}
+                    </button>
+                  </fieldset>
                 </form>
-                {message && <p className="form-message">{message}</p>}
+                <ErrorAlert message={message} />
               </>
             ) : (
               <>
@@ -655,253 +752,271 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 </div>
 
                 <form onSubmit={submit}>
-                  {mode === 'register' ? (
-                    <div className="auth-register-columns">
-                      <div className="auth-column">
-                        <label className="auth-label-styled">
-                          Full Name
-                          <input
-                            className="auth-input-styled"
-                            value={profile.fullName}
-                            onChange={(event) => updateProfile('fullName', event.target.value)}
-                            onBlur={(event) => updateProfile('fullName', toTitleCaseName(event.target.value))}
-                            autoComplete="name"
-                            placeholder="Enter your full name"
-                            required
-                          />
-                        </label>
-                        <label className="auth-label-styled">
-                          {profile.buyerType === 'user' ? 'Business Name (Optional)' : 'Business Name'}
-                          <input
-                            className="auth-input-styled"
-                            value={profile.businessName}
-                            onChange={(event) => updateProfile('businessName', event.target.value)}
-                            autoComplete="organization"
-                            placeholder="Enter your business name"
-                            required={profile.buyerType !== 'user'}
-                          />
-                        </label>
-                        <div className="auth-phone-field">
-                          <div className="auth-field-label-row">
-                            <span>WhatsApp Number</span>
-                            <small>Format: {profile.countryCode} xxxxxxxxxx</small>
-                          </div>
-                          <div>
-                            <select
-                              className="auth-input-styled"
-                              value={profile.countryCode}
-                              onChange={(event) => updateProfile('countryCode', event.target.value)}
-                              aria-label="Country code"
-                              required
-                              style={{ paddingRight: '24px' }}
-                            >
-                              {countryCodes.map((item) => (
-                                <option key={item.value} value={item.value}>{item.label}</option>
-                              ))}
-                            </select>
+                  <fieldset disabled={loading} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
+                    {mode === 'register' ? (
+                      <div className="auth-register-columns">
+                        <div className="auth-column">
+                          <label className="auth-label-styled">
+                            Full Name
                             <input
                               className="auth-input-styled"
-                              value={profile.whatsapp}
-                              onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/D/g, '').replace(/^0+/, '').slice(0, 10))}
-                              inputMode="numeric"
-                              autoComplete="tel-national"
-                              placeholder="xxxxxxxxxx"
-                              pattern="[0-9]{10}"
+                              value={profile.fullName}
+                              onChange={(event) => updateProfile('fullName', event.target.value)}
+                              onBlur={(event) => updateProfile('fullName', toTitleCaseName(event.target.value))}
+                              autoComplete="name"
+                              placeholder="Enter your full name"
+                              required
+                            />
+                          </label>
+                          <label className="auth-label-styled">
+                            {profile.buyerType === 'user' ? 'Business Name (Optional)' : 'Business Name'}
+                            <input
+                              className="auth-input-styled"
+                              value={profile.businessName}
+                              onChange={(event) => updateProfile('businessName', event.target.value)}
+                              autoComplete="organization"
+                              placeholder="Enter your business name"
+                              required={profile.buyerType !== 'user'}
+                            />
+                          </label>
+                          <div className="auth-phone-field">
+                            <div className="auth-field-label-row">
+                              <span>WhatsApp Number</span>
+                              <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                            </div>
+                            <div>
+                              <select
+                                className="auth-input-styled"
+                                value={profile.countryCode}
+                                onChange={(event) => updateProfile('countryCode', event.target.value)}
+                                aria-label="Country code"
+                                required
+                                style={{ paddingRight: '24px' }}
+                              >
+                                {countryCodes.map((item) => (
+                                  <option key={item.value} value={item.value}>{item.label}</option>
+                                ))}
+                              </select>
+                              <input
+                                className="auth-input-styled"
+                                value={profile.whatsapp}
+                                onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/D/g, '').replace(/^0+/, '').slice(0, 10))}
+                                inputMode="numeric"
+                                autoComplete="tel-national"
+                                placeholder="xxxxxxxxxx"
+                                pattern="[0-9]{10}"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <label className="auth-label-styled">
+                            Email
+                            <input
+                              className="auth-input-styled"
+                              value={email}
+                              onChange={(event) => setEmail(event.target.value)}
+                              type="email"
+                              autoComplete="email"
+                              placeholder="you@example.com"
+                              required
+                            />
+                          </label>
+                          <label className="auth-label-styled">
+                            Password
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                              <input
+                                className="auth-input-styled"
+                                value={password}
+                                onChange={(event) => setPassword(event.target.value)}
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                minLength="6"
+                                placeholder="Minimum 6 characters"
+                                required
+                                style={{ paddingRight: '40px', width: '100%' }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(prev => !prev)}
+                                style={{
+                                  position: 'absolute',
+                                  right: '10px',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  color: 'var(--muted, #78716c)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: '4px',
+                                }}
+                              >
+                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </label>
+                        </div>
+
+                        <div className="auth-column">
+                          <div className="auth-phone-field">
+                            <div className="auth-field-label-row">
+                              <span>City, State & Pincode *</span>
+                            </div>
+                            <div className="auth-city-pincode-inputs">
+                              <input
+                                className="auth-input-styled"
+                                value={profile.city}
+                                onChange={(event) => updateProfile('city', event.target.value)}
+                                placeholder="City name, State name"
+                                autoComplete="address-level2"
+                                required
+                              />
+                              <input
+                                className="auth-input-styled"
+                                value={profile.pincode}
+                                onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
+                                inputMode="numeric"
+                                autoComplete="postal-code"
+                                placeholder="Pincode"
+                                required
+                              />
+                            </div>
+                            <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type</span>
+                            <B2BSegmentDropdown
+                              value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
+                              onChange={(opt) => {
+                                setProfile(current => ({
+                                  ...current,
+                                  buyerType: opt.type,
+                                  buyerSubtype: opt.value
+                                }));
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
+                            <BuyingBehaviorDropdown
+                              value={profile.buyingBehavior}
+                              onChange={(value) => updateProfile('buyingBehavior', value)}
+                            />
+                          </div>
+
+                          <fieldset className="auth-category-fieldset">
+                            <legend>Interested Categories</legend>
+                            <div>
+                              {categoryOptions.map((category) => (
+                                <label key={category}>
+                                  <input
+                                    type="checkbox"
+                                    checked={profile.interestedCategories.includes(category)}
+                                    onChange={() => toggleCategory(category)}
+                                  />
+                                  <span>{category}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </fieldset>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <label className="auth-label-styled">
+                          Email
+                          <div className="auth-input-wrapper">
+                            <Mail className="auth-input-icon" size={18} />
+                            <input
+                              value={email}
+                              onChange={(event) => setEmail(event.target.value)}
+                              type="email"
+                              autoComplete="email"
+                              placeholder="you@example.com"
                               required
                             />
                           </div>
-                        </div>
-                        <label className="auth-label-styled">
-                          Email
-                          <input
-                            className="auth-input-styled"
-                            value={email}
-                            onChange={(event) => setEmail(event.target.value)}
-                            type="email"
-                            autoComplete="email"
-                            placeholder="you@example.com"
-                            required
-                          />
                         </label>
                         <label className="auth-label-styled">
                           Password
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+                          <div className="auth-input-wrapper">
+                            <Lock className="auth-input-icon" size={18} />
                             <input
-                              className="auth-input-styled"
                               value={password}
                               onChange={(event) => setPassword(event.target.value)}
                               type={showPassword ? 'text' : 'password'}
-                              autoComplete="new-password"
+                              autoComplete="current-password"
                               minLength="6"
-                              placeholder="Minimum 6 characters"
+                              placeholder="Enter your password"
                               required
-                              style={{ paddingRight: '40px', width: '100%' }}
+                              style={{ paddingRight: '48px' }}
                             />
                             <button
                               type="button"
+                              className="auth-password-toggle"
                               onClick={() => setShowPassword(prev => !prev)}
-                              style={{
-                                position: 'absolute',
-                                right: '10px',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: 'var(--muted, #78716c)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '4px',
-                              }}
                             >
-                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                           </div>
                         </label>
-                      </div>
-
-                      <div className="auth-column">
-                        <div className="auth-phone-field">
-                          <div className="auth-field-label-row">
-                            <span>City, State & Pincode *</span>
-                          </div>
-                          <div className="auth-city-pincode-inputs">
+                        <div className="auth-options-row">
+                          <label className="auth-remember-label">
                             <input
-                              className="auth-input-styled"
-                              value={profile.city}
-                              onChange={(event) => updateProfile('city', event.target.value)}
-                              placeholder="City name, State name"
-                              autoComplete="address-level2"
-                              required
+                              type="checkbox"
+                              className="auth-checkbox"
+                              checked={profile.rememberMe || false}
+                              onChange={(e) => updateProfile('rememberMe', e.target.checked)}
                             />
-                            <input
-                              className="auth-input-styled"
-                              value={profile.pincode}
-                              onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
-                              inputMode="numeric"
-                              autoComplete="postal-code"
-                              placeholder="Pincode"
-                              required
-                            />
-                          </div>
-                          <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type</span>
-                          <B2BSegmentDropdown
-                            value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
-                            onChange={(opt) => {
-                              setProfile(current => ({
-                                ...current,
-                                buyerType: opt.type,
-                                buyerSubtype: opt.value
-                              }));
-                            }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
-                          <BuyingBehaviorDropdown
-                            value={profile.buyingBehavior}
-                            onChange={(value) => updateProfile('buyingBehavior', value)}
-                          />
-                        </div>
-
-                        <fieldset className="auth-category-fieldset">
-                          <legend>Interested Categories</legend>
-                          <div>
-                            {categoryOptions.map((category) => (
-                              <label key={category}>
-                                <input
-                                  type="checkbox"
-                                  checked={profile.interestedCategories.includes(category)}
-                                  onChange={() => toggleCategory(category)}
-                                />
-                                <span>{category}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <label className="auth-label-styled">
-                        Email
-                        <div className="auth-input-wrapper">
-                          <Mail className="auth-input-icon" size={18} />
-                          <input
-                            value={email}
-                            onChange={(event) => setEmail(event.target.value)}
-                            type="email"
-                            autoComplete="email"
-                            placeholder="you@example.com"
-                            required
-                          />
-                        </div>
-                      </label>
-                      <label className="auth-label-styled">
-                        Password
-                        <div className="auth-input-wrapper">
-                          <Lock className="auth-input-icon" size={18} />
-                          <input
-                            value={password}
-                            onChange={(event) => setPassword(event.target.value)}
-                            type={showPassword ? 'text' : 'password'}
-                            autoComplete="current-password"
-                            minLength="6"
-                            placeholder="Enter your password"
-                            required
-                            style={{ paddingRight: '48px' }}
-                          />
+                            <span>Remember me</span>
+                          </label>
                           <button
                             type="button"
-                            className="auth-password-toggle"
-                            onClick={() => setShowPassword(prev => !prev)}
+                            className="auth-forgot-btn"
+                            onClick={() => { setMode('forgot-password'); setMessage(''); }}
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            Forgot password?
                           </button>
                         </div>
-                      </label>
-                      <div className="auth-options-row">
-                        <label className="auth-remember-label">
-                          <input
-                            type="checkbox"
-                            className="auth-checkbox"
-                            checked={profile.rememberMe || false}
-                            onChange={(e) => updateProfile('rememberMe', e.target.checked)}
-                          />
-                          <span>Remember me</span>
-                        </label>
+                      </>
+                    )}
+                    {mode === 'register' ? (
+                      <div className="auth-actions-row-buttons" style={{ marginTop: '16px' }}>
+                        <button className="auth-primary-submit-btn" type="submit">
+                          {loading ? (
+                            <>
+                              <Loader2 size={16} className="auth-spinner" /> Creating Account...
+                            </>
+                          ) : (
+                            <>
+                              Create Account <ArrowRight size={16} />
+                            </>
+                          )}
+                        </button>
                         <button
                           type="button"
-                          className="auth-forgot-btn"
-                          onClick={() => { setMode('forgot-password'); setMessage(''); }}
+                          className="auth-secondary-outline-btn"
+                          onClick={() => setMode('login')}
                         >
-                          Forgot password?
+                          Already registered? Login
                         </button>
                       </div>
-                    </>
-                  )}
-                  {mode === 'register' ? (
-                    <div className="auth-actions-row-buttons" style={{ marginTop: '16px' }}>
-                      <button className="auth-primary-submit-btn" type="submit">
-                        Create Account <ArrowRight size={16} />
+                    ) : (
+                      <button className="auth-primary-submit-btn" type="submit" style={{ marginTop: '8px' }}>
+                        {loading ? (
+                          <>
+                            <Loader2 size={16} className="auth-spinner" /> Logging in...
+                          </>
+                        ) : (
+                          <>
+                            Login <ArrowRight size={16} />
+                          </>
+                        )}
                       </button>
-                      <button
-                        type="button"
-                        className="auth-secondary-outline-btn"
-                        onClick={() => setMode('login')}
-                      >
-                        Already registered? Login
-                      </button>
-                    </div>
-                  ) : (
-                    <button className="auth-primary-submit-btn" type="submit" style={{ marginTop: '8px' }}>
-                      Login <ArrowRight size={16} />
-                    </button>
-                  )}
+                    )}
+                  </fieldset>
                 </form>
 
                 {mode === 'login' && (
@@ -913,6 +1028,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                       type="button"
                       className="auth-secondary-outline-btn"
                       onClick={() => setMode('register')}
+                      disabled={loading}
                     >
                       <UserPlus size={18} className="btn-icon" />
                       Create a new account
@@ -924,7 +1040,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <ShieldCheck size={16} />
                   <span>Your information is secure with us</span>
                 </div>
-                {message && <p className="form-message" style={{ marginTop: '12px', textAlign: 'center' }}>{message}</p>}
+                <ErrorAlert message={message} />
               </>
             )}
           </>
