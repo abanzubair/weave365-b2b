@@ -785,11 +785,11 @@ export function ProductDetail({
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
 
       const isWholesaler = priceAccess?.priceGroup === 'wholesale';
-      const shippingText = isWholesaler ? 'Excluded' : 'Included';
+      const shippingLine = isWholesaler ? 'Excluded: GST & Shipping' : 'Included: Free Shipping in India (Excluding GST)';
       let priceText = 'On request';
       if (displayPrice != null && displayPrice > 0) {
         if (isWholesaler && totalColors > 1 && !isSoldAsPc && !isUnder999) {
-          priceText = `${formatMoney(displayPrice * totalColors)} /Set (${totalColors} colors at ${formatMoney(displayPrice)}/pc)`;
+          priceText = `${formatMoney(displayPrice * totalColors)} /Set (${formatMoney(displayPrice)} /pc)`;
         } else {
           priceText = `${formatMoney(displayPrice)} /pc`;
         }
@@ -798,7 +798,7 @@ export function ProductDetail({
       const detailsLines = [
         `Code: ${variant?.code || 'N/A'}`,
         `Price: ${priceText}`,
-        `Shipping: ${shippingText}`,
+        shippingLine,
         '',
         `${product.title}`,
         '',
