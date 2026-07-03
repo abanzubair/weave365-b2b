@@ -1471,7 +1471,7 @@ export default function App({ initialData = {} }) {
       return <BlogList navigate={navigate} blogs={blogs} />;
     }
 
-    if (route === 'our-offerings') return <OurOfferings navigate={navigate} openAuth={() => setAuthOpen(true)} />;
+    if (route === 'collaboration') return <OurOfferings navigate={navigate} openAuth={() => setAuthOpen(true)} />;
 
     return <NotFoundPage />;
   })();

@@ -151,7 +151,7 @@ const staticSeoDefaults = [
     metaDescription: 'Read reviews and testimonials from registered boutique owners, retail partners, and saree resellers about their sourcing experience with Weave 365.',
   },
   {
-    path: '/our-offerings',
+    path: '/collaboration',
     label: 'Our Offerings',
     metaTitle: 'B2B Sourcing Services & Weaver Network | Weave 365',
     metaDescription: 'Discover our complete range of B2B offerings: custom catalog curation, quality checks, artisan direct pricing, and worldwide logistics for boutique owners.',

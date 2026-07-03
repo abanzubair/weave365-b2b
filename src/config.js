@@ -118,7 +118,7 @@ export const NON_PRODUCT_ROUTES = new Set([
   'white-label-brands',
   'weaver-registration',
   'weaver-onboarding',
-  'our-offerings',
+  'collaboration',
   'admin',
   'reseller-dashboard',
   'affiliate-program',
