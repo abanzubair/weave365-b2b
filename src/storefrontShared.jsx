@@ -164,6 +164,9 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
       const discountedSetPrice = baseSetPrice * discountFactor;
       const groupTotalPrice = discountedSetPrice * setQty;
 
+      const catSlug = getProductCategorySlug(firstItem.product.id, firstItem.product.category);
+      const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(firstItem.product.id)}`;
+
       if (isUnder999) {
         const totalPcs = groupItems.reduce((sum, item) => sum + item.quantity, 0);
         let groupTotalPricePcs = 0;
@@ -173,87 +176,117 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
         const details = groupItems.map(item => `${item.selectedColorName}: ${item.quantity}pc`).join(', ');
         return [
           `${firstItem.product.title}`,
+          productUrl,
           `Code: ${firstItem.variant.code} | Qty: ${totalPcs} pc${totalPcs === 1 ? '' : 's'} (${details}) | Price: ${formatMoney(groupTotalPricePcs)}`
         ].join('\n');
       }
 
       return [
         `${firstItem.product.title}`,
-        `Code: ${firstItem.variant.code} | Qty: ${setQty} Set${setQty === 1 ? '' : 's'} (${totalColors} colors) | Price: ${formatMoney(groupTotalPrice)} (at ${formatMoney(discountedSetPrice)}/Set)`
+        productUrl,
+        `Code: ${firstItem.variant.code} | Qty: ${setQty} Set${setQty === 1 ? '' : 's'} (${totalColors} colors) | Price: ${formatMoney(groupTotalPrice)} (${formatMoney(discountedSetPrice)}/Set)`
       ].join('\n');
     }).filter(Boolean);
 
-    const lines = [
-      isPayment 
-        ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
-        : `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
-      '',
-      itemLines.join('\n\n'),
-      '',
+    const greeting = isPayment 
+      ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
+      : `Hello ${storeConfig.name}, I want to enquire about these sarees:`;
+
+    const itemSection = itemLines.join('\n\n');
+
+    const summarySection = [
       total != null ? `Total: ${formatMoney(total)} (Excluding GST & Shipping)` : '',
       pincode ? `Pincode: ${pincode}` : '',
       codStatus === 'available' ? 'COD checked: Available' : '',
-    ].filter(Boolean);
+    ].filter(Boolean).join('\n');
+
+    const mainParts = [greeting, ''];
+    let itemsAndSummary = '';
+    if (itemSection && summarySection) {
+      itemsAndSummary = `${itemSection}\n${summarySection}`;
+    } else {
+      itemsAndSummary = itemSection || summarySection;
+    }
+    if (itemsAndSummary) {
+      mainParts.push(itemsAndSummary);
+    }
+
+    const blocks = [];
+    blocks.push(mainParts.join('\n'));
 
     if (address) {
-      lines.push(
-        '',
+      const addressLines = [
         '*Delivery Address:*',
-        `Name: ${address.full_name}`,
-        `Phone: ${address.phone_number}`,
-        `Address: ${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
-        `City: ${address.city}, State: ${address.state} - ${address.pincode}`,
-        `Country: ${address.country || 'India'}`
-      );
+        address.full_name,
+        `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
+        `${address.city}, ${address.state}, ${address.pincode}`,
+        address.country || 'India',
+        address.phone_number
+      ].filter(Boolean);
+      blocks.push(addressLines.join('\n'));
     }
 
     if (screenshotUrl) {
-      lines.push('', `Payment Screenshot: ${screenshotUrl}`);
+      blocks.push(`Payment Screenshot: ${screenshotUrl}`);
     }
 
-    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(blocks.filter(Boolean).join('\n\n'))}`;
   }
 
   const discount = calculateComboDiscount(items, priceAccess);
   const subtotal = items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
 
   // Fallback for non-wholesale users
-  const lines = [
-    isPayment 
-      ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
-      : `Hello ${storeConfig.name}, I want to enquire about these sarees:`,
-    '',
-    ...items.map((item) => {
-      const price = customerPrice(item.variant.prices, priceAccess);
-      const color = item.selectedColorName ? ` | Color: ${item.selectedColorName}` : '';
-      const priceText = canViewPrices && price != null ? ` | Price: ${formatMoney(price)}` : '';
-      return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity}${priceText}`;
-    }),
-    '',
+  const greeting = isPayment 
+    ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
+    : `Hello ${storeConfig.name}, I want to enquire about these sarees:`;
+
+  const itemSection = items.map((item) => {
+    const price = customerPrice(item.variant.prices, priceAccess);
+    const color = item.selectedColorName ? ` | Color: ${item.selectedColorName}` : '';
+    const priceText = canViewPrices && price != null ? ` | Price: ${formatMoney(price)}` : '';
+    return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity}${priceText}`;
+  }).join('\n');
+
+  const summarySection = [
     discount > 0 ? `Subtotal: ${formatMoney(subtotal)}` : '',
     discount > 0 ? `Combo Discount: -${formatMoney(discount)}` : '',
     canViewPrices && total != null ? `Total: ${formatMoney(total)}` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
-  ].filter(Boolean);
+  ].filter(Boolean).join('\n');
+
+  const mainParts = [greeting, ''];
+  let itemsAndSummary = '';
+  if (itemSection && summarySection) {
+    itemsAndSummary = `${itemSection}\n${summarySection}`;
+  } else {
+    itemsAndSummary = itemSection || summarySection;
+  }
+  if (itemsAndSummary) {
+    mainParts.push(itemsAndSummary);
+  }
+
+  const blocks = [];
+  blocks.push(mainParts.join('\n'));
 
   if (address) {
-    lines.push(
-      '',
+    const addressLines = [
       '*Delivery Address:*',
-      `Name: ${address.full_name}`,
-      `Phone: ${address.phone_number}`,
-      `Address: ${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
-      `City: ${address.city}, State: ${address.state} - ${address.pincode}`,
-      `Country: ${address.country || 'India'}`
-    );
+      address.full_name,
+      `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
+      `${address.city}, ${address.state}, ${address.pincode}`,
+      address.country || 'India',
+      address.phone_number
+    ].filter(Boolean);
+    blocks.push(addressLines.join('\n'));
   }
 
   if (screenshotUrl) {
-    lines.push('', `Payment Screenshot: ${screenshotUrl}`);
+    blocks.push(`Payment Screenshot: ${screenshotUrl}`);
   }
 
-  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+  return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(blocks.filter(Boolean).join('\n\n'))}`;
 }
 
 export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus, priceAccess) {

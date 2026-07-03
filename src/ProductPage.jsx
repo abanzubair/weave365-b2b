@@ -781,21 +781,39 @@ export function ProductDetail({
 
       // Construct and add the product details text file
       const isSaree = String(product.category || '').toLowerCase() === 'saree';
+      const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
+
+      const isWholesaler = priceAccess?.priceGroup === 'wholesale';
+      const shippingText = isWholesaler ? 'Excluded' : 'Included';
+      let priceText = 'On request';
+      if (displayPrice != null && displayPrice > 0) {
+        if (isWholesaler && totalColors > 1 && !isSoldAsPc && !isUnder999) {
+          priceText = `${formatMoney(displayPrice * totalColors)} /Set (${totalColors} colors at ${formatMoney(displayPrice)}/pc)`;
+        } else {
+          priceText = `${formatMoney(displayPrice)} /pc`;
+        }
+      }
+
       const detailsLines = [
-        `Product Title: ${product.title}`,
-        `Code/SKU: ${variant?.code || 'N/A'}`,
-        `Category: ${product.category || 'N/A'}`,
+        `Code: ${variant?.code || 'N/A'}`,
+        `Price: ${priceText}`,
+        `Shipping: ${shippingText}`,
+        '',
+        `${product.title}`,
         '',
         `Description:`,
         product.description || 'No description available.',
         '',
         `Specifications:`,
-        `- Fabric: ${product.fabric || 'N/A'}`,
-        `- Weave Technique: ${product.weave || 'N/A'}`,
-        `- Zari / Work: ${product.work || 'N/A'}`,
-        `- Pattern: ${product.pattern || 'N/A'}`,
-        `- Occasion: ${product.occasion || 'N/A'}`,
+        `- Color:`,
+        `- Fabric: ${product.fabric || ''}`,
+        `- Work: ${product.work || ''}`,
+        `- Pattern: ${product.pattern || ''}`,
+        `- Occasion: ${product.occasion || ''}`,
+        `- Weave: ${product.weave || ''}`,
+        `- Purity: ${product.purity || ''}`,
+        `- Type: ${product.type || ''}`,
         `- Length: ${lengthText}`,
         '',
         `Disclaimer: Slight variations in color, fabric, and weaving are possible. Model images are for reference only.`
@@ -825,7 +843,7 @@ export function ProductDetail({
     } finally {
       setIsDownloading(false);
     }
-  }, [product.id, product.images, product.title, priceAccess, variant]);
+  }, [product.id, product.images, product.title, priceAccess, variant, displayPrice, totalColors, isSoldAsPc]);
 
   const shareProductPage = useCallback(async () => {
     let shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
