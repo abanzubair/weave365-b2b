@@ -378,11 +378,7 @@ export default function App({ initialData = {} }) {
     [pricedProducts],
   );
 
-  useEffect(() => {
-    if (route === 'catalog' || route === 'catalogue') {
-      router.replace('/wholesale-catalogue' + (typeof window !== 'undefined' ? window.location.search : ''));
-    }
-  }, [route, router]);
+
 
   useEffect(() => {
     if (hasInitialData) return undefined;
@@ -635,7 +631,7 @@ export default function App({ initialData = {} }) {
   }, [pricedProducts, configOptions.weaves]);
 
   const category = useMemo(() => {
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return 'All';
     if (isSeoCategoryRoute) return seoCategoryRoutes[route];
     const catParam = searchParams?.get('category');
     if (catParam) {
@@ -648,7 +644,7 @@ export default function App({ initialData = {} }) {
   const activeCategory = isSeoCategoryRoute ? seoCategoryRoutes[route] : category;
 
   const fabric = useMemo(() => {
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return 'All';
     const fabricParam = searchParams?.get('fabric');
     if (fabricParam) {
       const matched = fabrics.find(f => f.toLowerCase() === fabricParam.toLowerCase());
@@ -658,7 +654,7 @@ export default function App({ initialData = {} }) {
   }, [route, isSeoCategoryRoute, searchParams, fabrics]);
 
   const weave = useMemo(() => {
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return 'All';
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return 'All';
     const weaveParam = searchParams?.get('weave');
     if (weaveParam) {
       const matched = weaves.find(w => w.toLowerCase() === weaveParam.toLowerCase());
@@ -668,7 +664,7 @@ export default function App({ initialData = {} }) {
   }, [route, isSeoCategoryRoute, searchParams, weaves]);
 
   const urlSearch = useMemo(() => {
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return '';
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return '';
     return searchParams?.get('search') || '';
   }, [route, isSeoCategoryRoute, searchParams]);
 
@@ -689,13 +685,13 @@ export default function App({ initialData = {} }) {
       params.delete(name);
     }
     const newSearch = params.toString();
-    const basePath = isSeoCategoryRoute ? `/${route}` : '/wholesale-catalogue';
+    const basePath = isSeoCategoryRoute ? `/${route}` : '/catalogue';
     const newUrl = basePath + (newSearch ? `?${newSearch}` : '');
     router.replace(newUrl, { scroll: false });
   }, [router, isSeoCategoryRoute, route]);
 
   useEffect(() => {
-    if (route !== 'wholesale-catalogue' && !isSeoCategoryRoute) return undefined;
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return undefined;
     const timer = setTimeout(() => {
       if (localSearch !== urlSearch) {
         updateQueryParam('search', localSearch, '');
@@ -722,7 +718,7 @@ export default function App({ initialData = {} }) {
   }, []);
 
   useLayoutEffect(() => {
-    if (search && searchRef.current && route !== 'wholesale-catalogue') {
+    if (search && searchRef.current && route !== 'catalogue') {
       const rect = searchRef.current.getBoundingClientRect();
       setSearchPos({ top: rect.bottom, left: rect.left, width: rect.width });
     } else if (!search) {
@@ -1119,7 +1115,7 @@ export default function App({ initialData = {} }) {
           params.set('weave', currentWeave.toLowerCase());
         }
         const searchStr = params.toString();
-        href = `/wholesale-catalogue${searchStr ? '?' + searchStr : ''}`;
+        href = `/catalogue${searchStr ? '?' + searchStr : ''}`;
       }
     }
 

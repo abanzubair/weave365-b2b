@@ -399,7 +399,7 @@ export function Account({
           </div>
         </div>
         <div className="account-hero-actions">
-          <button className="secondary-button" type="button" onClick={() => navigate('wholesale-catalogue')}>
+          <button className="secondary-button" type="button" onClick={() => navigate('catalogue')}>
             Browse Catalogue
           </button>
           <button className="secondary-button logout-btn" type="button" onClick={onSignOut}>
@@ -466,7 +466,7 @@ export function Account({
           <div className="account-panel-head">
             <span><ShoppingBag size={18} /> B2B Shopping Cart (Draft Order)</span>
             {cartItems.length > 0 && (
-              <button type="button" onClick={() => navigate('wholesale-catalogue')}>Continue Sourcing</button>
+              <button type="button" onClick={() => navigate('catalogue')}>Continue Sourcing</button>
             )}
           </div>
           <div className="account-list" style={{ marginBottom: '2.5rem' }}>

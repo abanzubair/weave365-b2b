@@ -502,7 +502,7 @@ function EnquiryItemsModal({ isOpen, onClose, enquiry, products }) {
               const itemTitle = product?.title || `Product Design Code: ${productKey || 'N/A'}`;
               const displayCode = searchCode || baseVariantCode || productKey || 'N/A';
 
-              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'wholesale-catalogue';
+              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
               const pId = productKey || product?.id || product?.groupKey;
               const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
 

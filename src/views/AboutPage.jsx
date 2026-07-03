@@ -380,8 +380,8 @@ export function AboutPage({ navigate }) {
             <p>Register on Weave 365 to view our diverse catalogs, trade prices, and shipping logistics across all material grades.</p>
             <div className="about-cta-buttons">
               <a
-                href="/wholesale-catalogue"
-                onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }}
+                href="/catalogue"
+                onClick={(e) => { e.preventDefault(); navigate('catalogue'); }}
                 className="cta-btn-primary"
               >
                 View Catalogue

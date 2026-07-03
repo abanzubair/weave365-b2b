@@ -61,12 +61,12 @@ export function Catalog({
   const seoConfig = useMemo(() => {
     let seoTitle = title || "Wholesale Saree & Suit Catalogue | Weave 365";
     let seoDesc = "Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.";
-    let seoCanonical = "/wholesale-catalogue";
+    let seoCanonical = "/catalogue";
 
     if (search && search.trim() !== '') {
       seoTitle = `Wholesale Banarasi Sarees matching "${search}" | Weave 365`;
       seoDesc = `Explore wholesale Banarasi sarees matching "${search}" at direct-from-weaver wholesale prices with flexible MOQ for resellers and boutiques.`;
-      seoCanonical = `/wholesale-catalogue?search=${encodeURIComponent(search)}`;
+      seoCanonical = `/catalogue?search=${encodeURIComponent(search)}`;
     } else if (category && category !== 'All') {
       const pluralCategory = category === 'Under 999' ? category : (category.endsWith('s') ? category : `${category}s`);
       seoTitle = `Wholesale Banarasi ${pluralCategory} Online | Weave 365`;
@@ -76,13 +76,13 @@ export function Catalog({
       if (cleanSlug) {
         seoCanonical = `/${cleanSlug}`;
       } else {
-        seoCanonical = `/wholesale-catalogue?category=${encodeURIComponent(category)}`;
+        seoCanonical = `/catalogue?category=${encodeURIComponent(category)}`;
       }
     } else if (fabric && fabric !== 'All') {
       const prettyFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
       seoTitle = `Pure ${prettyFabric} Silk Banarasi Sarees Wholesale | Weave 365`;
       seoDesc = `Discover handwoven pure ${prettyFabric} Banarasi sarees at wholesale prices. Certified quality checks and worldwide shipping for boutique owners.`;
-      seoCanonical = `/wholesale-catalogue?fabric=${encodeURIComponent(fabric)}`;
+      seoCanonical = `/catalogue?fabric=${encodeURIComponent(fabric)}`;
     }
 
     return {
@@ -118,16 +118,16 @@ export function Catalog({
  
     const schemaItems = [
       { name: 'Home', url: '/' },
-      { name: title || 'Wholesale Saree Catalogue', url: '/wholesale-catalogue' }
+      { name: title || 'Wholesale Saree Catalogue', url: '/catalogue' }
     ];
     if (category && category !== 'All') {
-      schemaItems.push({ name: category, url: `/wholesale-catalogue` });
+      schemaItems.push({ name: category, url: `/catalogue` });
     }
     if (fabric && fabric !== 'All') {
-      schemaItems.push({ name: fabric, url: `/wholesale-catalogue` });
+      schemaItems.push({ name: fabric, url: `/catalogue` });
     }
     if (weave && weave !== 'All') {
-      schemaItems.push({ name: weave, url: `/wholesale-catalogue` });
+      schemaItems.push({ name: weave, url: `/catalogue` });
     }
  
     const breadcrumbSchema = {
@@ -222,19 +222,19 @@ export function Catalog({
     ];
 
     if (title && title !== 'Wholesale Catalogue') {
-      items.push({ name: title, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', search: '' } });
+      items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', search: '' } });
     } else {
-      items.push({ name: 'Wholesale Catalogue', url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
+      items.push({ name: 'Wholesale Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
       if (category && category !== 'All') {
-        items.push({ name: category, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric: 'All', weave: 'All', search: '' } });
+        items.push({ name: category, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric: 'All', weave: 'All', search: '' } });
       }
     }
 
     if (fabric && fabric !== 'All') {
-      items.push({ name: fabric, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric, weave: 'All', search: '' } });
+      items.push({ name: fabric, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave: 'All', search: '' } });
     }
     if (weave && weave !== 'All') {
-      items.push({ name: weave, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category, fabric, weave, search: '' } });
+      items.push({ name: weave, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, search: '' } });
     }
 
     return items;

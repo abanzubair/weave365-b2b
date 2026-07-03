@@ -41,7 +41,7 @@ export function AppLink({
     } else if (to === 'blog' && productId) {
       url = `/blog/${encodeURIComponent(productId)}`;
     } else if (to === 'wholesale-catalogue' || to === 'catalogue') {
-      url = '/wholesale-catalogue';
+      url = '/catalogue';
     }
 
     return url;

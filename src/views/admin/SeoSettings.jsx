@@ -133,7 +133,7 @@ const staticSeoDefaults = [
     metaDescription: 'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
   },
   {
-    path: '/wholesale-catalogue',
+    path: '/catalogue',
     label: 'Wholesale Catalogue',
     metaTitle: 'Wholesale Saree & Suit Catalogue | Weave 365',
     metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',

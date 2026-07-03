@@ -292,7 +292,7 @@ export function CartDrawer({
     if (isSupabaseConfigured) {
       try {
         const enquiryItems = items.map(item => {
-          const categorySlug = item.product ? getProductCategorySlug(item.product.id || item.product.groupKey, item.product.category) : 'wholesale-catalogue';
+          const categorySlug = item.product ? getProductCategorySlug(item.product.id || item.product.groupKey, item.product.category) : 'catalogue';
           const pId = item.productGroupKey || item.product?.id || item.product?.groupKey;
           const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
 

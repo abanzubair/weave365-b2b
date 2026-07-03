@@ -210,9 +210,9 @@ export function WeaveComparisonGuidePage({ navigate }) {
           </p>
           <div className="weave-cta-buttons">
             <a
-              href="/wholesale-catalogue"
+              href="/catalogue"
               className="editorial-btn editorial-btn-primary"
-              onClick={(e) => { e.preventDefault(); navigate('wholesale-catalogue'); }}
+              onClick={(e) => { e.preventDefault(); navigate('catalogue'); }}
             >
               <span>Browse Saree Catalog</span>
               <ArrowRight size={16} />

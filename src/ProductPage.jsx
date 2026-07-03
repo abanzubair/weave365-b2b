@@ -952,8 +952,8 @@ export function ProductDetail({
 
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
-    { name: 'Wholesale Catalogue', url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } },
-    ...(product.category ? [{ name: product.category, url: '/wholesale-catalogue', route: 'wholesale-catalogue', routeOptions: { category: product.category, fabric: 'All', weave: 'All', search: '' } }] : []),
+    { name: 'Wholesale Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } },
+    ...(product.category ? [{ name: product.category, url: '/catalogue', route: 'catalogue', routeOptions: { category: product.category, fabric: 'All', weave: 'All', search: '' } }] : []),
     { name: product.title }
   ];
 

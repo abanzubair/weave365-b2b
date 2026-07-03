@@ -35,7 +35,7 @@ export function SearchOverlay({
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   setSearchActive(false);
-                  navigate('wholesale-catalogue');
+                  navigate('catalogue');
                 }
               }}
               placeholder="What are you looking for?"

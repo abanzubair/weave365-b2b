@@ -33,6 +33,7 @@ import { DemoToggle } from '../utils/demoHelper.js';
 const pluralizeCategory = (cat) => {
   if (!cat) return '';
   const lower = cat.toLowerCase();
+  if (lower === 'all') return cat;
   if (lower === 'under 999') return cat;
   if (lower === 'saree') return 'Sarees';
   if (lower === 'suit') return 'Suits';
@@ -144,7 +145,7 @@ export function MobileMenu({
                     className="mobile-account-subitem" 
                     onClick={() => {
                       setCategory(cat);
-                      navigate('wholesale-catalogue', null, null, { category: cat });
+                      navigate('catalogue', null, null, { category: cat });
                       onClose();
                     }}
                   >

@@ -108,7 +108,7 @@ export default function DirectoryManager() {
     setConfig(prev => {
       const newCols = [...prev.columns];
       const targetCol = newCols[colIdx];
-      const newLink = { label: 'New Custom Link', type: 'route', target: 'wholesale-catalogue', path: '/wholesale-catalogue' };
+      const newLink = { label: 'New Custom Link', type: 'route', target: 'catalogue', path: '/catalogue' };
       newCols[colIdx] = { ...targetCol, links: [...(targetCol.links || []), newLink] };
       return { ...prev, columns: newCols };
     });
@@ -155,7 +155,7 @@ export default function DirectoryManager() {
         const target = field === 'target' ? value : updatedLink.target;
 
         if (type === 'category') {
-          updatedLink.path = `/wholesale-catalogue?category=${encodeURIComponent(target || '')}`;
+          updatedLink.path = `/catalogue?category=${encodeURIComponent(target || '')}`;
         } else if (type === 'blog-guide') {
           updatedLink.path = `/blog/${target || ''}`;
         } else if (type === 'route') {

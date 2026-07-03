@@ -548,7 +548,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 <div className="auth-header" style={{ marginBottom: '24px' }}>
                   <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
                     Verify Your Email
-                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px',padding: '3px', lineHeight: 1 }}>✦</span>
                   </h2>
                   <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
                     Check your inbox to activate your account

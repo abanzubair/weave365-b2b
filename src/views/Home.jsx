@@ -34,7 +34,7 @@ const defaultHero = {
   title: 'Beyond\nBeauty',
   subtitle: 'Bringing You the Elements of Style',
   buttonText: 'Read More',
-  buttonLink: 'wholesale-catalogue',
+  buttonLink: 'catalogue',
   button2Text: 'Request Catalog',
   button2Link: 'bulk-inquiry',
   rightText: "B2B\nSAREE\nCOLLECTION\n'26",
@@ -618,7 +618,7 @@ export function Home({
             // seoCategoryMap imported from config.js
             const targetHref = seoCategoryMap[name.toLowerCase()]
               ? `/${seoCategoryMap[name.toLowerCase()]}`
-              : `/wholesale-catalogue?category=${name.toLowerCase()}`;
+              : `/catalogue?category=${name.toLowerCase()}`;
 
             return (
               <a
@@ -629,7 +629,7 @@ export function Home({
                   if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
                     e.preventDefault();
                     setCategory(name);
-                    navigate('wholesale-catalogue', null, null, { category: name });
+                    navigate('catalogue', null, null, { category: name });
                   }
                 }}
                 style={{ textDecoration: 'none' }}
@@ -649,7 +649,7 @@ export function Home({
             );
           })}
         </div>
-        <AppLink to="wholesale-catalogue" className="center-button" navigate={navigate} style={{ textDecoration: 'none' }}>
+        <AppLink to="catalogue" className="center-button" navigate={navigate} style={{ textDecoration: 'none' }}>
           View All Categories
         </AppLink>
       </section>
@@ -658,7 +658,7 @@ export function Home({
         <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
             <SectionTitle title="Best Sellers" align="left" />
-            <AppLink to="wholesale-catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <AppLink to="catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               View All <ArrowRight size={17} />
             </AppLink>
           </div>
@@ -702,7 +702,7 @@ export function Home({
       <section className="section home-product-section new-arrivals-section">
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
-          <AppLink to="wholesale-catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <AppLink to="catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             View All <ArrowRight size={17} />
           </AppLink>
         </div>
@@ -878,7 +878,7 @@ export function Home({
                 <Gem size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Explore Wholesale Saree Collections</h2>
               </div>
-              <p>Discover our extensive <a href="/wholesale-catalogue" onClick={(e) => handleLinkClick(e, 'wholesale-catalogue')} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => handleLinkClick(e, 'katan-silk-sarees')} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'organza-banarasi-sarees')} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/wholesale-catalogue" onClick={(e) => handleLinkClick(e, 'wholesale-catalogue')} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
+              <p>Discover our extensive <a href="/catalogue" onClick={(e) => handleLinkClick(e, 'catalogue')} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => handleLinkClick(e, 'katan-silk-sarees')} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'organza-banarasi-sarees')} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/catalogue" onClick={(e) => handleLinkClick(e, 'catalogue')} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
             </div>
 
             <div className="seo-compact-card">

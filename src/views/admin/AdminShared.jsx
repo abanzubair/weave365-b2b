@@ -438,7 +438,7 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
               const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
               const displayCode = row.variant_code || row.variantCode || baseVariantCode || row.product_group_key;
 
-              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'wholesale-catalogue';
+              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
               const pId = row.product_group_key || product?.id || product?.groupKey;
               const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
 

@@ -85,7 +85,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
 
   const getHref = (link) => {
     if (link.path) return link.path;
-    if (link.type === 'category') return `/wholesale-catalogue?category=${encodeURIComponent(link.target || '')}`;
+    if (link.type === 'category') return `/catalogue?category=${encodeURIComponent(link.target || '')}`;
     if (link.type === 'blog-guide') return `/blog/${link.target || ''}`;
     if (link.type === 'custom_url') return link.target || link.path || '#';
     return link.target ? (link.target.startsWith('/') ? link.target : `/${link.target}`) : '#';
@@ -101,7 +101,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
     if (targetRoute === 'category' && setCategory) {
       e.preventDefault();
       setCategory(param);
-      navigate('wholesale-catalogue');
+      navigate('catalogue');
     } else if (targetRoute === 'blog-guide') {
       e.preventDefault();
       navigate('blog', param);

@@ -273,29 +273,29 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
-  if (route === 'wholesale-catalogue') {
+  if (route === 'wholesale-catalogue' || route === 'catalogue') {
     const search = searchParams?.search;
     const category = searchParams?.category;
     const fabric = searchParams?.fabric;
     
     let title = 'Wholesale Saree & Suit Catalogue | Weave 365';
     let description = 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.';
-    let canonical = '/wholesale-catalogue';
+    let canonical = '/catalogue';
     
     if (search) {
       title = `Wholesale Banarasi Sarees matching "${search}" | Weave 365`;
       description = `Explore wholesale Banarasi sarees matching "${search}" at direct-from-weaver wholesale prices with flexible MOQ for resellers and boutiques.`;
-      canonical = `/wholesale-catalogue?search=${encodeURIComponent(search)}`;
+      canonical = `/catalogue?search=${encodeURIComponent(search)}`;
     } else if (category && category !== 'all') {
       const prettyCategory = category.charAt(0).toUpperCase() + category.slice(1);
       title = `Wholesale Banarasi ${prettyCategory} Collection | Weave 365`;
       description = `Shop premium wholesale Banarasi ${prettyCategory} direct from Varanasi weavers. High quality, flexible MOQ, and worldwide delivery for resellers.`;
-      canonical = `/wholesale-catalogue?category=${encodeURIComponent(category)}`;
+      canonical = `/catalogue?category=${encodeURIComponent(category)}`;
     } else if (fabric && fabric !== 'all') {
       const prettyFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
       title = `Pure ${prettyFabric} Silk Banarasi Sarees Wholesale | Weave 365`;
       description = `Discover handwoven pure ${prettyFabric} Banarasi sarees at wholesale prices. Certified quality checks and worldwide shipping for boutique owners.`;
-      canonical = `/wholesale-catalogue?fabric=${encodeURIComponent(fabric)}`;
+      canonical = `/catalogue?fabric=${encodeURIComponent(fabric)}`;
     }
     
     return buildMeta(
@@ -504,7 +504,7 @@ function getFirstImageOnPage(route, data, searchParams) {
   }
 
   // 3. Catalogue page
-  if (route === 'wholesale-catalogue') {
+  if (route === 'wholesale-catalogue' || route === 'catalogue') {
     const category = searchParams?.category;
     const fabric = searchParams?.fabric;
     let filtered = data.products?.filter(p => !p.isArchived) || [];
@@ -555,6 +555,7 @@ export async function generateMetadata({ params, searchParams }) {
     'blog',
     'new-arrivals',
     'wholesale-catalogue',
+    'catalogue',
     's',
     'partner'
   ].includes(route) || Object.keys(seoCategoryRoutes).includes(route) || isLandingPage;
