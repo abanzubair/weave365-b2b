@@ -364,11 +364,11 @@ export default function PageBuilder({
                 type="text"
                 value={builderCatalogTitle}
                 onChange={(e) => setBuilderCatalogTitle(e.target.value)}
-                placeholder="e.g. Explore B2B Wholesale Banarasi Katan Silk Saree For Wedding"
+                placeholder="e.g. Explore Wholesale Banarasi Katan Silk Saree For Wedding"
                 className="admin-field-input"
               />
               <small className="admin-doc-card-muted">
-                If left blank, defaults to "Explore B2B Wholesale [Page Title]"
+                If left blank, defaults to "Explore Wholesale [Page Title]"
               </small>
             </div>
 
@@ -449,7 +449,7 @@ export default function PageBuilder({
                 type="text"
                 value={builderBuyerGuideTitle}
                 onChange={(e) => setBuilderBuyerGuideTitle(e.target.value)}
-                placeholder="Ultimate B2B Sourcing Guide for Chanderi Suit Material"
+                placeholder="Ultimate Sourcing Guide for Chanderi Suit Material"
                 className="admin-field-input"
               />
             </div>

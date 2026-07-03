@@ -1,6 +1,6 @@
 /**
  * @file DirectoryManager.jsx
- * @description Admin panel management tool to fully customize the B2B Directory (InternalLinkNetwork).
+ * @description Admin panel management tool to fully customize the Directory (InternalLinkNetwork).
  * Provides section header controls, dynamic column management, link items editor, icon selection,
  * and persistent saving to Supabase and local storage.
  */
@@ -263,7 +263,7 @@ export default function DirectoryManager() {
                 className="directory-input"
                 value={config.kicker || ''}
                 onChange={(e) => handleHeaderChange('kicker', e.target.value)}
-                placeholder="e.g. WEAVE365 B2B DIRECTORY"
+                placeholder="e.g. WEAVE365 DIRECTORY"
               />
             </div>
             <div className="directory-form-group">

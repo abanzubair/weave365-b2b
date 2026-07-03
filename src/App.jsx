@@ -1365,7 +1365,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'wholesale-partner-program') {
+    if (route === 'partner-program') {
 
       return <WholesalePartnerProgramPage openAuth={() => setAuthOpen(true)} />;
     }
@@ -1409,7 +1409,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'sourcing-partners' || route === 'white-label-brands') {
+    if (route === 'sourcing-partners' || route === 'white-label') {
       return <PartnerProgramPage type={route} navigate={navigate} />;
     }
 

@@ -44,7 +44,7 @@ export const metadata = {
     "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
   keywords: [
     "wholesale banarasi sarees",
-    "B2B saree supplier",
+    "wholesale saree supplier",
     "banarasi silk saree wholesale",
     "saree wholesaler online India",
     "bulk saree order",

@@ -18,11 +18,11 @@ export function TermsConditionsPage({ navigate }) {
   const faqs = [
     {
       q: "Can standard retail buyers buy individual sarees at these prices?",
-      a: "No. Weave 365 is strictly a wholesale platform. Individual buyers seeking single items for personal use are not eligible for our B2B trade prices. All checkout baskets must fulfill our minimum order quantity threshold."
+      a: "No. Weave 365 is strictly a wholesale platform. Individual buyers seeking single items for personal use are not eligible for our wholesale trade prices. All checkout baskets must fulfill our minimum order quantity threshold."
     },
     {
       q: "Am I allowed to use Weave 365 catalog photos for my online boutique?",
-      a: "Yes. Registered, active B2B buyers and verified resellers are granted a non-exclusive, revocable license to utilize our high-resolution product imagery and descriptions to market the sarees to their end consumers. Scraping or copying these assets for non-reselling purposes is strictly prohibited."
+      a: "Yes. Registered, active buyers and verified resellers are granted a non-exclusive, revocable license to utilize our high-resolution product imagery and descriptions to market the sarees to their end consumers. Scraping or copying these assets for non-reselling purposes is strictly prohibited."
     },
     {
       q: "What happens if there is a trade dispute between my company and Weave 365?",
@@ -51,7 +51,7 @@ export function TermsConditionsPage({ navigate }) {
 
           <div className="legal-text-content">
             <p className="lead">
-              Welcome to the commercial B2B portal of Weave 365. Access to our catalog, wholesale price lists, reseller resources, and checkout systems is governed by the trade terms detailed below. By registering a buyer profile, you agree to comply with these terms.
+              Welcome to the partner portal of Weave 365. Access to our catalog, wholesale price lists, reseller resources, and checkout systems is governed by the trade terms detailed below. By registering a buyer profile, you agree to comply with these terms.
             </p>
 
             <h2>1. Trade-Only Portal Qualification</h2>

@@ -47,12 +47,12 @@ export function DisclaimerPage({ navigate }) {
         {/* content card */}
         <article className="legal-content-card animate-fade-in">
           <div className="legal-brand-kicker">Weave 365 Policies</div>
-          <h1 className="legal-h1">B2B Saree Sourcing & Product Disclaimer</h1>
+          <h1 className="legal-h1">Saree Sourcing & Product Disclaimer</h1>
           <span className="legal-legal-updated-date">Last Updated: May 2026</span>
 
           <div className="legal-text-content">
             <p className="lead">
-              Weave 365 operates as a premier B2B Banarasi saree wholesale and manufacturing network based in Varanasi, India. By accessing our wholesale catalogs, registering a reseller profile, or executing payments, you explicitly agree to the product characteristics and liability terms defined herein.
+              Weave 365 operates as a premier Banarasi saree wholesale and manufacturing network based in Varanasi, India. By accessing our wholesale catalogs, registering a reseller profile, or executing payments, you explicitly agree to the product characteristics and liability terms defined herein.
             </p>
 
             <h2>1. Handwoven Integrity and Textural Variations</h2>
@@ -78,9 +78,9 @@ export function DisclaimerPage({ navigate }) {
               Model images are provided solely for drape, scale, and stylistic reference. The actual flat product catalog shots represent the truest color profile of the saree. We advise wholesalers to review flat-lay pictures carefully.
             </p>
 
-            <h2>3. B2B Commercial Transactions & Limit of Liability</h2>
+            <h2>3. Commercial Transactions & Limit of Liability</h2>
             <p>
-              Weave 365 strictly handles business-to-business transactions. Wholesale purchase orders are placed with the understanding that boutique owners and retailers operate as independent merchants.
+              Weave 365 handles commercial transactions. Purchase orders are placed with the understanding that boutique owners and retailers operate as independent merchants.
             </p>
             <p>
               In no event shall Weave 365 or its manufacturing affiliates be liable for any indirect, incidental, or consequential business losses (including loss of retail sales, boutique profits, or marketing expenditure) arising from delay in supply, transit delays, or handloom artisan constraints.

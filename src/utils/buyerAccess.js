@@ -1,6 +1,6 @@
 /**
  * Buyer Access Utilities
- * Purpose: Implements B2B authentication & business permission rules.
+ * Purpose: Implements partner authentication & business permission rules.
  * Governs wholesale/reseller price visibility, checks against Varanasi geotargeting blocks,
  * and tracks account approval status mapping to direct SQL/Supabase profiles.
  */
@@ -96,7 +96,7 @@ export function getBuyerAccess(user, buyerProfile) {
   let message = '';
   if (approvalStatus === 'rejected') message = 'Your buyer account needs review. Showing prices.';
   if (approvalStatus === 'suspended') message = 'Price access is paused. Showing prices.';
-  if (blockedByPincode && approvalStatus === 'pending') message = 'Your B2B account approval is pending. Showing prices.';
+  if (blockedByPincode && approvalStatus === 'pending') message = 'Your account approval is pending. Showing prices.';
 
   return {
     isLoggedIn: true,

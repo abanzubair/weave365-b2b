@@ -1,6 +1,6 @@
 /**
  * @file directoryService.js
- * @description Data service for managing Weave365 B2B Directory (InternalLinkNetwork) configuration.
+ * @description Data service for managing Weave365 Directory (InternalLinkNetwork) configuration.
  * Handles persistence to Supabase database (`site_directory_settings`) and local browser cache (`localStorage`),
  * and dispatches live events when configurations are updated.
  */
@@ -11,7 +11,7 @@ export const DIRECTORY_STORAGE_KEY = 'weave365_directory_config';
 export const DIRECTORY_UPDATED_EVENT = 'directory-config-updated';
 
 export const DEFAULT_DIRECTORY_CONFIG = {
-  kicker: 'WEAVE365 B2B DIRECTORY',
+  kicker: 'WEAVE365 DIRECTORY',
   title: 'Sourcing & Craft Heritage Network',
   columns: [
     {
@@ -53,14 +53,14 @@ export const DEFAULT_DIRECTORY_CONFIG = {
     },
     {
       id: 'col_hubs',
-      title: 'B2B Sourcing Hubs',
+      title: 'Sourcing Hubs',
       icon: 'Briefcase',
       links: [
-        { label: 'Wholesale & Reseller Partner Program', type: 'route', target: 'wholesale-partner-program', path: '/wholesale-partner-program' },
+        { label: 'Wholesale & Reseller Partner Program', type: 'route', target: 'partner-program', path: '/partner-program' },
         { label: 'Weaver Partnership Program', type: 'route', target: 'weaver-onboarding', path: '/weaver-onboarding' },
         { label: 'Bulk Sourcing & Custom Catalog', type: 'route', target: 'bulk-inquiry', path: '/bulk-inquiry' },
         { label: 'Varanasi Brand Story & Heritage', type: 'route', target: 'about', path: '/about' },
-        { label: 'B2B Insights & Sourcing Blog', type: 'route', target: 'blog', path: '/blog' }
+        { label: 'Insights & Sourcing Blog', type: 'route', target: 'blog', path: '/blog' }
       ]
     }
   ]

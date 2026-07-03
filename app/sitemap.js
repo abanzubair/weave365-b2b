@@ -45,7 +45,7 @@ export default async function sitemap() {
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/wholesale-partner-program`,
+      url: `${siteUrl}/partner-program`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
@@ -63,7 +63,7 @@ export default async function sitemap() {
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/white-label-brands`,
+      url: `${siteUrl}/white-label`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,

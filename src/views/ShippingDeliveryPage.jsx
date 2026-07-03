@@ -46,12 +46,12 @@ export function ShippingDeliveryPage({ navigate }) {
         {/* content card */}
         <article className="legal-content-card animate-fade-in">
           <div className="legal-brand-kicker">Weave 365 Logistics</div>
-          <h1 className="legal-h1">B2B Saree Shipping & Delivery Policy</h1>
+          <h1 className="legal-h1">Saree Shipping & Delivery Policy</h1>
           <span className="legal-legal-updated-date">Last Updated: May 2026</span>
 
           <div className="legal-text-content">
             <p className="lead">
-              At Weave 365, we recognize that timely, safe, and highly reliable transit is essential for retail store inventories, boutique showcases, and global export operations. We partner with India\'s elite B2B logistics suppliers to guarantee safe arrival of your premium Banarasi sarees.
+              At Weave 365, we recognize that timely, safe, and highly reliable transit is essential for retail store inventories, boutique showcases, and global export operations. We partner with India\'s elite logistics suppliers to guarantee safe arrival of your premium Banarasi sarees.
             </p>
 
             <h2>1. Dispatch Hub & Origin of Goods</h2>

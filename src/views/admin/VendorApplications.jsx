@@ -289,7 +289,7 @@ export default function VendorApplications({
       const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const filename = `Weave365_B2B_Vendor_${isReviews ? 'Reviews' : 'Onboardings'}_${new Date().toISOString().split('T')[0]}.csv`;
+      const filename = `Weave365_Vendor_${isReviews ? 'Reviews' : 'Onboardings'}_${new Date().toISOString().split('T')[0]}.csv`;
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
@@ -383,7 +383,7 @@ export default function VendorApplications({
             <Check size={20} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Supabase B2B Linked Rate</span>
+            <span className="admin-partner-metric-label">Supabase Linked Rate</span>
             <div className="admin-partner-metric-values">
               <strong className="admin-partner-metric-value">
                 {Math.round(
@@ -693,7 +693,7 @@ export default function VendorApplications({
               {/* Modal Header */}
               <div className="admin-modal-header">
                 <div>
-                  <span className="admin-modal-subtitle">B2B Partner Basic Assessment</span>
+                  <span className="admin-modal-subtitle">Partner Basic Assessment</span>
                   <h3 className="admin-modal-title">{rev.full_name}</h3>
                 </div>
                 <button type="button" onClick={() => setSelectedReview(null)} className="admin-modal-close-btn">×</button>
@@ -739,7 +739,7 @@ export default function VendorApplications({
                 <div className="admin-review-control-panel">
                   <h4 className="admin-review-control-title">Review Status Controls</h4>
                   <p className="admin-review-control-desc">
-                    Approving the application marks the B2B partner as approved for both basic review and full onboarding profile databases.
+                    Approving the application marks the partner as approved for both basic review and full onboarding profile databases.
                   </p>
                   <div className="admin-flex-gap12">
                     <button
@@ -994,7 +994,7 @@ export default function VendorApplications({
 
                   {/* Supabase Matched Account */}
                   <div>
-                    <h4 className="admin-modal-section-title">Supabase B2B Database Integration</h4>
+                    <h4 className="admin-modal-section-title">Supabase Database Integration</h4>
                     <div className="admin-supabase-link-box">
                       {matchedProfile ? (
                         <div className="admin-grid-gap12">
@@ -1039,7 +1039,7 @@ export default function VendorApplications({
                             This vendor has submitted onboarding details, but hasn't created a login account on Weave365.com yet. Send WhatsApp signup reminder:
                           </p>
                           <a
-                            href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb.full_name}, we have verified your B2B Onboarding application for Weave 365! Please sign up an account at https://www.weave365.com using this WhatsApp number (+91 ${onb.whatsapp_number}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
+                            href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb.full_name}, we have verified your Onboarding application for Weave 365! Please sign up an account at https://www.weave365.com using this WhatsApp number (+91 ${onb.whatsapp_number}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
                             target="_blank"
                             rel="noreferrer"
                             className="admin-btn-wa-signup"

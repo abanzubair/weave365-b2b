@@ -18,7 +18,7 @@ export function PrivacySecurityPage({ navigate }) {
   const faqs = [
     {
       q: "Is my business GSTIN and tax billing information secure?",
-      a: "Yes. All business identity profiles, including GSTIN documents and tax credit data, are stored in encrypted databases. We utilize these details strictly for generating compliant B2B tax invoices and do not share them with external parties."
+      a: "Yes. All business identity profiles, including GSTIN documents and tax credit data, are stored in encrypted databases. We utilize these details strictly for generating compliant tax invoices and do not share them with external parties."
     },
     {
       q: "Does Weave 365 store my credit card or bank credentials?",
@@ -46,7 +46,7 @@ export function PrivacySecurityPage({ navigate }) {
         {/* content card */}
         <article className="legal-content-card animate-fade-in">
           <div className="legal-brand-kicker">Weave 365 Security</div>
-          <h1 className="legal-h1">B2B Portal Privacy & Data Security Policy</h1>
+          <h1 className="legal-h1">Portal Privacy & Data Security Policy</h1>
           <span className="legal-legal-updated-date">Last Updated: May 2026</span>
 
           <div className="legal-text-content">
@@ -56,7 +56,7 @@ export function PrivacySecurityPage({ navigate }) {
 
             <h2>1. Collection of Business Data</h2>
             <p>
-              To offer comprehensive B2B sourcing services, manage wholesale order lists, and verify trade credentials, we collect:
+              To offer comprehensive sourcing services, manage wholesale order lists, and verify trade credentials, we collect:
             </p>
             <ul>
               <li><strong>Corporate Identity:</strong> Business Name, Boutique registration certificates, and owner details.</li>
@@ -76,7 +76,7 @@ export function PrivacySecurityPage({ navigate }) {
               Your business intelligence data is utilized to streamline wholesale operations:
             </p>
             <p>
-              We compile and analyze catalog interaction data to enhance production volumes for trending weaves (e.g. organza vs katan). Consignment details are shared with our logistics partners (BlueDart, FedEx, etc.) to complete deliveries. We use email/WhatsApp channels to send shipment tracking numbers, B2B updates, and price lists.
+              We compile and analyze catalog interaction data to enhance production volumes for trending weaves (e.g. organza vs katan). Consignment details are shared with our logistics partners (BlueDart, FedEx, etc.) to complete deliveries. We use email/WhatsApp channels to send shipment tracking numbers, catalog updates, and price lists.
             </p>
 
             <h2>3. Secure Online Transactions & Gateway Encryption</h2>

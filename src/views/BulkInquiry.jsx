@@ -1,6 +1,6 @@
 /**
  * BulkInquiry View
- * Purpose: Renders the comprehensive B2B wholesale inquiry questionnaire.
+ * Purpose: Renders the comprehensive wholesale inquiry questionnaire.
  * Gathers order specifications (category, quantity, target budget, fabric preferences, timelines)
  * and formats the request into a WhatsApp dispatch link for immediate weaver concierge assistance.
  */

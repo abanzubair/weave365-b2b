@@ -111,7 +111,7 @@ export function SiteHeader({
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
           <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label-brands' || route === 'bulk-inquiry' ? 'active' : ''}
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
@@ -121,7 +121,7 @@ export function SiteHeader({
           </button>
           <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'}>
             {[
-              { name: 'White Label Brands', slug: 'white-label-brands' },
+              { name: 'White Label Brands', slug: 'white-label' },
               { name: 'Sourcing Partners', slug: 'sourcing-partners' },
               { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
             ].map((item) => (

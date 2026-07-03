@@ -7,7 +7,7 @@
  * 
  * @module views/PartnerProgramPage
  * @param {Object} props
- * @param {string} [props.type='sourcing-partners'] - The partnership channel to display ('sourcing-partners' or 'white-label-brands')
+ * @param {string} [props.type='sourcing-partners'] - The partnership channel to display ('sourcing-partners' or 'white-label')
  * @param {Function} props.navigate - Client router transition callback
  */
 
@@ -111,8 +111,8 @@ const partnerPages = {
       },
     ],
   },
-  'white-label-brands': {
-    slug: 'white-label-brands',
+  'white-label': {
+    slug: 'white-label',
     metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
     metaDescription:
       'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
@@ -217,7 +217,7 @@ const relatedSourcingLinks = [
 
 export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
   const page = partnerPages[type] || partnerPages['sourcing-partners'];
-  const alternateType = type === 'sourcing-partners' ? 'white-label-brands' : 'sourcing-partners';
+  const alternateType = type === 'sourcing-partners' ? 'white-label' : 'sourcing-partners';
   const alternatePage = partnerPages[alternateType];
   const pageUrl = `${siteUrl}/${page.slug}`;
   const breadcrumbSchema = {
@@ -266,7 +266,7 @@ export function PartnerProgramPage({ type = 'sourcing-partners', navigate }) {
   };
 
   return (
-    <article className={`partner-program-page ${type === 'white-label-brands' ? 'theme-olive' : ''}`}>
+    <article className={`partner-program-page ${type === 'white-label' ? 'theme-olive' : ''}`}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}

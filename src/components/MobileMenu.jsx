@@ -173,7 +173,7 @@ export function MobileMenu({
               <div className="mobile-account-items-inner">
                 {[
                   { name: 'Sourcing Partners', slug: 'sourcing-partners' },
-                  { name: 'White Label Brands', slug: 'white-label-brands' },
+                  { name: 'White Label Brands', slug: 'white-label' },
                   { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
                 ].map((item) => (
                   <button type="button" 

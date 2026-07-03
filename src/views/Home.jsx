@@ -37,7 +37,7 @@ const defaultHero = {
   buttonLink: 'catalogue',
   button2Text: 'Request Catalog',
   button2Link: 'bulk-inquiry',
-  rightText: "B2B\nSAREE\nCOLLECTION\n'26",
+  rightText: "WHOLESALE\nSAREE\nCOLLECTION\n'26",
 };
 
 const defaultHeroFeatures = [
@@ -868,8 +868,8 @@ export function Home({
         <div className="seo-compact-container">
           <div className="seo-compact-left">
             <span className="seo-compact-kicker">WEAVER PARTNERSHIP</span>
-            <h2>Trusted B2B Banarasi Saree Supplier</h2>
-            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our B2B portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
+            <h2>Trusted Banarasi Saree Supplier</h2>
+            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
           </div>
 
           <div className="seo-compact-right">
@@ -886,7 +886,7 @@ export function Home({
                 <Award size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Why Retailers Choose Weave 365</h2>
               </div>
-              <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern B2B commerce.</p>
+              <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern commerce.</p>
             </div>
 
             <div className="seo-compact-card">

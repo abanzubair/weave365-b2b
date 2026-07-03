@@ -144,7 +144,7 @@ export async function POST(request) {
               </div>
             </div>
             <div class="email-footer">
-              <p>This email was sent from the contact form on your Weave 365 B2B storefront.</p>
+              <p>This email was sent from the contact form on your Weave 365 storefront.</p>
               <p>&copy; ${new Date().getFullYear()} Weave 365. All Rights Reserved.</p>
             </div>
           </div>

@@ -213,7 +213,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
   // Dynamic Homepage Routing Metadata
   if (route === 'home') {
     return buildMeta(
-      'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+      'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
       'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
       '/'
     );
@@ -228,7 +228,7 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
         .join(' ');
       return buildMeta(
         `${prettyCategoryName} Wholesale Saree Sourcing Guides | Weave 365`,
-        `Explore all expert B2B ${prettyCategoryName} guides and boutique reselling articles direct from Varanasi master weavers on Weave 365.`,
+        `Explore all expert ${prettyCategoryName} guides and boutique reselling articles direct from Varanasi master weavers on Weave 365.`,
         `/blog/category/${blogCategorySlug}`
       );
     }
@@ -327,22 +327,22 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
   if (route === 'contact') {
     return buildMeta(
       'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
-      'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
+      'Get in touch with Weave 365, India\'s premier Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
       '/contact'
     );
   }
 
   if (route === 'about') {
     return buildMeta(
-      'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',
-      'Discover Weave 365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
+      'About Weave 365 | Premium Banarasi Saree Wholesaler India',
+      'Discover Weave 365, India\'s leading Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
       '/about'
     );
   }
 
   if (route === 'reviews') {
     return buildMeta(
-      'Client Sourcing Reviews | B2B Partner Feedback | Weave 365',
+      'Client Sourcing Reviews | Partner Feedback | Weave 365',
       'Verified reviews and feedback from boutique owners, apparel retailers, and saree resellers across India sourcing from Weave 365.',
       '/reviews'
     );
@@ -374,8 +374,8 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 
   if (route === 'returns-cancellation') {
     return buildMeta(
-      'B2B Saree Returns & Cancellation Policies | Weave 365',
-      'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
+      'Wholesale Saree Returns & Cancellation Policies | Weave 365',
+      'Verify our transparent wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
       '/returns-cancellation'
     );
   }
@@ -390,17 +390,17 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
 
   if (route === 'terms-conditions') {
     return buildMeta(
-      'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
+      'Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
       'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
       '/terms-conditions'
     );
   }
 
-  if (route === 'wholesale-partner-program') {
+  if (route === 'partner-program') {
     return buildMeta(
       'Wholesale & Reseller Partner Program | Weave 365',
       'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
-      '/wholesale-partner-program'
+      '/partner-program'
     );
   }
 
@@ -437,11 +437,11 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
-  if (route === 'white-label-brands') {
+  if (route === 'white-label') {
     return buildMeta(
       'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
       'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
-      '/white-label-brands'
+      '/white-label'
     );
   }
 

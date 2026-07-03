@@ -70,7 +70,7 @@ export const handleViewAgreement = (agreement, whatsapp) => {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Weave365 B2B Merchant Agreement - Signed Copy</title>
+<title>Weave365 Merchant Agreement - Signed Copy</title>
 <style>
   body {
     background-color: #faf8f5;
@@ -203,7 +203,7 @@ export const handleViewAgreement = (agreement, whatsapp) => {
 <div class="agreement-container">
   <div class="agreement-header">
     <div class="logo-text">Weave 365</div>
-    <div class="doc-title">B2B Merchant Agreement & Terms</div>
+    <div class="doc-title">Merchant Agreement & Terms</div>
   </div>
   
   <div class="meta-box">

@@ -1,7 +1,7 @@
 /**
  * Price & Currency Utilities
  * Purpose: Handles international multi-currency state management (INR, USD, GBP, AED, EUR, etc.),
- * dynamic currency conversion fetching, and premium B2B locale-specific money & weight formatting.
+ * dynamic currency conversion fetching, and premium locale-specific money & weight formatting.
  */
 import { useState, useEffect } from 'react';
 import { priceForBuyer } from './buyerAccess.js';
@@ -127,7 +127,7 @@ export function checkProductPriceInRange(product, priceRangeStr, priceAccess) {
     price = priceForBuyer(product.variants[0].prices, priceAccess);
   }
   
-  // Fallback to mrp (B2B price) if price is not found or not authorized (to maintain consistent categorization)
+  // Fallback to mrp (wholesale price) if price is not found or not authorized (to maintain consistent categorization)
   if (price == null || Number.isNaN(price) || price === 0) {
     if (product.variants && product.variants[0] && product.variants[0].prices) {
       price = Number(product.variants[0].prices.mrp) || 0;

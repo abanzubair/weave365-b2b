@@ -18,7 +18,7 @@ export function ReturnsCancellationPage({ navigate }) {
   const faqs = [
     {
       q: "Why is a continuous parcel unboxing video mandatory?",
-      a: "As a B2B wholesaler supplying products at near-manufacturing prices, our margins do not account for post-delivery consumer handling damage. A continuous, unedited unboxing video (starting with the sealed courier packet, displaying the shipping label, and showing the direct unpacking and unfolding of the product) provides ironclad proof of transit damage and helps us file claims with transport partners."
+      a: "As a wholesaler supplying products at near-manufacturing prices, our margins do not account for post-delivery consumer handling damage. A continuous, unedited unboxing video (starting with the sealed courier packet, displaying the shipping label, and showing the direct unpacking and unfolding of the product) provides ironclad proof of transit damage and helps us file claims with transport partners."
     },
     {
       q: "Can I return products that are not selling well in my store?",
@@ -51,7 +51,7 @@ export function ReturnsCancellationPage({ navigate }) {
 
           <div className="legal-text-content">
             <p className="lead">
-              Weave 365 processes commercial wholesale transactions exclusively. Because we supply premium, authentic Banarasi sarees directly from artisans at strict bulk pricing structures, our return and cancellation terms differ from standard B2C retail platforms.
+              Weave 365 processes commercial wholesale transactions exclusively. Because we supply premium, authentic Banarasi sarees directly from artisans at strict bulk pricing structures, our return and cancellation terms differ from standard retail platforms.
             </p>
 
             <h2>1. Zero Return Policy (Excluding Manufacturing Damage)</h2>

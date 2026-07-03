@@ -424,7 +424,7 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
         <article className="admin-panel admin-m0">
           <div className="admin-panel-head admin-panel-head-border">
             <span className="admin-editor-title">
-              {editingPost ? '✍️ Edit B2B Blog Post' : '✍️ Compose B2B Blog Post'}
+              {editingPost ? '✍️ Edit Blog Post' : '✍️ Compose Blog Post'}
             </span>
             {editingPost && (
               <span className="admin-editor-draft-badge">

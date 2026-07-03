@@ -43,7 +43,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
             </div>
 
             <AppLink 
-              to="wholesale-partner-program" 
+              to="partner-program" 
               className="growth-cta" 
               navigate={navigate}
               style={{ textDecoration: 'none' }}

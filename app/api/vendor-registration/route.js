@@ -1,5 +1,5 @@
 /**
- * @file API route for B2B Vendor Partner Registration and Onboarding pipeline.
+ * @file API route for Vendor Partner Registration and Onboarding pipeline.
  * Completely database-driven: writes to and reads from Supabase directly,
  * bypassing and eliminating Google Sheets completely.
  */
@@ -107,7 +107,7 @@ async function uploadBase64ToStorage(base64Str, path) {
 
 
 /**
- * Sends a beautifully styled B2B email notification to weave365@gmail.com
+ * Sends a beautifully styled email notification to weave365@gmail.com
  * when a new supplier completes Step 1 of the trusted partner registration.
  * Edge-compatible fetch POST payload directly to Resend API endpoint.
  */
@@ -315,7 +315,7 @@ async function sendNotificationEmail(reviewData) {
             </div>
           </div>
           <div class="email-footer">
-            <p>This is an automated notification from your Weave 365 B2B Portal backend.</p>
+            <p>This is an automated notification from your Weave 365 Portal backend.</p>
             <p>&copy; ${new Date().getFullYear()} Weave 365. All Rights Reserved.</p>
           </div>
         </div>
@@ -391,7 +391,7 @@ export async function POST(request) {
         return Response.json({ status: 'error', error: error.message }, { status: 400 });
       }
 
-      // Fire off B2B partner registration notification email to weave365@gmail.com
+      // Fire off partner registration notification email to weave365@gmail.com
       if (data) {
         // In edge/serverless runtime, we MUST await async fetch calls to guarantee they complete before the response is returned!
         await sendNotificationEmail(data);

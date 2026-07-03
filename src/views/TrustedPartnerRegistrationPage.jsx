@@ -1,6 +1,6 @@
 /**
  * @file TrustedPartnerRegistrationPage.jsx
- * @description Premium B2B Partner Registration & Product Review Onboarding Page.
+ * @description Premium Partner Registration & Product Review Onboarding Page.
  * Features a dual-stage segmented onboarding system:
  * - Tab 1: Submit Products for Review (Step 1)
  * - Tab 2: Advanced Profile (Step 2 - Locked until approved)
@@ -136,7 +136,7 @@ export function TrustedPartnerRegistrationPage() {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Weave365 B2B Merchant Agreement - Signed Copy</title>
+  <title>Weave365 Merchant Agreement - Signed Copy</title>
   <style>
     body { background-color: #faf8f5; color: #1a1715; font-family: 'Georgia', serif; padding: 40px; }
     .agreement-container { max-width: 800px; margin: 0 auto; background: #ffffff; border: 2px solid #b78646; padding: 60px 50px; }
@@ -157,7 +157,7 @@ export function TrustedPartnerRegistrationPage() {
   <div class="agreement-container">
     <div class="agreement-header">
       <div class="logo-text">Weave 365</div>
-      <div class="doc-title">B2B Merchant Agreement & Terms</div>
+      <div class="doc-title">Merchant Agreement & Terms</div>
     </div>
     <div class="meta-box">
       <div><strong>Agreement ID:</strong> ${agreementId}</div>

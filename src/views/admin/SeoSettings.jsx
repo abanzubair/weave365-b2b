@@ -39,14 +39,14 @@ const staticSeoDefaults = [
   {
     path: '/',
     label: 'Home',
-    metaTitle: 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+    metaTitle: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
     metaDescription: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
   },
   {
     path: '/about',
     label: 'About',
-    metaTitle: 'About Weave 365 | Premium B2B Banarasi Saree Wholesaler India',
-    metaDescription: 'Discover Weave 365, India\'s leading B2B Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
+    metaTitle: 'About Weave 365 | Premium Banarasi Saree Wholesaler India',
+    metaDescription: 'Discover Weave 365, India\'s leading Banarasi saree supplier. Learn about our heritage, meet our 200+ Varanasi artisan network, and explore our 5-step quality verification process.',
   },
   {
     path: '/blog',
@@ -64,7 +64,7 @@ const staticSeoDefaults = [
     path: '/contact',
     label: 'Contact',
     metaTitle: 'Contact Us | Wholesale Banarasi Sarees Online | Weave 365',
-    metaDescription: 'Get in touch with Weave 365, India\'s premier B2B Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
+    metaDescription: 'Get in touch with Weave 365, India\'s premier Banarasi saree supplier. Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India.',
   },
   {
     path: '/disclaimer',
@@ -93,8 +93,8 @@ const staticSeoDefaults = [
   {
     path: '/returns-cancellation',
     label: 'Returns & Cancellation',
-    metaTitle: 'B2B Saree Returns & Cancellation Policies | Weave 365',
-    metaDescription: 'Verify our transparent B2B wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
+    metaTitle: 'Wholesale Saree Returns & Cancellation Policies | Weave 365',
+    metaDescription: 'Verify our transparent wholesale policies. Information on manufacturing defect exchanges, unboxing video requirements, and ready-to-ship cancellations.',
   },
   {
     path: '/shipping-delivery',
@@ -111,7 +111,7 @@ const staticSeoDefaults = [
   {
     path: '/terms-conditions',
     label: 'Terms & Conditions',
-    metaTitle: 'B2B Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
+    metaTitle: 'Terms of Use, Wholesale MOQ & Trader Agreement | Weave 365',
     metaDescription: 'Review our commercial wholesale portal terms, minimum order quantity rules (3-saree minimum), payment gateway guidelines, and Varanasi jurisdiction.',
   },
   {
@@ -127,7 +127,7 @@ const staticSeoDefaults = [
     metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a weaver partner.',
   },
   {
-    path: '/white-label-brands',
+    path: '/white-label',
     label: 'White Label Brands',
     metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
     metaDescription: 'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
@@ -139,7 +139,7 @@ const staticSeoDefaults = [
     metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
   },
   {
-    path: '/wholesale-partner-program',
+    path: '/partner-program',
     label: 'Wholesale Partner Program',
     metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
     metaDescription: 'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
@@ -153,8 +153,8 @@ const staticSeoDefaults = [
   {
     path: '/collaboration',
     label: 'Our Offerings',
-    metaTitle: 'B2B Sourcing Services & Weaver Network | Weave 365',
-    metaDescription: 'Discover our complete range of B2B offerings: custom catalog curation, quality checks, artisan direct pricing, and worldwide logistics for boutique owners.',
+    metaTitle: 'Sourcing Services & Weaver Network | Weave 365',
+    metaDescription: 'Discover our complete range of offerings: custom catalog curation, quality checks, artisan direct pricing, and worldwide logistics for boutique owners.',
   },
   {
     path: '/affiliate-program',
@@ -396,22 +396,6 @@ export default function SeoSettings({
               </div>
             </div>
 
-            <div className="admin-field-container">
-              <label className="admin-field-label">Custom URL Path</label>
-              <input
-                type="text"
-                value={pageSeoPath}
-                onChange={(e) => {
-                  const nextPath = normalizeSeoPath(e.target.value);
-                  setPageSeoPath(nextPath);
-                  if (!pageSeoCanonicalPath || pageSeoCanonicalPath === pageSeoPath) {
-                    setPageSeoCanonicalPath(nextPath);
-                  }
-                }}
-                placeholder="/about"
-                className="admin-field-input"
-              />
-            </div>
 
             <div className="admin-current-meta-box">
               <div className="admin-current-meta-head">

@@ -1,8 +1,8 @@
 /**
  * AboutPage View
- * Purpose: Renders Weave 365's modern, minimal B2B about experience.
+ * Purpose: Renders Weave 365's modern, minimal about experience.
  * Typographic-first layout with zero heavy images, a compact hero header,
- * interactive sourcing comparison widget, metrics grid, B2B procurement standards,
+ * interactive sourcing comparison widget, metrics grid, procurement standards,
  * founder's quote block, and crawlable SEO structural data.
  */
 import React, { useState } from 'react';
@@ -30,7 +30,7 @@ export function AboutPage({ navigate }) {
   const faqs = [
     {
       question: "What is the Minimum Order Quantity (MOQ) for wholesale purchase?",
-      answer: "Our B2B model is designed for flexibility. For retail boutiques, online resellers, and new business test orders, we offer an MOQ of just 5 sarees across our entire catalog (mix-and-match allowed). For custom designs or volume manufacturing, MOQ starts at 15 pieces per design."
+      answer: "Our sourcing model is designed for flexibility. For retail boutiques, online resellers, and new business test orders, we offer an MOQ of just 5 sarees across our entire catalog (mix-and-match allowed). For custom designs or volume manufacturing, MOQ starts at 15 pieces per design."
     },
     {
       question: "What kinds of fabrics and materials are available in your catalogue?",
@@ -47,7 +47,7 @@ export function AboutPage({ navigate }) {
   };
 
   const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
-    'Hi Weave 365 B2B Desk, I would like to learn more about wholesale sourcing, pricing groups, and boutique reseller onboarding.'
+    'Hi Weave 365, I would like to learn more about wholesale sourcing, pricing groups, and boutique reseller onboarding.'
   )}`;
 
   // JSON-LD structured data for Google Search crawling
@@ -68,7 +68,7 @@ export function AboutPage({ navigate }) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Weave 365",
-    "description": "B2B Banarasi saree wholesaler and manufacturer directly partnering with Varanasi master weavers.",
+    "description": "Banarasi saree wholesaler and manufacturer directly partnering with Varanasi master weavers.",
     "telephone": storeConfig.phone,
     "email": storeConfig.email,
     "address": {
@@ -103,7 +103,7 @@ export function AboutPage({ navigate }) {
           "@type": "Person",
           "name": "Devika Sen"
         },
-        "reviewBody": "Ultimate backend supplier for international B2B saree wholesale. The weatherproof transit packaging is impeccable.",
+        "reviewBody": "Ultimate backend supplier for international saree wholesale. The weatherproof transit packaging is impeccable.",
         "reviewRating": {
           "@type": "Rating",
           "ratingValue": "5"
@@ -142,7 +142,7 @@ export function AboutPage({ navigate }) {
               <span className="current">About</span>
             </nav>
             <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>About Weave 365</h1>
-            <p>Weave 365 is a B2B sourcing platform based in Varanasi. It connects wholesalers, retailers, boutiques, resellers, online stores, designers and exporters, in India and abroad, directly to the weaving hubs and manufacturing networks of the city.</p>
+            <p>Weave 365 is a sourcing platform based in Varanasi. It connects wholesalers, retailers, boutiques, resellers, online stores, designers and exporters, in India and abroad, directly to the weaving hubs and manufacturing networks of the city.</p>
             <p>The idea is simple: Varanasi produces some of the finest Banarasi sarees, suits, dress materials and textiles in the world. Getting access to them, reliably and at fair wholesale prices, has always been the hard part. Weave 365 handles the coordination, across multiple weavers and fabric grades, so making it easier for buyers to source the right products.</p>
             <p>The platform covers the full sourcing chain. That means quality inspection at the Varanasi hub, logistics packaging, India and international shipping via DTDC, Delhivery, Blue Dart, DHL and FedEx, with full tracking. Orders start at five pieces, mix-and-match allowed, which makes it practical for smaller boutiques and resellers to test new fabric grades before committing to bulk.</p>
             <p>The catalog runs across handwoven pure silk, semi-silk, organza, georgette, art silk, blended and faux fabrics, each listing with clear details on fabric, zari, and weave type, and whether the piece is handloom or powerloom. No guesswork about what you're actually buying.</p>
@@ -168,7 +168,7 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 2. TRUSTED B2B METRICS GRID */}
+      {/* 2. TRUSTED METRICS GRID */}
       <section className="about-metrics-section">
         <div className="about-metrics-grid">
           <div className="metric-card">
@@ -301,7 +301,7 @@ export function AboutPage({ navigate }) {
 
       {/* 4. Section Removed (Content merged into Brand Story) */}
 
-      {/* 5. B2B STANDARDS GRID */}
+      {/* 5. STANDARDS GRID */}
       <section className="about-section about-standards">
         <div className="section-header-centered">
           <h2>Sourcing Parameters</h2>
@@ -371,7 +371,7 @@ export function AboutPage({ navigate }) {
         </div>
       </section>
 
-      {/* 8. B2B ACTION FOOTER CALL */}
+      {/* 8. ACTION FOOTER CALL */}
       <section className="about-cta-footer">
         <div className="about-cta-card-wrapper">
           <div className="cta-card-bg-glow"></div>

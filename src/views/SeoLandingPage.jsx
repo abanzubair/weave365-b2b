@@ -1,8 +1,8 @@
 /**
  * SeoLandingPage View
- * Purpose: Renders search-optimized B2B landing pages for specific Banarasi saree collections (e.g. organza, katan silk).
+ * Purpose: Renders search-optimized landing pages for specific Banarasi saree collections (e.g. organza, katan silk).
  * Leverages crawlable breadcrumb & FAQ JSON-LD schemas, structured header hierarchies, direct weaver narratives,
- * and high-end aesthetic designs to drive B2B traffic and boutique reseller conversions.
+ * and high-end aesthetic designs to drive boutique traffic and reseller conversions.
  */
 import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight } from 'lucide-react';
@@ -280,7 +280,7 @@ export function SeoLandingPage({
         <div className="seo-catalog-title-wrapper">
           <h2>
             {pageData.catalogTitle || 
-              `Explore B2B Wholesale ${pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`}
+              `Explore Wholesale ${pageData.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`}
           </h2>
           <span className="seo-catalog-subtitle">
             {pageData.catalogSubtitle || 'Real-time artisan inventory with secure international shipping support'}
@@ -351,7 +351,7 @@ export function SeoLandingPage({
               <HelpCircle size={24} />
             </div>
             <h2>Sourcing Insights & Boutique Support</h2>
-            <p>Get professional details regarding international customs clearing, dynamic B2B discount slabs, customized fabric inspections, and flexible dropshipping support from Varanasi weavers.</p>
+            <p>Get professional details regarding international customs clearing, bulk discount slabs, customized fabric inspections, and flexible dropshipping support from Varanasi weavers.</p>
             <a
               href="/bulk-inquiry"
               className="seo-faq-inquiry-btn"

@@ -183,7 +183,7 @@ export default function DashboardOverview({
   </div>
   <div class="invoice-header">
     <div>
-      <div class="brand-title">WEAVE 365 B2B</div>
+      <div class="brand-title">WEAVE 365</div>
       <div class="brand-sub">Authentic Varanasi Silk & Textile Sourcing Network</div>
       <div class="brand-sub">Varanasi, Uttar Pradesh, India | Support: WhatsApp Verified</div>
     </div>
@@ -243,7 +243,7 @@ export default function DashboardOverview({
   </div>
 
   <div class="footer-note">
-    This is an electronically generated pro-forma commercial invoice for B2B wholesale tracking purposes.
+    This is an electronically generated pro-forma commercial invoice for wholesale tracking purposes.
     <br/>Thank you for partner sourcing with Weave 365.
   </div>
 

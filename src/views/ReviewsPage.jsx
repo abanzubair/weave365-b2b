@@ -192,7 +192,7 @@ export function ReviewsSection({ navigate, user }) {
 
     // Client-side length validation (mirrors Supabase RLS constraints)
     const trimmedName = formData.reviewer_name.trim().slice(0, 100);
-    const trimmedBusiness = (formData.business_name || 'B2B Client').trim().slice(0, 200);
+    const trimmedBusiness = (formData.business_name || 'Client').trim().slice(0, 200);
     const trimmedTitle = (formData.title || 'Partner Review').trim().slice(0, 200);
     const trimmedComment = formData.comment.trim().slice(0, 2000);
 
@@ -443,7 +443,7 @@ export function ReviewsSection({ navigate, user }) {
                   <div className="reviewer-name-row">
                     <span className="reviewer-name">{review.reviewer_name}</span>
                   </div>
-                  <span className="reviewer-business">{review.business_name || 'B2B Saree Boutique'}</span>
+                  <span className="reviewer-business">{review.business_name || 'Saree Boutique'}</span>
                 </div>
                 <div className="review-date">
                   {new Date(review.created_at).toLocaleDateString('en-IN', {
@@ -490,7 +490,7 @@ export function ReviewsPage({ navigate, user }) {
     if (typeof window === 'undefined') return;
 
     const originalTitle = document.title;
-    document.title = 'Client Sourcing Reviews | B2B Partner Feedback | Weave365';
+    document.title = 'Client Sourcing Reviews | Partner Feedback | Weave365';
 
     let metaDesc = document.querySelector('meta[name="description"]');
     const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
@@ -560,7 +560,7 @@ export function ReviewsPage({ navigate, user }) {
               <path d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" id="reviewsSealPath" fill="none" />
               <text fill="#c69e6a" fontSize="8" fontFamily="var(--font-hero-body)" letterSpacing="2.8" fontWeight="600">
                 <textPath href="#reviewsSealPath" startOffset="0%">
-                  TRUSTED B2B • VERIFIED REVIEWS • 100% TRANSPARENT • 
+                  TRUSTED PARTNER • VERIFIED REVIEWS • 100% TRANSPARENT • 
                 </textPath>
               </text>
             </svg>

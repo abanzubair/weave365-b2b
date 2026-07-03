@@ -36,11 +36,11 @@ async function getInitialData() {
 
 export function generateMetadata() {
   const defaultMeta = {
-    title: 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+    title: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
     description: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
     alternates: { canonical: 'https://www.weave365.com/' },
     openGraph: {
-      title: 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+      title: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
       description: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
       type: 'website',
       url: 'https://www.weave365.com/',
@@ -49,7 +49,7 @@ export function generateMetadata() {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Wholesale Banarasi Sarees Online | B2B Saree Supplier India | Weave 365',
+      title: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
       description: 'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
       images: ['https://assets.weave365.com/assets/banner/favicon.svg'],
     },

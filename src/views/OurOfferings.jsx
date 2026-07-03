@@ -45,14 +45,14 @@ export function OurOfferings({ navigate, openAuth }) {
 
   // SEO: Update Page Title & Description
   useEffect(() => {
-    document.title = "Our Offerings | B2B Features & White Label Storefront | Weave365";
+    document.title = "Our Offerings | Sourcing Features & White Label Storefront | Weave365";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.content = "Discover Weave365 B2B offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
+      metaDescription.content = "Discover Weave365 offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
     } else {
       const newMeta = document.createElement('meta');
       newMeta.name = 'description';
-      newMeta.content = "Discover Weave365 B2B offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
+      newMeta.content = "Discover Weave365 offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
       document.head.appendChild(newMeta);
     }
   }, []);
@@ -101,7 +101,7 @@ export function OurOfferings({ navigate, openAuth }) {
             <div className="hero-divider-luxury"></div>
             <p className="hero-desc-luxury">
               Loom-direct authenticity. Worldwide unbranded dropshipping. Zero inventory risk. 
-              We provide the complete B2B infrastructure so you can focus entirely on scaling your luxury boutique.
+              We provide the complete commerce infrastructure so you can focus entirely on scaling your luxury boutique.
             </p>
             
             <div className="hero-action-luxury">
@@ -132,7 +132,7 @@ export function OurOfferings({ navigate, openAuth }) {
               <div className="pillar-icon-wrapper">
                 <Globe size={22} strokeWidth={1.2} />
               </div>
-              <h3 className="pillar-title-luxury">B2B Infrastructure</h3>
+              <h3 className="pillar-title-luxury">Commerce Infrastructure</h3>
               <p className="pillar-desc-luxury">
                 Showcase thousands of high-resolution saree designs without stock-holding overhead. 
                 Our Varanasi hub manages logistics, packing, and express worldwide transport.

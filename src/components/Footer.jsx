@@ -109,17 +109,9 @@ export function Footer({ navigate, scrollToSection }) {
           <Coins size={16} /> Affiliate Program
         </a>
         <a
-          href="/#brand-collab"
+          href="/collaboration"
           className="footer-link"
-          onClick={(e) => {
-            if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
-            e.preventDefault();
-            if (scrollToSection) {
-              scrollToSection('brand-collab');
-            } else {
-              navigate('home');
-            }
-          }}
+          onClick={(e) => handleLinkClick(e, 'collaboration')}
         >
           <Handshake size={16} /> Collaboration
         </a>

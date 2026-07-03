@@ -1,13 +1,13 @@
 /**
  * @file WholesalePartnerProgramPage.jsx
- * @description Educational program and marketing view introducing the certified B2B Partner Program.
+ * @description Educational program and marketing view introducing the certified Partner Program.
  * Outlines the 6-step registration, certification, margin configuration, and social sharing roadmap.
  * Displays premium feature benefit grids, zero-inventory risk explanations, and registration calls-to-action
  * designed to onboard new partners and boutique owners.
  * 
  * @module views/WholesalePartnerProgramPage
  * @param {Object} props
- * @param {Function} props.openAuth - Trigger callback to display the B2B registration/authentication modal
+ * @param {Function} props.openAuth - Trigger callback to display the partner registration/authentication modal
  */
 
 import { ArrowRight, BadgeCheck, Share2, PackagePlus, Users, Store, Zap, ShieldCheck } from 'lucide-react';
@@ -153,7 +153,7 @@ export function WholesalePartnerProgramPage({ openAuth }) {
                 <BadgeCheck className="benefit-list-icon" />
                 <div>
                   <strong>Build Trust</strong>
-                  <span>Deliver premium quality as a certified B2B partner.</span>
+                  <span>Deliver premium quality as a certified partner.</span>
                 </div>
               </li>
             </ul>
@@ -166,7 +166,7 @@ export function WholesalePartnerProgramPage({ openAuth }) {
         <div className="social-content">
           <h2>Share Anywhere, Anytime</h2>
           <p>
-            Our platform is built for modern B2B partners. Sourcing premium Banarasi handlooms has never been easier. Share product collections instantly with your customers across:
+            Our platform is built for modern partners. Sourcing premium Banarasi handlooms has never been easier. Share product collections instantly with your customers across:
           </p>
           <div className="social-tags">
             <span className="social-tag">WhatsApp</span>

@@ -85,7 +85,7 @@ export function SearchOverlay({
                       </button>
                     </li>
                     <li>
-                      <button type="button" onClick={() => { navigate('wholesale-partner-program'); setSearchActive(false); }}>
+                      <button type="button" onClick={() => { navigate('partner-program'); setSearchActive(false); }}>
                         <span>Wholesale & Reseller Partner Program</span>
                         <ArrowRight size={14} />
                       </button>

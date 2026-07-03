@@ -213,7 +213,7 @@ export default function EnquiresManager({
         <div className="admin-ea-header-left">
           <Inbox size={22} className="admin-ea-header-icon" />
           <div>
-            <h2 className="admin-ea-title">B2B Enquiries Manager (Table: inquiries)</h2>
+            <h2 className="admin-ea-title">Enquiries Manager (Table: inquiries)</h2>
             <p className="admin-ea-subtitle">
               {inquiresData.length} total &bull; {inquiresData.filter((r) => r.status === 'new').length} new enquiries
             </p>
