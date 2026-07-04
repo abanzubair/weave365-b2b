@@ -1,5 +1,6 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Mail } from 'lucide-react';
+import { storeConfig } from '../config.js';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -18,6 +19,27 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const errorMsg = this.state.error?.stack || this.state.error?.toString() || 'No stack trace available';
+      const email = storeConfig?.email || 'weave365@gmail.com';
+      const subject = `Weave365 Error Report: ${this.state.error?.toString().slice(0, 50) || 'Component Crash'}`;
+      const body = `Hello Weave365 Support Team,
+
+I encountered an error while browsing Weave365.
+
+Error Details:
+---------------------------------------------
+${errorMsg}
+
+Page URL:
+${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
+
+User Agent:
+${typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown'}
+---------------------------------------------
+
+Please look into this issue.`;
+
+      const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       return (
         <div style={{
           display: 'flex',
@@ -52,24 +74,46 @@ export class ErrorBoundary extends React.Component {
           }}>
             <strong>{this.state.error?.toString()}</strong>
           </div>
-          <button type="button"
-            onClick={() => window.location.reload()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              backgroundColor: 'var(--primary-color, #000000)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: '500'
-            }}
-          >
-            <RefreshCw size={16} />
-            Reload Page
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button type="button"
+              onClick={() => window.location.reload()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'var(--primary-color, #000000)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              <RefreshCw size={16} />
+              Reload Page
+            </button>
+            <a
+              href={mailtoUrl}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'transparent',
+                color: 'var(--gold-dark, #805d31)',
+                border: '1px solid var(--gold-dark, #805d31)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Mail size={16} />
+              Report Error
+            </a>
+          </div>
         </div>
       );
     }
