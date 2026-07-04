@@ -4,7 +4,7 @@ import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRou
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSupabaseLandingPages } from '../../src/productData.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { isSupabaseConfigured, supabase } from '../../src/supabaseClient.js';
 
 export const revalidate = 900; // Cache and revalidate at most every 15 minutes
@@ -752,6 +752,13 @@ export default async function CatchAllPage({ params }) {
     product = (initialData.products || []).find((item) => item.id === productId);
     if (!product || product.isArchived) {
       notFound();
+    }
+
+    // Redirect if the category slug in the path doesn't match the canonical category slug of the product
+    const expectedCatSlug = getProductCategorySlug(product.id, product.category);
+    const actualCatSlug = slug[0];
+    if (actualCatSlug !== expectedCatSlug) {
+      redirect(`/${expectedCatSlug}/${encodeURIComponent(product.id)}`);
     }
     
     // Fetch product reviews on the server for schema generation
