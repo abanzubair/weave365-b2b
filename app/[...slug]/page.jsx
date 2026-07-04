@@ -412,6 +412,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
+  if (route === 'dropshipping') {
+    return buildMeta(
+      'Free Saree & Suit Dropshipping Program in India | Weave 365',
+      'Start your free Banarasi saree & suit dropshipping business in India. Sourced directly from weavers with WhatsApp sharing, catalog downloads, and white-label website tools.',
+      '/dropshipping'
+    );
+  }
+
   if (route === 'bulk-inquiry') {
     return buildMeta(
       'Banarasi Saree Wholesale Bulk Inquiry & Sourcing | Weave 365',

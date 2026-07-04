@@ -83,7 +83,7 @@ export default function SchemaMarkup() {
         },
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: "Banarasi Saree Wholesale Catalogue",
+          name: "Banarasi Saree Catalogue",
           itemListElement: [
             {
               "@type": "OfferCatalog",

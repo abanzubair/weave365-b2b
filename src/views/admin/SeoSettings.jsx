@@ -134,7 +134,7 @@ const staticSeoDefaults = [
   },
   {
     path: '/catalogue',
-    label: 'Wholesale Catalogue',
+    label: 'Catalogue',
     metaTitle: 'Wholesale Saree & Suit Catalogue | Weave 365',
     metaDescription: 'Browse our live Banarasi saree and suit wholesale catalogue. Sourced directly from Varanasi weavers for boutiques and retailers.',
   },
@@ -161,6 +161,12 @@ const staticSeoDefaults = [
     label: 'Affiliate Program',
     metaTitle: 'Saree Affiliate Program | Earn Commissions | Weave 365',
     metaDescription: 'Join the Weave 365 Affiliate Program. Refer boutique owners and retail store owners to our Banarasi saree platform and earn attractive commissions.',
+  },
+  {
+    path: '/dropshipping',
+    label: 'Dropshipping Program',
+    metaTitle: 'Free Saree & Suit Dropshipping Program in India | Weave 365',
+    metaDescription: 'Start your free Banarasi saree & suit dropshipping business in India. Sourced directly from Varanasi weavers with WhatsApp sharing, catalog downloads, and white-label website tools.',
   },
 ];
 

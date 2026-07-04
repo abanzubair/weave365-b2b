@@ -221,10 +221,10 @@ export function Catalog({
       { name: 'Home', url: '/', route: 'home' }
     ];
 
-    if (title && title !== 'Wholesale Catalogue') {
+    if (title && title !== 'Catalogue') {
       items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', search: '' } });
     } else {
-      items.push({ name: 'Wholesale Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
+      items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
       if (category && category !== 'All') {
         items.push({ name: category, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric: 'All', weave: 'All', search: '' } });
       }
@@ -247,7 +247,7 @@ export function Catalog({
       <h1 className="sr-only">
         {search && search.trim() !== ''
           ? `Wholesale Banarasi Sarees matching "${search}" - Weave 365`
-          : (title || "Banarasi Sarees and Suits Wholesale Catalogue")}
+          : (title || "Banarasi Sarees and Suits Catalogue")}
       </h1>
       {openDropdown && (
         <div 
@@ -259,7 +259,7 @@ export function Catalog({
       <div className="catalog-toolbar">
         <div className="catalog-header-row">
           <SectionTitle 
-            title={search && search.trim() !== '' ? `Search Results: "${search}"` : (title || "Wholesale Catalogue")} 
+            title={search && search.trim() !== '' ? `Search Results: "${search}"` : (title || "Catalogue")} 
             align="left" 
           />
           {hasActiveFilters && (

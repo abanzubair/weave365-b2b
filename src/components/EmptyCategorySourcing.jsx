@@ -169,7 +169,7 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
 
         <div className="view-full-catalog-row">
           <button type="button" onClick={() => navigate('catalogue')} className="full-catalog-link">
-            <span>View Full Wholesale Catalogue</span>
+            <span>View Full Catalogue</span>
             <ArrowRight size={16} />
           </button>
         </div>

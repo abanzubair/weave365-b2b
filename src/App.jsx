@@ -71,6 +71,7 @@ const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m 
 const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
 const WeaveComparisonGuidePage = lazy(() => import('./views/WeaveComparisonGuidePage.jsx').then(m => ({ default: m.WeaveComparisonGuidePage })));
 const AffiliateProgramPage = lazy(() => import('./views/AffiliateProgramPage.jsx').then(m => ({ default: m.AffiliateProgramPage })));
+const DropshippingPage = lazy(() => import('./views/DropshippingPage.jsx').then(m => ({ default: m.DropshippingPage })));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
@@ -1212,7 +1213,7 @@ export default function App({ initialData = {} }) {
         ? `Banarasi ${pluralCategory}`
         : route === 'partner' 
           ? `${products.find(p => p.partner && slugifyPartner(p.partner) === partnerName)?.partner || (partnerName ? partnerName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '')}'s Collection` 
-          : 'Wholesale Catalogue';
+          : 'Catalogue';
 
       return (
         <Suspense fallback={
@@ -1372,6 +1373,18 @@ export default function App({ initialData = {} }) {
 
     if (route === 'affiliate-program') {
       return <AffiliateProgramPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />;
+    }
+
+    if (route === 'dropshipping') {
+      return (
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={12} wrap={true} />
+          </div>
+        }>
+          <DropshippingPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />
+        </Suspense>
+      );
     }
 
     if (route === 'new-arrivals') {
