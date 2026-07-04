@@ -1,87 +1,91 @@
 /* -------------------------------------------------------------
    Weave365 Empty Category Sourcing Interface Styling
-   UI/UX PRO MAX OVERHAUL - PREMIUM VARANASI WEAVER CONCIERGE
+   UI/UX OVERHAUL - PREMIUM VARANASI WEAVING CONCIERGE & D2C PORTAL
 ------------------------------------------------------------- */
 
 .empty-category-sourcing {
-  max-width: 1100px;
-  margin: 2.5rem auto 4.5rem;
-  padding: 0 5%;
+  max-width: 1200px;
+  margin: 2rem auto 1rem;
+  padding: 0 4%;
   font-family: var(--font-hero-body, 'Inter', sans-serif);
   color: var(--text-color, #1a1a1a);
+  animation: fadeInEmpty 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInEmpty {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* 1. Prestige Status & Curation Section */
 .concierge-narrative-section {
-  padding: 1rem 0 2rem;
+  padding: 1.5rem 0 2rem;
   margin-bottom: 2.5rem;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.12);
-  position: relative;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.15);
 }
 
 .concierge-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(198, 158, 106, 0.08);
+  background: rgba(198, 158, 106, 0.07);
   border: 1px solid rgba(198, 158, 106, 0.25);
   color: var(--gold-dark, #805d31);
-  padding: 0.4rem 0.8rem;
+  padding: 0.45rem 1rem;
   border-radius: 99px;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(198, 158, 106, 0.05);
 }
 
 .concierge-badge svg {
   color: var(--primary-color, #c69e6a);
-  animation: pulseGold 2s infinite;
+  animation: pulseGold 2.5s infinite;
 }
 
-.concierge-narrative-card h2 {
+@keyframes pulseGold {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.concierge-narrative-section h2 {
   font-family: var(--font-hero-heading, 'Manrope', serif);
-  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem);
   font-weight: 300;
   color: var(--gold-dark, #805d31);
   letter-spacing: -0.02em;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1rem;
   line-height: 1.25;
 }
 
-.concierge-narrative-card .narrative-p {
-  font-size: 0.94rem;
-  line-height: 1.65;
-  color: #333;
-  margin-bottom: 1.1rem;
-}
-
-.concierge-narrative-card .narrative-p.text-muted {
-  color: #666;
-  font-size: 0.88rem;
-  border-left: 2px solid rgba(198, 158, 106, 0.3);
-  padding-left: 0.95rem;
+.concierge-narrative-section .narrative-p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  max-width: 850px;
+  margin-bottom: 1.5rem;
 }
 
 .narrative-trust-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(198, 158, 106, 0.12);
+  gap: 2rem;
+  margin-top: 1.5rem;
 }
 
 .trust-indicator {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--gold-dark, #805d31);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .trust-indicator svg {
@@ -89,26 +93,202 @@
   flex-shrink: 0;
 }
 
-
-/* 2. Interactive Bespoke Sourcing Mini-Form Section */
-.concierge-sourcing-form-section {
-  padding: 2rem 0;
-  margin-bottom: 3.5rem;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.12);
+/* 2. Split Content Layout */
+.empty-category-split-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 3.5rem;
+  align-items: start;
+  margin-bottom: 4rem;
 }
 
-.form-heading-row {
+/* Left Column Styling */
+.split-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.craft-process-card {
+  background: #fafaf9;
+  border: 1px solid rgba(198, 158, 106, 0.08);
+  border-radius: 12px;
+  padding: 2.2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.craft-process-card h4 {
+  font-family: var(--font-hero-heading);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 0.4rem;
+}
+
+.section-subtitle-p {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.sourcing-process-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  position: relative;
+}
+
+.sourcing-process-timeline::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 15px;
+  bottom: 15px;
+  width: 1px;
+  background: rgba(198, 158, 106, 0.2);
+}
+
+.sourcing-timeline-step {
   display: flex;
   gap: 1.2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.sourcing-timeline-step-number {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--primary-color, #c69e6a);
+  color: var(--gold-dark, #805d31);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(198, 158, 106, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sourcing-timeline-step-content h5 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.3rem;
+}
+
+.sourcing-timeline-step-content p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+}
+
+/* FAQ Accordion Styling (SEO Rich Text) */
+.sourcing-faqs-section h4 {
+  font-family: var(--font-hero-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.08);
+  padding-bottom: 0.75rem;
+}
+
+.faq-accordion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.faq-accordion-item {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faq-accordion-item.open {
+  border-color: rgba(198, 158, 106, 0.35);
+  box-shadow: 0 4px 15px rgba(198, 158, 106, 0.06);
+}
+
+.faq-accordion-header {
+  width: 100%;
+  padding: 1.15rem 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.25s ease;
+}
+
+.faq-accordion-header:hover {
+  color: var(--gold-dark, #805d31);
+}
+
+.faq-arrow-icon {
+  color: var(--primary-color, #c69e6a);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faq-accordion-item.open .faq-arrow-icon {
+  transform: rotate(180deg);
+}
+
+.faq-accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faq-accordion-item.open .faq-accordion-body {
+  max-height: 200px; /* Adjust if needed */
+}
+
+.faq-accordion-body p {
+  padding: 0 1.4rem 1.3rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #555;
+  border-top: 1px dashed rgba(198, 158, 106, 0.1);
+  padding-top: 1rem;
+}
+
+/* Right Column: Custom Order/Sourcing Desk Card */
+.concierge-sourcing-form-card {
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.2);
+  border-radius: 14px;
+  padding: 2.2rem;
+  box-shadow: 0 10px 35px rgba(198, 158, 106, 0.05);
+  position: sticky;
+  top: 100px;
+}
+
+.form-card-header {
+  display: flex;
+  gap: 1rem;
   align-items: flex-start;
-  margin-bottom: 2.2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .form-icon-circle {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
-  background: rgba(198, 158, 106, 0.06);
+  background: rgba(198, 158, 106, 0.08);
   color: var(--primary-color, #c69e6a);
   display: flex;
   align-items: center;
@@ -116,57 +296,117 @@
   flex-shrink: 0;
 }
 
-.form-title-col h3 {
+.form-card-header h3 {
   font-family: var(--font-hero-heading);
-  font-size: 1.25rem;
-  font-weight: 550;
+  font-size: 1.4rem;
+  font-weight: 600;
   color: var(--gold-dark, #805d31);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.25rem;
 }
 
-.form-title-col p {
-  font-size: 0.85rem;
-  line-height: 1.5;
+.form-card-header p {
+  font-size: 0.92rem;
+  line-height: 1.4;
   color: #666;
 }
 
-.concierge-mini-form .form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.concierge-interactive-form {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
-.concierge-mini-form .form-grid label.full-width {
-  grid-column: span 2;
-}
-
-.form-label {
+.form-field-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  font-size: 0.75rem;
+}
+
+.field-group-title,
+.form-field-label {
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #555;
 }
 
-.sourcing-input,
-.sourcing-textarea {
+/* Quantity Preset Grid & Chips */
+.quantity-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.qty-preset-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: #fafaf9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  outline: none;
+}
+
+.qty-preset-chip:hover {
+  background: #ffffff;
+  border-color: var(--primary-color, #c69e6a);
+  color: var(--gold-dark, #805d31);
+}
+
+.qty-preset-chip.active {
+  background: rgba(198, 158, 106, 0.08);
+  border-color: var(--gold-dark, #805d31);
+  color: var(--gold-dark, #805d31);
+  box-shadow: 0 2px 8px rgba(198, 158, 106, 0.1);
+}
+
+.qty-preset-chip .check-icon {
+  color: var(--gold-dark, #805d31);
+}
+
+/* Custom quantity input fade-in animation */
+.custom-qty-wrapper {
+  margin-top: 0.25rem;
+}
+
+.animate-fade-in {
+  animation: fadeInInput 0.35s ease forwards;
+}
+
+@keyframes fadeInInput {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Text & Select Input styling */
+.sourcing-text-input,
+.sourcing-textarea,
+.sourcing-select {
+  width: 100%;
+  box-sizing: border-box;
   font-family: var(--font-hero-body);
-  font-size: 0.9rem;
-  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  padding: 0.8rem 1rem;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 6px;
   outline: none;
   background: #fafaf9;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #1a1a1a;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sourcing-input:focus,
-.sourcing-textarea:focus {
+.sourcing-text-input:focus,
+.sourcing-textarea:focus,
+.sourcing-select:focus {
   border-color: var(--primary-color, #c69e6a);
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(198, 158, 106, 0.08);
@@ -176,39 +416,65 @@
   resize: vertical;
 }
 
+/* Dropdown arrow positioning */
+.select-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.sourcing-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color, #c69e6a);
+  pointer-events: none;
+  transition: transform 0.25s ease;
+}
+
+.sourcing-select:focus ~ .select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
 .form-submit-row {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .sourcing-submit-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   background: var(--gold-dark, #805d31);
   color: #ffffff;
   padding: 0.95rem 2rem;
   border-radius: 6px;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 1px solid var(--gold-dark, #805d31);
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.15);
 }
 
 .sourcing-submit-btn:hover {
   background: var(--primary-color, #c69e6a);
   border-color: var(--primary-color, #c69e6a);
   transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(198, 158, 106, 0.22);
-}
-
-.sourcing-submit-btn svg {
-  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(198, 158, 106, 0.25);
 }
 
 .sourcing-submit-btn .send-arrow {
@@ -220,23 +486,23 @@
 }
 
 .sourcing-success-msg {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #2e7d32;
-  margin: 0.25rem 0 0;
-  animation: fadeIn 0.4s ease forwards;
+  text-align: center;
+  animation: fadeInInput 0.3s ease forwards;
 }
-
 
 /* 3. Alternative Active Collections (SEO Internal Links Grid) */
 .sourcing-alternatives-section {
-  border-top: 1px solid rgba(198, 158, 106, 0.12);
-  padding-top: 3.5rem;
+  border-top: 1px solid rgba(198, 158, 106, 0.15);
+  padding-top: 4rem;
+  margin-top: 1.5rem;
 }
 
 .sourcing-alternatives-section h3 {
   font-family: var(--font-hero-heading);
-  font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
   font-weight: 300;
   color: var(--gold-dark, #805d31);
   letter-spacing: -0.01em;
@@ -244,14 +510,14 @@
 }
 
 .alternatives-desc {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: #666;
-  margin-bottom: 2rem;
+  margin-bottom: 2.2rem;
 }
 
 .alternatives-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
 }
 
@@ -259,34 +525,33 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: transparent;
-  padding: 1.25rem 0 1.5rem;
-  border-radius: 0;
+  background: #ffffff;
+  padding: 1.6rem;
+  border-radius: 8px;
   text-decoration: none;
-  border: none;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.12);
-  box-shadow: none;
+  border: 1px solid rgba(198, 158, 106, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
   text-align: left;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .alternative-card span.alt-category {
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--primary-color, #c69e6a);
   text-transform: uppercase;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.6rem;
   display: block;
 }
 
 .alternative-card h4 {
   font-family: var(--font-hero-heading);
-  font-size: 1.05rem;
-  font-weight: 550;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--gold-dark, #805d31);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
   line-height: 1.25;
 }
 
@@ -294,7 +559,7 @@
   font-size: 0.8rem;
   line-height: 1.45;
   color: #666;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .alternative-card .alt-action-row {
@@ -315,8 +580,9 @@
 }
 
 .alternative-card:hover {
-  border-bottom-color: var(--primary-color, #c69e6a);
-  transform: translateY(-2px);
+  border-color: var(--primary-color, #c69e6a);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(198, 158, 106, 0.08);
 }
 
 .alternative-card:hover .alt-action-row .arrow {
@@ -340,7 +606,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.2rem;
   transition: all 0.25s ease;
   position: relative;
 }
@@ -373,80 +639,43 @@
   transform: translateX(4px);
 }
 
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Responsive Layout */
+@media (max-width: 1024px) {
+  .empty-category-split-layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .concierge-sourcing-form-card {
+    position: static;
+  }
 }
 
-
-/* Responsive Layout */
 @media (max-width: 768px) {
-  .concierge-narrative-card,
-  .concierge-sourcing-form-wrap {
-    padding: 1.8rem;
+  .empty-category-sourcing {
+    margin: 1.5rem auto 3.5rem;
   }
   
-  .concierge-mini-form .form-grid {
+  .concierge-narrative-section {
+    padding-bottom: 1.5rem;
+  }
+  
+  .craft-process-card,
+  .concierge-sourcing-form-card {
+    padding: 1.5rem;
+  }
+
+  .quantity-preset-grid {
     grid-template-columns: 1fr;
-    gap: 1.1rem;
+    gap: 0.5rem;
   }
-  
-  .concierge-mini-form .form-grid label.full-width {
-    grid-column: span 1;
+
+  .qty-preset-chip {
+    padding: 0.7rem 0.5rem;
   }
-  
-  .form-heading-row {
-    margin-bottom: 1.5rem;
-  }
-  
-  .trust-indicator {
-    font-size: 0.72rem;
-  }
-  
+
   .sourcing-submit-btn {
     width: 100%;
     justify-content: center;
   }
 }
-
-/* Expandable Details Toggle */
-.concierge-toggle-details-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--gold-dark, #805d31);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 0.2rem 0 0.9rem;
-  transition: all 0.25s ease;
-  margin-bottom: 0.5rem;
-  outline: none;
-}
-
-.concierge-toggle-details-btn:hover {
-  color: var(--primary-color, #c69e6a);
-}
-
-.concierge-toggle-details-btn svg {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--primary-color, #c69e6a);
-}
-
-.concierge-toggle-details-btn svg.rotate {
-  transform: rotate(180deg);
-}
-
-.concierge-details-expandable {
-  animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-  border-top: 1px dashed rgba(198, 158, 106, 0.2);
-  padding-top: 1.1rem;
-  margin-bottom: 0.75rem;
-}
-
