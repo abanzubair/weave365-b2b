@@ -14,6 +14,64 @@ function escapeXml(unsafe) {
     .replace(/'/g, '&apos;');
 }
 
+function isCoverVariantCode(code = '') {
+  return /-0$/i.test(String(code || '').trim());
+}
+
+function getImagesForVariant(product, variant, hasSubVariants) {
+  const images = [];
+  if (variant.image) {
+    images.push(variant.image);
+  }
+
+  const vColor = String(variant.color || '').trim().toLowerCase();
+  const vCode = String(variant.code || '').trim().toLowerCase();
+
+  // Find other variant main images to avoid cross-assigning them
+  const otherVariantImages = (product.variants || [])
+    .filter(v => v.code !== variant.code)
+    .map(v => v.image)
+    .filter(Boolean);
+
+  // Compile other color names to ensure we don't match them
+  const otherColors = (product.variants || [])
+    .filter(v => v.code !== variant.code && v.color && v.color !== variant.color)
+    .map(v => v.color.trim().toLowerCase())
+    .filter(Boolean);
+
+  const codeRegex = new RegExp(vCode.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '([^0-9]|$)', 'i');
+
+  const allImages = product.images || [];
+
+  for (const img of allImages) {
+    if (img === variant.image) continue;
+
+    // Skip if it's the main image of another variant
+    if (otherVariantImages.includes(img)) continue;
+
+    let isMatch = false;
+
+    // 1. Match by variant code
+    if (codeRegex.test(img)) {
+      isMatch = true;
+    }
+
+    // 2. Match by color name (if non-empty)
+    if (vColor && img.toLowerCase().includes(vColor)) {
+      const matchesOtherColor = otherColors.some(other => img.toLowerCase().includes(other));
+      if (!matchesOtherColor) {
+        isMatch = true;
+      }
+    }
+
+    if (isMatch && !images.includes(img)) {
+      images.push(img);
+    }
+  }
+
+  return images;
+}
+
 export async function GET() {
   try {
     const products = await fetchProducts();
@@ -27,29 +85,77 @@ export async function GET() {
     for (const product of activeProducts) {
       const categorySlug = getProductCategorySlug(product.id, product.category);
       const prodUrl = `${siteUrl}/${categorySlug}/${product.id}`;
-      const imageUrl = product.images?.[0] || 'https://assets.weave365.com/assets/banner/favicon.svg';
 
-      // Resolve guest/crawler price (D2C single price)
-      const variant = product.variants?.[0] || { code: product.id, prices: {} };
-      const displayPrice = variant.prices?.single || variant.prices?.mrp || 2500;
-      
-      const availability = product.isOutOfStock ? 'out_of_stock' : 'in_stock';
+      // Check if product has sub-variants (variant codes containing '-')
+      const hasSubVariants = product.variants && product.variants.some(v => v.code && v.code.includes('-'));
+
+      // Determine which variants to export
+      let activeVariants = [];
+      if (product.variants && product.variants.length > 0) {
+        if (hasSubVariants) {
+          // Keep only actual color variants, filter out the cover/parent variant
+          activeVariants = product.variants.filter(v => v.code && v.code.includes('-') && !isCoverVariantCode(v.code));
+        } else {
+          activeVariants = product.variants;
+        }
+      }
+
+      // Fallback if no variants are present
+      if (activeVariants.length === 0) {
+        activeVariants = [{
+          code: product.id,
+          color: product.colorOptions?.[0]?.name || 'multicolor',
+          image: product.images?.[0] || 'https://assets.weave365.com/assets/banner/favicon.svg',
+          prices: {}
+        }];
+      }
+
       const brandName = storeConfig.name || 'Weave 365';
-      const color = variant.color || product.colorOptions?.[0]?.name || 'multicolor';
       const size = String(product.category || '').toLowerCase() === 'saree' ? '6.3m' : 'one size';
       const weight = Number(product.weight) || 0.8;
-      
+      const availability = product.isOutOfStock ? 'out_of_stock' : 'in_stock';
+
       const googleCategory = String(product.category || '').toLowerCase() === 'saree'
         ? 'Apparel & Accessories > Clothing > Traditional & Ceremonial Clothing > Sarees'
         : 'Apparel & Accessories > Clothing';
 
-      itemsXml += `
+      for (const variant of activeVariants) {
+        const displayPrice = variant.prices?.single || variant.prices?.mrp || 2500;
+        const color = variant.color || 'multicolor';
+
+        // Construct a variant-specific URL linking back to the landing page with the selected color parameter
+        const variantUrl = variant.color 
+          ? `${prodUrl}?color=${encodeURIComponent(variant.color.toLowerCase())}` 
+          : prodUrl;
+
+        // Enhance title to include the variant color name if not already present
+        let title = product.title || product.metaTitle || 'Premium Banarasi Collection';
+        if (variant.color && !title.toLowerCase().includes(variant.color.toLowerCase())) {
+          title = `${title} - ${variant.color}`;
+        }
+
+        // Map variant images (first is main image, subsequent are additional images)
+        const variantImages = getImagesForVariant(product, variant, hasSubVariants);
+        const mainImage = variantImages[0] || 'https://assets.weave365.com/assets/banner/favicon.svg';
+        const additionalImages = variantImages.slice(1, 11); // Max 10 additional images per Google Merchant specs
+
+        let additionalImageXml = '';
+        for (const img of additionalImages) {
+          additionalImageXml += `\n      <g:additional_image_link>${escapeXml(img)}</g:additional_image_link>`;
+        }
+
+        // Include item_group_id if the product has multiple color variants
+        const itemGroupIdXml = (activeVariants.length > 1 || (product.variants && product.variants.length > 1))
+          ? `\n      <g:item_group_id>${escapeXml(product.id)}</g:item_group_id>`
+          : '';
+
+        itemsXml += `
     <item>
-      <g:id>${escapeXml(product.id)}</g:id>
-      <g:title>${escapeXml(product.title)}</g:title>
+      <g:id>${escapeXml(variant.code)}</g:id>${itemGroupIdXml}
+      <g:title>${escapeXml(title)}</g:title>
       <g:description>${escapeXml(product.summary || product.description || `Premium handwoven Banarasi collection in ${product.fabric || 'pure silk'}.`)}</g:description>
-      <g:link>${escapeXml(prodUrl)}</g:link>
-      <g:image_link>${escapeXml(imageUrl)}</g:image_link>
+      <g:link>${escapeXml(variantUrl)}</g:link>
+      <g:image_link>${escapeXml(mainImage)}</g:image_link>${additionalImageXml}
       <g:availability>${escapeXml(availability)}</g:availability>
       <g:price>${displayPrice} INR</g:price>
       <g:brand>${escapeXml(brandName)}</g:brand>
@@ -61,6 +167,7 @@ export async function GET() {
       <g:shipping_weight>${weight} kg</g:shipping_weight>
       <g:google_product_category>${escapeXml(googleCategory)}</g:google_product_category>
     </item>`;
+      }
     }
 
     const feedXml = `<?xml version="1.0" encoding="utf-8"?>

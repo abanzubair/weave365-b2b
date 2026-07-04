@@ -557,6 +557,51 @@ export function ProductDetail({
       return acc;
     }, []);
   }, [product.colorOptions, product.variants]);
+
+  // Handle color/variant query parameter initialization on page load
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlColor = params.get('color');
+    const urlVariant = params.get('variant');
+
+    if (urlVariant) {
+      const matchingVariant = product.variants?.find(
+        (v) => String(v.code).toLowerCase() === urlVariant.toLowerCase()
+      );
+      if (matchingVariant) {
+        setVariantCode(matchingVariant.code);
+        if (matchingVariant.color) {
+          setSelectedColorName(matchingVariant.color);
+        }
+        if (matchingVariant.image) {
+          setSelectedImage(matchingVariant.image);
+        }
+        return;
+      }
+    }
+
+    if (urlColor) {
+      const matchingColorOpt = colorOptions.find(
+        (c) => String(c.name).toLowerCase() === urlColor.toLowerCase()
+      );
+      const matchingVariant = product.variants?.find(
+        (v) => String(v.color).toLowerCase() === urlColor.toLowerCase()
+      );
+      if (matchingColorOpt || matchingVariant) {
+        const targetColor = matchingColorOpt?.name || matchingVariant?.color;
+        setSelectedColorName(targetColor);
+        const targetImage = matchingColorOpt?.image || matchingVariant?.image;
+        if (targetImage) {
+          setSelectedImage(targetImage);
+        }
+        const targetCode = matchingVariant?.code || product.variants?.find(v => v.color === targetColor)?.code;
+        if (targetCode) {
+          setVariantCode(targetCode);
+        }
+      }
+    }
+  }, [product.id, colorOptions, product.variants]);
   const productStatusTags = useMemo(
     () => (product.statusTags || []).filter((tag) => {
       const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
