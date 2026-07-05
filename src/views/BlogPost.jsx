@@ -326,9 +326,112 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     const normalized = rawContent.replace(/\r\n/g, '\n');
     const blocks = normalized.split('\n\n');
 
-    return blocks.map((block, idx) => {
+    const groupedBlocks = [];
+    let currentList = null; // { type: 'ol' | 'ul', items: [] }
+
+    const parseListItems = (blockText, listType) => {
+      const lines = blockText.split('\n');
+      const items = [];
+      lines.forEach((line) => {
+        const isListItem = listType === 'ol' ? /^\s*\d+\.\s/.test(line) : /^\s*-\s/.test(line);
+        if (isListItem) {
+          const regex = listType === 'ol' ? /^\s*\d+\.\s/ : /^\s*-\s/;
+          const cleanText = line.replace(regex, '').trim();
+          items.push({ text: cleanText, sublines: [] });
+        } else {
+          const cleanText = line.trim();
+          if (cleanText) {
+            if (items.length > 0) {
+              items[items.length - 1].sublines.push(cleanText);
+            } else {
+              items.push({ text: cleanText, sublines: [] });
+            }
+          }
+        }
+      });
+      return items;
+    };
+
+    blocks.forEach((block) => {
       const trimmed = block.trim();
-      if (!trimmed) return null;
+      if (!trimmed) return;
+
+      const isBullet = trimmed.startsWith('- ');
+      const isNumbered = /^\d+\.\s/.test(trimmed);
+
+      if (isBullet) {
+        const items = parseListItems(trimmed, 'ul');
+        if (currentList && currentList.type === 'ul') {
+          currentList.items.push(...items);
+        } else {
+          if (currentList) {
+            groupedBlocks.push(currentList);
+          }
+          currentList = { type: 'ul', items };
+        }
+      } else if (isNumbered) {
+        const items = parseListItems(trimmed, 'ol');
+        if (currentList && currentList.type === 'ol') {
+          currentList.items.push(...items);
+        } else {
+          if (currentList) {
+            groupedBlocks.push(currentList);
+          }
+          currentList = { type: 'ol', items };
+        }
+      } else {
+        if (currentList) {
+          groupedBlocks.push(currentList);
+          currentList = null;
+        }
+        groupedBlocks.push({ type: 'raw', content: trimmed });
+      }
+    });
+
+    if (currentList) {
+      groupedBlocks.push(currentList);
+    }
+
+    return groupedBlocks.map((block, idx) => {
+      if (block.type === 'ul') {
+        return (
+          <ul key={idx}>
+            {block.items.map((item, lIdx) => (
+              <li key={lIdx}>
+                <div>{renderTextWithLinks(item.text)}</div>
+                {item.sublines.length > 0 && (
+                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
+                    {item.sublines.map((sub, sIdx) => (
+                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
+      if (block.type === 'ol') {
+        return (
+          <ol key={idx}>
+            {block.items.map((item, lIdx) => (
+              <li key={lIdx}>
+                <div>{renderTextWithLinks(item.text)}</div>
+                {item.sublines.length > 0 && (
+                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
+                    {item.sublines.map((sub, sIdx) => (
+                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        );
+      }
+
+      const trimmed = block.content;
 
       // H2 Headers
       if (trimmed.startsWith('## ')) {
@@ -345,82 +448,6 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       // Horizontal Divider
       if (trimmed === '---') {
         return <hr key={idx} />;
-      }
-
-      // Bullet Lists
-      if (trimmed.startsWith('- ')) {
-        const lines = trimmed.split('\n');
-        const items = [];
-        lines.forEach((line) => {
-          const isListItem = /^\s*-\s/.test(line);
-          if (isListItem) {
-            const cleanText = line.replace(/^\s*-\s/, '').trim();
-            items.push({ text: cleanText, sublines: [] });
-          } else {
-            const cleanText = line.trim();
-            if (cleanText) {
-              if (items.length > 0) {
-                items[items.length - 1].sublines.push(cleanText);
-              } else {
-                items.push({ text: cleanText, sublines: [] });
-              }
-            }
-          }
-        });
-        return (
-          <ul key={idx}>
-            {items.map((item, lIdx) => (
-              <li key={lIdx}>
-                <div>{renderTextWithLinks(item.text)}</div>
-                {item.sublines.length > 0 && (
-                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
-                    {item.sublines.map((sub, sIdx) => (
-                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
-                    ))}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        );
-      }
-
-      // Numbered Lists
-      if (/^\d+\.\s/.test(trimmed)) {
-        const lines = trimmed.split('\n');
-        const items = [];
-        lines.forEach((line) => {
-          const isListItem = /^\s*\d+\.\s/.test(line);
-          if (isListItem) {
-            const cleanText = line.replace(/^\s*\d+\.\s/, '').trim();
-            items.push({ text: cleanText, sublines: [] });
-          } else {
-            const cleanText = line.trim();
-            if (cleanText) {
-              if (items.length > 0) {
-                items[items.length - 1].sublines.push(cleanText);
-              } else {
-                items.push({ text: cleanText, sublines: [] });
-              }
-            }
-          }
-        });
-        return (
-          <ol key={idx}>
-            {items.map((item, lIdx) => (
-              <li key={lIdx}>
-                <div>{renderTextWithLinks(item.text)}</div>
-                {item.sublines.length > 0 && (
-                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
-                    {item.sublines.map((sub, sIdx) => (
-                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
-                    ))}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ol>
-        );
       }
 
       // Table Parser
