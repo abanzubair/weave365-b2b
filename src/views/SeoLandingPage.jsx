@@ -28,7 +28,7 @@ const getCollectionTagline = (itemSlug) => {
       return 'Supple Lightweight Versatile Drape';
     case 'wholesale-saree-supplier-india':
       return 'Global Export & Bulk Direct Distribution';
-    case 'handloom-vs-semi-handloom-vs-powerloom-guide':
+    case 'handloom-vs-powerloom-guide':
       return 'Know your fabric before you buy';
     default:
       return 'Handcrafted Banarasi Excellence';

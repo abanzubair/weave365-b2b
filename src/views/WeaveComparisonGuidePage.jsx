@@ -3,7 +3,7 @@ import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, ShieldChec
 import { seoLandingPages } from '../data/seoLandingPages.js';
 
 export function WeaveComparisonGuidePage({ navigate }) {
-  const pageData = seoLandingPages['handloom-vs-semi-handloom-vs-powerloom-guide'] || {};
+  const pageData = seoLandingPages['handloom-vs-powerloom-guide'] || {};
   const [openFaq, setOpenFaq] = useState(null);
 
   // Synchronize dynamic head titles on client route switches

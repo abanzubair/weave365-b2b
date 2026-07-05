@@ -1411,7 +1411,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'handloom-vs-semi-handloom-vs-powerloom-guide') {
+    if (route === 'handloom-vs-powerloom-guide') {
       return (
         <Suspense fallback={
           <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>

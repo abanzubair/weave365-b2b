@@ -263,46 +263,57 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
     };
   }, [post]);
 
-  // Helper to parse markdown links and convert them to React routers
+  // Helper to parse markdown links and bold formatting, converting them to React elements
   const renderTextWithLinks = (text) => {
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    if (typeof text !== 'string') return text;
+    
+    // Pattern to match markdown links: [label](url) OR bold text: **text**
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g;
     const parts = [];
     let lastIndex = 0;
     let match;
-    while ((match = linkRegex.exec(text)) !== null) {
+    
+    while ((match = regex.exec(text)) !== null) {
       if (match.index > lastIndex) {
         parts.push(text.substring(lastIndex, match.index));
       }
-      const label = match[1];
-      const url = match[2];
-      const isInternal = url.startsWith('/');
-      if (isInternal) {
-        const targetRoute = url.substring(1);
-        parts.push(
-          <a
-            key={match.index}
-            href={url}
-            onClick={(e) => handleLinkClick(e, targetRoute)}
-            className="seo-inline-link"
-          >
-            {label}
-          </a>
-        );
-      } else {
-        parts.push(
-          <a
-            key={match.index}
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="seo-inline-link"
-          >
-            {label}
-          </a>
-        );
+      
+      const [_, linkLabel, linkUrl, boldText] = match;
+      
+      if (linkLabel && linkUrl) {
+        const isInternal = linkUrl.startsWith('/');
+        if (isInternal) {
+          const targetRoute = linkUrl.substring(1);
+          parts.push(
+            <a
+              key={match.index}
+              href={linkUrl}
+              onClick={(e) => handleLinkClick(e, targetRoute)}
+              className="seo-inline-link"
+            >
+              {linkLabel}
+            </a>
+          );
+        } else {
+          parts.push(
+            <a
+              key={match.index}
+              href={linkUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="seo-inline-link"
+            >
+              {linkLabel}
+            </a>
+          );
+        }
+      } else if (boldText) {
+        parts.push(<strong key={match.index}>{boldText}</strong>);
       }
-      lastIndex = linkRegex.lastIndex;
+      
+      lastIndex = regex.lastIndex;
     }
+    
     if (lastIndex < text.length) {
       parts.push(text.substring(lastIndex));
     }
@@ -339,12 +350,37 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       // Bullet Lists
       if (trimmed.startsWith('- ')) {
         const lines = trimmed.split('\n');
+        const items = [];
+        lines.forEach((line) => {
+          const isListItem = /^\s*-\s/.test(line);
+          if (isListItem) {
+            const cleanText = line.replace(/^\s*-\s/, '').trim();
+            items.push({ text: cleanText, sublines: [] });
+          } else {
+            const cleanText = line.trim();
+            if (cleanText) {
+              if (items.length > 0) {
+                items[items.length - 1].sublines.push(cleanText);
+              } else {
+                items.push({ text: cleanText, sublines: [] });
+              }
+            }
+          }
+        });
         return (
           <ul key={idx}>
-            {lines.map((line, lIdx) => {
-              const itemText = line.substring(2).trim();
-              return <li key={lIdx}>{renderTextWithLinks(itemText)}</li>;
-            })}
+            {items.map((item, lIdx) => (
+              <li key={lIdx}>
+                <div>{renderTextWithLinks(item.text)}</div>
+                {item.sublines.length > 0 && (
+                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
+                    {item.sublines.map((sub, sIdx) => (
+                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
           </ul>
         );
       }
@@ -352,13 +388,37 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       // Numbered Lists
       if (/^\d+\.\s/.test(trimmed)) {
         const lines = trimmed.split('\n');
+        const items = [];
+        lines.forEach((line) => {
+          const isListItem = /^\s*\d+\.\s/.test(line);
+          if (isListItem) {
+            const cleanText = line.replace(/^\s*\d+\.\s/, '').trim();
+            items.push({ text: cleanText, sublines: [] });
+          } else {
+            const cleanText = line.trim();
+            if (cleanText) {
+              if (items.length > 0) {
+                items[items.length - 1].sublines.push(cleanText);
+              } else {
+                items.push({ text: cleanText, sublines: [] });
+              }
+            }
+          }
+        });
         return (
           <ol key={idx}>
-            {lines.map((line, lIdx) => {
-              // Strip numbering e.g. "1. " or "10. "
-              const itemText = line.replace(/^\d+\.\s/, '').trim();
-              return <li key={lIdx}>{renderTextWithLinks(itemText)}</li>;
-            })}
+            {items.map((item, lIdx) => (
+              <li key={lIdx}>
+                <div>{renderTextWithLinks(item.text)}</div>
+                {item.sublines.length > 0 && (
+                  <div className="list-item-details" style={{ marginTop: '0.25rem', opacity: 0.9, fontSize: '0.95em', paddingLeft: '1rem', color: 'var(--text-muted)' }}>
+                    {item.sublines.map((sub, sIdx) => (
+                      <p key={sIdx} style={{ margin: '0.25rem 0 0 0' }}>{renderTextWithLinks(sub)}</p>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
           </ol>
         );
       }

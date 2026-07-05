@@ -123,7 +123,7 @@ export const NON_PRODUCT_ROUTES = new Set([
   'reseller-dashboard',
   'affiliate-program',
   'dropshipping',
-  'handloom-vs-semi-handloom-vs-powerloom-guide'
+  'handloom-vs-powerloom-guide'
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {
