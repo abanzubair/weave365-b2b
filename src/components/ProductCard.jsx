@@ -116,6 +116,10 @@ export const ProductCard = memo(function ProductCard({
     if (!showOptions || isMobile) return;
 
     const handleOutsideClick = (e) => {
+      // Ignore click if it's inside the walkthrough elements
+      if (e.target.closest('.walkthrough-card-container') || e.target.closest('.walkthrough-backdrop')) {
+        return;
+      }
       // If the click is outside the product card
       if (!e.target.closest('.product-card')) {
         handleClose();

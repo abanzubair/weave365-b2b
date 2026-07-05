@@ -93,7 +93,7 @@ export function Footer({ navigate, scrollToSection }) {
       <div>
         <h3>Social Links</h3>
         <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><LinkedInIcon size={16} /> LinkedIn</a>
-        <a href="https://www.instagram.com/weaves365.wholesale" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>
+        <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>
         <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer"><Facebook size={16} /> Facebook</a>
         <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer"><Youtube size={16} /> YouTube</a>
         <a href="https://in.pinterest.com/weaves365/" target="_blank" rel="noreferrer"><PinterestIcon size={16} /> Pinterest</a>

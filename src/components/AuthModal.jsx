@@ -460,6 +460,9 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         setLoading(false);
       } else {
         if (mode === 'register') {
+          if (profile.buyerType === 'reseller' || profile.buyerType === 'wholesale') {
+            localStorage.setItem('just_registered_b2b', 'true');
+          }
           // Enforce verification: check if session exists (if email confirmation is turned off in Supabase, session is returned immediately)
           if (!result.data.session) {
             // No session means they must confirm their email first!

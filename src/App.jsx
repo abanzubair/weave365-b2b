@@ -46,6 +46,7 @@ import { InternalLinkNetwork } from './components/InternalLinkNetwork.jsx';
 import { MobileMenu } from './components/MobileMenu.jsx';
 import { AppLink } from './components/AppLink.jsx';
 import { AuthModal } from './components/AuthModal.jsx';
+import { ResellerOnboardingWalkthrough } from './components/ResellerOnboardingWalkthrough.jsx';
 import { CartDrawer } from './components/CartDrawer.jsx';
 import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
@@ -1594,6 +1595,11 @@ export default function App({ initialData = {} }) {
         buyerProfile={buyerProfile}
         setBuyerProfile={setBuyerProfile}
         initialMode={authInitialMode}
+      />
+      <ResellerOnboardingWalkthrough
+        user={user}
+        buyerProfile={buyerProfile}
+        priceAccess={priceAccess}
       />
     </>
   );

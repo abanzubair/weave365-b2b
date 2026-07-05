@@ -1,0 +1,263 @@
+/* Walkthrough Overlay and Spotlight */
+.walkthrough-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: transparent;
+  z-index: 99998;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.walkthrough-spotlight {
+  position: fixed;
+  z-index: 99999;
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 15px var(--gold), 0 0 0 9999px rgba(15, 23, 42, 0.7);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: spotlight-pulse 2s infinite ease-in-out;
+}
+
+@keyframes spotlight-pulse {
+  0% {
+    border-color: var(--gold);
+    box-shadow: 0 0 15px var(--gold), 0 0 0 9999px rgba(15, 23, 42, 0.7);
+  }
+  50% {
+    border-color: var(--gold-light);
+    box-shadow: 0 0 25px var(--gold-light), 0 0 0 9999px rgba(15, 23, 42, 0.7);
+  }
+  100% {
+    border-color: var(--gold);
+    box-shadow: 0 0 15px var(--gold), 0 0 0 9999px rgba(15, 23, 42, 0.7);
+  }
+}
+
+/* Floating Card Container */
+.walkthrough-card-container {
+  position: fixed;
+  z-index: 100000;
+  width: 380px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(183, 134, 70, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.walkthrough-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.walkthrough-card-header h4 {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.walkthrough-card-header h4 span.sparkle {
+  color: var(--gold);
+  font-family: serif;
+}
+
+.walkthrough-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.walkthrough-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--ink);
+}
+
+/* Steps content */
+.walkthrough-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.walkthrough-illustration {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(183, 134, 70, 0.04);
+  border-radius: 12px;
+  border: 1px dashed rgba(183, 134, 70, 0.15);
+  margin-bottom: 6px;
+}
+
+.walkthrough-illustration svg {
+  height: 90px;
+  width: auto;
+}
+
+.walkthrough-step-desc {
+  font-family: var(--font-body);
+  font-size: 0.925rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Footer & Pagination */
+.walkthrough-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.walkthrough-skip-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.walkthrough-skip-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--ink);
+}
+
+.walkthrough-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.walkthrough-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(183, 134, 70, 0.25);
+  transition: all 0.3s ease;
+}
+
+.walkthrough-dot.active {
+  background: var(--gold);
+  transform: scale(1.2);
+}
+
+.walkthrough-next-btn {
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  color: var(--white, #ffffff);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.walkthrough-next-btn:hover {
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+}
+
+.walkthrough-next-btn:active {
+  transform: scale(0.97);
+}
+
+/* Animated graphic elements */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.illustration-spin {
+  animation: spin-slow 12s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.illustration-bounce {
+  animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.illustration-pulse {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .walkthrough-illustration {
+    display: none !important;
+  }
+
+  .walkthrough-card-container {
+    position: fixed !important;
+    top: 20px !important;
+    bottom: auto !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(183, 134, 70, 0.25) !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    animation: slide-down-banner 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+
+  @keyframes slide-down-banner {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+/* Disable product card hover shifts during active walkthrough to maintain spotlight alignment */
+body:has(.walkthrough-backdrop) .product-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}

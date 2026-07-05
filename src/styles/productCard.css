@@ -596,6 +596,7 @@
 .options-trigger-btn:hover {
   background: rgba(191, 146, 87, 0.12) !important;
   border-color: #bf9257 !important;
+  transform: none !important;
 }
 
 /* Exit Animations — UI/UX Pro Max */
