@@ -613,6 +613,47 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
                 rows="15"
                 className="admin-field-textarea-monospace"
               />
+              
+              {/* Markdown Formatting Cheat Sheet Reference */}
+              <div className="admin-markdown-cheatsheet" style={{
+                marginTop: '0.75rem',
+                padding: '1rem',
+                backgroundColor: 'rgba(235, 187, 86, 0.05)',
+                border: '1px solid rgba(235, 187, 86, 0.25)',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                lineHeight: '1.45'
+              }}>
+                <div style={{ fontWeight: 600, color: '#c49a3c', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>📝 Blog Markdown Reference Guide</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Headers & Divider</p>
+                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace' }}>
+                      ## Main Heading (H2)<br/>
+                      ### Sub Heading (H3)<br/>
+                      --- (Horizontal Divider)
+                    </code>
+                  </div>
+                  <div>
+                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Links & Bold Text</p>
+                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace' }}>
+                      [Link Text](https://example.com) (External)<br/>
+                      [Link Text](/wholesale-catalogue) (Internal)<br/>
+                      **Bold Text**
+                    </code>
+                  </div>
+                  <div>
+                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Lists with Details (Indented)</p>
+                    <code style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.03)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                      1. Step Title<br/>
+                      &nbsp;&nbsp;&nbsp;&nbsp;Step details line (indented)<br/>
+                      2. Step Title
+                    </code>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* FAQs */}
