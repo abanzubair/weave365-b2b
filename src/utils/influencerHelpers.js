@@ -183,12 +183,12 @@ export async function recordReferral({ orderId, inquiryId, buyerId, buyerName, i
 }
 
 /**
- * Sets the active referral code in localStorage with a 30-day expiration window.
+ * Sets the active referral code in localStorage with a 1-day expiration window.
  * @param {string} code 
  */
 export function setStoredReferralCode(code) {
   if (typeof window === 'undefined' || !code) return;
-  const expirationTime = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+  const expirationTime = Date.now() + 1 * 24 * 60 * 60 * 1000; // 1 day in ms
   const payload = {
     code: code.trim().toUpperCase(),
     expiresAt: expirationTime

@@ -1401,7 +1401,7 @@ export function ProductDetail({
                             setShowShareModal(true);
                           }}
                         >
-                          <Share2 size={18} /> Get White-Label Link
+                          <Layers size={18} /> Get White-Label Link
                         </button>
                       </div>
                     )}
