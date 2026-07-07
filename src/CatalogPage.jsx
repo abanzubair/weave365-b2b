@@ -213,7 +213,7 @@ export function Catalog({
     setPriceRange('All');
     if (setSearch) setSearch('');
     setVisibleCount(getPageSize());
-    navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', search: '' });
+    navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', price: 'All', search: '' });
   };
 
   const breadcrumbItems = useMemo(() => {
@@ -222,19 +222,19 @@ export function Catalog({
     ];
 
     if (title && title !== 'Catalogue') {
-      items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', search: '' } });
+      items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', price: 'All', search: '' } });
     } else {
-      items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } });
+      items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', price: 'All', search: '' } });
       if (category && category !== 'All') {
-        items.push({ name: category, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric: 'All', weave: 'All', search: '' } });
+        items.push({ name: category, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric: 'All', weave: 'All', price: 'All', search: '' } });
       }
     }
 
     if (fabric && fabric !== 'All') {
-      items.push({ name: fabric, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave: 'All', search: '' } });
+      items.push({ name: fabric, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave: 'All', price: 'All', search: '' } });
     }
     if (weave && weave !== 'All') {
-      items.push({ name: weave, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, search: '' } });
+      items.push({ name: weave, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, price: 'All', search: '' } });
     }
 
     return items;

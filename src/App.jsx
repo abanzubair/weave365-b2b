@@ -313,7 +313,6 @@ export default function App({ initialData = {} }) {
   const [products, setProducts] = useState(() => initialData.products || []);
   const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
   const [error, setError] = useState(() => initialData.error || '');
-  const [priceRange, setPriceRange] = useState('All');
 
   // Lifted dynamic global states using Zustand storefront store
   const {
@@ -363,13 +362,6 @@ export default function App({ initialData = {} }) {
     const access = getBuyerAccess(user, buyerProfile);
     return overrideDemoPriceAccess(user, buyerProfile, access);
   }, [buyerProfile, user, demoPriceGroup]);
-  const [prevCanViewPrices, setPrevCanViewPrices] = useState(priceAccess.canViewPrices);
-  if (priceAccess.canViewPrices !== prevCanViewPrices) {
-    setPrevCanViewPrices(priceAccess.canViewPrices);
-    if (!priceAccess.canViewPrices && priceRange !== 'All') {
-      setPriceRange('All');
-    }
-  }
   const pricedProducts = useMemo(
     () => (Array.isArray(products) ? products : []),
     [products],
@@ -718,6 +710,26 @@ export default function App({ initialData = {} }) {
   const setSearch = useCallback((val) => {
     setLocalSearch(val);
   }, []);
+
+  const priceRange = useMemo(() => {
+    if (route !== 'catalogue' && !isSeoCategoryRoute) return 'All';
+    const priceParam = searchParams?.get('price');
+    if (priceParam) {
+      const matched = priceRanges.find(r => r.toLowerCase() === priceParam.toLowerCase());
+      if (matched) return matched;
+    }
+    return 'All';
+  }, [route, isSeoCategoryRoute, searchParams, priceRanges]);
+
+  const setPriceRange = useCallback((val) => {
+    updateQueryParam('price', val, 'All');
+  }, [updateQueryParam]);
+
+  useEffect(() => {
+    if (!priceAccess.canViewPrices && priceRange !== 'All') {
+      setPriceRange('All');
+    }
+  }, [priceAccess.canViewPrices, priceRange, setPriceRange]);
 
   useLayoutEffect(() => {
     if (search && searchRef.current && route !== 'catalogue') {
@@ -1093,13 +1105,15 @@ export default function App({ initialData = {} }) {
       const currentCategory = navOptions.category !== undefined ? navOptions.category : category;
       const currentFabric = navOptions.fabric !== undefined ? navOptions.fabric : fabric;
       const currentWeave = navOptions.weave !== undefined ? navOptions.weave : weave;
+      const currentPrice = navOptions.price !== undefined ? navOptions.price : priceRange;
 
       // seoCategoryMap imported from config.js
 
       const isCleanCategory = currentCategory && currentCategory !== 'All' && 
                              (!currentSearch || currentSearch.trim() === '') && 
                              (!currentFabric || currentFabric === 'All') && 
-                             (!currentWeave || currentWeave === 'All');
+                             (!currentWeave || currentWeave === 'All') &&
+                             (!currentPrice || currentPrice === 'All');
 
       if (isCleanCategory && seoCategoryMap[currentCategory.toLowerCase()]) {
         href = `/${seoCategoryMap[currentCategory.toLowerCase()]}`;
@@ -1115,6 +1129,9 @@ export default function App({ initialData = {} }) {
         }
         if (currentWeave && currentWeave !== 'All') {
           params.set('weave', currentWeave.toLowerCase());
+        }
+        if (currentPrice && currentPrice !== 'All') {
+          params.set('price', currentPrice.toLowerCase());
         }
         const searchStr = params.toString();
         href = `/catalogue${searchStr ? '?' + searchStr : ''}`;
@@ -1147,7 +1164,7 @@ export default function App({ initialData = {} }) {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
-  }, [router, pathname, search, category, fabric, weave]);
+  }, [router, pathname, search, category, fabric, weave, priceRange]);
 
   const handleSignOut = useCallback(async () => {
     if (isSupabaseConfigured) {
