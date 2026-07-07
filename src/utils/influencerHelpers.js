@@ -188,13 +188,21 @@ export async function recordReferral({ orderId, inquiryId, buyerId, buyerName, i
  */
 export function setStoredReferralCode(code) {
   if (typeof window === 'undefined' || !code) return;
+  const cleanCode = code.trim().toUpperCase();
+
+  // If the same referral code is already active and valid, keep the original expiration
+  const existingCode = getStoredReferralCode();
+  if (existingCode === cleanCode) {
+    return;
+  }
+
   const expirationTime = Date.now() + 1 * 24 * 60 * 60 * 1000; // 1 day in ms
   const payload = {
-    code: code.trim().toUpperCase(),
+    code: cleanCode,
     expiresAt: expirationTime
   };
   localStorage.setItem('influencer_ref_data', JSON.stringify(payload));
-  localStorage.setItem('influencer_ref', code.trim().toUpperCase());
+  localStorage.setItem('influencer_ref', cleanCode);
 }
 
 /**
