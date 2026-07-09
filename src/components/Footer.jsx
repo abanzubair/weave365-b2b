@@ -91,7 +91,7 @@ export function Footer({ navigate, scrollToSection }) {
         <a href="/blog?category=Business Growth" onClick={(e) => handleLinkClick(e, 'blog', '?category=Business Growth')}>Business Growth</a>
       </div>
       <div>
-        <h3>Social Links</h3>
+        <h3>Social Profiles</h3>
         <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><LinkedInIcon size={16} /> LinkedIn</a>
         <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>
         <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer"><Facebook size={16} /> Facebook</a>
