@@ -193,6 +193,7 @@ export function Home({
   const dealRailRef = useRef(null);
   const [showNewHero, setShowNewHero] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [seoExpanded, setSeoExpanded] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -426,8 +427,8 @@ export function Home({
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
-  const resellerSectionImage = assetSrc(resellerImage);
-  const brandCollabSectionImage = assetSrc(brandCollabImage);
+  const resellerSectionImage = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
+  const brandCollabSectionImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
   const weaverSectionImage = assetSrc(weaverImage);
 
   const openHeroLink = (link, fallbackRoute) => {
@@ -553,7 +554,38 @@ export function Home({
           </section>
         </div>
 
+        {bannerSlides.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="hero-nav-arrow left-arrow"
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button
+              type="button"
+              className="hero-nav-arrow right-arrow"
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
+              aria-label="Next slide"
+            >
+              <ChevronRight size={24} />
+            </button>
 
+            <div className="hero-slide-indicators">
+              {bannerSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`hero-indicator-dot ${currentSlide === idx ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {dealProducts.length > 0 && (
@@ -865,11 +897,19 @@ export function Home({
       </section>
 
       <section className="seo-compact-section">
-        <div className="seo-compact-container">
+        <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>
           <div className="seo-compact-left">
-            <span className="seo-compact-kicker">WEAVER PARTNERSHIP</span>
             <h2>Trusted Banarasi Saree Supplier</h2>
             <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
+            <button
+              type="button"
+              className="seo-expand-trigger"
+              onClick={() => setSeoExpanded(!seoExpanded)}
+              aria-expanded={seoExpanded}
+            >
+              {seoExpanded ? 'Show Less' : 'Read Wholesale Sourcing Guide'}
+              <ArrowDown size={14} style={{ transform: seoExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
+            </button>
           </div>
 
           <div className="seo-compact-right">

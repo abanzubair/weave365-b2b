@@ -18,6 +18,7 @@
 .product-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(128, 93, 49, 0.14);
+  border-color: transparent;
 }
 
 .card-media {

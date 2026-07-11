@@ -73,27 +73,81 @@
 }
 
 .seo-compact-container {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 4rem;
-  align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
+.seo-compact-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.seo-compact-right {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2x2 grid on desktop */
+  gap: 2rem;
+  text-align: left;
+  opacity: 1;
+  max-height: 2000px;
+  margin-top: 3rem;
+  transform: translateY(0);
+  transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), 
+              transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), 
+              max-height 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              margin-top 0.5s ease;
+  overflow: hidden;
+}
+
+.seo-compact-container.collapsed .seo-compact-right {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  transform: translateY(15px);
+  pointer-events: none;
+}
 .seo-compact-left {
   position: static;
   top: 75px;
   margin-top: -2.5rem;
 }
 
-.seo-compact-kicker {
+.seo-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--gold, #b78646);
+  color: var(--gold-dark, #805d31);
+  padding: 10px 24px;
   font-family: var(--font-hero-body);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.seo-expand-trigger:hover {
+  background: rgba(183, 134, 70, 0.05);
   color: var(--primary-color, #c69e6a);
-  text-transform: uppercase;
+  border-color: var(--primary-color, #c69e6a);
+}
+
+.seo-compact-kicker {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--primary-color, #c69e6a);
   margin-bottom: 0.75rem;
   display: block;
+  text-transform: none;
 }
 
 .seo-compact-left h2 {
@@ -163,9 +217,8 @@
 }
 
 @media (max-width: 991px) {
-  .seo-compact-container {
-    grid-template-columns: 1fr;
-    gap: 3rem;
+  .seo-compact-section {
+    padding: 3rem 5%;
   }
   .seo-compact-left {
     position: static;
@@ -173,10 +226,10 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .seo-compact-right {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 }
 

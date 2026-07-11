@@ -30,7 +30,7 @@
 .review-strip > div {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
 }
 
 .review-strip .strip-icon-wrapper {

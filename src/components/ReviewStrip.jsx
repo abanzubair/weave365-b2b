@@ -19,7 +19,6 @@ export function ReviewStrip({ navigate }) {
           <MessageSquare className="strip-icon" />
         </span>
         <div className="review-strip-text">
-          <span className="review-strip-kicker">What People Say About Us</span>
           <h2 className="review-strip-title">Share Your Sourcing Experience</h2>
           <p className="review-strip-description">
             Help us support our weaver network by reviewing your wholesale sourcing, fabric quality, or shipping experience.
