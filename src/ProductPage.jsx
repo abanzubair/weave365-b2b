@@ -1391,7 +1391,7 @@ export function ProductDetail({
                             setWhatsappShareOpen(true);
                           }}
                         >
-                          <WhatsappIcon size={18} /> Share on Whatsapp
+                          <Share2 size={18} /> Share with Customer
                         </button>
                         <button
                           type="button"

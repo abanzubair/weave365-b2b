@@ -253,11 +253,11 @@ export function ResellerWhatsappShare({
 
         <div className="reseller-share-actions" style={{ display: 'flex', gap: '12px', marginTop: '1.5rem' }}>
           <button type="button" className="secondary-button" style={{ flex: 1 }} onClick={copyMessage}>
-            {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Message'}
+            {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Description'}
           </button>
           <button 
             type="button" 
-            className="primary-button share-btn" 
+            className="primary-button" 
             style={{ 
               flex: 1.5, 
               background: isPreparingImages ? '#6b7280' : 'var(--reseller-primary, #1C1917)',
@@ -270,7 +270,7 @@ export function ResellerWhatsappShare({
             {imageShareState === 'shared' ? 'Shared!' : 
              imageShareState === 'preparing' ? 'Sharing...' : 
              isPreparingImages ? `Preparing (${preparedFiles.length}/${shareImages.length})` :
-             'Share Image + Text'}
+             'Share Catalogue'}
           </button>
         </div>
         {isPreparingImages && (
