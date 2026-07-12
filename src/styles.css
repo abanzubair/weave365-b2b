@@ -246,3 +246,19 @@
   color: var(--primary-color, #c69e6a);
   text-decoration-color: var(--primary-color, #c69e6a);
 }
+
+/* Global Touch and Tap Highlight resets to prevent default browser blue tap/selection highlights */
+button,
+a,
+select,
+input,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button:focus,
+a:focus,
+button:active,
+a:active {
+  outline: none !important;
+}

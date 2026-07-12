@@ -60,12 +60,12 @@ button {
 @keyframes liquidGlassFade {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(0px) scale(0.95) translateZ(0);
+    transform: translateX(var(--translate-x, -50%)) translateY(0px) scale(0.95) translateZ(0);
   }
 
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(12px) scale(1) translateZ(0);
+    transform: translateX(var(--translate-x, -50%)) translateY(12px) scale(1) translateZ(0);
   }
 }
 

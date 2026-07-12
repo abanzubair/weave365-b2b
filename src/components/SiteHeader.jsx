@@ -169,7 +169,7 @@ export function SiteHeader({
           <Search size={18} strokeWidth={1.5} />
         </button>
         
-        <div className="nav-item-dropdown" ref={profileRef}>
+        <div className="nav-item-dropdown profile-dropdown-container" ref={profileRef}>
           <button 
             className={`premium-icon-btn profile-trigger ${dropdownOpen === 'profile' ? 'active' : ''}`}
             type="button" 
@@ -180,6 +180,9 @@ export function SiteHeader({
             aria-label="Profile"
           >
             <User size={18} strokeWidth={1.5} />
+            {cartProducts.length > 0 && (
+              <span className="premium-badge mobile-only-badge">{cartProducts.length}</span>
+            )}
           </button>
           <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'profile'}>
             {user ? (
@@ -235,6 +238,20 @@ export function SiteHeader({
                   Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
                 </button>
                 <button type="button"
+                  className="profile-dropdown-cart-btn"
+                  onClick={() => {
+                    setCartOpen(true);
+                    setDropdownOpen(null);
+                  }}
+                >
+                  <span>Order List</span>
+                  {cartProducts.length > 0 && (
+                    <span className="premium-badge" style={{ position: 'static', transform: 'none' }}>
+                      {cartProducts.length}
+                    </span>
+                  )}
+                </button>
+                <button type="button"
                   onClick={() => {
                     handleSignOut();
                     setDropdownOpen(null);
@@ -244,14 +261,16 @@ export function SiteHeader({
                 </button>
               </>
             ) : (
-              <button type="button"
-                onClick={() => {
-                  setAuthOpen(true);
-                  setDropdownOpen(null);
-                }}
-              >
-                Sign In / Register
-              </button>
+              <>
+                <button type="button"
+                  onClick={() => {
+                    setAuthOpen(true);
+                    setDropdownOpen(null);
+                  }}
+                >
+                  Sign In / Register
+                </button>
+              </>
             )}
           </DropdownPortal>
         </div>
@@ -278,7 +297,7 @@ export function SiteHeader({
           {cartProducts.length > 0 && <span className="premium-badge">{cartProducts.length}</span>}
         </button>
 
-        <div className="nav-item-dropdown" ref={currencyRef}>
+        <div className="nav-item-dropdown currency-dropdown-container" ref={currencyRef}>
           <button 
             className={`premium-icon-btn navbar-currency-trigger ${dropdownOpen === 'currency' ? 'active' : ''}`}
             type="button" 

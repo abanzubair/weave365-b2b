@@ -1,3 +1,12 @@
+/* Custom navigation adjustments */
+.mobile-only-badge {
+  display: none !important;
+}
+
+.profile-dropdown-cart-btn {
+  display: none !important;
+}
+
 /* Fix for 1920x1080 screens to show exactly 5 cards in rails */
 @media screen and (min-width: 1440px) {
   .scrollable-row>* {
@@ -101,7 +110,7 @@
   }
 
   .brand-divider {
-    height: 22px !important;
+    height: 14px !important;
     background: var(--line) !important;
     opacity: 0.25 !important;
     margin: 0 !important;
@@ -163,12 +172,31 @@
     display: none !important;
   }
 
-  .header-actions-premium .nav-item-dropdown,
+  .header-actions-premium .cart-btn {
+    display: none !important;
+  }
+
+  .header-actions-premium .currency-dropdown-container,
   .header-actions-premium .premium-auth-group,
   .header-actions-premium .premium-auth-link,
   .header-actions-premium .premium-auth-slash,
   .header-actions-premium .premium-divider {
     display: none !important;
+  }
+
+  .header-actions-premium .profile-dropdown-container {
+    display: flex !important;
+  }
+
+  .mobile-only-badge {
+    display: grid !important;
+  }
+
+  .profile-dropdown-cart-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
   }
 
   .hamburger-btn {
