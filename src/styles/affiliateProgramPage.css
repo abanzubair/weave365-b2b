@@ -6,79 +6,161 @@
 }
 
 /* Hero Section */
-.affiliate-hero-section {
-  padding: 100px 24px 60px;
-  background: linear-gradient(135deg, rgba(183, 134, 70, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--surface);
-  text-align: center;
+.affiliate-hero {
+  padding: 80px 24px;
+  background: radial-gradient(circle at 20% 50%, rgba(183, 134, 70, 0.04) 0%, rgba(255, 255, 255, 0) 70%), var(--surface);
   position: relative;
   border-bottom: 1px solid var(--line);
 }
 
-.affiliate-hero-content {
-  max-width: 900px;
+.affiliate-hero-inner {
+  max-width: 1200px;
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.affiliate-hero-content {
+  text-align: left;
 }
 
 .affiliate-hero-kicker {
   display: inline-block;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   color: var(--gold-dark);
   margin-bottom: 20px;
-  background: rgba(183, 134, 70, 0.08);
-  padding: 6px 16px;
-  border-radius: 50px;
+  background: rgba(183, 134, 70, 0.06);
+  padding: 5px 12px;
+  border-radius: 4px;
 }
 
 .affiliate-hero-title {
   font-family: var(--font-heading);
-  font-size: clamp(36px, 5.5vw, 56px);
-  line-height: 1.15;
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1.1;
   color: var(--ink);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-weight: 800;
+  text-wrap: balance;
 }
 
-.affiliate-hero-title span {
-  background: linear-gradient(90deg, var(--gold-dark) 0%, #d4af37 100%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
+.affiliate-hero-title em {
+  font-family: var(--font-serif-italic) || inherit;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold-dark);
+}
+
+.affiliate-hero-subtitle {
+  font-size: clamp(16px, 1.8vw, 20px);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--gold-dark);
+  margin-bottom: 24px;
+  text-wrap: balance;
 }
 
 .affiliate-hero-description {
-  font-size: clamp(16px, 2.5vw, 19px);
+  font-size: 16px;
   line-height: 1.6;
   color: var(--muted);
-  margin-bottom: 35px;
-  max-width: 750px;
-  margin-inline: auto;  
+  margin-bottom: 32px;
+  max-width: 580px;
 }
 
-.affiliate-hero-action {
+.affiliate-hero-actions {
+  margin-bottom: 36px;
+}
+
+.affiliate-hero-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   background: var(--ink);
-  color: var(--white);
+  color: var(--paper);
   padding: 15px 36px;
-  border-radius: 8px;
+  border: none;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid var(--ink);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.affiliate-hero-action:hover {
-  background: var(--gold);
-  border-color: var(--gold);
+.affiliate-hero-action-btn:hover {
+  background: var(--gold-dark);
+  color: var(--white);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.2);
+  box-shadow: 0 6px 15px rgba(183, 134, 70, 0.15);
+}
+
+.affiliate-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.affiliate-hero-stats .hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.affiliate-hero-stats .hero-stat-value {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.affiliate-hero-stats .hero-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.affiliate-hero-stats .hero-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--line);
+}
+
+.affiliate-hero-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.affiliate-hero-img-wrapper {
+  background: var(--surface-soft);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.affiliate-hero-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.affiliate-hero-img:hover {
+  transform: scale(1.02);
+}
+
+.affiliate-hero-visual .visual-caption {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
 }
 
 /* Steps Section */
@@ -328,14 +410,22 @@
 }
 
 @media (max-width: 1024px) {
+  .affiliate-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
   .affiliate-benefits-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .affiliate-hero-section {
+  .affiliate-hero {
     padding: 60px 20px 40px;
+  }
+  .affiliate-hero-stats {
+    flex-wrap: wrap;
+    gap: 16px 20px;
   }
   .affiliate-steps-section {
     padding: 50px 20px;

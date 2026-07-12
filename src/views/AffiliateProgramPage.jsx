@@ -108,30 +108,63 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
   return (
     <div className="affiliate-page-container">
       {/* 1. Hero Section */}
-      <section className="affiliate-hero-section">
-        <div className="affiliate-hero-content">
-          <span className="affiliate-hero-kicker">Weave 365 Affiliates Program</span>
-          <h1 className="affiliate-hero-title">
-            Turn Your Network into <br /> an Earning Channel
-            <span>Earn upto 15% Commission</span>
-          </h1>
-          <p className="affiliate-hero-description">
-            Promote authentic Banarasi sarees, suits, lhenga and more directly from Varanasi. Earn premium commission payouts on referred purchases with zero investment.
-          </p>
-          <button 
-            type="button" 
-            className="affiliate-hero-action" 
-            onClick={() => {
-              if (user) {
-                navigate('account?tab=influencer');
-              } else {
-                openAuth();
-              }
-            }}
-          >
-            <span>Register as Partner</span>
-            <ArrowRight size={18} />
-          </button>
+      <section className="affiliate-hero">
+        <div className="affiliate-hero-inner">
+          <div className="affiliate-hero-content">
+            <span className="affiliate-hero-kicker">Free to Join · Zero Investment</span>
+            <h1 className="affiliate-hero-title">
+              Turn Your Network <br />
+              into an <em>Earning Channel</em>
+            </h1>
+            <p className="affiliate-hero-subtitle">
+              Earn up to 15% commission on referred bulk handloom orders.
+            </p>
+            <p className="affiliate-hero-description">
+              Partner with Weave 365 to promote authentic Banarasi sarees, suits, and fabrics directly sourced from Varanasi. Share custom referral links and track premium payouts in real-time.
+            </p>
+            <div className="affiliate-hero-actions">
+              <button 
+                type="button" 
+                className="affiliate-hero-action-btn" 
+                onClick={() => {
+                  if (user) {
+                    navigate('account?tab=influencer');
+                  } else {
+                    openAuth();
+                  }
+                }}
+              >
+                <span>Register as Partner</span>
+                <ArrowRight size={18} />
+              </button>
+            </div>
+            <div className="affiliate-hero-stats">
+              <div className="hero-stat">
+                <span className="hero-stat-value">15%</span>
+                <span className="hero-stat-label">Commission</span>
+              </div>
+              <div className="hero-stat-divider"></div>
+              <div className="hero-stat">
+                <span className="hero-stat-value">30-Day</span>
+                <span className="hero-stat-label">Cookie Window</span>
+              </div>
+              <div className="hero-stat-divider"></div>
+              <div className="hero-stat">
+                <span className="hero-stat-value">₹0</span>
+                <span className="hero-stat-label">Setup Cost</span>
+              </div>
+            </div>
+          </div>
+          <div className="affiliate-hero-visual">
+            <div className="affiliate-hero-img-wrapper">
+              <img 
+                src="/affiliate-hero.png" 
+                alt="Luxury Banarasi fabrics and digital partner catalog display" 
+                className="affiliate-hero-img" 
+              />
+            </div>
+            <span className="visual-caption">Fig. 02 // Digital Partner Catalog, Varanasi</span>
+          </div>
         </div>
       </section>
 
