@@ -29,6 +29,7 @@ CLAUDE.md
 
 skills/*
 .agents/
+.zcode/
 
 # OpenNext & Wrangler
 .open-next/
