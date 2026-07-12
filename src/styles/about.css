@@ -6,6 +6,7 @@
   font-family: var(--font-body);
   width: 100%;
   overflow-x: hidden;
+  padding-top: 30px;
 }
 
 /* 1. EDITORIAL OVERHAULED HERO SECTION */
@@ -835,5 +836,19 @@
 
   .faq-answer-content-inner {
     padding: 0 16px 14px 16px;
+  }
+
+  .flow-tabs {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .flow-tab-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
   }
 }
