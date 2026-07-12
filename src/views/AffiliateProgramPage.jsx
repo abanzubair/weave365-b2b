@@ -158,7 +158,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
           <div className="affiliate-hero-visual">
             <div className="affiliate-hero-img-wrapper">
               <img 
-                src="/affiliate-hero.png" 
+                src="https://assets.weave365.com/assets/banner/affiliate-hero.jpg" 
                 alt="Luxury Banarasi fabrics and digital partner catalog display" 
                 className="affiliate-hero-img" 
               />
