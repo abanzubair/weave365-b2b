@@ -174,20 +174,27 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
           <p>Four simple steps to launch your passive earning channel</p>
         </div>
 
-        <div className="affiliate-steps-grid">
-          {steps.map((step) => {
-            const IconComponent = step.icon;
-            return (
-              <article className="affiliate-step-card" key={step.num}>
-                <span className="affiliate-step-num">{step.num}</span>
-                <div className="affiliate-step-icon">
-                  <IconComponent size={24} />
+        <div className="affiliate-steps-flow">
+          <div className="steps-flow-track" />
+          <div className="affiliate-steps-grid">
+            {steps.map((step) => {
+              const IconComponent = step.icon;
+              return (
+                <div className="affiliate-step-item" key={step.num}>
+                  <div className="affiliate-step-indicator-wrapper">
+                    <div className="affiliate-step-badge">
+                      <span>0{step.num}</span>
+                    </div>
+                  </div>
+                  <div className="affiliate-step-icon-badge">
+                    <IconComponent size={20} />
+                  </div>
+                  <h3 className="affiliate-step-title">{step.title}</h3>
+                  <p className="affiliate-step-desc">{step.desc}</p>
                 </div>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-              </article>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
