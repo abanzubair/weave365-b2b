@@ -30,6 +30,8 @@ CLAUDE.md
 skills/*
 .agents/
 .zcode/
+skills-lock.json
+AGENTS.md
 
 # OpenNext & Wrangler
 .open-next/

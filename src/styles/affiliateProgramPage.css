@@ -50,7 +50,7 @@
 }
 
 .affiliate-hero-title em {
-  font-family: var(--font-serif-italic) || inherit;
+  font-family: inherit;
   font-style: italic;
   font-weight: 400;
   color: var(--gold-dark);
