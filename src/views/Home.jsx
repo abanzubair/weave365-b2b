@@ -900,7 +900,7 @@ export function Home({
         <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>
           <div className="seo-compact-left">
             <h2>Trusted Banarasi Saree Supplier</h2>
-            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and reliable dropshipping support.</p>
+            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and <a href="/dropshipping" onClick={(e) => handleLinkClick(e, 'dropshipping')} className="seo-inline-link">reliable dropshipping support</a>.</p>
             <button
               type="button"
               className="seo-expand-trigger"
@@ -942,7 +942,7 @@ export function Home({
                 <Globe size={30} strokeWidth={1.5} className="seo-card-icon" />
                 <h2>Flexible MOQ for Wholesale, Export and Dropshipping</h2>
               </div>
-              <p>We understand that every business scales differently. That's why we offer flexible Minimum Order Quantities (MOQ), supporting small boutique dropshipping, large-scale domestic retail, and international export orders worldwide. Learn how to launch your business with our expert <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => handleLinkClick(e, 'blog', 'how-to-start-saree-reselling-business')} className="seo-inline-link">saree reselling business blueprint</a>.</p>
+              <p>We understand that every business scales differently. That's why we offer flexible Minimum Order Quantities (MOQ), supporting small boutique <a href="/dropshipping" onClick={(e) => handleLinkClick(e, 'dropshipping')} className="seo-inline-link">saree &amp; suit dropshipping</a>, large-scale domestic retail, and international export orders worldwide. Learn how to launch your business with our expert <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => handleLinkClick(e, 'blog', 'how-to-start-saree-reselling-business')} className="seo-inline-link">saree reselling business blueprint</a>.</p>
             </div>
           </div>
         </div>

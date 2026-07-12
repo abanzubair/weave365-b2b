@@ -172,6 +172,7 @@ export function MobileMenu({
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 {[
+                  { name: 'Dropshipping Program', slug: 'dropshipping' },
                   { name: 'Sourcing Partners', slug: 'sourcing-partners' },
                   { name: 'White Label Brands', slug: 'white-label' },
                   { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },

@@ -121,6 +121,7 @@ export function SiteHeader({
           </button>
           <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'}>
             {[
+              { name: 'Dropshipping Program', slug: 'dropshipping' },
               { name: 'White Label Brands', slug: 'white-label' },
               { name: 'Sourcing Partners', slug: 'sourcing-partners' },
               { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
