@@ -163,7 +163,6 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
                 className="affiliate-hero-img" 
               />
             </div>
-            <span className="visual-caption">Fig. 02 // Digital Partner Catalog, Varanasi</span>
           </div>
         </div>
       </section>
