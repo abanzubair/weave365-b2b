@@ -8,7 +8,7 @@
  * @module views/DropshippingPage
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { 
   ArrowRight, 
   Share2, 
@@ -17,32 +17,16 @@ import {
   Coins, 
   ShieldCheck, 
   CheckCircle, 
-  HelpCircle, 
   ChevronDown, 
   ShoppingBag,
-  Info,
   Truck,
   HeartHandshake
 } from 'lucide-react';
-import { assetSrc } from '../utils/assetSrc.js';
-import packagingImage from '../../assets/saree_luxury_packaging.webp';
 import '../styles/dropshipping.css';
 
 export function DropshippingPage({ navigate, openAuth }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
-  const isFirstRender = useRef(true);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    const activeTab = document.querySelector('.walkthrough-tab-btn.active');
-    if (activeTab) {
-      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-  }, [activeStep]);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
