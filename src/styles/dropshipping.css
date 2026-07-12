@@ -7,7 +7,7 @@
 
 /* Hero Section — split layout with product imagery */
 .dropshipping-hero {
-  padding: clamp(80px, 10vw, 130px) var(--site-padding) clamp(60px, 8vw, 100px);
+  padding: 80px var(--site-padding) clamp(60px, 8vw, 100px);
   background: var(--paper);
   position: relative;
   overflow: hidden;
@@ -30,14 +30,14 @@
 
 .dropshipping-kicker {
   display: inline-block;
-  font-family: var(--font-modern-heading);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   color: var(--gold-dark);
-  margin-bottom: 24px;
-  border: 1px solid rgba(183, 134, 70, 0.25);
-  padding: 7px 18px;
+  margin-bottom: 20px;
+  background: rgba(183, 134, 70, 0.06);
+  padding: 5px 12px;
   border-radius: 4px;
 }
 
@@ -1388,7 +1388,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .dropshipping-hero {
-    padding: 32px 16px 40px;
+    padding: 60px 16px 40px;
   }
   .dropshipping-hero-inner {
     grid-template-columns: 1fr;

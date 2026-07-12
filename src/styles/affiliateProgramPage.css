@@ -8,7 +8,7 @@
 /* Hero Section */
 .affiliate-hero {
   padding: 80px 24px;
-  background: radial-gradient(circle at 20% 50%, rgba(183, 134, 70, 0.04) 0%, rgba(255, 255, 255, 0) 70%), var(--surface);
+  background: var(--surface);
   position: relative;
   border-bottom: 1px solid var(--line);
 }
@@ -416,6 +416,7 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
+
   .affiliate-benefits-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -425,25 +426,32 @@
   .affiliate-hero {
     padding: 60px 20px 40px;
   }
+
   .affiliate-hero-stats {
     flex-wrap: wrap;
     gap: 16px 20px;
   }
+
   .affiliate-steps-section {
     padding: 50px 20px;
   }
+
   .affiliate-benefits-section {
     padding: 50px 20px;
   }
+
   .affiliate-benefits-grid {
     grid-template-columns: 1fr;
   }
+
   .affiliate-faq-section {
     padding: 50px 20px;
   }
+
   .affiliate-step-card {
     padding: 24px;
   }
+
   .affiliate-step-num {
     top: -15px;
     left: 20px;
