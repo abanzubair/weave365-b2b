@@ -52,7 +52,8 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: #fff;
-  background: rgba(183, 134, 70, 0.6); /* Fallback translucent theme gold background */
+  background: rgba(183, 134, 70, 0.6);
+  /* Fallback translucent theme gold background */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -62,7 +63,8 @@
 .status-badge[class*="tag-buy-"],
 .status-badge[class*="tag-combo-"],
 .status-badge[class*="tag-promo-"] {
-  background: #9e8cc4; /* Soft Purple/Lavender for promotions */
+  background: #9e8cc4;
+  /* Soft Purple/Lavender for promotions */
 }
 
 /* Updated Saturated Palette */
@@ -415,7 +417,8 @@
 .card-options-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.05); /* Very light dim */
+  background: rgba(0, 0, 0, 0.05);
+  /* Very light dim */
   z-index: 100;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
@@ -426,8 +429,13 @@
 }
 
 @keyframes optionsFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .card-options-sheet {
@@ -445,8 +453,13 @@
 }
 
 @keyframes optionsSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .sheet-header {
@@ -543,12 +556,35 @@
   flex-shrink: 0;
 }
 
-.item-icon.whatsapp { background: rgba(37, 211, 102, 0.08); color: #25D366; }
-.item-icon.zap { background: rgba(255, 170, 0, 0.08); color: #FFAA00; }
-.item-icon.bag { background: rgba(191, 146, 87, 0.08); color: #bf9257; }
-.item-icon.heart { background: rgba(255, 59, 48, 0.08); color: #FF3B30; }
-.item-icon.share { background: rgba(7, 94, 84, 0.08); color: #075E54; }
-.item-icon.link { background: rgba(10, 132, 255, 0.08); color: #0A84FF; }
+.item-icon.whatsapp {
+  background: rgba(37, 211, 102, 0.08);
+  color: #25D366;
+}
+
+.item-icon.zap {
+  background: rgba(255, 170, 0, 0.08);
+  color: #FFAA00;
+}
+
+.item-icon.bag {
+  background: rgba(191, 146, 87, 0.08);
+  color: #bf9257;
+}
+
+.item-icon.heart {
+  background: rgba(255, 59, 48, 0.08);
+  color: #FF3B30;
+}
+
+.item-icon.share {
+  background: rgba(7, 94, 84, 0.08);
+  color: #075E54;
+}
+
+.item-icon.link {
+  background: rgba(10, 132, 255, 0.08);
+  color: #0A84FF;
+}
 
 .item-copy {
   display: flex;
@@ -606,8 +642,13 @@
 }
 
 @keyframes optionsFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .card-options-sheet.closing {
@@ -615,8 +656,13 @@
 }
 
 @keyframes optionsSlideDown {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
 }
 
 .card-brand-vertical {
@@ -707,7 +753,8 @@
 @media screen and (max-width: 820px) {
   .card-options-overlay {
     position: fixed;
-    background: rgba(0, 0, 0, 0.45); /* Darker dim for better focus on mobile */
+    background: rgba(0, 0, 0, 0.45);
+    /* Darker dim for better focus on mobile */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     padding: 0;
@@ -1032,6 +1079,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

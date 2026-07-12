@@ -1,41 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   ArrowRight, 
   ChevronDown, 
   CheckCircle, 
-  Home as HomeIcon,
   Sparkles,
   ShieldCheck,
   Globe,
-  Award,
-  ChevronRight
+  Award
 } from 'lucide-react';
-import { assetSrc } from '../utils/assetSrc.js';
 import { ContactSection } from './ContactPage.jsx';
-
-import weaverImage from '../../assets/offerings_weaver.webp';
 
 import '../styles/ourOfferings.css';
 
 export function OurOfferings({ navigate, openAuth }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);
+  const contactRef = useRef(null);
 
   const faqs = [
     {
-      question: "How does the White Label program operate?",
-      answer: "Our White Label service allows you to launch your own boutique using your custom domain. We sync our Varanasi warehouse inventory directly to your store, letting you define your own retail margins. When a customer orders, we dispatch it in unbranded, high-end packaging directly to their door. Weave365 remains completely invisible."
+      question: "How do established brands sell on Weave365?",
+      answer: "Established brands and premium boutiques can apply to become verified seller partners. Once approved, you can list your exclusive handwoven collections directly on our platform. We coordinate cataloging, payment processing, and global logistics, while you focus on curation and manufacturing."
     },
     {
-      question: "What are the start-up costs for resellers?",
-      answer: "Joining the Weave365 network is completely free of charge. There are no upfront fees, registration costs, or minimum inventory purchases required to list and sell our collection."
+      question: "Will my boutique's brand name be visible to buyers?",
+      answer: "Absolutely. We believe in preserving brand identity. Every product you list on Weave365 will display your brand or boutique name prominently on the product details page, ensuring that buyers know exactly who crafted the design."
     },
     {
-      question: "How does direct weaver sourcing benefit local artisans?",
-      answer: "By removing middle-agents and brokers, we enable Varanasi's master weavers to set their own fair rates. Payments are settled in full directly into their accounts immediately upon quality check, providing stable incomes for over 200+ local handloom artisans."
+      question: "How does the dedicated boutique URL work?",
+      answer: "Each verified brand partner gets a dedicated storefront page on our website with a clean, direct URL (e.g., weave365.com/your-boutique-name). This showroom page filters the entire Weave365 catalog to show only your brand's premium products, making it easy to share with your customer base."
     },
     {
-      question: "Do you offer international shipping?",
-      answer: "Yes. We ship worldwide via DHL and FedEx Express. Resellers can serve customers across the US, UK, Canada, Europe, and the Middle East, and we handle all customs documentation and unbranded express delivery."
+      question: "Who handles the shipping and quality verification?",
+      answer: "Weave365 takes care of the heavy lifting. All partner products are routed through our Varanasi quality-check hub, where they undergo rigorous silk mark and handloom authentication. We then pack them in premium packaging and ship them via DHL/FedEx Express worldwide."
     }
   ];
 
@@ -45,14 +41,15 @@ export function OurOfferings({ navigate, openAuth }) {
 
   // SEO: Update Page Title & Description
   useEffect(() => {
-    document.title = "Our Offerings | Sourcing Features & White Label Storefront | Weave365";
+    document.title = "Brand Partnership & Dedicated Boutique Storefronts | Weave365";
     const metaDescription = document.querySelector('meta[name="description"]');
+    const seoContent = "Partner with Weave365 to showcase and sell your premium boutique collection on our global marketplace. Get your own dedicated storefront URL and brand visibility.";
     if (metaDescription) {
-      metaDescription.content = "Discover Weave365 offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
+      metaDescription.content = seoContent;
     } else {
       const newMeta = document.createElement('meta');
       newMeta.name = 'description';
-      newMeta.content = "Discover Weave365 offerings: authentic Varanasi handloom sourcing, unbranded global dropshipping, and custom white-label storefronts for premium boutiques.";
+      newMeta.content = seoContent;
       document.head.appendChild(newMeta);
     }
   }, []);
@@ -80,33 +77,26 @@ export function OurOfferings({ navigate, openAuth }) {
       <section className="offerings-hero-section">
 
         <div className="offerings-hero-content">
-          <div className="offerings-breadcrumb-bar">
-            <div className="breadcrumb-content">
-              <button type="button" onClick={() => navigate('home')} className="breadcrumb-link">
-                <HomeIcon size={13} /> HOME
-              </button>
-              <ChevronRight size={10} className="breadcrumb-separator" />
-              <span className="breadcrumb-current">OUR OFFERINGS</span>
-            </div>
-          </div>
-
           <div className="editorial-hero-text">
             <span className="hero-kicker-luxury">
-              <Sparkles size={12} /> The Weave365 Ecosystem
+              <Sparkles size={12} /> Sell on Weave365
             </span>
             <h1 className="hero-title-luxury">
-              A Refined Approach to <br />
-              <span className="gold-serif-text">Saree Wholesale</span>
+              Showcase Your Boutique to <br />
+              <span className="gold-serif-text">A Global Audience</span>
             </h1>
             <div className="hero-divider-luxury"></div>
             <p className="hero-desc-luxury">
-              Loom-direct authenticity. Worldwide unbranded dropshipping. Zero inventory risk. 
-              We provide the complete commerce infrastructure so you can focus entirely on scaling your luxury boutique.
+              Put your brand front and center. Established boutiques and premium ethnic wear brands can list their collections on Weave365, complete with dedicated brand pages, custom URLs, and co-branded listings.
             </p>
             
             <div className="hero-action-luxury">
-              <button type="button" className="minimal-ink-btn" onClick={openAuth}>
-                Join the Reseller Network <ArrowRight size={16} />
+              <button 
+                type="button" 
+                className="minimal-ink-btn" 
+                onClick={() => contactRef.current?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Apply for Brand Partnership <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -121,10 +111,9 @@ export function OurOfferings({ navigate, openAuth }) {
               <div className="pillar-icon-wrapper">
                 <Award size={22} strokeWidth={1.2} />
               </div>
-              <h3 className="pillar-title-luxury">Direct Loom Sourcing</h3>
+              <h3 className="pillar-title-luxury">Preserved Brand Identity</h3>
               <p className="pillar-desc-luxury">
-                Bypass traditional brokers and purchase directly from Varanasi's master weavers. 
-                Every saree is checked and carries absolute Silk Mark authenticity at true weaver-set pricing.
+                Every design you sell on Weave365 carries your boutique's name alongside the listing. Build direct brand trust and customer affinity with buyers across the globe.
               </p>
             </div>
 
@@ -132,10 +121,9 @@ export function OurOfferings({ navigate, openAuth }) {
               <div className="pillar-icon-wrapper">
                 <Globe size={22} strokeWidth={1.2} />
               </div>
-              <h3 className="pillar-title-luxury">Commerce Infrastructure</h3>
+              <h3 className="pillar-title-luxury">Dedicated Storefront URL</h3>
               <p className="pillar-desc-luxury">
-                Showcase thousands of high-resolution saree designs without stock-holding overhead. 
-                Our Varanasi hub manages logistics, packing, and express worldwide transport.
+                Get a personalized brand showroom with a direct URL path (e.g. weave365.com/your-boutique-name). A focused space showing exclusively your collection.
               </p>
             </div>
 
@@ -143,49 +131,46 @@ export function OurOfferings({ navigate, openAuth }) {
               <div className="pillar-icon-wrapper">
                 <ShieldCheck size={22} strokeWidth={1.2} />
               </div>
-              <h3 className="pillar-title-luxury">White-Label Program</h3>
+              <h3 className="pillar-title-luxury">End-to-End Fulfillment</h3>
               <p className="pillar-desc-luxury">
-                Deploy your own independent storefront under your custom domain. 
-                We sync our catalogs and ship in unbranded luxury boxes, keeping our platform completely anonymous.
+                Focus entirely on curation and designing. Our Varanasi logistics hub manages quality checks, premium packaging, and secure door-to-door express delivery.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. White-Label Showcase (Spacious 2-Column Editorial) */}
+      {/* 3. Brand Showcase (Spacious 2-Column Editorial) */}
       <section className="wl-showcase-section-luxury">
         <div className="offerings-container">
           <div className="wl-editorial-layout">
             <div className="wl-text-column">
-              <span className="section-kicker-luxury">Exclusive Service</span>
-              <h2 className="section-title-luxury">Your Independent Saree Brand</h2>
+              <h2 className="section-title-luxury">A Dedicated Space for Your Brand</h2>
               <div className="title-underline-luxury"></div>
               <p className="section-desc-luxury">
-                Build a bespoke digital storefront under your own domain name, completely free from Weave365 branding. 
-                We provide the backend supply chain while you command full authority over your collection and pricing.
+                Weave365 gives premium brands and established boutiques the tools to grow their wholesale channels. Reach verified retail buyers globally under your own designer label.
               </p>
               
               <ul className="wl-editorial-list">
                 <li>
                   <span className="list-number-luxury">01</span>
                   <div className="list-text-luxury">
-                    <h4>Automated Catalog Integration</h4>
-                    <p>Sync thousands of handwoven silk, organza, and katan saree designs directly to your store front in real time.</p>
+                    <h4>Direct URL Showrooms</h4>
+                    <p>Share a professional, dynamic page showing only your products (like <code>weave365.com/your-boutique-name</code>) with potential buyers and retailers.</p>
                   </div>
                 </li>
                 <li>
                   <span className="list-number-luxury">02</span>
                   <div className="list-text-luxury">
-                    <h4>Tailored Retail Margins</h4>
-                    <p>You have full autonomy over your price listings. Select markup percentages that match your boutique's market tier.</p>
+                    <h4>Co-Branded Product Listings</h4>
+                    <p>Your brand name is prominently displayed directly on the product card, certifying your boutique as the designer of the heritage weaves.</p>
                   </div>
                 </li>
                 <li>
                   <span className="list-number-luxury">03</span>
                   <div className="list-text-luxury">
-                    <h4>Bespoke Anonymous Delivery</h4>
-                    <p>Orders are dispatched directly from our looms to your clients. All packaging is completely unbranded to ensure customer loyalty stays with you.</p>
+                    <h4>Varanasi Logistics Infrastructure</h4>
+                    <p>Drop ship or bulk ship your products to our central warehouse. We verify, seal, and route orders to final clients in express courier boxes.</p>
                   </div>
                 </li>
               </ul>
@@ -194,14 +179,14 @@ export function OurOfferings({ navigate, openAuth }) {
             <div className="wl-visual-column">
               <div className="unbranded-packaging-card">
                 <div className="box-inner-border">
-                  <span className="box-brand-placeholder">AURA WEAVES</span>
+                  <span className="box-brand-placeholder">YOUR BOUTIQUE</span>
                   <div className="box-divider"></div>
-                  <span className="box-location-placeholder">VARANASI</span>
+                  <span className="box-location-placeholder">DESIGNER LABEL</span>
                   <div className="box-seal-luxury">
-                    <span className="seal-text-luxury">HANDLOOM SILK</span>
+                    <span className="seal-text-luxury">WEAVE365 PARTNER</span>
                   </div>
                 </div>
-                <div className="box-label-caption">Simulated Unbranded Luxury Box Delivery</div>
+                <div className="box-label-caption">Simulated Brand Storefront (weave365.com/your-boutique-name)</div>
               </div>
             </div>
           </div>
@@ -219,43 +204,33 @@ export function OurOfferings({ navigate, openAuth }) {
                 <div className="frame-corner bottom-left-g"></div>
                 <div className="frame-corner bottom-right-g"></div>
                 <img 
-                  src={assetSrc(weaverImage)} 
-                  alt="Varanasi Master Weaver working on traditional handloom" 
+                  src="https://assets.weave365.com/assets/banner/collab-brand-hero2.jpg" 
+                  alt="Premium brand designer showroom showcasing Banarasi sarees" 
                   className="artisan-image-luxury" 
                 />
               </div>
             </div>
 
             <div className="weaver-text-column">
-              <span className="section-kicker-luxury">Social Responsibility</span>
-              <h2 className="section-title-luxury text-dark">Empowering Varanasi's Artisans</h2>
+              <h2 className="section-title-luxury text-dark">Empowering Varanasi's Artisans & Brands</h2>
               <div className="title-underline-luxury"></div>
               <p className="section-desc-luxury">
-                We believe premium craft deserves fair compensation. By connecting local Varanasi weavers directly 
-                to retail owners across India and globally, we eliminate the exploitative tiers of middlemen.
+                We believe premium craft deserves fair compensation. By connecting boutique owners, designers, and local Varanasi weavers directly to global buyers, we eliminate layers of middlemen to support heritage weaving communities.
               </p>
 
-              <div className="weaver-stats-row">
+              <div className="weaver-stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                 <div className="weaver-stat-box">
-                  <span className="stat-value-luxury">200+</span>
-                  <span className="stat-label-luxury">Weavers Onboarded</span>
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>0</span>
+                  <span className="stat-label-luxury">Setup Fees</span>
                 </div>
                 <div className="weaver-stat-box">
-                  <span className="stat-value-luxury">100%</span>
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>3-5</span>
+                  <span className="stat-label-luxury">Days Dispatch</span>
+                </div>
+                <div className="weaver-stat-box">
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>100%</span>
                   <span className="stat-label-luxury">Direct Payouts</span>
                 </div>
-                <div className="weaver-stat-box">
-                  <span className="stat-value-luxury">0%</span>
-                  <span className="stat-label-luxury">Broker Dilution</span>
-                </div>
-              </div>
-
-              <div className="impact-quote-box">
-                <p>
-                  "Partnering with Weave365 ensures my family’s looms stay active throughout the year. 
-                  Direct payouts remove the stress of unpaid credits, allowing us to preserve our heritage."
-                </p>
-                <strong>— Master Weaver Santosh Kumar, Varanasi</strong>
               </div>
             </div>
           </div>
@@ -299,9 +274,10 @@ export function OurOfferings({ navigate, openAuth }) {
         </div>
       </section>
       {/* 6. Contact Us Section */}
-      <div className="offerings-contact-wrapper">
+      <div ref={contactRef} className="offerings-contact-wrapper">
         <ContactSection navigate={navigate} />
       </div>
     </div>
   );
 }
+

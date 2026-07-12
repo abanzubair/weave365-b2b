@@ -359,7 +359,7 @@
 
 .list-text-luxury p {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
   margin: 0;

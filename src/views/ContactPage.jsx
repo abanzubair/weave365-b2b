@@ -165,7 +165,7 @@ export function ContactSection({ navigate }) {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your sourcing needs, bulk inquiry, or feedback..."
+                placeholder="Tell us about your product sourcing needs, brand collaboration, bulk inquiry, or any other query..."
                 rows="4"
                 required
                 disabled={status === 'submitting'}
