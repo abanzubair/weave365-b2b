@@ -174,65 +174,56 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
           <p>Four simple steps to launch your passive earning channel</p>
         </div>
 
-        <div className="affiliate-steps-flow">
-          <div className="steps-flow-track" />
-          <div className="affiliate-steps-grid">
-            {steps.map((step) => {
-              const IconComponent = step.icon;
-              return (
-                <div className="affiliate-step-item" key={step.num}>
-                  <div className="affiliate-step-indicator-wrapper">
-                    <div className="affiliate-step-badge">
-                      <span>0{step.num}</span>
-                    </div>
-                  </div>
-                  <div className="affiliate-step-icon-badge">
-                    <IconComponent size={20} />
-                  </div>
-                  <h3 className="affiliate-step-title">{step.title}</h3>
-                  <p className="affiliate-step-desc">{step.desc}</p>
-                </div>
-              );
-            })}
-          </div>
+        <div className="affiliate-steps-grid">
+          {steps.map((step) => (
+            <div className="affiliate-step-item" key={step.num}>
+              <div className="affiliate-step-meta">
+                <span className="affiliate-step-num">0{step.num} —</span>
+              </div>
+              <h3 className="affiliate-step-title">{step.title}</h3>
+              <p className="affiliate-step-desc">{step.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* 3. Benefits Section */}
       <section className="affiliate-benefits-section">
         <div className="affiliate-benefits-container">
-          <div className="affiliate-section-header">
-            <h2>Why Partner With Us?</h2>
-            <p>High-demand ethnic catalog combined with direct factory-level support</p>
-          </div>
-
-          <div className="affiliate-benefits-grid">
-            {benefits.map((benefit, index) => {
-              const Icon = benefit.icon;
-              return (
-                <div className="affiliate-benefit-card" key={index}>
-                  <div className="affiliate-benefit-icon-box">
-                    <Icon size={22} />
-                  </div>
-                  <div className="affiliate-benefit-details">
-                    <h3>{benefit.title}</h3>
-                    <p>{benefit.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Terms Payout Notice Alert Box */}
-          <div className="affiliate-alert-wrapper">
-            <div className="affiliate-terms-alert">
-              <AlertTriangle className="affiliate-alert-icon" size={20} />
-              <div className="affiliate-alert-content">
-                <h4>Important Payout Clearance Terms</h4>
-                <p>
-                  Because we ship large wholesale bundles at near-manufacturing margins, all affiliate commission credits are finalized only when the customer payment is verified, the courier is safely delivered, and the client return eligibility window has fully passed.
-                </p>
+          <div className="affiliate-benefits-left">
+            <h2 className="benefits-title">Why Partner <br />With Us?</h2>
+            <p className="benefits-lead">
+              High-demand ethnic catalog combined with direct factory-level support. We handle the production, sorting, and logistics so you can focus entirely on sharing.
+            </p>
+            
+            {/* Redesigned Payout Notice as an elegant callout */}
+            <div className="affiliate-payout-callout">
+              <div className="callout-header">
+                <AlertTriangle size={16} className="callout-icon" />
+                <h4>Important Payout Terms</h4>
               </div>
+              <p>
+                Because we ship bulk bundles at narrow manufacturing margins, commission is finalized once the customer payment is verified, delivery completes, and the return window passes.
+              </p>
+            </div>
+          </div>
+
+          <div className="affiliate-benefits-right">
+            <div className="affiliate-benefits-list">
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon;
+                return (
+                  <div className="benefit-item" key={index}>
+                    <div className="benefit-icon-wrapper">
+                      <Icon size={20} />
+                    </div>
+                    <div className="benefit-details">
+                      <h3>{benefit.title}</h3>
+                      <p>{benefit.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

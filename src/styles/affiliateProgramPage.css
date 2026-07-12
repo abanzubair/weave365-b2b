@@ -188,93 +188,44 @@
   font-size: 16px;
 }
 
-.affiliate-steps-flow {
-  position: relative;
-  margin-top: 40px;
-}
-
-.steps-flow-track {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  height: 1px;
-  background: var(--line);
-  z-index: 1;
-}
-
 .affiliate-steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 40px;
-  position: relative;
-  z-index: 2;
+  margin-top: 40px;
 }
 
 .affiliate-step-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
 }
 
-.affiliate-step-indicator-wrapper {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 24px;
-  z-index: 2;
+.affiliate-step-meta {
+  margin-bottom: 16px;
 }
 
-.affiliate-step-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.affiliate-step-num {
   font-family: var(--font-heading);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 300;
   color: var(--gold-dark);
-  transition: all 0.3s ease;
-}
-
-.affiliate-step-item:hover .affiliate-step-badge {
-  border-color: var(--gold-dark);
-  background: rgba(183, 134, 70, 0.05);
-  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.1);
-}
-
-.affiliate-step-icon-badge {
-  width: 44px;
-  height: 44px;
-  background: rgba(183, 134, 70, 0.06);
-  color: var(--gold-dark);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  transition: transform 0.3s ease;
-}
-
-.affiliate-step-item:hover .affiliate-step-icon-badge {
-  transform: translateY(-2px);
+  line-height: 1;
 }
 
 .affiliate-step-title {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  line-height: 1.3;
 }
 
 .affiliate-step-desc {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
 }
@@ -290,85 +241,115 @@
 .affiliate-benefits-container {
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.affiliate-benefits-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 60px;
+  align-items: start;
 }
 
-.affiliate-benefit-card {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
+.affiliate-benefits-left {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border: 1px solid var(--line);
+  align-items: flex-start;
 }
 
+.benefits-title {
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  color: var(--ink);
+}
 
+.benefits-lead {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
 
-.affiliate-benefit-icon-box {
-  width: 48px;
-  height: 48px;
-  background: var(--surface-soft);
-  color: var(--gold-dark);
+.affiliate-payout-callout {
+  background: rgba(183, 134, 70, 0.03);
+  border: 1px solid rgba(183, 134, 70, 0.12);
   border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.affiliate-payout-callout .callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.affiliate-payout-callout .callout-icon {
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}
+
+.affiliate-payout-callout h4 {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.affiliate-payout-callout p {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+.affiliate-benefits-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.affiliate-benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.benefit-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--gold-dark);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.affiliate-benefit-details h3 {
-  font-size: 19px;
+.benefit-details h3 {
+  font-family: var(--font-heading);
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: var(--ink);
+  margin-bottom: 6px;
+  margin-top: 0;
 }
 
-.affiliate-benefit-details p {
+.benefit-details p {
   font-size: 14px;
+  line-height: 1.55;
   color: var(--muted);
-  line-height: 1.5;
-}
-
-/* Alert Section */
-.affiliate-alert-wrapper {
-  max-width: 800px;
-  margin: 40px auto 0;
-  padding: 0 24px;
-}
-
-.affiliate-terms-alert {
-  background: rgba(183, 134, 70, 0.05);
-  border: 1px solid rgba(183, 134, 70, 0.2);
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.affiliate-alert-icon {
-  color: var(--gold-dark);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.affiliate-alert-content h4 {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 4px;
-}
-
-.affiliate-alert-content p {
-  margin: 1px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--ink);
+  margin: 0;
 }
 
 /* FAQ Section */
@@ -448,15 +429,13 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  .steps-flow-track {
-    display: none;
-  }
   .affiliate-steps-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
   }
-  .affiliate-benefits-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .affiliate-benefits-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
   }
 }
 
@@ -475,14 +454,8 @@
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  .affiliate-step-indicator-wrapper {
-    margin-bottom: 16px;
-  }
   .affiliate-benefits-section {
     padding: 50px 20px;
-  }
-  .affiliate-benefits-grid {
-    grid-template-columns: 1fr;
   }
   .affiliate-faq-section {
     padding: 50px 20px;
