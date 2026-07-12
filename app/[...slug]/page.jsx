@@ -396,11 +396,11 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
-  if (route === 'partner-program') {
+  if (route === 'weaver-onboarding') {
     return buildMeta(
-      'Wholesale & Reseller Partner Program | Weave 365',
-      'Grow your textile business with Weave 365 reseller tools and white-label catalogues. Join our network of successful saree resellers.',
-      '/partner-program'
+      'Varanasi Silk Weaver Onboarding & Partnership | Weave 365',
+      'Are you a master weaver, manufacturer, or artisan in Varanasi? Onboard as a certified partner with Weave 365 to showcase your handlooms directly to global boutiques.',
+      '/weaver-onboarding'
     );
   }
 

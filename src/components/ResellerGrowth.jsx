@@ -11,35 +11,35 @@ export function ResellerGrowth({ imageUrl, navigate }) {
           <div className="content-wrapper">
             
             <h2 id="reseller-editorial-heading" className="brand-title">
-              Crafting <em>Success</em><br />
-              Beyond the <em>Weave</em>.
+              Crafting <em>Partnership</em><br />
+              Direct from the <em>Loom</em>.
             </h2>
             
             <p className="brand-lead">
-              A partnership built on heritage, quality, and mutual growth. We supply the finest authentic Varanasi handloom collections, and provide the infrastructure to deliver them to your market.
+              A partnership built on authentic heritage, quality, and mutual growth. Register as a certified weaver partner to showcase your collections directly to global boutique networks.
             </p>
 
             {/* 2-Column Detail Grid */}
             <div className="brand-detail-grid">
               <div className="detail-block">
-                <h3 className="detail-title">Curated Catalog</h3>
-                <p className="detail-text">Premium Banarasi collections that resonate with global bridal and festive trends.</p>
+                <h3 className="detail-title">Factory-Direct Rates</h3>
+                <p className="detail-text">Receive payouts based on your set factory rates. We manage storefront markups, catalog listings, and buyer logistics.</p>
               </div>
               <div className="detail-block">
-                <h3 className="detail-title">Growth Toolkit</h3>
-                <p className="detail-text">Dedicated white-label storefront tools and logistics support to scale your business.</p>
+                <h3 className="detail-title">Zero Listing Risk</h3>
+                <p className="detail-text">We catalog your premium collections at no cost using the product images you share with us.</p>
               </div>
             </div>
 
             {/* Minimalist Underline Text Link CTA */}
             <AppLink 
-              to="partner-program" 
+              to="weaver-onboarding" 
               className="brand-editorial-link" 
               navigate={navigate}
-              aria-label="Join partner program"
+              aria-label="Onboard as a weaver"
               style={{ textDecoration: 'none' }}
             >
-              <span className="link-label">Grow With Us</span>
+              <span className="link-label">Partner with Us</span>
               <ArrowRight size={16} className="link-arrow" />
             </AppLink>
 

@@ -42,3 +42,6 @@ scratch/
 
 # Supabase
 supabase/.temp/
+
+# Impeccable cache
+.impeccable/

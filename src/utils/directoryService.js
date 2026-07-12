@@ -56,7 +56,6 @@ export const DEFAULT_DIRECTORY_CONFIG = {
       title: 'Sourcing Hubs',
       icon: 'Briefcase',
       links: [
-        { label: 'Wholesale & Reseller Partner Program', type: 'route', target: 'partner-program', path: '/partner-program' },
         { label: 'Weaver Partnership Program', type: 'route', target: 'weaver-onboarding', path: '/weaver-onboarding' },
         { label: 'Bulk Sourcing & Custom Catalog', type: 'route', target: 'bulk-inquiry', path: '/bulk-inquiry' },
         { label: 'Varanasi Brand Story & Heritage', type: 'route', target: 'about', path: '/about' },

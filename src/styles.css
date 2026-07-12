@@ -4,16 +4,14 @@
 @import './styles/pages.css';
 @import './styles/responsive.css';
 @import './styles/onboardingWalkthrough.css';
-
 @import './styles/heroPremium.css';
 @import './styles/resellerGrowth.css';
 @import './styles/brandCollaboration.css';
-@import './styles/wholesalePartnerProgramPage.css';
+@import './styles/weaverOnboardingPage.css';
+@import './styles/weaverRegistrationPage.css';
 @import './styles/affiliateProgramPage.css';
 @import './styles/resellerTools.css';
 @import './styles/sharedCatalog.css';
-@import './styles/vendorPartnership.css';
-@import './styles/vendorPartnershipPage.css';
 @import './styles/variationQuantityDrawer.css';
 @import './styles/newArrivals.css';
 @import './styles/seoLandingPages.css';

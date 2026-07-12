@@ -111,7 +111,6 @@ export const NON_PRODUCT_ROUTES = new Set([
   'returns-cancellation',
   'privacy-security',
   'terms-conditions',
-  'partner-program',
   'bulk-inquiry',
   'new-arrivals',
   'sourcing-partners',

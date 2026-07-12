@@ -13,7 +13,7 @@ import {
 import { assetSrc } from '../utils/assetSrc.js';
 import { ContactSection } from './ContactPage.jsx';
 
-import weaverImage from '../../assets/offerings_weaver.png';
+import weaverImage from '../../assets/offerings_weaver.webp';
 
 import '../styles/ourOfferings.css';
 

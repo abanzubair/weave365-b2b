@@ -64,8 +64,7 @@ const BulkInquiry = lazy(() => import('./views/BulkInquiry.jsx').then(m => ({ de
 const OrderTracking = dynamic(() => import('./views/OrderTracking.jsx').then(m => ({ default: m.OrderTracking })), { ssr: false });
 const Admin = dynamic(() => import('./views/Admin.jsx').then(m => ({ default: m.Admin })), { ssr: false });
 const Account = dynamic(() => import('./views/Account.jsx').then(m => ({ default: m.Account })), { ssr: false });
-const WholesalePartnerProgramPage = lazy(() => import('./views/WholesalePartnerProgramPage.jsx').then(m => ({ default: m.WholesalePartnerProgramPage })));
-const VendorPartnershipPage = lazy(() => import('./views/VendorPartnershipPage.jsx').then(m => ({ default: m.VendorPartnershipPage })));
+const WeaverOnboardingPage = lazy(() => import('./views/WeaverOnboardingPage.jsx').then(m => ({ default: m.WeaverOnboardingPage })));
 const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => ({ default: m.TrustedPartnerRegistrationPage })), { ssr: false });
 const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })), { ssr: false });
 const NewArrivalsPage = lazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
@@ -1384,10 +1383,7 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'partner-program') {
 
-      return <WholesalePartnerProgramPage openAuth={() => setAuthOpen(true)} />;
-    }
 
     if (route === 'affiliate-program') {
       return <AffiliateProgramPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />;
@@ -1488,7 +1484,7 @@ export default function App({ initialData = {} }) {
 
     if (route === 'terms-conditions') return <TermsConditionsPage navigate={navigate} />;
 
-    if (route === 'weaver-onboarding') return <VendorPartnershipPage />;
+    if (route === 'weaver-onboarding') return <WeaverOnboardingPage openAuth={() => navigate('weaver-registration')} />;
 
     if (route === 'weaver-registration') return <TrustedPartnerRegistrationPage />;
 
