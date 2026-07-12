@@ -574,7 +574,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 88px 16px 56px;
+    padding: 30px 16px 56px;
     border-bottom: none;
     box-sizing: border-box;
   }
@@ -885,7 +885,7 @@
   }
 
   .weaver-final-cta {
-    padding: 60px 24px 64px;
+    padding: 30px 24px 64px;
   }
 
   .weaver-final-cta h2 {

@@ -8,7 +8,7 @@
  * @module views/DropshippingPage
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   ArrowRight, 
   Share2, 
@@ -27,6 +27,20 @@ import '../styles/dropshipping.css';
 export function DropshippingPage({ navigate, openAuth }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
+  const tabsRef = useRef(null);
+
+  useEffect(() => {
+    if (tabsRef.current) {
+      const activeTab = tabsRef.current.querySelector('.walkthrough-tab-btn.active');
+      if (activeTab) {
+        activeTab.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, [activeStep]);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -319,7 +333,7 @@ export function DropshippingPage({ navigate, openAuth }) {
 
         <div className="walkthrough-panel">
           {/* Navigation Tabs */}
-          <div className="walkthrough-tabs">
+          <div className="walkthrough-tabs" ref={tabsRef}>
             {steps.map((step, idx) => (
               <button
                 key={step.num}

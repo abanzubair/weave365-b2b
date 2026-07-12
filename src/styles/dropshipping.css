@@ -626,7 +626,7 @@
 }
 
 .secondary-tool-card p {
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
   margin: 0;
@@ -1478,7 +1478,7 @@
     margin-bottom: 6px;
   }
   .benefit-text p {
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1.55;
   }
 
@@ -1579,11 +1579,11 @@
     margin-bottom: 16px;
   }
   .seo-editorial-quote {
-    font-size: 16px;
+    font-size: 22px;
     padding-left: 16px;
   }
   .seo-copy-text p {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.6;
   }
 
