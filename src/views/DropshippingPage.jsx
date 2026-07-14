@@ -28,18 +28,23 @@ export function DropshippingPage({ navigate, openAuth }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
   const tabsRef = useRef(null);
+  const prevActiveStepRef = useRef(undefined);
 
   useEffect(() => {
-    if (tabsRef.current) {
-      const activeTab = tabsRef.current.querySelector('.walkthrough-tab-btn.active');
-      if (activeTab) {
-        activeTab.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
+    // Only scroll if activeStep has actually changed from a previous step index
+    if (prevActiveStepRef.current !== undefined && prevActiveStepRef.current !== activeStep) {
+      if (tabsRef.current) {
+        const activeTab = tabsRef.current.querySelector('.walkthrough-tab-btn.active');
+        if (activeTab) {
+          activeTab.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
       }
     }
+    prevActiveStepRef.current = activeStep;
   }, [activeStep]);
 
   const toggleFaq = (index) => {
@@ -218,28 +223,28 @@ export function DropshippingPage({ navigate, openAuth }) {
         </div>
         <div className="benefits-grid">
           <div className="benefit-item">
-            <div className="benefit-icon-box"><Coins size={20} /></div>
+            <div className="benefit-icon-box"><Coins size={22} /></div>
             <div className="benefit-text">
               <h3>Completely Free Setup</h3>
               <p>Start your fashion dropshipping store with zero investment. No monthly fees, sign-up deposits, or bulk warehousing risks.</p>
             </div>
           </div>
           <div className="benefit-item">
-            <div className="benefit-icon-box"><Truck size={20} /></div>
+            <div className="benefit-icon-box"><Truck size={22} /></div>
             <div className="benefit-text">
               <h3>Blind White-Label Delivery</h3>
               <p>We pack and ship the products directly to your customer. Your business name is printed as the sender. No invoices or Weave 365 brand names are visible.</p>
             </div>
           </div>
           <div className="benefit-item">
-            <div className="benefit-icon-box"><HeartHandshake size={20} /></div>
+            <div className="benefit-icon-box"><HeartHandshake size={22} /></div>
             <div className="benefit-text">
               <h3>Direct Varanasi Factory Pricing</h3>
               <p>Get authentic pure silk Banarasi sarees, organza handlooms, Georgette fabrics, and designer suits direct from the loom, bypassing all middlemen.</p>
             </div>
           </div>
           <div className="benefit-item">
-            <div className="benefit-icon-box"><ShieldCheck size={20} /></div>
+            <div className="benefit-icon-box"><ShieldCheck size={22} /></div>
             <div className="benefit-text">
               <h3>Strict Quality Control</h3>
               <p>Every single product undergoes physical inspection by our experts in Varanasi before packaging, eliminating returns and complaints.</p>
@@ -254,14 +259,14 @@ export function DropshippingPage({ navigate, openAuth }) {
           <h2>Premium Dropshipping Tools</h2>
           <p>We provide state-of-the-art catalog distribution and storefront tools to help you scale.</p>
         </div>
-        <div className="features-container">
-          {/* Main Showcase Feature: White Label Tool */}
-          <div className="showcase-tool-card">
+        <div className="features-showcase-grid">
+          {/* Left Column: White Label Tool (Main Showcase Card) */}
+          <div className="showcase-main-column">
             <div className="showcase-tool-info">
-              <div className="showcase-icon-wrapper">
+              <div className="showcase-tool-header">
                 <Globe size={24} />
+                <h3>White Label Website Tool</h3>
               </div>
-              <h3>White Label Website Tool</h3>
               <p>
                 Create your own branded storefront loaded with Weave 365 products. Customize your logo, color palette, link your custom domain, and configure profit markup rules in real-time.
               </p>
@@ -300,22 +305,25 @@ export function DropshippingPage({ navigate, openAuth }) {
             </div>
           </div>
 
-          {/* Secondary Tools Grid */}
-          <div className="secondary-tools-grid">
-            <div className="secondary-tool-card">
-              <div className="secondary-icon-wrapper">
+          {/* Right Column: Other Premium Tools (Asymmetric Stack) */}
+          <div className="showcase-side-column">
+            <div className="side-tool-item">
+              <div className="side-tool-header">
                 <Share2 size={22} />
+                <h3>WhatsApp Catalogue Sharing</h3>
               </div>
-              <h3>WhatsApp Catalogue Sharing</h3>
               <p>
                 Share live, updated saree and suit catalogs with your WhatsApp contacts, status updates, or broadcasts. Instantly build customer interest with curated designer cards.
               </p>
             </div>
-            <div className="secondary-tool-card">
-              <div className="secondary-icon-wrapper">
+            
+            <div className="side-tool-divider" />
+            
+            <div className="side-tool-item">
+              <div className="side-tool-header">
                 <Download size={22} />
+                <h3>Catalogue Download Feature</h3>
               </div>
-              <h3>Catalogue Download Feature</h3>
               <p>
                 Download high-quality professional imagery, styling videos, and specifications for all Banarasi designs. Export them in bulk format to easily feed your Shopify store or Instagram page.
               </p>

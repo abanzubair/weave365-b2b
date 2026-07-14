@@ -88,7 +88,7 @@
 }
 
 .hero-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.02em;
 }
@@ -314,15 +314,11 @@
 
 .benefit-icon-box {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: var(--cream);
-  border: 1px solid var(--line);
   color: var(--gold-dark);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top: 4px;
 }
 
 .benefit-text {
@@ -330,15 +326,15 @@
 }
 
 .benefit-text h3 {
-  font-family: var(--font-modern-heading);
-  font-size: 17px;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
   color: var(--heading);
   margin-bottom: 8px;
 }
 
 .benefit-text p {
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.65;
   color: var(--muted);
   margin: 0;
@@ -352,24 +348,24 @@
   border-bottom: 1px solid var(--line);
 }
 
-.features-container {
+.features-showcase-grid {
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: start;
 }
 
-.showcase-tool-card {
+.showcase-main-column {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
+  gap: 40px;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 48px;
+  border-radius: 12px;
+  padding: 40px;
   align-items: center;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.015);
 }
 
 .showcase-tool-info {
@@ -378,16 +374,16 @@
   align-items: flex-start;
 }
 
-.showcase-icon-wrapper {
-  color: var(--gold-dark);
-  background: rgba(183, 134, 70, 0.08);
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+.showcase-tool-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.showcase-tool-header svg {
+  color: var(--gold-dark);
+  flex-shrink: 0;
 }
 
 .showcase-tag {
@@ -401,11 +397,12 @@
 }
 
 .showcase-tool-info h3 {
-  font-family: var(--font-modern-heading);
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 600;
   color: var(--heading);
-  margin-bottom: 16px;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .showcase-tool-info p {
@@ -588,48 +585,54 @@
   color: var(--gold-dark);
 }
 
-/* Secondary Tools Grid */
-.secondary-tools-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Asymmetric Side column (Right side list) */
+.showcase-side-column {
+  display: flex;
+  flex-direction: column;
   gap: 32px;
+  padding: 16px 0;
+  height: 100%;
+  justify-content: center;
 }
 
-.secondary-tool-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 35px;
+.side-tool-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.secondary-icon-wrapper {
-  color: var(--gold-dark);
-  background: rgba(183, 134, 70, 0.08);
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
+.side-tool-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.secondary-tool-card h3 {
-  font-family: var(--font-modern-heading);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--heading);
+  gap: 14px;
   margin-bottom: 12px;
 }
 
-.secondary-tool-card p {
+.side-tool-header svg {
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}
+
+.side-tool-item h3 {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--heading);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.side-tool-item p {
   font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
   margin: 0;
+}
+
+.side-tool-divider {
+  height: 1px;
+  background: var(--line);
+  width: 100%;
 }
 
 /* Steps Section — Interactive Walkthrough */
@@ -1465,16 +1468,10 @@
     gap: 16px;
   }
   .benefit-icon-box {
-    width: 38px;
-    height: 38px;
-    border-radius: 6px;
-  }
-  .benefit-icon-box svg {
-    width: 16px;
-    height: 16px;
+    padding-top: 3px;
   }
   .benefit-text h3 {
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 6px;
   }
   .benefit-text p {
@@ -1486,10 +1483,11 @@
   .dropshipping-features-section {
     padding: 50px 16px;
   }
-  .features-container {
-    gap: 24px;
+  .features-showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
-  .showcase-tool-card {
+  .showcase-main-column {
     grid-template-columns: 1fr;
     gap: 32px;
     padding: 24px 20px;
@@ -1506,12 +1504,9 @@
   .preview-window {
     max-width: 100%;
   }
-  .secondary-tools-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .secondary-tool-card {
-    padding: 24px 20px;
+  .showcase-side-column {
+    padding: 16px 8px;
+    gap: 24px;
   }
 
   .dropshipping-steps {
