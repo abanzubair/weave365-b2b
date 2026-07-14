@@ -392,7 +392,8 @@
 }
 
 .affiliate-faq-trigger h3 {
-  font-size: 19px;
+  font-family: var(--font-modern-heading);
+  font-size: 18px;
   font-weight: 600;
   color: var(--ink);
   margin: 0;
@@ -421,7 +422,7 @@
 
 .affiliate-faq-answer {
   padding: 0 24px 20px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
 }
