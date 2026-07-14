@@ -160,7 +160,6 @@
 .gold-serif-text {
   font-family: var(--font-heading, 'Cormorant Garamond', serif);
   color: var(--gold-dark, #805d31); /* Lighter golden accent */
-  font-style: italic;
 }
 
 .hero-divider-luxury {
@@ -260,7 +259,7 @@
 
 .pillar-desc-luxury {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 14.5px;
+  font-size: 16px;
   line-height: 1.65;
   color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
   margin: 0;
@@ -312,7 +311,7 @@
 
 .section-desc-luxury {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 15.5px;
+  font-size: 16px;
   line-height: 1.7;
   color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
   margin: 0 0 32px 0;
@@ -359,7 +358,7 @@
 
 .list-text-luxury p {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
   margin: 0;
@@ -627,8 +626,8 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  font-family: var(--font-heading, 'Cormorant Garamond', serif);
-  font-size: clamp(18px, 1.8vw, 22px); /* Increased size for superior readability of Cormorant serif strokes */
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(15px, 1.8vw, 18px); /* Increased size for superior readability of Cormorant serif strokes */
   font-weight: 500;
   color: var(--ink, #241912);
   transition: all 0.3s ease;
