@@ -156,11 +156,11 @@
   border-color: var(--gold-soft);
 }
 
-/* Notice Section */
+/* Notice Section - Redesigned as a Framed Editorial Strip */
 .weaver-notice-section {
   padding: 0 20px;
   max-width: 1200px;
-  margin: 40px auto 60px;
+  margin: 60px auto 80px;
   position: relative;
   z-index: 10;
 }
@@ -168,24 +168,25 @@
 .weaver-page-container .notice-card {
   display: flex;
   align-items: center;
-  gap: 32px;
-  background: #faf8f4;
-  padding: 32px 40px;
-  border-radius: 8px;
-  border: 1px solid var(--gold-soft);
-  box-shadow: none;
+  gap: 40px;
+  background: transparent;
+  padding: 40px 0;
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .weaver-page-container .notice-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold);
+  color: var(--gold-dark);
   flex-shrink: 0;
 }
 
 .weaver-page-container .notice-icon {
-  color: var(--gold);
+  color: var(--gold-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,8 +201,8 @@
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--ink);
+  margin-bottom: 8px;
+  color: var(--heading);
 }
 
 .weaver-page-container .notice-text p {
@@ -212,16 +213,16 @@
 }
 
 .weaver-page-container .notice-cta-button {
-  background: var(--gold);
-  color: var(--white);
+  background: var(--ink);
+  color: var(--paper);
   border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
-  font-family: var(--font-body);
-  font-size: 14px;
+  padding: 12px 28px;
+  border-radius: 4px;
+  font-family: var(--font-modern-heading);
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease-out, transform 0.2s ease-out;
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -229,7 +230,7 @@
 .weaver-page-container .notice-cta-button:hover {
   background: var(--gold-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(183, 134, 70, 0.15);
+  box-shadow: none;
 }
 
 /* Steps Section Redesign (Clean Typographic Grid) */
@@ -655,18 +656,21 @@
 
   .weaver-notice-section {
     padding: 0 16px;
-    margin: 32px auto 44px;
+    margin: 40px auto 60px;
   }
 
   .weaver-page-container .notice-card {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 24px;
-    border-radius: 8px;
-    border: 1px solid var(--gold-soft);
-    background: #faf8f4;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 32px 0;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: transparent;
     box-shadow: none;
   }
 
@@ -687,19 +691,19 @@
   }
 
   .weaver-page-container .notice-text strong {
-    font-size: 21px;
-    margin-bottom: 6px;
+    font-size: 20px;
+    margin-bottom: 8px;
   }
 
   .weaver-page-container .notice-text p {
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 14.5px;
+    line-height: 1.55;
   }
 
   .weaver-page-container .notice-cta-button {
-    width: 100%;
-    margin-top: 12px;
-    padding: 12px 20px;
+    width: auto;
+    margin-top: 8px;
+    padding: 12px 32px;
     font-size: 14px;
     text-align: center;
   }
