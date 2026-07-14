@@ -171,7 +171,7 @@
 
 .affiliate-section-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .affiliate-section-header h2 {
@@ -207,7 +207,7 @@
 
 .affiliate-step-num {
   font-family: var(--font-heading);
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 300;
   color: var(--gold-dark);
   line-height: 1;
@@ -215,7 +215,7 @@
 
 .affiliate-step-title {
   font-family: var(--font-heading);
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 8px;
@@ -269,39 +269,46 @@
 }
 
 .affiliate-payout-callout {
-  background: rgba(183, 134, 70, 0.03);
-  border: 1px solid rgba(183, 134, 70, 0.12);
-  border-radius: 8px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+  align-items: flex-start;
+  gap: 16px;
+  background: #ffffff;
+  padding: 28px 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+  margin-top: 24px;
+  box-sizing: border-box;
 }
 
 .affiliate-payout-callout .callout-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
 }
 
 .affiliate-payout-callout .callout-icon {
-  color: var(--gold-dark);
+  color: #d97706; /* Warning amber color */
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .affiliate-payout-callout h4 {
-  font-family: var(--font-heading);
-  font-size: 17px;
+  font-family: var(--font-modern-heading);
+  font-size: 18px;
   font-weight: 700;
-  color: var(--ink);
+  color: #0f172a; /* Slate 900 */
   margin: 0;
 }
 
 .affiliate-payout-callout p {
+  color: #475569; /* Slate 600 - soft grey */
   font-size: 15px;
-  line-height: 1.5;
-  color: var(--muted);
+  line-height: 1.6;
   margin: 0;
 }
 

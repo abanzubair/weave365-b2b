@@ -199,7 +199,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
             {/* Redesigned Payout Notice as an elegant callout */}
             <div className="affiliate-payout-callout">
               <div className="callout-header">
-                <AlertTriangle size={16} className="callout-icon" />
+                <AlertTriangle size={20} className="callout-icon" />
                 <h4>Important Payout Terms</h4>
               </div>
               <p>
