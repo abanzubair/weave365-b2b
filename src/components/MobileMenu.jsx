@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   ChevronDown,
   LogOut,
+  Briefcase,
   Globe,
   Info,
   Star,
@@ -164,7 +165,7 @@ export function MobileMenu({
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => setPartnerOpen(!partnerOpen)}
             >
-              <span className="mobile-menu-icon"><Globe size={20} /></span>
+              <span className="mobile-menu-icon"><Briefcase size={20} /></span>
               <span className="mobile-menu-label">BUSINESS</span>
               <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
             </button>
