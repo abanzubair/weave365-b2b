@@ -126,6 +126,8 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Buy</span>
                   <button type="button" onClick={() => { navigate('bulk-inquiry'); setDropdownOpen(null); }}>Bulk Enquiry</button>
                 </div>
+              </div>
+              <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Partner</span>
                   <button type="button" onClick={() => { navigate('collaboration'); setDropdownOpen(null); }}>Collaboration</button>
@@ -138,6 +140,8 @@ export function SiteHeader({
                   <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Program</button>
                   <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
                 </div>
+              </div>
+              <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Supply</span>
                   <button type="button" onClick={() => { navigate('weaver-onboarding'); setDropdownOpen(null); }}>Vendor Onboarding</button>

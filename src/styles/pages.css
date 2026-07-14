@@ -105,13 +105,13 @@ button {
 
 /* ── Business Mega Menu (desktop) ── */
 .business-mega-menu {
-  min-width: 415px !important;
+  min-width: 680px !important;
   padding: 16px !important;
 }
 
 .mega-menu-grid {
   display: flex;
-  gap: 24px;
+  gap: 5px;
 }
 
 .mega-menu-col {
@@ -135,14 +135,15 @@ button {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--gold-dark, #8b6914);
-  padding: 8px 18px 4px;
+  padding: 8px 12px 4px;
   opacity: 0.75;
   pointer-events: none;
 }
 
 .mega-menu-section button {
   font-size: 13px !important;
-  padding: 9px 18px !important;
+  padding: 9px 12px !important;
+  white-space: nowrap;
 }
 
 /* ── Mobile mega-menu headings ── */
