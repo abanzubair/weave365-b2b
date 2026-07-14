@@ -20,7 +20,8 @@ import {
   ChevronDown, 
   ShoppingBag,
   Truck,
-  HeartHandshake
+  HeartHandshake,
+  Sparkles
 } from 'lucide-react';
 import '../styles/dropshipping.css';
 
@@ -552,6 +553,7 @@ export function DropshippingPage({ navigate, openAuth }) {
       {/* Bottom CTA */}
       <section className="dropshipping-cta">
         <div className="cta-inner">
+          <Sparkles className="cta-icon" size={28} />
           <h2>Ready to Launch Your Saree Dropshipping Brand?</h2>
           <p>Register today, access our live catalog, set your profit margins, and start selling globally with Varanasi's premium manufacturer.</p>
           <button 
