@@ -117,7 +117,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
               into an <em>Earning Channel</em>
             </h1>
             <p className="affiliate-hero-subtitle">
-              Earn up to 15% commission on referred bulk handloom orders.
+              Earn up to 15% commission on every single referred order.
             </p>
             <p className="affiliate-hero-description">
               Partner with Weave 365 to promote authentic Banarasi sarees, suits, and fabrics directly sourced from Varanasi. Share custom referral links and track premium payouts in real-time.
