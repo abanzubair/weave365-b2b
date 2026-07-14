@@ -160,7 +160,7 @@
 .weaver-notice-section {
   padding: 0 20px;
   max-width: 1200px;
-  margin: 40px auto 60px;
+  margin: 50px auto 10px;
   position: relative;
   z-index: 10;
 }
@@ -175,7 +175,7 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
-  max-width: 680px;
+  max-width: 750px;
   margin: 0 auto;
   box-sizing: border-box;
 }
@@ -538,13 +538,13 @@
 
 .weaver-final-cta h2 {
   font-family: var(--font-heading);
-  font-size: 48px;
+  font-size: 36px;
   margin-bottom: 16px;
   color: var(--heading);
 }
 
 .weaver-final-cta p {
-  font-size: 20px;
+  font-size: 18px;
   color: var(--muted);
   margin-bottom: 40px;
 }

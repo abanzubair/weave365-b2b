@@ -29,24 +29,22 @@
 .affiliate-hero-kicker {
   display: inline-block;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   color: var(--gold-dark);
-  margin-bottom: 20px;
-  background: rgba(183, 134, 70, 0.06);
-  padding: 5px 12px;
-  border-radius: 4px;
+  margin-bottom: 16px;
 }
 
 .affiliate-hero-title {
   font-family: var(--font-heading);
   font-size: clamp(34px, 4.2vw, 52px);
-  line-height: 1.1;
-  color: var(--ink);
-  margin-bottom: 16px;
-  font-weight: 800;
+  line-height: 1.12;
+  color: var(--heading);
+  margin-bottom: 20px;
+  font-weight: 600;
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .affiliate-hero-title em {
@@ -324,21 +322,17 @@
 }
 
 .benefit-icon-wrapper {
-  width: 42px;
-  height: 42px;
-  background: var(--surface);
-  border: 1px solid var(--line);
   color: var(--gold-dark);
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  padding-top: 4px;
 }
 
 .benefit-details h3 {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 6px;
@@ -441,11 +435,46 @@
 
 @media (max-width: 768px) {
   .affiliate-hero {
-    padding: 60px 20px 40px;
+    padding: 30px 16px 40px;
+  }
+  .affiliate-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+  .affiliate-hero-content {
+    text-align: center;
+  }
+  .affiliate-hero-title {
+    font-size: 32px;
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  .affiliate-hero-description {
+    max-width: 100%;
+    margin-bottom: 24px;
+  }
+  .affiliate-hero-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .affiliate-hero-img-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
   }
   .affiliate-hero-stats {
-    flex-wrap: wrap;
-    gap: 16px 20px;
+    justify-content: space-around;
+    max-width: 480px;
+    margin: 32px auto 0;
+    gap: 16px;
+  }
+  .affiliate-hero-stats .hero-stat {
+    align-items: center;
+    text-align: center;
+  }
+  .affiliate-hero-stats .hero-stat-divider {
+    display: none;
   }
   .affiliate-steps-section {
     padding: 50px 20px;
