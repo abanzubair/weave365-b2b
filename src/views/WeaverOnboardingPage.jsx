@@ -10,7 +10,7 @@
  * @param {Function} props.openAuth - Trigger callback to display the registration modal / portal
  */
 
-import { ArrowRight, Globe, Shield, Handshake, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Globe, Shield, Handshake, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
 const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
@@ -61,18 +61,15 @@ export function WeaverOnboardingPage({ openAuth }) {
         </div>
       </section>
 
-      {/* B. Important Notice Section */}
       <section className="weaver-notice-section">
         <div className="notice-card">
-          <div className="notice-icon-wrapper">
-            <ShieldCheck size={28} className="notice-icon" />
-          </div>
-          <div className="notice-text">
+          <div className="notice-header">
+            <AlertTriangle size={20} className="notice-icon" />
             <strong>Important Notice for Varanasi Weavers</strong>
-            <p>
-              To start listing your handloom products on our B2B catalog, you must first register through our verification portal. Our vendor relations team will review your workshop and artisan credentials.
-            </p>
           </div>
+          <p className="notice-desc">
+            To start listing your handloom products on our B2B catalog, you must first register through our verification portal. Our vendor relations team will review your workshop and artisan credentials.
+          </p>
           <button type="button" className="notice-cta-button" onClick={openAuth}>
             Register Now
           </button>
