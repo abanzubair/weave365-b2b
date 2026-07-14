@@ -114,7 +114,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
             <span className="affiliate-hero-kicker">Free to Join · Zero Investment</span>
             <h1 className="affiliate-hero-title">
               Turn Your Network <br />
-              into an <em>Earning Channel</em>
+              into an <span className="affiliate-highlight">Earning Channel</span>
             </h1>
             <p className="affiliate-hero-subtitle">
               Earn up to 15% commission on every single referred order.

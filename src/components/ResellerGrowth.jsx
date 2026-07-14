@@ -11,8 +11,8 @@ export function ResellerGrowth({ imageUrl, navigate }) {
           <div className="content-wrapper">
             
             <h2 id="reseller-editorial-heading" className="brand-title">
-              Crafting <em>Partnership</em><br />
-              Direct from the <em>Loom</em>.
+              Crafting <span className="brand-highlight">Partnership</span><br />
+              Direct from the <span className="brand-highlight">Loom</span>.
             </h2>
             
             <p className="brand-lead">
@@ -39,7 +39,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               aria-label="Onboard as a weaver"
               style={{ textDecoration: 'none' }}
             >
-              <span className="link-label">Partner with Us</span>
+              <span className="link-label">Grow with Us</span>
               <ArrowRight size={16} className="link-arrow" />
             </AppLink>
 

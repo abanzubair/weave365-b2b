@@ -109,6 +109,12 @@
   font-weight: normal;
 }
 
+.brand-title .brand-highlight {
+  font-style: normal;
+  color: var(--gold-dark, #805d31);
+  font-weight: inherit;
+}
+
 .brand-lead {
   font-family: var(--font-hero-body);
   font-size: 18px;

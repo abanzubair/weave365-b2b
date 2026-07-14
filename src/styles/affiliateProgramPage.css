@@ -54,6 +54,13 @@
   color: var(--gold-dark);
 }
 
+.affiliate-hero-title .affiliate-highlight {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--gold-dark);
+}
+
 .affiliate-hero-subtitle {
   font-size: clamp(16px, 1.8vw, 20px);
   font-weight: 600;

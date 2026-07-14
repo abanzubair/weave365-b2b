@@ -21,8 +21,8 @@ export function BrandCollaboration({ imageUrl, navigate }) {
           <div className="content-wrapper">
             
             <h2 id="brand-collab-heading" className="brand-title">
-              Your <em>Label</em>,<br />
-              Featured on <em>Weave 365</em>.
+              Your <span className="brand-highlight">Label</span>,<br />
+              Featured on <span className="brand-highlight">Weave 365</span>.
             </h2>
             
             <p className="brand-lead">

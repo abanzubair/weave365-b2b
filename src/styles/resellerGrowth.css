@@ -3,6 +3,12 @@
    Luxury Editorial Design System (Option 1 Redesign)
    ================================================== */
 
+.reseller-editorial-section .brand-title .brand-highlight {
+  font-style: normal;
+  color: var(--gold-dark, #805d31);
+  font-weight: inherit;
+}
+
 .reseller-editorial-section {
   background-color: var(--white, #ffffff) !important;
 }
