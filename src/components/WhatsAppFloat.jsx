@@ -13,7 +13,8 @@ const WA_SVG = (
 
 export function WhatsAppFloat() {
   const phone = storeConfig.whatsapp || storeConfig.phone || '';
-  const fullPhone = phone.startsWith('+') ? phone : `91${phone}`;
+  const cleaned = phone.replace(/\D/g, '');
+  const fullPhone = cleaned.length === 10 ? `91${cleaned}` : cleaned;
   const href = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi, I\'m interested in your Banarasi collection.')}`;
 
   return (
