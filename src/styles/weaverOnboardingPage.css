@@ -175,6 +175,9 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
+  max-width: 680px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .weaver-page-container .notice-header {
@@ -653,7 +656,7 @@
 
   .weaver-notice-section {
     padding: 0 16px;
-    margin: 40px auto 60px;
+    margin: 30px auto 0px;
   }
 
   .weaver-page-container .notice-card {
