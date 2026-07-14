@@ -553,22 +553,23 @@ export function DropshippingPage({ navigate, openAuth }) {
       {/* Bottom CTA */}
       <section className="dropshipping-cta">
         <div className="cta-inner">
-          <Sparkles className="cta-icon" size={28} />
-          <h2>Ready to Launch Your Saree Dropshipping Brand?</h2>
-          <p>Register today, access our live catalog, set your profit margins, and start selling globally with Varanasi's premium manufacturer.</p>
-          <button 
-            type="button" 
-            className="dropshipping-cta-btn" 
-            onClick={handleStartCatalog}
-          >
-            Access Saree &amp; Suit Catalogue <ArrowRight size={16} />
-          </button>
-          <div className="cta-trust-signals">
-            <span>No Upfront Cost</span>
-            <span className="dot-separator">•</span>
-            <span>Instant Setup</span>
-            <span className="dot-separator">•</span>
-            <span>Dedicated Support</span>
+          <h2 className="cta-title">Ready to Launch Your Saree Dropshipping Brand?</h2>
+          <div className="cta-content-col">
+            <p>Register today, access our live catalog, set your profit margins, and start selling globally with Varanasi's premium manufacturer.</p>
+            <button 
+              type="button" 
+              className="dropshipping-cta-btn" 
+              onClick={handleStartCatalog}
+            >
+              Access Saree &amp; Suit Catalogue <ArrowRight size={16} />
+            </button>
+            <div className="cta-trust-signals">
+              <span>No Upfront Cost</span>
+              <span className="dot-separator">•</span>
+              <span>Instant Setup</span>
+              <span className="dot-separator">•</span>
+              <span>Dedicated Support</span>
+            </div>
           </div>
         </div>
       </section>

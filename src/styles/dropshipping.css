@@ -474,9 +474,17 @@
   margin-right: 6px;
 }
 
-.preview-dot:nth-child(1) { background: #ff5f56; }
-.preview-dot:nth-child(2) { background: #ffbd2e; }
-.preview-dot:nth-child(3) { background: #27c93f; }
+.preview-dot:nth-child(1) {
+  background: #ff5f56;
+}
+
+.preview-dot:nth-child(2) {
+  background: #ffbd2e;
+}
+
+.preview-dot:nth-child(3) {
+  background: #27c93f;
+}
 
 .preview-address-bar {
   flex-grow: 1;
@@ -655,7 +663,8 @@
   border-bottom: 1px solid var(--line);
   background: var(--cream);
   overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbars */
+  scrollbar-width: none;
+  /* Hide scrollbars */
 }
 
 .walkthrough-tabs::-webkit-scrollbar {
@@ -823,7 +832,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
 }
 
 .mock-search-bar {
@@ -884,7 +893,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
 }
 
 .calc-header {
@@ -942,13 +951,13 @@
   width: 100%;
   max-width: 320px;
   background: #e5ddd5;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 220px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
 }
 
 .chat-header {
@@ -976,7 +985,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .chat-card {
@@ -1032,7 +1041,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
 }
 
 .domain-header {
@@ -1113,7 +1122,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
 }
 
 .delivery-header {
@@ -1304,41 +1313,42 @@
 
 /* Bottom CTA */
 .dropshipping-cta {
-  padding: 100px var(--site-padding);
-  background: var(--paper);
+  padding: 120px 24px;
+  background: var(--surface-soft);
   border-top: 1px solid var(--line);
-  text-align: center;
+  border-bottom: 1px solid var(--line);
 }
 
 .cta-inner {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(40px, 6vw, 80px);
   align-items: center;
-}
-
-.cta-icon {
-  color: var(--gold-dark);
-  margin-bottom: 24px;
 }
 
 .cta-inner h2 {
   font-family: var(--font-heading);
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 600;
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 500;
   color: var(--heading);
-  margin-bottom: 18px;
-  line-height: 1.2;
+  line-height: 1.15;
+  margin: 0;
   text-wrap: balance;
 }
 
-.cta-inner p {
+.cta-content-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cta-content-col p {
   font-size: 16px;
+  line-height: 1.65;
   color: var(--muted);
-  max-width: 650px;
-  margin: 0 auto 36px;
-  line-height: 1.7;
+  margin: 0 0 28px 0;
 }
 
 .dropshipping-cta-btn {
@@ -1347,7 +1357,7 @@
   gap: 10px;
   background: var(--ink);
   color: var(--paper);
-  padding: 14px 32px;
+  padding: 15px 36px;
   border-radius: 6px;
   font-family: var(--font-modern-heading);
   font-weight: 600;
@@ -1361,7 +1371,7 @@
   background: var(--gold-dark);
   color: var(--paper);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(183, 134, 70, 0.2);
+  box-shadow: 0 8px 24px rgba(183, 134, 70, 0.15);
 }
 
 .cta-trust-signals {
@@ -1369,9 +1379,9 @@
   align-items: center;
   gap: 16px;
   margin-top: 32px;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--gold-dark);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   font-family: var(--font-modern-heading);
   font-weight: 600;
   text-transform: uppercase;
@@ -1390,76 +1400,95 @@
   .dropshipping-hero {
     padding: 30px 16px 40px;
   }
+
   .dropshipping-hero-inner {
     grid-template-columns: 1fr;
     gap: 48px;
     text-align: center;
   }
+
   .dropshipping-hero-content {
     order: 1;
   }
+
   .dropshipping-hero-title {
     font-size: 32px;
     line-height: 1.25;
     margin-bottom: 16px;
   }
+
   .dropshipping-hero-description {
     max-width: 100%;
     margin-bottom: 24px;
   }
+
   .dropshipping-hero-visual {
     order: 2;
   }
+
   .dropshipping-hero-img {
     max-width: 100%;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
   }
+
   .dropshipping-hero-stats {
     justify-content: space-around;
     max-width: 480px;
     margin: 32px auto 0;
     gap: 16px;
   }
+
   .hero-stat {
     align-items: center;
     text-align: center;
   }
+
   .hero-stat-value {
     font-size: 18px;
   }
+
   .hero-stat-divider {
     display: none;
   }
+
   .dropshipping-profit-alert {
     padding: 40px 16px;
   }
+
   .dropshipping-profit-alert .alert-box {
     padding: 24px 20px;
   }
+
   .alert-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
     margin-bottom: 20px;
   }
+
   .alert-grid {
     grid-template-columns: 1fr;
     gap: 28px;
   }
+
   .alert-formula-side {
     padding: 16px;
     gap: 8px;
   }
+
   .formula-label {
     font-size: 10px;
   }
+
   .formula-value {
     font-size: 16px;
   }
+
   .formula-step.total .formula-value {
     font-size: 18px;
   }
+
   .formula-operator {
     font-size: 16px;
   }
@@ -1468,20 +1497,25 @@
   .dropshipping-benefits {
     padding: 35px 28px;
   }
+
   .benefits-grid {
     grid-template-columns: 1fr;
     gap: 28px;
   }
+
   .benefit-item {
     gap: 16px;
   }
+
   .benefit-icon-box {
     padding-top: 3px;
   }
+
   .benefit-text h3 {
     font-size: 20px;
     margin-bottom: 6px;
   }
+
   .benefit-text p {
     font-size: 15px;
     line-height: 1.55;
@@ -1491,27 +1525,34 @@
   .dropshipping-features-section {
     padding: 50px 16px;
   }
+
   .features-showcase-grid {
     grid-template-columns: 1fr;
     gap: 32px;
   }
+
   .showcase-main-column {
     grid-template-columns: 1fr;
     gap: 32px;
     padding: 24px 20px;
   }
+
   .showcase-tool-info h3 {
     font-size: 20px;
   }
+
   .showcase-features-list {
     gap: 8px;
   }
+
   .showcase-tool-preview {
     width: 100%;
   }
+
   .preview-window {
     max-width: 100%;
   }
+
   .showcase-side-column {
     padding: 16px 8px;
     gap: 24px;
@@ -1520,24 +1561,30 @@
   .dropshipping-steps {
     padding: 50px 16px;
   }
+
   .walkthrough-panel {
     border-radius: 8px;
   }
+
   .walkthrough-tab-btn {
     padding: 14px 8px;
     min-width: 80px;
   }
+
   .walkthrough-tab-btn .tab-number {
     font-size: 16px;
   }
+
   .walkthrough-tab-btn .tab-title {
     font-size: 9px;
     letter-spacing: 0;
   }
+
   .walkthrough-display {
     grid-template-columns: 1fr;
     min-height: auto;
   }
+
   .walkthrough-text {
     padding: 28px 20px;
     border-right: none;
@@ -1545,23 +1592,29 @@
     align-items: center;
     text-align: center;
   }
+
   .walkthrough-text h3 {
     font-size: 18px;
   }
+
   .walkthrough-text p {
     font-size: 13.5px;
     margin-bottom: 20px;
   }
+
   .walkthrough-actions {
     justify-content: center;
   }
+
   .walkthrough-visual {
     padding: 32px 16px;
   }
+
   .faq-question {
     padding: 18px 20px;
     font-size: 15px;
   }
+
   .faq-answer-inner {
     padding: 0 20px 18px;
   }
@@ -1570,21 +1623,26 @@
   .dropshipping-seo-copy {
     padding: 50px 16px;
   }
+
   .seo-copy-inner {
     grid-template-columns: 1fr;
     gap: 24px;
   }
+
   .seo-copy-header {
     position: static;
   }
+
   .seo-copy-header h2 {
     font-size: 26px;
     margin-bottom: 16px;
   }
+
   .seo-editorial-quote {
     font-size: 22px;
     padding-left: 16px;
   }
+
   .seo-copy-text p {
     font-size: 15px;
     line-height: 1.6;
@@ -1594,11 +1652,30 @@
   .dropshipping-cta {
     padding: 60px 16px;
   }
-  .cta-inner p {
-    font-size: 14.5px;
-    margin-bottom: 28px;
-    line-height: 1.6;
+
+  .cta-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
   }
+
+  .cta-inner h2 {
+    font-size: 28px;
+    line-height: 1.25;
+    margin-bottom: 0;
+  }
+
+  .cta-content-col {
+    align-items: center;
+  }
+
+  .cta-content-col p {
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+
   .cta-trust-signals {
     flex-wrap: wrap;
     justify-content: center;
@@ -1606,6 +1683,7 @@
     margin-top: 24px;
     font-size: 12.5px;
   }
+
   .cta-trust-signals .dot-separator {
     display: none;
   }
