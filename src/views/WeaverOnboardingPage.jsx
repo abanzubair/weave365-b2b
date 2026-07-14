@@ -10,7 +10,7 @@
  * @param {Function} props.openAuth - Trigger callback to display the registration modal / portal
  */
 
-import { ArrowRight, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Globe, Shield, Handshake, ShieldCheck } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
 const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
@@ -34,15 +34,15 @@ export function WeaverOnboardingPage({ openAuth }) {
             </div>
             <div className="hero-trust-indicators">
               <div className="indicator-item">
-                <BadgeCheck size={16} className="indicator-icon" />
+                <Globe size={16} strokeWidth={2} className="indicator-icon" />
                 <span>Global Boutique Reach</span>
               </div>
               <div className="indicator-item">
-                <BadgeCheck size={16} className="indicator-icon" />
+                <Shield size={16} strokeWidth={2} className="indicator-icon" />
                 <span>Zero Listing Risk</span>
               </div>
               <div className="indicator-item">
-                <BadgeCheck size={16} className="indicator-icon" />
+                <Handshake size={16} strokeWidth={2} className="indicator-icon" />
                 <span>Fair Trade Pricing</span>
               </div>
             </div>

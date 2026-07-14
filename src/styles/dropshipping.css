@@ -1388,7 +1388,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .dropshipping-hero {
-    padding: 40px 16px 40px;
+    padding: 30px 16px 40px;
   }
   .dropshipping-hero-inner {
     grid-template-columns: 1fr;
