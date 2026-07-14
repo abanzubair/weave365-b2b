@@ -158,38 +158,44 @@ export function MobileMenu({
             </div>
           </div>
 
-          {/* 4. PARTNERS */}
+          {/* 4. BUSINESS */}
           <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => setPartnerOpen(!partnerOpen)}
             >
               <span className="mobile-menu-icon"><Globe size={20} /></span>
-              <span className="mobile-menu-label">PARTNERS</span>
+              <span className="mobile-menu-label">BUSINESS</span>
               <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
             </button>
             
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
-                {[
-                  { name: 'Dropshipping Program', slug: 'dropshipping' },
-                  { name: 'Sourcing Partners', slug: 'sourcing-partners' },
-                  { name: 'White Label Brands', slug: 'white-label' },
-                  { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
-                ].map((item) => (
-                  <button type="button" 
-                    key={item.slug} 
-                    className="mobile-account-subitem" 
-                    onClick={() => {
-                      navigate(item.slug);
-                      onClose();
-                    }}
-                  >
-                    <span className="subitem-label" style={{ paddingLeft: '8px' }}>
-                      {item.name}
-                    </span>
-                  </button>
-                ))}
+                <span className="mobile-mega-heading">Buy</span>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('bulk-inquiry'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
+                </button>
+
+                <span className="mobile-mega-heading">Sell</span>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('dropshipping'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Program</span>
+                </button>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('white-label'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
+                </button>
+
+                <span className="mobile-mega-heading">Partner</span>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('collaboration'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Collaboration</span>
+                </button>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('sourcing-partners'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
+                </button>
+
+                <span className="mobile-mega-heading">Supply</span>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('weaver-onboarding'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
+                </button>
               </div>
             </div>
           </div>

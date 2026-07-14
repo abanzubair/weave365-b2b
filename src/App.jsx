@@ -56,6 +56,7 @@ import { validateReferralCode, setStoredReferralCode, getStoredReferralCode, cle
 // Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
 import { ReviewStrip } from './components/ReviewStrip.jsx';
+import { WhatsAppFloat } from './components/WhatsAppFloat.jsx';
 
 // Dynamically split (lazy-loaded or dynamic client-side only) page views
 const Catalog = lazy(() => import('./CatalogPage.jsx').then(m => ({ default: m.Catalog })));
@@ -1614,6 +1615,7 @@ export default function App({ initialData = {} }) {
         buyerProfile={buyerProfile}
         priceAccess={priceAccess}
       />
+      {!isSharedPage && route !== 'admin' && <WhatsAppFloat />}
     </>
   );
 }

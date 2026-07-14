@@ -111,31 +111,39 @@ export function SiteHeader({
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
           <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' ? 'active' : ''}
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
             }}
           >
-            PARTNERS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
+            BUSINESS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
           </button>
-          <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'}>
-            {[
-              { name: 'Dropshipping Program', slug: 'dropshipping' },
-              { name: 'White Label Brands', slug: 'white-label' },
-              { name: 'Sourcing Partners', slug: 'sourcing-partners' },
-              { name: 'Bulk Inquiry', slug: 'bulk-inquiry' },
-            ].map((item) => (
-              <button type="button"
-                key={item.slug}
-                onClick={() => {
-                  navigate(item.slug);
-                  setDropdownOpen(null);
-                }}
-              >
-                {item.name}
-              </button>
-            ))}
+          <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'} className="dropdown-menu business-mega-menu">
+            <div className="mega-menu-grid">
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Buy</span>
+                  <button type="button" onClick={() => { navigate('bulk-inquiry'); setDropdownOpen(null); }}>Bulk Enquiry</button>
+                </div>
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Partner</span>
+                  <button type="button" onClick={() => { navigate('collaboration'); setDropdownOpen(null); }}>Collaboration</button>
+                  <button type="button" onClick={() => { navigate('sourcing-partners'); setDropdownOpen(null); }}>Sourcing Partner</button>
+                </div>
+              </div>
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Sell</span>
+                  <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Program</button>
+                  <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
+                </div>
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Supply</span>
+                  <button type="button" onClick={() => { navigate('weaver-onboarding'); setDropdownOpen(null); }}>Vendor Onboarding</button>
+                </div>
+              </div>
+            </div>
           </DropdownPortal>
         </div>
         <AppLink 

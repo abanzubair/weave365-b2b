@@ -1,0 +1,54 @@
+/* ── Floating WhatsApp Button ── */
+.wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--brown-800, #262626);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(183, 134, 70, 0.25);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wa-float:hover {
+  transform: translateY(-2px);
+  color: #25d366;
+  border-color: rgba(183, 134, 70, 0.45);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.16),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.wa-float:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.wa-float svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .wa-float {
+    bottom: 20px;
+    right: 20px;
+    width: 46px;
+    height: 46px;
+  }
+  .wa-float svg {
+    width: 22px;
+    height: 22px;
+  }
+}

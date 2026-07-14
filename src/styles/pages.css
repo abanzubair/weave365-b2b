@@ -103,6 +103,65 @@ button {
   box-shadow: 0 4px 12px rgba(31, 20, 13, 0.03);
 }
 
+/* ── Business Mega Menu (desktop) ── */
+.business-mega-menu {
+  min-width: 380px !important;
+  padding: 16px !important;
+}
+
+.mega-menu-grid {
+  display: flex;
+  gap: 24px;
+}
+
+.mega-menu-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mega-menu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.mega-menu-heading {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-dark, #8b6914);
+  padding: 8px 18px 4px;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.mega-menu-section button {
+  font-size: 13px !important;
+  padding: 9px 18px !important;
+}
+
+/* ── Mobile mega-menu headings ── */
+.mobile-mega-heading {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-dark, #8b6914);
+  padding: 12px 12px 2px;
+  opacity: 0.7;
+}
+
+.mobile-mega-heading:first-child {
+  padding-top: 4px;
+}
+
+
 .search-suggestions {
   position: absolute;
   top: 100%;
