@@ -120,7 +120,7 @@
 }
 
 .affiliate-hero-stats .hero-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.02em;
 }
@@ -393,7 +393,7 @@
 
 .affiliate-faq-trigger h3 {
   font-family: var(--font-modern-heading);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
   margin: 0;
