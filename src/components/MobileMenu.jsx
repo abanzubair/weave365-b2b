@@ -184,6 +184,9 @@ export function MobileMenu({
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('white-label'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
                 </button>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('resell-sarees-online'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Centre</span>
+                </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('affiliate-program'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
                 </button>

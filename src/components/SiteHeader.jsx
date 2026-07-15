@@ -139,6 +139,7 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Sell</span>
                   <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Program</button>
                   <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
+                  <button type="button" onClick={() => { navigate('resell-sarees-online'); setDropdownOpen(null); }}>Reseller Centre</button>
                   <button type="button" onClick={() => { navigate('affiliate-program'); setDropdownOpen(null); }}>Affiliate Program</button>
                 </div>
               </div>

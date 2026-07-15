@@ -73,6 +73,7 @@ const SeoLandingPage = lazy(() => import('./views/SeoLandingPage.jsx').then(m =>
 const WeaveComparisonGuidePage = lazy(() => import('./views/WeaveComparisonGuidePage.jsx').then(m => ({ default: m.WeaveComparisonGuidePage })));
 const AffiliateProgramPage = lazy(() => import('./views/AffiliateProgramPage.jsx').then(m => ({ default: m.AffiliateProgramPage })));
 const DropshippingPage = lazy(() => import('./views/DropshippingPage.jsx').then(m => ({ default: m.DropshippingPage })));
+const ResellerFeaturesPage = lazy(() => import('./views/ResellerFeaturesPage.jsx').then(m => ({ default: m.ResellerFeaturesPage })));
 const PartnerProgramPage = lazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
 const BlogList = lazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = lazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
@@ -1398,6 +1399,18 @@ export default function App({ initialData = {} }) {
           </div>
         }>
           <DropshippingPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />
+        </Suspense>
+      );
+    }
+
+    if (route === 'resell-sarees-online') {
+      return (
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={12} wrap={true} />
+          </div>
+        }>
+          <ResellerFeaturesPage user={user} navigate={navigate} openAuth={() => setAuthOpen(true)} />
         </Suspense>
       );
     }

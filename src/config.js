@@ -122,6 +122,7 @@ export const NON_PRODUCT_ROUTES = new Set([
   'reseller-dashboard',
   'affiliate-program',
   'dropshipping',
+  'resell-sarees-online',
   'handloom-vs-powerloom-guide'
 ]);
 
