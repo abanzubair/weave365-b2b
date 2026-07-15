@@ -54,7 +54,7 @@ export function ContactSection({ navigate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       setStatus('error');
       setErrorMessage('Please fill in all required fields.');
       return;
@@ -133,19 +133,19 @@ export function ContactSection({ navigate }) {
             
             <div className="form-group-row">
               <div className="form-group">
-                <label htmlFor="contact-phone">Phone Number (Optional)</label>
+                <label htmlFor="contact-phone">Phone Number</label>
                 <input
                   type="tel"
                   id="contact-phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="e.g. +91 99999 99999"
+                  placeholder="e.g. +91 98765 43210"
                   disabled={status === 'submitting'}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="contact-subject">Subject</label>
+                <label htmlFor="contact-subject">Subject *</label>
                 <input
                   type="text"
                   id="contact-subject"
@@ -153,6 +153,7 @@ export function ContactSection({ navigate }) {
                   value={formData.subject}
                   onChange={handleChange}
                   placeholder="How can we help?"
+                  required
                   disabled={status === 'submitting'}
                 />
               </div>

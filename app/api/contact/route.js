@@ -11,9 +11,9 @@ export async function POST(request) {
     const { name, email, phone, subject, message } = body;
 
     // Validation
-    if (!name || !email || !message) {
+    if (!name || !email || !subject || !message) {
       return Response.json(
-        { status: 'error', error: 'Name, email, and message are required.' },
+        { status: 'error', error: 'Name, email, subject, and message are required.' },
         { status: 400 }
       );
     }
