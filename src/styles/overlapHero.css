@@ -1,0 +1,286 @@
+/* Overlap Hero Component CSS */
+
+.overlap-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #e5dfd9; /* Neutral plaster gray-cream */
+  overflow-y: hidden;
+}
+
+.overlap-hero-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #e5dfd9;
+  display: flex;
+  flex-direction: column; /* Mobile layout: image on top, text panel below */
+}
+
+/* Background/Image Layer - Mobile: full width with header clearance spacing */
+.overlap-hero-bg-layer {
+  position: relative;
+  width: 100%;
+  height: 60vh; /* Take up 60% of viewport height on mobile */
+  min-height: 380px;
+  flex-shrink: 0;
+  background-color: #eae5df; /* Matches text layer for unified look */
+  padding: 80px 0 0 0; /* Just top padding to clear header, no side borders */
+  box-sizing: border-box;
+}
+
+/* Static Mobile Card Wrapper (transparents for full bleed image) */
+.overlap-hero-card {
+  background-color: transparent;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+
+/* Images alignment */
+.overlap-hero-picture {
+  display: block;
+  width: 100%;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.overlap-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Editorial Content Split Panel */
+.overlap-hero-content-layer {
+  position: relative;
+  width: 100%;
+  height: 40vh; /* Take up 40% of viewport height on mobile */
+  flex-grow: 1;
+  background-color: #eae5df; /* Solid warm plaster bg for perfect readability */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.5rem 1.25rem 1.5rem;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* Text and details container inside panel */
+.overlap-hero-content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 330px;
+}
+
+.overlap-hero-tagline {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: clamp(1.1rem, 3.2vw, 1.25rem);
+  color: #1a1a1a;
+  line-height: 1.3;
+  margin: 0;
+  font-weight: 600;
+}
+
+.overlap-hero-divider {
+  width: 40px;
+  height: 1px;
+  background-color: var(--gold-mid, #926b38);
+  margin: 0.4rem 0;
+}
+
+.overlap-hero-description {
+  display: block; /* Visible on mobile */
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #4a423a;
+  line-height: 1.5;
+  margin: 0 0 0.8rem 0;
+}
+
+.overlap-hero-highlights {
+  display: flex; /* Visible on mobile */
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #8a7f75;
+  margin-bottom: 0.85rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.overlap-hero-highlights .divider-dot {
+  color: var(--gold-mid, #926b38);
+  font-weight: bold;
+}
+
+/* Action button styled as a premium hollow bordered button */
+.overlap-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.5rem;
+  border: 1px solid #1a1a1a;
+  background: transparent;
+  color: #1a1a1a;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.overlap-hero-btn:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Desktop layout constraints */
+@media (min-width: 768px) {
+  .overlap-hero {
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: hidden;
+  }
+
+  .overlap-hero-container {
+    height: 100%;
+    flex-direction: row; /* Desktop layout: split screen */
+  }
+
+  /* Full bleed panel on desktop (deactivates mobile card layout) */
+  .overlap-hero-bg-layer {
+    width: 60vw; /* Take up 60% width on desktop */
+    height: 100%;
+    padding: 0;
+    background-color: transparent;
+    min-height: 0;
+  }
+
+  .overlap-hero-card {
+    background-color: transparent;
+    padding: 0;
+    box-shadow: none;
+    display: block;
+    height: 100%;
+  }
+
+  .overlap-hero-picture {
+    height: 100%;
+    display: block;
+  }
+
+  .overlap-hero-img {
+    object-position: 25% center; /* Shift the image towards the right to show the left side more */
+  }
+
+  .overlap-hero-content-layer {
+    width: 40vw; /* Take up 40% width on desktop */
+    height: 100%;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    justify-content: flex-start;
+    align-items: center;
+    padding: 4rem 3.5rem;
+  }
+
+  .overlap-hero-content-right {
+    align-items: flex-start;
+    text-align: left;
+    max-width: 100%;
+  }
+
+  .overlap-hero-tagline {
+    font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+    line-height: 1.25;
+  }
+
+  .overlap-hero-divider {
+    margin: 1.5rem 0;
+    width: 50px;
+    align-self: flex-start;
+  }
+
+  .overlap-hero-description {
+    display: block; /* Shown on desktop */
+    max-width: 425px;
+    font-size: 1.45rem;
+  }
+
+  .overlap-hero-highlights {
+    display: flex; /* Shown on desktop */
+    justify-content: flex-start;
+    font-size: 0.7rem;
+    margin-bottom: 2rem;
+  }
+
+  .overlap-hero-btn {
+    padding: 0.85rem 2.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode safety override to preserve editorial look */
+.dark-mode .overlap-hero {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-container {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-content-layer {
+  background-color: #1a1918;
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+.dark-mode .overlap-hero-tagline {
+  color: #ffffff;
+}
+.dark-mode .overlap-hero-description {
+  color: rgba(255, 255, 255, 0.75);
+}
+.dark-mode .dark-mode .overlap-hero-highlights {
+  color: rgba(255, 255, 255, 0.5);
+}
+.dark-mode .overlap-hero-btn {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+.dark-mode .overlap-hero-btn:hover {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+.dark-mode .overlap-hero-bg-layer {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-card {
+  background-color: transparent;
+  box-shadow: none;
+}
+@media (min-width: 768px) {
+  .dark-mode .overlap-hero-bg-layer {
+    background-color: transparent;
+  }
+  .dark-mode .overlap-hero-card {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}

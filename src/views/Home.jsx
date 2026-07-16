@@ -25,6 +25,9 @@ import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { AppLink } from '../components/AppLink.jsx';
+import { OverlapHero } from '../components/OverlapHero.jsx';
+
+export const SHOW_OVERLAP_HERO = true;
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
 
@@ -304,7 +307,17 @@ export function Home({
   }, [bannerSlides.length, currentSlide]);
 
   useEffect(() => {
-    // Premium hero is always dark → force white header text
+    if (SHOW_OVERLAP_HERO) {
+      document.documentElement.style.setProperty('--header-text-color', '#1a1a1a');
+      document.documentElement.style.setProperty('--hero-logo-color', '#1a1a1a');
+      document.documentElement.style.setProperty('--hero-nav-color', '#1a1a1a');
+      return () => {
+        document.documentElement.style.removeProperty('--header-text-color');
+        document.documentElement.style.removeProperty('--hero-logo-color');
+        document.documentElement.style.removeProperty('--hero-nav-color');
+      };
+    }
+
     document.documentElement.style.setProperty('--header-text-color', activeHeroData?.headerColor || 'white');
     if (activeHeroData?.logoColor) {
       document.documentElement.style.setProperty('--hero-logo-color', activeHeroData.logoColor);
@@ -445,8 +458,11 @@ export function Home({
 
   return (
     <>
-      <section className="hero-transition-container">
-        <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
+      <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
+      {SHOW_OVERLAP_HERO ? (
+        <OverlapHero navigate={navigate} />
+      ) : (
+        <section className="hero-transition-container">
         {/* Original Slide */}
         <div className={`hero-slide-pane pane-first ${!showNewHero ? 'active' : ''}`}>
           <section className="premium-hero" style={heroStyle}>
@@ -587,6 +603,7 @@ export function Home({
           </>
         )}
       </section>
+      )}
 
       {dealProducts.length > 0 && (
         <section className="deal-section" aria-labelledby="deal-heading">

@@ -618,7 +618,7 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
               <tbody>
                 <tr>
                   <td><strong>Catalog Authenticity</strong></td>
-                  <td>100% Varanasi direct, verified handloom silk sarees & premium suits</td>
+                  <td>100% Varanasi direct, verified sarees & premium suits</td>
                   <td>Mass-manufactured synthetic fabrics with no origin checks</td>
                 </tr>
                 <tr>
