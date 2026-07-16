@@ -22,11 +22,11 @@
 .overlap-hero-bg-layer {
   position: relative;
   width: 100%;
-  height: 60vh; /* Take up 60% of viewport height on mobile */
-  min-height: 380px;
+  height: 56vh; /* Take up 56% of viewport height on mobile */
+  min-height: 350px;
   flex-shrink: 0;
   background-color: #eae5df; /* Matches text layer for unified look */
-  padding: 80px 0 0 0; /* Just top padding to clear header, no side borders */
+  padding: 80px var(--site-padding) 0 var(--site-padding); /* Clear header and add side padding */
   box-sizing: border-box;
 }
 
@@ -64,13 +64,13 @@
 .overlap-hero-content-layer {
   position: relative;
   width: 100%;
-  height: 40vh; /* Take up 40% of viewport height on mobile */
+  height: 44vh; /* Take up 44% of viewport height on mobile */
   flex-grow: 1;
   background-color: #eae5df; /* Solid warm plaster bg for perfect readability */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.75rem 1.5rem 1.25rem 1.5rem;
+  padding: 1rem 1.5rem 1.25rem 1.5rem;
   box-sizing: border-box;
   pointer-events: auto;
 }
@@ -81,7 +81,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 330px;
+  max-width: 360px;
 }
 
 .overlap-hero-tagline {
@@ -105,10 +105,10 @@
   display: block; /* Visible on mobile */
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 400;
   color: #4a423a;
-  line-height: 1.5;
+  line-height: 1.45;
   margin: 0 0 0.8rem 0;
 }
 
