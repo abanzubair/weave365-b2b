@@ -142,16 +142,8 @@ button {
 
 .mega-menu-section button {
   font-size: 13px !important;
-  padding: 4px 12px !important;
+  padding: 9px 12px !important;
   white-space: nowrap;
-  transition: color 0.2s ease !important;
-}
-
-.mega-menu-section button:hover {
-  background: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
-  color: var(--gold-dark, #8b6914) !important;
 }
 
 /* ── Mobile mega-menu headings ── */
