@@ -216,7 +216,7 @@ export default function InfluencerManager() {
         <div className="admin-ea-header-left" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Users size={24} style={{ color: 'var(--gold-dark)' }} />
           <div>
-            <h2 className="admin-ea-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-dark)' }}>Influencer Program Management</h2>
+            <h2 className="admin-ea-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-dark)' }}>Affiliate Program Management</h2>
             <p className="admin-ea-subtitle" style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
               Track referred customer traffic, moderate applications, and manage commission payouts.
             </p>
@@ -240,7 +240,7 @@ export default function InfluencerManager() {
             <Users size={20} />
           </div>
           <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>Active Influencers</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block' }}>Active Affiliates</span>
             <strong style={{ fontSize: '1.25rem', color: 'var(--text-dark)' }}>{stats.activeInfluencers}</strong>
             {stats.pendingApps > 0 && <small style={{ display: 'block', fontSize: '11px', color: 'var(--gold-dark)', fontWeight: 600 }}>{stats.pendingApps} Pending Apps</small>}
           </div>
@@ -293,7 +293,7 @@ export default function InfluencerManager() {
           onClick={() => { setActiveSubTab('influencers'); setSearchQuery(''); }}
           style={{ padding: '8px 16px', borderBottom: activeSubTab === 'influencers' ? '2px solid var(--gold-dark)' : 'none', fontWeight: activeSubTab === 'influencers' ? 600 : 400, color: activeSubTab === 'influencers' ? 'var(--gold-dark)' : 'var(--muted)', background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none', cursor: 'pointer' }}
         >
-          Active Influencers ({profiles.filter(p => p.is_approved).length})
+          Active Affiliates ({profiles.filter(p => p.is_approved).length})
         </button>
         <button
           type="button"

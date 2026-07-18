@@ -506,9 +506,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
   const newOrdersCount = useMemo(() => {
     return enquiryRows.filter(i => {
-      const isOrder = i._sourceTable === 'orders' || 
-                      i.inquiry_type === 'cart_payment' || 
-                      i.inquiry_type === 'cart_payment_fallback';
+      const isOrder = i._sourceTable === 'orders' ||
+        i.inquiry_type === 'cart_payment' ||
+        i.inquiry_type === 'cart_payment_fallback';
       const isNew = (i.status || 'new').toLowerCase() === 'new';
       return isOrder && isNew;
     }).length;
