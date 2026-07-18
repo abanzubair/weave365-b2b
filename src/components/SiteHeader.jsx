@@ -124,7 +124,17 @@ export function SiteHeader({
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Buy</span>
+                  <button type="button" onClick={() => { navigate('wholesale-catalogue'); setDropdownOpen(null); }}>Wholesale</button>
                   <button type="button" onClick={() => { navigate('bulk-inquiry'); setDropdownOpen(null); }}>Bulk Enquiry</button>
+                </div>
+              </div>
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Sell</span>
+                  <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Support</button>
+                  <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
+                  <button type="button" onClick={() => { navigate('resell-sarees-online'); setDropdownOpen(null); }}>Reseller Center</button>
+                  <button type="button" onClick={() => { navigate('affiliate-program'); setDropdownOpen(null); }}>Affiliate Program</button>
                 </div>
               </div>
               <div className="mega-menu-col">
@@ -132,15 +142,7 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Partner</span>
                   <button type="button" onClick={() => { navigate('collaboration'); setDropdownOpen(null); }}>Collaboration</button>
                   <button type="button" onClick={() => { navigate('sourcing-partners'); setDropdownOpen(null); }}>Sourcing Partner</button>
-                </div>
-              </div>
-              <div className="mega-menu-col">
-                <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Sell</span>
-                  <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Program</button>
-                  <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
-                  <button type="button" onClick={() => { navigate('resell-sarees-online'); setDropdownOpen(null); }}>Reseller Centre</button>
-                  <button type="button" onClick={() => { navigate('affiliate-program'); setDropdownOpen(null); }}>Affiliate Program</button>
+                  <button type="button" onClick={() => { navigate('early-access'); setDropdownOpen(null); }}>WhatsApp Community</button>
                 </div>
               </div>
               <div className="mega-menu-col">

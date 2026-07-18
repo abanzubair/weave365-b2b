@@ -539,7 +539,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
         { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
         { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
-        { key: 'influencers', label: 'Influencers', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
+        { key: 'influencers', label: 'Affiliates', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
       ],
     },
   ];

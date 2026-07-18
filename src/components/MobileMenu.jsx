@@ -173,19 +173,22 @@ export function MobileMenu({
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 <span className="mobile-mega-heading">Buy</span>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('wholesale-catalogue'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Wholesale</span>
+                </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('bulk-inquiry'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
                 </button>
 
                 <span className="mobile-mega-heading">Sell</span>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('dropshipping'); onClose(); }}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Program</span>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Support</span>
                 </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('white-label'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
                 </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('resell-sarees-online'); onClose(); }}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Centre</span>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
                 </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('affiliate-program'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
@@ -197,6 +200,9 @@ export function MobileMenu({
                 </button>
                 <button type="button" className="mobile-account-subitem" onClick={() => { navigate('sourcing-partners'); onClose(); }}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
+                </button>
+                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('early-access'); onClose(); }}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
                 </button>
 
                 <span className="mobile-mega-heading">Supply</span>

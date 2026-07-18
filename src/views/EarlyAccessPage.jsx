@@ -234,8 +234,8 @@ export function EarlyAccessPage({ navigate }) {
           <div className="early-access-form-card animate-fade-in">
             <div className="early-access-header">
               <span className="early-access-kicker">WEAVE 365 • WHOLESALE</span>
-              <h1>Get early access to new arrivals</h1>
-              <p>For verified buyers only. Fill in your details — our team will review and share the WhatsApp group link.</p>
+              <h1>Join Our WhatsApp Community</h1>
+              <p>Get Early Access to New Arrivals, Catalog Updates & Special Offers</p>
             </div>
 
             <form className="early-access-form" onSubmit={handleSubmit}>
