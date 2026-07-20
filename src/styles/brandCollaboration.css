@@ -13,9 +13,10 @@
 
 @media (min-width: 1025px) {
   .brand-collab-section {
-    height: 92vh;
-    height: 92svh;
-    overflow: hidden;
+    min-height: 92vh;
+    min-height: 92svh;
+    display: flex;
+    flex-direction: column;
   }
 }
 
