@@ -107,7 +107,7 @@ function routeFromSlug(slug = [], landingPages = []) {
 }
 
 function toSerializable(value) {
-  return JSON.parse(JSON.stringify(value));
+  return value;
 }
 
 const getInitialData = cache(async () => {
@@ -593,30 +593,26 @@ export async function generateMetadata({ params, searchParams }) {
       }
     }
     if (route === 'new-arrivals' && data.products) {
-      const productsWithIndex = data.products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+      const getTimestamp = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        const t = (val instanceof Date ? val : new Date(val)).getTime();
+        return isNaN(t) ? 0 : t;
+      };
+      const productsWithIndex = data.products.map((p, idx) => ({
+        ...p,
+        _originalIndex: idx,
+        _timeVal: getTimestamp(p.stockInDate),
+      }));
       let filtered = productsWithIndex.filter(p => p.isNew && !p.isArchived);
       
       // Sort by stockInDate descending; tie-breaker: reverse sheet order (latest first)
-      filtered.sort((a, b) => {
-        const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
-        const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-        if (dateA !== dateB) {
-          return dateB - dateA;
-        }
-        return b._originalIndex - a._originalIndex;
-      });
+      filtered.sort((a, b) => (b._timeVal - a._timeVal) || (b._originalIndex - a._originalIndex));
 
       if (filtered.length === 0) {
         filtered = [...productsWithIndex]
           .filter(p => !p.isArchived)
-          .sort((a, b) => {
-            const dateA = a.stockInDate ? new Date(a.stockInDate).getTime() : 0;
-            const dateB = b.stockInDate ? new Date(b.stockInDate).getTime() : 0;
-            if (dateA !== dateB) {
-              return dateB - dateA;
-            }
-            return b._originalIndex - a._originalIndex;
-          })
+          .sort((a, b) => (b._timeVal - a._timeVal) || (b._originalIndex - a._originalIndex))
           .slice(0, 16);
       }
 

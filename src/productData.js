@@ -21,6 +21,29 @@ const moneyColumns = {
   offer: 'Offer',
 };
 
+// In-memory cache for Edge Worker isolates to prevent CPU limit exceeded (Error 1102) on Cloudflare Pages
+const memoryCache = new Map();
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export function clearProductDataCache() {
+  memoryCache.clear();
+}
+
+async function fetchSyncedJsonCached(id, ttlMs = DEFAULT_CACHE_TTL_MS) {
+  const cacheKey = `json_${id}`;
+  const cached = memoryCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < ttlMs)) {
+    return cached.data;
+  }
+  const data = await fetchSyncedJson(id);
+  if (data !== null) {
+    memoryCache.set(cacheKey, { data, timestamp: Date.now() });
+  } else if (cached) {
+    return cached.data;
+  }
+  return data;
+}
+
 async function fetchSyncedJson(id) {
   if (isSupabaseConfigured) {
     try {
@@ -41,13 +64,13 @@ async function fetchSyncedJson(id) {
 }
 
 export async function fetchConfigOptions() {
-  const cachedJson = await fetchSyncedJson('config_json');
+  const cachedJson = await fetchSyncedJsonCached('config_json');
   if (cachedJson) return cachedJson;
   return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
 }
 
 export async function fetchProducts() {
-  const cachedJson = await fetchSyncedJson('products_json');
+  const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     return cachedJson;
   }
@@ -643,7 +666,7 @@ function unique(items) {
 }
 
 export async function fetchHeroData() {
-  const cachedJson = await fetchSyncedJson('hero_json');
+  const cachedJson = await fetchSyncedJsonCached('hero_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     return cachedJson;
   }
@@ -871,6 +894,7 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     const { error } = await db.from('sheet_data').upsert(updates);
     if (error) throw error;
     
+    clearProductDataCache();
     console.log('Successfully synced sheets and parsed JSON to Supabase at', timestamp);
   } catch (err) {
     console.error('Manual sync failed:', err);
@@ -881,6 +905,11 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
 }
 
 export async function fetchSupabaseBlogPosts() {
+  const cacheKey = 'db_blog_posts';
+  const cached = memoryCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
+    return cached.data;
+  }
   if (!isSupabaseConfigured) return [];
   try {
     const { data, error } = await supabase
@@ -889,9 +918,9 @@ export async function fetchSupabaseBlogPosts() {
       .order('created_at', { ascending: false });
     if (error) {
       console.warn('Unable to select from blog_posts:', error.message);
-      return [];
+      return cached ? cached.data : [];
     }
-    return (data || []).map((row) => ({
+    const result = (data || []).map((row) => ({
       id: row.id,
       slug: row.slug,
       title: row.title,
@@ -908,9 +937,11 @@ export async function fetchSupabaseBlogPosts() {
       faqs: row.faqs || [],
       createdAt: row.created_at,
     }));
+    memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   } catch (err) {
     console.error('Error fetching Supabase blog posts:', err);
-    return [];
+    return cached ? cached.data : [];
   }
 }
 
@@ -922,6 +953,11 @@ function normalizeSeoPath(path) {
 }
 
 export async function fetchSupabasePageSeoSettings() {
+  const cacheKey = 'db_page_seo_settings';
+  const cached = memoryCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
+    return cached.data;
+  }
   if (!isSupabaseConfigured) return [];
   try {
     const { data, error } = await supabase
@@ -930,9 +966,9 @@ export async function fetchSupabasePageSeoSettings() {
       .order('path', { ascending: true });
     if (error) {
       console.warn('Unable to select from page_seo_settings:', error.message);
-      return [];
+      return cached ? cached.data : [];
     }
-    return (data || []).map((row) => ({
+    const result = (data || []).map((row) => ({
       id: row.id,
       path: normalizeSeoPath(row.path),
       metaTitle: row.meta_title || '',
@@ -945,9 +981,11 @@ export async function fetchSupabasePageSeoSettings() {
       robotsFollow: row.robots_follow !== false,
       updatedAt: row.updated_at,
     }));
+    memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   } catch (err) {
     console.error('Error fetching Supabase page SEO settings:', err);
-    return [];
+    return cached ? cached.data : [];
   }
 }
 
@@ -981,6 +1019,7 @@ export async function saveSupabasePageSeoSetting(setting) {
     .single();
 
   if (error) throw error;
+  memoryCache.delete('db_page_seo_settings');
   return data;
 }
 
@@ -1015,10 +1054,17 @@ export async function saveSupabaseBlogPost(post) {
     .single();
 
   if (error) throw error;
+  memoryCache.delete('db_blog_posts');
   return data;
 }
 
 export async function fetchSupabaseLandingPages() {
+  const cacheKey = 'db_landing_pages';
+  const cached = memoryCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
+    return cached.data;
+  }
+
   const staticPages = Object.entries(seoLandingPages).map(([slug, page]) => ({
     slug,
     metaTitle: page.metaTitle,
@@ -1045,7 +1091,9 @@ export async function fetchSupabaseLandingPages() {
   staticPages.forEach(p => pagesMap.set(p.slug, p));
 
   if (!isSupabaseConfigured) {
-    return Array.from(pagesMap.values());
+    const res = Array.from(pagesMap.values());
+    memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+    return res;
   }
 
   try {
@@ -1055,7 +1103,9 @@ export async function fetchSupabaseLandingPages() {
       .order('slug', { ascending: true });
     if (error) {
       console.warn('Unable to select from landing_pages:', error.message);
-      return Array.from(pagesMap.values());
+      const res = Array.from(pagesMap.values());
+      memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+      return res;
     }
 
     const dbPages = (data || []).map((row) => ({
@@ -1083,10 +1133,14 @@ export async function fetchSupabaseLandingPages() {
     }));
 
     dbPages.forEach(p => pagesMap.set(p.slug, p));
-    return Array.from(pagesMap.values());
+    const result = Array.from(pagesMap.values());
+    memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   } catch (err) {
     console.error('Failed to fetch dynamic landing pages:', err);
-    return Array.from(pagesMap.values());
+    const res = Array.from(pagesMap.values());
+    memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+    return res;
   }
 }
 
@@ -1129,6 +1183,7 @@ export async function saveSupabaseLandingPage(page) {
     .single();
 
   if (error) throw error;
+  memoryCache.delete('db_landing_pages');
   return data;
 }
 
@@ -1142,5 +1197,6 @@ export async function deleteSupabaseLandingPage(slug) {
     .select();
 
   if (error) throw error;
+  memoryCache.delete('db_landing_pages');
   return data;
 }

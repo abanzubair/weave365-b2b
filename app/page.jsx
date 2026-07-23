@@ -22,7 +22,7 @@ async function getInitialData() {
 
   const productError = productsResult.status === 'rejected' ? productsResult.reason : null;
 
-  return JSON.parse(JSON.stringify({
+  return {
     hydrated: true,
     products,
     heroSlides,
@@ -31,7 +31,7 @@ async function getInitialData() {
     landingPages,
     status: productError ? 'error' : 'ready',
     error: productError?.message || '',
-  }));
+  };
 }
 
 export function generateMetadata() {
