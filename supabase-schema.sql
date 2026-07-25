@@ -797,11 +797,12 @@ alter table public.addresses enable row level security;
 
 -- Policies
 drop policy if exists "addresses own or admin" on public.addresses;
-create policy "addresses own or admin"
+drop policy if exists "addresses own user only" on public.addresses;
+create policy "addresses own user only"
   on public.addresses for all
   to authenticated
-  using ((select auth.uid()) = user_id or public.is_admin())
-  with check ((select auth.uid()) = user_id or public.is_admin());
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 -- Index
 create index if not exists addresses_user_id_idx on public.addresses (user_id);
@@ -811,10 +812,24 @@ create trigger touch_addresses_updated_at
 before update on public.addresses
 for each row execute function public.touch_updated_at();
 
--- Add order tracking columns to the inquiries table
+-- Add order tracking and dropshipping columns to the inquiries table
 ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_carrier text;
 ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_number text;
 ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS tracking_message text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS is_dropship boolean DEFAULT false;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_name text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_phone text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_address text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_city text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_state text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_sender_pincode text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_name text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_phone text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_address text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_city text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_state text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_recipient_pincode text;
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_packing_preference text;
 
 -- -------------------------------------------------------------------------------
 -- B2B PAID ORDERS TABLE
@@ -837,6 +852,22 @@ create table if not exists public.orders (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Ensure dropshipping columns exist on orders table if table already exists
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS is_dropship boolean DEFAULT false;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_name text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_phone text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_address text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_city text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_state text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_pincode text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_name text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_phone text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_address text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_city text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_state text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_pincode text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_packing_preference text;
 
 -- Enable RLS
 alter table public.orders enable row level security;
@@ -870,6 +901,7 @@ create policy "orders admin delete"
 -- Indices
 create index if not exists orders_user_id_idx on public.orders (user_id);
 create index if not exists orders_status_idx on public.orders (status);
+create index if not exists orders_is_dropship_idx on public.orders (is_dropship);
 
 -- Trigger for updated_at
 drop trigger if exists touch_orders_updated_at on public.orders;
@@ -878,6 +910,7 @@ before update on public.orders
 for each row execute function public.touch_updated_at();
 
 -- Create secure get_order_tracking database function to fetch tracking data by ID from both inquiries and orders
+DROP FUNCTION IF EXISTS public.get_order_tracking(uuid);
 CREATE OR REPLACE FUNCTION public.get_order_tracking(order_id uuid)
 RETURNS TABLE (
   id uuid,
@@ -890,6 +923,20 @@ RETURNS TABLE (
   tracking_message text,
   items jsonb,
   message text,
+  is_dropship boolean,
+  dropship_sender_name text,
+  dropship_sender_phone text,
+  dropship_sender_address text,
+  dropship_sender_city text,
+  dropship_sender_state text,
+  dropship_sender_pincode text,
+  dropship_recipient_name text,
+  dropship_recipient_phone text,
+  dropship_recipient_address text,
+  dropship_recipient_city text,
+  dropship_recipient_state text,
+  dropship_recipient_pincode text,
+  dropship_packing_preference text,
   created_at timestamptz,
   updated_at timestamptz
 ) 
@@ -909,6 +956,20 @@ BEGIN
     o.tracking_message,
     o.items,
     o.message,
+    o.is_dropship,
+    o.dropship_sender_name,
+    o.dropship_sender_phone,
+    o.dropship_sender_address,
+    o.dropship_sender_city,
+    o.dropship_sender_state,
+    o.dropship_sender_pincode,
+    o.dropship_recipient_name,
+    o.dropship_recipient_phone,
+    o.dropship_recipient_address,
+    o.dropship_recipient_city,
+    o.dropship_recipient_state,
+    o.dropship_recipient_pincode,
+    o.dropship_packing_preference,
     o.created_at,
     o.updated_at
   FROM public.orders o
@@ -925,6 +986,20 @@ BEGIN
     i.tracking_message,
     i.items,
     i.message,
+    i.is_dropship,
+    i.dropship_sender_name,
+    i.dropship_sender_phone,
+    i.dropship_sender_address,
+    i.dropship_sender_city,
+    i.dropship_sender_state,
+    i.dropship_sender_pincode,
+    i.dropship_recipient_name,
+    i.dropship_recipient_phone,
+    i.dropship_recipient_address,
+    i.dropship_recipient_city,
+    i.dropship_recipient_state,
+    i.dropship_recipient_pincode,
+    i.dropship_packing_preference,
     i.created_at,
     i.updated_at
   FROM public.inquiries i

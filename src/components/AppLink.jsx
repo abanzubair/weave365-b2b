@@ -40,7 +40,9 @@ export function AppLink({
       url = `/partner/${encodeURIComponent(slug)}`;
     } else if (to === 'blog' && productId) {
       url = `/blog/${encodeURIComponent(productId)}`;
-    } else if (to === 'wholesale-catalogue' || to === 'catalogue') {
+    } else if (to === 'wholesale-catalogue') {
+      url = '/wholesale-catalogue';
+    } else if (to === 'catalogue') {
       url = '/catalogue';
     }
 

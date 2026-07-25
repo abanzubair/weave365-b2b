@@ -5,7 +5,7 @@
  * PAN India delivery pincode check status, and dynamic WhatsApp checkouts.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard, Store, MapPin } from 'lucide-react';
 import { storeConfig, getProductCategorySlug } from '../config.js';
 import {
   customerPrice,
@@ -60,6 +60,17 @@ export function CartDrawer({
   const [formCountry, setFormCountry] = useState('India');
   const [saveToAccount, setSaveToAccount] = useState(true);
 
+  // Dropshipping state
+  const [isDropship, setIsDropship] = useState(false);
+  const [senderName, setSenderName] = useState(priceAccess?.businessName || user?.user_metadata?.business_name || '');
+  const [senderPhone, setSenderPhone] = useState(priceAccess?.buyerPhone || user?.user_metadata?.phone || '');
+  const [senderAddress, setSenderAddress] = useState('');
+  const [senderCity, setSenderCity] = useState('');
+  const [senderState, setSenderState] = useState('');
+  const [senderPincode, setSenderPincode] = useState('');
+  const [packingPreference, setPackingPreference] = useState('Blind Packaging (Zero Supplier Branding / No Price Tags)');
+  const [dropshipNotes, setDropshipNotes] = useState('');
+
   // Sync pincode from cart check if available
   useEffect(() => {
     if (pincode) {
@@ -73,6 +84,7 @@ export function CartDrawer({
       const { data, error } = await supabase
         .from('addresses')
         .select('*')
+        .eq('user_id', user.id)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -109,9 +121,31 @@ export function CartDrawer({
   };
 
   const handleProceedToPayment = async () => {
+    const dropshipMeta = isDropship ? {
+      is_dropship: true,
+      dropship_sender_name: senderName.trim() || priceAccess?.businessName || 'Reseller Store',
+      dropship_sender_phone: senderPhone.trim() || priceAccess?.buyerPhone || 'N/A',
+      dropship_sender_address: senderAddress.trim() || null,
+      dropship_sender_city: senderCity.trim() || null,
+      dropship_sender_state: senderState.trim() || null,
+      dropship_sender_pincode: senderPincode.trim() || null,
+      dropship_recipient_name: formName.trim(),
+      dropship_recipient_phone: formPhone.trim(),
+      dropship_recipient_address: `${formAddr1.trim()}${formAddr2.trim() ? ', ' + formAddr2.trim() : ''}`,
+      dropship_recipient_city: formCity.trim(),
+      dropship_recipient_state: formState.trim(),
+      dropship_recipient_pincode: formPincode.trim(),
+      dropship_packing_preference: packingPreference,
+    } : { is_dropship: false };
+
     if (showAddressForm || addresses.length === 0) {
       if (!formName.trim() || !formPhone.trim() || !formAddr1.trim() || !formCity.trim() || !formState.trim() || !formPincode.trim()) {
-        alert('Please fill in all required fields.');
+        alert('Please fill in all required delivery address fields.');
+        return;
+      }
+
+      if (isDropship && (!senderName.trim() || !senderPhone.trim() || !senderAddress.trim() || !senderCity.trim() || !senderState.trim() || !senderPincode.trim())) {
+        alert('Please fill in all required Sender Address fields (Store Name, Phone, Address, City, State, Pincode).');
         return;
       }
 
@@ -124,15 +158,23 @@ export function CartDrawer({
         state: formState.trim(),
         pincode: formPincode.trim(),
         country: formCountry.trim() || 'India',
+        ...dropshipMeta,
       };
 
-      if (saveToAccount && user?.id && isSupabaseConfigured) {
+      if (saveToAccount && user?.id && isSupabaseConfigured && !isDropship) {
         try {
           const isFirst = addresses.length === 0;
           const { data, error } = await supabase
             .from('addresses')
             .insert({
-              ...addrData,
+              full_name: addrData.full_name,
+              phone_number: addrData.phone_number,
+              address_line1: addrData.address_line1,
+              address_line2: addrData.address_line2,
+              city: addrData.city,
+              state: addrData.state,
+              pincode: addrData.pincode,
+              country: addrData.country,
               user_id: user.id,
               is_default: isFirst,
             })
@@ -140,12 +182,11 @@ export function CartDrawer({
             .single();
           if (error) throw error;
 
-          setSelectedAddress(data);
+          setSelectedAddress({ ...data, ...dropshipMeta });
           setSelectedAddressId(data.id);
           await fetchAddresses();
         } catch (err) {
           console.error('Failed to save address:', err);
-          alert('Failed to save address to account, but proceeding with this address.');
           setSelectedAddress(addrData);
         }
       } else {
@@ -159,7 +200,7 @@ export function CartDrawer({
         alert('Please select a delivery address.');
         return;
       }
-      setSelectedAddress(active);
+      setSelectedAddress({ ...active, ...dropshipMeta });
     }
 
     setAddressStep(false);
@@ -370,17 +411,36 @@ export function CartDrawer({
 
     if (isSupabaseConfigured) {
       try {
+        const isDropshipOrder = Boolean(selectedAddress?.is_dropship);
+        const orderMessage = isDropshipOrder
+          ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\n\nSender (Parcel Label):\nName: ${selectedAddress?.dropship_sender_name}\nPhone: ${selectedAddress?.dropship_sender_phone}\n\nRecipient Delivery Address:\nName: ${selectedAddress?.dropship_recipient_name || selectedAddress?.full_name}\nPhone: ${selectedAddress?.dropship_recipient_phone || selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}\n\nPackaging: ${selectedAddress?.dropship_packing_preference || 'Blind Shipping'}`
+          : `Order paid via UPI. (User is sharing payment screenshot on WhatsApp)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`;
+
         const { data: insertData, error: insertErr } = await supabase
           .from('orders')
           .insert({
             user_id: priceAccess?.userId || undefined,
             email: priceAccess?.userEmail || undefined,
-            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-            business_name: priceAccess?.businessName || undefined,
-            phone: priceAccess?.buyerPhone || undefined,
-            pincode: pincode || priceAccess?.buyerPincode || undefined,
+            buyer_name: isDropshipOrder ? selectedAddress?.dropship_sender_name : (priceAccess?.buyerName || 'Guest Buyer'),
+            business_name: isDropshipOrder ? selectedAddress?.dropship_sender_name : (priceAccess?.businessName || undefined),
+            phone: isDropshipOrder ? selectedAddress?.dropship_sender_phone : (priceAccess?.buyerPhone || undefined),
+            pincode: pincode || priceAccess?.buyerPincode || selectedAddress?.pincode || undefined,
             status: 'new',
-            message: `Order paid via UPI. (User is sharing payment screenshot on WhatsApp)\n\nDelivery Address:\nName: ${selectedAddress?.full_name}\nPhone: ${selectedAddress?.phone_number}\nAddress: ${selectedAddress?.address_line1}${selectedAddress?.address_line2 ? ', ' + selectedAddress?.address_line2 : ''}\nCity: ${selectedAddress?.city}, ${selectedAddress?.state} - ${selectedAddress?.pincode}\nCountry: ${selectedAddress?.country || 'India'}`,
+            message: orderMessage,
+            is_dropship: isDropshipOrder,
+            dropship_sender_name: selectedAddress?.dropship_sender_name || null,
+            dropship_sender_phone: selectedAddress?.dropship_sender_phone || null,
+            dropship_sender_address: selectedAddress?.dropship_sender_address || null,
+            dropship_sender_city: selectedAddress?.dropship_sender_city || null,
+            dropship_sender_state: selectedAddress?.dropship_sender_state || null,
+            dropship_sender_pincode: selectedAddress?.dropship_sender_pincode || null,
+            dropship_recipient_name: selectedAddress?.dropship_recipient_name || selectedAddress?.full_name || null,
+            dropship_recipient_phone: selectedAddress?.dropship_recipient_phone || selectedAddress?.phone_number || null,
+            dropship_recipient_address: selectedAddress ? `${selectedAddress.address_line1}${selectedAddress.address_line2 ? ', ' + selectedAddress.address_line2 : ''}` : null,
+            dropship_recipient_city: selectedAddress?.city || null,
+            dropship_recipient_state: selectedAddress?.state || null,
+            dropship_recipient_pincode: selectedAddress?.pincode || null,
+            dropship_packing_preference: selectedAddress?.dropship_packing_preference || null,
             items: items.map(item => ({
               product_id: item.productGroupKey,
               product_title: item.product.title,
@@ -509,43 +569,137 @@ export function CartDrawer({
             </div>
           ) : addressStep ? (
             <div className="cart-address-view">
-              <button
-                type="button"
-                className="cart-back-btn"
-                onClick={() => {
-                  setAddressStep(false);
-                  setShowAddressForm(false);
-                }}
-              >
-                <ArrowLeft size={16} /> Back to Order List
-              </button>
+              <div className="address-step-header-bar">
+                <div className="address-header-top-row">
+                  <button
+                    type="button"
+                    className="cart-back-btn"
+                    onClick={() => {
+                      setAddressStep(false);
+                      setShowAddressForm(false);
+                    }}
+                  >
+                    <ArrowLeft size={15} /> Order List
+                  </button>
 
-              <div className="upi-payment-header">
-                <strong>Delivery Address</strong>
-                <span className="upi-payment-badge">Step 1 of 2</span>
-              </div>
-
-              {showAddressForm || addresses.length === 0 ? (
-                <div className="address-form">
-                  <div className="form-head-row">
-                    <h3>Add Delivery Address</h3>
-                    {addresses.length > 0 && (
+                  <div className="address-header-actions">
+                    {isDropship && (
+                      <span className="upi-payment-badge">Dropship Mode</span>
+                    )}
+                    {showAddressForm && addresses.length > 0 && (
                       <button
                         type="button"
-                        className="text-button"
+                        className="cart-cancel-btn"
                         onClick={() => setShowAddressForm(false)}
                       >
                         Cancel
                       </button>
                     )}
                   </div>
+                </div>
+
+                <h3 className="address-step-title">
+                  {showAddressForm || addresses.length === 0
+                    ? (isDropship ? "Dropship Delivery & Sender Details" : "Add Delivery Address")
+                    : "Select Delivery Address"}
+                </h3>
+              </div>
+
+              <label className={`dropship-toggle-row ${isDropship ? 'active' : ''}`}>
+                <div className="dropship-toggle-left">
+                  <input
+                    type="checkbox"
+                    checked={isDropship}
+                    onChange={(e) => setIsDropship(e.target.checked)}
+                  />
+                  <span className="dropship-toggle-label-text">Direct Dropshipping to Customer</span>
+                </div>
+              </label>
+
+              {showAddressForm || addresses.length === 0 ? (
+                <div className="address-form">
+
+                  {isDropship && (
+                    <>
+                      <div className="minimal-section-title">
+                        1. Sender Details (On Parcel Label)
+                      </div>
+
+                      <div className="address-form-grid" style={{ marginBottom: '14px' }}>
+                        <label className="field-label">
+                          Sender Store Name *
+                          <input
+                            type="text"
+                            placeholder="e.g. Royal Heritage Store"
+                            value={senderName}
+                            onChange={(e) => setSenderName(e.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="field-label">
+                          Sender Contact Phone *
+                          <input
+                            type="tel"
+                            placeholder="10-digit mobile number"
+                            value={senderPhone}
+                            onChange={(e) => setSenderPhone(e.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="field-label full-width">
+                          Sender Address Line *
+                          <input
+                            type="text"
+                            placeholder="Shop/Building, Street, Area"
+                            value={senderAddress}
+                            onChange={(e) => setSenderAddress(e.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="field-label">
+                          Sender City *
+                          <input
+                            type="text"
+                            placeholder="City"
+                            value={senderCity}
+                            onChange={(e) => setSenderCity(e.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="field-label">
+                          Sender State *
+                          <input
+                            type="text"
+                            placeholder="State"
+                            value={senderState}
+                            onChange={(e) => setSenderState(e.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="field-label">
+                          Sender Pincode *
+                          <input
+                            type="text"
+                            placeholder="6-digit pincode"
+                            value={senderPincode}
+                            onChange={(e) => setSenderPincode(normalizePincodeInput(e.target.value))}
+                            required
+                          />
+                        </label>
+                      </div>
+
+                      <div className="minimal-section-title">
+                        2. Customer Delivery Address
+                      </div>
+                    </>
+                  )}
 
                   <div className="address-form-grid">
                     <label className="field-label">
-                      Full Name *
+                      {isDropship ? "Customer Full Name *" : "Full Name *"}
                       <input
                         type="text"
-                        placeholder="Receiver's name"
+                        placeholder={isDropship ? "End-customer's name" : "Receiver's name"}
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         required
@@ -553,7 +707,7 @@ export function CartDrawer({
                     </label>
 
                     <label className="field-label">
-                      Phone Number *
+                      {isDropship ? "Customer Mobile Number *" : "Phone Number *"}
                       <input
                         type="tel"
                         placeholder="10-digit mobile number"
@@ -629,7 +783,34 @@ export function CartDrawer({
                     </label>
                   </div>
 
-                  {user?.id && (
+                  {isDropship && (
+                    <div style={{ marginTop: '16px' }}>
+                      <label className="field-label full-width" style={{ marginBottom: '10px' }}>
+                        Packaging & Branding Preference
+                        <select
+                          value={packingPreference}
+                          onChange={(e) => setPackingPreference(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.85rem',
+                            borderRadius: '6px',
+                            border: '1px solid var(--line)',
+                            background: '#fff',
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                            color: 'var(--ink)',
+                            marginTop: '4px',
+                          }}
+                        >
+                          <option value="Blind Packaging (Zero Supplier Branding / No Price Tags)">Blind Shipping (No supplier branding or prices)</option>
+                          <option value="Attach Reseller Custom Invoice">Attach Reseller Custom Invoice</option>
+                          <option value="Express Plain White Gift Packaging">Express Plain White Gift Packaging</option>
+                        </select>
+                      </label>
+                    </div>
+                  )}
+
+                  {user?.id && !isDropship && (
                     <label className="address-checkbox-label">
                       <input
                         type="checkbox"
@@ -645,7 +826,7 @@ export function CartDrawer({
                     className="primary-button proceed-address-btn"
                     onClick={handleProceedToPayment}
                   >
-                    Deliver to this Address <ArrowRight size={18} />
+                    {isDropship ? "Proceed with Dropship Address" : "Deliver to this Address"} <ArrowRight size={18} />
                   </button>
                 </div>
               ) : (

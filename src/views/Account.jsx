@@ -92,6 +92,16 @@ export function Account({
   // Placed orders state
   const [placedOrders, setPlacedOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [orderFilterTab, setOrderFilterTab] = useState('all');
+  const [copiedTrackingId, setCopiedTrackingId] = useState(null);
+
+  const copyCustomerTrackingLink = (orderId) => {
+    if (typeof window === 'undefined') return;
+    const link = `${window.location.origin}/order-tracking?id=${orderId}`;
+    navigator.clipboard.writeText(link);
+    setCopiedTrackingId(orderId);
+    setTimeout(() => setCopiedTrackingId(null), 2000);
+  };
 
   // Influencer Program State
   const [influencerProfile, setInfluencerProfile] = useState(null);
@@ -181,10 +191,11 @@ export function Account({
     setAddressLoading(true);
     try {
       const { data, error } = await supabase
-        .from('addresses')
-        .select('*')
-        .order('is_default', { ascending: false })
-        .order('created_at', { ascending: false });
+      .from('addresses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false });
       if (error) throw error;
       setAddresses(data || []);
     } catch (err) {
@@ -279,7 +290,8 @@ export function Account({
         const { error } = await supabase
           .from('addresses')
           .update(addrData)
-          .eq('id', editingAddress.id);
+          .eq('id', editingAddress.id)
+          .eq('user_id', user.id);
         if (error) throw error;
       } else {
         const isFirst = addresses.length === 0;
@@ -304,14 +316,15 @@ export function Account({
 
   const handleDeleteAddress = async (id) => {
     if (!confirm('Are you sure you want to delete this address?')) return;
-    if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured || !user?.id) return;
 
     try {
       const target = addresses.find(a => a.id === id);
       const { error } = await supabase
         .from('addresses')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
 
       if (target?.is_default && addresses.length > 1) {
@@ -319,7 +332,8 @@ export function Account({
         await supabase
           .from('addresses')
           .update({ is_default: true })
-          .eq('id', remaining[0].id);
+          .eq('id', remaining[0].id)
+          .eq('user_id', user.id);
       }
 
       await fetchAddresses();
@@ -341,7 +355,8 @@ export function Account({
       const { error } = await supabase
         .from('addresses')
         .update({ is_default: true })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
 
       await fetchAddresses();
@@ -495,6 +510,33 @@ export function Account({
             <span><History size={18} /> Placed Orders (Order History)</span>
           </div>
 
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className={`account-tab-btn ${orderFilterTab === 'all' ? 'active' : ''}`}
+              onClick={() => setOrderFilterTab('all')}
+              style={{ padding: '5px 12px', fontSize: '12px' }}
+            >
+              All Orders ({placedOrders.length})
+            </button>
+            <button
+              type="button"
+              className={`account-tab-btn ${orderFilterTab === 'dropship' ? 'active' : ''}`}
+              onClick={() => setOrderFilterTab('dropship')}
+              style={{ padding: '5px 12px', fontSize: '12px' }}
+            >
+              Dropship Orders ({placedOrders.filter(o => o.is_dropship).length})
+            </button>
+            <button
+              type="button"
+              className={`account-tab-btn ${orderFilterTab === 'regular' ? 'active' : ''}`}
+              onClick={() => setOrderFilterTab('regular')}
+              style={{ padding: '5px 12px', fontSize: '12px' }}
+            >
+              Standard Orders ({placedOrders.filter(o => !o.is_dropship).length})
+            </button>
+          </div>
+
           <div className="account-list">
             {ordersLoading ? (
               <p className="loading-state" style={{ padding: '20px', textAlign: 'center', color: 'var(--muted)' }}>Loading your orders...</p>
@@ -504,106 +546,151 @@ export function Account({
               </p>
             ) : (
               <div className="placed-orders-grid" style={{ display: 'grid', gap: '16px' }}>
-                {placedOrders.map((order) => {
-                  const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                  });
-                  const statusStyle = getStatusBadgeStyle(order.status);
-                  const orderTotal = order.items && Array.isArray(order.items)
-                    ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
-                    : 0;
+                {placedOrders
+                  .filter(o => {
+                    if (orderFilterTab === 'dropship') return o.is_dropship;
+                    if (orderFilterTab === 'regular') return !o.is_dropship;
+                    return true;
+                  })
+                  .map((order) => {
+                    const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+                    const statusStyle = getStatusBadgeStyle(order.status);
+                    const orderTotal = order.items && Array.isArray(order.items)
+                      ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                      : 0;
+                    const isDropshipOrder = Boolean(order.is_dropship);
 
-                  return (
-                    <div 
-                      key={order.id} 
-                      className="placed-order-card"
-                      style={{ 
-                        border: '1px solid var(--line)', 
-                        borderRadius: '8px', 
-                        padding: '16px', 
-                        background: 'var(--surface-soft)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                        <div>
-                          <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Tracking ID</span>
-                          <code style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold-dark)' }}>{order.id}</code>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Date Placed</span>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{orderDate}</span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
-                        <div>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
-                            <span 
-                              style={{ 
-                                ...statusStyle, 
-                                fontSize: '10px', 
-                                fontWeight: 800, 
-                                padding: '4px 10px', 
-                                borderRadius: '20px', 
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.04em'
-                              }}
-                            >
-                              {order.status || 'new'}
-                            </span>
-                            {order.pincode && (
-                              <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                                Pincode: <strong>{order.pincode}</strong>
+                    return (
+                      <div 
+                        key={order.id} 
+                        className="placed-order-card"
+                        style={{ 
+                          border: isDropshipOrder ? '1px solid #fde68a' : '1px solid var(--line)', 
+                          borderRadius: '10px', 
+                          padding: '16px', 
+                          background: isDropshipOrder ? 'linear-gradient(135deg, #fffdfa 0%, #fffbf0 100%)' : 'var(--surface-soft)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Tracking ID</span>
+                              <code style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold-dark)' }}>{order.id}</code>
+                            </div>
+                            {isDropshipOrder && (
+                              <span className="dropship-badge" style={{ marginLeft: '6px' }}>
+                                Dropship
                               </span>
                             )}
                           </div>
-                          
-                          <div style={{ display: 'grid', gap: '6px' }}>
-                            {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
-                              <div key={idx} style={{ fontSize: '13px', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--gold)', display: 'inline-block' }}></span>
-                                <span>
-                                  <strong>{item.product_title || 'Premium Banarasi Saree'}</strong>
-                                  {item.color && <span style={{ color: 'var(--muted)' }}> · Color: {item.color}</span>}
-                                  {` x ${item.quantity || 1}`}
-                                </span>
-                              </div>
-                            ))}
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Date Placed</span>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{orderDate}</span>
                           </div>
                         </div>
 
-                        <div style={{ textAlign: 'right', display: 'grid', gap: '8px', justifyItems: 'end' }}>
-                          <div>
-                            <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Amount</span>
-                            <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>
-                              {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
-                            </strong>
+                        {isDropshipOrder && (
+                          <div style={{ background: '#fef3c7', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', color: '#92400e', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div><strong>Parcel Sender (Label):</strong> {order.dropship_sender_name || order.business_name || 'Reseller Store'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
+                            <div><strong>Recipient Customer:</strong> {order.dropship_recipient_name || order.buyer_name} {order.dropship_recipient_phone ? `(${order.dropship_recipient_phone})` : ''}</div>
+                            {order.dropship_recipient_address && (
+                              <div><strong>Deliver To:</strong> {order.dropship_recipient_address}, {order.dropship_recipient_city} - {order.dropship_recipient_pincode}</div>
+                            )}
+                            <div><strong>Packaging:</strong> {order.dropship_packing_preference || 'Blind Shipping'}</div>
                           </div>
-                          <button 
-                            type="button" 
-                            className="primary-button" 
-                            onClick={() => navigate('order-tracking', order.id)}
-                            style={{ 
-                              padding: '6px 14px', 
-                              fontSize: '12px', 
-                              minHeight: 0, 
-                              height: 'auto',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              width: 'fit-content'
-                            }}
-                          >
-                            Track Order
-                          </button>
+                        )}
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                          <div>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
+                              <span 
+                                style={{ 
+                                  ...statusStyle, 
+                                  fontSize: '10px', 
+                                  fontWeight: 800, 
+                                  padding: '4px 10px', 
+                                  borderRadius: '20px', 
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em'
+                                }}
+                              >
+                                {order.status || 'new'}
+                              </span>
+                              {order.pincode && (
+                                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                                  Pincode: <strong>{order.pincode}</strong>
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div style={{ display: 'grid', gap: '6px' }}>
+                              {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
+                                <div key={idx} style={{ fontSize: '13px', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--gold)', display: 'inline-block' }}></span>
+                                  <span>
+                                    <strong>{item.product_title || 'Premium Banarasi Saree'}</strong>
+                                    {item.color && <span style={{ color: 'var(--muted)' }}> · Color: {item.color}</span>}
+                                    {` x ${item.quantity || 1}`}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div style={{ textAlign: 'right', display: 'grid', gap: '8px', justifyItems: 'end' }}>
+                            <div>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Amount</span>
+                              <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>
+                                {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                              </strong>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <button 
+                                type="button" 
+                                className="primary-button" 
+                                onClick={() => navigate('order-tracking', order.id)}
+                                style={{ 
+                                  padding: '6px 14px', 
+                                  fontSize: '12px', 
+                                  minHeight: 0, 
+                                  height: 'auto',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  width: 'fit-content'
+                                }}
+                              >
+                                Track Order
+                              </button>
+                              {isDropshipOrder && (
+                                <button
+                                  type="button"
+                                  className="text-button"
+                                  onClick={() => copyCustomerTrackingLink(order.id)}
+                                  style={{
+                                    fontSize: '11px',
+                                    padding: '6px 10px',
+                                    border: '1px solid #d97706',
+                                    borderRadius: '6px',
+                                    color: '#b45309',
+                                    background: '#fff',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  {copiedTrackingId === order.id ? '✓ Link Copied!' : 'Copy Customer Tracking Link'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             )}
           </div>

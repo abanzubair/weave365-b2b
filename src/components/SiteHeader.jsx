@@ -124,31 +124,31 @@ export function SiteHeader({
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Buy</span>
-                  <button type="button" onClick={() => { navigate('wholesale-catalogue'); setDropdownOpen(null); }}>Wholesale</button>
-                  <button type="button" onClick={() => { navigate('bulk-inquiry'); setDropdownOpen(null); }}>Bulk Enquiry</button>
+                  <AppLink to="wholesale-catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>Wholesale</AppLink>
+                  <AppLink to="bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>Bulk Enquiry</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Sell</span>
-                  <button type="button" onClick={() => { navigate('dropshipping'); setDropdownOpen(null); }}>Dropshipping Support</button>
-                  <button type="button" onClick={() => { navigate('white-label'); setDropdownOpen(null); }}>White Label Catalog</button>
-                  <button type="button" onClick={() => { navigate('resell-sarees-online'); setDropdownOpen(null); }}>Reseller Center</button>
-                  <button type="button" onClick={() => { navigate('affiliate-program'); setDropdownOpen(null); }}>Affiliate Program</button>
+                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Support</AppLink>
+                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
+                  <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Reseller Center</AppLink>
+                  <AppLink to="affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>Affiliate Program</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Partner</span>
-                  <button type="button" onClick={() => { navigate('collaboration'); setDropdownOpen(null); }}>Collaboration</button>
-                  <button type="button" onClick={() => { navigate('sourcing-partners'); setDropdownOpen(null); }}>Sourcing Partner</button>
-                  <button type="button" onClick={() => { navigate('early-access'); setDropdownOpen(null); }}>WhatsApp Community</button>
+                  <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Collaboration</AppLink>
+                  <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sourcing Partner</AppLink>
+                  <AppLink to="early-access" navigate={navigate} onClick={() => setDropdownOpen(null)}>WhatsApp Community</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Supply</span>
-                  <button type="button" onClick={() => { navigate('weaver-onboarding'); setDropdownOpen(null); }}>Vendor Onboarding</button>
+                  <AppLink to="weaver-onboarding" navigate={navigate} onClick={() => setDropdownOpen(null)}>Vendor Onboarding</AppLink>
                 </div>
               </div>
             </div>

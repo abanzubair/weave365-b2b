@@ -355,10 +355,33 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 )}
               </div>
 
-              {/* Delivery Address */}
+              {/* Delivery Address / Dropship Info */}
               <div className="details-card">
                 <h4><Compass size={14} /> Delivery Address</h4>
-                {parsedAddress ? (
+                {order.is_dropship ? (
+                  <div>
+                    <span className="dropship-badge" style={{ marginBottom: '8px', display: 'inline-block' }}>
+                      Direct Dropship Package
+                    </span>
+                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{order.dropship_recipient_name || parsedAddress?.name || order.buyer_name}</p>
+                    {(order.dropship_recipient_phone || parsedAddress?.phone) && (
+                      <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--muted)' }}>
+                        Phone: {order.dropship_recipient_phone || parsedAddress?.phone}
+                      </p>
+                    )}
+                    <p style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
+                      {order.dropship_recipient_address || parsedAddress?.address || (order.message && order.message.includes('Delivery Address:') ? order.message.split('Delivery Address:')[1].trim() : '')}
+                    </p>
+                    {(order.dropship_recipient_city || parsedAddress?.city) && (
+                      <p style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                        {order.dropship_recipient_city || parsedAddress?.city} - {order.dropship_recipient_pincode || order.pincode}
+                      </p>
+                    )}
+                    <p style={{ fontSize: '0.8rem', color: '#b45309', marginTop: '6px', fontWeight: 600 }}>
+                      Parcel Sender: {order.dropship_sender_name || 'Partner Store'}
+                    </p>
+                  </div>
+                ) : parsedAddress ? (
                   <div>
                     <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{parsedAddress.name}</p>
                     {parsedAddress.phone && <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {parsedAddress.phone}</p>}

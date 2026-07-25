@@ -27,6 +27,8 @@ import {
   ChevronRight,
   Layers,
   UserPlus,
+  Activity,
+  Printer,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -44,6 +46,8 @@ import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 import DirectoryManager from './admin/DirectoryManager.jsx';
 import EnquiresManager from './admin/EnquiresManager.jsx';
 import InfluencerManager from './admin/InfluencerManager.jsx';
+import BuyerActivity from './admin/BuyerActivity.jsx';
+import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
 
 import { storeConfig } from '../config.js';
 
@@ -519,27 +523,29 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       title: 'General',
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
-        { key: 'pipeline', label: 'Customers', icon: Users, badge: null },
-        { key: 'enquires', label: 'Enquires', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
+        { key: 'pipeline', label: 'Customer', icon: Users, badge: null },
+        { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
+        { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
+      ],
+    },
+    {
+      title: 'Sales',
+      items: [
+        { key: 'buyer-activity', label: 'Buyer Activity', icon: Activity, badge: null },
+        { key: 'tracking', label: 'Order', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
+        { key: 'invoice-slip', label: 'Invoice / Courier Slip', icon: Printer, badge: null },
+        { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
+        { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
       ],
     },
     {
       title: 'Settings',
       items: [
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
-        { key: 'seo', label: 'SEO Settings', icon: Search, badge: null },
+        { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
-        { key: 'directory', label: 'Internal Links', icon: Compass, badge: null },
-      ],
-    },
-    {
-      title: 'Sales',
-      items: [
-        { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
-        { key: 'partners', label: 'Vendor Applications', icon: Award, badge: null },
-        { key: 'tracking', label: 'Order Tracking', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
-        { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
-        { key: 'influencers', label: 'Affiliates', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
+        { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
+        { key: 'partners', label: 'Vendor Application', icon: Award, badge: null },
       ],
     },
   ];
@@ -737,6 +743,22 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
           {activeTab === 'influencers' && (
             <InfluencerManager />
+          )}
+
+          {activeTab === 'buyer-activity' && (
+            <BuyerActivity
+              adminData={adminData}
+              products={products}
+              loadAdminData={loadAdminData}
+            />
+          )}
+
+          {activeTab === 'invoice-slip' && (
+            <InvoiceCourierManager
+              inquiries={enquiryRows}
+              products={products}
+              loadAdminData={loadAdminData}
+            />
           )}
 
           {activeTab === 'enquires' && (

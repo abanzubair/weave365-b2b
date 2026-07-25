@@ -130,6 +130,37 @@ export function safeFileName(value) {
 
 
 
+export function formatAddressBlock(address) {
+  if (!address) return '';
+  if (address.is_dropship) {
+    const senderFullAddress = [
+      address.dropship_sender_address,
+      address.dropship_sender_city,
+      address.dropship_sender_state ? `${address.dropship_sender_state}${address.dropship_sender_pincode ? ' - ' + address.dropship_sender_pincode : ''}` : address.dropship_sender_pincode
+    ].filter(Boolean).join(', ');
+
+    return [
+      '*DIRECT DROPSHIP ORDER (BLIND PACKAGING)*',
+      `*Sender (Parcel Label):* ${address.dropship_sender_name || 'Reseller'} (Ph: ${address.dropship_sender_phone || 'N/A'})`,
+      senderFullAddress ? `*Sender Address:* ${senderFullAddress}` : null,
+      `*Recipient:* ${address.dropship_recipient_name || address.full_name}`,
+      `*Recipient Phone:* ${address.dropship_recipient_phone || address.phone_number}`,
+      `*Deliver To:* ${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
+      address.country && address.country !== 'India' ? `*Country:* ${address.country}` : null,
+      `*Packaging Preference:* ${address.dropship_packing_preference || 'Blind Shipping (Zero Supplier Branding / No Price Tags)'}`,
+    ].filter(Boolean).join('\n');
+  }
+
+  return [
+    '*Delivery Address:*',
+    address.full_name,
+    `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
+    `${address.city}, ${address.state}, ${address.pincode}`,
+    address.country || 'India',
+    address.phone_number
+  ].filter(Boolean).join('\n');
+}
+
 export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address, isPayment = false) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const isWholesale = priceAccess?.priceGroup === 'wholesale';
@@ -215,15 +246,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     blocks.push(mainParts.join('\n'));
 
     if (address) {
-      const addressLines = [
-        '*Delivery Address:*',
-        address.full_name,
-        `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
-        `${address.city}, ${address.state}, ${address.pincode}`,
-        address.country || 'India',
-        address.phone_number
-      ].filter(Boolean);
-      blocks.push(addressLines.join('\n'));
+      blocks.push(formatAddressBlock(address));
     }
 
     if (screenshotUrl) {
@@ -271,15 +294,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
   blocks.push(mainParts.join('\n'));
 
   if (address) {
-    const addressLines = [
-      '*Delivery Address:*',
-      address.full_name,
-      `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
-      `${address.city}, ${address.state}, ${address.pincode}`,
-      address.country || 'India',
-      address.phone_number
-    ].filter(Boolean);
-    blocks.push(addressLines.join('\n'));
+    blocks.push(formatAddressBlock(address));
   }
 
   if (screenshotUrl) {

@@ -7,7 +7,8 @@ import {
   ExternalLink, 
   MessageSquareText, 
   Copy,
-  Check
+  Check,
+  Printer
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient.js';
 
@@ -62,6 +63,106 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
     setTimeout(() => {
       setCopyFeedback(prev => ({ ...prev, [id]: false }));
     }, 2000);
+  };
+
+  const handlePrintBlindLabel = (inquiry) => {
+    if (typeof window === 'undefined') return;
+    const senderName = inquiry.dropship_sender_name || inquiry.business_name || inquiry.buyer_name || 'Reseller Store';
+    const senderPhone = inquiry.dropship_sender_phone || inquiry.phone || 'N/A';
+    const senderAddrText = inquiry.dropship_sender_address ? `${inquiry.dropship_sender_address}, ${inquiry.dropship_sender_city || ''}, ${inquiry.dropship_sender_state || ''} - ${inquiry.dropship_sender_pincode || ''}` : '';
+    const recipientName = inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer';
+    const recipientPhone = inquiry.dropship_recipient_phone || inquiry.phone || 'N/A';
+    const recipientAddress = inquiry.dropship_recipient_address || getParsedAddress(inquiry.message) || 'N/A';
+    const cityStatePin = `${inquiry.dropship_recipient_city || ''} ${inquiry.dropship_recipient_state || ''} ${inquiry.dropship_recipient_pincode || inquiry.pincode || ''}`.trim();
+    const packingPref = inquiry.dropship_packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)';
+
+    const itemsHtml = (inquiry.items || []).map(it => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-family: monospace;">${it.variant_code || 'N/A'}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${it.product_title || 'Banarasi Textile'}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${it.color || 'Standard'}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">${it.quantity || 1} pc</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Blind Shipping Label - Order ${inquiry.id.substring(0, 8)}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; color: #1e293b; background: #fff; }
+          .label-box { border: 2px solid #0f172a; padding: 24px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+          .label-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #0f172a; padding-bottom: 16px; margin-bottom: 20px; }
+          .badge { background: #d97706; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+          .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+          .addr-card { border: 1px solid #cbd5e1; padding: 14px; border-radius: 6px; background: #f8fafc; }
+          .addr-title { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 6px; }
+          .addr-name { font-size: 15px; font-weight: bold; color: #0f172a; margin-bottom: 4px; }
+          .addr-text { font-size: 13px; line-height: 1.4; color: #334155; }
+          .items-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+          .items-table th { background: #f1f5f9; text-align: left; padding: 8px; font-size: 11px; text-transform: uppercase; color: #475569; }
+          .footer-note { margin-top: 20px; font-size: 11px; color: #92400e; background: #fef3c7; border: 1px solid #fde68a; padding: 8px; border-radius: 4px; text-align: center; font-weight: bold; }
+          @media print { button { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="label-box">
+          <div class="label-header">
+            <div>
+              <span class="badge">BLIND DROPSHIP DISPATCH LABEL</span>
+              <div style="font-size: 12px; color: #64748b; margin-top: 6px;">Order ID: <strong>${inquiry.id}</strong></div>
+            </div>
+            <button onclick="window.print()" style="padding: 8px 16px; background: #0f172a; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-weight: bold;">🖨️ Print Label</button>
+          </div>
+
+          <div class="address-grid">
+            <div class="addr-card">
+              <div class="addr-title">SHIP FROM (SENDER LABEL)</div>
+              <div class="addr-name">${senderName}</div>
+              <div class="addr-text">Contact: ${senderPhone}</div>
+              ${senderAddrText ? `<div class="addr-text" style="margin-top: 4px;">${senderAddrText}</div>` : ''}
+            </div>
+            <div class="addr-card" style="background: #fffdf5; border-color: #fde68a;">
+              <div class="addr-title" style="color: #b45309;">SHIP TO (RECIPIENT)</div>
+              <div class="addr-name">${recipientName}</div>
+              <div class="addr-text">Phone: ${recipientPhone}</div>
+              <div class="addr-text">${recipientAddress}</div>
+              <div class="addr-text" style="font-weight: bold; margin-top: 4px;">${cityStatePin}</div>
+            </div>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; font-size: 12px; color: #334155; margin-bottom: 16px;">
+            <strong>PACKAGING PREFERENCE:</strong> ${packingPref}
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Item Title</th>
+                <th>Color</th>
+                <th style="text-align: center;">Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="footer-note">
+            ⚠️ WAREHOUSE INSTRUCTION: BLIND FULFILLMENT. DO NOT INCLUDE SUPPLIER PRICING LEAFLETS OR WEAVE365 BRANDING.
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWin = window.open('', '_blank');
+    if (printWin) {
+      printWin.document.write(htmlContent);
+      printWin.document.close();
+    }
   };
 
   // Helper template fillers for quick messages
@@ -125,6 +226,8 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
         i.inquiry_type === 'cart_payment' || 
         i.inquiry_type === 'cart_payment_fallback'
       );
+    } else if (typeFilter === 'dropship') {
+      result = result.filter(i => i.is_dropship);
     }
 
     if (statusFilter !== 'all') {
@@ -136,6 +239,8 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
       result = result.filter(i => 
         (i.id && i.id.toLowerCase().includes(q)) ||
         (i.buyer_name && i.buyer_name.toLowerCase().includes(q)) ||
+        (i.dropship_sender_name && i.dropship_sender_name.toLowerCase().includes(q)) ||
+        (i.dropship_recipient_name && i.dropship_recipient_name.toLowerCase().includes(q)) ||
         (i.phone && i.phone.toLowerCase().includes(q)) ||
         (i.email && i.email.toLowerCase().includes(q)) ||
         (i.tracking_number && i.tracking_number.toLowerCase().includes(q))
@@ -262,6 +367,7 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                 className="admin-select-input"
               >
                 <option value="orders">Orders (UPI Checkout)</option>
+                <option value="dropship">Dropship Orders Only</option>
                 <option value="all">All Inquiries (incl. Product/Cart)</option>
               </select>
             </div>
@@ -315,7 +421,7 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
               <tr>
                 <th>Date</th>
                 <th>Inquiry/Order ID</th>
-                <th>Buyer & Address</th>
+                <th>Buyer & Delivery Details</th>
                 <th>Items Summary</th>
                 <th>Tracking Info</th>
                 <th>Status</th>
@@ -326,9 +432,10 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
               {filteredInquiries.map((inquiry) => {
                 const addressText = getParsedAddress(inquiry.message);
                 const currentStatus = inquiry.status || 'new';
+                const isDropship = Boolean(inquiry.is_dropship);
 
                 return (
-                  <tr key={inquiry.id}>
+                  <tr key={inquiry.id} style={isDropship ? { background: '#fffdf5' } : {}}>
                     {/* Date */}
                     <td className="admin-fs12">
                       {new Date(inquiry.created_at).toLocaleDateString('en-IN', {
@@ -353,7 +460,7 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                           {copyFeedback[inquiry.id] ? <Check size={12} className="admin-text-green" /> : <Copy size={12} />}
                         </button>
                         <a 
-                          href={`/order-tracking/${inquiry.id}`}
+                          href={`/order-tracking?id=${inquiry.id}`}
                           target="_blank" 
                           rel="noreferrer"
                           className="admin-icon-btn-ghost"
@@ -362,23 +469,44 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                           <ExternalLink size={12} />
                         </a>
                       </div>
-                    </td>
-
-                    {/* Buyer */}
-                    <td>
-                      <strong>{inquiry.buyer_name || 'Guest'}</strong>
-                      {inquiry.phone && (
-                        <span className="admin-phone-label">
-                          Phone: {inquiry.phone}
+                      {isDropship && (
+                        <span className="dropship-badge" style={{ marginTop: '4px', fontSize: '10px' }}>
+                          Dropship
                         </span>
                       )}
-                      {addressText && (
-                        <span 
-                          className="admin-address-trunc"
-                          title={addressText}
-                        >
-                          Address: {addressText}
-                        </span>
+                    </td>
+
+                    {/* Buyer & Delivery Details */}
+                    <td>
+                      {isDropship ? (
+                        <div>
+                          <span style={{ fontSize: '11px', color: '#b45309', fontWeight: 700, display: 'block' }}>
+                            Sender Label: {inquiry.dropship_sender_name || 'Reseller'} ({inquiry.dropship_sender_phone || 'N/A'})
+                          </span>
+                          <strong style={{ fontSize: '13px', display: 'block', marginTop: '2px' }}>
+                            Recipient: {inquiry.dropship_recipient_name || inquiry.buyer_name} ({inquiry.dropship_recipient_phone || inquiry.phone || 'N/A'})
+                          </strong>
+                          <span className="admin-address-trunc" title={inquiry.dropship_recipient_address || addressText}>
+                            Address: {inquiry.dropship_recipient_address || addressText}
+                          </span>
+                        </div>
+                      ) : (
+                        <div>
+                          <strong>{inquiry.buyer_name || 'Guest'}</strong>
+                          {inquiry.phone && (
+                            <span className="admin-phone-label">
+                              Phone: {inquiry.phone}
+                            </span>
+                          )}
+                          {addressText && (
+                            <span 
+                              className="admin-address-trunc"
+                              title={addressText}
+                            >
+                              Address: {addressText}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
 
@@ -421,13 +549,36 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
 
                     {/* Actions */}
                     <td>
-                      <button
-                        type="button"
-                        onClick={() => handleEditClick(inquiry)}
-                        className="admin-btn-edit-tracking"
-                      >
-                        <Edit3 size={13} /> Edit Tracking
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleEditClick(inquiry)}
+                          className="admin-btn-edit-tracking"
+                        >
+                          <Edit3 size={13} /> Edit Tracking
+                        </button>
+                        {isDropship && (
+                          <button
+                            type="button"
+                            onClick={() => handlePrintBlindLabel(inquiry)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 8px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: '#fef3c7',
+                              color: '#b45309',
+                              border: '1px solid #fde68a',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Printer size={12} /> Print Shipping Slip
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

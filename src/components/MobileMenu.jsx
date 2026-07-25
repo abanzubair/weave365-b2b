@@ -30,6 +30,7 @@ import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
+import { AppLink } from './AppLink.jsx';
 
 const pluralizeCategory = (cat) => {
   if (!cat) return '';
@@ -173,42 +174,42 @@ export function MobileMenu({
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 <span className="mobile-mega-heading">Buy</span>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('wholesale-catalogue'); onClose(); }}>
+                <AppLink to="wholesale-catalogue" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Wholesale</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('bulk-inquiry'); onClose(); }}>
+                </AppLink>
+                <AppLink to="bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
-                </button>
+                </AppLink>
 
                 <span className="mobile-mega-heading">Sell</span>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('dropshipping'); onClose(); }}>
+                <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Support</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('white-label'); onClose(); }}>
+                </AppLink>
+                <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('resell-sarees-online'); onClose(); }}>
+                </AppLink>
+                <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('affiliate-program'); onClose(); }}>
+                </AppLink>
+                <AppLink to="affiliate-program" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
-                </button>
+                </AppLink>
 
                 <span className="mobile-mega-heading">Partner</span>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('collaboration'); onClose(); }}>
+                <AppLink to="collaboration" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Collaboration</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('sourcing-partners'); onClose(); }}>
+                </AppLink>
+                <AppLink to="sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
-                </button>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('early-access'); onClose(); }}>
+                </AppLink>
+                <AppLink to="early-access" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
-                </button>
+                </AppLink>
 
                 <span className="mobile-mega-heading">Supply</span>
-                <button type="button" className="mobile-account-subitem" onClick={() => { navigate('weaver-onboarding'); onClose(); }}>
+                <AppLink to="weaver-onboarding" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
-                </button>
+                </AppLink>
               </div>
             </div>
           </div>
