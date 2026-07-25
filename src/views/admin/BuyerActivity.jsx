@@ -541,7 +541,6 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                           title="Copy Activity & Buyer Info"
                         >
                           {isCopied ? <Check size={16} className="icon-check-anim" /> : <Copy size={16} />}
-                          {isCopied && <span className="copy-tooltip">Copied!</span>}
                         </button>
 
                         {/* Action Dropdown Button */}

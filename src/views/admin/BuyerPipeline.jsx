@@ -425,7 +425,6 @@ export default function BuyerPipeline({
                           ) : (
                             <Copy size={14} />
                           )}
-                          {copyFeedback[profile.id] && <span className="copy-tooltip">Copied!</span>}
                         </button>
                         <select
                           value={currentStatusVal}
