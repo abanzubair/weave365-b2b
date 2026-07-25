@@ -9,6 +9,7 @@ import {
   Store,
   UserRound,
   Copy,
+  Check,
   RefreshCw,
   FileSpreadsheet,
   Search,
@@ -229,9 +230,9 @@ export default function BuyerPipeline({
           <button
             type="button"
             onClick={handleCopyAllUserDetails}
-            className="pipeline-header-btn"
+            className={`pipeline-header-btn ${copyFeedback.allUsers ? 'copied' : ''}`}
           >
-            <Copy size={14} /> {copyFeedback.allUsers ? 'Copied!' : 'Copy All'}
+            {copyFeedback.allUsers ? <Check size={14} className="icon-check-anim" /> : <Copy size={14} />} {copyFeedback.allUsers ? 'Copied!' : 'Copy All'}
           </button>
         </div>
       </div>
@@ -416,10 +417,15 @@ export default function BuyerPipeline({
                         <button
                           type="button"
                           onClick={() => handleCopyUserDetails(profile)}
-                          className="pipeline-action-icon-btn"
+                          className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
                           title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
                         >
-                          <Copy size={14} />
+                          {copyFeedback[profile.id] ? (
+                            <Check size={14} className="icon-check-anim" />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                          {copyFeedback[profile.id] && <span className="copy-tooltip">Copied!</span>}
                         </button>
                         <select
                           value={currentStatusVal}
