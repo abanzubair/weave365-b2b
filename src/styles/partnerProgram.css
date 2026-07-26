@@ -1169,6 +1169,15 @@
     grid-template-columns: 1fr;
   }
 
+  .narrative-pillars-3col {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .narrative-hero-statement {
+    margin-bottom: 2rem;
+  }
+
   .partner-program-split {
     grid-template-columns: 1fr;
   }
