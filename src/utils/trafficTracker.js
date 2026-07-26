@@ -2,6 +2,7 @@
  * @file trafficTracker.js
  * Client-side non-blocking traffic tracker.
  * Features:
+ * - Ignores localhost and local dev network visits (production live traffic only)
  * - Session-Deduplicated per browsing session
  * - Universally compatible with Mobile iOS, Android, and in-app webviews
  * - Completely silent and crash-proof
@@ -13,6 +14,19 @@ export function trackSiteTraffic() {
   if (typeof window === 'undefined') return;
 
   try {
+    // 0. Ignore local development environments (localhost, 127.0.0.1, local IP ranges)
+    const hostname = (window.location.hostname || '').toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.') ||
+      hostname.endsWith('.local')
+    ) {
+      return;
+    }
+
     // 1. Session Deduplication Check (Logs 1 visit per browsing session)
     const sessionKey = 'weave_analytics_session_active';
     if (sessionStorage.getItem(sessionKey) || isTrackedInSession) {

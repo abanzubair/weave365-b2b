@@ -358,6 +358,13 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   const filteredTraffic = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return siteAnalytics.filter((t) => {
+      const cityLower = String(t.city || '').toLowerCase();
+      const pathLower = String(t.path || '').toLowerCase();
+      // Hide localhost and local development network entries
+      if (cityLower.includes('localhost') || cityLower.includes('local dev') || pathLower.includes('localhost')) {
+        return false;
+      }
+
       if (categoryFilter !== 'all' && t.source_category !== categoryFilter) return false;
       if (!q) return true;
       const text = `${t.path} ${t.source_name} ${t.source_category} ${t.device_type} ${t.device_os} ${t.browser} ${t.city} ${t.country} ${t.referrer || ''}`.toLowerCase();
