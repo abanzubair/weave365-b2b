@@ -9,91 +9,94 @@ export const runtime = 'edge';
 
 /**
  * Classifies traffic source into Category & Friendly Name
- * Supports AI Assistants (ChatGPT, Gemini, Claude, Perplexity, Copilot, DeepSeek, Poe, Mistral),
- * Social Media (Instagram, Facebook, YouTube, WhatsApp, X/Twitter, LinkedIn, Pinterest),
- * Search Engines (Google, Bing, DuckDuckGo, Yahoo), and Direct Traffic.
+ * Inspects HTTP Referrer, URL Query Params (UTM / ChatGPT tags), Full URL, and UserAgent.
  */
-function classifyTrafficSource(referrer) {
-  if (!referrer || typeof referrer !== 'string') {
-    return { category: 'Direct / App', name: 'Direct Visit' };
-  }
+function classifyTrafficSource(referrer, searchParams, fullUrl, rawUserAgent) {
+  const ref = (referrer || '').toLowerCase().trim();
+  const search = (searchParams || '').toLowerCase().trim();
+  const url = (fullUrl || '').toLowerCase().trim();
+  const ua = (rawUserAgent || '').toLowerCase().trim();
 
-  const ref = referrer.toLowerCase().trim();
+  const combined = `${ref} ${search} ${url} ${ua}`;
 
-  // 1. AI Assistants
-  if (ref.includes('chatgpt.com') || ref.includes('chat.openai.com') || ref.includes('openai.com')) {
+  // 1. AI Assistants (Matches referrer, query parameters like ?utm_source=chatgpt, AND user-agent tags)
+  if (combined.includes('chatgpt') || combined.includes('openai') || combined.includes('gptbot')) {
     return { category: 'AI Assistant', name: 'ChatGPT' };
   }
-  if (ref.includes('gemini.google.com') || ref.includes('bard.google.com')) {
+  if (combined.includes('gemini') || combined.includes('bard.google')) {
     return { category: 'AI Assistant', name: 'Google Gemini' };
   }
-  if (ref.includes('claude.ai') || ref.includes('anthropic.com')) {
+  if (combined.includes('claude') || combined.includes('anthropic')) {
     return { category: 'AI Assistant', name: 'Claude AI' };
   }
-  if (ref.includes('perplexity.ai')) {
+  if (combined.includes('perplexity')) {
     return { category: 'AI Assistant', name: 'Perplexity AI' };
   }
-  if (ref.includes('copilot.microsoft.com') || ref.includes('bing.com/chat')) {
+  if (combined.includes('copilot') || combined.includes('bing.com/chat')) {
     return { category: 'AI Assistant', name: 'Microsoft Copilot' };
   }
-  if (ref.includes('deepseek.com')) {
+  if (combined.includes('deepseek')) {
     return { category: 'AI Assistant', name: 'DeepSeek' };
   }
-  if (ref.includes('poe.com')) {
+  if (combined.includes('poe.com') || combined.includes('poe')) {
     return { category: 'AI Assistant', name: 'Poe AI' };
   }
-  if (ref.includes('mistral.ai')) {
+  if (combined.includes('mistral')) {
     return { category: 'AI Assistant', name: 'Mistral AI' };
   }
-  if (ref.includes('phind.com')) {
+  if (combined.includes('phind')) {
     return { category: 'AI Assistant', name: 'Phind AI' };
   }
 
   // 2. Social Media
-  if (ref.includes('instagram.com') || ref.includes('l.instagram.com')) {
+  if (combined.includes('instagram') || combined.includes('ig.me')) {
     return { category: 'Social Media', name: 'Instagram' };
   }
-  if (ref.includes('facebook.com') || ref.includes('fb.com') || ref.includes('l.facebook.com')) {
+  if (combined.includes('facebook') || combined.includes('fb.com')) {
     return { category: 'Social Media', name: 'Facebook' };
   }
-  if (ref.includes('youtube.com') || ref.includes('youtu.be')) {
+  if (combined.includes('youtube') || combined.includes('youtu.be')) {
     return { category: 'Social Media', name: 'YouTube' };
   }
-  if (ref.includes('t.co') || ref.includes('twitter.com') || ref.includes('x.com')) {
+  if (combined.includes('t.co') || combined.includes('twitter') || combined.includes('x.com')) {
     return { category: 'Social Media', name: 'X (Twitter)' };
   }
-  if (ref.includes('whatsapp.com') || ref.includes('api.whatsapp.com') || ref.includes('web.whatsapp.com')) {
+  if (combined.includes('whatsapp') || combined.includes('wa.me')) {
     return { category: 'Social Media', name: 'WhatsApp' };
   }
-  if (ref.includes('linkedin.com')) {
+  if (combined.includes('linkedin')) {
     return { category: 'Social Media', name: 'LinkedIn' };
   }
-  if (ref.includes('pinterest.com')) {
+  if (combined.includes('pinterest')) {
     return { category: 'Social Media', name: 'Pinterest' };
   }
 
   // 3. Search Engines
-  if (ref.includes('google.com') || ref.includes('google.co.in')) {
+  if (combined.includes('google.com') || combined.includes('google.co.in')) {
     return { category: 'Search Engine', name: 'Google Search' };
   }
-  if (ref.includes('bing.com')) {
+  if (combined.includes('bing.com')) {
     return { category: 'Search Engine', name: 'Bing Search' };
   }
-  if (ref.includes('duckduckgo.com')) {
+  if (combined.includes('duckduckgo')) {
     return { category: 'Search Engine', name: 'DuckDuckGo' };
   }
-  if (ref.includes('yahoo.com')) {
+  if (combined.includes('yahoo')) {
     return { category: 'Search Engine', name: 'Yahoo Search' };
   }
 
   // 4. Other Website Referrals
-  try {
-    const urlObj = new URL(referrer);
-    const domain = urlObj.hostname.replace(/^www\./, '');
-    return { category: 'Referral Website', name: domain };
-  } catch (e) {
-    return { category: 'Referral Link', name: 'External Link' };
+  if (ref && ref !== 'null' && ref !== 'undefined') {
+    try {
+      const urlObj = new URL(referrer);
+      const domain = urlObj.hostname.replace(/^www\./, '');
+      return { category: 'Referral Website', name: domain };
+    } catch (e) {
+      return { category: 'Referral Link', name: 'External Link' };
+    }
   }
+
+  return { category: 'Direct / App', name: 'Direct Visit' };
 }
 
 /**
@@ -146,7 +149,7 @@ function parseDeviceDetails(uaString) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { path, referrer, userAgent, sessionId } = body || {};
+    const { path, referrer, searchParams, fullUrl, userAgent, sessionId } = body || {};
 
     // 1. Extract Geolocation from Vercel & Cloudflare Edge Headers / Objects
     const host = (request.headers.get('host') || '').toLowerCase();
@@ -173,8 +176,9 @@ export async function POST(request) {
     const city = rawCity || (isLocal ? 'Local Dev Network' : 'India');
 
     // 2. Classify Referrer & Device Specs securely
-    const trafficSource = classifyTrafficSource(referrer);
-    const deviceSpecs = parseDeviceDetails(userAgent || request.headers.get('user-agent'));
+    const rawUA = userAgent || request.headers.get('user-agent') || '';
+    const trafficSource = classifyTrafficSource(referrer, searchParams, fullUrl, rawUA);
+    const deviceSpecs = parseDeviceDetails(rawUA);
 
     // 3. Security Sanitize strings
     const safePath = (path || '/').slice(0, 200);

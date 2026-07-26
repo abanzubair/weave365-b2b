@@ -2,6 +2,7 @@
  * @file trafficTracker.js
  * Client-side non-blocking traffic tracker.
  * Features:
+ * - Captures referrer, full URL, query params (UTM / ChatGPT tags), and device UserAgent
  * - Ignores localhost and local dev network visits (production live traffic only)
  * - Session-Deduplicated per browsing session
  * - Universally compatible with Mobile iOS, Android, and in-app webviews
@@ -46,6 +47,8 @@ export function trackSiteTraffic() {
     const payload = JSON.stringify({
       path: window.location.pathname || '/',
       referrer: document.referrer || '',
+      searchParams: window.location.search || '',
+      fullUrl: window.location.href || '',
       userAgent: navigator.userAgent || '',
       sessionId: sessionId
     });
