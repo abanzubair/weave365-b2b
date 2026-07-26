@@ -5130,6 +5130,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #374151;
+  white-space: nowrap;
 }
 
 .buyer-activity-table td {

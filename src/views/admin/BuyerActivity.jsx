@@ -870,10 +870,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               <thead>
                 <tr>
                   <th style={{ width: '160px' }}>Date & Time</th>
-                  <th>Website Page Path</th>
-                  <th style={{ width: '180px' }}>Traffic Channel / Source</th>
+                  <th>Page Path</th>
+                  <th style={{ width: '180px' }}>Traffic Source</th>
                   <th style={{ width: '150px' }}>Device & OS</th>
-                  <th style={{ width: '160px' }}>Location (City/Country)</th>
+                  <th style={{ width: '160px' }}>Location</th>
                 </tr>
               </thead>
               <tbody>
