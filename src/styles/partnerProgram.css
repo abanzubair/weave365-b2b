@@ -1109,9 +1109,20 @@
   line-height: 1.4;
 }
 
+@keyframes faqExpand {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .faq-chevron {
   color: #cdaa7c;
-  transition: transform 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
   flex-shrink: 0;
 }
 
@@ -1130,6 +1141,8 @@
   border-top: 1px dashed rgba(198, 158, 106, 0.25);
   margin-top: 0.25rem;
   padding-top: 0.95rem;
+  animation: faqExpand 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
 }
 
 /* --------------------------------------------------------------------------
