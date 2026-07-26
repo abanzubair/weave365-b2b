@@ -333,28 +333,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
 
   return (
     <div className="partner-atelier-view">
-      {/* Dynamic Program Switcher Bar */}
-      <nav className="atelier-nav-bar" aria-label="Partner Program Selection">
-        <div className="atelier-nav-inner">
-          <button
-            type="button"
-            className={`atelier-nav-tab ${activeType === 'white-label' ? 'active' : ''}`}
-            onClick={() => navigate('white-label')}
-          >
-            <Tags size={16} />
-            <span>White Label Brand</span>
-          </button>
-          <button
-            type="button"
-            className={`atelier-nav-tab ${activeType === 'sourcing-partners' ? 'active' : ''}`}
-            onClick={() => navigate('sourcing-partners')}
-          >
-            <Factory size={16} />
-            <span>Sourcing Partner</span>
-          </button>
-        </div>
-      </nav>
-
       {/* Hero Master Section */}
       <section className="atelier-hero-section">
         <div className="atelier-hero-grid">
