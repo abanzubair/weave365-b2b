@@ -95,11 +95,11 @@
 
 .atelier-hero-content h1 {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(2.1rem, 3.8vw, 3.2rem);
+  font-size: clamp(1.85rem, 3.1vw, 2.65rem);
   font-weight: 400;
-  line-height: 1.18;
+  line-height: 1.2;
   color: #1c1917;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1.15rem;
 }
 
 .atelier-hero-lead {
