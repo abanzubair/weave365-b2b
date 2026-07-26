@@ -19,29 +19,32 @@ function classifyTrafficSource(referrer, searchParams, fullUrl, rawUserAgent) {
 
   const combined = `${ref} ${search} ${url} ${ua}`;
 
-  // 1. AI Assistants (Matches referrer, query parameters like ?utm_source=chatgpt, AND user-agent tags)
+  // 1. AI Assistants (Matches Referrer, URL parameters like ?utm_source=claude, AND User-Agent tags)
   if (combined.includes('chatgpt') || combined.includes('openai') || combined.includes('gptbot')) {
     return { category: 'AI Assistant', name: 'ChatGPT' };
   }
-  if (combined.includes('gemini') || combined.includes('bard.google')) {
-    return { category: 'AI Assistant', name: 'Google Gemini' };
-  }
-  if (combined.includes('claude') || combined.includes('anthropic')) {
+  if (combined.includes('claude') || combined.includes('anthropic') || combined.includes('claudebot')) {
     return { category: 'AI Assistant', name: 'Claude AI' };
   }
-  if (combined.includes('perplexity')) {
+  if (combined.includes('gemini') || combined.includes('bard.google') || combined.includes('geminibot')) {
+    return { category: 'AI Assistant', name: 'Google Gemini' };
+  }
+  if (combined.includes('perplexity') || combined.includes('perplexitybot')) {
     return { category: 'AI Assistant', name: 'Perplexity AI' };
   }
-  if (combined.includes('copilot') || combined.includes('bing.com/chat')) {
+  if (combined.includes('copilot') || combined.includes('bing.com/chat') || combined.includes('bingchat')) {
     return { category: 'AI Assistant', name: 'Microsoft Copilot' };
   }
-  if (combined.includes('deepseek')) {
+  if (combined.includes('deepseek') || combined.includes('deepseekbot')) {
     return { category: 'AI Assistant', name: 'DeepSeek' };
+  }
+  if (combined.includes('grok') || combined.includes('x.ai')) {
+    return { category: 'AI Assistant', name: 'Grok AI' };
   }
   if (combined.includes('poe.com') || combined.includes('poe')) {
     return { category: 'AI Assistant', name: 'Poe AI' };
   }
-  if (combined.includes('mistral')) {
+  if (combined.includes('mistral') || combined.includes('lechat')) {
     return { category: 'AI Assistant', name: 'Mistral AI' };
   }
   if (combined.includes('phind')) {
