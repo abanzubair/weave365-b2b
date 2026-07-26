@@ -294,9 +294,27 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     return counts;
   }, [allActivities]);
 
+  // Filtered raw site analytics (Excludes /admin pages, localhost, and local dev network)
+  const cleanSiteAnalytics = useMemo(() => {
+    return siteAnalytics.filter((t) => {
+      const cityLower = String(t.city || '').toLowerCase();
+      const pathLower = String(t.path || '').toLowerCase();
+      if (
+        cityLower.includes('localhost') ||
+        cityLower.includes('local dev') ||
+        pathLower.includes('localhost') ||
+        pathLower.startsWith('/admin') ||
+        pathLower.includes('/admin')
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [siteAnalytics]);
+
   // Traffic Analytics Breakdown Calculations
   const trafficMetrics = useMemo(() => {
-    let totalVisits = siteAnalytics.length;
+    let totalVisits = cleanSiteAnalytics.length;
     let aiVisits = 0;
     let socialVisits = 0;
     let searchVisits = 0;
@@ -308,7 +326,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     const socialBreakdown = {};
     const cityBreakdown = {};
 
-    siteAnalytics.forEach((item) => {
+    cleanSiteAnalytics.forEach((item) => {
       const cat = item.source_category || 'Direct / App';
       const name = item.source_name || 'Direct Visit';
       const city = item.city && item.city !== 'Unknown' ? item.city : 'India';
@@ -353,24 +371,17 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       topSocialList,
       topCitiesList,
     };
-  }, [siteAnalytics]);
+  }, [cleanSiteAnalytics]);
 
   const filteredTraffic = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return siteAnalytics.filter((t) => {
-      const cityLower = String(t.city || '').toLowerCase();
-      const pathLower = String(t.path || '').toLowerCase();
-      // Hide localhost and local development network entries
-      if (cityLower.includes('localhost') || cityLower.includes('local dev') || pathLower.includes('localhost')) {
-        return false;
-      }
-
+    return cleanSiteAnalytics.filter((t) => {
       if (categoryFilter !== 'all' && t.source_category !== categoryFilter) return false;
       if (!q) return true;
       const text = `${t.path} ${t.source_name} ${t.source_category} ${t.device_type} ${t.device_os} ${t.browser} ${t.city} ${t.country} ${t.referrer || ''}`.toLowerCase();
       return text.includes(q);
     });
-  }, [siteAnalytics, categoryFilter, searchQuery]);
+  }, [cleanSiteAnalytics, categoryFilter, searchQuery]);
 
   const handleCopyActivity = (activity) => {
     const b = activity.buyer;

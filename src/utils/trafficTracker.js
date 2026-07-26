@@ -2,8 +2,8 @@
  * @file trafficTracker.js
  * Client-side non-blocking traffic tracker.
  * Features:
+ * - Excludes /admin pages, localhost, and local dev network visits
  * - Captures referrer, full URL, query params (UTM / ChatGPT tags), and device UserAgent
- * - Ignores localhost and local dev network visits (production live traffic only)
  * - Session-Deduplicated per browsing session
  * - Universally compatible with Mobile iOS, Android, and in-app webviews
  * - Completely silent and crash-proof
@@ -15,7 +15,13 @@ export function trackSiteTraffic() {
   if (typeof window === 'undefined') return;
 
   try {
-    // 0. Ignore local development environments (localhost, 127.0.0.1, local IP ranges)
+    // 0a. Exclude admin panel pages (/admin)
+    const pathname = (window.location.pathname || '').toLowerCase();
+    if (pathname.startsWith('/admin') || pathname.includes('/admin')) {
+      return;
+    }
+
+    // 0b. Ignore local development environments (localhost, 127.0.0.1, local IP ranges)
     const hostname = (window.location.hostname || '').toLowerCase();
     if (
       hostname === 'localhost' ||

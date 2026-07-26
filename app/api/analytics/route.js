@@ -187,6 +187,11 @@ export async function POST(request) {
     const safePath = (path || '/').slice(0, 200);
     const safeReferrer = (referrer || '').slice(0, 500);
 
+    // Ignore admin panel paths (/admin)
+    if (safePath.toLowerCase().startsWith('/admin') || safePath.toLowerCase().includes('/admin')) {
+      return Response.json({ status: 'ignored_admin_path' }, { status: 200 });
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
