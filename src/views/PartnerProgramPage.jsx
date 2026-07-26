@@ -483,26 +483,26 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
           </div>
         </div>
 
-        {/* Hero Visual Panel */}
-        <aside className="partner-program-hero-panel" style={{ backgroundImage: `url(${page.heroImage})` }}>
-          <div className="partner-panel-overlay">
+        {/* Hero Visual Panel (Refined Light Luxury Design) */}
+        <aside className="partner-program-hero-panel">
+          <div className="hero-panel-media" style={{ backgroundImage: `url(${page.heroImage})` }}>
             <div className="partner-seal-badge">
-              <Handshake size={22} />
+              <Handshake size={18} />
               <span>{page.seal} PROGRAM</span>
             </div>
+          </div>
 
-            <div className="partner-panel-content">
-              <span className="partner-panel-kicker">{page.badge}</span>
-              <p className="partner-panel-role">{page.role}</p>
+          <div className="hero-panel-body">
+            <span className="partner-panel-kicker">{page.badge}</span>
+            <p className="partner-panel-role">{page.role}</p>
 
-              <div className="partner-program-stat-grid">
-                {page.stats.map(([label, value]) => (
-                  <div key={`${label}-${value}`} className="partner-program-stat">
-                    <strong>{value}</strong>
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="partner-program-stat-grid">
+              {page.stats.map(([label, value]) => (
+                <div key={`${label}-${value}`} className="partner-program-stat">
+                  <strong>{value}</strong>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </aside>
