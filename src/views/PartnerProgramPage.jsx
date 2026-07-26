@@ -501,7 +501,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">01</span>
-                    <Tags size={20} className="pillar-icon" />
+                    <Tags size={26} className="pillar-icon" />
                   </div>
                   <h4>Private Label Autonomy</h4>
                   <p>Deploy your custom tags, woven labels, and luxury gold-foil boxes with 100% brand confidentiality.</p>
@@ -510,7 +510,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">02</span>
-                    <Boxes size={20} className="pillar-icon" />
+                    <Boxes size={26} className="pillar-icon" />
                   </div>
                   <h4>Zero Holding Risk</h4>
                   <p>Access our live Varanasi ready-stock catalog with 1-piece dropshipping directly to your clients.</p>
@@ -519,7 +519,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">03</span>
-                    <Coins size={20} className="pillar-icon" />
+                    <Coins size={26} className="pillar-icon" />
                   </div>
                   <h4>High Retail Margins</h4>
                   <p>Enjoy direct-from-loom wholesale pricing supporting healthy 2.0x to 3.0x retail markup potential.</p>
@@ -530,7 +530,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">01</span>
-                    <Factory size={20} className="pillar-icon" />
+                    <Factory size={26} className="pillar-icon" />
                   </div>
                   <h4>Direct Loom Rates</h4>
                   <p>Eliminate middleman commissions with pure master-weaver wholesale pricing straight from Varanasi looms.</p>
@@ -539,7 +539,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">02</span>
-                    <ShieldCheck size={20} className="pillar-icon" />
+                    <ShieldCheck size={26} className="pillar-icon" />
                   </div>
                   <h4>Pre-Dispatch Inspection</h4>
                   <p>Every saree and suit set undergoes strict 5-point checks for silk purity, zari weave, and finish.</p>
@@ -548,7 +548,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 <div className="narrative-pillar-card">
                   <div className="pillar-header">
                     <span className="pillar-index">03</span>
-                    <Truck size={20} className="pillar-icon" />
+                    <Truck size={26} className="pillar-icon" />
                   </div>
                   <h4>Global Logistics SLAs</h4>
                   <p>Full export support, customs documentation, and priority air logistics across 45+ international destinations.</p>
