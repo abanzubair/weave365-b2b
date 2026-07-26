@@ -579,7 +579,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                     <span className="journey-step-tag">{item.step}</span>
                   </div>
                   <h3>{item.title}</h3>
-                  <h4>{item.subtitle}</h4>
                   <p>{item.content}</p>
                 </div>
               );
@@ -733,7 +732,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                       <span className="pkg-badge">{pkg.badge}</span>
                     </div>
                     <h3>{pkg.title}</h3>
-                    <h4>{pkg.subtitle}</h4>
                     <p>{pkg.desc}</p>
                     <div className="pkg-preview-box">
                       <span className="preview-lbl">Preview Standard:</span>
