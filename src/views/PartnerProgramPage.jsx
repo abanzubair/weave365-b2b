@@ -483,16 +483,76 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </aside>
       </header>
 
-      {/* SEO Strategic Narrative */}
-      <section className="partner-program-seo-copy">
-        <div className="seo-copy-header">
-          <h2>
-            {activeType === 'white-label'
-              ? 'Empowering Boutique Owners & Online Sellers with Private Label Power'
-              : 'Direct Varanasi Sourcing Infrastructure for Retailers & Export Buyers'}
-          </h2>
+      {/* Editorial Brand Narrative & Infrastructure Pillars */}
+      <section className="partner-program-narrative">
+        <div className="section-container">
+          <div className="narrative-editorial-grid">
+            <div className="narrative-headline-col">
+              <h2>
+                {activeType === 'white-label'
+                  ? 'Empowering Boutique Owners & Online Sellers with Private Label Power'
+                  : 'Direct Varanasi Sourcing Infrastructure for Retailers & Export Buyers'}
+              </h2>
+              <div className="narrative-divider-line" />
+            </div>
+
+            <div className="narrative-body-col">
+              <p className="narrative-lead-text">{page.seoIntro}</p>
+
+              <div className="narrative-pillars-grid">
+                {activeType === 'white-label' ? (
+                  <>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">01</span>
+                      <div>
+                        <h4>Private Label Autonomy</h4>
+                        <p>Deploy your custom tags, woven labels, and luxury gold-foil boxes with complete brand confidentiality.</p>
+                      </div>
+                    </div>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">02</span>
+                      <div>
+                        <h4>Zero Holding Risk</h4>
+                        <p>Access our ready Varanasi stock catalog with direct 1-piece dispatch to your end customers.</p>
+                      </div>
+                    </div>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">03</span>
+                      <div>
+                        <h4>High Retail Margins</h4>
+                        <p>Enjoy direct wholesale pricing that enables healthy 2.0x to 3.0x retail markup potential.</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">01</span>
+                      <div>
+                        <h4>Direct Loom Pricing</h4>
+                        <p>Eliminate middleman commissions with pure master-weaver wholesale rates straight from Varanasi looms.</p>
+                      </div>
+                    </div>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">02</span>
+                      <div>
+                        <h4>Quality Inspection</h4>
+                        <p>Every saree and suit set undergoes strict pre-dispatch checks for silk purity, zari weave, and finish.</p>
+                      </div>
+                    </div>
+                    <div className="narrative-pillar">
+                      <span className="pillar-num">03</span>
+                      <div>
+                        <h4>Global Dispatch SLAs</h4>
+                        <p>Full export support, customs documentation, and priority international air logistics across 45+ countries.</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        <p>{page.seoIntro}</p>
       </section>
 
       {/* 4-Step Visual Partner Journey */}
