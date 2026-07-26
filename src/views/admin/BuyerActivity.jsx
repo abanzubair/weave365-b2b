@@ -572,22 +572,26 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                         </td>
 
                         <td className="cell-buyer">
-                          <div className="buyer-name">{b.name}</div>
-                          <div className="buyer-business">{b.businessName}</div>
-                          <div className="buyer-meta-list">
-                            <span className="meta-item"><MapPin size={13.5} /> {b.location}</span>
-                            {b.email && <span className="meta-item"><Mail size={13.5} /> {b.email}</span>}
-                            {b.phone && <span className="meta-item"><Phone size={13.5} /> {b.phone}</span>}
+                          <div className="buyer-card-wrapper">
+                            <div className="buyer-name">{b.name}</div>
+                            <div className="buyer-business">{b.businessName}</div>
+                            <div className="buyer-meta-list">
+                              <span className="meta-item"><MapPin size={13.5} /> {b.location}</span>
+                              {b.email && <span className="meta-item"><Mail size={13.5} /> {b.email}</span>}
+                              {b.phone && <span className="meta-item"><Phone size={13.5} /> {b.phone}</span>}
+                            </div>
                           </div>
                         </td>
 
                         <td className="cell-activity-type">
-                          <span className={`badge-activity ${getActivityBadgeClass(act.activityType)}`}>
-                            {act.activityType}
-                          </span>
-                          <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
-                            {b.type}
-                          </span>
+                          <div className="activity-type-wrapper">
+                            <span className={`badge-activity ${getActivityBadgeClass(act.activityType)}`}>
+                              {act.activityType}
+                            </span>
+                            <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
+                              {b.type}
+                            </span>
+                          </div>
                         </td>
 
                         <td className="cell-products">

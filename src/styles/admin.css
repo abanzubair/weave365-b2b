@@ -5133,10 +5133,10 @@
 }
 
 .buyer-activity-table td {
-  padding: 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
-  font-size: 14.5px;
+  font-size: 14px;
 }
 
 .buyer-activity-table tr:last-child td {
@@ -5170,14 +5170,14 @@
   border-radius: 6px;
   border: 1px solid #cbd5e1;
   margin-top: 6px;
-  max-width: 155px;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* Buyer Card Cell */
-.cell-buyer {
+.buyer-card-wrapper {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -5186,15 +5186,15 @@
 .buyer-name {
   font-weight: 700;
   color: #0f172a;
-  font-size: 16px;
-  line-height: 1.25;
+  font-size: 15px;
+  line-height: 1.3;
 }
 
 .buyer-business {
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #b45309;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .buyer-meta-list {
@@ -5214,7 +5214,7 @@
 }
 
 /* Buyer Activity & Tier Badges */
-.cell-activity-type {
+.activity-type-wrapper {
   display: flex;
   flex-direction: column;
   gap: 6px;
