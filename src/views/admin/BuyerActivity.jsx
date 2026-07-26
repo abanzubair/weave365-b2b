@@ -941,7 +941,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13.5px', fontWeight: 600, color: '#0f172a' }}>
                             <MapPin size={14} style={{ color: '#dc2626' }} />
-                            <span>{item.city || 'India'}, {item.country || 'IN'}</span>
+                            <span>{item.city ? `${item.city}, ${item.country || 'IN'}` : (item.country || 'IN')}</span>
                           </div>
                         </td>
                       </tr>

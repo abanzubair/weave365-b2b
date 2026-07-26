@@ -169,10 +169,13 @@ export async function POST(request) {
     const { path, referrer, userAgent, sessionId } = body || {};
 
     // 1. Extract Cloudflare Edge Geolocation HTTP Headers
+    const host = request.headers.get('host') || '';
+    const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+
     const country = (request.headers.get('cf-ipcountry') || 'IN').toUpperCase();
     const rawCity = request.headers.get('cf-ipcity');
     const region = request.headers.get('cf-region');
-    const city = rawCity ? decodeURIComponent(rawCity) : (region ? decodeURIComponent(region) : 'India');
+    const city = rawCity ? decodeURIComponent(rawCity) : (region ? decodeURIComponent(region) : (isLocal ? 'Localhost (Dev)' : 'India'));
 
     // 2. Classify Referrer & Device Specs securely
     const trafficSource = classifyTrafficSource(referrer);
