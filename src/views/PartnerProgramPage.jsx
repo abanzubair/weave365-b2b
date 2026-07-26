@@ -647,7 +647,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                     </div>
                     <div className="calc-stat">
                       <span className="calc-stat-lbl">Net Margin %</span>
-                      <strong className="calc-stat-val badge">{calcResults.marginPercent}%</strong>
+                      <strong className="calc-stat-val calc-margin-val">{calcResults.marginPercent}%</strong>
                     </div>
                   </div>
 
