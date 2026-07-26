@@ -30,86 +30,15 @@
   --theme-badge-text: #6b2612;
 }
 
-/* --------------------------------------------------------------------------
-   Top Channel Selector Bar (Warm Ivory & Gold Brand Family)
-   -------------------------------------------------------------------------- */
-.partner-channel-selector-bar {
-  background: #f7f4ed; /* Warm Ivory Brand Family */
-  color: #1a1a1a;
-  padding: 0.65rem 5%;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
-}
 
-.partner-channel-selector-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.partner-channel-label {
-  font-size: 0.78rem;
-  font-weight: 750;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #805d31;
-}
-
-.partner-channel-tabs {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: rgba(128, 93, 49, 0.08);
-  padding: 0.25rem;
-  border-radius: 8px;
-  border: 1px solid rgba(128, 93, 49, 0.18);
-}
-
-.partner-channel-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.55rem 1.1rem;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: #554433;
-  font-family: var(--font-hero-body);
-  font-size: 0.84rem;
-  font-weight: 650;
-  cursor: pointer;
-  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.partner-channel-tab:hover:not(.active) {
-  color: #805d31;
-  background: rgba(128, 93, 49, 0.1);
-}
-
-.partner-channel-tab:active {
-  transform: scale(0.98);
-}
-
-.partner-channel-tab.active {
-  background: #805d31;
-  color: #ffffff;
-  box-shadow: 0 3px 12px rgba(128, 93, 49, 0.25);
-}
 
 /* --------------------------------------------------------------------------
    Breadcrumbs
    -------------------------------------------------------------------------- */
 .partner-program-breadcrumbs {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 1rem 5% 0.25rem;
+  padding: 1.25rem 5% 0.5rem;
   font-size: 0.8rem;
   color: #665544;
   display: flex;
@@ -143,12 +72,12 @@
    Hero Section Layout
    -------------------------------------------------------------------------- */
 .partner-program-hero {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 1.5rem 5% 4rem;
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
-  gap: clamp(2rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
+  gap: clamp(2rem, 4vw, 4rem);
   align-items: stretch;
 }
 
@@ -180,11 +109,11 @@
 }
 
 .partner-hero-intro {
-  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  font-size: clamp(1.02rem, 1.5vw, 1.15rem);
   line-height: 1.7;
   color: #43382f;
   margin-bottom: 1.75rem;
-  max-width: 680px;
+  max-width: 820px;
 }
 
 .partner-hero-highlights {
@@ -375,15 +304,15 @@
    SEO Strategic Narrative Section
    -------------------------------------------------------------------------- */
 .partner-program-seo-copy {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto 3.5rem;
-  padding: 2.25rem 5%;
+  padding: 2.25rem 4%;
   background: #fbf8f2;
   border: 1px solid rgba(198, 158, 106, 0.2);
   border-radius: 12px;
   display: grid;
-  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(1.5rem, 3vw, 3rem);
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(1.5rem, 3vw, 3.5rem);
   align-items: center;
 }
 
@@ -420,13 +349,13 @@
 }
 
 .section-container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
 .section-header-center {
   text-align: center;
-  max-width: 680px;
+  max-width: 780px;
   margin: 0 auto 3rem;
 }
 
@@ -857,7 +786,7 @@
    Split Responsibility & Commitment Cards
    -------------------------------------------------------------------------- */
 .partner-program-split {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 4rem auto;
   padding: 0 5%;
   display: grid;
