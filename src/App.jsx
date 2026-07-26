@@ -52,6 +52,7 @@ import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
 import { validateReferralCode, setStoredReferralCode, getStoredReferralCode, clearStoredReferralCode } from './utils/influencerHelpers.js';
+import { trackSiteTraffic } from './utils/trafficTracker.js';
 
 // Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
@@ -239,6 +240,7 @@ export default function App({ initialData = {} }) {
       }
     };
     void checkReferral();
+    void trackSiteTraffic();
   }, [searchParams]);
 
   // Keep the browser address bar synchronized with the active referral code if stored in localStorage

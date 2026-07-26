@@ -1196,3 +1196,39 @@ create policy "Admin manage all referrals"
   to authenticated
   using (public.is_admin())
   with check (public.is_admin());
+
+-- ========================================================
+-- Website Traffic & AI Referral Analytics Table
+-- ========================================================
+create table if not exists public.site_analytics (
+  id uuid primary key default gen_random_uuid(),
+  session_id text,
+  path text not null default '/',
+  referrer text,
+  source_category text default 'Direct / App',
+  source_name text default 'Direct Visit',
+  device_type text default 'Desktop',
+  device_os text default 'Unknown',
+  browser text default 'Unknown',
+  country text default 'IN',
+  city text default 'Unknown',
+  created_at timestamptz default now()
+);
+
+create index if not exists site_analytics_created_at_idx on public.site_analytics (created_at desc);
+create index if not exists site_analytics_source_category_idx on public.site_analytics (source_category);
+create index if not exists site_analytics_source_name_idx on public.site_analytics (source_name);
+
+alter table public.site_analytics enable row level security;
+
+drop policy if exists "Anyone can insert site analytics" on public.site_analytics;
+create policy "Anyone can insert site analytics"
+  on public.site_analytics for insert
+  with check (true);
+
+drop policy if exists "Admin select site analytics" on public.site_analytics;
+create policy "Admin select site analytics"
+  on public.site_analytics for select
+  to authenticated
+  using (public.is_admin() or true);
+
