@@ -49,7 +49,7 @@ const partnerPages = {
       'Launch your private label Banarasi saree and suit brand with Weave 365. Source authentic weaves, customize tags & luxury packaging, get unbranded HD catalogs, and ship direct to your clients.',
     eyebrow: 'WEAVE 365 PRIVATE LABEL ECOSYSTEM',
     badge: 'Market-to-Customer Brand Acceleration',
-    h1: 'Launch & Scale Your Private Banarasi Ethnic Label',
+    h1: 'Sell Authentic Banarasi Weaves Under Your Own Luxury Label',
     intro:
       'Build a high-margin luxury saree & suit brand backed by direct Varanasi loom infrastructure. We supply authentic Banarasi weaves, custom woven neck-tags, rigid brand boxes, unbranded HD catalogs, and blind dropshipping direct to your customers.',
     seoIntro:
@@ -146,7 +146,7 @@ const partnerPages = {
       'Become a Banarasi saree and suit sourcing partner with Weave 365. Coordinate weavers, MOQ, wholesale pricing, catalog support, quality checks, stock updates, and dispatch.',
     eyebrow: 'LOOM-TO-MARKET SUPPLY ECOSYSTEM',
     badge: 'Backend Supply Chain Coordination',
-    h1: 'Direct Sourcing Partnership for Banarasi Sarees & Suits',
+    h1: 'Direct-from-Loom Sourcing for Wholesale & Export Buyers',
     intro:
       'Act as the backend sourcing bridge for authentic Banarasi sarees, suits, fabrics, and bulk requirements. Coordinate loom production, quality inspection, pricing, and dispatch discipline across Varanasi weaving hubs.',
     seoIntro:
@@ -490,8 +490,8 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
             <div className="narrative-headline-col">
               <h2>
                 {activeType === 'white-label'
-                  ? 'Empowering Boutique Owners & Online Sellers with Private Label Power'
-                  : 'Direct Varanasi Sourcing Infrastructure for Retailers & Export Buyers'}
+                  ? 'Crafted in Varanasi. Branded by You.'
+                  : 'Varanasi’s Master Weavers, Straight to Your Business.'}
               </h2>
               <div className="narrative-divider-line" />
             </div>
