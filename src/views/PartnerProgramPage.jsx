@@ -496,11 +496,12 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
             <span className="partner-panel-kicker">{page.badge}</span>
             <p className="partner-panel-role">{page.role}</p>
 
-            <div className="partner-program-stat-grid">
+            <div className="partner-spec-list">
               {page.stats.map(([label, value]) => (
-                <div key={`${label}-${value}`} className="partner-program-stat">
-                  <strong>{value}</strong>
-                  <span>{label}</span>
+                <div key={`${label}-${value}`} className="partner-spec-item">
+                  <span className="spec-label">{label}</span>
+                  <span className="spec-dots" aria-hidden="true" />
+                  <strong className="spec-value">{value}</strong>
                 </div>
               ))}
             </div>
