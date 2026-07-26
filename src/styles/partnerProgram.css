@@ -1192,35 +1192,167 @@
 }
 
 @media (max-width: 640px) {
-  .partner-channel-selector-container {
-    flex-direction: column;
-    align-items: flex-start;
+  .partner-program-breadcrumbs {
+    padding: 0.75rem 4% 0.35rem;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .partner-channel-tabs {
-    width: 100%;
+  .partner-program-hero {
+    padding: 1rem 4% 2.25rem;
+    gap: 1.75rem;
   }
 
-  .partner-channel-tab {
-    flex: 1;
-    justify-content: center;
+  .partner-program-hero h1 {
+    font-size: clamp(1.7rem, 6.2vw, 2.15rem);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .partner-hero-intro {
+    font-size: 0.96rem;
+    line-height: 1.62;
+    margin-bottom: 1.35rem;
+  }
+
+  .partner-hero-highlights {
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .partner-highlight-item {
+    font-size: 0.9rem;
   }
 
   .partner-program-actions {
     flex-direction: column;
+    gap: 0.75rem;
   }
 
   .partner-program-primary,
   .partner-program-secondary {
     width: 100%;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+
+  .partner-program-hero-panel {
+    min-height: 0;
+  }
+
+  .hero-panel-media {
+    height: 140px;
+    padding: 1rem;
+  }
+
+  .hero-panel-body {
+    padding: 1.15rem;
+    gap: 0.65rem;
+  }
+
+  .partner-program-narrative {
+    padding: 2.5rem 4%;
+    margin-bottom: 2.5rem;
+  }
+
+  .narrative-hero-statement {
+    margin-bottom: 1.75rem;
+  }
+
+  .narrative-hero-statement h2 {
+    font-size: clamp(1.45rem, 5.5vw, 1.85rem);
+    line-height: 1.24;
+    margin-bottom: 0.85rem;
+  }
+
+  .narrative-lead-text {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .narrative-pillar-card {
+    padding: 1.35rem;
+    border-radius: 10px;
+  }
+
+  .narrative-pillar-card h4 {
+    font-size: 1.1rem;
+  }
+
+  .partner-journey-section,
+  .partner-packaging-section,
+  .partner-faq-section {
+    padding: 2.5rem 4%;
+  }
+
+  .section-header-center {
+    margin-bottom: 2rem;
+  }
+
+  .section-header-center h2 {
+    font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+  }
+
+  .journey-card,
+  .packaging-card {
+    padding: 1.35rem;
+    border-radius: 10px;
+  }
+
+  .partner-calculator-section {
+    padding: 3rem 4%;
+  }
+
+  .calculator-card {
+    padding: 1.25rem;
+    border-radius: 10px;
   }
 
   .markup-btn-group {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
   }
 
   .calc-stat-row {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
+  }
+
+  .partner-program-split {
+    margin: 2.5rem auto;
+    padding: 0 4%;
+  }
+
+  .partner-program-list-panel {
+    padding: 1.35rem;
+    border-radius: 10px;
+  }
+
+  .comparison-table-wrapper {
+    margin: 0 -4%;
+    padding: 0 4%;
+    border-radius: 0;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.75rem 0.65rem;
+    font-size: 0.82rem;
+  }
+
+  .faq-accordion-trigger {
+    padding: 1rem 1.15rem;
+  }
+
+  .faq-accordion-trigger h3 {
+    font-size: 0.95rem;
+  }
+
+  .faq-accordion-body-content p {
+    padding: 0.75rem 1.15rem 1.15rem;
+    font-size: 0.9rem;
   }
 }
