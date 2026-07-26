@@ -363,11 +363,11 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
             <h1>{page.h1}</h1>
             <p className="atelier-hero-lead">{page.intro}</p>
 
-            <div className="atelier-metrics-pill-row">
+            <div className="atelier-metrics-row">
               {page.stats.map(([lbl, val]) => (
-                <div key={lbl} className="atelier-metric-pill">
-                  <span className="pill-lbl">{lbl}:</span>
-                  <span className="pill-val">{val}</span>
+                <div key={lbl} className="atelier-metric-item">
+                  <span className="metric-lbl">{lbl}:</span>
+                  <span className="metric-val">{val}</span>
                 </div>
               ))}
             </div>
@@ -485,23 +485,23 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </div>
       </section>
 
-      {/* Dark Workflow Stepper */}
-      <section className="atelier-workflow-dark">
+      {/* Light Workflow Stepper */}
+      <section className="atelier-workflow-light">
         <div className="atelier-container">
-          <div className="atelier-section-head light">
+          <div className="atelier-section-head">
             <h2>How the {activeType === 'white-label' ? 'White Label' : 'Sourcing'} Program Works</h2>
             <p>Designed for clarity, fast execution, and seamless business scaling.</p>
           </div>
 
-          <div className="dark-workflow-stepper">
+          <div className="light-workflow-stepper">
             {page.guide.map((item) => {
               const StepIcon = item.icon;
               return (
-                <div key={item.step} className="dark-step-col">
-                  <div className="dark-step-badge">
+                <div key={item.step} className="light-step-col">
+                  <div className="light-step-badge">
                     <span>{item.step}</span>
                   </div>
-                  <StepIcon size={22} className="dark-step-icon" />
+                  <StepIcon size={22} className="light-step-icon" />
                   <h3>{item.title}</h3>
                   <p>{item.content}</p>
                 </div>

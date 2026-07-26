@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Weave365 Atelier Partner Program — Luxury Redesign Architecture
+   Weave365 Atelier Partner Program — Light & Elegant Redesign
    ========================================================================== */
 
 .partner-atelier-view {
@@ -24,19 +24,19 @@
   top: 70px;
   z-index: 40;
   padding: 0.75rem 1rem;
-  background: rgba(250, 247, 242, 0.92);
+  background: rgba(250, 247, 242, 0.94);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.2);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
 }
 
 .atelier-nav-inner {
   max-width: 440px;
   margin: 0 auto;
   display: flex;
-  background: #ede3d3;
+  background: #ffffff;
   padding: 4px;
-  border-radius: 999px;
-  border: 1px solid #dfcfb9;
+  border-radius: 8px;
+  border: 1px solid #e5d8c6;
 }
 
 .atelier-nav-tab {
@@ -46,7 +46,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.65rem 1rem;
-  border-radius: 999px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: #665239;
@@ -54,20 +54,20 @@
   font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .atelier-nav-tab.active {
   background: #805d31;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.25);
+  box-shadow: 0 2px 8px rgba(128, 93, 49, 0.15);
 }
 
 /* --------------------------------------------------------------------------
    Hero Master Section
    -------------------------------------------------------------------------- */
 .atelier-hero-section {
-  padding: 3rem 1.5rem 4rem;
+  padding: 3.5rem 1.5rem 4rem;
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -83,13 +83,14 @@
   display: inline-block;
   font-size: 0.76rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #805d31;
-  background: #f1e4d3;
-  padding: 0.35rem 0.85rem;
-  border-radius: 999px;
+  background: #f2e6d6;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
   margin-bottom: 1.25rem;
+  border: 1px solid #e4d3bd;
 }
 
 .atelier-hero-content h1 {
@@ -109,30 +110,30 @@
   max-width: 620px;
 }
 
-.atelier-metrics-pill-row {
+.atelier-metrics-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem 1.25rem;
   margin-bottom: 2rem;
 }
 
-.atelier-metric-pill {
+.atelier-metric-item {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.88rem;
   background: #ffffff;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  border: 1px solid #e8dbca;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #e4d6c4;
 }
 
-.pill-lbl {
+.metric-lbl {
   color: #805d31;
   font-weight: 600;
 }
 
-.pill-val {
+.metric-val {
   color: #1c1917;
   font-weight: 750;
 }
@@ -147,8 +148,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.95rem 1.75rem;
-  border-radius: 999px;
+  padding: 0.9rem 1.75rem;
+  border-radius: 8px;
   border: 1px solid #805d31;
   background: #805d31;
   color: #ffffff;
@@ -156,21 +157,21 @@
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.2);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.15);
 }
 
 .atelier-btn-primary:hover {
   background: #684a25;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.28);
+  box-shadow: 0 6px 18px rgba(128, 93, 49, 0.22);
 }
 
 .atelier-btn-secondary {
   display: inline-flex;
   align-items: center;
-  padding: 0.95rem 1.75rem;
-  border-radius: 999px;
+  padding: 0.9rem 1.75rem;
+  border-radius: 8px;
   border: 1px solid #d8c7b3;
   background: #ffffff;
   color: #44372c;
@@ -178,7 +179,7 @@
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
 
 .atelier-btn-secondary:hover {
@@ -188,9 +189,10 @@
 
 .visual-card-wrap {
   position: relative;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(28, 25, 23, 0.12);
+  box-shadow: 0 12px 32px rgba(128, 93, 49, 0.08);
+  border: 1px solid #e8dbca;
 }
 
 .visual-img {
@@ -205,16 +207,21 @@
   bottom: 1.25rem;
   left: 1.25rem;
   right: 1.25rem;
-  background: rgba(28, 25, 23, 0.88);
+  background: rgba(253, 251, 247, 0.94);
   backdrop-filter: blur(8px);
-  color: #ffffff;
+  color: #1c1917;
   padding: 0.85rem 1.2rem;
-  border-radius: 10px;
+  border-radius: 8px;
+  border: 1px solid #e0d2bf;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-size: 0.86rem;
   font-weight: 600;
+}
+
+.visual-trust-badge svg {
+  color: #805d31;
 }
 
 /* --------------------------------------------------------------------------
@@ -241,19 +248,11 @@
   margin: 0;
 }
 
-.atelier-section-head.light h2 {
-  color: #ffffff;
-}
-
-.atelier-section-head.light p {
-  color: #d1c4b2;
-}
-
 /* --------------------------------------------------------------------------
    Capabilities Section
    -------------------------------------------------------------------------- */
 .atelier-capabilities-section {
-  padding: 4rem 0;
+  padding: 4.5rem 0;
   background: #ffffff;
   border-top: 1px solid #eee5d8;
   border-bottom: 1px solid #eee5d8;
@@ -272,9 +271,9 @@
 }
 
 .capability-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
   background: #f5ece0;
   color: #805d31;
   display: grid;
@@ -298,51 +297,53 @@
 }
 
 /* --------------------------------------------------------------------------
-   Dark Workflow Stepper
+   Light Workflow Stepper
    -------------------------------------------------------------------------- */
-.atelier-workflow-dark {
+.atelier-workflow-light {
   padding: 5rem 0;
-  background: #181512;
-  color: #fbf8f2;
+  background: #f6efe5;
+  color: #1c1917;
+  border-top: 1px solid #ebdccb;
+  border-bottom: 1px solid #ebdccb;
 }
 
-.dark-workflow-stepper {
+.light-workflow-stepper {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
 }
 
-.dark-step-col {
+.light-step-col {
   position: relative;
   padding-top: 1.5rem;
-  border-top: 2px solid rgba(198, 158, 106, 0.35);
+  border-top: 2px solid #805d31;
 }
 
-.dark-step-badge {
+.light-step-badge {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
   font-size: 1.3rem;
   font-weight: 600;
-  color: #cdaa7c;
+  color: #805d31;
   margin-bottom: 0.75rem;
 }
 
-.dark-step-icon {
-  color: #cdaa7c;
+.light-step-icon {
+  color: #805d31;
   margin-bottom: 0.75rem;
 }
 
-.dark-step-col h3 {
+.light-step-col h3 {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
   font-size: 1.2rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #1c1917;
   margin: 0 0 0.5rem;
 }
 
-.dark-step-col p {
+.light-step-col p {
   font-size: 0.92rem;
   line-height: 1.62;
-  color: #bfae99;
+  color: #554433;
   margin: 0;
 }
 
@@ -356,12 +357,12 @@
 .atelier-calculator-card {
   background: #ffffff;
   border: 1px solid #e8dbca;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 3rem;
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 3.5rem;
-  box-shadow: 0 12px 32px rgba(128, 93, 49, 0.05);
+  box-shadow: 0 8px 24px rgba(128, 93, 49, 0.04);
 }
 
 .calc-left-info h2 {
@@ -414,7 +415,7 @@
 .calc-form-group select {
   width: 100%;
   padding: 0.8rem 1rem;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #d8c7b3;
   background: #fdfbf7;
   font-family: var(--font-hero-body);
@@ -471,7 +472,7 @@
 .calc-output-box {
   background: #fbf6ee;
   border: 1px solid #e4d5c3;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
@@ -504,7 +505,7 @@
 }
 
 .profit-val {
-  font-size: 1.25rem !important;
+  font-size: 1.2rem !important;
   color: #805d31 !important;
   font-weight: 800 !important;
 }
@@ -513,7 +514,7 @@
    Packaging Interactive Showcase
    -------------------------------------------------------------------------- */
 .atelier-packaging-section {
-  padding: 4rem 0;
+  padding: 4.5rem 0;
   background: #ffffff;
   border-top: 1px solid #eee5d8;
 }
@@ -536,7 +537,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.85rem 0.75rem;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #d8c7b3;
   background: #fdfbf7;
   font-family: var(--font-hero-body);
@@ -551,13 +552,12 @@
   background: #805d31;
   color: #ffffff;
   border-color: #805d31;
-  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.2);
 }
 
 .packaging-active-display {
   background: #fbf6ee;
   border: 1px solid #e4d5c3;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 2rem;
   display: flex;
   align-items: center;
@@ -611,7 +611,7 @@
   color: #1c1917;
   background: #ffffff;
   padding: 0.5rem 0.85rem;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px dashed #d8c7b3;
 }
 
@@ -676,7 +676,7 @@
    Comparison Table Matrix
    -------------------------------------------------------------------------- */
 .atelier-matrix-section {
-  padding: 4rem 0;
+  padding: 4.5rem 0;
   background: #ffffff;
   border-top: 1px solid #eee5d8;
 }
@@ -751,7 +751,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.85rem 1.4rem;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 1px solid #805d31;
   background: #805d31;
   color: #ffffff;
@@ -759,7 +759,7 @@
   font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
 
 .faq-ask-btn:hover {
@@ -777,15 +777,15 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #e8dbca;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: #ffffff;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
 
 .faq-row.open {
   border-color: #805d31;
-  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.08);
+  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.06);
 }
 
 .faq-row-trigger {
@@ -867,7 +867,7 @@
     gap: 1.75rem;
   }
 
-  .dark-workflow-stepper {
+  .light-workflow-stepper {
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
@@ -914,7 +914,7 @@
     justify-content: center;
   }
 
-  .dark-workflow-stepper {
+  .light-workflow-stepper {
     grid-template-columns: 1fr;
     gap: 1.75rem;
   }
