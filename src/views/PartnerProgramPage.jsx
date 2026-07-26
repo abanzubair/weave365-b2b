@@ -579,53 +579,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </section>
       )}
 
-      {/* Packaging & Branding Options */}
-      {activeType === 'white-label' && (
-        <section className="atelier-packaging-section">
-          <div className="atelier-container">
-            <div className="atelier-section-head">
-              <h2>Custom Packaging & Branding Options</h2>
-              <p>Select your preferred white-label packaging and marketing support options.</p>
-            </div>
 
-            <div className="packaging-interactive-container">
-              <div className="packaging-tab-buttons">
-                {packagingOptions.map((pkg) => {
-                  const PkgIcon = pkg.icon;
-                  const isSelected = selectedPkg === pkg.id;
-                  return (
-                    <button
-                      key={pkg.id}
-                      type="button"
-                      className={`packaging-tab-btn ${isSelected ? 'active' : ''}`}
-                      onClick={() => setSelectedPkg(pkg.id)}
-                    >
-                      <PkgIcon size={18} />
-                      <span>{pkg.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {packagingOptions
-                .filter((pkg) => pkg.id === selectedPkg)
-                .map((pkg) => (
-                  <div key={pkg.id} className="packaging-active-display">
-                    <div className="display-info">
-                      <span className="display-badge">{pkg.badge}</span>
-                      <h3>{pkg.title}</h3>
-                      <p>{pkg.desc}</p>
-                    </div>
-                    <div className="display-code-preview">
-                      <span className="lbl">Preview Standard:</span>
-                      <code>{pkg.previewText}</code>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Split Responsibility */}
       <section className="atelier-split-section">
