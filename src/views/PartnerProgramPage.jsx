@@ -408,30 +408,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      {/* Top Channel Navigation Bar */}
-      <div className="partner-channel-selector-bar">
-        <div className="partner-channel-selector-container">
-          <span className="partner-channel-label">Select Partner Track:</span>
-          <div className="partner-channel-tabs">
-            <button
-              type="button"
-              className={`partner-channel-tab ${activeType === 'white-label' ? 'active' : ''}`}
-              onClick={() => navigate('white-label')}
-            >
-              <Store size={16} />
-              <span>White Label Brands</span>
-            </button>
-            <button
-              type="button"
-              className={`partner-channel-tab ${activeType === 'sourcing-partners' ? 'active' : ''}`}
-              onClick={() => navigate('sourcing-partners')}
-            >
-              <Factory size={16} />
-              <span>Sourcing Partners</span>
-            </button>
-          </div>
-        </div>
-      </div>
+
 
       {/* Breadcrumbs */}
       <nav className="seo-breadcrumbs partner-program-breadcrumbs" aria-label="Breadcrumb">
@@ -443,7 +420,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       {/* Hero Section */}
       <header className="partner-program-hero">
         <div className="partner-program-hero-copy">
-          <span className="partner-program-eyebrow">{page.eyebrow}</span>
           <h1>{page.h1}</h1>
           <p className="partner-hero-intro">{page.intro}</p>
 
@@ -510,7 +486,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       {/* SEO Strategic Narrative */}
       <section className="partner-program-seo-copy">
         <div className="seo-copy-header">
-          <span className="seo-subhead-badge">EXPERT ECOSYSTEM</span>
           <h2>
             {activeType === 'white-label'
               ? 'Empowering Boutique Owners & Online Sellers with Private Label Power'
@@ -524,7 +499,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       <section className="partner-journey-section">
         <div className="section-container">
           <div className="section-header-center">
-            <span className="section-eyebrow">CLEAR 4-STEP WORKFLOW</span>
             <h2>How the {activeType === 'white-label' ? 'White Label' : 'Sourcing'} Program Works</h2>
             <p>Designed for clarity, fast execution, and seamless business growth.</p>
           </div>
@@ -556,10 +530,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
           <div className="section-container">
             <div className="calculator-wrapper">
               <div className="calculator-info">
-                <div className="calc-badge">
-                  <Coins size={18} />
-                  <span>Interactive ROI Estimator</span>
-                </div>
                 <h2>White Label Profit & Margin Calculator</h2>
                 <p>
                   Estimate your brand revenue and net profits when selling private label Banarasi sarees and suit sets to your customers.
@@ -678,7 +648,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         <section className="partner-packaging-section">
           <div className="section-container">
             <div className="section-header-center">
-              <span className="section-eyebrow">CUSTOM PACKAGING & BRANDING</span>
               <h2>Your Brand Identity on Every Product & Package</h2>
               <p>Select your preferred white-label packaging and marketing support options.</p>
             </div>
@@ -820,7 +789,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         <div className="section-container">
           <div className="faq-split-grid">
             <div className="faq-intro-card">
-              <span className="faq-badge">TRANSPARENCY FIRST</span>
               <h2>Frequently Asked Questions</h2>
               <p>Everything you need to know about onboarding, custom branding, MOQ, and fulfillment SLAs.</p>
               <div className="faq-cta-box">
