@@ -2,8 +2,8 @@
  * @file trafficTracker.js
  * Client-side non-blocking traffic tracker.
  * Features:
- * - Session-Deduplicated (logs 1 visit per session to prevent DB bloat & cloudflare server burden)
- * - Zero-Latency / Non-Blocking (uses navigator.sendBeacon or async fetch with keepalive: true)
+ * - Session-Deduplicated per browsing session
+ * - Universally compatible with Mobile iOS, Android, and in-app webviews
  * - Completely silent and crash-proof
  */
 
@@ -13,7 +13,7 @@ export function trackSiteTraffic() {
   if (typeof window === 'undefined') return;
 
   try {
-    // 1. Session Deduplication Check (Prevents logging page reloads & avoids server burden)
+    // 1. Session Deduplication Check (Logs 1 visit per browsing session)
     const sessionKey = 'weave_analytics_session_active';
     if (sessionStorage.getItem(sessionKey) || isTrackedInSession) {
       return;
@@ -36,18 +36,13 @@ export function trackSiteTraffic() {
       sessionId: sessionId
     });
 
-    // 3. Send using SendBeacon (0ms TTFB / zero main thread impact) or fetch keepalive
-    if (navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon('/api/analytics', blob);
-    } else {
-      void fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true
-      }).catch(() => {});
-    }
+    // 3. Reliable fetch with keepalive: true (Works across mobile Safari, Chrome, and In-App browsers)
+    void fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true
+    }).catch(() => {});
   } catch (err) {
     // Fail silently so user experience is never impacted
     console.warn('[Analytics Tracker] Silent warning:', err);
