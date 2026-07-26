@@ -149,13 +149,18 @@ export async function POST(request) {
     const { path, referrer, userAgent, sessionId } = body || {};
 
     // 1. Extract Cloudflare Edge Geolocation HTTP Headers
-    const host = request.headers.get('host') || '';
-    const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+    const host = (request.headers.get('host') || '').toLowerCase();
+    const isLocal = host.includes('localhost') ||
+                    host.includes('127.0.0.1') ||
+                    host.includes('192.168.') ||
+                    host.includes('10.') ||
+                    host.includes('172.') ||
+                    host.endsWith('.local');
 
     const country = (request.headers.get('cf-ipcountry') || 'IN').toUpperCase();
     const rawCity = request.headers.get('cf-ipcity');
     const region = request.headers.get('cf-region');
-    const city = rawCity ? decodeURIComponent(rawCity) : (region ? decodeURIComponent(region) : (isLocal ? 'Localhost (Dev)' : 'India'));
+    const city = rawCity ? decodeURIComponent(rawCity) : (region ? decodeURIComponent(region) : (isLocal ? 'Local Dev Network' : 'India'));
 
     // 2. Classify Referrer & Device Specs securely
     const trafficSource = classifyTrafficSource(referrer);
@@ -170,7 +175,7 @@ export async function POST(request) {
 
     if (supabaseUrl && supabaseKey) {
       // Direct REST API fetch to Supabase (Zero dependency bundle overhead for Edge worker)
-      void fetch(`${supabaseUrl}/rest/v1/site_analytics`, {
+      const res = await fetch(`${supabaseUrl}/rest/v1/site_analytics`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +195,12 @@ export async function POST(request) {
           country: country.slice(0, 10),
           city: city.slice(0, 100),
         })
-      }).catch(() => {});
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('[Analytics API] Supabase REST error:', res.status, errText);
+      }
     }
 
     return Response.json({ status: 'success' }, { status: 200 });
