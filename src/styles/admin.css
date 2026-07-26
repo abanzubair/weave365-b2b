@@ -4992,6 +4992,7 @@
 .card-icon.icon-enquiry { background: #f0fdf4; color: #16a34a; }
 .card-icon.icon-abandoned { background: #fffbeb; color: #d97706; }
 .card-icon.icon-shopping { background: #f5f3ff; color: #7c3aed; }
+.card-icon.icon-download { background: #f3e8ff; color: #7e22ce; }
 
 .card-label {
   display: block;
@@ -5254,6 +5255,12 @@
   background: #ecfdf5;
   color: #059669;
   border: 1px solid #a7f3d0;
+}
+
+.badge-activity-download {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
 }
 
 .badge-buyer-tier {

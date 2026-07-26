@@ -63,6 +63,7 @@ import {
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'orders', label: 'Orders' },
+  { key: 'download_logs', label: 'Download Logs' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
   { key: 'influencer_profiles', label: 'Influencer Profiles' },

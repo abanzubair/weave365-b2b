@@ -24,7 +24,8 @@ import {
   Bot,
   BarChart3,
   TrendingUp,
-  ShieldCheck
+  ShieldCheck,
+  Download
 } from 'lucide-react';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
@@ -186,6 +187,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     const favList = adminData.favorites || adminData.favourites || adminData.optional?.favorites || [];
     const cartList = adminData.cartItems || adminData.carts || adminData.optional?.cartItems || [];
     const inqList = adminData.inquiries || adminData.optional?.inquiries || [];
+    const dlList = adminData.download_logs || adminData.optional?.download_logs || [];
 
     favList.forEach((fav) => {
       const b = resolveBuyer(fav.user_id, fav.user_email, fav.phone, fav.full_name, fav.business_name, fav.city, fav.pincode);
@@ -251,6 +253,19 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       });
     });
 
+    dlList.forEach((dl) => {
+      const b = resolveBuyer(dl.user_id, dl.user_email, dl.phone, dl.full_name, dl.business_name, dl.city, dl.pincode);
+      const prodInfo = getProductDetails(dl.product_id || dl.item_key, dl.variant_code);
+      list.push({
+        id: `dl_${dl.id}`,
+        type: 'download',
+        activityType: 'Catalogue Downloads',
+        date: dl.downloaded_at || dl.created_at || new Date().toISOString(),
+        buyer: b,
+        products: [{ ...prodInfo, qty: 1 }],
+      });
+    });
+
     return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [adminData, products, profileMap, productMap]);
 
@@ -272,7 +287,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   }, [allActivities, activityFilter, typeFilter, searchQuery]);
 
   const activityCounts = useMemo(() => {
-    const counts = { all: allActivities.length, Favourites: 0, Enquiry: 0, 'Abandoned Carts': 0, 'Shopping Carts': 0 };
+    const counts = { all: allActivities.length, Favourites: 0, Enquiry: 0, 'Abandoned Carts': 0, 'Shopping Carts': 0, 'Catalogue Downloads': 0 };
     allActivities.forEach((act) => {
       if (counts[act.activityType] !== undefined) counts[act.activityType]++;
     });
@@ -368,6 +383,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       case 'Enquiry': return 'badge-activity-enquiry';
       case 'Abandoned Carts': return 'badge-activity-abandoned';
       case 'Shopping Carts': return 'badge-activity-shopping';
+      case 'Catalogue Downloads': return 'badge-activity-download';
       default: return 'badge-activity-default';
     }
   };
@@ -382,7 +398,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           </h1>
           <p className="admin-page-subtitle">
             {viewMode === 'interactions'
-              ? 'Real-time stream of customer intent, shopping carts, enquiries, and wishlist interactions.'
+              ? 'Real-time stream of customer intent, shopping carts, enquiries, wishlist interactions, and catalogue downloads.'
               : 'Track visitor traffic, AI Assistants (ChatGPT, Gemini, Claude, Perplexity), Social Media origins, devices, and cities.'}
           </p>
         </div>
@@ -501,6 +517,17 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               <div>
                 <span className="card-label">Shopping Carts</span>
                 <div className="card-val">{activityCounts['Shopping Carts']}</div>
+              </div>
+            </div>
+
+            <div
+              className={`buyer-activity-card ${activityFilter === 'Catalogue Downloads' ? 'active' : ''}`}
+              onClick={() => setActivityFilter('Catalogue Downloads')}
+            >
+              <div className="card-icon icon-download"><Download size={22} /></div>
+              <div>
+                <span className="card-label">Downloads</span>
+                <div className="card-val">{activityCounts['Catalogue Downloads']}</div>
               </div>
             </div>
           </div>
