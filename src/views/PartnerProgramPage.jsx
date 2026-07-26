@@ -476,10 +476,10 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
               const StepIcon = item.icon;
               return (
                 <div key={item.step} className="light-step-col">
-                  <div className="light-step-badge">
-                    <span>{item.step}</span>
+                  <div className="light-step-header">
+                    <span className="light-step-badge">{item.step}</span>
+                    <StepIcon size={22} className="light-step-icon" />
                   </div>
-                  <StepIcon size={22} className="light-step-icon" />
                   <h3>{item.title}</h3>
                   <p>{item.content}</p>
                 </div>

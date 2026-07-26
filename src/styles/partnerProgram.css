@@ -326,17 +326,22 @@
   border-top: 2px solid #805d31;
 }
 
+.light-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
 .light-step-badge {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: #805d31;
-  margin-bottom: 0.75rem;
 }
 
 .light-step-icon {
   color: #805d31;
-  margin-bottom: 0.75rem;
 }
 
 .light-step-col h3 {
