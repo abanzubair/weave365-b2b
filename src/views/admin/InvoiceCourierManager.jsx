@@ -23,7 +23,7 @@ import { supabase } from '../../supabaseClient.js';
  */
 export function InvoiceCourierManager({ inquiries = [], products = [], loadAdminData }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('orders');
   const [copyFeedback, setCopyFeedback] = useState({});
 
   const filteredInquiries = useMemo(() => {

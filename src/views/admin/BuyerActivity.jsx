@@ -310,7 +310,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           onClick={() => loadAdminData && loadAdminData()}
           title="Refresh Data"
         >
-          <RefreshCw size={16} /> Refresh
+          <RefreshCw size={18} /> Refresh
         </button>
       </div>
 
@@ -320,7 +320,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           className={`buyer-activity-card ${activityFilter === 'all' ? 'active' : ''}`}
           onClick={() => setActivityFilter('all')}
         >
-          <div className="card-icon icon-all"><Activity size={20} /></div>
+          <div className="card-icon icon-all"><Activity size={22} /></div>
           <div>
             <span className="card-label">Total Activities</span>
             <div className="card-val">{activityCounts.all}</div>
@@ -331,7 +331,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           className={`buyer-activity-card ${activityFilter === 'Favourites' ? 'active' : ''}`}
           onClick={() => setActivityFilter('Favourites')}
         >
-          <div className="card-icon icon-favourites"><Heart size={20} /></div>
+          <div className="card-icon icon-favourites"><Heart size={22} /></div>
           <div>
             <span className="card-label">Favourites</span>
             <div className="card-val">{activityCounts.Favourites}</div>
@@ -342,7 +342,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           className={`buyer-activity-card ${activityFilter === 'Enquiry' ? 'active' : ''}`}
           onClick={() => setActivityFilter('Enquiry')}
         >
-          <div className="card-icon icon-enquiry"><MessageSquare size={20} /></div>
+          <div className="card-icon icon-enquiry"><MessageSquare size={22} /></div>
           <div>
             <span className="card-label">Enquiry</span>
             <div className="card-val">{activityCounts.Enquiry}</div>
@@ -353,7 +353,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           className={`buyer-activity-card ${activityFilter === 'Abandoned Carts' ? 'active' : ''}`}
           onClick={() => setActivityFilter('Abandoned Carts')}
         >
-          <div className="card-icon icon-abandoned"><Clock size={20} /></div>
+          <div className="card-icon icon-abandoned"><Clock size={22} /></div>
           <div>
             <span className="card-label">Abandoned Carts</span>
             <div className="card-val">{activityCounts['Abandoned Carts']}</div>
@@ -364,7 +364,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           className={`buyer-activity-card ${activityFilter === 'Shopping Carts' ? 'active' : ''}`}
           onClick={() => setActivityFilter('Shopping Carts')}
         >
-          <div className="card-icon icon-shopping"><ShoppingBag size={20} /></div>
+          <div className="card-icon icon-shopping"><ShoppingBag size={22} /></div>
           <div>
             <span className="card-label">Shopping Carts</span>
             <div className="card-val">{activityCounts['Shopping Carts']}</div>
@@ -375,7 +375,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       {/* 3. Search and Filters Bar */}
       <div className="buyer-activity-toolbar">
         <div className="search-input-wrapper">
-          <Search size={16} className="search-icon" />
+          <Search size={18} className="search-icon" />
           <input
             type="text"
             placeholder="Search by Buyer Name, Email, Phone, City or Product..."
@@ -387,7 +387,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
 
         <div className="toolbar-filters">
           <div className="filter-select-group">
-            <Filter size={15} className="filter-icon" />
+            <Filter size={16} className="filter-icon" />
             <select
               value={activityFilter}
               onChange={(e) => setActivityFilter(e.target.value)}
@@ -402,7 +402,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           </div>
 
           <div className="filter-select-group">
-            <User size={15} className="filter-icon" />
+            <User size={16} className="filter-icon" />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -422,11 +422,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
         <table className="buyer-activity-table">
           <thead>
             <tr>
-              <th style={{ width: '90px' }}>ID</th>
-              <th style={{ width: '130px' }}>Date</th>
-              <th style={{ minWidth: '220px' }}>Buyer</th>
-              <th style={{ width: '120px' }}>Type</th>
-              <th style={{ width: '170px' }}>
+              <th style={{ width: '95px' }}>ID</th>
+              <th style={{ width: '140px' }}>Date</th>
+              <th style={{ minWidth: '240px' }}>Buyer</th>
+              <th style={{ width: '130px' }}>Type</th>
+              <th style={{ width: '180px' }}>
                 <div className="th-filter-header">
                   <span>Buyer Activity</span>
                   <select
@@ -443,8 +443,8 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                   </select>
                 </div>
               </th>
-              <th style={{ minWidth: '240px' }}>Products</th>
-              <th style={{ width: '140px', textAlign: 'center' }}>Action</th>
+              <th style={{ minWidth: '250px' }}>Products</th>
+              <th style={{ width: '150px', textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -480,7 +480,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                         {b.businessName && <div className="buyer-business">{b.businessName}</div>}
                         {b.location !== 'N/A' && (
                           <div className="buyer-location">
-                            <MapPin size={12} /> {b.location}
+                            <MapPin size={14} /> {b.location}
                           </div>
                         )}
                         {b.email && <div className="buyer-email">{b.email}</div>}
@@ -521,7 +521,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                   className="product-url-link"
                                   title="Open Product Page"
                                 >
-                                  URL <ExternalLink size={11} />
+                                  URL <ExternalLink size={13} />
                                 </a>
                               </div>
                             </div>
@@ -540,7 +540,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                           onClick={() => handleCopyActivity(act)}
                           title="Copy Activity & Buyer Info"
                         >
-                          {isCopied ? <Check size={16} className="icon-check-anim" /> : <Copy size={16} />}
+                          {isCopied ? <Check size={18} className="icon-check-anim" /> : <Copy size={18} />}
                         </button>
 
                         {/* Action Dropdown Button */}
@@ -553,7 +553,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                               setOpenDropdownId(openDropdownId === act.id ? null : act.id);
                             }}
                           >
-                            Action <ChevronDown size={14} />
+                            Action <ChevronDown size={15} />
                           </button>
 
                           {openDropdownId === act.id && (
@@ -566,7 +566,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                   className="action-menu-item"
                                   onClick={() => setOpenDropdownId(null)}
                                 >
-                                  <MessageSquare size={14} style={{ color: '#25D366' }} /> WhatsApp Buyer
+                                  <MessageSquare size={16} style={{ color: '#25D366' }} /> WhatsApp Buyer
                                 </a>
                               )}
                               {b.email && (
@@ -575,7 +575,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                   className="action-menu-item"
                                   onClick={() => setOpenDropdownId(null)}
                                 >
-                                  <Mail size={14} style={{ color: '#2563eb' }} /> Email Buyer
+                                  <Mail size={16} style={{ color: '#2563eb' }} /> Email Buyer
                                 </a>
                               )}
                               <button
@@ -586,7 +586,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                   setOpenDropdownId(null);
                                 }}
                               >
-                                <Copy size={14} /> Copy Details
+                                <Copy size={16} /> Copy Details
                               </button>
                             </div>
                           )}

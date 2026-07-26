@@ -225,14 +225,14 @@ export default function BuyerPipeline({
             onClick={handleExportCSV}
             className="pipeline-header-btn"
           >
-            <Download size={14} /> Export
+            <Download size={16} /> Export
           </button>
           <button
             type="button"
             onClick={handleCopyAllUserDetails}
             className={`pipeline-header-btn ${copyFeedback.allUsers ? 'copied' : ''}`}
           >
-            {copyFeedback.allUsers ? <Check size={14} className="icon-check-anim" /> : <Copy size={14} />} {copyFeedback.allUsers ? 'Copied!' : 'Copy All'}
+            {copyFeedback.allUsers ? <Check size={16} className="icon-check-anim" /> : <Copy size={16} />} {copyFeedback.allUsers ? 'Copied!' : 'Copy All'}
           </button>
         </div>
       </div>
@@ -240,7 +240,7 @@ export default function BuyerPipeline({
       {/* Search + Filters Bar */}
       <div className="pipeline-toolbar">
         <div className="pipeline-search-wrap">
-          <Search size={16} className="pipeline-search-icon" />
+          <Search size={18} className="pipeline-search-icon" />
           <input
             type="text"
             placeholder="Search by name, email, or phone."
@@ -378,7 +378,7 @@ export default function BuyerPipeline({
                         className={`admin-list-link-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
                         disabled={cartRows.length === 0}
                       >
-                        <ShoppingBag size={13} />
+                        <ShoppingBag size={15} />
                         <span>{cartRows.length} {cartRows.length === 1 ? 'row' : 'rows'}</span>
                       </button>
                     </td>
@@ -389,7 +389,7 @@ export default function BuyerPipeline({
                         className={`admin-list-link-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
                         disabled={favoriteRows.length === 0}
                       >
-                        <Heart size={13} />
+                        <Heart size={15} />
                         <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'item' : 'items'}</span>
                       </button>
                     </td>
@@ -421,9 +421,9 @@ export default function BuyerPipeline({
                           title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
                         >
                           {copyFeedback[profile.id] ? (
-                            <Check size={14} className="icon-check-anim" />
+                            <Check size={16} className="icon-check-anim" />
                           ) : (
-                            <Copy size={14} />
+                            <Copy size={16} />
                           )}
                         </button>
                         <select
