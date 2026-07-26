@@ -1,31 +1,11 @@
 /**
- * @file API route for lightweight Edge Traffic & AI Referral Analytics.
+ * @file API route for ultra-lightweight Edge Traffic & AI Referral Analytics.
  * Runs on Edge runtime to extract Cloudflare Geolocation headers (cf-ipcountry, cf-ipcity),
  * parses AI Referrals (ChatGPT, Gemini, Claude, Perplexity, Copilot, DeepSeek),
- * social media networks, and device metrics with zero-overhead async logging.
+ * social media networks, and device metrics with zero dependency overhead.
  */
 
-import { createClient } from '@supabase/supabase-js';
-
 export const runtime = 'edge';
-
-let _supabase = null;
-function getSupabase() {
-  if (!_supabase) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) {
-      return {
-        from: () => ({
-          insert: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
-          select: () => ({ order: () => Promise.resolve({ data: [], error: null }) })
-        })
-      };
-    }
-    _supabase = createClient(url, key);
-  }
-  return _supabase;
-}
 
 /**
  * Classifies traffic source into Category & Friendly Name
@@ -103,33 +83,33 @@ function classifyTrafficSource(referrer) {
     return { category: 'Search Engine', name: 'DuckDuckGo' };
   }
   if (ref.includes('yahoo.com')) {
-    return { category: 'Search Engine', name: 'Yahoo' };
+    return { category: 'Search Engine', name: 'Yahoo Search' };
   }
 
-  // 4. Other Web Referrals
+  // 4. Other Website Referrals
   try {
-    const host = new URL(referrer).hostname.replace(/^www\./, '');
-    return { category: 'Referral Website', name: host };
+    const urlObj = new URL(referrer);
+    const domain = urlObj.hostname.replace(/^www\./, '');
+    return { category: 'Referral Website', name: domain };
   } catch (e) {
-    return { category: 'Referral Website', name: 'External Site' };
+    return { category: 'Referral Link', name: 'External Link' };
   }
 }
 
 /**
- * Parses user-agent header into Device Type, OS, and Browser
+ * Parses User-Agent header for Device & Operating System
  */
-function parseDeviceDetails(userAgent) {
-  let deviceType = 'Desktop';
-  let deviceOs = 'Unknown';
-  let browser = 'Browser';
-
-  if (!userAgent || typeof userAgent !== 'string') {
-    return { deviceType, deviceOs, browser };
+function parseDeviceDetails(uaString) {
+  if (!uaString || typeof uaString !== 'string') {
+    return { deviceType: 'Desktop', deviceOs: 'Unknown', browser: 'Unknown' };
   }
 
-  const ua = userAgent;
+  const ua = uaString;
+  let deviceType = 'Desktop';
+  let deviceOs = 'Unknown';
+  let browser = 'Unknown';
 
-  // OS & Device Type
+  // Device & OS
   if (/iPhone/i.test(ua)) {
     deviceType = 'Mobile';
     deviceOs = 'iOS';
@@ -181,36 +161,40 @@ export async function POST(request) {
     const trafficSource = classifyTrafficSource(referrer);
     const deviceSpecs = parseDeviceDetails(userAgent || request.headers.get('user-agent'));
 
-    // 3. Security Sanitize strings to avoid excessive length / spam
+    // 3. Security Sanitize strings
     const safePath = (path || '/').slice(0, 200);
     const safeReferrer = (referrer || '').slice(0, 500);
 
-    const supabase = getSupabase();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // 4. Insert into Supabase (Edge runtime optimized)
-    const { error } = await supabase
-      .from('site_analytics')
-      .insert({
-        session_id: (sessionId || '').slice(0, 100) || null,
-        path: safePath,
-        referrer: safeReferrer || null,
-        source_category: trafficSource.category,
-        source_name: trafficSource.name,
-        device_type: deviceSpecs.deviceType,
-        device_os: deviceSpecs.deviceOs,
-        browser: deviceSpecs.browser,
-        country: country.slice(0, 10),
-        city: city.slice(0, 100),
-      });
-
-    if (error) {
-      console.error('[Analytics API] Supabase insert error:', error.message);
-      return Response.json({ status: 'error', error: error.message }, { status: 500 });
+    if (supabaseUrl && supabaseKey) {
+      // Direct REST API fetch to Supabase (Zero dependency bundle overhead for Edge worker)
+      void fetch(`${supabaseUrl}/rest/v1/site_analytics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          session_id: (sessionId || '').slice(0, 100) || null,
+          path: safePath,
+          referrer: safeReferrer || null,
+          source_category: trafficSource.category,
+          source_name: trafficSource.name,
+          device_type: deviceSpecs.deviceType,
+          device_os: deviceSpecs.deviceOs,
+          browser: deviceSpecs.browser,
+          country: country.slice(0, 10),
+          city: city.slice(0, 100),
+        })
+      }).catch(() => {});
     }
 
     return Response.json({ status: 'success' }, { status: 200 });
   } catch (err) {
-    console.error('[Analytics API] Exception:', err);
     return Response.json({ status: 'error', error: err.message }, { status: 500 });
   }
 }
