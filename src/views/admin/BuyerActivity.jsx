@@ -568,7 +568,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                       <tr key={act.id}>
                         <td className="cell-date">
                           <div className="date-main">{formattedDate}</div>
-                          <div className="cell-id">ID: {act.id}</div>
+                          <div className="cell-id" title={act.id}>ID: {String(act.id).length > 18 ? String(act.id).slice(0, 14) + '…' : act.id}</div>
                         </td>
 
                         <td className="cell-buyer">
