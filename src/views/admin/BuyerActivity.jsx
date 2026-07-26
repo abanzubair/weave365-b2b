@@ -110,12 +110,13 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   // 1. Build map of profiles by ID
   const profileMap = useMemo(() => {
     const map = new Map();
-    (adminData.profiles || []).forEach((p) => {
+    const profileList = adminData.profiles || adminData.optional?.profiles || [];
+    profileList.forEach((p) => {
       if (p.id) map.set(p.id, p);
       if (p.email) map.set(p.email.toLowerCase(), p);
     });
     return map;
-  }, [adminData.profiles]);
+  }, [adminData.profiles, adminData.optional]);
 
   // 2. Build product lookup map
   const productMap = useMemo(() => {
@@ -182,7 +183,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     const nowMs = Date.now();
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-    (adminData.favourites || []).forEach((fav) => {
+    const favList = adminData.favorites || adminData.favourites || adminData.optional?.favorites || [];
+    const cartList = adminData.cartItems || adminData.carts || adminData.optional?.cartItems || [];
+    const inqList = adminData.inquiries || adminData.optional?.inquiries || [];
+
+    favList.forEach((fav) => {
       const b = resolveBuyer(fav.user_id, fav.user_email, fav.phone, fav.full_name, fav.business_name, fav.city, fav.pincode);
       const prodInfo = getProductDetails(fav.item_key || fav.product_id, fav.variant_code);
       list.push({
@@ -195,7 +200,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       });
     });
 
-    (adminData.carts || []).forEach((cart) => {
+    cartList.forEach((cart) => {
       const b = resolveBuyer(cart.user_id, cart.email, cart.phone, cart.full_name, cart.business_name, cart.city, cart.pincode);
       const cartDateMs = cart.updated_at ? new Date(cart.updated_at).getTime() : (cart.created_at ? new Date(cart.created_at).getTime() : nowMs);
       const isAbandoned = (nowMs - cartDateMs) > TWENTY_FOUR_HOURS;
@@ -222,7 +227,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       });
     });
 
-    (adminData.inquiries || []).forEach((inq) => {
+    inqList.forEach((inq) => {
       const b = resolveBuyer(inq.user_id, inq.email, inq.phone, inq.buyer_name || inq.full_name, inq.business_name, inq.city, inq.pincode);
       let items = [];
       if (Array.isArray(inq.items) && inq.items.length > 0) {

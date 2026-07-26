@@ -5018,75 +5018,92 @@
   background: #ffffff;
   padding: 14px 18px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  flex-wrap: wrap;
 }
 
 .search-input-wrapper {
   position: relative;
   flex: 1;
-  max-width: 480px;
-
+  min-width: 260px;
+  max-width: 520px;
   display: flex;
   align-items: center;
 }
 
 .search-input-wrapper .search-icon {
   position: absolute;
-  left: 12px;
-  color: #9ca3af;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
   pointer-events: none;
+  z-index: 2;
 }
 
+.toolbar-search-input,
 .admin-search-input {
   width: 100%;
-  padding: 10px 14px 10px 40px;
-  border: 1px solid #d1d5db;
+  height: 42px;
+  padding: 10px 14px 10px 42px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 14.5px;
+  color: #0f172a;
+  background: #ffffff;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: all 0.2s ease;
 }
 
+.toolbar-search-input:focus,
 .admin-search-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.toolbar-filters {
+.toolbar-type-filter {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.filter-select-group {
-  position: relative;
-  display: flex;
+.toolbar-type-filter label {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.filter-select-group .filter-icon {
-  position: absolute;
-  left: 10px;
-  color: #6b7280;
-  pointer-events: none;
-}
-
+.toolbar-select-dropdown,
 .admin-filter-select {
-  padding: 9px 14px 9px 34px;
-  border: 1px solid #d1d5db;
+  height: 42px;
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #0f172a;
   background-color: #ffffff;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.2s;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: all 0.2s ease;
 }
 
+.toolbar-select-dropdown:focus,
 .admin-filter-select:focus {
-  border-color: #3b82f6;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 /* Data Table */
