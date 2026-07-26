@@ -437,15 +437,9 @@
   border-radius: 12px;
   border: 1px solid #eadecc;
   background: #ffffff;
-  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.03);
   display: flex;
   flex-direction: column;
-}
-
-.journey-card:hover {
-  border-color: #b78646;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(128, 93, 49, 0.08);
 }
 
 .journey-card-top {
@@ -481,10 +475,13 @@
 }
 
 .journey-card h4 {
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
   font-size: 0.86rem;
-  font-weight: 600;
-  color: #805d31;
-  margin: 0 0 0.85rem;
+  font-weight: 650;
+  color: #665239;
+  letter-spacing: 0.01em;
+  font-style: normal;
+  margin: 0.15rem 0 0.85rem;
 }
 
 .journey-card p {
@@ -750,10 +747,9 @@
   transition: all 0.25s ease;
 }
 
-.packaging-card:hover,
 .packaging-card.selected {
   border-color: #805d31;
-  box-shadow: 0 10px 25px rgba(128, 93, 49, 0.1);
+  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.08);
 }
 
 .pkg-card-top {
@@ -792,10 +788,12 @@
 }
 
 .packaging-card h4 {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #805d31;
-  margin: 0 0 0.75rem;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 0.86rem;
+  font-weight: 650;
+  color: #665239;
+  font-style: normal;
+  margin: 0.15rem 0 0.75rem;
 }
 
 .packaging-card p {
