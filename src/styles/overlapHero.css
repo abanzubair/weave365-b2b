@@ -127,6 +127,12 @@
   gap: 0.4rem;
 }
 
+.overlap-hero-highlights .highlight-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .overlap-hero-highlights .divider-dot {
   color: var(--gold-mid, #926b38);
   font-weight: bold;
