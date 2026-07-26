@@ -302,86 +302,92 @@
 }
 
 /* --------------------------------------------------------------------------
-   Editorial Brand Narrative & Infrastructure Pillars Section
+   High-Impact Infrastructure & Craft Legacy Showcase
    -------------------------------------------------------------------------- */
 .partner-program-narrative {
   padding: 4rem 5%;
   background: #fdfbf7;
   border-top: 1px solid rgba(198, 158, 106, 0.25);
   border-bottom: 1px solid rgba(198, 158, 106, 0.25);
-  margin-bottom: 3.5rem;
+  margin-bottom: 4rem;
 }
 
-.narrative-editorial-grid {
-  display: grid;
-  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(2rem, 4vw, 4.5rem);
-  align-items: start;
+.narrative-hero-statement {
+  text-align: center;
+  max-width: 860px;
+  margin: 0 auto 3rem;
 }
 
-.narrative-headline-col h2 {
+.narrative-hero-statement h2 {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(1.8rem, 2.5vw + 0.4rem, 2.45rem);
+  font-size: clamp(2rem, 3.2vw + 0.4rem, 2.75rem);
   font-weight: 400;
-  line-height: 1.22;
+  line-height: 1.2;
   color: #1a1a1a;
-  margin: 0 0 1.5rem;
-}
-
-.narrative-divider-line {
-  width: 60px;
-  height: 3px;
-  background: #805d31;
-  border-radius: 2px;
+  margin: 0 0 1.25rem;
+  letter-spacing: -0.02em;
 }
 
 .narrative-lead-text {
-  font-size: clamp(1.02rem, 0.4vw + 0.75rem, 1.1rem);
-  line-height: 1.75;
+  font-size: clamp(1.02rem, 0.4vw + 0.75rem, 1.12rem);
+  line-height: 1.72;
   color: #43382f;
-  margin: 0 0 2rem;
+  margin: 0;
 }
 
-.narrative-pillars-grid {
+.narrative-pillars-3col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.75rem;
+  margin-top: 2rem;
+}
+
+.narrative-pillar-card {
+  padding: 1.85rem;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.3);
+  box-shadow: 0 8px 24px rgba(128, 93, 49, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 1.35rem;
-  padding-top: 1.5rem;
-  border-top: 1px dashed rgba(198, 158, 106, 0.35);
 }
 
-.narrative-pillar {
+.narrative-pillar-card:hover {
+  transform: translateY(-4px);
+  border-color: #805d31;
+  box-shadow: 0 14px 32px rgba(128, 93, 49, 0.12);
+}
+
+.pillar-header {
   display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
 }
 
-.pillar-num {
+.pillar-index {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #805d31;
-  background: rgba(128, 93, 49, 0.08);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  border: 1px solid rgba(128, 93, 49, 0.2);
 }
 
-.narrative-pillar h4 {
+.pillar-icon {
+  color: #805d31;
+}
+
+.narrative-pillar-card h4 {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.12rem;
+  font-size: 1.22rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.5rem;
 }
 
-.narrative-pillar p {
+.narrative-pillar-card p {
   font-size: 0.94rem;
-  line-height: 1.6;
+  line-height: 1.62;
   color: #554433;
   margin: 0;
 }
