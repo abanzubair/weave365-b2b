@@ -883,11 +883,11 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                       <h3>{faq.q}</h3>
                       <ChevronDown size={18} className={`faq-chevron ${isOpen ? 'rotated' : ''}`} />
                     </button>
-                    {isOpen && (
-                      <div className="faq-accordion-body">
+                    <div className="faq-accordion-body-wrapper">
+                      <div className="faq-accordion-body-content">
                         <p>{faq.a}</p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}
