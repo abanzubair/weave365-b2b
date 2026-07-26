@@ -418,18 +418,16 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
               className={`partner-channel-tab ${activeType === 'white-label' ? 'active' : ''}`}
               onClick={() => navigate('white-label')}
             >
-              <Store size={15} />
+              <Store size={16} />
               <span>White Label Brands</span>
-              <span className="tab-pill">Boutique & Retail</span>
             </button>
             <button
               type="button"
               className={`partner-channel-tab ${activeType === 'sourcing-partners' ? 'active' : ''}`}
               onClick={() => navigate('sourcing-partners')}
             >
-              <Factory size={15} />
+              <Factory size={16} />
               <span>Sourcing Partners</span>
-              <span className="tab-pill">Loom & Supply</span>
             </button>
           </div>
         </div>
