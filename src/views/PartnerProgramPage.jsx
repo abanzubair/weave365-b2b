@@ -566,17 +566,14 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
             <h2>How the {activeType === 'white-label' ? 'White Label' : 'Sourcing'} Program Works</h2>
             <p>Designed for clarity, fast execution, and seamless business growth.</p>
           </div>
-
-          <div className="journey-grid">
+          <div className="journey-timeline">
             {page.guide.map((item) => {
               const StepIcon = item.icon;
               return (
-                <div key={item.step} className="journey-card">
-                  <div className="journey-card-top">
-                    <div className="journey-icon-box">
-                      <StepIcon size={22} />
-                    </div>
-                    <span className="journey-step-tag">{item.step}</span>
+                <div key={item.step} className="journey-step-item">
+                  <div className="step-header">
+                    <span className="step-num">{item.step}</span>
+                    <StepIcon size={20} className="step-icon" />
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.content}</p>
@@ -649,55 +646,35 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                   <div className="control-group">
                     <label>Target Retail Markup Multiplier</label>
                     <div className="markup-btn-group">
-                      {[
-                        { val: 1.8, label: '1.8x (Conservative)' },
-                        { val: 2.2, label: '2.2x (Standard)' },
-                        { val: 2.5, label: '2.5x (Premium Boutique)' },
-                      ].map((m) => (
+                      {[1.8, 2.0, 2.5, 3.0].map((m) => (
                         <button
-                          key={m.val}
+                          key={m}
                           type="button"
-                          className={`markup-btn ${calcMarkup === m.val ? 'active' : ''}`}
-                          onClick={() => setCalcMarkup(m.val)}
+                          className={`markup-btn ${calcMarkup === m ? 'active' : ''}`}
+                          onClick={() => setCalcMarkup(m)}
                         >
-                          {m.label}
+                          {m}x Retail
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="calc-output-panel">
+                <div className="calc-results-panel">
                   <div className="calc-stat-row">
-                    <div className="calc-stat">
-                      <span className="calc-stat-lbl">Wholesale Cost / Pc</span>
-                      <strong className="calc-stat-val">₹{calcResults.unitWholesale.toLocaleString('en-IN')}</strong>
+                    <div className="calc-stat-item">
+                      <span className="calc-stat-lbl">Wholesale Investment</span>
+                      <strong className="calc-stat-val">₹{calcResults.monthlyCost.toLocaleString('en-IN')}</strong>
                     </div>
-                    <div className="calc-stat">
-                      <span className="calc-stat-lbl">Selling Price / Pc</span>
-                      <strong className="calc-stat-val highlight">₹{calcResults.unitRetail.toLocaleString('en-IN')}</strong>
+                    <div className="calc-stat-item">
+                      <span className="calc-stat-lbl">Est. Retail Revenue</span>
+                      <strong className="calc-stat-val">₹{calcResults.monthlyRevenue.toLocaleString('en-IN')}</strong>
                     </div>
-                    <div className="calc-stat">
-                      <span className="calc-stat-lbl">Net Margin %</span>
-                      <strong className="calc-stat-val calc-margin-val">{calcResults.marginPercent}%</strong>
+                    <div className="calc-stat-item highlight">
+                      <span className="calc-stat-lbl">Est. Net Profit</span>
+                      <strong className="calc-stat-val profit">₹{calcResults.monthlyProfit.toLocaleString('en-IN')}</strong>
+                      <span className="calc-margin-val">{calcResults.marginPercent}% Net Margin</span>
                     </div>
-                  </div>
-
-                  <div className="calc-divider" />
-
-                  <div className="calc-total-box">
-                    <div>
-                      <span className="calc-total-lbl">Estimated Monthly Net Profit</span>
-                      <strong className="calc-total-val">₹{calcResults.monthlyProfit.toLocaleString('en-IN')}</strong>
-                    </div>
-                    <button
-                      type="button"
-                      className="calc-apply-btn"
-                      onClick={() => handleInquiry()}
-                    >
-                      <span>Get Started</span>
-                      <ArrowRight size={14} />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -706,7 +683,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </section>
       )}
 
-      {/* WHITE LABEL EXCLUSIVE: Packaging & Branding Options Showcase */}
+      {/* Custom Packaging & Branding Options */}
       {activeType === 'white-label' && (
         <section className="partner-packaging-section">
           <div className="section-container">
@@ -715,27 +692,28 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
               <p>Select your preferred white-label packaging and marketing support options.</p>
             </div>
 
-            <div className="packaging-grid">
+            <div className="packaging-rows-container">
               {packagingOptions.map((pkg) => {
                 const PkgIcon = pkg.icon;
                 const isSelected = selectedPkg === pkg.id;
                 return (
                   <div
                     key={pkg.id}
-                    className={`packaging-card ${isSelected ? 'selected' : ''}`}
+                    className={`packaging-spec-row ${isSelected ? 'selected' : ''}`}
                     onClick={() => setSelectedPkg(pkg.id)}
                   >
-                    <div className="pkg-card-top">
-                      <div className="pkg-icon-badge">
-                        <PkgIcon size={20} />
+                    <div className="pkg-row-left">
+                      <div className="pkg-icon-wrap">
+                        <PkgIcon size={22} />
                       </div>
-                      <span className="pkg-badge">{pkg.badge}</span>
+                      <div>
+                        <h3>{pkg.title}</h3>
+                        <p>{pkg.desc}</p>
+                      </div>
                     </div>
-                    <h3>{pkg.title}</h3>
-                    <p>{pkg.desc}</p>
-                    <div className="pkg-preview-box">
-                      <span className="preview-lbl">Preview Standard:</span>
-                      <code>{pkg.previewText}</code>
+                    <div className="pkg-row-right">
+                      <span className="pkg-badge">{pkg.badge}</span>
+                      <code className="pkg-code">{pkg.previewText}</code>
                     </div>
                   </div>
                 );
@@ -747,7 +725,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
 
       {/* Split Responsibility & Accountability Grid */}
       <section className="partner-program-split">
-        <div className="partner-program-list-panel">
+        <div className="partner-program-list-panel borderless">
           <div className="partner-program-section-head">
             <ClipboardCheck size={22} />
             <div>
@@ -764,7 +742,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
           </ul>
         </div>
 
-        <div className="partner-program-list-panel">
+        <div className="partner-program-list-panel borderless">
           <div className="partner-program-section-head">
             <BadgeCheck size={22} />
             <div>

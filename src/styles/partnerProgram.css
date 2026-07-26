@@ -426,69 +426,152 @@
   margin: 0;
 }
 
-.journey-grid {
+/* --------------------------------------------------------------------------
+   Borderless Process Timeline
+   -------------------------------------------------------------------------- */
+.journey-timeline {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
-.journey-card {
-  padding: 1.75rem;
-  border-radius: 12px;
-  border: 1px solid #eadecc;
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.03);
+.journey-step-item {
+  padding-top: 1.25rem;
+  border-top: 2px solid rgba(198, 158, 106, 0.35);
   display: flex;
   flex-direction: column;
 }
 
-.journey-card-top {
+.step-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1rem;
 }
 
-.journey-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: #f3eae0;
+.step-num {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #805d31;
+}
+
+.step-icon {
+  color: #805d31;
+}
+
+.journey-step-item h3 {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.22rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem;
+}
+
+.journey-step-item p {
+  font-size: 0.94rem;
+  line-height: 1.62;
+  color: #43382f;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Borderless Packaging Spec Rows
+   -------------------------------------------------------------------------- */
+.packaging-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.packaging-spec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.35rem;
+  border-radius: 8px;
+  border: 1px solid rgba(198, 158, 106, 0.25);
+  background: #fdfbf7;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  gap: 1.5rem;
+}
+
+.packaging-spec-row.selected {
+  border-color: #805d31;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(128, 93, 49, 0.08);
+}
+
+.pkg-row-left {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.pkg-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(128, 93, 49, 0.08);
   color: #805d31;
   display: grid;
   place-items: center;
+  flex-shrink: 0;
 }
 
-.journey-step-tag {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: #b78646;
-  letter-spacing: 0.08em;
-}
-
-.journey-card h3 {
+.pkg-row-left h3 {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(1.18rem, 0.8vw + 0.6rem, 1.3rem);
+  font-size: 1.12rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.15rem;
 }
 
-.journey-card h4 {
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-size: 0.86rem;
-  font-weight: 650;
-  color: #665239;
-  letter-spacing: 0.01em;
-  font-style: normal;
-  margin: 0.15rem 0 0.85rem;
-}
-
-.journey-card p {
-  font-size: clamp(0.94rem, 0.4vw + 0.7rem, 1.02rem);
-  line-height: 1.6;
-  color: #43382f;
+.pkg-row-left p {
+  font-size: 0.88rem;
+  color: #554433;
   margin: 0;
+}
+
+.pkg-row-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.pkg-code {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(128, 93, 49, 0.08);
+  color: #805d31;
+  border: 1px dashed rgba(128, 93, 49, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   Split Responsibility & Commitment Cards
+   -------------------------------------------------------------------------- */
+.partner-program-split {
+  max-width: 1440px;
+  margin: 4rem auto;
+  padding: 0 5%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+}
+
+.partner-program-list-panel.borderless {
+  padding: 1.75rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-top: 2px solid rgba(198, 158, 106, 0.35);
 }
 
 /* --------------------------------------------------------------------------
@@ -1172,6 +1255,11 @@
   .narrative-pillars-3col {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+
+  .journey-timeline {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
 
   .narrative-hero-statement {
