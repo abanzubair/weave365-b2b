@@ -36,9 +36,10 @@
    Breadcrumbs
    -------------------------------------------------------------------------- */
 .partner-program-breadcrumbs {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 1.25rem 5% 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 1.25rem 4% 0.5rem;
   font-size: 0.8rem;
   color: #665544;
   display: flex;
