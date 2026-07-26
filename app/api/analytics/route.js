@@ -148,7 +148,7 @@ export async function POST(request) {
     const body = await request.json();
     const { path, referrer, userAgent, sessionId } = body || {};
 
-    // 1. Extract Cloudflare Edge Geolocation HTTP Headers
+    // 1. Extract Geolocation from Vercel & Cloudflare Edge Headers / Objects
     const host = (request.headers.get('host') || '').toLowerCase();
     const isLocal = host.includes('localhost') ||
                     host.includes('127.0.0.1') ||
@@ -157,10 +157,20 @@ export async function POST(request) {
                     host.includes('172.') ||
                     host.endsWith('.local');
 
-    const country = (request.headers.get('cf-ipcountry') || 'IN').toUpperCase();
-    const rawCity = request.headers.get('cf-ipcity');
-    const region = request.headers.get('cf-region');
-    const city = rawCity ? decodeURIComponent(rawCity) : (region ? decodeURIComponent(region) : (isLocal ? 'Local Dev Network' : 'India'));
+    const vercelCity = request.headers.get('x-vercel-ip-city');
+    const vercelCountry = request.headers.get('x-vercel-ip-country');
+    const cfCity = request.cf?.city;
+    const cfCountry = request.cf?.country;
+    const cfHeaderCity = request.headers.get('cf-ipcity');
+    const cfHeaderCountry = request.headers.get('cf-ipcountry');
+    const cfRegion = request.headers.get('cf-region');
+
+    const country = (vercelCountry || cfCountry || cfHeaderCountry || 'IN').toUpperCase();
+    let rawCity = vercelCity || cfCity || cfHeaderCity || cfRegion;
+    if (rawCity) {
+      try { rawCity = decodeURIComponent(rawCity); } catch (e) {}
+    }
+    const city = rawCity || (isLocal ? 'Local Dev Network' : 'India');
 
     // 2. Classify Referrer & Device Specs securely
     const trafficSource = classifyTrafficSource(referrer);
