@@ -284,7 +284,7 @@ const comparisonData = [
   },
 ];
 
-export default function PartnerProgramPage({ type = 'white-label', navigate }) {
+export function PartnerProgramPage({ type = 'white-label', navigate }) {
   const activeType = partnerPages[type] ? type : 'white-label';
   const page = partnerPages[activeType];
 
@@ -764,3 +764,5 @@ export default function PartnerProgramPage({ type = 'white-label', navigate }) {
     </div>
   );
 }
+
+export default PartnerProgramPage;
