@@ -402,7 +402,7 @@ export function CustomWovenPage({ navigate }) {
 
             <div className="cw-sheet-action">
               <a href="#inquiry-form" className="cw-btn cw-btn-primary">
-                Configure This Specification <ArrowRight size={18} />
+                Configure Specification <ArrowRight size={16} />
               </a>
             </div>
           </div>
@@ -447,8 +447,10 @@ export function CustomWovenPage({ navigate }) {
           <div className="cw-inputs-grid">
             {designInputs.map((item, idx) => (
               <div className="cw-input-card" key={idx}>
-                <div className="cw-input-icon">{item.icon}</div>
-                <h3 className="cw-input-title">{item.title}</h3>
+                <div className="cw-card-header">
+                  <h3 className="cw-input-title">{item.title}</h3>
+                  <span className="cw-input-icon">{item.icon}</span>
+                </div>
                 <p className="cw-input-desc">{item.desc}</p>
               </div>
             ))}
@@ -457,11 +459,11 @@ export function CustomWovenPage({ navigate }) {
           {/* TEAM ASSISTANCE BANNER */}
           <div className="cw-assistance-wrapper">
             <div className="cw-assistance-header">
-              <Award size={28} className="cw-gold-icon" />
-              <div>
+              <div className="cw-assistance-title-row">
                 <h3>How Our Varanasi Weaving Team Assists You</h3>
-                <p>Once we receive your inputs, our technical weaving experts guide your project through every stage:</p>
+                <Award size={36} className="cw-gold-icon cw-badge-icon" />
               </div>
+              <p>Once we receive your inputs, our technical weaving experts guide your project through every stage:</p>
             </div>
 
             <div className="cw-assistance-list">
@@ -652,8 +654,10 @@ export function CustomWovenPage({ navigate }) {
           <div className="cw-commercial-grid">
             {/* CARD 1: MOQ */}
             <div className="cw-comm-card">
-              <div className="cw-comm-icon"><Box size={24} /></div>
-              <h3>Minimum Order Quantity (MOQ)</h3>
+              <div className="cw-card-header">
+                <h3>Minimum Order Quantity (MOQ)</h3>
+                <div className="cw-comm-icon"><Box size={22} /></div>
+              </div>
               <p className="cw-comm-intro">
                 Custom loom development involves design planning, technical development, and loom preparation before production begins. 
                 As a result, an MOQ is required to make the weaving process commercially viable.
@@ -675,8 +679,10 @@ export function CustomWovenPage({ navigate }) {
 
             {/* CARD 2: TIMELINE */}
             <div className="cw-comm-card">
-              <div className="cw-comm-icon"><Clock size={24} /></div>
-              <h3>Development & Production Timeline</h3>
+              <div className="cw-card-header">
+                <h3>Development & Production Timeline</h3>
+                <div className="cw-comm-icon"><Clock size={22} /></div>
+              </div>
               <p className="cw-comm-intro">
                 Timeline depends on design complexity, weave structure, yarn/zari availability, sampling requirements, and quantity.
               </p>
@@ -696,8 +702,10 @@ export function CustomWovenPage({ navigate }) {
 
             {/* CARD 3: PRE-PRODUCTION CHARGES */}
             <div className="cw-comm-card">
-              <div className="cw-comm-icon"><FileText size={24} /></div>
-              <h3>Pre-Production Charges</h3>
+              <div className="cw-card-header">
+                <h3>Pre-Production Charges</h3>
+                <div className="cw-comm-icon"><FileText size={22} /></div>
+              </div>
               <p className="cw-comm-intro">
                 Every custom woven project requires design evaluation, technical planning, and loom preparation before production.
               </p>
@@ -714,8 +722,10 @@ export function CustomWovenPage({ navigate }) {
 
             {/* CARD 4: ESTIMATED COST DRIVERS */}
             <div className="cw-comm-card">
-              <div className="cw-comm-icon"><DollarSign size={24} /></div>
-              <h3>Estimated Saree Cost Factors</h3>
+              <div className="cw-card-header">
+                <h3>Estimated Saree Cost Factors</h3>
+                <div className="cw-comm-icon"><DollarSign size={22} /></div>
+              </div>
               <p className="cw-comm-intro">
                 Since every custom weaving project is developed to approved specifications, there is no single standard price.
               </p>
@@ -805,8 +815,10 @@ export function CustomWovenPage({ navigate }) {
               const AudIcon = aud.icon || Building2;
               return (
                 <div className="cw-audience-card" key={i}>
-                  <AudIcon size={24} className="cw-gold-icon" style={{ marginBottom: 12 }} />
-                  <h3>{aud.title}</h3>
+                  <div className="cw-card-header">
+                    <h3>{aud.title}</h3>
+                    <AudIcon size={22} className="cw-gold-icon" />
+                  </div>
                   <p>{aud.desc}</p>
                 </div>
               );
