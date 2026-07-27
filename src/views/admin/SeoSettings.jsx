@@ -130,7 +130,7 @@ const staticSeoDefaults = [
     path: '/white-label',
     label: 'White Label Brands',
     metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
-    metaDescription: 'Launch a white label Banarasi saree and suit brand with Weave 365. Source products, customize labels and packaging, build catalogs, and grow reseller channels.',
+    metaDescription: 'Build a high-margin ethnic wear business with authentic Banarasi sarees and suits from Varanasi. Weave 365 provides direct loom sourcing, unbranded HD catalogues, white label support, and blind dropshipping to your customers.',
   },
   {
     path: '/catalogue',

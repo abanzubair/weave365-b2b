@@ -46,88 +46,88 @@ const partnerPages = {
     slug: 'white-label',
     metaTitle: 'White Label Banarasi Sarees & Suits Brand Program | Weave 365',
     metaDescription:
-      'Launch your private label Banarasi saree and suit brand with Weave 365. Source authentic weaves, customize tags & luxury packaging, get unbranded HD catalogs, and ship direct to your clients.',
-    badge: 'Luxury Private Label Program',
+      'Build a high-margin ethnic wear business with authentic Banarasi sarees and suits from Varanasi. Weave 365 provides direct loom sourcing, unbranded HD catalogues, white label support, and blind dropshipping to your customers.',
+    badge: 'Private Label Program',
     h1: 'Sell Authentic Banarasi Weaves Under Your Own Brand',
     intro:
-      'Build a high-margin luxury ethnic label backed by direct Varanasi loom infrastructure. We supply authentic Banarasi weaves, custom woven neck-tags, rigid gold-foil boxes, unbranded HD catalogs, and blind dropshipping direct to your customers.',
+      'Build a high-margin ethnic wear business with authentic Banarasi sarees and suits from Varanasi. Weave 365 provides direct loom sourcing, unbranded HD catalogues, white label support, and blind dropshipping to your customers.',
     role:
       'A White Label Brand owns customer trust, brand identity, product curation, and retail growth, while Weave 365 acts as your silent, direct-from-loom manufacturing and white-label fulfillment backbone.',
     ctaText: 'Start White Label Inquiry',
     ctaRoute: 'bulk-inquiry',
     heroImage: 'https://assets.weave365.com/assets/banner/collab-brand-hero2.jpg',
     stats: [
-      ['Margin', '40% – 65% Net'],
-      ['Branding', 'Custom Tags & Packaging'],
-      ['Catalogs', 'Unbranded HD 4K'],
-      ['Shipping', 'Blind Worldwide'],
+      ['Margin', '40% – 70% Net'],
+      ['Branding', 'Your Own Brand & Packaging'],
+      ['Catalogs', 'Unbranded Images'],
+      ['Shipping', 'Worldwide'],
     ],
     responsibilities: [
-      'Build brand positioning & customer pricing strategy',
-      'Curate collections tailored to your target audience',
-      'Provide custom logo artwork for tags & box packaging',
-      'Drive marketing, social media, and client acquisition',
-      'Manage client support & storefront experience',
-      'Set retail prices and profit margins',
+      'Build your brand positioning and customer pricing strategy.',
+      'Curate Banarasi saree and suit collections for your target customers.',
+      'Provide your logo and brand artwork for custom tags and packaging.',
+      'Market your brand through WhatsApp, social media, marketplaces, or your own website.',
+      'Manage customer enquiries, sales, and after-sales support.',
+      'Set your retail prices and profit margins.',
     ],
     accountability: [
-      '100% Genuine Varanasi Craft & Silk Certification',
-      'Strict Zero-Poaching Guarantee (Your clients stay yours)',
-      'Pre-dispatch 5-Point Quality Inspection',
-      'Custom packaging compliance on every dispatch',
-      'Fast turnaround for custom tagging & blind shipping',
-      'Live stock & catalog update access',
+      'Supply authentic Banarasi sarees and suits sourced from Varanasi.',
+      'Strict Zero-Poaching Guarantee, your customers always remain your customers.',
+      'Perform a 5-point quality inspection before every dispatch.',
+      'Pack every order using your approved branded packaging.',
+      'Provide custom tagging, White Label fulfilment, and blind shipping.',
+      'Maintain live stock availability and updated White Label catalogues.',
     ],
     guide: [
       {
         step: '01',
-        title: 'Curate Your Collection',
+        title: 'Choose Your Collection',
         content:
-          'Access our live catalog of Katan silk, Organza, Chanderi, Georgette sarees, and bridal suit sets. Filter by price point, weave technique, and color palettes.',
+          'Browse our ready-stock catalogue of authentic Banarasi sarees and suits, including Katan Silk, Organza, Chanderi, Georgette, Tissue, Soft Silk and unstitched suit sets. Select products based on fabric, weave, colour, design, and wholesale price.',
         icon: Compass,
       },
       {
         step: '02',
-        title: 'Custom Branding & Packaging',
+        title: 'Add Your Brand Identity',
         content:
-          'We craft high-density woven satin neck tags, wash-care cards, satin dust bags, and magnetic gold-foil boxes bearing your brand name and logo.',
+          'We customise your orders with your brand name using custom tags, brand labels, branded packaging, and branding materials, helping you build your own ethnic wear brand while maintaining complete brand confidentiality.',
         icon: Tags,
       },
       {
         step: '03',
-        title: 'Unbranded HD Catalogs',
+        title: 'Share, Download & List Products',
         content:
-          'Download high-resolution, unbranded model photos, 4K product video reels, and PDF catalogs to publish immediately on your website or social media.',
+          'Access high-resolution, unbranded product images and catalogues to share on WhatsApp, Instagram, Facebook, and online marketplaces, or list products on your own website without Weave 365 branding. Start selling without holding inventory.',
         icon: Sparkles,
       },
       {
         step: '04',
-        title: 'Blind Fulfillment & Shipping',
+        title: 'Blind Fulfilment & Shipping',
         content:
-          'When orders arrive, we pack with your custom boxes and dispatch directly to your end-client. Packages carry your brand sender address—zero Weave 365 markers.',
+          'After you receive an order, we pack your products using your branded packaging and dispatch them directly to your customer. Every shipment is sent with blind fulfilment, without Weave 365 branding, helping you deliver a consistent branded customer experience.',
         icon: Truck,
       },
     ],
     faqs: [
       {
         q: 'What is included in the Weave 365 White Label Program?',
-        a: 'The program includes direct wholesale access to authentic Banarasi sarees and suit sets, custom woven brand neck tags, customized luxury box packaging, unbranded 4K product photography and video reels, and blind direct-to-customer order fulfillment.',
+        a: 'The Weave 365 White Label Program includes unbranded HD catalogues, direct wholesale access to authentic Banarasi sarees and suits, custom tags, brand labels, branded packaging, White Label fulfilment, and blind dropshipping directly to your customers.',
       },
       {
         q: 'What is the Minimum Order Quantity (MOQ) for custom branded products?',
-        a: 'We offer flexible MOQ slabs starting from as few as 5 to 10 pieces per order for private label packaging. For custom woven satin neck-tag production, initial tag setup starts at 200 tags, which are stored securely in our dispatch center.',
+        a: 'We offer flexible MOQs starting from 5 to 10 pieces for White Label packaging. For custom branding, the initial setup requires a minimum order of 200 custom tags, which are securely stored at our fulfilment centre for future orders.',
       },
       {
-        q: 'Will Weave 365 contact or sell directly to my end-customers?',
-        a: 'Never. We operate under a strict non-disclosure and anti-poaching agreement. Blind dispatches carry your brand name as the sender, and no Weave 365 invoices, flyers, or branding are ever included.',
+        q: 'Will Weave 365 contact or sell directly to my customers?',
+        a: 'No. We follow a strict Zero-Poaching Policy. Your customers always remain your customers. Every order is shipped through blind fulfilment using your brand name, and no Weave 365 invoices, promotional materials, or branding are included in the shipment.',
       },
       {
-        q: 'Can I request sample pieces before placing a larger white label order?',
-        a: 'Yes! We encourage new white label partners to request a White Label Sample Kit containing fabric swatches, sample woven tags, sample luxury packaging boxes, and 2-3 sample sarees/suits.',
+        q: 'What is required before placing a White Label order?',
+        a: 'Before placing a White Label order, you need to finalise your brand name, provide your logo artwork, approve your custom tags and packaging design, and complete the initial custom tag setup. Once your branding materials are ready, all future orders can be fulfilled under your brand.',
       },
       {
-        q: 'How do digital unbranded catalogs work?',
-        a: 'Upon joining, you get access to our cloud drive containing watermark-free, unbranded 4K photos and reels. You can add your logo or price tag and post directly to your social media or online store.',
+        q: 'How do the unbranded White Label catalogues work?',
+        a: 'After joining the Weave 365 White Label Program, you receive access to high-resolution, unbranded product images and catalogues of authentic Banarasi sarees and suits. You can add your own logo, pricing, and branding before sharing them on WhatsApp, Instagram, Facebook, online marketplaces, or your own website.',
       },
     ],
   },
@@ -292,19 +292,19 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
   const [selectedPkg, setSelectedPkg] = useState('neck-tags');
 
   // Profit Calculator State
-  const [calcCategory, setCalcCategory] = useState('katan');
+  const [calcPriceRange, setCalcPriceRange] = useState('3000-4999');
   const [calcVolume, setCalcVolume] = useState(30);
   const [calcMarkup, setCalcMarkup] = useState(2.2);
 
   // Profit Calculator Logic
   const calcResults = useMemo(() => {
     const wholesalePrices = {
-      katan: 3800,
-      organza: 2600,
-      bridal: 7500,
-      suits: 1950,
+      '500-999': 750,
+      '1000-1999': 1500,
+      '3000-4999': 3800,
+      '5000-9999': 7500,
     };
-    const unitWholesale = wholesalePrices[calcCategory] || 3800;
+    const unitWholesale = wholesalePrices[calcPriceRange] || 3800;
     const unitRetail = Math.round(unitWholesale * calcMarkup);
     const unitProfit = unitRetail - unitWholesale;
     const monthlyCost = unitWholesale * calcVolume;
@@ -321,7 +321,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       monthlyProfit,
       marginPercent,
     };
-  }, [calcCategory, calcVolume, calcMarkup]);
+  }, [calcPriceRange, calcVolume, calcMarkup]);
 
   const handleInquiry = () => {
     if (typeof navigate === 'function') {
@@ -390,7 +390,11 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         <div className="atelier-container">
           <div className="atelier-section-head">
             <h2>Why Partner With Weave 365</h2>
-            <p>Direct Varanasi loom infrastructure built for rapid business growth.</p>
+            <p>
+              {activeType === 'white-label'
+                ? 'Everything you need to source, brand, and sell authentic Banarasi sarees and suits from Varanasi.'
+                : 'Direct Varanasi loom infrastructure built for rapid business growth.'}
+            </p>
           </div>
 
           <div className="capabilities-grid">
@@ -398,11 +402,21 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
               <>
                 <div className="capability-row">
                   <div className="capability-icon">
+                    <Factory size={24} />
+                  </div>
+                  <div className="capability-text">
+                    <h3>Direct Loom Sourcing</h3>
+                    <p>Source authentic Banarasi sarees and suits directly from Varanasi looms, ensuring genuine weaving, consistent quality, competitive wholesale pricing, and a reliable supply.</p>
+                  </div>
+                </div>
+
+                <div className="capability-row">
+                  <div className="capability-icon">
                     <Tags size={24} />
                   </div>
                   <div className="capability-text">
-                    <h3>Private Label Autonomy</h3>
-                    <p>Deploy your custom tags, woven labels, and luxury gold-foil boxes with 100% brand confidentiality.</p>
+                    <h3>Private Label Support</h3>
+                    <p>Sell authentic Banarasi sarees and suits under your own brand with custom tags, brand labels, branded packaging, and complete brand confidentiality.</p>
                   </div>
                 </div>
 
@@ -411,8 +425,8 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                     <Boxes size={24} />
                   </div>
                   <div className="capability-text">
-                    <h3>Zero Warehouse Risk</h3>
-                    <p>Access our live Varanasi ready-stock catalog with 1-piece dropshipping directly to your end-clients.</p>
+                    <h3>Zero Risk Inventory Model</h3>
+                    <p>Access live ready-stock Banarasi sarees and suits with 1-piece dropshipping, white label catalogues, and blind shipping directly to your customers, without holding inventory.</p>
                   </div>
                 </div>
 
@@ -422,7 +436,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                   </div>
                   <div className="capability-text">
                     <h3>High Retail Margins</h3>
-                    <p>Enjoy direct-from-loom wholesale pricing supporting healthy 2.0x to 3.0x retail markup potential.</p>
+                    <p>Benefit from direct-from-loom wholesale pricing, helping resellers, boutiques, online sellers, and private label brands achieve healthy retail profit margins.</p>
                   </div>
                 </div>
               </>
@@ -467,8 +481,16 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
       <section className="atelier-workflow-light">
         <div className="atelier-container">
           <div className="atelier-section-head">
-            <h2>How the {activeType === 'white-label' ? 'White Label' : 'Sourcing'} Program Works</h2>
-            <p>Designed for clarity, fast execution, and seamless business scaling.</p>
+            <h2>
+              {activeType === 'white-label'
+                ? 'How White Label Catalog, Fulfilment & Dropshipping Services Work'
+                : 'How the Sourcing Program Works'}
+            </h2>
+            <p>
+              {activeType === 'white-label'
+                ? 'A simple process to source authentic Banarasi sarees and suits, access unbranded catalogues, and sell under your own brand with White Label fulfilment and dropshipping services.'
+                : 'Designed for clarity, fast execution, and seamless business scaling.'}
+            </p>
           </div>
 
           <div className="light-workflow-stepper">
@@ -514,17 +536,27 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
 
               <div className="calc-right-form">
                 <div className="calc-form-group">
-                  <label htmlFor="atelier-category-select">Product Category</label>
-                  <select
-                    id="atelier-category-select"
-                    value={calcCategory}
-                    onChange={(e) => setCalcCategory(e.target.value)}
-                  >
-                    <option value="katan">Katan Silk Sarees (Wholesale ~₹3,800)</option>
-                    <option value="organza">Organza Sarees (Wholesale ~₹2,600)</option>
-                    <option value="bridal">Heavy Bridal Sarees (Wholesale ~₹7,500)</option>
-                    <option value="suits">Banarasi Suit Sets (Wholesale ~₹1,950)</option>
-                  </select>
+                  <label className="price-range-label">Product Category with Price Range</label>
+                  <div className="price-range-checkbox-grid">
+                    {[
+                      { id: '500-999', label: '₹500 - ₹999' },
+                      { id: '1000-1999', label: '₹1,000 - ₹1,999' },
+                      { id: '3000-4999', label: '₹3,000 - ₹4,999' },
+                      { id: '5000-9999', label: '₹5,000 - ₹9,999' },
+                    ].map((range) => {
+                      const isSelected = calcPriceRange === range.id;
+                      return (
+                        <label key={range.id} className={`price-range-checkbox-item ${isSelected ? 'selected' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => setCalcPriceRange(range.id)}
+                          />
+                          <span>{range.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="calc-form-group">

@@ -267,7 +267,7 @@
 
 .capabilities-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 2.5rem;
 }
 
@@ -479,6 +479,54 @@
   background: #805d31;
   color: #ffffff;
   border-color: #805d31;
+}
+
+.price-range-label {
+  font-family: var(--font-hero-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2c221a;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.price-range-checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.price-range-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-hero-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #3b2e23;
+  transition: color 0.15s ease;
+}
+
+.price-range-checkbox-item:hover {
+  color: #805d31;
+}
+
+.price-range-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1.5px solid #805d31;
+  accent-color: #805d31;
+  cursor: pointer;
+}
+
+.price-range-checkbox-item.selected span {
+  font-weight: 700;
+  color: #805d31;
 }
 
 .calc-output-box {
