@@ -8,7 +8,6 @@
  * @module productData
  */
 
-import Papa from 'papaparse';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import { seoLandingPages } from './data/seoLandingPages.js';
@@ -77,7 +76,8 @@ export async function fetchProducts() {
   return [];
 }
 
-export function parseProductCsv(text) {
+export async function parseProductCsv(text) {
+  const Papa = (await import('papaparse')).default;
   const parsed = Papa.parse(text, {
     header: true,
     skipEmptyLines: false,
@@ -738,13 +738,14 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     // 1. Parse products CSV to JSON
     let parsedProductsJson = null;
     try {
-      const mainProducts = parseProductCsv(products);
+      const Papa = (await import('papaparse')).default;
+      const mainProducts = await parseProductCsv(products);
       const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
 
       for (const result of categoryResults) {
         if (result?.text) {
           try {
-            const categoryProducts = parseProductCsv(result.text);
+            const categoryProducts = await parseProductCsv(result.text);
             for (const product of categoryProducts) {
               if (!product.category || product.category === 'Saree') {
                 product.category = result.catName;
