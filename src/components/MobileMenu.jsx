@@ -180,6 +180,9 @@ export function MobileMenu({
                 <AppLink to="bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
                 </AppLink>
+                <AppLink to="custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven</span>
+                </AppLink>
 
                 <span className="mobile-mega-heading">Sell</span>
                 <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>

@@ -111,7 +111,7 @@ export function SiteHeader({
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
           <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' ? 'active' : ''}
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' || route === 'custom-woven' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
@@ -126,6 +126,7 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Buy</span>
                   <AppLink to="wholesale-catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>Wholesale</AppLink>
                   <AppLink to="bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>Bulk Enquiry</AppLink>
+                  <AppLink to="custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>Custom Woven</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">

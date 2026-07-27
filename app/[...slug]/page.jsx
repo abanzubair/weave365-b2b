@@ -445,6 +445,14 @@ function metadataForRoute(route, product, sharedSlug, blogPostSlug, searchParams
     );
   }
 
+  if (route === 'custom-woven') {
+    return buildMeta(
+      'Custom Woven Banarasi Sarees | Weave 365',
+      'Create custom woven Banarasi sarees with loom development. Learn the MOQ, process, sampling, pricing, production timeline, and private label options.',
+      '/custom-woven'
+    );
+  }
+
   if (route === 'sourcing-partners') {
     return buildMeta(
       'Sourcing Partners for Banarasi Sarees & Suits | Weave 365',

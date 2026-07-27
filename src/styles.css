@@ -41,6 +41,7 @@
 @import './styles/orderTracking.css';
 @import './styles/whatsappFloat.css';
 @import './styles/resellerFeatures.css';
+@import './styles/customWoven.css';
 
 .search-lock {
   overflow: hidden !important;

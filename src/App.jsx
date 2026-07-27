@@ -77,6 +77,7 @@ const AffiliateProgramPage = safeLazy(() => import('./views/AffiliateProgramPage
 const DropshippingPage = safeLazy(() => import('./views/DropshippingPage.jsx').then(m => ({ default: m.DropshippingPage })));
 const ResellerFeaturesPage = safeLazy(() => import('./views/ResellerFeaturesPage.jsx').then(m => ({ default: m.ResellerFeaturesPage })));
 const PartnerProgramPage = safeLazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
+const CustomWovenPage = safeLazy(() => import('./views/CustomWovenPage.jsx').then(m => ({ default: m.CustomWovenPage })));
 const BlogList = safeLazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = safeLazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
 const AboutPage = lazy(() => import('./views/AboutPage.jsx').then(m => ({ default: m.AboutPage })));
@@ -1437,6 +1438,18 @@ export default function App({ initialData = {} }) {
             openAuth={() => setAuthOpen(true)}
             isTransitioning={false}
           />
+        </Suspense>
+      );
+    }
+
+    if (route === 'custom-woven') {
+      return (
+        <Suspense fallback={
+          <div className="section" aria-hidden="true" style={{ padding: '0 20px 40px' }}>
+            <CatalogPageSkeleton count={8} wrap={true} />
+          </div>
+        }>
+          <CustomWovenPage navigate={navigate} />
         </Suspense>
       );
     }
