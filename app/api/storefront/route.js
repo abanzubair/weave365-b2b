@@ -5,45 +5,24 @@
  * Also logs customer lead inquiries securely.
  */
 
-import { createClient } from '@supabase/supabase-js';
-
 export const runtime = 'edge';
 
 // Safe server-side client lazy initialization to prevent next build compilation errors
 let supabaseInstance = null;
-function getSupabase() {
+async function getSupabase() {
   if (!supabaseInstance) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     // Use service role key if available to bypass RLS, otherwise fallback to public anon key
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     if (!url || !key) {
-      // Mock client returned during next build compilation phase
-      return {
-        from: () => ({
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () => Promise.resolve({ data: null, error: null }),
-            }),
-          }),
-          insert: () => ({
-            select: () => ({
-              single: () => Promise.resolve({ data: null, error: null })
-            })
-          })
-        })
-      };
+      return null;
     }
+    const { createClient } = await import('@supabase/supabase-js');
     supabaseInstance = createClient(url, key);
   }
   return supabaseInstance;
 }
-
-const supabase = new Proxy({}, {
-  get(target, prop) {
-    return getSupabase()[prop];
-  }
-});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -74,6 +53,7 @@ const driveImageUrl = (link) => {
 
 export async function GET(request) {
   try {
+    const supabase = await getSupabase();
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
     const domain = searchParams.get('domain');
@@ -238,6 +218,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const supabase = await getSupabase();
     const payload = await request.json();
     
     // Insert new inquiry lead securely into the database

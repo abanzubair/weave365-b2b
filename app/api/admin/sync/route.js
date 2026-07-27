@@ -5,9 +5,6 @@
  * and updates the Supabase cached sheet database.
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { syncSheetsToSupabase } from '../../../../src/productData.js';
-
 export const runtime = 'edge';
 
 const corsHeaders = {
@@ -55,6 +52,7 @@ export async function POST(request) {
       };
     }
 
+    const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey, clientOptions);
 
     // 2. Verify administrator email credentials (env list or Supabase profiles table)
@@ -68,31 +66,20 @@ export async function POST(request) {
 
     if (!isAuthorized && token) {
       try {
-        const { data: { user: authUser }, error: authUserError } = await supabase.auth.getUser(token);
+        const { data: { user: authUser } } = await supabase.auth.getUser(token);
+        if (authUser?.email && authUser.email.trim().toLowerCase() === cleanEmail) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authUser.id)
+            .maybeSingle();
 
-        if (!authUserError && authUser && authUser.email) {
-          const verifiedEmail = authUser.email.trim().toLowerCase();
-
-          if (verifiedEmail === cleanEmail) {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', authUser.id)
-              .maybeSingle();
-
-            if (profileError) {
-              console.error('Error fetching profile from Supabase for sync auth:', profileError);
-            } else if (profile?.role === 'admin') {
-              isAuthorized = true;
-            }
-          } else {
-            console.warn('Sync authorization warning: requested email does not match verified JWT email.');
+          if (profile?.role === 'admin') {
+            isAuthorized = true;
           }
-        } else if (authUserError) {
-          console.error('Error verifying user token in sync API:', authUserError);
         }
       } catch (err) {
-        console.error('Unexpected token verification error in sync API:', err);
+        console.warn('Unexpected token verification error in sync API:', err.message);
       }
     }
 
@@ -104,6 +91,7 @@ export async function POST(request) {
     }
 
     // 3. Trigger central sync implementation with secure database client
+    const { syncSheetsToSupabase } = await import('../../../../src/productData.js');
     await syncSheetsToSupabase(supabase);
     const timestamp = new Date().toISOString();
 
