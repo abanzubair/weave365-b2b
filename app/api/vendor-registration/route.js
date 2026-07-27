@@ -4,58 +4,23 @@
  * bypassing and eliminating Google Sheets completely.
  */
 
-import { createClient } from '@supabase/supabase-js';
-
 export const runtime = 'edge';
 
 // Safe server-side client lazy initialization to prevent next build compilation errors
 let supabaseInstance = null;
-function getSupabase() {
+async function getSupabase() {
   if (!supabaseInstance) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     // Use service_role key to bypass RLS for administrative updates and file uploads
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!url || !key) {
-      // Return a dummy object during build time to prevent supabaseUrl required errors
-      return {
-        from: () => ({
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () => Promise.resolve({ data: null, error: null }),
-              order: () => Promise.resolve({ data: [], error: null })
-            }),
-            order: () => Promise.resolve({ data: [], error: null })
-          }),
-          insert: () => ({
-            select: () => ({
-              single: () => Promise.resolve({ data: null, error: null })
-            })
-          }),
-          update: () => ({
-            eq: () => ({
-              select: () => Promise.resolve({ data: null, error: null })
-            })
-          })
-        }),
-        storage: {
-          from: () => ({
-            upload: () => Promise.resolve({ data: null, error: null }),
-            getPublicUrl: () => ({ data: { publicUrl: '' } })
-          })
-        }
-      };
+      return null;
     }
+    const { createClient } = await import('@supabase/supabase-js');
     supabaseInstance = createClient(url, key);
   }
   return supabaseInstance;
 }
-
-// Proxy wrapper around the lazy client to avoid modifying downstream code references
-const supabase = new Proxy({}, {
-  get(target, prop) {
-    return getSupabase()[prop];
-  }
-});
 
 
 // Helper to parse base64 file payloads and upload them directly to Supabase Storage
@@ -82,6 +47,9 @@ async function uploadBase64ToStorage(base64Str, path) {
     
     const blob = new Blob([bytes], { type: contentType });
     
+    const supabase = await getSupabase();
+    if (!supabase) return '';
+
     const { data, error } = await supabase.storage
       .from('vendor-onboarding')
       .upload(path, blob, {
@@ -348,6 +316,7 @@ async function sendNotificationEmail(reviewData) {
 
 export async function POST(request) {
   try {
+    const supabase = await getSupabase();
     const payload = await request.json();
     const action = payload.action;
 
@@ -543,6 +512,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    const supabase = await getSupabase();
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const whatsapp = searchParams.get('whatsapp');

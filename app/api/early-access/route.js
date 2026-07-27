@@ -1,107 +1,77 @@
 /**
  * @file API route for Early Access form submissions.
- * Saves submission data directly to Supabase `early_access_submissions` table.
- * Google Sheets integration has been removed in favour of the Admin panel.
+ * Saves submission data directly to Supabase `early_access_submissions` table via REST.
  */
-
-import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
 
-// Lazy singleton to avoid build-time crash when env vars are absent
-let _supabase = null;
-function getSupabase() {
-  if (!_supabase) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) {
-      return {
-        from: () => ({
-          insert: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
-          select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
-          update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
-        }),
-      };
-    }
-    _supabase = createClient(url, key);
+async function supabaseRest(path, { method = 'GET', body, headers = {} } = {}) {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!baseUrl || !apiKey) {
+    throw new Error('Supabase environment variables not configured');
   }
-  return _supabase;
+
+  const res = await fetch(`${baseUrl}/rest/v1/${path}`, {
+    method,
+    headers: {
+      'apikey': apiKey,
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || data.error || 'Database operation failed');
+  }
+  return data;
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    // Strip the client-only slider flag before persisting
     const { sliderVerified, ...submissionData } = body;
 
-    const supabase = getSupabase();
+    const row = {
+      submitted_at: submissionData.submittedAt || new Date().toISOString(),
+      full_name: submissionData.fullName || '',
+      whatsapp_number: submissionData.whatsappNumber || '',
+      buyer_type: submissionData.buyerType || '',
+      buying_preference: submissionData.buyingPreference || '',
+      monthly_budget: submissionData.monthlyBudget || '',
+      city: submissionData.city || '',
+      pincode: submissionData.pincode || '',
+      store_link: submissionData.storeLink || '',
+      status: submissionData.status || 'pending_review',
+    };
 
-    const { data, error } = await supabase
-      .from('early_access_submissions')
-      .insert({
-        submitted_at: submissionData.submittedAt || new Date().toISOString(),
-        full_name: submissionData.fullName || '',
-        whatsapp_number: submissionData.whatsappNumber || '',
-        buyer_type: submissionData.buyerType || '',
-        buying_preference: submissionData.buyingPreference || '',
-        monthly_budget: submissionData.monthlyBudget || '',
-        city: submissionData.city || '',
-        pincode: submissionData.pincode || '',
-        store_link: submissionData.storeLink || '',
-        status: submissionData.status || 'pending_review',
-      });
-
-    if (error) {
-      console.error('[early-access API] Supabase insert error:', error);
-      return Response.json(
-        { status: 'error', error: error.message || 'Failed to save submission.' },
-        { status: 500 }
-      );
-    }
+    const data = await supabaseRest('early_access_submissions', {
+      method: 'POST',
+      body: row,
+    });
 
     return Response.json({ status: 'success', data });
   } catch (err) {
     console.error('[early-access API] Error:', err);
-    return Response.json(
-      { status: 'error', error: err.message },
-      { status: 500 }
-    );
+    return Response.json({ status: 'error', error: err.message }, { status: 500 });
   }
 }
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status'); // optional: 'pending_review' | 'approved' | 'rejected'
+    const statusFilter = searchParams.get('status');
 
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('[early-access API GET] Error: SUPABASE_SERVICE_ROLE_KEY is not configured on the server.');
-      return Response.json({
-        status: 'error',
-        error: 'SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Please add it to your environment variables/secrets in your hosting dashboard.'
-      }, { status: 500 });
-    }
-
-    const supabase = getSupabase();
-
-
-    let query = supabase
-      .from('early_access_submissions')
-      .select('*')
-      .order('submitted_at', { ascending: false })
-      .limit(500);
-
+    let queryPath = 'early_access_submissions?select=*&order=submitted_at.desc&limit=500';
     if (statusFilter) {
-      query = query.eq('status', statusFilter);
+      queryPath += `&status=eq.${encodeURIComponent(statusFilter)}`;
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('[early-access API GET] Error:', error);
-      return Response.json({ status: 'error', error: error.message }, { status: 500 });
-    }
-
+    const data = await supabaseRest(queryPath, { method: 'GET' });
     return Response.json({ status: 'success', data: data || [] });
   } catch (err) {
     console.error('[early-access API GET] Crash:', err);
@@ -112,30 +82,14 @@ export async function GET(request) {
 export async function PATCH(request) {
   try {
     const { id, status } = await request.json();
-
     if (!id || !status) {
       return Response.json({ status: 'error', error: 'id and status are required.' }, { status: 400 });
     }
 
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('[early-access API PATCH] Error: SUPABASE_SERVICE_ROLE_KEY is not configured on the server.');
-      return Response.json({
-        status: 'error',
-        error: 'SUPABASE_SERVICE_ROLE_KEY is not configured on the server. Please add it to your environment variables/secrets in your hosting dashboard.'
-      }, { status: 500 });
-    }
-
-    const supabase = getSupabase();
-
-
-    const { data, error } = await supabase
-      .from('early_access_submissions')
-      .update({ status })
-      .eq('id', id);
-
-    if (error) {
-      return Response.json({ status: 'error', error: error.message }, { status: 500 });
-    }
+    const data = await supabaseRest(`early_access_submissions?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: { status },
+    });
 
     return Response.json({ status: 'success', data });
   } catch (err) {
