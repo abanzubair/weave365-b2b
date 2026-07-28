@@ -22,7 +22,11 @@ import {
   ZoomIn,
   AlignLeft,
   AlignCenter,
-  AlignRight
+  AlignRight,
+  Maximize2,
+  Minimize2,
+  Box,
+  Move
 } from 'lucide-react';
 
 const DEVICE_PRESETS = [
@@ -97,14 +101,24 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
   const [scaleRatio, setScaleRatio] = useState(1);
   const previewAreaRef = useRef(null);
 
-  // Active Selected Element State
+  // Target Inspection Selection (Item vs Parent Section)
+  const [targetType, setTargetType] = useState('item'); // 'item' | 'container'
+  const [itemSelector, setItemSelector] = useState('');
+  const [containerSelector, setContainerSelector] = useState('');
   const [activeDomSelector, setActiveDomSelector] = useState('');
+
   const [activeElementMeta, setActiveElementMeta] = useState({
     label: 'Homepage Hero Title',
     text: 'Authentic Banarasi Silk & Wholesale Textiles',
     color: '#000000',
     fontSize: 56,
     textAlign: 'left',
+    width: 'auto',
+    maxWidth: '100%',
+    height: 'auto',
+    minHeight: 'auto',
+    padding: '0px',
+    margin: '0px',
   });
 
   const iframeRef = useRef(null);
@@ -156,7 +170,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
     return () => window.removeEventListener('resize', updateScale);
   }, [viewportWidth, viewportHeight, zoomMode]);
 
-  // Sync theme variables, styles, and written text to iframe in real-time
+  // Sync theme variables, styles, dimensions and written text to iframe in real-time
   const syncIframeTheme = (dataToSync = themeData) => {
     if (!iframeRef.current) return;
     try {
@@ -178,7 +192,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
           const style = doc.createElement('style');
           style.id = 'wysiwyg-inspect-styles';
           style.innerHTML = `
-            h1, h2, h3, h4, h5, h6, p, button, a, span, label, [data-editable-key] {
+            h1, h2, h3, h4, h5, h6, p, button, a, span, label, section, article, div, [data-editable-key] {
               cursor: pointer !important;
               transition: outline 0.15s ease, background 0.15s ease !important;
             }
@@ -200,7 +214,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
         if (doc.body && !doc.body.__wysiwygInspectBound) {
           doc.body.__wysiwygInspectBound = true;
           doc.body.addEventListener('click', (e) => {
-            const target = e.target.closest('h1, h2, h3, h4, h5, h6, p, button, a, span, label, [data-editable-key]');
+            const target = e.target.closest('h1, h2, h3, h4, h5, h6, p, button, a, span, label, section, article, div, [data-editable-key]');
             if (!target) return;
             e.preventDefault();
             e.stopPropagation();
@@ -208,16 +222,25 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             doc.querySelectorAll('.wysiwyg-active-selected').forEach(el => el.classList.remove('wysiwyg-active-selected'));
             target.classList.add('wysiwyg-active-selected');
 
-            // Generate unique selector for target element
-            const selector = getUniqueSelector(target);
-            setActiveDomSelector(selector);
+            // Item Selector
+            const iSel = getUniqueSelector(target);
+            setItemSelector(iSel);
 
-            // Read target computed styles
-            const comp = win ? win.getComputedStyle(target) : {};
-            const existingOverride = currentData.domOverrides?.[selector] || {};
+            // Container / Section Selector
+            const pCont = target.closest('section, article, div[class*="-section"], div[class*="-band"], div.content-wrapper, div.container') || target.parentElement;
+            const cSel = pCont ? getUniqueSelector(pCont) : iSel;
+            setContainerSelector(cSel);
+
+            const activeSel = targetType === 'container' ? cSel : iSel;
+            setActiveDomSelector(activeSel);
+
+            // Read computed styles
+            const inspectNode = targetType === 'container' && pCont ? pCont : target;
+            const comp = win ? win.getComputedStyle(inspectNode) : {};
+            const existingOverride = currentData.domOverrides?.[activeSel] || {};
             
-            const rawText = target.innerText || target.textContent || '';
-            const tagLabel = target.tagName.toUpperCase() + (target.className ? `.${target.className.trim().split(/\s+/)[0]}` : '');
+            const rawText = inspectNode.innerText || inspectNode.textContent || '';
+            const tagLabel = inspectNode.tagName.toUpperCase() + (inspectNode.className ? `.${inspectNode.className.trim().split(/\s+/)[0]}` : '');
 
             setActiveElementMeta({
               label: tagLabel,
@@ -225,6 +248,12 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
               color: existingOverride.color || rgbToHex(comp.color) || '#1a1a1a',
               fontSize: parseInt(existingOverride.fontSize || comp.fontSize || 16, 10),
               textAlign: existingOverride.textAlign || comp.textAlign || 'left',
+              width: existingOverride.width || comp.width || 'auto',
+              maxWidth: existingOverride.maxWidth || comp.maxWidth || '100%',
+              height: existingOverride.height || comp.height || 'auto',
+              minHeight: existingOverride.minHeight || comp.minHeight || 'auto',
+              padding: existingOverride.padding || comp.padding || '0px',
+              margin: existingOverride.margin || comp.margin || '0px',
             });
 
           }, true);
@@ -240,6 +269,12 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                 if (styleObj.color) el.style.color = styleObj.color;
                 if (styleObj.fontSize) el.style.fontSize = typeof styleObj.fontSize === 'number' ? `${styleObj.fontSize}px` : styleObj.fontSize;
                 if (styleObj.textAlign) el.style.textAlign = styleObj.textAlign;
+                if (styleObj.width) el.style.width = styleObj.width;
+                if (styleObj.maxWidth) el.style.maxWidth = styleObj.maxWidth;
+                if (styleObj.height) el.style.height = styleObj.height;
+                if (styleObj.minHeight) el.style.minHeight = styleObj.minHeight;
+                if (styleObj.padding) el.style.padding = styleObj.padding;
+                if (styleObj.margin) el.style.margin = styleObj.margin;
               });
             } catch (err) {}
           });
@@ -253,6 +288,45 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
   useEffect(() => {
     syncIframeTheme();
   }, [themeData, activePage]);
+
+  // Handle Target Type Switch (Item vs Section Container)
+  const handleTargetTypeSwitch = (type) => {
+    setTargetType(type);
+    const newSel = type === 'container' ? containerSelector : itemSelector;
+    setActiveDomSelector(newSel);
+
+    if (iframeRef.current && newSel) {
+      try {
+        const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+        const win = iframeRef.current.contentWindow;
+        if (doc) {
+          doc.querySelectorAll('.wysiwyg-active-selected').forEach(el => el.classList.remove('wysiwyg-active-selected'));
+          const targetNode = doc.querySelector(newSel);
+          if (targetNode) {
+            targetNode.classList.add('wysiwyg-active-selected');
+            const comp = win ? win.getComputedStyle(targetNode) : {};
+            const existingOverride = themeData.domOverrides?.[newSel] || {};
+            const rawText = targetNode.innerText || targetNode.textContent || '';
+            const tagLabel = targetNode.tagName.toUpperCase() + (targetNode.className ? `.${targetNode.className.trim().split(/\s+/)[0]}` : '');
+
+            setActiveElementMeta({
+              label: tagLabel,
+              text: existingOverride.text !== undefined ? existingOverride.text : rawText.trim(),
+              color: existingOverride.color || rgbToHex(comp.color) || '#1a1a1a',
+              fontSize: parseInt(existingOverride.fontSize || comp.fontSize || 16, 10),
+              textAlign: existingOverride.textAlign || comp.textAlign || 'left',
+              width: existingOverride.width || comp.width || 'auto',
+              maxWidth: existingOverride.maxWidth || comp.maxWidth || '100%',
+              height: existingOverride.height || comp.height || 'auto',
+              minHeight: existingOverride.minHeight || comp.minHeight || 'auto',
+              padding: existingOverride.padding || comp.padding || '0px',
+              margin: existingOverride.margin || comp.margin || '0px',
+            });
+          }
+        }
+      } catch (err) {}
+    }
+  };
 
   const handleSelectPreset = (presetId) => {
     setSelectedPresetId(presetId);
@@ -312,7 +386,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
     syncIframeTheme(updated);
   };
 
-  // Universal Element Override Handler
+  // Universal Element Override Handler (Text, Colors, Width, Height, Spacing)
   const handleUniversalDomOverride = (propName, val) => {
     const selector = activeDomSelector;
     
@@ -345,6 +419,12 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             if (propName === 'color') el.style.color = val;
             if (propName === 'fontSize') el.style.fontSize = typeof val === 'number' ? `${val}px` : val.endsWith('px') ? val : `${val}px`;
             if (propName === 'textAlign') el.style.textAlign = val;
+            if (propName === 'width') el.style.width = val;
+            if (propName === 'maxWidth') el.style.maxWidth = val;
+            if (propName === 'height') el.style.height = val;
+            if (propName === 'minHeight') el.style.minHeight = val;
+            if (propName === 'padding') el.style.padding = val;
+            if (propName === 'margin') el.style.margin = val;
           });
         }
       } catch (err) {}
@@ -371,7 +451,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
   };
 
   const handleReset = async () => {
-    if (!window.confirm('Reset all colors, font scales, and written copy to default branding?')) {
+    if (!window.confirm('Reset all colors, font scales, dimensions, and written copy to default branding?')) {
       return;
     }
     try {
@@ -843,12 +923,60 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             /* Universal Click Inspector */
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
-              <div style={{ background: '#0f172a', borderRadius: '8px', border: '1px solid #334155', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ background: '#0f172a', borderRadius: '8px', border: '1px solid #334155', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Item vs Container Section Target Switcher */}
+                <div style={{ background: '#1e293b', padding: '4px', borderRadius: '6px', display: 'flex', gap: '4px', border: '1px solid #334155' }}>
+                  <button
+                    onClick={() => handleTargetTypeSwitch('item')}
+                    style={{
+                      flex: 1,
+                      padding: '6px 8px',
+                      border: 'none',
+                      background: targetType === 'item' ? '#b78646' : 'transparent',
+                      color: targetType === 'item' ? '#ffffff' : '#94a3b8',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Box size={13} />
+                    Clicked Item
+                  </button>
+
+                  <button
+                    onClick={() => handleTargetTypeSwitch('container')}
+                    style={{
+                      flex: 1,
+                      padding: '6px 8px',
+                      border: 'none',
+                      background: targetType === 'container' ? '#b78646' : 'transparent',
+                      color: targetType === 'container' ? '#ffffff' : '#94a3b8',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Layers size={13} />
+                    Parent Section
+                  </button>
+                </div>
+
                 <div>
                   <span style={{ fontSize: '11px', textTransform: 'uppercase', tracking: '1px', color: '#b78646', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
-                    Editing Clicked Target Element
+                    Target: {targetType === 'container' ? 'Parent Section' : 'Selected Item'}
                   </span>
-                  <h4 style={{ fontSize: '14px', color: '#38bdf8', margin: 0, fontWeight: '600', fontFamily: 'monospace' }}>
+                  <h4 style={{ fontSize: '13px', color: '#38bdf8', margin: 0, fontWeight: '600', fontFamily: 'monospace', wordBreak: 'break-all' }}>
                     {activeElementMeta.label || 'Click Any Element on Preview Canvas'}
                   </h4>
                 </div>
@@ -873,6 +1001,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                       fontSize: '13px',
                       outline: 'none',
                       boxSizing: 'border-box',
+                      lineHeight: '1.5',
                     }}
                   />
                 </div>
@@ -1005,13 +1134,169 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                   </div>
                 </div>
 
-                {/* Instructions Callout */}
-                <div style={{ background: '#0f172a', border: '1px dashed #334155', padding: '14px', borderRadius: '8px', color: '#94a3b8', fontSize: '12px', lineHeight: '1.5' }}>
-                  <strong style={{ color: '#b78646', display: 'block', marginBottom: '4px' }}>💡 Universal Click-To-Edit Engine</strong>
-                  Click <strong>any text, heading, paragraph, button, or link</strong> anywhere on the live preview canvas to inspect and edit its wording, color, font size (px), and alignment!
+                <hr style={{ borderColor: '#334155', margin: '4px 0' }} />
+
+                {/* 5. Box Model & Dimensions Controls (Width, Height, Spacing) */}
+                <h4 style={{ fontSize: '13px', color: '#38bdf8', margin: '0 0 4px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Maximize2 size={15} color="#b78646" />
+                  Dimensions & Box Layout
+                </h4>
+
+                {/* Max-Width Control */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>
+                      Max Width
+                    </label>
+                    <input
+                      type="text"
+                      value={activeElementMeta.maxWidth || '100%'}
+                      placeholder="e.g. 800px / 100%"
+                      onChange={(e) => handleUniversalDomOverride('maxWidth', e.target.value)}
+                      style={{
+                        width: '90px',
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #475569',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  {/* Preset Width Buttons */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                    {['100%', '1200px', '800px', '600px', 'auto'].map(presetW => (
+                      <button
+                        key={presetW}
+                        onClick={() => handleUniversalDomOverride('maxWidth', presetW)}
+                        style={{
+                          flex: 1,
+                          padding: '3px 0',
+                          background: activeElementMeta.maxWidth === presetW ? '#b78646' : '#1e293b',
+                          color: activeElementMeta.maxWidth === presetW ? '#ffffff' : '#94a3b8',
+                          border: '1px solid #334155',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {presetW}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Height / Min-Height Control */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>
+                      Min Height
+                    </label>
+                    <input
+                      type="text"
+                      value={activeElementMeta.minHeight || 'auto'}
+                      placeholder="e.g. 400px / auto"
+                      onChange={(e) => handleUniversalDomOverride('minHeight', e.target.value)}
+                      style={{
+                        width: '90px',
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #475569',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  {/* Preset Height Buttons */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                    {['auto', '200px', '400px', '600px', '100vh'].map(presetH => (
+                      <button
+                        key={presetH}
+                        onClick={() => handleUniversalDomOverride('minHeight', presetH)}
+                        style={{
+                          flex: 1,
+                          padding: '3px 0',
+                          background: activeElementMeta.minHeight === presetH ? '#b78646' : '#1e293b',
+                          color: activeElementMeta.minHeight === presetH ? '#ffffff' : '#94a3b8',
+                          border: '1px solid #334155',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {presetH}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Padding Control */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>
+                      Container Padding
+                    </label>
+                    <input
+                      type="text"
+                      value={activeElementMeta.padding || '0px'}
+                      placeholder="e.g. 20px 40px"
+                      onChange={(e) => handleUniversalDomOverride('padding', e.target.value)}
+                      style={{
+                        width: '90px',
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #475569',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  {/* Preset Padding Buttons */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                    {['0px', '12px 24px', '24px 48px', '40px 60px', '60px 80px'].map(presetP => (
+                      <button
+                        key={presetP}
+                        onClick={() => handleUniversalDomOverride('padding', presetP)}
+                        style={{
+                          flex: 1,
+                          padding: '3px 0',
+                          background: activeElementMeta.padding === presetP ? '#b78646' : '#1e293b',
+                          color: activeElementMeta.padding === presetP ? '#ffffff' : '#94a3b8',
+                          border: '1px solid #334155',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {presetP}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
               </div>
+
+              {/* Instructions Callout */}
+              <div style={{ background: '#0f172a', border: '1px dashed #334155', padding: '14px', borderRadius: '8px', color: '#94a3b8', fontSize: '12px', lineHeight: '1.5' }}>
+                <strong style={{ color: '#b78646', display: 'block', marginBottom: '4px' }}>💡 Width, Height & Container Styling</strong>
+                Switch between <strong>Clicked Item</strong> and <strong>Parent Section</strong> above to customize width, min-height, padding, and wording across any element or container section!
+              </div>
+
             </div>
           )}
 

@@ -86,6 +86,12 @@ export function applyCustomTheme(themeData) {
             if (styles.color) el.style.color = styles.color;
             if (styles.fontSize) el.style.fontSize = typeof styles.fontSize === 'number' ? `${styles.fontSize}px` : styles.fontSize;
             if (styles.textAlign) el.style.textAlign = styles.textAlign;
+            if (styles.width) el.style.width = styles.width;
+            if (styles.maxWidth) el.style.maxWidth = styles.maxWidth;
+            if (styles.height) el.style.height = styles.height;
+            if (styles.minHeight) el.style.minHeight = styles.minHeight;
+            if (styles.padding) el.style.padding = styles.padding;
+            if (styles.margin) el.style.margin = styles.margin;
           });
         } catch (err) {}
       });
