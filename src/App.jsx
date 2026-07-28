@@ -11,7 +11,8 @@ import { createPortal } from 'react-dom';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
-import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings } from './productData.js';
+import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSiteCustomizer } from './productData.js';
+import { applyCustomTheme } from './utils/themeEngine.js';
 import { blogPosts } from './data/blogPosts.js';
 import { seoLandingPages } from './data/seoLandingPages.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
@@ -378,6 +379,27 @@ export default function App({ initialData = {} }) {
   );
 
 
+
+  const [siteCustomizer, setSiteCustomizer] = useState(null);
+
+  useEffect(() => {
+    fetchSiteCustomizer()
+      .then((customizerData) => {
+        if (customizerData) {
+          setSiteCustomizer(customizerData);
+          applyCustomTheme(customizerData);
+        }
+      })
+      .catch((err) => console.warn('[Customizer] Failed to load customizer settings:', err));
+  }, []);
+
+  useEffect(() => {
+    if (siteCustomizer) {
+      applyCustomTheme(siteCustomizer);
+      const timer = setTimeout(() => applyCustomTheme(siteCustomizer), 120);
+      return () => clearTimeout(timer);
+    }
+  }, [siteCustomizer, route]);
 
   useEffect(() => {
     if (hasInitialData) return undefined;
@@ -1374,6 +1396,7 @@ export default function App({ initialData = {} }) {
             products={pricedProducts}
             landingPages={landingPages}
             setLandingPages={setLandingPages}
+            navigate={navigate}
           />
         </ErrorBoundary>
       );

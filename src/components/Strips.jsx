@@ -95,8 +95,9 @@ export function Stat({ icon, value, label }) {
     };
   }, [target, hasMatch]);
 
+  const key = `stat_${String(label).toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
   return (
-    <div ref={elementRef}>
+    <div ref={elementRef} data-editable-key={key}>
       {icon}
       <strong>
         {hasMatch ? `${isClient ? count : target}${suffix}` : value}

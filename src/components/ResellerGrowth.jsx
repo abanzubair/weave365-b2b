@@ -15,7 +15,7 @@ export function ResellerGrowth({ imageUrl, navigate }) {
               Direct from the <span className="brand-highlight">Loom</span>.
             </h2>
             
-            <p className="brand-lead">
+            <p className="brand-lead" data-editable-key="weaver_program_subtitle">
               A partnership built on authentic heritage, quality, and mutual growth. Register as a certified weaver partner to showcase your collections directly to global boutique networks.
             </p>
 

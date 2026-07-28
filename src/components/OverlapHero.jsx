@@ -34,13 +34,13 @@ export function OverlapHero({ navigate }) {
         {/* Foreground Content Layer */}
         <div className="overlap-hero-content-layer">
           <div className="overlap-hero-content-right">
-            <p className="overlap-hero-tagline">
+            <p className="overlap-hero-tagline" data-editable-key="hero_title">
               {tagline}
             </p>
 
             <div className="overlap-hero-divider"></div>
 
-            <p className="overlap-hero-description">
+            <p className="overlap-hero-description" data-editable-key="hero_subtitle">
               {description}
             </p>
 

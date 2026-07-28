@@ -41,12 +41,25 @@
   --white: #ffffff;
   --shadow: 0 18px 45px rgba(128, 93, 49, 0.12);
   
-  /* Fluid Tokens */
+  /* Client Customizable Theme Tokens (Default values) */
+  --brand-primary: #b78646;
+  --brand-secondary: #0F172A;
+  --page-bg: #ffffff;
+  --surface-bg: #fafafa;
+  --text-heading: #000000;
+  --text-body: #1a1a1a;
+  --accent-gold: #c69e6a;
+
+  /* Typography Scale Overrides */
+  --font-scale-base: 1;
+  --font-scale-heading: 1;
+
+  /* Fluid & Pixel Tokens */
   --site-padding: clamp(24px, 4vw, 80px);
   --section-gap: clamp(40px, 6vw, 100px);
-  --h1-size: clamp(48px, 6vw, 100px);
-  --h2-size: clamp(34px, 4.5vw, 64px);
-  --body-size: clamp(16px, 1.2vw, 22px);
+  --h1-size: 56px;
+  --h2-size: 36px;
+  --body-size: 16px;
 }
 
 html {

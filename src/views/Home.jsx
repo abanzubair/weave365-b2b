@@ -169,12 +169,12 @@ const scrollProductRail = (rowId, direction) => {
 };
 
 export function Home({
-  products,
+  products = [],
   status,
   error,
-  heroSlides,
+  heroSlides = [],
   fallbackHeroImage,
-  navigate,
+  navigate = () => {},
   setCategory,
   openAuth,
   addToCart,
@@ -793,9 +793,9 @@ export function Home({
 
       <section id="why" className="why-band">
         <div>
-          <SectionTitle title="Why Choose Us?" align="left" />
-          <p>We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <AppLink to="about" className="primary-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <SectionTitle title="Why Choose Us?" align="left" elementKey="why_choose_us_title" />
+          <p data-editable-key="why_choose_us_subtitle">We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
+          <AppLink to="about" className="primary-button" data-editable-key="why_choose_us_cta" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             Know More
           </AppLink>
         </div>

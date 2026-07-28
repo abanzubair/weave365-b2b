@@ -68,6 +68,26 @@ export async function fetchConfigOptions() {
   return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
 }
 
+export async function fetchSiteCustomizer() {
+  const cachedJson = await fetchSyncedJsonCached('site_customizer_json');
+  if (cachedJson) return cachedJson;
+  return null;
+}
+
+export async function saveSiteCustomizer(customizerData) {
+  if (!supabase) throw new Error('Supabase client is not configured');
+  const timestamp = new Date().toISOString();
+  const stringified = typeof customizerData === 'string' ? customizerData : JSON.stringify(customizerData);
+  const { error } = await supabase.from('sheet_data').upsert({
+    id: 'site_customizer_json',
+    csv_data: stringified,
+    updated_at: timestamp,
+  });
+  if (error) throw error;
+  clearProductDataCache();
+  return true;
+}
+
 export async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {

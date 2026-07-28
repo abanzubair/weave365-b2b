@@ -25,7 +25,7 @@ export function BrandCollaboration({ imageUrl, navigate }) {
               Featured on <span className="brand-highlight">Weave 365</span>.
             </h2>
             
-            <p className="brand-lead">
+            <p className="brand-lead" data-editable-key="partner_brand_showcase_sub">
               Sell your independent collections under your own brand name on our marketplace. Reach our vetted B2B network with direct pricing control and the credibility of our certified heritage quality.
             </p>
 

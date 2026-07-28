@@ -29,9 +29,11 @@ import {
   UserPlus,
   Activity,
   Printer,
+  Palette,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
+import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
 // Import split sub-components
 import DashboardOverview from './admin/DashboardOverview.jsx';
@@ -77,7 +79,7 @@ const emptyAdminData = {
   errors: {},
 };
 
-export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [], landingPages = [], setLandingPages }) {
+export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [], landingPages = [], setLandingPages, navigate }) {
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
@@ -542,6 +544,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     {
       title: 'Settings',
       items: [
+        { key: 'customizer', label: 'Appearance & Content', icon: Palette, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
@@ -670,6 +673,10 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               adminData={adminData}
               loadAdminData={loadAdminData}
             />
+          )}
+
+          {activeTab === 'customizer' && (
+            <SiteCustomizerTab user={user} navigate={navigate} />
           )}
 
           {activeTab === 'seo' && (
