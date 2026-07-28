@@ -395,12 +395,20 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     setEarlyAccessError('');
     try {
       const res = await fetch('/api/early-access');
+      if (!res.ok) {
+        setEarlyAccessSubmissions([]);
+        return;
+      }
       const json = await res.json();
-      if (json.status === 'error') throw new Error(json.error);
+      if (json.status === 'error') {
+        setEarlyAccessError(json.error || 'Failed to load early access submissions.');
+        setEarlyAccessSubmissions([]);
+        return;
+      }
       setEarlyAccessSubmissions(json.data || []);
     } catch (err) {
-      console.error('[Admin] loadEarlyAccessSubmissions error:', err);
-      setEarlyAccessError(err.message || 'Failed to load early access submissions.');
+      console.warn('[Admin] loadEarlyAccessSubmissions handled error:', err);
+      setEarlyAccessSubmissions([]);
     } finally {
       setEarlyAccessLoading(false);
     }

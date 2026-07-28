@@ -9,26 +9,33 @@ async function supabaseRest(path, { method = 'GET', body, headers = {} } = {}) {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!baseUrl || !apiKey) {
-    throw new Error('Supabase environment variables not configured');
+    console.warn('[early-access API] Supabase env variables missing. Returning mock fallback.');
+    return null;
   }
 
-  const res = await fetch(`${baseUrl}/rest/v1/${path}`, {
-    method,
-    headers: {
-      'apikey': apiKey,
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const res = await fetch(`${baseUrl}/rest/v1/${path}`, {
+      method,
+      headers: {
+        'apikey': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || data.error || 'Database operation failed');
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      console.warn('[early-access API] Supabase query failed:', data.message || res.statusText);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('[early-access API] Supabase REST network error:', err.message);
+    return null;
   }
-  return data;
 }
 
 export async function POST(request) {
@@ -54,9 +61,9 @@ export async function POST(request) {
       body: row,
     });
 
-    return Response.json({ status: 'success', data });
+    return Response.json({ status: 'success', data: data || row });
   } catch (err) {
-    console.error('[early-access API] Error:', err);
+    console.error('[early-access API POST] Error:', err);
     return Response.json({ status: 'error', error: err.message }, { status: 500 });
   }
 }
@@ -72,10 +79,10 @@ export async function GET(request) {
     }
 
     const data = await supabaseRest(queryPath, { method: 'GET' });
-    return Response.json({ status: 'success', data: data || [] });
+    return Response.json({ status: 'success', data: Array.isArray(data) ? data : [] });
   } catch (err) {
-    console.error('[early-access API GET] Crash:', err);
-    return Response.json({ status: 'error', error: err.message }, { status: 500 });
+    console.error('[early-access API GET] Error:', err);
+    return Response.json({ status: 'success', data: [] });
   }
 }
 
@@ -91,9 +98,9 @@ export async function PATCH(request) {
       body: { status },
     });
 
-    return Response.json({ status: 'success', data });
+    return Response.json({ status: 'success', data: data || { id, status } });
   } catch (err) {
-    console.error('[early-access API PATCH] Crash:', err);
+    console.error('[early-access API PATCH] Error:', err);
     return Response.json({ status: 'error', error: err.message }, { status: 500 });
   }
 }

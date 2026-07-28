@@ -1240,11 +1240,11 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                   </div>
                 </div>
 
-                {/* Padding Control */}
+                {/* Inner Padding Control */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                     <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>
-                      Container Padding
+                      Inner Padding
                     </label>
                     <input
                       type="text"
@@ -1284,6 +1284,55 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                         }}
                       >
                         {presetP}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Outer Margin Control */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: '500' }}>
+                      Outer Margin
+                    </label>
+                    <input
+                      type="text"
+                      value={activeElementMeta.margin || '0px'}
+                      placeholder="e.g. 20px auto"
+                      onChange={(e) => handleUniversalDomOverride('margin', e.target.value)}
+                      style={{
+                        width: '90px',
+                        background: '#1e293b',
+                        color: '#38bdf8',
+                        border: '1px solid #475569',
+                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  {/* Preset Margin Buttons */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                    {['0px', '16px 0px', '24px auto', '40px auto', '60px 0px'].map(presetM => (
+                      <button
+                        key={presetM}
+                        onClick={() => handleUniversalDomOverride('margin', presetM)}
+                        style={{
+                          flex: 1,
+                          padding: '3px 0',
+                          background: activeElementMeta.margin === presetM ? '#b78646' : '#1e293b',
+                          color: activeElementMeta.margin === presetM ? '#ffffff' : '#94a3b8',
+                          border: '1px solid #334155',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {presetM}
                       </button>
                     ))}
                   </div>
