@@ -186,7 +186,7 @@ export function MobileMenu({
 
                 <span className="mobile-mega-heading">Sell</span>
                 <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Support</span>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Services</span>
                 </AppLink>
                 <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>

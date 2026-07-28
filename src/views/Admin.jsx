@@ -534,7 +534,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'buyer-activity', label: 'Buyer Activity', icon: Activity, badge: null },
         { key: 'tracking', label: 'Order', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
-        { key: 'invoice-slip', label: 'Invoice / Courier Slip', icon: Printer, badge: null },
+        { key: 'invoice-slip', label: 'Invoice', icon: Printer, badge: null },
         { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
         { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
       ],
@@ -546,7 +546,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
-        { key: 'partners', label: 'Vendor Application', icon: Award, badge: null },
+        { key: 'partners', label: 'Vendor', icon: Award, badge: null },
       ],
     },
   ];

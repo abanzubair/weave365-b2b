@@ -584,11 +584,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
             <table className="buyer-activity-table">
               <thead>
                 <tr>
-                  <th style={{ width: '170px' }}>Date & Time</th>
-                  <th style={{ width: '240px' }}>Buyer Detail</th>
+                  <th style={{ width: '210px' }}>Date & Time</th>
+                  <th style={{ width: '230px' }}>Buyer Detail</th>
                   <th style={{ width: '130px' }}>Activity Type</th>
-                  <th>Products Involved</th>
-                  <th style={{ width: '120px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ width: '300px' }}>Products Involved</th>
+                  <th style={{ width: '110px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -914,7 +914,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
             <table className="buyer-activity-table">
               <thead>
                 <tr>
-                  <th style={{ width: '160px' }}>Date & Time</th>
+                  <th style={{ width: '200px' }}>Date & Time</th>
                   <th>Page Path</th>
                   <th style={{ width: '180px' }}>Traffic Source</th>
                   <th style={{ width: '150px' }}>Device & OS</th>

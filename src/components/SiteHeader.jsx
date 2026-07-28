@@ -132,7 +132,7 @@ export function SiteHeader({
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Sell</span>
-                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Support</AppLink>
+                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Services</AppLink>
                   <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
                   <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Reseller Center</AppLink>
                   <AppLink to="affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>Affiliate Program</AppLink>
