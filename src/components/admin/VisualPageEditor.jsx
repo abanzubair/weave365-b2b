@@ -1061,10 +1061,14 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                         type="number"
                         min="8"
                         max="200"
-                        value={activeElementMeta.fontSize || 16}
+                        value={parseInt(activeElementMeta.fontSize, 10) || ''}
                         onChange={(e) => {
-                          const val = parseInt(e.target.value, 10);
-                          handleUniversalDomOverride('fontSize', `${isNaN(val) ? 16 : val}px`);
+                          const raw = e.target.value;
+                          if (!raw) return;
+                          const parsed = parseInt(raw, 10);
+                          if (!isNaN(parsed) && parsed >= 8) {
+                            handleUniversalDomOverride('fontSize', `${parsed}px`);
+                          }
                         }}
                         style={{
                           width: '56px',
@@ -1087,7 +1091,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
                     min="12"
                     max="96"
                     step="1"
-                    value={activeElementMeta.fontSize || 16}
+                    value={parseInt(activeElementMeta.fontSize, 10) || 16}
                     onChange={(e) => handleUniversalDomOverride('fontSize', `${e.target.value}px`)}
                     style={{ width: '100%', cursor: 'pointer' }}
                   />
