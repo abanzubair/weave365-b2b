@@ -742,6 +742,7 @@ export function CustomWovenPage({ navigate }) {
           </div>
 
           {/* PRICE BENCHMARK & SPEC MATRIX */}
+{/*           
           <div className="cw-table-wrapper" style={{ marginTop: 40 }}>
             <h3 className="cw-table-title">Technique & Price Range Benchmarks</h3>
             <table className="cw-pricing-table">
@@ -763,6 +764,7 @@ export function CustomWovenPage({ navigate }) {
               </tbody>
             </table>
           </div>
+          */}
 
           {/* FABRICS & ZARI MATRICES */}
           <div className="cw-spec-matrix">

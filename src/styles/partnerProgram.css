@@ -509,6 +509,7 @@
   font-weight: 500;
   color: #3b2e23;
   transition: color 0.15s ease;
+  line-height: 1;
 }
 
 .price-range-checkbox-item:hover {
@@ -518,10 +519,18 @@
 .price-range-checkbox-item input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  margin: 0;
   border-radius: 3px;
   border: 1.5px solid #805d31;
   accent-color: #805d31;
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.price-range-checkbox-item span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .price-range-checkbox-item.selected span {

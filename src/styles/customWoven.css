@@ -50,7 +50,7 @@
 
 .cw-eyebrow {
   display: inline-block;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -64,7 +64,7 @@
 
 .cw-section-header h2 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.85rem, 2.7vw, 2.5rem);
+  font-size: clamp(1.65rem, 2.4vw, 2.2rem);
   font-weight: 700;
   color: #1c1917;
   letter-spacing: -0.01em;
@@ -77,7 +77,7 @@
 }
 
 .cw-section-subtitle {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   color: #52525b;
   line-height: 1.6;
 }
@@ -111,7 +111,7 @@
 
 .cw-hero-masthead {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.9rem, 3.1vw, 2.95rem);
+  font-size: clamp(1.68rem, 2.7vw, 2.6rem);
   font-weight: 700;
   line-height: 1.08;
   color: #1c1917;
@@ -122,7 +122,7 @@
 
 .cw-hero-subhead {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+  font-size: clamp(1.05rem, 1.6vw, 1.32rem);
   font-weight: 600;
   font-style: italic;
   color: #b78646;
@@ -134,7 +134,7 @@
 }
 
 .cw-hero-body-text p {
-  font-size: clamp(0.98rem, 1.3vw, 1.12rem);
+  font-size: clamp(0.88rem, 1.15vw, 1rem);
   color: #3f3a34;
   line-height: 1.6;
   margin-bottom: 0.65rem;
@@ -157,7 +157,7 @@
   white-space: nowrap;
   padding-top: 1.25rem;
   border-top: 1px solid #e8ded0;
-  font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+  font-size: clamp(0.75rem, 1vw, 0.86rem);
   color: #52525b;
 }
 
@@ -175,7 +175,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -216,7 +216,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #716a61;
   padding-left: 0.25rem;
@@ -254,7 +254,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   padding: 0 0 0.75rem 0;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #716a61;
@@ -288,13 +288,13 @@
 }
 
 .cw-sheet-key {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   color: #52525b;
   font-weight: 600;
 }
 
 .cw-sheet-val {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   font-weight: 750;
   color: #1c1917;
   text-align: right;
@@ -303,7 +303,7 @@
 
 .cw-val-gold {
   color: #b78646;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 
 .cw-sheet-action {
@@ -314,7 +314,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   font-weight: 750;
   color: #b78646;
   text-decoration: none;
@@ -333,7 +333,7 @@
   justify-content: center;
   gap: 0.45rem;
   padding: 0.65rem 1.5rem;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 700;
   border-radius: 8px;
   text-decoration: none;
@@ -372,7 +372,7 @@
 
 .cw-btn-sm {
   padding: 0.65rem 1.4rem;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   width: auto;
   border-radius: 6px;
 }
@@ -381,7 +381,7 @@
   background: none;
   border: none;
   color: #b78646;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   padding: 0.4rem 0.8rem;
@@ -401,14 +401,14 @@
 }
 
 .cw-concept-lead {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #1c1917;
   line-height: 1.75;
   margin-bottom: 1.35rem;
 }
 
 .cw-concept-body {
-  font-size: 1.12rem;
+  font-size: 1rem;
   color: #52525b;
   line-height: 1.75;
   margin-bottom: 0;
@@ -429,14 +429,14 @@
 }
 
 .cw-concept-feat-item h4 {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   font-weight: 750;
   color: #1c1917;
   margin: 0.25rem 0 0 0;
 }
 
 .cw-concept-feat-item p {
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   color: #666059;
   line-height: 1.5;
   margin: 0;
@@ -469,7 +469,7 @@
 
 .cw-card-header h3,
 .cw-input-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0 !important;
@@ -486,7 +486,7 @@
 }
 
 .cw-input-desc {
-  font-size: 1.02rem;
+  font-size: 0.92rem;
   color: #52525b;
   line-height: 1.55;
 }
@@ -518,7 +518,7 @@
 }
 
 .cw-assistance-title-row h3 {
-  font-size: clamp(1.4rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0 !important;
@@ -534,7 +534,7 @@
 }
 
 .cw-assistance-header p {
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   color: #52525b;
 }
 
@@ -555,7 +555,7 @@
   border-radius: 50%;
   background: #b78646;
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -565,14 +565,14 @@
 }
 
 .cw-assistance-item h4 {
-  font-size: 1.2rem;
+  font-size: 1.06rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.3rem;
 }
 
 .cw-assistance-item p {
-  font-size: 1.05rem;
+  font-size: 0.94rem;
   color: #52525b;
   line-height: 1.6;
 }
@@ -613,7 +613,7 @@
 
 .cw-step-num {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   color: #b78646;
@@ -622,7 +622,7 @@
 
 .cw-step-name {
   display: block;
-  font-size: 1.05rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: #1c1917;
   white-space: nowrap;
@@ -649,14 +649,14 @@
   border: none;
   padding: 0;
   border-radius: 0;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .cw-step-card-header h3 {
-  font-size: 1.85rem;
+  font-size: 1.62rem;
   font-weight: 700;
   color: #1c1917;
   line-height: 1.15;
@@ -669,7 +669,7 @@
 }
 
 .cw-step-card-desc {
-  font-size: 1.22rem;
+  font-size: 1.08rem;
   color: #3f3a34;
   margin-bottom: 1.75rem;
   line-height: 1.65;
@@ -685,7 +685,7 @@
 }
 
 .cw-step-details-box h4 {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 800;
   text-transform: uppercase;
   color: #52525b;
@@ -705,7 +705,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   color: #1c1917;
 }
 
@@ -719,7 +719,7 @@
 }
 
 .cw-step-counter {
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   color: #52525b;
   font-weight: 600;
 }
@@ -734,7 +734,7 @@
 
 .cw-loom-text h2 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.85rem, 2.7vw, 2.5rem);
+  font-size: clamp(1.65rem, 2.4vw, 2.2rem);
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.85rem;
@@ -742,7 +742,7 @@
 }
 
 .cw-lead-text {
-  font-size: 1.18rem;
+  font-size: 1.04rem;
   color: #52525b;
   margin-bottom: 1.25rem;
   line-height: 1.7;
@@ -753,7 +753,7 @@
 }
 
 .cw-steps-tag {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -776,7 +776,7 @@
 
 .cw-loom-num {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: 1.45rem;
+  font-size: 1.28rem;
   font-weight: 700;
   color: #b78646;
   line-height: 1;
@@ -785,7 +785,7 @@
 }
 
 .cw-loom-milestone-item p {
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   color: #1c1917;
   line-height: 1.6;
   font-weight: 550;
@@ -801,7 +801,7 @@
 
 .cw-impact-header h3 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.65rem, 2.2vw, 2.15rem);
+  font-size: clamp(1.48rem, 2vw, 1.92rem);
   font-weight: 700;
   color: #1c1917;
   margin: 0.35rem 0 0.65rem 0;
@@ -809,7 +809,7 @@
 }
 
 .cw-impact-lead {
-  font-size: 1.18rem;
+  font-size: 1.04rem;
   color: #52525b;
   line-height: 1.7;
   margin: 0;
@@ -837,13 +837,13 @@
 }
 
 .cw-metric-title {
-  font-size: 1.12rem;
+  font-size: 1rem;
   font-weight: 750;
   color: #1c1917;
 }
 
 .cw-metric-val {
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   font-weight: 800;
   color: #b78646;
   text-transform: uppercase;
@@ -851,7 +851,7 @@
 }
 
 .cw-metric-desc {
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   color: #52525b;
   line-height: 1.6;
   margin: 0;
@@ -880,14 +880,14 @@
 }
 
 .cw-comm-card h3 {
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.75rem;
 }
 
 .cw-comm-intro {
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   color: #52525b;
   margin-bottom: 1.25rem;
   line-height: 1.6;
@@ -911,13 +911,13 @@
 }
 
 .cw-moq-val {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   font-weight: 750;
   color: #b78646;
 }
 
 .cw-moq-lbl {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: #52525b;
   font-weight: 600;
 }
@@ -935,21 +935,21 @@
 
 .cw-tl-stage {
   display: block;
-  font-size: 1.05rem;
+  font-size: 0.94rem;
   font-weight: 750;
   color: #1c1917;
 }
 
 .cw-tl-days {
   display: block;
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: #b78646;
   margin-bottom: 0.25rem;
 }
 
 .cw-tl-desc {
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   color: #52525b;
   line-height: 1.5;
 }
@@ -966,13 +966,13 @@
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  font-size: 1.05rem;
+  font-size: 0.94rem;
   color: #3f3a34;
   line-height: 1.5;
 }
 
 .cw-note-sm {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: #8c8275;
   margin-top: auto;
   font-style: italic;
@@ -991,7 +991,7 @@
 }
 
 .cw-table-title {
-  font-size: 1.45rem;
+  font-size: 1.28rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 1.35rem;
@@ -1006,7 +1006,7 @@
 .cw-pricing-table th {
   background: transparent;
   padding: 1rem 1.15rem;
-  font-size: 1.02rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: #1c1917;
   border-bottom: 2px solid #e5d8c6;
@@ -1014,7 +1014,7 @@
 
 .cw-pricing-table td {
   padding: 1.15rem;
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   color: #27272a;
   border-bottom: 1px solid #f0e6d8;
 }
@@ -1027,7 +1027,7 @@
 .cw-td-price {
   font-weight: 800;
   color: #b78646;
-  font-size: 1.18rem;
+  font-size: 1.05rem;
   white-space: nowrap;
 }
 
@@ -1048,7 +1048,7 @@
 }
 
 .cw-spec-col h4 {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 1rem;
@@ -1065,7 +1065,7 @@
   border: 1px solid #e5d8c6;
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: #3f3a34;
 }
@@ -1086,14 +1086,14 @@
 }
 
 .cw-audience-card h3 {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.45rem;
 }
 
 .cw-audience-card p {
-  font-size: 1.05rem;
+  font-size: 0.94rem;
   color: #52525b;
   line-height: 1.55;
 }
@@ -1115,7 +1115,7 @@
 
 .cw-comp-table th {
   padding: 1.2rem 1.35rem;
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   font-weight: 800;
   border-bottom: 2px solid #e5d8c6;
 }
@@ -1132,7 +1132,7 @@
 
 .cw-comp-table td {
   padding: 1.2rem 1.35rem;
-  font-size: 1.08rem;
+  font-size: 0.95rem;
   border-bottom: 1px solid #f0e6d8;
 }
 
@@ -1175,7 +1175,7 @@
   padding: 1.35rem 0;
   background: none;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1c1917;
   text-align: left;
@@ -1195,7 +1195,7 @@
 
 .cw-faq-answer {
   padding: 0 1.5rem 1.5rem 1.5rem;
-  font-size: 1.12rem;
+  font-size: 0.98rem;
   color: #52525b;
   line-height: 1.68;
   border-top: 1px dashed #f0e6d8;
@@ -1215,20 +1215,20 @@
 
 .cw-inquiry-intro h2 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: 2.85rem;
+  font-size: 2.45rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.75rem;
 }
 
 .cw-inquiry-intro p {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   color: #52525b;
   line-height: 1.65;
 }
 
 .cw-inquiry-note {
-  font-size: 1.02rem !important;
+  font-size: 0.92rem !important;
   color: #57534e !important;
   margin-top: 1rem;
   background: transparent;
@@ -1264,7 +1264,7 @@
 }
 
 .cw-field label {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1278,7 +1278,7 @@
   border: 1px solid #e5d8c6;
   border-radius: 6px;
   padding: 0.85rem 1rem;
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   color: #1c1917;
   font-family: inherit;
 }
@@ -1331,12 +1331,12 @@
   .cw-hero-masthead {
     white-space: normal;
     word-break: break-word;
-    font-size: clamp(1.8rem, 6.5vw, 2.5rem);
+    font-size: clamp(1.6rem, 5.5vw, 2.2rem);
     line-height: 1.15;
   }
 
   .cw-hero-subhead {
-    font-size: clamp(1.1rem, 4vw, 1.35rem);
+    font-size: clamp(1rem, 3.5vw, 1.2rem);
     margin-bottom: 1rem;
   }
 
@@ -1387,7 +1387,7 @@
 
   .cw-btn {
     padding: 0.65rem 1.2rem;
-    font-size: 0.92rem;
+    font-size: 0.85rem;
     line-height: 1.2;
     white-space: nowrap;
     border-radius: 6px;
@@ -1402,11 +1402,11 @@
   }
 
   .cw-section-header h2 {
-    font-size: clamp(1.65rem, 5.5vw, 2.1rem);
+    font-size: clamp(1.48rem, 4.8vw, 1.88rem);
   }
 
   .cw-section-subtitle {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 
   .cw-loom-milestone-grid {
@@ -1440,17 +1440,17 @@
   }
 
   .cw-inquiry-intro h2 {
-    font-size: 2.15rem;
+    font-size: 1.9rem;
   }
 
   .cw-inquiry-intro p {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 
   .cw-field input,
   .cw-field select,
   .cw-field textarea {
-    font-size: 1rem; /* Minimum 16px to prevent iOS auto-zoom on focus */
+    font-size: 0.95rem;
     padding: 0.8rem 0.9rem;
   }
 
@@ -1458,7 +1458,7 @@
     width: 100%;
     justify-content: center;
     padding: 0.9rem 1.25rem;
-    font-size: 1rem;
+    font-size: 0.92rem;
   }
 }
 
@@ -1468,16 +1468,16 @@
   }
 
   .cw-hero-masthead {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
   }
 
   .cw-hero-badge {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     padding: 0.35rem 0.65rem;
   }
 
   .cw-hero-body-text p {
-    font-size: 0.98rem;
+    font-size: 0.88rem;
   }
 
   .cw-loom-milestone-item {
@@ -1485,16 +1485,16 @@
   }
 
   .cw-loom-number {
-    font-size: 1.75rem;
+    font-size: 1.55rem;
   }
 
   .cw-faq-question {
-    font-size: 1.1rem;
+    font-size: 1.02rem;
     padding: 1.1rem 0;
   }
 
   .cw-faq-answer {
-    font-size: 1rem;
+    font-size: 0.92rem;
     padding: 0 0.5rem 1.25rem 0.5rem;
   }
 }

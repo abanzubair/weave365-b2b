@@ -385,8 +385,42 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </div>
       </section>
 
-      {/* Core Capability Showcase */}
+      {/* Light Workflow Stepper */}
       <section className="atelier-capabilities-section">
+        <div className="atelier-container">
+          <div className="atelier-section-head">
+            <h2>
+              {activeType === 'white-label'
+                ? 'How White Label Catalog, Fulfilment & Dropshipping Services Work'
+                : 'How the Sourcing Program Works'}
+            </h2>
+            <p>
+              {activeType === 'white-label'
+                ? 'A simple process to source authentic Banarasi sarees and suits, access unbranded catalogues, and sell under your own brand with White Label fulfilment and dropshipping services.'
+                : 'Designed for clarity, fast execution, and seamless business scaling.'}
+            </p>
+          </div>
+
+          <div className="light-workflow-stepper">
+            {page.guide.map((item) => {
+              const StepIcon = item.icon;
+              return (
+                <div key={item.step} className="light-step-col">
+                  <div className="light-step-header">
+                    <span className="light-step-badge">{item.step}</span>
+                    <StepIcon size={22} className="light-step-icon" />
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.content}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Capability Showcase */}
+      <section className="atelier-workflow-light">
         <div className="atelier-container">
           <div className="atelier-section-head">
             <h2>Why Partner With Weave 365</h2>
@@ -473,40 +507,6 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
                 </div>
               </>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Light Workflow Stepper */}
-      <section className="atelier-workflow-light">
-        <div className="atelier-container">
-          <div className="atelier-section-head">
-            <h2>
-              {activeType === 'white-label'
-                ? 'How White Label Catalog, Fulfilment & Dropshipping Services Work'
-                : 'How the Sourcing Program Works'}
-            </h2>
-            <p>
-              {activeType === 'white-label'
-                ? 'A simple process to source authentic Banarasi sarees and suits, access unbranded catalogues, and sell under your own brand with White Label fulfilment and dropshipping services.'
-                : 'Designed for clarity, fast execution, and seamless business scaling.'}
-            </p>
-          </div>
-
-          <div className="light-workflow-stepper">
-            {page.guide.map((item) => {
-              const StepIcon = item.icon;
-              return (
-                <div key={item.step} className="light-step-col">
-                  <div className="light-step-header">
-                    <span className="light-step-badge">{item.step}</span>
-                    <StepIcon size={22} className="light-step-icon" />
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.content}</p>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
