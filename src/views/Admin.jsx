@@ -552,7 +552,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     {
       title: 'Settings',
       items: [
-        { key: 'customizer', label: 'Appearance & Content', icon: Palette, badge: null },
+        { key: 'customizer', label: 'Appearance', icon: Palette, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
