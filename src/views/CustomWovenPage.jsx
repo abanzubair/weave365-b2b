@@ -781,7 +781,7 @@ export function CustomWovenPage({ navigate }) {
               <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                 Traditional Banarasi Weaving Techniques
               </h3>
-              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: 'var(--body-size)', color: '#574c40', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.6' }}>
                 These are the primary weaving methods used by Banarasi artisans to create motifs and patterns. Each technique differs in weaving process, craftsmanship, production time, and fabric appearance.
               </p>
               <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
@@ -799,7 +799,7 @@ export function CustomWovenPage({ navigate }) {
               <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                 Banarasi Design & Motif Weaving Styles
               </h3>
-              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: 'var(--body-size)', color: '#574c40', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.6' }}>
                 These weaving styles define the visual appearance and decorative motifs of Banarasi sarees rather than the weaving mechanism itself.
               </p>
               <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
@@ -814,7 +814,7 @@ export function CustomWovenPage({ navigate }) {
               <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                 Banarasi Fabric Base Weaves
               </h3>
-              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: 'var(--body-size)', color: '#574c40', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.6' }}>
                 These refer to the base fabric on which Banarasi motifs and weave techniques are created. The fabric influences the saree's texture, weight, drape, and overall appearance.
               </p>
               <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
@@ -833,7 +833,7 @@ export function CustomWovenPage({ navigate }) {
               <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                 Banarasi Blended Fabric Weaves
               </h3>
-              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: 'var(--body-size)', color: '#574c40', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.6' }}>
                 These fabrics combine two or more natural fibres to achieve a balance of appearance, texture, durability, comfort, and cost.
               </p>
               <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
@@ -849,7 +849,7 @@ export function CustomWovenPage({ navigate }) {
               <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
                 Traditional & Specialty Banarasi Weaves
               </h3>
-              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              <p style={{ fontSize: 'var(--body-size)', color: '#574c40', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.6' }}>
                 Specialized or less commonly used weaving techniques that represent traditional craftsmanship and niche textile applications.
               </p>
               <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>

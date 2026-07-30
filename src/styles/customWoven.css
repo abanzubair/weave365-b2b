@@ -463,11 +463,23 @@
 
 .cw-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.65rem;
   width: 100%;
+}
+
+.cw-card-header svg,
+.cw-audience-card svg {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  flex-shrink: 0 !important;
+  margin-top: 3px;
 }
 
 .cw-card-header h3,
