@@ -240,8 +240,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           <div style={{ color: '#ef4444', display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
             <AlertCircle size={40} />
           </div>
-          <h3 style={{ color: 'var(--ink)', fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 600 }}>Tracking Unavailable</h3>
-          <p style={{ color: 'var(--muted)', fontSize: '0.95rem', maxWidth: '460px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>{error}</p>
+          <h3 style={{ color: 'var(--ink)', fontSize: 'var(--h5-size)', marginBottom: '0.75rem', fontWeight: 600 }}>Tracking Unavailable</h3>
+          <p style={{ color: 'var(--muted)', fontSize: 'var(--body-size)', maxWidth: '460px', margin: '0 auto 1.5rem', lineHeight: 1.6, fontWeight: 400 }}>{error}</p>
           <form onSubmit={handleLookupSubmit} className="lookup-form-wrap" style={{ maxWidth: '400px' }}>
             <div className="lookup-input-group">
               <input 
@@ -263,12 +263,12 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           <div className="order-tracking-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
               <div>
-                <span className="lookup-label" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>Order Tracking ID</span>
-                <code style={{ fontSize: '0.9rem', color: 'var(--muted)', fontWeight: 600 }}>{order.id}</code>
+                <span className="lookup-label" style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem' }}>Order Tracking ID</span>
+                <code style={{ fontSize: 'var(--body-size)', color: 'var(--muted)', fontWeight: 600 }}>{order.id}</code>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span className="lookup-label" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>Order Date</span>
-                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--ink)' }}>
+                <span className="lookup-label" style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem' }}>Order Date</span>
+                <span style={{ fontSize: 'var(--body-size)', fontWeight: 600, color: 'var(--ink)' }}>
                   {new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',
@@ -345,11 +345,11 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         </a>
                       </p>
                     ) : (
-                      <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Tracking number will update shortly.</p>
+                      <p style={{ color: 'var(--muted)', fontSize: 'var(--small-size)' }}>Tracking number will update shortly.</p>
                     )}
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+                  <p style={{ color: 'var(--muted)', fontSize: 'var(--small-size)' }}>
                     Shipping carrier and tracking ID will be listed here as soon as the order is handed over to our shipping partner.
                   </p>
                 )}
@@ -365,31 +365,31 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     </span>
                     <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{order.dropship_recipient_name || parsedAddress?.name || order.buyer_name}</p>
                     {(order.dropship_recipient_phone || parsedAddress?.phone) && (
-                      <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--muted)' }}>
+                      <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>
                         Phone: {order.dropship_recipient_phone || parsedAddress?.phone}
                       </p>
                     )}
-                    <p style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
+                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>
                       {order.dropship_recipient_address || parsedAddress?.address || (order.message && order.message.includes('Delivery Address:') ? order.message.split('Delivery Address:')[1].trim() : '')}
                     </p>
                     {(order.dropship_recipient_city || parsedAddress?.city) && (
-                      <p style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                      <p style={{ fontSize: 'var(--small-size)', fontWeight: 500 }}>
                         {order.dropship_recipient_city || parsedAddress?.city} - {order.dropship_recipient_pincode || order.pincode}
                       </p>
                     )}
-                    <p style={{ fontSize: '0.8rem', color: '#b45309', marginTop: '6px', fontWeight: 600 }}>
+                    <p style={{ fontSize: 'var(--small-size)', color: '#b45309', marginTop: '6px', fontWeight: 600 }}>
                       Parcel Sender: {order.dropship_sender_name || 'Partner Store'}
                     </p>
                   </div>
                 ) : parsedAddress ? (
                   <div>
                     <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{parsedAddress.name}</p>
-                    {parsedAddress.phone && <p style={{ fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {parsedAddress.phone}</p>}
-                    <p style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>{parsedAddress.address}</p>
-                    {parsedAddress.city && <p style={{ fontSize: '0.85rem', fontWeight: 500 }}>{parsedAddress.city}</p>}
+                    {parsedAddress.phone && <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {parsedAddress.phone}</p>}
+                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>{parsedAddress.address}</p>
+                    {parsedAddress.city && <p style={{ fontSize: 'var(--small-size)', fontWeight: 500 }}>{parsedAddress.city}</p>}
                   </div>
                 ) : (
-                  <p style={{ whiteSpace: 'pre-line', fontSize: '0.8rem', lineHeight: 1.4, opacity: 0.85 }}>
+                  <p style={{ whiteSpace: 'pre-line', fontSize: 'var(--small-size)', lineHeight: 1.4, opacity: 0.85 }}>
                     {order.message && order.message.includes('Delivery Address:') 
                       ? order.message.split('Delivery Address:')[1].trim()
                       : order.pincode ? `Shipping to pincode: ${order.pincode}` : 'Address details listed in order logs.'}

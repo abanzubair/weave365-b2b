@@ -337,16 +337,16 @@ export function BlogList({ navigate, blogs = [] }) {
             
             {/* Premium Sourcing CTA Widget */}
             <div className="sidebar-widget sidebar-cta-widget" style={{ marginTop: '2.5rem', padding: '2rem' }}>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: 'var(--h5-size)', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                 B2B Sourcing Portal
               </h3>
-              <p style={{ fontSize: '0.85rem', lineHeight: '1.5', opacity: 0.85, marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: 'var(--body-size)', lineHeight: '1.5', opacity: 0.85, marginBottom: '1.5rem', fontWeight: 400 }}>
                 Source authentic Banarasi sarees and suits direct from Varanasi weavers with low MOQs and reliable global shipping.
               </p>
               <AppLink 
                 to="bulk-inquiry"
                 className="sidebar-luxury-btn"
-                style={{ padding: '0.8rem', fontSize: '0.8rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ padding: '0.8rem', fontSize: 'var(--button-size)', fontWeight: 'var(--button-weight)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 navigate={navigate}
               >
                 Request Bulk Quotes

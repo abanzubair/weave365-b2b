@@ -11,9 +11,9 @@
 }
 
 .cw-container {
-  max-width: 1240px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 .cw-gold-icon {
@@ -44,14 +44,14 @@
 
 .cw-section-header {
   text-align: center;
-  max-width: 1040px;
+  max-width: 1240px;
   margin: 0 auto 3rem auto;
 }
 
 .cw-eyebrow {
   display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 800;
+  font-size: var(--small-size);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #b78646;
@@ -64,7 +64,7 @@
 
 .cw-section-header h2 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.65rem, 2.4vw, 2.2rem);
+  font-size: var(--h2-size);
   font-weight: 700;
   color: #1c1917;
   letter-spacing: -0.01em;
@@ -77,20 +77,18 @@
 }
 
 .cw-section-subtitle {
-  font-size: 1.05rem;
+  font-size: var(--body-large-size);
   color: #52525b;
   line-height: 1.6;
+  font-weight: 400;
 }
 
 .cw-text-muted {
   color: #666059;
 }
 
-/* ATELIER EDITORIAL HERO SECTION (100VH FOLD) */
+/* ATELIER EDITORIAL HERO SECTION */
 .cw-editorial-hero {
-  min-height: calc(100vh - 70px);
-  max-height: calc(100vh - 70px);
-  height: calc(100vh - 70px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,19 +97,23 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 1.5rem 0;
+  padding: clamp(2.5rem, 5vw, 4.5rem) 0;
 }
 
 .cw-hero-editorial-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.55fr 1fr;
   gap: 3.5rem;
   align-items: center;
 }
 
+.cw-hero-editorial-main {
+  max-width: 840px;
+}
+
 .cw-hero-masthead {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(1.68rem, 2.7vw, 2.6rem);
+  font-size: var(--h1-size);
   font-weight: 700;
   line-height: 1.08;
   color: #1c1917;
@@ -130,6 +132,7 @@
 }
 
 .cw-hero-body-text {
+  max-width: 760px;
   margin-bottom: 1.5rem;
 }
 
@@ -237,7 +240,7 @@
   border-radius: 14px;
   padding: 2.5rem;
   box-shadow: 0 6px 24px rgba(183, 134, 70, 0.06);
-  max-width: 960px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
@@ -395,21 +398,21 @@
 /* CONCEPT OVERVIEW BOX */
 /* CONCEPT NARRATIVE SECTION (STRICTLY EXACT DOC CONTENT) */
 .cw-concept-narrative {
-  max-width: 860px;
+  max-width: 1120px;
   margin: 0 auto;
   text-align: center;
 }
 
 .cw-concept-lead {
-  font-size: 1.1rem;
-  color: #1c1917;
+  font-size: var(--body-large-size);
+  color: var(--ink);
   line-height: 1.75;
   margin-bottom: 1.35rem;
 }
 
 .cw-concept-body {
-  font-size: 1rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.75;
   margin-bottom: 0;
 }
@@ -429,15 +432,15 @@
 }
 
 .cw-concept-feat-item h4 {
-  font-size: 1.02rem;
+  font-size: var(--h6-size);
   font-weight: 750;
-  color: #1c1917;
+  color: var(--ink);
   margin: 0.25rem 0 0 0;
 }
 
 .cw-concept-feat-item p {
-  font-size: 0.88rem;
-  color: #666059;
+  font-size: var(--small-size);
+  color: var(--muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -469,16 +472,17 @@
 
 .cw-card-header h3,
 .cw-input-title {
-  font-size: 1.1rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0 !important;
   line-height: 1.25;
 }
 
 .cw-input-icon,
 .cw-comm-icon {
-  color: #b78646;
+  color: var(--gold);
   margin-bottom: 0 !important;
   display: inline-flex;
   align-items: center;
@@ -486,8 +490,8 @@
 }
 
 .cw-input-desc {
-  font-size: 0.92rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.55;
 }
 
@@ -518,9 +522,10 @@
 }
 
 .cw-assistance-title-row h3 {
-  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h3-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0 !important;
 }
 
@@ -534,8 +539,8 @@
 }
 
 .cw-assistance-header p {
-  font-size: 0.98rem;
-  color: #52525b;
+  font-size: var(--body-large-size);
+  color: var(--muted);
 }
 
 .cw-assistance-list {
@@ -553,9 +558,9 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #b78646;
+  background: var(--gold);
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: var(--small-size);
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -565,15 +570,16 @@
 }
 
 .cw-assistance-item h4 {
-  font-size: 1.06rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0.3rem;
 }
 
 .cw-assistance-item p {
-  font-size: 0.94rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.6;
 }
 
@@ -613,18 +619,18 @@
 
 .cw-step-num {
   display: block;
-  font-size: 0.75rem;
+  font-size: var(--small-size);
   font-weight: 800;
   text-transform: uppercase;
-  color: #b78646;
+  color: var(--gold);
   margin-bottom: 0.25rem;
 }
 
 .cw-step-name {
   display: block;
-  font-size: 0.94rem;
+  font-size: var(--body-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   white-space: nowrap;
 }
 
@@ -645,32 +651,32 @@
 
 .cw-step-badge {
   background: transparent;
-  color: #b78646;
+  color: var(--gold);
   border: none;
   padding: 0;
   border-radius: 0;
-  font-size: 0.86rem;
+  font-size: var(--small-size);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .cw-step-card-header h3 {
-  font-size: 1.62rem;
+  font-size: var(--h3-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   line-height: 1.15;
 }
 
 .cw-step-body-fixed {
-  min-height: 280px;
+  min-height: auto;
   overflow: visible;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .cw-step-card-desc {
-  font-size: 1.08rem;
-  color: #3f3a34;
+  font-size: var(--body-large-size);
+  color: var(--ink);
   margin-bottom: 1.75rem;
   line-height: 1.65;
 }
@@ -685,10 +691,10 @@
 }
 
 .cw-step-details-box h4 {
-  font-size: 0.9rem;
+  font-size: var(--small-size);
   font-weight: 800;
   text-transform: uppercase;
-  color: #52525b;
+  color: var(--muted);
   margin-bottom: 1rem;
   letter-spacing: 0.06em;
 }
@@ -705,8 +711,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.98rem;
-  color: #1c1917;
+  font-size: var(--body-size);
+  color: var(--ink);
 }
 
 .cw-step-nav-btns {
@@ -719,8 +725,8 @@
 }
 
 .cw-step-counter {
-  font-size: 0.86rem;
-  color: #52525b;
+  font-size: var(--small-size);
+  color: var(--muted);
   font-weight: 600;
 }
 
@@ -736,14 +742,14 @@
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
   font-size: clamp(1.65rem, 2.4vw, 2.2rem);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0.85rem;
   line-height: 1.2;
 }
 
 .cw-lead-text {
-  font-size: 1.04rem;
-  color: #52525b;
+  font-size: var(--body-large-size);
+  color: var(--muted);
   margin-bottom: 1.25rem;
   line-height: 1.7;
 }
@@ -753,11 +759,11 @@
 }
 
 .cw-steps-tag {
-  font-size: 0.75rem;
+  font-size: var(--small-size);
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #b78646;
+  color: var(--gold);
 }
 
 .cw-loom-milestone-grid {
@@ -776,17 +782,17 @@
 
 .cw-loom-num {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: 1.28rem;
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #b78646;
+  color: var(--gold);
   line-height: 1;
   flex-shrink: 0;
   padding-top: 2px;
 }
 
 .cw-loom-milestone-item p {
-  font-size: 0.95rem;
-  color: #1c1917;
+  font-size: var(--body-size);
+  color: var(--ink);
   line-height: 1.6;
   font-weight: 550;
   margin: 0;
@@ -803,14 +809,14 @@
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
   font-size: clamp(1.48rem, 2vw, 1.92rem);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin: 0.35rem 0 0.65rem 0;
   line-height: 1.2;
 }
 
 .cw-impact-lead {
-  font-size: 1.04rem;
-  color: #52525b;
+  font-size: var(--body-large-size);
+  color: var(--muted);
   line-height: 1.7;
   margin: 0;
 }
@@ -837,22 +843,22 @@
 }
 
 .cw-metric-title {
-  font-size: 1rem;
+  font-size: var(--body-size);
   font-weight: 750;
-  color: #1c1917;
+  color: var(--ink);
 }
 
 .cw-metric-val {
-  font-size: 0.84rem;
+  font-size: var(--small-size);
   font-weight: 800;
-  color: #b78646;
+  color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .cw-metric-desc {
-  font-size: 0.95rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.6;
   margin: 0;
 }
@@ -860,8 +866,9 @@
 /* COMMERCIAL GUIDELINES (CARD-FREE UNBOXED GRID) */
 .cw-commercial-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3.25rem;
+  align-items: start;
 }
 
 .cw-comm-card {
@@ -869,26 +876,42 @@
   border: none;
   border-top: 1px solid #e8ded0;
   border-radius: 0;
-  padding: 1.5rem 0 0 0;
+  padding: 1.75rem 0 0 0;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.cw-comm-icon {
-  color: #b78646;
-  margin-bottom: 1rem;
-}
-
-.cw-comm-card h3 {
-  font-size: 1.18rem;
-  font-weight: 700;
-  color: #1c1917;
+.cw-comm-card .cw-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
   margin-bottom: 0.75rem;
 }
 
+.cw-comm-icon {
+  color: var(--gold);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cw-comm-card h3 {
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0 !important;
+  line-height: 1.2;
+}
+
 .cw-comm-intro {
-  font-size: 0.95rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   margin-bottom: 1.25rem;
   line-height: 1.6;
 }
@@ -911,14 +934,14 @@
 }
 
 .cw-moq-val {
-  font-size: 1.02rem;
+  font-size: var(--body-large-size);
   font-weight: 750;
-  color: #b78646;
+  color: var(--gold);
 }
 
 .cw-moq-lbl {
-  font-size: 0.82rem;
-  color: #52525b;
+  font-size: var(--small-size);
+  color: var(--muted);
   font-weight: 600;
 }
 
@@ -929,28 +952,28 @@
 }
 
 .cw-tl-row {
-  border-left: 2px solid #b78646;
+  border-left: 2px solid var(--gold);
   padding-left: 0.95rem;
 }
 
 .cw-tl-stage {
   display: block;
-  font-size: 0.94rem;
+  font-size: var(--body-size);
   font-weight: 750;
-  color: #1c1917;
+  color: var(--ink);
 }
 
 .cw-tl-days {
   display: block;
-  font-size: 0.88rem;
+  font-size: var(--small-size);
   font-weight: 800;
-  color: #b78646;
+  color: var(--gold);
   margin-bottom: 0.25rem;
 }
 
 .cw-tl-desc {
-  font-size: 0.86rem;
-  color: #52525b;
+  font-size: var(--small-size);
+  color: var(--muted);
   line-height: 1.5;
 }
 
@@ -966,16 +989,19 @@
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  font-size: 0.94rem;
-  color: #3f3a34;
+  font-size: var(--body-size);
+  color: var(--ink);
   line-height: 1.5;
 }
 
 .cw-note-sm {
-  font-size: 0.8rem;
-  color: #8c8275;
+  font-size: var(--body-size);
+  color: #574c40;
   margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px dashed #e8ded0;
   font-style: italic;
+  line-height: 1.5;
 }
 
 /* PRICING BENCHMARK TABLE (CARD-FREE EDITORIAL TABLE) */
@@ -991,9 +1017,10 @@
 }
 
 .cw-table-title {
-  font-size: 1.28rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h3-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 1.35rem;
 }
 
@@ -1006,28 +1033,28 @@
 .cw-pricing-table th {
   background: transparent;
   padding: 1rem 1.15rem;
-  font-size: 0.92rem;
+  font-size: var(--small-size);
   font-weight: 800;
-  color: #1c1917;
+  color: var(--ink);
   border-bottom: 2px solid #e5d8c6;
 }
 
 .cw-pricing-table td {
   padding: 1.15rem;
-  font-size: 0.95rem;
-  color: #27272a;
+  font-size: var(--body-size);
+  color: var(--ink);
   border-bottom: 1px solid #f0e6d8;
 }
 
 .cw-td-highlight {
   font-weight: 750;
-  color: #1c1917;
+  color: var(--ink);
 }
 
 .cw-td-price {
   font-weight: 800;
-  color: #b78646;
-  font-size: 1.05rem;
+  color: var(--gold);
+  font-size: var(--body-large-size);
   white-space: nowrap;
 }
 
@@ -1048,9 +1075,10 @@
 }
 
 .cw-spec-col h4 {
-  font-size: 1.02rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 1rem;
 }
 
@@ -1065,9 +1093,9 @@
   border: 1px solid #e5d8c6;
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.86rem;
+  font-size: var(--small-size);
   font-weight: 700;
-  color: #3f3a34;
+  color: var(--ink);
 }
 
 /* AUDIENCE GRID (CARD-FREE UNBOXED GRID) */
@@ -1086,15 +1114,16 @@
 }
 
 .cw-audience-card h3 {
-  font-size: 1.15rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0.45rem;
 }
 
 .cw-audience-card p {
-  font-size: 0.94rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.55;
 }
 
@@ -1115,40 +1144,40 @@
 
 .cw-comp-table th {
   padding: 1.2rem 1.35rem;
-  font-size: 0.98rem;
+  font-size: var(--body-size);
   font-weight: 800;
   border-bottom: 2px solid #e5d8c6;
 }
 
 .cw-col-custom {
   background: transparent;
-  color: #8c6227;
+  color: var(--gold-dark);
 }
 
 .cw-col-ready {
   background: transparent;
-  color: #3f3a34;
+  color: var(--ink);
 }
 
 .cw-comp-table td {
   padding: 1.2rem 1.35rem;
-  font-size: 0.95rem;
+  font-size: var(--body-size);
   border-bottom: 1px solid #f0e6d8;
 }
 
 .cw-td-custom {
   background: transparent;
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
 }
 
 .cw-td-ready {
-  color: #4b5563;
+  color: var(--muted);
 }
 
 /* FAQ ACCORDION (CARD-FREE HAIRLINE LIST) */
 .cw-faq-accordion {
-  max-width: 880px;
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
   gap: 0;
@@ -1164,7 +1193,7 @@
 }
 
 .cw-faq-item.open {
-  border-bottom-color: #b78646;
+  border-bottom-color: var(--gold);
 }
 
 .cw-faq-question {
@@ -1175,15 +1204,16 @@
   padding: 1.35rem 0;
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: var(--h4-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   text-align: left;
   cursor: pointer;
 }
 
 .cw-faq-chevron {
-  color: #b78646;
+  color: var(--gold);
   transition: transform 0.2s ease;
   flex-shrink: 0;
   margin-left: 1rem;
@@ -1195,8 +1225,8 @@
 
 .cw-faq-answer {
   padding: 0 1.5rem 1.5rem 1.5rem;
-  font-size: 0.98rem;
-  color: #52525b;
+  font-size: var(--body-size);
+  color: var(--muted);
   line-height: 1.68;
   border-top: 1px dashed #f0e6d8;
   padding-top: 1rem;
@@ -1204,7 +1234,7 @@
 
 /* INQUIRY FORM BOX */
 .cw-inquiry-box {
-  max-width: 880px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -1215,26 +1245,27 @@
 
 .cw-inquiry-intro h2 {
   font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: 2.45rem;
+  font-size: var(--h2-size);
   font-weight: 700;
-  color: #1c1917;
+  color: var(--ink);
   margin-bottom: 0.75rem;
 }
 
 .cw-inquiry-intro p {
-  font-size: 1.05rem;
-  color: #52525b;
+  font-size: var(--body-large-size);
+  color: var(--muted);
   line-height: 1.65;
 }
 
 .cw-inquiry-note {
-  font-size: 0.92rem !important;
-  color: #57534e !important;
+  font-size: var(--body-size) !important;
+  color: #574c40 !important;
   margin-top: 1rem;
   background: transparent;
   padding: 0.85rem 0;
   border-radius: 0;
   border-top: 1px solid #e8ded0;
+  line-height: 1.6;
 }
 
 .cw-inquiry-form {
@@ -1264,11 +1295,11 @@
 }
 
 .cw-field label {
-  font-size: 0.82rem;
+  font-size: var(--small-size);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #3f3a34;
+  color: var(--ink);
 }
 
 .cw-field input,
@@ -1278,8 +1309,8 @@
   border: 1px solid #e5d8c6;
   border-radius: 6px;
   padding: 0.85rem 1rem;
-  font-size: 0.98rem;
-  color: #1c1917;
+  font-size: var(--body-size);
+  color: var(--ink);
   font-family: inherit;
 }
 
@@ -1496,5 +1527,127 @@
   .cw-faq-answer {
     font-size: 0.92rem;
     padding: 0 0.5rem 1.25rem 0.5rem;
+  }
+}
+
+/* ==========================================================================
+   PRODUCTION MATRIX & WORKFLOW (SIMPLE ELEGANT COMPARISON TABLE)
+   ========================================================================== */
+.cw-matrix-section {
+  padding: 4.5rem 0;
+  background-color: #faf7f2;
+  border-bottom: 1px solid rgba(226, 217, 204, 0.6);
+}
+
+.cw-simple-table-card {
+  background: #ffffff;
+  border: 1px solid #dcd0bf;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  margin-bottom: 1.5rem;
+}
+
+.cw-simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cw-simple-table th,
+.cw-simple-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e8decb;
+  border-right: 1px solid #e8decb;
+  vertical-align: top;
+}
+
+.cw-simple-table th:last-child,
+.cw-simple-table td:last-child {
+  border-right: none;
+}
+
+.cw-simple-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cw-simple-table th {
+  background-color: #f6f0e6;
+  font-family: var(--font-modern-heading);
+  font-size: var(--body-large-size);
+  font-weight: var(--h6-weight, 700);
+  color: var(--ink);
+}
+
+.cw-simple-table th.th-param {
+  width: 44%;
+}
+
+.cw-simple-table th.th-mode {
+  width: 28%;
+  font-family: var(--font-heading);
+  font-size: var(--h4-size);
+}
+
+.cw-table-param-title {
+  font-family: var(--font-modern-heading);
+  font-size: var(--body-large-size);
+  font-weight: var(--h6-weight, 700);
+  color: var(--ink);
+}
+
+.cw-table-bullets {
+  margin: 0.6rem 0 0 1.2rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cw-table-bullets li {
+  font-size: var(--body-size);
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.cw-table-val-bold {
+  font-family: var(--font-modern-heading);
+  font-size: var(--body-large-size);
+  font-weight: var(--h6-weight, 700);
+  color: var(--ink);
+}
+
+.cw-table-val-gold {
+  font-family: var(--font-modern-heading);
+  font-size: var(--body-large-size);
+  font-weight: var(--h6-weight, 700);
+  color: var(--gold);
+  background: rgba(183, 134, 70, 0.08);
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.cw-table-note {
+  font-size: var(--body-size);
+  color: var(--muted);
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+.cw-table-note strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .cw-simple-table-card {
+    overflow-x: auto;
+  }
+  .cw-simple-table th.th-param {
+    min-width: 280px;
+  }
+  .cw-simple-table th.th-mode {
+    min-width: 180px;
   }
 }

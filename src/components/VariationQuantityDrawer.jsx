@@ -195,8 +195,8 @@ export function VariationQuantityDrawer({
                 alignItems: 'center'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <strong style={{ fontSize: '15px', color: '#8c6239' }}>Quantity</strong>
-                  <span style={{ fontSize: '12px', color: '#a08060' }}>
+                  <strong style={{ fontSize: 'var(--body-size)', color: '#8c6239' }}>Quantity</strong>
+                  <span style={{ fontSize: 'var(--small-size)', color: '#a08060' }}>
                     1 Set = 1 piece of each color variant ({rows.length} pcs total)
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export function VariationQuantityDrawer({
                       {row.price != null ? formatMoney(row.price) : priceNoticeForAccess(priceAccess)}
                     </span>
                     {priceAccess?.priceGroup === 'wholesale' && !isSoldAsPc ? (
-                      <span className="wholesale-qty-display" style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
+                      <span className="wholesale-qty-display" style={{ fontSize: 'var(--body-size)', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
                         {quantity} {quantity === 1 ? 'pc' : 'pcs'}
                       </span>
                     ) : (

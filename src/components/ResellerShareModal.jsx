@@ -95,7 +95,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
               <h3 style={{ color: '#991b1b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 White-label Website Disabled
               </h3>
-              <p style={{ color: '#b91c1c', margin: '0.5rem 0 1rem 0', fontSize: '0.875rem', lineHeight: '1.4' }}>
+              <p style={{ color: '#b91c1c', margin: '0.5rem 0 1rem 0', fontSize: 'var(--small-size)', lineHeight: '1.4' }}>
                 Your white-label website is currently disabled. To enable it and start sharing, please contact us.
               </p>
               <a
@@ -202,7 +202,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 </a>
               </div>
               
-              <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '0.8125rem' }}>
+              <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: 'var(--button-size)' }}>
                 Close
               </button>
             </div>

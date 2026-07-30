@@ -1187,7 +1187,7 @@ export function ProductDetail({
                 {canViewPrice ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {priceAccess?.priceLabel && (
-                      <span className="price-label-badge" style={{ fontSize: '11px', textTransform: 'uppercase', color: '#b8924a', letterSpacing: '1.2px', fontWeight: '700' }}>
+                      <span className="price-label-badge" style={{ fontSize: 'var(--small-size)', textTransform: 'uppercase', color: '#b8924a', letterSpacing: '1.2px', fontWeight: '700' }}>
                         {priceAccess.priceLabel}
                       </span>
                     )}
@@ -1267,11 +1267,11 @@ export function ProductDetail({
             {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
               <p className="b2b-shipping-note" style={{ 
                 margin: '0 0 12px 0', 
-                fontSize: '15px', 
+                fontSize: 'var(--body-size)', 
                 lineHeight: '1.6', 
                 color: 'var(--muted)', 
                 fontFamily: 'var(--font-ui)', 
-                fontWeight: '500'
+                fontWeight: 400
               }}>
                 For accurate shipping charges and delivery timelines, kindly WhatsApp us your order quantity along with your city and pin code. We will get back to you promptly.
               </p>

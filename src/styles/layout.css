@@ -1489,7 +1489,7 @@
   .feature-strip,
   .bulk-inquiry-page,
   .deal-section {
-    width: min(1560px, calc(100% - var(--site-padding) * 2.5)) !important;
+    width: min(1400px, calc(100% - var(--site-padding) * 2.5)) !important;
   }
 
   .why-band,
@@ -1497,13 +1497,13 @@
   .reseller-band,
   .newsletter,
   .footer {
-    padding-left: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
-    padding-right: max(var(--site-padding), calc((100vw - 1560px) / 2)) !important;
+    padding-left: max(var(--site-padding), calc((100vw - 1400px) / 2)) !important;
+    padding-right: max(var(--site-padding), calc((100vw - 1400px) / 2)) !important;
   }
 
   .hero-copy {
-    padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
-    padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1560px) / 2 + 38px)) !important;
+    padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1400px) / 2 + 38px)) !important;
+    padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1400px) / 2 + 38px)) !important;
   }
 
   .top-bar-static,

@@ -220,15 +220,15 @@ export function OurOfferings({ navigate, openAuth }) {
 
               <div className="weaver-stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                 <div className="weaver-stat-box">
-                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>0</span>
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: 600 }}>0</span>
                   <span className="stat-label-luxury">Setup Fees</span>
                 </div>
                 <div className="weaver-stat-box">
-                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>3-5</span>
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: 600 }}>3-5</span>
                   <span className="stat-label-luxury">Days Dispatch</span>
                 </div>
                 <div className="weaver-stat-box">
-                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: '500' }}>100%</span>
+                  <span className="stat-value-luxury" style={{ fontFamily: 'var(--font-modern-heading, "Manrope", sans-serif)', fontWeight: 600 }}>100%</span>
                   <span className="stat-label-luxury">Direct Payouts</span>
                 </div>
               </div>

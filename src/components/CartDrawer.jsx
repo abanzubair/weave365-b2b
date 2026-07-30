@@ -982,7 +982,7 @@ export function CartDrawer({
                                 </button>
                               </div>
                             ) : (
-                              <span className="cart-qty-display-wholesale" style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
+                              <span className="cart-qty-display-wholesale" style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
                                 {item.quantity} {item.quantity === 1 ? 'pc' : 'pcs'}
                               </span>
                             )}
@@ -1001,7 +1001,7 @@ export function CartDrawer({
                       paddingTop: '12px',
                       borderTop: '1px solid #f2f2f2'
                     }}>
-                      <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: '600' }}>
+                      <span style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontWeight: '600' }}>
                         Quantity: {group.items[0]?.quantity} Set{group.items[0]?.quantity === 1 ? '' : 's'}
                       </span>
                       <div className="qty-row">
@@ -1045,11 +1045,11 @@ export function CartDrawer({
         <div className="drawer-foot">
           {discount > 0 && (
             <div className="cart-price-breakdown" style={{ marginBottom: '12px', borderBottom: '1px dashed #e6e6e6', paddingBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--muted)', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--small-size)', color: 'var(--muted)', marginBottom: '6px' }}>
                 <span>Subtotal</span>
                 <span>{formatMoney(subtotal)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--primary-color)', fontWeight: '600' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--small-size)', color: 'var(--primary-color)', fontWeight: '600' }}>
                 <span>Combo Discount</span>
                 <span>-{formatMoney(discount)}</span>
               </div>

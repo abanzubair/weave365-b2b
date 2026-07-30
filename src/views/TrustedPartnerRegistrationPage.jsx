@@ -814,7 +814,7 @@ export function TrustedPartnerRegistrationPage() {
                 <CheckCircle2 size={42} />
                 <h2>{t('onboardingSuccessTitle')}</h2>
                 <p>{t('onboardingSuccessDesc')}</p>
-                <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>{t('onboardingSuccessSub')}</p>
+                <p style={{ fontSize: 'var(--body-size)', color: 'var(--color-text-secondary)', marginTop: '8px' }}>{t('onboardingSuccessSub')}</p>
 
                 {process.env.NODE_ENV === 'development' && (
                   <button
@@ -984,10 +984,10 @@ export function TrustedPartnerRegistrationPage() {
                         >
                           <AlertCircle size={22} />
                         </div>
-                        <h3 style={{ fontSize: '18px', color: '#241912', marginBottom: '8px', fontFamily: "var(--font-heading)" }}>
+                        <h3 style={{ fontSize: 'var(--h6-size)', fontWeight: 600, color: '#241912', marginBottom: '8px', fontFamily: "var(--font-heading)" }}>
                           {lang === 'hi' ? 'त्रुटि (Error)' : 'Submission Error'}
                         </h3>
-                        <p className="onboarding-modal-message" style={{ fontSize: '13.5px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                        <p className="onboarding-modal-message" style={{ fontSize: 'var(--small-size)', margin: '0 0 20px', lineHeight: '1.5' }}>
                           {reviewError}
                         </p>
                         <div className="onboarding-modal-actions">
@@ -998,7 +998,7 @@ export function TrustedPartnerRegistrationPage() {
                               background: '#8b2f2f', 
                               boxShadow: '0 4px 12px rgba(139, 47, 47, 0.15)',
                               padding: '10px 20px',
-                              fontSize: '13px',
+                              fontSize: 'var(--small-size)',
                               borderRadius: '6px',
                               cursor: 'pointer',
                               border: 'none',
@@ -1266,10 +1266,10 @@ export function TrustedPartnerRegistrationPage() {
                           >
                             <AlertCircle size={22} />
                           </div>
-                          <h3 style={{ fontSize: '18px', color: '#241912', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+                          <h3 style={{ fontSize: 'var(--h6-size)', fontWeight: 600, color: '#241912', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
                             {lang === 'hi' ? 'त्रुटि (Error)' : 'Submission Error'}
                           </h3>
-                          <p className="onboarding-modal-message" style={{ fontSize: '13.5px', margin: '0 0 20px', lineHeight: '1.5' }}>
+                          <p className="onboarding-modal-message" style={{ fontSize: 'var(--small-size)', margin: '0 0 20px', lineHeight: '1.5' }}>
                             {paymentError}
                           </p>
                           <div className="onboarding-modal-actions">
@@ -1280,7 +1280,7 @@ export function TrustedPartnerRegistrationPage() {
                                 background: '#8b2f2f', 
                                 boxShadow: '0 4px 12px rgba(139, 47, 47, 0.15)',
                                 padding: '10px 20px',
-                                fontSize: '13px',
+                                fontSize: 'var(--small-size)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 border: 'none',

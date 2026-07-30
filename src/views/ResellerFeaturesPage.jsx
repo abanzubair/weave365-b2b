@@ -80,11 +80,12 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
       <section className="rf-hero">
         <div className="rf-hero-inner">
           <div className="rf-hero-content">
+            <span className="rf-hero-kicker">Multi-Tier B2B Reseller Platform</span>
             <h1 className="rf-hero-title">
               The Professional Toolkit to <span>Resell Sarees Online</span>
             </h1>
             <p className="rf-hero-desc">
-              Power your social commerce boutique. Weave 365 provides Varanasi direct factory sourcing, instant social cataloging, custom pricing rules, and blind shipping — all from a single reseller ecosystem.
+              Power your social commerce boutique. Weave 365 provides Varanasi direct factory sourcing, instant social cataloging, custom pricing rules, and blind shipping &mdash; all from a single reseller ecosystem.
             </p>
             <div className="rf-hero-actions">
               <button 
@@ -92,7 +93,8 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
                 className="rf-btn-primary" 
                 onClick={handleStartSharing}
               >
-                Start Reselling Now <ArrowRight size={16} />
+                <span>Start Reselling Now</span>
+                <ArrowRight size={16} />
               </button>
               <button 
                 type="button" 
@@ -104,16 +106,16 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
             </div>
             <div className="rf-hero-trust-row">
               <div className="rf-trust-item">
-                <span className="rf-trust-dot" />
-                <span>Zero Inventory Risk</span>
+                <ShieldCheck size={18} className="rf-trust-icon" />
+                <span>Risk: <strong>Zero Inventory</strong></span>
               </div>
               <div className="rf-trust-item">
-                <span className="rf-trust-dot" />
-                <span>Varanasi Factory Rates</span>
+                <Globe size={18} className="rf-trust-icon" />
+                <span>Pricing: <strong>Varanasi Factory Rates</strong></span>
               </div>
               <div className="rf-trust-item">
-                <span className="rf-trust-dot" />
-                <span>Global Express Dispatch</span>
+                <Truck size={18} className="rf-trust-icon" />
+                <span>Fulfillment: <strong>Global Express</strong></span>
               </div>
             </div>
           </div>
@@ -411,7 +413,7 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
                             <div className="demo-wa-product-img" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/dropshipping-hero.jpg)' }} />
                             <div className="demo-wa-product-desc">
                               <div className="demo-wa-product-title">Varanasi Katan Silk Saree</div>
-                              <p style={{ margin: '2px 0 0', color: '#666', fontSize: '9px' }}>Pure mulberry silk weave with gold zari work.</p>
+                              <p style={{ margin: '2px 0 0', color: '#666', fontSize: 'var(--small-size)' }}>Pure mulberry silk weave with gold zari work.</p>
                               <div className="demo-wa-product-price">₹2,800</div>
                             </div>
                           </div>

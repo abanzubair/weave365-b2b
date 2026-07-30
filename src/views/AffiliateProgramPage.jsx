@@ -111,7 +111,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
       <section className="affiliate-hero">
         <div className="affiliate-hero-inner">
           <div className="affiliate-hero-content">
-            <span className="affiliate-hero-kicker">Free to Join · Zero Investment</span>
+            <span className="affiliate-hero-kicker">Free to Join &bull; Zero Investment</span>
             <h1 className="affiliate-hero-title">
               Turn Your Network <br />
               into an <span className="affiliate-highlight">Earning Channel</span>
@@ -137,11 +137,14 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
                 <span>Register as Partner</span>
                 <ArrowRight size={18} />
               </button>
+              <a href="#how-it-works" className="affiliate-hero-secondary-btn">
+                How It Works
+              </a>
             </div>
             <div className="affiliate-hero-stats">
               <div className="hero-stat">
                 <span className="hero-stat-value">15%</span>
-                <span className="hero-stat-label">Commission</span>
+                <span className="hero-stat-label">Commission Rate</span>
               </div>
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
@@ -151,17 +154,21 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
               <div className="hero-stat-divider"></div>
               <div className="hero-stat">
                 <span className="hero-stat-value">₹0</span>
-                <span className="hero-stat-label">Setup Cost</span>
+                <span className="hero-stat-label">Setup Fee</span>
               </div>
             </div>
           </div>
           <div className="affiliate-hero-visual">
-            <div className="affiliate-hero-img-wrapper">
+            <div className="affiliate-hero-editorial-frame">
               <img 
                 src="https://assets.weave365.com/assets/banner/affiliate-hero.jpg" 
                 alt="Luxury Banarasi fabrics and digital partner catalog display" 
                 className="affiliate-hero-img" 
               />
+            </div>
+            <div className="affiliate-hero-caption">
+              <span className="caption-dot" />
+              <span>Weave 365 Affiliate Portal &bull; Live Analytics &amp; Direct Payouts</span>
             </div>
           </div>
         </div>

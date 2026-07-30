@@ -48,8 +48,8 @@
 .vendor-hero-kicker {
   display: inline-block;
   font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: var(--olive);
@@ -64,20 +64,21 @@
 
 .vendor-hero-title {
   font-family: var(--font-heading);
-  font-size: clamp(40px, 5.5vw, 64px);
+  font-size: var(--h1-size);
   line-height: 1.08;
   color: var(--ink);
   margin-bottom: 24px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .vendor-hero-description {
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: var(--body-large-size);
   line-height: 1.7;
   color: var(--muted);
   max-width: 560px;
   margin: 0 auto 40px;
+  font-weight: 400;
 }
 
 .vendor-hero-actions {
@@ -95,8 +96,8 @@
   background: var(--olive);
   color: var(--white);
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -207,8 +208,8 @@
 
 /* ---- C. Steps ---- */
 .vendor-steps-section {
-  padding: 100px var(--site-padding);
-  max-width: 1200px;
+  padding: 80px 2rem;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -314,8 +315,9 @@
 }
 
 .vendor-benefits-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 80px;
@@ -987,11 +989,12 @@
 }
 
 .vendor-stats-grid {
-  max-width: 1200px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .vendor-stat {

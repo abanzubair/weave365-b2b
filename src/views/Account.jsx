@@ -515,7 +515,7 @@ export function Account({
               type="button"
               className={`account-tab-btn ${orderFilterTab === 'all' ? 'active' : ''}`}
               onClick={() => setOrderFilterTab('all')}
-              style={{ padding: '5px 12px', fontSize: '12px' }}
+              style={{ padding: '5px 12px', fontSize: 'var(--small-size)' }}
             >
               All Orders ({placedOrders.length})
             </button>
@@ -523,7 +523,7 @@ export function Account({
               type="button"
               className={`account-tab-btn ${orderFilterTab === 'dropship' ? 'active' : ''}`}
               onClick={() => setOrderFilterTab('dropship')}
-              style={{ padding: '5px 12px', fontSize: '12px' }}
+              style={{ padding: '5px 12px', fontSize: 'var(--small-size)' }}
             >
               Dropship Orders ({placedOrders.filter(o => o.is_dropship).length})
             </button>
@@ -531,7 +531,7 @@ export function Account({
               type="button"
               className={`account-tab-btn ${orderFilterTab === 'regular' ? 'active' : ''}`}
               onClick={() => setOrderFilterTab('regular')}
-              style={{ padding: '5px 12px', fontSize: '12px' }}
+              style={{ padding: '5px 12px', fontSize: 'var(--small-size)' }}
             >
               Standard Orders ({placedOrders.filter(o => !o.is_dropship).length})
             </button>
@@ -947,13 +947,13 @@ export function Account({
             ) : !influencerProfile ? (
               /* Application Form */
               <div style={{ maxWidth: '500px', margin: '1.5rem auto' }}>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>Join the Weave 365 Affiliate Partner Program</h2>
-                <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '2rem', lineHeight: '1.5', textAlign: 'center' }}>
+                <h2 style={{ fontSize: 'var(--h3-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', textAlign: 'center' }}>Join the Weave 365 Affiliate Partner Program</h2>
+                <p style={{ fontSize: 'var(--body-size)', color: 'var(--muted)', marginBottom: '2rem', lineHeight: '1.5', textAlign: 'center', fontWeight: 400 }}>
                   Share Banarasi collection (saree, suit and more) with your audience and earn 10% commission on every order!
                 </p>
 
                 <form onSubmit={handleApplyInfluencer} style={{ display: 'grid', gap: '20px' }}>
-                  <div style={{ background: 'rgba(183, 134, 70, 0.08)', border: '1px solid rgba(183, 134, 70, 0.25)', borderRadius: '8px', padding: '14px', fontSize: '0.85rem', color: 'var(--gold-dark)', display: 'flex', gap: '8px', alignItems: 'flex-start', lineHeight: '1.4' }}>
+                  <div style={{ background: 'rgba(183, 134, 70, 0.08)', border: '1px solid rgba(183, 134, 70, 0.25)', borderRadius: '8px', padding: '14px', fontSize: 'var(--small-size)', color: 'var(--gold-dark)', display: 'flex', gap: '8px', alignItems: 'flex-start', lineHeight: '1.4' }}>
                     <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
                       <strong>Important Notice:</strong> Commissions are tracked once a customer completes checkout. However, funds will only be credited to your account and eligible for payout after the customer receives the products and the return/exchange window has successfully expired.
@@ -961,16 +961,16 @@ export function Account({
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Desired Referral Code *</label>
+                    <label style={{ display: 'block', fontSize: 'var(--small-size)', fontWeight: 600, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Desired Referral Code *</label>
                     <input
                       type="text"
                       placeholder="e.g. FASHION10"
                       value={infFormCode}
                       onChange={e => setInfFormCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                       required
-                      style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', transition: 'border-color 0.2s' }}
+                      style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: '8px', fontSize: 'var(--body-size)', outline: 'none', transition: 'border-color 0.2s' }}
                     />
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(183,134,70,0.06)', padding: '6px 12px', borderRadius: '20px', border: '1px dashed rgba(183,134,70,0.3)', marginTop: '10px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--gold-dark)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(183,134,70,0.06)', padding: '6px 12px', borderRadius: '20px', border: '1px dashed rgba(183,134,70,0.3)', marginTop: '10px', fontSize: 'var(--small-size)', fontWeight: 600, color: 'var(--gold-dark)' }}>
                       <span>Referral Link:</span>
                       <code>weave365.com/?ref={infFormCode || 'YOUR_CODE'}</code>
                     </div>

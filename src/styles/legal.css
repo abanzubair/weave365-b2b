@@ -52,7 +52,7 @@
   gap: 0.5rem;
   margin-bottom: 2rem;
   font-family: var(--font-hero-body);
-  font-size: 0.85rem;
+  font-size: var(--small-size);
   letter-spacing: 0.05em;
   width: 100%;
   max-width: 1200px;
@@ -105,8 +105,8 @@
 
 .legal-sidebar h3 {
   font-family: var(--font-modern-heading);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: var(--gold-dark);
@@ -131,8 +131,8 @@
   border: 1px solid transparent;
   border-radius: 10px;
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   color: var(--muted);
   text-align: left;
   cursor: pointer;
@@ -188,8 +188,8 @@
 
 .legal-brand-kicker {
   font-family: var(--font-modern-heading);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.25em;
   color: var(--gold);
@@ -198,8 +198,8 @@
 
 .legal-h1 {
   font-family: var(--font-hero-heading);
-  font-size: clamp(1.85rem, 4vw, 2.5rem);
-  font-weight: 500;
+  font-size: var(--h1-size);
+  font-weight: 700;
   color: var(--ink);
   margin-bottom: 1.5rem;
   letter-spacing: -0.01em;
@@ -207,7 +207,7 @@
 
 .legal-updated-date {
   font-family: var(--font-modern-body);
-  font-size: 0.8rem;
+  font-size: var(--small-size);
   color: var(--muted);
   margin-bottom: 2rem;
   display: block;
@@ -219,7 +219,7 @@
 /* POLICY CONTENT FORMATTING */
 .legal-text-content {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--body-size);
   line-height: 1.75;
   color: var(--ink);
 }
@@ -230,16 +230,16 @@
 }
 
 .legal-text-content p.lead {
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: var(--body-large-size);
+  font-weight: 400;
   color: var(--gold-dark);
   line-height: 1.7;
 }
 
 .legal-text-content h2 {
   font-family: var(--font-heading);
-  font-size: 1.45rem;
-  font-weight: 600;
+  font-size: var(--h2-size);
+  font-weight: 700;
   color: var(--gold-dark);
   margin-top: 2.25rem;
   margin-bottom: 1rem;

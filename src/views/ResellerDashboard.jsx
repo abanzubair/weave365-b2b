@@ -87,8 +87,8 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
 
       <main style={{ maxWidth: '1000px', margin: '4rem auto', padding: '0 2rem' }}>
         <div style={{ marginBottom: '3rem' }}>
-           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', marginBottom: '0.5rem' }}>Business Center</h1>
-           <p style={{ color: 'var(--reseller-muted)', fontSize: '1.1rem' }}>Manage your white-label boutique and customer shares.</p>
+           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--h1-size)', fontWeight: 700, marginBottom: '0.5rem' }}>Business Center</h1>
+           <p style={{ color: 'var(--reseller-muted)', fontSize: 'var(--body-large-size)', fontWeight: 400 }}>Manage your white-label boutique and customer shares.</p>
         </div>
 
         <div style={{ background: 'white', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-xl)', padding: '1rem', border: '1px solid var(--reseller-border)' }}>
@@ -96,7 +96,7 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
         </div>
 
 
-        <div style={{ marginTop: '4rem', display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--reseller-muted)', fontSize: '0.9rem' }}>
+        <div style={{ marginTop: '4rem', display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--reseller-muted)', fontSize: 'var(--body-size)' }}>
 
           <ShieldCheck size={20} />
           <span>Your business data is secure and white-labeled. Weave 365 branding is suppressed on your customer-facing pages.</span>

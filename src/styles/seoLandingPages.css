@@ -30,10 +30,11 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.7rem;
+  font-size: var(--small-size);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #888;
+  font-weight: 400;
 }
 
 .seo-breadcrumbs a {
@@ -87,8 +88,8 @@
 
 .seo-landing-hero h1 {
   font-family: var(--font-hero-heading, 'Manrope', serif);
-  font-size: clamp(1.9rem, 4.8vw, 2.9rem);
-  font-weight: 300;
+  font-size: var(--h1-size);
+  font-weight: 700;
   line-height: 1.15;
   color: var(--gold-dark, #805d31);
   letter-spacing: -0.03em;
@@ -97,8 +98,9 @@
 
 .seo-subtitle {
   font-family: var(--font-hero-body);
-  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+  font-size: var(--body-large-size);
   font-weight: 600;
+  line-height: 1.6;
   letter-spacing: 0.12em;
   color: var(--primary-color, #c69e6a);
   text-transform: uppercase;

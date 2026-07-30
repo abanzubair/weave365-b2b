@@ -117,15 +117,13 @@
 }
 
 .offerings-hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .editorial-hero-text {
-  max-width: 800px;
+  max-width: 1040px;
   text-align: center;
   margin: 0 auto;
   display: flex;
@@ -148,9 +146,9 @@
 
 .hero-title-luxury {
   font-family: var(--font-heading, 'Cormorant Garamond', serif);
-  font-size: clamp(38px, 5vw, 64px);
+  font-size: var(--h1-size);
   line-height: 1.15;
-  font-weight: 400;
+  font-weight: 700;
   margin: 0;
   color: var(--ink, #241912); /* Dark text for perfect contrast on light background */
   letter-spacing: -0.01em;
@@ -172,10 +170,10 @@
 
 .hero-desc-luxury {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(15px, 1.15vw, 18px);
+  font-size: var(--body-large-size);
   line-height: 1.7;
   color: var(--muted, #6d5946); /* Pristine white-cream body readability */
-  max-width: 660px;
+  max-width: 840px;
   margin: 0 auto;
   font-weight: 400;
 }
@@ -190,9 +188,9 @@
   border: 1px solid transparent;
   padding: 15px 36px;
   font-family: var(--font-modern-heading, 'Manrope', sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
   display: inline-flex;
@@ -218,7 +216,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 48px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -250,19 +248,20 @@
 
 .pillar-title-luxury {
   font-family: var(--font-heading, 'Cormorant Garamond', serif);
-  font-size: 24px;
+  font-size: var(--h4-size);
   color: var(--ink, #241912);
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 12px;
   letter-spacing: 0.01em;
 }
 
 .pillar-desc-luxury {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 16px;
+  font-size: var(--body-size);
   line-height: 1.65;
   color: #3F3329; /* Dark espresso charcoal for perfect high-contrast readability */
   margin: 0;
+  font-weight: 400;
 }
 
 /* ── White Label Showcase (Spacious 2-Column Editorial) ───────── */
@@ -273,8 +272,9 @@
 }
 
 .wl-editorial-layout {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 80px;
@@ -283,7 +283,7 @@
 
 .section-kicker-luxury {
   font-family: var(--font-modern-heading, 'Manrope', sans-serif);
-  font-size: 11px;
+  font-size: var(--small-size);
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--gold, #b78646);
@@ -294,9 +294,9 @@
 
 .section-title-luxury {
   font-family: var(--font-heading, 'Cormorant Garamond', serif);
-  font-size: clamp(28px, 3.5vw, 44px);
+  font-size: var(--h2-size);
   color: var(--ink, #241912);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.2;
   margin: 0;
 }
@@ -463,8 +463,9 @@
 }
 
 .weaver-editorial-layout {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
   gap: 80px;

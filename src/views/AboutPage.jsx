@@ -133,7 +133,7 @@ export function AboutPage({ navigate }) {
 
       {/* 1. COMPREHENSIVE BRAND STORY (Replaces old Hero) */}
       <section className="about-section typographic-story" style={{ padding: 'clamp(40px, 6vw, 64px) var(--site-padding)', backgroundColor: 'var(--paper)', borderBottom: '1px solid var(--line)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
 
           <div className="story-text-block">
             <nav className="about-breadcrumbs" aria-label="Breadcrumb" style={{ marginBottom: '2rem' }}>
@@ -141,7 +141,7 @@ export function AboutPage({ navigate }) {
               <span className="separator">/</span>
               <span className="current">About</span>
             </nav>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>About Weave 365</h1>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--h1-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>About Weave 365</h1>
             <p>Weave 365 is a sourcing platform based in Varanasi. It connects wholesalers, retailers, boutiques, resellers, online stores, designers and exporters, in India and abroad, directly to the weaving hubs and manufacturing networks of the city.</p>
             <p>The idea is simple: Varanasi produces some of the finest Banarasi sarees, suits, dress materials and textiles in the world. Getting access to them, reliably and at fair wholesale prices, has always been the hard part. Weave 365 handles the coordination, across multiple weavers and fabric grades, so making it easier for buyers to source the right products.</p>
             <p>The platform covers the full sourcing chain. That means quality inspection at the Varanasi hub, logistics packaging, India and international shipping via DTDC, Delhivery, Blue Dart, DHL and FedEx, with full tracking. Orders start at five pieces, mix-and-match allowed, which makes it practical for smaller boutiques and resellers to test new fabric grades before committing to bulk.</p>

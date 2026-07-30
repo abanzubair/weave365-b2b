@@ -10,7 +10,19 @@
  * @param {Function} props.openAuth - Trigger callback to display the registration modal / portal
  */
 
-import { ArrowRight, Globe, Shield, Handshake, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Globe, 
+  Shield, 
+  Handshake, 
+  ShieldCheck, 
+  AlertTriangle,
+  UserCheck,
+  MessageSquare,
+  Sparkles,
+  ShoppingBag,
+  Coins
+} from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
 const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
@@ -22,40 +34,56 @@ export function WeaverOnboardingPage({ openAuth }) {
       <section className="weaver-hero-section">
         <div className="weaver-hero-split">
           <div className="hero-left">
-            <span className="hero-category-label">Wholesale & Weaver Onboarding</span>
-            <h1 className="hero-title">Empower Your Craft: Onboard as a Certified Weaver Partner</h1>
+            <span className="hero-category-label">Wholesale &amp; Weaver Onboarding</span>
+            <h1 className="hero-title">
+              Empower Your Craft: Onboard as a Certified Weaver Partner
+            </h1>
             <p className="hero-description">
               Showcase your Banarasi sarees, suits, and fabrics directly to global boutiques and retail networks. Partner with Weave 365 to expand your reach with zero listing risk.
             </p>
             <div className="hero-actions">
-              <button type="button" className="gold-button" onClick={openAuth}>
+              <button 
+                type="button" 
+                className="gold-button large"
+                onClick={openAuth}
+              >
                 Register as Weaver <ArrowRight size={18} />
               </button>
+              <a href="#how-it-works" className="hero-secondary-btn">
+                Explore Process
+              </a>
             </div>
             <div className="hero-trust-indicators">
               <div className="indicator-item">
-                <Globe size={16} strokeWidth={2} className="indicator-icon" />
-                <span>Global Boutique Reach</span>
+                <Globe size={18} className="indicator-icon" />
+                <span>Boutique Reach: <strong>500+ Buyers</strong></span>
               </div>
               <div className="indicator-item">
-                <Shield size={16} strokeWidth={2} className="indicator-icon" />
-                <span>Zero Listing Risk</span>
+                <Shield size={18} className="indicator-icon" />
+                <span>Listing Fee: <strong>₹0 (Free)</strong></span>
               </div>
               <div className="indicator-item">
-                <Handshake size={16} strokeWidth={2} className="indicator-icon" />
-                <span>Fair Trade Pricing</span>
+                <Handshake size={18} className="indicator-icon" />
+                <span>Payouts: <strong>100% Direct</strong></span>
               </div>
             </div>
           </div>
+          
           <div className="hero-right">
             <div className="hero-image-single">
-              <img 
-                src={assetSrc(artisanImage)}
-                alt="Artisan weaving Varanasi silk" 
-                className="hero-main-image"
-                width={600}
-                height={600}
-              />
+              <div className="hero-editorial-frame">
+                <img 
+                  src={assetSrc(artisanImage)}
+                  alt="Artisan weaving Varanasi silk" 
+                  className="hero-main-image"
+                  width={600}
+                  height={600}
+                />
+              </div>
+              <div className="hero-image-caption">
+                <span className="caption-dot" />
+                <span>Varanasi Loom Network &bull; Master Silk &amp; Brocade Weavers</span>
+              </div>
             </div>
           </div>
         </div>
@@ -85,32 +113,50 @@ export function WeaverOnboardingPage({ openAuth }) {
         
         <div className="steps-grid">
           <div className="step-item clickable-step" onClick={openAuth}>
-            <span className="step-num">01</span>
+            <div className="step-card-header">
+              <span className="step-num">01</span>
+              <div className="step-icon-box"><UserCheck size={20} /></div>
+            </div>
             <h3>Artisan Registration <ArrowRight size={16} className="step-inline-arrow" /></h3>
             <p>Go to our registration page and fill out the onboarding form to get verified.</p>
           </div>
           <div className="step-item">
-            <span className="step-num">02</span>
+            <div className="step-card-header">
+              <span className="step-num">02</span>
+              <div className="step-icon-box"><MessageSquare size={20} /></div>
+            </div>
             <h3>WhatsApp Verification</h3>
             <p>Verification is conducted on the product images you share with our team on WhatsApp once your registration form is approved.</p>
           </div>
           <div className="step-item">
-            <span className="step-num">03</span>
+            <div className="step-card-header">
+              <span className="step-num">03</span>
+              <div className="step-icon-box"><Sparkles size={20} /></div>
+            </div>
             <h3>Professional Curation</h3>
             <p>We catalog your premium collections on our storefront at no cost to you using the product images you share.</p>
           </div>
           <div className="step-item">
-            <span className="step-num">04</span>
+            <div className="step-card-header">
+              <span className="step-num">04</span>
+              <div className="step-icon-box"><Globe size={20} /></div>
+            </div>
             <h3>Live Placement</h3>
             <p>Your collections are listed directly on our B2B wholesale storefront.</p>
           </div>
           <div className="step-item">
-            <span className="step-num">05</span>
+            <div className="step-card-header">
+              <span className="step-num">05</span>
+              <div className="step-icon-box"><ShoppingBag size={20} /></div>
+            </div>
             <h3>Direct Boutique Orders</h3>
             <p>Receive bulk or single-piece orders directly from verified boutique owners.</p>
           </div>
           <div className="step-item">
-            <span className="step-num">06</span>
+            <div className="step-card-header">
+              <span className="step-num">06</span>
+              <div className="step-icon-box"><Coins size={20} /></div>
+            </div>
             <h3>Secure Payouts</h3>
             <p>Get timely direct payouts for every shipped order with transparent margins.</p>
           </div>

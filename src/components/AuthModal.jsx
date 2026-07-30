@@ -549,11 +549,11 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
             {message === 'verification-email-sent' ? (
               <>
                 <div className="auth-header" style={{ marginBottom: '24px' }}>
-                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: 'var(--h3-size)', fontWeight: 700, margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
                     Verify Your Email
-                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px',padding: '3px', lineHeight: 1 }}>✦</span>
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: 'var(--h4-size)', padding: '3px', lineHeight: 1 }}>✦</span>
                   </h2>
-                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--small-size)', color: 'var(--muted)' }}>
                     Check your inbox to activate your account
                   </p>
                 </div>
@@ -562,14 +562,14 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold)' }}>
                     <Mail size={22} />
                   </div>
-                  <strong style={{ color: 'var(--ink)', fontSize: '16px', fontWeight: '700' }}>
+                  <strong style={{ color: 'var(--ink)', fontSize: 'var(--body-size)', fontWeight: '700' }}>
                     Check your inbox
                   </strong>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--muted)', lineHeight: 1.6 }}>
+                  <p style={{ margin: 0, fontSize: 'var(--body-size)', color: 'var(--muted)', lineHeight: 1.6 }}>
                     We have sent a verification link to <strong style={{ color: 'var(--ink)', wordBreak: 'break-all' }}>{email}</strong>. Please confirm your email address to activate your account.
                   </p>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '20px', textAlign: 'center', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', marginTop: '20px', textAlign: 'center', lineHeight: 1.5 }}>
                   Once verified, you will be able to log in to access direct factory pricing and live inventory.
                 </p>
                 <button type="button"
@@ -586,11 +586,11 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
             ) : message === 'demo-verification-sent' ? (
               <>
                 <div className="auth-header" style={{ marginBottom: '24px' }}>
-                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontSize: 'var(--h3-size)', fontWeight: 700, margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
                     Verify Your Email
-                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
+                    <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: 'var(--h4-size)', lineHeight: 1 }}>✦</span>
                   </h2>
-                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--small-size)', color: 'var(--muted)' }}>
                     Demo Mode — Verification Simulated
                   </p>
                 </div>
@@ -599,10 +599,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(183, 134, 70, 0.1)', color: 'var(--gold)' }}>
                     <Mail size={22} />
                   </div>
-                  <strong style={{ color: 'var(--ink)', fontSize: '16px', fontWeight: '700' }}>
+                  <strong style={{ color: 'var(--ink)', fontSize: 'var(--body-size)', fontWeight: '700' }}>
                     Verification Simulated
                   </strong>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '4px' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--body-size)', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '4px' }}>
                     A verification link has been simulated for <strong style={{ color: 'var(--ink)', wordBreak: 'break-all' }}>{email}</strong>. In production, the user must click this link to access the platform.
                   </p>
                   <button type="button"

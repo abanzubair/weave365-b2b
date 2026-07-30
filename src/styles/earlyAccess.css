@@ -49,19 +49,20 @@
 
 .early-access-success-card h2 {
   font-family: var(--font-heading);
-  font-size: 2.25rem;
-  font-weight: 500;
+  font-size: var(--h2-size);
+  font-weight: 700;
   color: var(--gold-dark, #805d31);
   margin-bottom: 12px;
   letter-spacing: -0.01em;
 }
 
 .early-access-success-card p {
-  font-size: 1rem;
+  font-size: var(--body-size);
   color: var(--muted, #6d5946);
   max-width: 420px;
   line-height: 1.6;
   margin-bottom: 32px;
+  font-weight: 400;
 }
 
 .early-access-success-card .success-home-btn {
@@ -70,8 +71,8 @@
   border: none;
   border-radius: 30px;
   padding: 14px 36px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -89,8 +90,8 @@
 
 .early-access-kicker {
   font-family: var(--font-modern-heading);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   color: var(--gold, #b78646);
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -100,8 +101,8 @@
 
 .early-access-header h1 {
   font-family: var(--font-heading);
-  font-size: 2.25rem;
-  font-weight: 500;
+  font-size: var(--h1-size);
+  font-weight: 700;
   line-height: 1.25;
   color: var(--ink, #241912);
   margin-bottom: 12px;
@@ -109,10 +110,11 @@
 }
 
 .early-access-header p {
-  font-size: 0.95rem;
+  font-size: var(--body-size);
   line-height: 1.55;
   color: var(--muted, #6d5946);
   margin: 0;
+  font-weight: 400;
 }
 
 /* Form layouts */

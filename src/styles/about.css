@@ -18,13 +18,14 @@
   position: relative;
 }
 
-.hero-overhaul-grid {
-  max-width: 1200px;
+.about-hero-grid {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: clamp(2rem, 5vw, 4rem);
-  align-items: start;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: center;
 }
 
 .hero-left-col {
@@ -35,7 +36,7 @@
 
 .about-breadcrumbs {
   font-family: var(--font-ui);
-  font-size: 0.75rem;
+  font-size: var(--small-size);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--muted);
@@ -67,8 +68,8 @@
 
 .hero-headline {
   font-family: var(--font-heading);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 600;
+  font-size: var(--h1-size);
+  font-weight: 700;
   line-height: 1.15;
   color: var(--ink);
   margin: 0;
@@ -84,11 +85,12 @@
 
 .hero-description {
   font-family: var(--font-body);
-  font-size: 1.05rem;
+  font-size: var(--body-large-size);
   line-height: 1.65;
   color: var(--muted);
   margin: 0 0 1.25rem 0;
   max-width: 48ch;
+  font-weight: 400;
 }
 
 .hero-primary-link {
@@ -96,8 +98,8 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-ui);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   color: var(--gold-dark);
   text-decoration: none;
   text-transform: uppercase;
@@ -128,11 +130,12 @@
 }
 
 .about-metrics-grid {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  gap: clamp(20px, 3vw, 40px);
 }
 
 .metric-card {
@@ -254,8 +257,9 @@
 }
 
 .flow-visual-panel {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   min-height: 220px;
   display: flex;
   align-items: center;
@@ -363,8 +367,9 @@
 }
 
 .typographic-story .story-split-grid {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(2.5rem, 5vw, 5rem);
@@ -385,7 +390,7 @@
   font-size: 1.05rem;
   line-height: 1.7;
   margin-bottom: 1rem;
-  max-width: 100%;
+  max-width: 960px;
 }
 
 /* 5. B2B STANDARDS SECTION */
@@ -396,8 +401,9 @@
 }
 
 .standards-cards-grid {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
@@ -642,8 +648,14 @@
   background-color: var(--paper);
 }
 
+.about-faq-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
 .about-cta-card-wrapper {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   background-color: var(--cream);
   color: var(--ink);

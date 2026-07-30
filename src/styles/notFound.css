@@ -77,8 +77,8 @@
 .nf-kicker {
   display: inline-block;
   font-family: var(--font-modern-heading, 'Manrope', sans-serif);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: var(--gold, #b78646);
@@ -90,8 +90,8 @@
 
 .nf-heading {
   font-family: var(--font-hero-heading, 'Marcellus', Georgia, serif);
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  font-weight: 500;
+  font-size: var(--h1-size);
+  font-weight: 700;
   color: var(--ink, #241912);
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -100,11 +100,12 @@
 
 .nf-body {
   font-family: var(--font-hero-body, 'Inter', sans-serif);
-  font-size: 1rem;
+  font-size: var(--body-large-size);
   line-height: 1.7;
   color: var(--muted, #6d5946);
   max-width: 440px;
   margin: 0;
+  font-weight: 400;
 }
 
 /* Action buttons */
@@ -123,8 +124,8 @@
   padding: 0.75rem 1.5rem;
   border-radius: 100px;
   font-family: var(--font-modern-heading, 'Manrope', sans-serif);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   letter-spacing: 0.03em;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);

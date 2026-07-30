@@ -72,7 +72,7 @@
 
 .reviews-subtitle {
   font-family: var(--font-modern-heading);
-  font-size: 1rem;
+  font-size: var(--small-size);
   font-weight: 600;
   letter-spacing: 0.1em;
   color: var(--olive);
@@ -82,8 +82,8 @@
 
 .reviews-h1 {
   font-family: var(--font-hero-heading);
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  font-weight: 500;
+  font-size: var(--h1-size);
+  font-weight: 700;
   color: var(--ink);
   margin-bottom: 0;
   line-height: 1.1;

@@ -227,7 +227,7 @@ export function ResellerTools({ user, buyerProfile }) {
             </div>
             
             {visibleCount < processedShares.length && (
-              <div style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--reseller-muted)', fontSize: '0.85rem' }}>
+              <div style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--reseller-muted)', fontSize: 'var(--small-size)' }}>
                 Scroll for more...
               </div>
             )}

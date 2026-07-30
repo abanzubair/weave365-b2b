@@ -30,6 +30,7 @@ import {
   Check, 
   Info,
   DollarSign,
+  IndianRupee,
   Palette,
   Feather,
   RefreshCw,
@@ -51,45 +52,10 @@ export function CustomWovenPage({ navigate }) {
   const [activeStep, setActiveStep] = useState(1);
   const [openFaq, setOpenFaq] = useState(null);
 
-  // Inquiry form interactive state
-  const [businessType, setBusinessType] = useState('Private Label Brand');
-  const [weavingType, setWeavingType] = useState('Powerloom (MOQ: 50 pcs)');
-  const [fabricPref, setFabricPref] = useState('Katan Silk');
-  const [zariPref, setZariPref] = useState('Tested Zari');
-  const [inputType, setInputType] = useState('Design Reference Image');
-  const [contactName, setContactName] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [projectNotes, setProjectNotes] = useState('');
-
-  const businessTypeSelectId = useId();
-  const weavingTypeSelectId = useId();
-  const fabricPrefSelectId = useId();
-  const zariPrefSelectId = useId();
-  const inputTypeSelectId = useId();
-
   const [heroLoomType, setHeroLoomType] = useState('handloom');
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    const whatsappMessage = `*Custom Woven Saree Inquiry - Weave 365*%0A%0A` +
-      `*Name:* ${encodeURIComponent(contactName || 'Valued Client')}%0A` +
-      `*Phone/WhatsApp:* ${encodeURIComponent(contactPhone || 'Not provided')}%0A` +
-      `*Email:* ${encodeURIComponent(contactEmail || 'Not provided')}%0A` +
-      `*Business Segment:* ${encodeURIComponent(businessType)}%0A` +
-      `*Weaving Preference:* ${encodeURIComponent(weavingType)}%0A` +
-      `*Fabric:* ${encodeURIComponent(fabricPref)}%0A` +
-      `*Zari Grade:* ${encodeURIComponent(zariPref)}%0A` +
-      `*Design Input:* ${encodeURIComponent(inputType)}%0A` +
-      `*Project Notes:* ${encodeURIComponent(projectNotes || 'None')}%0A%0A` +
-      `Please review my custom weaving requirement and get back to me with feasibility and initial estimates.`;
-
-    const whatsappUrl = `https://wa.me/${storeConfig.whatsapp}?text=${whatsappMessage}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   const designInputs = [
@@ -104,95 +70,106 @@ export function CustomWovenPage({ navigate }) {
   ];
 
   const teamAssistance = [
-    { title: 'Technical Feasibility Review', desc: 'Reviewing your design for traditional Banarasi weaving compatibility.' },
-    { title: 'Weave & Yarn Structuring', desc: 'Determining optimal weave structure, technique, fabric composition, and zari pairing.' },
-    { title: 'Motif & Color Curation', desc: 'Suggesting suitable motifs, shade combinations, and finishing treatments for maximum aesthetic appeal.' },
-    { title: 'Practical Weaving Optimization', desc: 'Identifying and refining design details to ensure smooth, defect-free production.' },
-    { title: 'Design Intent Preservation', desc: 'Recommending the best weaving setup while strictly keeping your original brand vision.' },
-    { title: 'Transparent Commercial Estimates', desc: 'Providing clear guidance on MOQs, sampling fees, pre-production charges, and timelines.' },
-    { title: 'Full Lifecycle Guidance', desc: 'Guiding you step-by-step from loom graph preparation and sample approval to final dispatch.' },
+    { title: 'Technical Feasibility Review', desc: 'Reviewing the technical feasibility of your design for traditional Banarasi weaving.' },
+    { title: 'Weave & Yarn Structuring', desc: 'Determining the appropriate weave structure, weaving technique, fabric composition, and zari combination required for your design.' },
+    { title: 'Motif & Color Curation', desc: 'Suggesting suitable motifs, colour combinations, and finishing options to achieve the desired look.' },
+    { title: 'Practical Weaving Optimization', desc: 'Identifying any design elements that may require modification for practical weaving and production.' },
+    { title: 'Design Intent Preservation', desc: 'Recommending the most suitable weaving approach while preserving your original design intent.' },
+    { title: 'Commercial & Timeline Guidance', desc: 'Providing guidance on the estimated MOQ, sampling requirements, pre-production charges, and expected production timeline.' },
+    { title: 'Full Lifecycle Support', desc: 'Guiding you through every stage, from loom development and sample approval to final production.' },
   ];
 
   const steps = [
     {
       step: 1,
       name: 'Share Your Design',
-      short: 'Submit Concept',
-      desc: 'Send us your design reference, artwork, sketch, concept, or inspiration through our custom inquiry portal or WhatsApp.',
+      short: 'Share Design',
+      desc: 'Send us your design reference, artwork, sketch, concept, or inspiration.',
       details: [
-        'Reference images, digital sketches, CADs, or physical swatches accepted',
-        'Specify target colorways, estimated quantity, and preferred delivery timeline',
-        'Initial confidentiality and brand privacy assurance'
-      ]
+        'Photos, sketches, CAD files, or physical fabric swatches accepted',
+        'Target colorway and quantity requirement assessment',
+        'Complete brand privacy and design confidentiality'
+      ],
+      note: ''
     },
     {
       step: 2,
       name: 'Technical Design Review',
-      short: 'Tech Evaluation',
-      desc: 'Our Varanasi weaving experts evaluate your design for technical feasibility, motif complexity, weave structure, and warp/weft requirements.',
+      short: 'Design Review',
+      desc: 'Our weaving experts evaluate technical feasibility and loom compatibility:',
       details: [
-        'Weave structure feasibility (Kadhwa, Phekwa, Tanchoi, Cutwork)',
-        'Fabric selection (Katan, Organza, Georgette, Tissue, Satin)',
-        'Zari quality selection (Tested Zari vs Certified Real Gold/Silver Zari)',
-        'Border, body, and pallu balance evaluation'
-      ]
+        'Design feasibility & weave structure',
+        'Fabric selection (Katan, Organza, Georgette, Tissue)',
+        'Zari quality (Tested Zari vs Certified Real Gold/Silver Zari)',
+        'Motif complexity, border and pallu balance',
+        'Colour combinations & production suitability'
+      ],
+      note: 'If required, we may recommend technical modifications to improve weaving quality and production efficiency.'
     },
     {
       step: 3,
       name: 'Development Planning',
-      short: 'Specs & Costing',
-      desc: 'Following feasibility review, we prepare technical weaving specifications, yarn requirements, pre-production charges, sampling plan, and timeline.',
+      short: 'Dev Planning',
+      desc: 'After evaluation, our technical team prepares:',
       details: [
-        'Detailed yarn and zari quantity estimation',
-        'Pre-production cost estimate and sampling fee quotation',
-        'Minimum Order Quantity (MOQ) finalization based on loom type',
-        'Milestone-based production & sampling schedule'
-      ]
+        'Technical weaving specifications & fabric recommendation',
+        'Yarn and zari requirement calculation',
+        'Estimated development cost & sampling plan',
+        'Production timeline & MOQ schedule'
+      ],
+      note: ''
     },
     {
       step: 4,
       name: 'Custom Loom Development',
       short: 'Loom Setup',
-      desc: 'A dedicated loom is configured specifically for your project, including jacquard graphing, card punching, warp setting, and trial weaving.',
+      desc: 'A dedicated loom is developed and configured according to your approved design and technical weaving specifications.',
+      intro: 'This stage includes:',
       details: [
-        'Design graph preparation (Point paper design mapping)',
-        'Jacquard punching or digital electronic jacquard programming',
-        'Loom setting, warp mounting, and tension calibration',
-        'Trial weaving and color testing'
-      ]
+        'Design graph preparation (Point paper mapping)',
+        'Punching or electronic jacquard programming',
+        'Loom setup & warp preparation',
+        'Colour planning & trial weaving',
+        'Sample development'
+      ],
+      note: 'Every custom project is prepared independently according to the approved design.'
     },
     {
       step: 5,
       name: 'Sample Approval',
       short: 'Sample Review',
-      desc: 'A physical development sample is produced on the configured loom for your review and physical quality sign-off.',
+      desc: 'A development sample is produced for your physical review.',
       details: [
-        'Sample saree piece or swatch produced for hand-feel and motif check',
-        'High-resolution video and photo documentation sent for immediate review',
-        'Full-scale production commences ONLY after formal client approval'
-      ]
+        'Physical sample piece or swatch created on configured loom',
+        'High-resolution photo & video documentation for remote review',
+        'Physical inspection and client feedback sign-off'
+      ],
+      note: 'Production begins only after the sample is approved.'
     },
     {
       step: 6,
       name: 'Final Weaving',
-      short: 'Bulk Production',
-      desc: 'After sample approval, master artisans execute bulk weaving on dedicated handlooms or powerlooms according to approved specs.',
+      short: 'Final Weaving',
+      desc: 'After approval, final weaving starts according to agreed specifications.',
       details: [
-        'Consistent batch weaving under strict quality control',
-        'Periodic progress updates with weave status tracking',
-        'Custom weave modifications applied seamlessly across the lot'
-      ]
+        'Bulk weaving executed on dedicated handlooms or powerlooms',
+        'Master artisan supervision under strict quality parameters',
+        'Consistent thread tension and color accuracy across the order lot'
+      ],
+      note: ''
     },
     {
       step: 7,
-      name: 'Quality Inspection & Finishing',
-      short: 'Dispatch & Packing',
-      desc: 'Every saree undergoes thread cutting, double-pass fabric inspection, steam finishing, polishing, folding, and custom private label packing.',
+      name: 'Quality Inspection and Finishing',
+      short: 'QC & Finishing',
+      desc: 'Each saree passes through comprehensive quality checks and export finishing:',
       details: [
-        'Rigorous thread inspection, stain checking, and dimensional verification',
-        'Traditional calendering, polishing, and steam pressing',
-        'Private label tagging, blind packaging, and insured global dispatch'
-      ]
+        'Quality inspection & thread checking',
+        'Fabric inspection & defect verification',
+        'Finishing & roll polishing',
+        'Folding, private label packing & worldwide dispatch'
+      ],
+      note: ''
     }
   ];
 
@@ -206,44 +183,44 @@ export function CustomWovenPage({ navigate }) {
   ];
 
   const suitableAudiences = [
-    { title: 'Private Label Brands', desc: 'Create signature saree lines under your own brand identity without owning looms.', icon: Tag },
-    { title: 'Luxury Fashion Labels', desc: 'Develop exclusive runway & couture Banarasi collections with custom motifs.', icon: Crown },
-    { title: 'Fashion Designers', desc: 'Transform bespoke artwork and CADs into authentic handwoven heritage textiles.', icon: PenTool },
-    { title: 'Boutique Owners', desc: 'Offer unique, non-catalog sarees to differentiate your store from retail competitors.', icon: Store },
-    { title: 'Bridal Wear Collections', desc: 'Craft exclusive bridal trousseau series with custom color palettes and zari work.', icon: Heart },
-    { title: 'Export Buyers & Wholesalers', desc: 'Develop high-volume custom lines tailored for international ethnic markets.', icon: Globe },
-    { title: 'Corporate Gifting Projects', desc: 'Commission customized heritage sarees featuring subtle bespoke motifs for VIP gifts.', icon: Gift },
-    { title: 'White Label Businesses', desc: 'Source fully unbranded, premium custom weaves ready for your private branding.', icon: ShieldCheck },
+    { title: 'Private Label Brands', icon: Tag },
+    { title: 'Luxury Fashion Labels', icon: Crown },
+    { title: 'Fashion Designers', icon: PenTool },
+    { title: 'Fashion Entrepreneurs', icon: Sparkles },
+    { title: 'Boutique Owners', icon: Store },
+    { title: 'Bridal Wear Brands', icon: Heart },
+    { title: 'Wedding Wear Collections', icon: Layers },
+    { title: 'White Label Businesses', icon: ShieldCheck },
+    { title: 'Export Buyers', icon: Globe },
+    { title: 'Retail Chains', icon: Building2 },
+    { title: 'Corporate Gifting Projects', icon: Gift },
+    { title: 'Premium Ethnic Wear Brands', icon: Award },
   ];
 
   const faqs = [
     {
-      q: 'What is the minimum order quantity (MOQ) for custom woven Banarasi sarees?',
-      a: 'The MOQ starts from 4 pieces per design for Handloom custom weaving, and 50 pieces per design for Powerloom custom weaving. The exact quantity depends on design complexity, weave structure, fabric selection, and zari grade.'
-    },
-    {
       q: 'Can I make only 10 custom Banarasi sarees?',
-      a: 'Normally no for powerloom weaving, as custom loom setup and jacquard punch card programming are not commercially viable for 10 pieces. However, for Handloom custom weaving, projects starting from 4 to 10 pieces per design can be executed depending on the design.'
+      a: 'Normally no. Custom loom development is generally not commercially viable for such small quantities. In most cases, 5 to 10 pieces are not sufficient for custom loom development, and existing collections are recommended for orders of 5 to 10 pieces.'
     },
     {
-      q: 'Can I provide my own design or artwork?',
-      a: 'Yes! You can share design reference images, hand sketches, digital artwork, CAD punch files, fabric swatches, motif references, or color moodboards. Our technical weaving team will review feasibility and guide you through the process.'
+      q: 'What is the minimum order quantity for custom woven Banarasi sarees?',
+      a: 'The MOQ generally starts from around 50 pieces per design. The exact quantity depends on the design, fabric, and weaving complexity.'
     },
     {
-      q: 'Are sampling charges applicable for custom weaving?',
-      a: 'Yes. Pre-production charges apply to cover technical design evaluation, point paper graph preparation, jacquard setup, warp mounting, trial weaving, and sample production. Pre-production fees are quoted after reviewing your design.'
+      q: 'Can I provide my own design?',
+      a: 'Yes. You can share artwork, sketches, images, CAD files, fabric references, motifs, or design concepts for evaluation.'
+    },
+    {
+      q: 'Are sampling charges applicable?',
+      a: 'Yes. Pre-production charges generally apply for design evaluation, technical development, loom setup, sampling, and production planning.'
     },
     {
       q: 'How long does custom Banarasi saree development take?',
-      a: 'Pre-weaving development (design review, graph preparation, loom setup, and sampling) takes 30 to 45 working days. Once the sample is approved, weaving and bulk production take 20 to 90 working days depending on order quantity and weave complexity.'
+      a: 'The timeline depends on the design complexity, sampling requirements, loom preparation, approvals, and production quantity. An estimated schedule is shared after reviewing the design.'
     },
     {
-      q: 'Do you manufacture under private label for custom orders?',
-      a: 'Yes. We support complete private label manufacturing, custom brand tagging, white-label packaging, and blind dropshipping for eligible production quantities.'
-    },
-    {
-      q: 'What is the difference between Tested Zari and Real Zari in custom sarees?',
-      a: 'Tested Zari uses silver/gold electroplated metallic yarn that offers rich luster and durability at a commercial cost. Real Zari uses genuine silver core wire electroplated with pure gold, complete with purity certification for luxury heirloom collections.'
+      q: 'Do you manufacture under private label?',
+      a: 'Yes. We support custom weaving and private label manufacturing for eligible production quantities.'
     }
   ];
 
@@ -290,120 +267,28 @@ export function CustomWovenPage({ navigate }) {
                 <p>
                   Unlike ready-made wholesale collections, custom weaving begins with your design concept. 
                   Each project involves technical feasibility assessment, loom development, weave planning, yarn and zari selection, 
-                  sampling, and production before full-scale weaving starts.
+                  sampling, and production before full-scale weaving starts. This process enables you to develop a unique Banarasi saree that reflects your brand identity rather than choosing from existing catalogue designs.
                 </p>
               </div>
 
-              <div className="cw-hero-action-row">
-                <a href="#inquiry-form" className="cw-btn cw-btn-primary">
-                  Submit Design Inquiry <ArrowRight size={18} />
-                </a>
-                <a href="#loom-matrix" className="cw-btn cw-btn-secondary">
-                  View Loom Spec Matrix
-                </a>
-              </div>
 
-              {/* SPEC SUMMARY LIST */}
-              <div className="cw-hero-spec-summary">
-                <span className="cw-spec-meta-item">Handloom MOQ: <strong>From 4 Pcs</strong></span>
-                <span className="cw-spec-meta-dot">&bull;</span>
-                <span className="cw-spec-meta-item">Powerloom MOQ: <strong>From 50 Pcs</strong></span>
-                <span className="cw-spec-meta-dot">&bull;</span>
-                <span className="cw-spec-meta-item">Loom Setup: <strong>30–45 Days</strong></span>
-              </div>
+
+
             </div>
 
             {/* RIGHT COLUMN: CLEAN EDITORIAL CRAFT PHOTOGRAPHY SHOWCASE */}
             <div className="cw-hero-visual-editorial">
               <div className="cw-editorial-frame">
                 <img
-                  src="https://assets.weave365.com/assets/banner/collab-brand-hero2.jpg"
+                  src="https://assets.weave365.com/assets/banner/custom-woven-hero.webp"
                   alt="Varanasi Master Silk Weaver at Handloom"
                   className="cw-editorial-main-img"
                 />
               </div>
               <div className="cw-editorial-caption">
                 <span className="cw-caption-dot" />
-                <span>Varanasi Loom Network &bull; Kadhwa, Phekwa & Brocade Master Weavers</span>
+                <span>Varanasi Master Weavers Network</span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* DEDICATED LOOM SPECIFICATION & COMMERCIAL ESTIMATOR MATRIX */}
-      <section className="cw-section cw-bg-light" id="loom-matrix">
-        <div className="cw-container">
-          <div className="cw-section-header">
-            <h2>Loom Specification & Production Matrix</h2>
-            <p className="cw-section-subtitle">
-              Select your target production mode to review Minimum Order Quantities (MOQ), setup lead times, and weave capabilities.
-            </p>
-          </div>
-
-          <div className="cw-loom-matrix-card">
-            {/* FLAT UNDERLINE TAB SWITCHER */}
-            <div className="cw-sheet-tabs">
-              <button
-                type="button"
-                className={`cw-sheet-tab ${heroLoomType === 'handloom' ? 'active' : ''}`}
-                onClick={() => {
-                  setHeroLoomType('handloom');
-                  setWeavingType('Handloom (MOQ: 4 pcs)');
-                }}
-              >
-                HANDLOOM (ARTISAN WEAVE)
-              </button>
-              <button
-                type="button"
-                className={`cw-sheet-tab ${heroLoomType === 'powerloom' ? 'active' : ''}`}
-                onClick={() => {
-                  setHeroLoomType('powerloom');
-                  setWeavingType('Powerloom (MOQ: 50 pcs)');
-                }}
-              >
-                POWERLOOM (VOLUME PRODUCTION)
-              </button>
-            </div>
-
-            {/* INLINE DIVIDER ROWS */}
-            <dl className="cw-sheet-list">
-              <div className="cw-sheet-row">
-                <dt className="cw-sheet-key">Minimum Order Quantity (MOQ)</dt>
-                <dd className="cw-sheet-val cw-val-gold">
-                  {heroLoomType === 'handloom' ? '4 Pieces / Design' : '50 Pieces / Design'}
-                </dd>
-              </div>
-              <div className="cw-sheet-row">
-                <dt className="cw-sheet-key">Pre-Weaving & Loom Setup</dt>
-                <dd className="cw-sheet-val">
-                  {heroLoomType === 'handloom' ? '30–45 Working Days' : '15–30 Working Days'}
-                </dd>
-              </div>
-              <div className="cw-sheet-row">
-                <dt className="cw-sheet-key">Weaving & Production Lead Time</dt>
-                <dd className="cw-sheet-val">
-                  {heroLoomType === 'handloom' ? '20–90 Working Days' : '15–45 Working Days'}
-                </dd>
-              </div>
-              <div className="cw-sheet-row">
-                <dt className="cw-sheet-key">Weave & Motif Capability</dt>
-                <dd className="cw-sheet-val">
-                  {heroLoomType === 'handloom' ? 'Kadhwa, Phekwa, Meenakari, Cutwork' : 'High-Density Jacquard, Brocade'}
-                </dd>
-              </div>
-              <div className="cw-sheet-row">
-                <dt className="cw-sheet-key">Zari Compatibility</dt>
-                <dd className="cw-sheet-val">
-                  {heroLoomType === 'handloom' ? 'Tested Zari & Certified Real Zari' : 'Tested Metallic Zari'}
-                </dd>
-              </div>
-            </dl>
-
-            <div className="cw-sheet-action">
-              <a href="#inquiry-form" className="cw-btn cw-btn-primary">
-                Configure Specification <ArrowRight size={16} />
-              </a>
             </div>
           </div>
         </div>
@@ -414,14 +299,11 @@ export function CustomWovenPage({ navigate }) {
         <div className="cw-container">
           <div className="cw-section-header">
             <h2>What is a Custom Woven Banarasi Saree?</h2>
-            <p className="cw-section-subtitle">
-              Dedicated weave planning engineered specifically around your brand's exclusive visual identity.
-            </p>
           </div>
 
           <div className="cw-concept-narrative">
             <p className="cw-concept-lead">
-              A <strong>custom woven Banarasi saree</strong> is a saree created through a dedicated weaving process based on your brand’s 
+              A <strong>custom woven Banarasi saree</strong> is a saree created through a dedicated weaving process based on your brand's 
               design requirements. Unlike ready-to-ship products, the weaving is planned specifically for your project, with decisions made on the 
               weave structure, motifs, fabric, zari, colours, and finishing before production begins.
             </p>
@@ -429,6 +311,90 @@ export function CustomWovenPage({ navigate }) {
               Each project starts with design evaluation and technical planning, followed by loom development, sampling (where required), 
               and production. This approach enables businesses to develop exclusive Banarasi sarees that are not part of standard wholesale collections.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUCTION MATRIX, WEAVING WORKFLOW & TIMELINE (SIMPLE ELEGANT TABLE) */}
+      <section className="cw-matrix-section" id="production-matrix">
+        <div className="cw-container">
+          <div className="cw-section-header">
+            <h2>Production Matrix, Weaving Workflow &amp; Timeline</h2>
+            <p className="cw-section-subtitle">
+              Select your preferred production method to compare Minimum Order Quantities (MOQ), pre-weaving lead times, production timelines, and weaving capabilities for Handloom and Powerloom Banarasi sarees.
+            </p>
+          </div>
+
+          <div className="cw-simple-table-card">
+            <table className="cw-simple-table">
+              <thead>
+                <tr>
+                  <th className="th-param">Weaving Workflow &amp; MOQ</th>
+                  <th className="th-mode">Handloom</th>
+                  <th className="th-mode">Powerloom</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* ROW 1: MOQ */}
+                <tr>
+                  <td>
+                    <div className="cw-table-param-title">Minimum Order Quantity (MOQ)</div>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-gold">4 Pieces / Design</span>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-bold">50 Pieces / Design</span>
+                  </td>
+                </tr>
+
+                {/* ROW 2: PRE-WEAVING PREPARATION */}
+                <tr>
+                  <td>
+                    <div className="cw-table-param-title">Pre-Weaving Preparation &amp; Loom Development</div>
+                    <ul className="cw-table-bullets">
+                      <li>Design graphing (Naksha)</li>
+                      <li>Yarn selection</li>
+                      <li>Dyeing</li>
+                      <li>Warp (Tana) preparation</li>
+                      <li>Weft (Bana) preparation</li>
+                      <li>Jacquard card punching (if applicable)</li>
+                      <li>Loom setup</li>
+                    </ul>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-bold">30–45 Working Days</span>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-bold">30–45 Working Days</span>
+                  </td>
+                </tr>
+
+                {/* ROW 3: WEAVING, FINISHING & DISPATCH */}
+                <tr>
+                  <td>
+                    <div className="cw-table-param-title">Weaving, Finishing &amp; Dispatch Timeline</div>
+                    <ul className="cw-table-bullets">
+                      <li>Handloom weaving</li>
+                      <li>Quality inspection</li>
+                      <li>Finishing &amp; polishing</li>
+                      <li>Packing</li>
+                      <li>Dispatch</li>
+                    </ul>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-bold">20–90 Working Days</span>
+                  </td>
+                  <td>
+                    <span className="cw-table-val-bold">30–60 Working Days</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="cw-table-note">
+            <strong>Note:</strong> The final MOQ is confirmed after our weaving team reviews your design and technical requirements.
           </div>
         </div>
       </section>
@@ -463,7 +429,7 @@ export function CustomWovenPage({ navigate }) {
                 <h3>How Our Varanasi Weaving Team Assists You</h3>
                 <Award size={36} className="cw-gold-icon cw-badge-icon" />
               </div>
-              <p>Once we receive your inputs, our technical weaving experts guide your project through every stage:</p>
+              <p>Once we receive your inputs, our weaving team will assist you by:</p>
             </div>
 
             <div className="cw-assistance-list">
@@ -481,14 +447,11 @@ export function CustomWovenPage({ navigate }) {
         </div>
       </section>
 
-      {/* 7-STEP CUSTOM BANARASI SAREE WEAVING PROCESS */}
+      {/* CUSTOM BANARASI SAREE WEAVING PROCESS */}
       <section id="weaving-process" className="cw-section cw-bg-light">
         <div className="cw-container">
           <div className="cw-section-header">
-            <h2>The 7-Step Custom Weaving Process</h2>
-            <p className="cw-section-subtitle">
-              From design submission to final loom dispatch, explore our 7-stage quality-controlled production workflow.
-            </p>
+            <h2>Custom Banarasi Saree Weaving Process</h2>
           </div>
 
           {/* STEP CONTROLS / TIMELINE TABS */}
@@ -512,21 +475,34 @@ export function CustomWovenPage({ navigate }) {
             return (
               <div className="cw-active-step-card">
                 <div className="cw-step-card-header">
-                  <div className="cw-step-badge">STAGE 0{cur.step}</div>
+                  <div className="cw-step-badge">STEP 0{cur.step}</div>
                   <h3>{cur.name}</h3>
                 </div>
 
                 <div className="cw-step-body-fixed">
                   <p className="cw-step-card-desc">{cur.desc}</p>
 
-                  <div className="cw-step-details-box">
-                    <h4>Key Milestones & Activities:</h4>
-                    <ul>
-                      {cur.details.map((d, i) => (
-                        <li key={i}><Check size={16} className="cw-gold-icon" /> {d}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  {cur.intro && (
+                    <p style={{ fontWeight: 600, color: '#1c1917', marginBottom: '0.75rem', fontSize: 'var(--body-size)' }}>
+                      {cur.intro}
+                    </p>
+                  )}
+
+                  {cur.details && cur.details.length > 0 && (
+                    <div className="cw-step-details-box">
+                      <ul>
+                        {cur.details.map((d, i) => (
+                          <li key={i}><Check size={16} className="cw-gold-icon" /> {d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {cur.note && (
+                    <p style={{ fontStyle: 'italic', color: '#574c40', marginTop: '1rem', fontSize: 'var(--body-size)' }}>
+                      {cur.note}
+                    </p>
+                  )}
                 </div>
 
                 <div className="cw-step-nav-btns">
@@ -536,16 +512,16 @@ export function CustomWovenPage({ navigate }) {
                     disabled={activeStep === 1}
                     onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                   >
-                    ← Previous Stage
+                    ← Previous Step
                   </button>
-                  <span className="cw-step-counter">{activeStep} of 7</span>
+                  <span className="cw-step-counter">Step {activeStep} of 7</span>
                   <button
                     type="button"
                     className="cw-btn-text"
                     disabled={activeStep === 7}
                     onClick={() => setActiveStep(Math.min(7, activeStep + 1))}
                   >
-                    Next Stage →
+                    Next Step →
                   </button>
                 </div>
               </div>
@@ -554,89 +530,51 @@ export function CustomWovenPage({ navigate }) {
         </div>
       </section>
 
-      {/* LOOM DEVELOPMENT DEEP DIVE */}
-      <section className="cw-section">
-        <div className="cw-container">
-          <div className="cw-section-header">
-            <h2>Loom Setup & Development Deep-Dive</h2>
-            <p className="cw-section-subtitle">
-              Loom development is the process of developing and configuring a weaving loom according to the approved 
-              design and technical weaving specifications before production begins.
-            </p>
-          </div>
 
-          <div className="cw-loom-impact-showcase">
-            <div className="cw-impact-header">
-              <h3>Why Loom Development is Critical</h3>
-              <p className="cw-impact-lead">
-                Loom development directly governs the tactile weight, pattern accuracy, motif sharpness, and structural durability of every handwoven Banarasi saree.
-              </p>
-            </div>
 
-            <div className="cw-impact-metrics-list">
-              <div className="cw-impact-metric-item">
-                <div className="cw-metric-header">
-                  <span className="cw-metric-title">Weaving Precision & Warp Tension</span>
-                  <span className="cw-metric-val">100% Calibrated</span>
-                </div>
-                <p className="cw-metric-desc">Zero warp-break distortion or motif misalignment across full saree length.</p>
-              </div>
-
-              <div className="cw-impact-metric-item">
-                <div className="cw-metric-header">
-                  <span className="cw-metric-title">Fabric Hand-Feel & Density</span>
-                  <span className="cw-metric-val">Certified Saree GSM</span>
-                </div>
-                <p className="cw-metric-desc">Exact thread density control for Katan, Georgette, Organza & Tissue silk warps.</p>
-              </div>
-
-              <div className="cw-impact-metric-item">
-                <div className="cw-metric-header">
-                  <span className="cw-metric-title">Motif Sharpness & Zari Finish</span>
-                  <span className="cw-metric-val">Clean Lock</span>
-                </div>
-                <p className="cw-metric-desc">Clean reverse weaving without loose floats (Kadhwa & Phekwa specs).</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* KEY WEAVING ACTIVITIES IN LOOM DEVELOPMENT */}
+      {/* LOOM DEVELOPMENT */}
       <section className="cw-section cw-bg-light">
         <div className="cw-container">
           <div className="cw-section-header">
-            <h2>Key Activities in Loom Development</h2>
+            <h2>Loom Development</h2>
             <p className="cw-section-subtitle">
-              Explore the 6-stage technical setup workflow executed by master Varanasi weavers prior to bulk production.
+              Loom development is the process of developing and configuring a weaving loom according to the approved design and technical weaving specifications before production begins.
             </p>
           </div>
 
-          <div className="cw-loom-milestone-grid">
+          <p style={{ fontWeight: 600, color: '#1c1917', marginBottom: '1.5rem', fontSize: 'var(--body-large-size)' }}>
+            During loom development, our weaving team:
+          </p>
+
+          <div className="cw-loom-milestone-grid" style={{ marginBottom: '2.5rem' }}>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">01</span>
-              <p>Analyses approved design & weaving requirements</p>
+              <p>Analyses the approved design and its weaving requirements.</p>
             </div>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">02</span>
-              <p>Determines weave structure & weaving technique</p>
+              <p>Determines the appropriate weave structure and weaving technique.</p>
             </div>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">03</span>
-              <p>Selects suitable yarn, fabric & zari combination</p>
+              <p>Selects the suitable yarn, fabric composition, and zari combination.</p>
             </div>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">04</span>
-              <p>Plans motifs, borders, pallu & colour placement</p>
+              <p>Plans motifs, borders, pallu, and colour placement.</p>
             </div>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">05</span>
-              <p>Prepares loom settings & production specs</p>
+              <p>Prepares the loom settings and weaving specifications required for production.</p>
             </div>
             <div className="cw-loom-milestone-item">
               <span className="cw-loom-num">06</span>
-              <p>Conducts trial adjustments for accurate weaving</p>
+              <p>Conducts trial adjustments where necessary to ensure accurate weaving.</p>
             </div>
+          </div>
+
+          <div className="cw-table-note" style={{ borderLeft: '3px solid #b78646', paddingLeft: '1.25rem' }}>
+            <span>Loom development is a critical stage because it directly influences the appearance, fabric quality, weaving accuracy, durability, and production efficiency of the finished Banarasi saree.</span>
           </div>
         </div>
       </section>
@@ -660,44 +598,87 @@ export function CustomWovenPage({ navigate }) {
               </div>
               <p className="cw-comm-intro">
                 Custom loom development involves design planning, technical development, and loom preparation before production begins. 
-                As a result, an MOQ is required to make the weaving process commercially viable.
+                As a result, a minimum order quantity (MOQ) is required to make the weaving process commercially viable.
               </p>
-              <div className="cw-moq-pills">
-                <div className="cw-moq-pill">
-                  <span className="cw-moq-val">From 4 pcs</span>
-                  <span className="cw-moq-lbl">Handloom / Design</span>
-                </div>
-                <div className="cw-moq-pill">
-                  <span className="cw-moq-val">From 50 pcs</span>
-                  <span className="cw-moq-lbl">Powerloom / Design</span>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--small-size)', marginBottom: '0.5rem' }}>
+                  The typical minimum order quantity (MOQ) is:
+                </p>
+                <div className="cw-moq-pills">
+                  <div className="cw-moq-pill">
+                    <span className="cw-moq-val">From 4 pcs</span>
+                    <span className="cw-moq-lbl">Handloom / Design</span>
+                  </div>
+                  <div className="cw-moq-pill">
+                    <span className="cw-moq-val">From 50 pcs</span>
+                    <span className="cw-moq-lbl">Powerloom / Design</span>
+                  </div>
                 </div>
               </div>
-              <p className="cw-note-sm">
-                *Final MOQ depends on design complexity, weave structure, fabric composition, zari type, and color count.
+
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--small-size)', marginBottom: '0.4rem' }}>
+                  The final MOQ may vary depending on:
+                </p>
+                <ul className="cw-check-list" style={{ gap: '0.4rem', marginBottom: '0.5rem' }}>
+                  <li><Check size={15} className="cw-gold-icon" /> Design complexity</li>
+                  <li><Check size={15} className="cw-gold-icon" /> Weave structure</li>
+                  <li><Check size={15} className="cw-gold-icon" /> Fabric composition</li>
+                  <li><Check size={15} className="cw-gold-icon" /> Zari type</li>
+                  <li><Check size={15} className="cw-gold-icon" /> Number of colours</li>
+                  <li><Check size={15} className="cw-gold-icon" /> Production feasibility</li>
+                </ul>
+              </div>
+
+              <p className="cw-note-sm" style={{ fontStyle: 'italic', marginTop: 'auto' }}>
+                Note: The final MOQ is confirmed after our weaving team reviews your design and technical requirements.
               </p>
             </div>
 
             {/* CARD 2: TIMELINE */}
             <div className="cw-comm-card">
               <div className="cw-card-header">
-                <h3>Development & Production Timeline</h3>
+                <h3>Timeline</h3>
                 <div className="cw-comm-icon"><Clock size={22} /></div>
               </div>
               <p className="cw-comm-intro">
-                Timeline depends on design complexity, weave structure, yarn/zari availability, sampling requirements, and quantity.
+                The development and production timeline for a custom woven Banarasi saree depends on the design complexity, weave structure, yarn and zari availability, sampling requirements, and order quantity.
               </p>
-              <div className="cw-timeline-rows">
+              
+              <div className="cw-timeline-rows" style={{ gap: '1.25rem' }}>
                 <div className="cw-tl-row">
                   <span className="cw-tl-stage">1. Pre-Weaving Development</span>
                   <span className="cw-tl-days">30–45 Working Days</span>
-                  <p className="cw-tl-desc">Design review, material planning, loom development, and sample approval.</p>
+                  <p className="cw-tl-desc" style={{ marginBottom: '0.4rem', fontStyle: 'italic' }}>
+                    Before weaving begins, a typical project progresses through the following stages:
+                  </p>
+                  <ul className="cw-check-list" style={{ gap: '0.35rem', marginBottom: 0 }}>
+                    <li><Check size={14} className="cw-gold-icon" /> Design review & technical feasibility assessment</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Weave structure & material planning</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Loom development & setup</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Sample development (if required)</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Sample review & approval</li>
+                  </ul>
                 </div>
+
                 <div className="cw-tl-row">
                   <span className="cw-tl-stage">2. Weaving & Production</span>
                   <span className="cw-tl-days">20–90 Working Days</span>
-                  <p className="cw-tl-desc">Bulk weaving, quality inspection, pressing, finishing, packing, and dispatch.</p>
+                  <p className="cw-tl-desc" style={{ marginBottom: '0.4rem', fontStyle: 'italic' }}>
+                    Once the design and sample are approved, production typically includes:
+                  </p>
+                  <ul className="cw-check-list" style={{ gap: '0.35rem', marginBottom: 0 }}>
+                    <li><Check size={14} className="cw-gold-icon" /> Bulk weaving using traditional Banarasi weaving techniques</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Finishing & quality inspection</li>
+                    <li><Check size={14} className="cw-gold-icon" /> Packing & dispatch</li>
+                  </ul>
                 </div>
               </div>
+
+              <p className="cw-note-sm" style={{ fontStyle: 'italic', marginTop: 'auto' }}>
+                Note: The estimated production timeline is shared after our weaving team reviews your design, technical requirements, and order quantity.
+              </p>
             </div>
 
             {/* CARD 3: PRE-PRODUCTION CHARGES */}
@@ -707,96 +688,173 @@ export function CustomWovenPage({ navigate }) {
                 <div className="cw-comm-icon"><FileText size={22} /></div>
               </div>
               <p className="cw-comm-intro">
-                Every custom woven project requires design evaluation, technical planning, and loom preparation before production.
+                Every custom woven Banarasi saree project requires design development, technical planning, and loom preparation before production begins.
               </p>
-              <ul className="cw-check-list">
-                <li><Check size={16} className="cw-gold-icon" /> Design evaluation & technical consultation</li>
-                <li><Check size={16} className="cw-gold-icon" /> Point paper graph & jacquard setup</li>
-                <li><Check size={16} className="cw-gold-icon" /> Loom setting & trial weaving</li>
-                <li><Check size={16} className="cw-gold-icon" /> Physical development sample (if required)</li>
-              </ul>
-              <p className="cw-note-sm">
-                *Pre-production charges are quoted after our weaving team reviews your design specifications.
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--small-size)', marginBottom: '0.4rem' }}>
+                  Pre-production charges may include:
+                </p>
+                <ul className="cw-check-list" style={{ gap: '0.35rem', marginBottom: '0.75rem' }}>
+                  <li><Check size={14} className="cw-gold-icon" /> Design evaluation</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Technical consultation</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Weave structure planning</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Loom development and setup</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Design development</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Sample development (if required)</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Production planning</li>
+                </ul>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--small-size)', marginBottom: '0.4rem' }}>
+                  The final pre-production cost depends on:
+                </p>
+                <ul className="cw-check-list" style={{ gap: '0.35rem', marginBottom: '0.5rem' }}>
+                  <li><Check size={14} className="cw-gold-icon" /> Design complexity</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Fabric composition</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Zari type and quality</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Weaving technique</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Sampling requirements</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Project scope</li>
+                </ul>
+              </div>
+
+              <p className="cw-note-sm" style={{ fontStyle: 'italic', marginTop: 'auto' }}>
+                Note: Pre-production charges are quoted after our weaving team reviews your design and technical requirements.
               </p>
             </div>
 
-            {/* CARD 4: ESTIMATED COST DRIVERS */}
+            {/* CARD 4: ESTIMATED SAREE COST */}
             <div className="cw-comm-card">
               <div className="cw-card-header">
-                <h3>Estimated Saree Cost Factors</h3>
-                <div className="cw-comm-icon"><DollarSign size={22} /></div>
+                <h3>Estimated Saree Cost</h3>
+                <div className="cw-comm-icon"><IndianRupee size={22} /></div>
               </div>
               <p className="cw-comm-intro">
-                Since every custom weaving project is developed to approved specifications, there is no single standard price.
+                The cost of a custom woven Banarasi saree varies depending on the design specifications and production requirements. Since every custom weaving project is developed according to the approved design specifications, there is no standard price.
               </p>
-              <ul className="cw-check-list">
-                <li><Check size={16} className="cw-gold-icon" /> Motif density & weave technique (Kadhwa vs Phekwa)</li>
-                <li><Check size={16} className="cw-gold-icon" /> Pure Silk fabric composition (Katan, Organza, Georgette)</li>
-                <li><Check size={16} className="cw-gold-icon" /> Zari grade (Tested Metallic vs Certified Real Zari)</li>
-                <li><Check size={16} className="cw-gold-icon" /> Total order volume & finishing requirements</li>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--small-size)', marginBottom: '0.4rem' }}>
+                  The final saree cost is determined by factors such as:
+                </p>
+                <ul className="cw-check-list" style={{ gap: '0.35rem', marginBottom: '0.75rem' }}>
+                  <li><Check size={14} className="cw-gold-icon" /> Design complexity</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Fabric composition</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Weave structure</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Zari type and quality</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Colour combinations</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Weaving time and labour</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Order quantity</li>
+                  <li><Check size={14} className="cw-gold-icon" /> Finishing requirements</li>
+                </ul>
+              </div>
+
+              <p className="cw-comm-intro" style={{ marginBottom: '1rem', fontStyle: 'normal' }}>
+                If your project proceeds to bulk production, we will provide a detailed commercial quotation based on the approved design, final specifications, minimum order quantity (MOQ), and production requirements.
+              </p>
+
+              <p className="cw-note-sm" style={{ fontStyle: 'italic', marginTop: 'auto' }}>
+                Note: A detailed cost estimate is shared after the design review and technical feasibility assessment are completed.
+              </p>
+            </div>
+          </div>
+
+
+        </div>
+      </section>
+
+      {/* COMPLETE GUIDE TO BANARASI SAREE WEAVE TECHNIQUES */}
+      <section className="cw-section cw-bg-light">
+        <div className="cw-container">
+          <div className="cw-section-header">
+            <h2>Complete Guide to Banarasi Saree Weave Techniques</h2>
+            <p className="cw-section-subtitle" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              Banarasi sarees are crafted using a variety of traditional weaving techniques, each offering a unique combination of craftsmanship, texture, motif formation, and production complexity. These weaving techniques can be applied to different Banarasi fabric bases, including Katan Silk, Kora (Organza), Georgette, Tissue, Satin, Cotton Silk, and other silk-blend fabrics. Depending on the chosen fabric, the same weave technique can produce different textures, drape, weight, and appearance. The breakdown below summarizes the most important Banarasi weave techniques and the fabric types in which they are commonly woven, helping buyers, designers, resellers, and textile enthusiasts understand their key differences.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem', marginTop: '2.5rem', alignItems: 'start' }}>
+            {/* CATEGORY 1 */}
+            <div style={{ borderTop: '1px solid #e8ded0', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                Traditional Banarasi Weaving Techniques
+              </h3>
+              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                These are the primary weaving methods used by Banarasi artisans to create motifs and patterns. Each technique differs in weaving process, craftsmanship, production time, and fabric appearance.
+              </p>
+              <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Kadhwa Weaving</strong> – Individual motifs woven separately without floats on the reverse.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Phekwa Weaving</strong> – Continuous supplementary weft weaving with floats on the back.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Cutwork Weaving</strong> – Floating threads are cut after weaving for a cleaner reverse finish.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Tanchoi Weaving</strong> – Dense silk weave with intricate self-patterns and minimal zari floats.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Jamdani Weaving</strong> – Supplementary weft technique for detailed floral and geometric motifs.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Brocade Weaving</strong> – Rich decorative weaving using silk and zari threads.</span></li>
               </ul>
-              <p className="cw-note-sm">
-                *A detailed commercial quotation is shared upon completion of design evaluation.
+            </div>
+
+            {/* CATEGORY 2 */}
+            <div style={{ borderTop: '1px solid #e8ded0', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                Banarasi Design & Motif Weaving Styles
+              </h3>
+              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                These weaving styles define the visual appearance and decorative motifs of Banarasi sarees rather than the weaving mechanism itself.
               </p>
+              <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Jangla Weaving</strong> – Large interconnected floral vine patterns across the fabric.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Meenakari Weaving</strong> – Multicolour silk highlights woven within zari motifs.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Butidar Weaving</strong> – Small repeating buti motifs distributed across the fabric.</span></li>
+              </ul>
             </div>
-          </div>
 
-          {/* PRICE BENCHMARK & SPEC MATRIX */}
-{/*           
-          <div className="cw-table-wrapper" style={{ marginTop: 40 }}>
-            <h3 className="cw-table-title">Technique & Price Range Benchmarks</h3>
-            <table className="cw-pricing-table">
-              <thead>
-                <tr>
-                  <th>Weaving Technique / Style</th>
-                  <th>Estimated Price Range (per saree)</th>
-                  <th>Suitable Applications & Specifications</th>
-                </tr>
-              </thead>
-              <tbody>
-                {priceReferenceTable.map((row, i) => (
-                  <tr key={i}>
-                    <td className="cw-td-highlight">{row.technique}</td>
-                    <td className="cw-td-price">{row.priceRange}</td>
-                    <td>{row.suitable}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          */}
+            {/* CATEGORY 3 */}
+            <div style={{ borderTop: '1px solid #e8ded0', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                Banarasi Fabric Base Weaves
+              </h3>
+              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                These refer to the base fabric on which Banarasi motifs and weave techniques are created. The fabric influences the saree's texture, weight, drape, and overall appearance.
+              </p>
+              <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Katan Weaving</strong> – Fine pure silk plain weave with a smooth finish.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Kora Weaving</strong> – Crisp, lightweight silk organza base.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Organza Banarasi Weaving</strong> – Sheer organza fabric decorated with Banarasi motifs.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Georgette Banarasi Weaving</strong> – Lightweight crepe-textured fabric with fluid drape.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Satin Weaving</strong> – Smooth and lustrous fabric with a glossy surface.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Dupion Weaving</strong> – Textured silk fabric woven from uneven silk yarns.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Tissue Weaving</strong> – Lightweight shimmering fabric woven with silk and metallic zari.</span></li>
+              </ul>
+            </div>
 
-          {/* FABRICS & ZARI MATRICES */}
-          <div className="cw-spec-matrix">
-            <div className="cw-spec-col">
-              <h4>Available Fabric Compositions</h4>
-              <div className="cw-tags">
-                <span className="cw-tag">Katan Silk</span>
-                <span className="cw-tag">Organza</span>
-                <span className="cw-tag">Satin Silk</span>
-                <span className="cw-tag">Tissue Silk</span>
-                <span className="cw-tag">Tussar Silk</span>
-                <span className="cw-tag">Georgette</span>
-                <span className="cw-tag">Mashroo</span>
-              </div>
+            {/* CATEGORY 4 */}
+            <div style={{ borderTop: '1px solid #e8ded0', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                Banarasi Blended Fabric Weaves
+              </h3>
+              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                These fabrics combine two or more natural fibres to achieve a balance of appearance, texture, durability, comfort, and cost.
+              </p>
+              <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Cotton-Silk Weaving</strong> – Blend of cotton and silk for comfort and sheen.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Silk Linen Weaving</strong> – Blend of silk and linen with a natural textured finish.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Silk Cotton Tissue Weaving</strong> – Tissue fabric woven using silk and cotton yarns.</span></li>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Mashru Weaving</strong> – Traditional silk-cotton weave offering the appearance of silk with the comfort of cotton.</span></li>
+              </ul>
             </div>
-            <div className="cw-spec-col">
-              <h4>Weaving Techniques & Motifs</h4>
-              <div className="cw-tags">
-                <span className="cw-tag">Kadhwa</span>
-                <span className="cw-tag">Phekwa</span>
-                <span className="cw-tag">Pick n Pick</span>
-                <span className="cw-tag">Buta</span>
-                <span className="cw-tag">Buti</span>
-                <span className="cw-tag">Malti</span>
-              </div>
-            </div>
-            <div className="cw-spec-col">
-              <h4>Zari Quality Options</h4>
-              <div className="cw-tags">
-                <span className="cw-tag">Tested Zari (Silver/Gold Plated)</span>
-                <span className="cw-tag">Real Zari (Certified Pure Silver/Gold)</span>
-              </div>
+
+            {/* CATEGORY 5 */}
+            <div style={{ borderTop: '1px solid #e8ded0', paddingTop: '1.5rem' }}>
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h4-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                Traditional & Specialty Banarasi Weaves
+              </h3>
+              <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+                Specialized or less commonly used weaving techniques that represent traditional craftsmanship and niche textile applications.
+              </p>
+              <ul className="cw-check-list" style={{ gap: '0.75rem', marginBottom: 0 }}>
+                <li><Check size={16} className="cw-gold-icon" style={{ flexShrink: 0, marginTop: 3 }} /> <span><strong>Ektara Weaving</strong> – A traditional weaving technique used for specific fabric constructions and niche Banarasi textiles.</span></li>
+              </ul>
             </div>
           </div>
         </div>
@@ -806,25 +864,33 @@ export function CustomWovenPage({ navigate }) {
       <section className="cw-section">
         <div className="cw-container">
           <div className="cw-section-header">
-            <h2>Target Audience & Business Models</h2>
+            <h2>Who is Custom Weaving Suitable For?</h2>
             <p className="cw-section-subtitle">
-              Custom woven Banarasi sarees are ideal for businesses looking to build exclusive proprietary lines.
+              Custom woven Banarasi sarees are ideal for businesses and professionals looking to develop exclusive products instead of purchasing ready-made wholesale collections.
             </p>
           </div>
 
-          <div className="cw-audience-grid">
-            {suitableAudiences.map((aud, i) => {
-              const AudIcon = aud.icon || Building2;
-              return (
-                <div className="cw-audience-card" key={i}>
-                  <div className="cw-card-header">
-                    <h3>{aud.title}</h3>
-                    <AudIcon size={22} className="cw-gold-icon" />
+          <div style={{ marginBottom: '1.5rem' }}>
+            <p style={{ fontWeight: 600, color: '#1c1917', fontSize: 'var(--body-large-size)', marginBottom: '1.25rem' }}>
+              Custom weaving is suitable for:
+            </p>
+            <div className="cw-audience-grid">
+              {suitableAudiences.map((aud, i) => {
+                const AudIcon = aud.icon || Building2;
+                return (
+                  <div className="cw-audience-card" key={i}>
+                    <div className="cw-card-header">
+                      <h3>{aud.title}</h3>
+                      <AudIcon size={20} className="cw-gold-icon" />
+                    </div>
                   </div>
-                  <p>{aud.desc}</p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="cw-table-note" style={{ borderLeft: '3px solid #b78646', paddingLeft: '1.25rem', marginTop: '2.25rem' }}>
+            <span>Custom weaving is suitable for businesses that want to develop exclusive Banarasi saree collections under their own brand.</span>
           </div>
         </div>
       </section>
@@ -833,54 +899,123 @@ export function CustomWovenPage({ navigate }) {
       <section className="cw-section cw-bg-light">
         <div className="cw-container">
           <div className="cw-section-header">
-            <h2>Custom Weaving vs. Ready Wholesale Saree Collections</h2>
-            <p className="cw-section-subtitle">
-              Choose the sourcing approach that best aligns with your brand strategy and inventory timeline.
-            </p>
+            <h2>Custom Weaving vs Ready Collections</h2>
           </div>
 
           <div className="cw-comparison-table-wrapper">
             <table className="cw-comp-table">
               <thead>
                 <tr>
-                  <th>Feature / Parameter</th>
-                  <th className="cw-col-custom">Choose Custom Weaving</th>
-                  <th className="cw-col-ready">Choose Ready Collections</th>
+                  <th className="cw-col-custom" style={{ width: '50%' }}>Choose Custom Weaving</th>
+                  <th className="cw-col-ready" style={{ width: '50%' }}>Choose Ready Collections</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Design Exclusivity</strong></td>
-                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Exclusive proprietary brand designs</td>
-                  <td className="cw-td-ready">Ready-to-order catalog designs</td>
+                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Exclusive brand designs</td>
+                  <td className="cw-td-ready">Ready-to-order collections</td>
                 </tr>
                 <tr>
-                  <td><strong>Branding & Labeling</strong></td>
                   <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Private label manufacturing</td>
-                  <td className="cw-td-ready">Standard wholesale catalog / white-label</td>
+                  <td className="cw-td-ready">Low MOQ (5–10 pieces)</td>
                 </tr>
                 <tr>
-                  <td><strong>Minimum Order Quantity (MOQ)</strong></td>
-                  <td className="cw-td-custom">4 pcs (Handloom) / 50 pcs (Powerloom)</td>
-                  <td className="cw-td-ready"><Check size={16} className="cw-gold-icon" /> Low MOQ (5–10 pieces)</td>
+                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Custom weave structures</td>
+                  <td className="cw-td-ready">Immediate availability</td>
                 </tr>
                 <tr>
-                  <td><strong>Customization Scope</strong></td>
-                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Custom weave structures, zari & shades</td>
-                  <td className="cw-td-ready">Pre-set colorways and weaving specs</td>
+                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Medium to large production quantities</td>
+                  <td className="cw-td-ready">Faster dispatch</td>
                 </tr>
                 <tr>
-                  <td><strong>Lead Time / Availability</strong></td>
-                  <td className="cw-td-custom">50–135 Working Days total development</td>
-                  <td className="cw-td-ready"><Check size={16} className="cw-gold-icon" /> Immediate dispatch (24–48 Hours)</td>
-                </tr>
-                <tr>
-                  <td><strong>Business Objective</strong></td>
-                  <td className="cw-td-custom">Long-term brand equity & proprietary lines</td>
-                  <td className="cw-td-ready">Fast stock turnaround & lower initial investment</td>
+                  <td className="cw-td-custom"><Check size={16} className="cw-gold-icon" /> Long-term product development</td>
+                  <td className="cw-td-ready">Lower initial investment</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* START YOUR CUSTOM DEVELOPMENT / INQUIRY BOX */}
+      <section id="inquiry-form" className="cw-section cw-bg-light">
+        <div className="cw-container">
+          <div className="cw-inquiry-box">
+            <div className="cw-inquiry-intro">
+              <h2>Start Your Custom Banarasi Saree Development</h2>
+              <p style={{ marginBottom: '1rem', lineHeight: '1.65' }}>
+                If you already have a design, share your reference image, sketch, artwork, CAD file, or concept with our team. We will evaluate its weaving feasibility, recommend the most suitable Banarasi weave structure, fabric, yarn, and zari options, estimate the loom development cost, advise the Minimum Order Quantity (MOQ), and provide an estimated production and delivery timeline.
+              </p>
+              <p className="cw-inquiry-note" style={{ marginBottom: '1.75rem' }}>
+                <Info size={16} className="cw-gold-icon" style={{ display: 'inline', marginRight: 6 }} />
+                If your current requirement is only 5–10 pieces, we recommend selecting from our existing{' '}
+                <AppLink to="wholesale-catalogue" navigate={navigate} style={{ color: '#b78646', textDecoration: 'underline', marginLeft: 4 }}>
+                  Banarasi Saree Wholesale Collections
+                </AppLink>. Custom loom development is generally recommended for brands, designers, boutiques, wholesalers, exporters, and private-label businesses planning larger production quantities.
+              </p>
+
+              <h3 style={{ fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)", fontSize: 'var(--h3-size)', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.75rem' }}>
+                Ready to Bring Your Design to the Loom?
+              </h3>
+              <p style={{ marginBottom: '1.25rem', lineHeight: '1.65' }}>
+                Whether you are developing a private label collection, designer collection, bridal collection, or an exclusive Banarasi saree range, our team can guide you through every stage of the process—from loom development and yarn preparation to weaving, quality inspection, finishing, packing, and dispatch.
+              </p>
+
+              <div style={{ margin: '2rem 0', background: '#ffffff', padding: '2rem 2.25rem', borderRadius: '12px', border: '1px solid #e8ded0', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <p style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: '1.25rem', fontSize: 'var(--h5-size)', fontFamily: "var(--font-heading, 'Cormorant Garamond', Georgia, serif)" }}>
+                  Share your design with us to receive:
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem 2.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>Weaving feasibility assessment</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>Recommended weave structure and fabric</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>MOQ recommendation</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>Loom development cost estimate</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>Production timeline</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: 'var(--body-size)', color: 'var(--ink)' }}>
+                    <Check size={18} className="cw-gold-icon" style={{ flexShrink: 0 }} />
+                    <span>Quotation for custom manufacturing</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px dashed #e8ded0' }}>
+                <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <span style={{ color: 'var(--muted)', display: 'block', fontSize: 'var(--small-size)', marginBottom: '0.2rem' }}>Direct Email</span>
+                    <a href="mailto:weave365@gmail.com" style={{ color: 'var(--ink)', fontWeight: 700, fontSize: 'var(--body-large-size)', textDecoration: 'none' }}>weave365@gmail.com</a>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--muted)', display: 'block', fontSize: 'var(--small-size)', marginBottom: '0.2rem' }}>Direct WhatsApp</span>
+                    <a href="https://wa.me/919919101369" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: 'var(--body-large-size)', textDecoration: 'none' }}>+91 99191 01369</a>
+                  </div>
+                </div>
+
+                <a 
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20have%20a%20custom%20Banarasi%20saree%20design%20to%20share." 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="cw-btn cw-btn-primary cw-btn-sm"
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  Share Your Design on WhatsApp <Send size={16} />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -913,160 +1048,6 @@ export function CustomWovenPage({ navigate }) {
                 )}
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* START YOUR CUSTOM DEVELOPMENT / INQUIRY FORM */}
-      <section id="inquiry-form" className="cw-section cw-bg-light">
-        <div className="cw-container">
-          <div className="cw-inquiry-box">
-            <div className="cw-inquiry-intro">
-              <h2>Start Your Custom Banarasi Saree Development</h2>
-              <p>
-                If you already have a design, share your reference image, sketch, artwork, or concept with our team. 
-                We will review the weaving feasibility, recommend suitable fabric and zari options, estimate the development cost, 
-                advise the minimum order quantity, and provide an expected production timeline.
-              </p>
-              <p className="cw-inquiry-note">
-                <Info size={16} className="cw-gold-icon" style={{ display: 'inline', marginRight: 6 }} />
-                If your current requirement is only 5 to 10 pieces, we recommend selecting from our existing 
-                <AppLink to="wholesale-catalogue" navigate={navigate} style={{ color: '#b78646', textDecoration: 'underline', marginLeft: 4 }}>
-                  Banarasi Saree Wholesale Collections
-                </AppLink>.
-              </p>
-            </div>
-
-            <form className="cw-inquiry-form" onSubmit={handleFormSubmit}>
-              <div className="cw-form-grid">
-                <div className="cw-field">
-                  <label htmlFor={businessTypeSelectId}>Your Business Segment *</label>
-                  <select 
-                    id={businessTypeSelectId}
-                    value={businessType} 
-                    onChange={(e) => setBusinessType(e.target.value)}
-                  >
-                    <option value="Private Label Brand">Private Label Brand</option>
-                    <option value="Luxury Fashion Label">Luxury Fashion Label</option>
-                    <option value="Fashion Designer">Fashion Designer</option>
-                    <option value="Boutique Owner">Boutique Owner</option>
-                    <option value="Bridal Wear Brand">Bridal Wear Brand</option>
-                    <option value="Wholesaler / Exporter">Wholesaler / Exporter</option>
-                    <option value="Corporate Gifting">Corporate Gifting</option>
-                  </select>
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor={weavingTypeSelectId}>Weaving Preference & MOQ *</label>
-                  <select 
-                    id={weavingTypeSelectId}
-                    value={weavingType} 
-                    onChange={(e) => setWeavingType(e.target.value)}
-                  >
-                    <option value="Handloom (MOQ: 4 pcs)">Handloom (MOQ: 4 pcs per design)</option>
-                    <option value="Powerloom (MOQ: 50 pcs)">Powerloom (MOQ: 50 pcs per design)</option>
-                    <option value="Need Guidance">Need Weaving Guidance</option>
-                  </select>
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor={fabricPrefSelectId}>Preferred Fabric Composition</label>
-                  <select 
-                    id={fabricPrefSelectId}
-                    value={fabricPref} 
-                    onChange={(e) => setFabricPref(e.target.value)}
-                  >
-                    <option value="Katan Silk">Pure Katan Silk</option>
-                    <option value="Organza">Organza Silk</option>
-                    <option value="Satin Silk">Satin Silk</option>
-                    <option value="Tissue Silk">Tissue Silk</option>
-                    <option value="Tussar Silk">Tussar Silk</option>
-                    <option value="Georgette">Pure Georgette</option>
-                    <option value="Mashroo">Mashroo Fabric</option>
-                    <option value="Open to Suggestion">Open to Suggestion</option>
-                  </select>
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor={zariPrefSelectId}>Zari Quality Option</label>
-                  <select 
-                    id={zariPrefSelectId}
-                    value={zariPref} 
-                    onChange={(e) => setZariPref(e.target.value)}
-                  >
-                    <option value="Tested Zari">Tested Zari (Silver/Gold Plated Metallic)</option>
-                    <option value="Real Zari">Real Zari (Certified Pure Silver/Gold)</option>
-                    <option value="Silk Threads / Resham">Silk Threads / Resham (No Zari)</option>
-                    <option value="Open to Suggestion">Open to Suggestion</option>
-                  </select>
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor={inputTypeSelectId}>Design Input Type You Will Share</label>
-                  <select 
-                    id={inputTypeSelectId}
-                    value={inputType} 
-                    onChange={(e) => setInputType(e.target.value)}
-                  >
-                    <option value="Design Reference Image">Design Reference Image</option>
-                    <option value="Hand Sketch">Hand Sketch</option>
-                    <option value="Digital Artwork">Digital Artwork / CAD</option>
-                    <option value="Fabric Swatch">Fabric Swatch / Photo</option>
-                    <option value="Concept / Theme">Brand Concept / Theme</option>
-                  </select>
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor="cw-contact-name">Full Name *</label>
-                  <input
-                    id="cw-contact-name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor="cw-contact-phone">Phone / WhatsApp Number *</label>
-                  <input
-                    id="cw-contact-phone"
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="cw-field">
-                  <label htmlFor="cw-contact-email">Email Address</label>
-                  <input
-                    id="cw-contact-email"
-                    type="email"
-                    placeholder="name@brand.com"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="cw-field cw-field-full">
-                <label htmlFor="cw-project-notes">Design Notes & Specification Details</label>
-                <textarea
-                  id="cw-project-notes"
-                  rows={3}
-                  placeholder="Describe your design concept, preferred colorways, estimated order quantity, or any specific motif requirements..."
-                  value={projectNotes}
-                  onChange={(e) => setProjectNotes(e.target.value)}
-                />
-              </div>
-
-              <button type="submit" className="cw-btn cw-btn-primary cw-btn-sm">
-                Submit Inquiry via WhatsApp <Send size={16} />
-              </button>
-            </form>
           </div>
         </div>
       </section>

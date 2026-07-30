@@ -169,7 +169,7 @@
 .card-title {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: var(--body-size);
   font-weight: 600;
   color: var(--brown-900);
   cursor: pointer;
@@ -183,7 +183,7 @@
 }
 
 .card-product-code {
-  font-size: 11px;
+  font-size: var(--small-size);
   color: var(--gold-mid);
   font-weight: 600;
   margin-top: 4px;

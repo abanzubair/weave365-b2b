@@ -14,18 +14,20 @@
 
 /* 1. Asymmetric Hero Section */
 .rf-hero {
-  padding: clamp(60px, 8vw, 120px) var(--site-padding) clamp(60px, 6vw, 90px);
-  border-bottom: 1px solid var(--line);
+  padding: 4.5rem 0;
+  border-bottom: 1px solid #e8ded0;
   position: relative;
-  background: radial-gradient(circle at top right, rgba(191, 146, 88, 0.05) 0%, transparent 60%);
+  background: linear-gradient(180deg, #fcfaf6 0%, #faf7f2 100%);
+  box-sizing: border-box;
 }
 
 .rf-hero-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: clamp(40px, 6vw, 80px);
+  grid-template-columns: 1.3fr 1fr;
+  gap: 3rem;
   align-items: center;
 }
 
@@ -33,106 +35,134 @@
   .rf-hero-inner {
     grid-template-columns: 1fr;
     gap: 40px;
+    padding: 0 1.5rem;
   }
 }
 
 .rf-hero-content {
-  max-width: 620px;
+  text-align: left;
+  max-width: 840px;
+}
+
+.rf-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #805d31;
+  background: #f2e6d6;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #e4d3bd;
+  margin-bottom: 1.25rem;
 }
 
 .rf-hero-title {
-  font-family: var(--font-heading);
-  font-size: clamp(36px, 5.5vw, 56px);
-  line-height: 1.15;
-  color: var(--heading);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  margin-bottom: 24px;
-  text-wrap: balance;
+  font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(2.4rem, 3.8vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1c1917;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.15rem;
 }
 
 .rf-hero-title span {
-  color: var(--gold-dark);
+  color: #805d31;
+  font-weight: 700;
 }
 
 .rf-hero-desc {
-  font-size: clamp(16px, 1.3vw, 18px);
-  line-height: 1.65;
-  color: var(--muted);
-  margin-bottom: 36px;
-  text-wrap: pretty;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: clamp(1rem, 1.2vw, 1.12rem);
+  line-height: 1.7;
+  color: #52473c;
+  margin-bottom: 2rem;
+  max-width: 760px;
+  font-weight: 400;
 }
 
 .rf-hero-actions {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 40px;
+  margin-bottom: 2.25rem;
 }
 
 .rf-btn-primary {
-  background-color: var(--gold-dark);
-  color: var(--paper);
-  border: 1px solid var(--gold-dark);
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 15px;
-  padding: 14px 28px;
+  background: linear-gradient(135deg, #805d31 0%, #9e733e 100%);
+  color: #ffffff;
+  border: none;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.9rem 2.2rem;
+  border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: background-color 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.25s ease;
-  border-radius: 4px;
+  gap: 0.65rem;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.2);
+  transition: all 0.2s ease;
 }
 
 .rf-btn-primary:hover {
-  background-color: var(--gold-mid);
-  border-color: var(--gold-mid);
+  background: #6a4c26;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.3);
 }
 
 .rf-btn-secondary {
-  background-color: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  font-family: var(--font-ui);
-  font-weight: 500;
-  font-size: 15px;
-  padding: 14px 28px;
+  background: transparent;
+  color: #1c1917;
+  border: 1px solid #d8cbba;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.8rem;
+  border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: border-color 0.25s ease, background-color 0.25s ease;
-  border-radius: 4px;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .rf-btn-secondary:hover {
-  border-color: var(--ink);
-  background-color: var(--surface-soft);
+  background: #f2e8da;
+  border-color: #805d31;
+  color: #805d31;
 }
 
 .rf-hero-trust-row {
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
   align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  border-top: 1px solid #e8ded0;
+  padding-top: 1.5rem;
 }
 
 .rf-trust-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--muted);
-  font-weight: 500;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #52525b;
 }
 
-.rf-trust-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--gold);
+.rf-trust-item strong {
+  color: #1c1917;
+  font-weight: 750;
+}
+
+.rf-trust-icon {
+  color: #b78646;
 }
 
 @media (max-width: 576px) {
@@ -173,7 +203,7 @@
 .rf-visual-workspace {
   position: relative;
   width: 100%;
-  height: 440px;
+  height: 420px;
   display: block;
 }
 
@@ -192,15 +222,15 @@
 .mock-ig-post {
   position: absolute;
   left: 0;
-  top: 30px;
-  width: 250px;
+  top: 20px;
+  width: 230px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  transform: rotate(-3deg);
+  transform: rotate(-2deg);
   transition: transform 0.3s ease, z-index 0.2s ease;
-  z-index: 2;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -262,13 +292,13 @@
 /* WhatsApp Chat Bubble Mockup */
 .mock-wa-bubble {
   position: absolute;
-  right: 0;
-  top: 10px;
-  width: 230px;
+  right: -10px;
+  top: -10px;
+  width: 270px;
   background: #efeae2;
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.07);
   transform: rotate(2deg);
   transition: transform 0.3s ease, z-index 0.2s ease;
   z-index: 3;
@@ -356,9 +386,9 @@
 /* White Label Web storefront viewport mockup */
 .mock-wl-browser {
   position: absolute;
-  right: 20px;
-  bottom: 10px;
-  width: 290px;
+  left: 140px;
+  bottom: -10px;
+  width: 260px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -503,8 +533,9 @@
 }
 
 .rf-section-intro-inner {
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;
   gap: 40px;
@@ -580,9 +611,9 @@
 
 /* 3. Non-Identical Personas Section */
 .rf-personas {
-  padding: clamp(60px, 8vw, 100px) var(--site-padding);
+  padding: clamp(60px, 8vw, 100px) 2rem;
   border-bottom: 1px solid var(--line);
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -625,7 +656,7 @@
   background-color: var(--surface-soft);
   border-radius: 8px;
   overflow: hidden;
-  aspect-ratio: 1.6;
+  aspect-ratio: 1.85;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -638,8 +669,8 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   width: 100%;
-  max-width: 420px;
-  padding: 20px;
+  max-width: 480px;
+  padding: 32px 36px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
 }
 
@@ -666,9 +697,9 @@
 
 .rf-wf-step {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .rf-wf-step:last-child {
@@ -676,31 +707,32 @@
 }
 
 .rf-wf-num {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   background-color: rgba(191, 146, 88, 0.1);
   color: var(--gold-dark);
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .rf-wf-text strong {
   display: block;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--ink);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .rf-wf-text p {
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--muted);
   margin: 0;
+  line-height: 1.55;
 }
 
 .rf-persona-card-content {
@@ -739,8 +771,9 @@
 }
 
 .rf-features-demo-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .rf-demo-panel {
@@ -1375,8 +1408,9 @@
 }
 
 .rf-comparison-inner {
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .rf-table-wrapper {
@@ -1509,8 +1543,9 @@
 }
 
 .rf-earnings-inner {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .rf-earnings-grid {
@@ -1594,8 +1629,9 @@
 }
 
 .rf-pathway-inner {
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .rf-path-selector {
@@ -1653,7 +1689,7 @@
 }
 
 .rf-trust-strip-inner {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   justify-content: space-around;
@@ -1694,7 +1730,7 @@
 }
 
 .rf-faq-inner {
-  max-width: 800px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 

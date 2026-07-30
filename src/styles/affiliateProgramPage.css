@@ -7,109 +7,142 @@
 
 /* Hero Section */
 .affiliate-hero {
-  padding: 80px 24px;
-  background: var(--surface);
+  padding: 4.5rem 0;
+  background: linear-gradient(180deg, #fcfaf6 0%, #faf7f2 100%);
   position: relative;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid #e8ded0;
+  box-sizing: border-box;
 }
 
 .affiliate-hero-inner {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(40px, 5vw, 80px);
+  grid-template-columns: 1.35fr 1fr;
+  gap: 3.5rem;
   align-items: center;
 }
 
 .affiliate-hero-content {
   text-align: left;
+  max-width: 840px;
 }
 
 .affiliate-hero-kicker {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--gold-dark);
-  margin-bottom: 16px;
+  color: #805d31;
+  background: #f2e6d6;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #e4d3bd;
+  margin-bottom: 1.25rem;
 }
 
 .affiliate-hero-title {
-  font-family: var(--font-heading);
-  font-size: clamp(34px, 4.2vw, 52px);
-  line-height: 1.12;
-  color: var(--heading);
-  margin-bottom: 20px;
-  font-weight: 600;
-  text-wrap: balance;
+  font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(2.4rem, 3.8vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1c1917;
   letter-spacing: -0.02em;
-}
-
-.affiliate-hero-title em {
-  font-family: inherit;
-  font-style: italic;
-  font-weight: 400;
-  color: var(--gold-dark);
+  margin-bottom: 1.15rem;
 }
 
 .affiliate-hero-title .affiliate-highlight {
   font-family: inherit;
   font-style: normal;
-  font-weight: 400;
-  color: var(--gold-dark);
+  font-weight: 700;
+  color: #805d31;
 }
 
 .affiliate-hero-subtitle {
-  font-size: clamp(16px, 1.8vw, 20px);
-  font-weight: 600;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: clamp(1.1rem, 1.4vw, 1.25rem);
+  font-weight: 700;
   line-height: 1.4;
-  color: var(--gold-dark);
-  margin-bottom: 24px;
-  max-width: 35ch;
+  color: #805d31;
+  margin-bottom: 0.75rem;
+  max-width: 720px;
 }
 
 .affiliate-hero-description {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 32px;
-  max-width: 580px;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: clamp(1rem, 1.2vw, 1.12rem);
+  line-height: 1.7;
+  color: #52473c;
+  margin-bottom: 2rem;
+  max-width: 760px;
+  font-weight: 400;
 }
 
 .affiliate-hero-actions {
-  margin-bottom: 36px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.25rem;
 }
 
 .affiliate-hero-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 15px 36px;
+  gap: 0.65rem;
+  background: linear-gradient(135deg, #805d31 0%, #9e733e 100%);
+  color: #ffffff;
+  padding: 0.9rem 2.2rem;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 15px;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.2);
 }
 
 .affiliate-hero-action-btn:hover {
-  background: var(--gold-dark);
-  color: var(--white);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(183, 134, 70, 0.15);
+  background: #6a4c26;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.3);
+}
+
+.affiliate-hero-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #1c1917;
+  padding: 0.85rem 1.8rem;
+  border-radius: 6px;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1px solid #d8cbba;
+  transition: all 0.2s ease;
+}
+
+.affiliate-hero-secondary-btn:hover {
+  background: #f2e8da;
+  border-color: #805d31;
+  color: #805d31;
 }
 
 .affiliate-hero-stats {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 2.25rem;
+  border-top: 1px solid #e8ded0;
+  padding-top: 1.5rem;
 }
 
 .affiliate-hero-stats .hero-stat {
@@ -119,41 +152,43 @@
 }
 
 .affiliate-hero-stats .hero-stat-value {
-  font-family: var(--font-modern-heading);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--gold-dark);
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #805d31;
   line-height: 1.2;
 }
 
 .affiliate-hero-stats .hero-stat-label {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 0.84rem;
+  color: #64748b;
   letter-spacing: 0.02em;
+  font-weight: 500;
 }
 
 .affiliate-hero-stats .hero-stat-divider {
   width: 1px;
-  height: 28px;
-  background: var(--line);
+  height: 32px;
+  background: #e8ded0;
 }
 
+/* Editorial Visual Frame (Right Side) */
 .affiliate-hero-visual {
-  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
 }
 
-.affiliate-hero-img-wrapper {
-  width: 100%;
-  max-width: 520px;
-  aspect-ratio: 1 / 1;
-  background: var(--surface-soft);
+.affiliate-hero-editorial-frame {
+  position: relative;
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  box-shadow: 0 16px 40px rgba(128, 93, 49, 0.12);
+  background: #faf5ed;
+  aspect-ratio: 4 / 3;
+  width: 100%;
 }
 
 .affiliate-hero-img {
@@ -163,16 +198,28 @@
   object-fit: cover;
 }
 
-.affiliate-hero-visual .visual-caption {
-  font-size: 12px;
-  color: var(--muted);
-  font-style: italic;
+.affiliate-hero-caption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #716a61;
+  padding-left: 0.25rem;
+}
+
+.caption-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #b78646;
+  flex-shrink: 0;
 }
 
 /* Steps Section */
 .affiliate-steps-section {
-  padding: 80px 24px;
-  max-width: 1200px;
+  padding: 80px 2rem;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -245,8 +292,9 @@
 }
 
 .affiliate-benefits-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 0.85fr 1.15fr;
   gap: 60px;
@@ -364,7 +412,7 @@
 /* FAQ Section */
 .affiliate-faq-section {
   padding: 80px 24px;
-  max-width: 800px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 

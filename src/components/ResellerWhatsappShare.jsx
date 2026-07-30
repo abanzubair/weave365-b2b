@@ -274,7 +274,7 @@ export function ResellerWhatsappShare({
           </button>
         </div>
         {isPreparingImages && (
-          <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', textAlign: 'center' }}>
+          <p style={{ fontSize: 'var(--small-size)', color: 'var(--muted)', marginTop: '8px', textAlign: 'center' }}>
             Fetching {shareImages.length} images for high-quality sharing...
           </p>
         )}

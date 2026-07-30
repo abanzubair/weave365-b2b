@@ -890,11 +890,11 @@ export function Home({
                       <Clock size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.readTime}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: '1.2rem', minHeight: '3.4rem' }}>{post.title}</h3>
-                  <p style={{ fontSize: '0.85rem' }}>{post.intro}</p>
+                  <h3 style={{ fontSize: 'var(--h5-size)', fontWeight: 600, minHeight: '3.4rem' }}>{post.title}</h3>
+                  <p style={{ fontSize: 'var(--body-size)', fontWeight: 400 }}>{post.intro}</p>
                   <span
                     className="read-more-link"
-                    style={{ marginTop: 'auto', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    style={{ marginTop: 'auto', fontSize: 'var(--small-size)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     Read Guide <ArrowRight size={14} />
                   </span>

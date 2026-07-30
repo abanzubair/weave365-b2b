@@ -3,9 +3,9 @@
    ========================================== */
 
 .order-tracking-container {
-  max-width: 860px;
+  max-width: 1080px;
   margin: 3rem auto 5rem;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #1e293b;
 }
@@ -34,9 +34,9 @@
 }
 
 .order-tracking-title {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
+  font-family: var(--font-heading, 'Inter', system-ui, sans-serif);
+  font-size: var(--h1-size);
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 0.5rem 0;
   text-align: center;
@@ -46,7 +46,8 @@
 .order-tracking-subtitle {
   text-align: center;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: var(--body-large-size);
+  font-weight: 400;
   line-height: 1.5;
   margin: 0 0 2.5rem 0;
   max-width: 540px;
@@ -62,8 +63,8 @@
 
 .lookup-label {
   display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--small-size);
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #475569;
@@ -81,7 +82,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   background: #ffffff;
-  font-size: 0.95rem;
+  font-size: var(--body-size);
   color: #0f172a;
   outline: none;
   font-family: inherit;
@@ -98,9 +99,10 @@
   background: #2563eb;
   color: #ffffff;
   border: none;
+  font-size: var(--button-size);
+  font-weight: var(--button-weight);
   border-radius: 10px;
   padding: 0 1.75rem;
-  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;

@@ -69,7 +69,7 @@ Please look into this issue.`;
             width: '100%',
             overflowX: 'auto',
             textAlign: 'left',
-            fontSize: '0.875rem',
+            fontSize: 'var(--small-size)',
             fontFamily: 'monospace'
           }}>
             <strong>{this.state.error?.toString()}</strong>
@@ -87,7 +87,8 @@ Please look into this issue.`;
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontWeight: '500'
+                fontSize: 'var(--button-size)',
+                fontWeight: 'var(--button-weight)'
               }}
             >
               <RefreshCw size={16} />
@@ -105,7 +106,8 @@ Please look into this issue.`;
                 border: '1px solid var(--gold-dark, #805d31)',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontWeight: '500',
+                fontSize: 'var(--button-size)',
+                fontWeight: 'var(--button-weight)',
                 textDecoration: 'none',
                 transition: 'all 0.2s ease'
               }}
