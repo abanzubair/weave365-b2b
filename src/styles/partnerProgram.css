@@ -51,7 +51,7 @@
   background: transparent;
   color: #665239;
   font-family: var(--font-hero-body);
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -81,7 +81,7 @@
 
 .atelier-badge {
   display: inline-block;
-  font-size: 0.76rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -125,7 +125,7 @@
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.88rem;
+  font-size: 1rem;
   background: transparent;
   padding: 0;
   border-radius: 0;
@@ -136,7 +136,7 @@
   color: #805d31;
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.76rem;
+  font-size: 1rem;
   letter-spacing: 0.06em;
 }
 
@@ -161,7 +161,7 @@
   background: #805d31;
   color: #ffffff;
   font-family: var(--font-hero-body);
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -183,7 +183,7 @@
   background: #ffffff;
   color: #44372c;
   font-family: var(--font-hero-body);
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -223,7 +223,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -297,7 +297,7 @@
 }
 
 .capability-text p {
-  font-size: 0.94rem;
+  font-size: 1rem;
   line-height: 1.62;
   color: #554433;
   margin: 0;
@@ -353,7 +353,7 @@
 }
 
 .light-step-col p {
-  font-size: 0.92rem;
+  font-size: 1rem;
   line-height: 1.62;
   color: #554433;
   margin: 0;
@@ -385,7 +385,7 @@
 }
 
 .calc-left-info p {
-  font-size: 0.98rem;
+  font-size: 1rem;
   line-height: 1.65;
   color: #665544;
   margin: 0 0 2rem;
@@ -401,7 +401,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  font-size: 0.92rem;
+  font-size: 1rem;
   color: #33281e;
   line-height: 1.5;
 }
@@ -418,7 +418,7 @@
 
 .calc-form-group label {
   display: block;
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1c1917;
   margin-bottom: 0.5rem;
@@ -431,7 +431,7 @@
   border: 1px solid #d8c7b3;
   background: #fdfbf7;
   font-family: var(--font-hero-body);
-  font-size: 0.92rem;
+  font-size: 1rem;
   color: #1c1917;
 }
 
@@ -443,7 +443,7 @@
 }
 
 .val-badge {
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #805d31;
   background: #f3eae0;
@@ -468,7 +468,7 @@
   border: 1px solid #d8c7b3;
   background: #fdfbf7;
   font-family: var(--font-hero-body);
-  font-size: 0.84rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #44372c;
   cursor: pointer;
@@ -483,7 +483,7 @@
 
 .price-range-label {
   font-family: var(--font-hero-body);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #2c221a;
   margin-bottom: 0.75rem;
@@ -505,7 +505,7 @@
   cursor: pointer;
   user-select: none;
   font-family: var(--font-hero-body);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #3b2e23;
   transition: color 0.15s ease;
@@ -553,7 +553,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #554433;
 }
 
@@ -610,7 +610,7 @@
   border: 1px solid #d8c7b3;
   background: #fdfbf7;
   font-family: var(--font-hero-body);
-  font-size: 0.84rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #44372c;
   cursor: pointer;
@@ -635,7 +635,7 @@
 }
 
 .display-badge {
-  font-size: 0.72rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -653,7 +653,7 @@
 }
 
 .display-info p {
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1.62;
   color: #554433;
   margin: 0;
@@ -668,14 +668,14 @@
 }
 
 .display-code-preview .lbl {
-  font-size: 0.7rem;
+  font-size: 1rem;
   text-transform: uppercase;
   color: #805d31;
   font-weight: 700;
 }
 
 .display-code-preview code {
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1c1917;
   background: #ffffff;
@@ -730,7 +730,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  font-size: 0.96rem;
+  font-size: 1rem;
   color: #33281e;
   line-height: 1.5;
 }
@@ -765,7 +765,7 @@
 .matrix-table td {
   padding: 1.1rem 1.25rem;
   border-bottom: 1px solid #eee5d8;
-  font-size: 0.92rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: #44372c;
 }
@@ -809,7 +809,7 @@
 }
 
 .faq-intro-col p {
-  font-size: 0.98rem;
+  font-size: 1rem;
   line-height: 1.65;
   color: #665544;
   margin: 0 0 2rem;
@@ -825,7 +825,7 @@
   background: #805d31;
   color: #ffffff;
   font-family: var(--font-hero-body);
-  font-size: 0.86rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -909,7 +909,7 @@
 
 .faq-row-body-content p {
   padding: 0.85rem 1.5rem 1.35rem;
-  font-size: 0.96rem;
+  font-size: 1rem;
   line-height: 1.7;
   color: #43382f;
   border-top: 1px dashed rgba(198, 158, 106, 0.25);
@@ -920,6 +920,96 @@
 
 .faq-row.open .faq-row-body-content p {
   opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Related Services Section
+   -------------------------------------------------------------------------- */
+.related-services-section {
+  padding: 5rem 0;
+  background: #faf6f0;
+  border-top: 1px solid #eee5d8;
+  border-bottom: 1px solid #eee5d8;
+}
+
+.related-services-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.related-service-row {
+  padding: 2rem 0;
+  border-bottom: 1px solid #e8dccb;
+}
+
+.related-service-row:first-child {
+  padding-top: 0;
+}
+
+.related-service-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.related-service-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.related-service-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f5ece0, #efe3d0);
+  color: #805d31;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.related-service-header h3 {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1c1917;
+  margin: 0;
+}
+
+.related-service-row p {
+  font-size: 1rem;
+  line-height: 1.72;
+  color: #554433;
+  margin: 0;
+}
+
+.related-service-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #805d31;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, gap 0.2s ease;
+}
+
+.related-service-link:hover {
+  color: #5c3d1a;
+  gap: 0.65rem;
+}
+
+.related-service-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -1001,4 +1091,13 @@
   .markup-pill-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .related-services-section {
+    padding: 3rem 0;
+  }
+
+  .related-service-row {
+    padding: 1.5rem 0;
+  }
 }
+

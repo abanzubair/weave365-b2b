@@ -419,6 +419,96 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
         </div>
       </section>
 
+      {/* Related Services — White Label only */}
+      {activeType === 'white-label' && (
+        <section className="related-services-section">
+          <div className="atelier-container">
+            <div className="atelier-section-head">
+              <h2>Related Services</h2>
+              <p>
+                Weave 365 offers a complete ecosystem for resellers and online sellers. Start with a White Label Catalog, sell without inventory using Dropshipping Services, let our Order Fulfilment team handle dispatch, and access business resources through the Reseller Centre. Together, these services help you build and scale a Banarasi Sarees and Suits business with zero or lower investment and reduced operational complexity.
+              </p>
+            </div>
+
+            <div className="related-services-list">
+              {/* White Label Catalog */}
+              <div className="related-service-row">
+                <div className="related-service-header">
+                  <span className="related-service-icon"><Tags size={20} /></span>
+                  <h3>White Label Catalog</h3>
+                </div>
+                <p>
+                  A White Label Catalog allows resellers, boutiques, online stores, and export buyers to sell authentic Banarasi sarees and suits under their own brand without revealing the supplier's identity. Weave 365 provides unbranded product catalogs that are ready to share on WhatsApp, Instagram, Facebook, or your own website. Simply add your own selling price and profit margin, then start selling without investing in product photography or catalogue creation. To complete the selling process, explore our Dropshipping Services, Order Fulfilment, and Reseller Centre.
+                </p>
+              </div>
+
+              {/* Dropshipping Services */}
+              <div className="related-service-row">
+                <div className="related-service-header">
+                  <span className="related-service-icon"><Truck size={20} /></span>
+                  <h3>Dropshipping Services</h3>
+                </div>
+                <p>
+                  Our Dropshipping Services help you sell Banarasi sarees and suits without purchasing inventory in advance. You receive customer orders, while Weave 365 manages product sourcing, quality inspection, packing, and shipping. This zero or low-investment business model is ideal for resellers, boutiques, home-based businesses, and online sellers who want to start or expand their business with minimal operational overhead.
+                </p>
+                <button
+                  className="related-service-link"
+                  onClick={() => navigate('dropshipping')}
+                  aria-label="Learn more about Dropshipping Services"
+                >
+                  Learn More <ArrowRight size={15} />
+                </button>
+              </div>
+
+              {/* Order Fulfilment */}
+              <div className="related-service-row">
+                <div className="related-service-header">
+                  <span className="related-service-icon"><PackageCheck size={20} /></span>
+                  <h3>Order Fulfilment</h3>
+                </div>
+                <p>
+                  Order Fulfilment is the process of preparing and dispatching customer orders after they are confirmed. At Weave 365, every order goes through product inspection, dyeing and finishing where required, professional packing, and timely dispatch before being shipped to your customer or business address. Our fulfilment process helps you deliver authentic Banarasi sarees and suits professionally while eliminating the need to manage inventory, warehousing, or logistics.
+                </p>
+                <div className="related-service-links-row">
+                  <button
+                    className="related-service-link"
+                    onClick={() => navigate('dropshipping')}
+                    aria-label="Explore Dropshipping Services"
+                  >
+                    Dropshipping <ArrowRight size={15} />
+                  </button>
+                  <button
+                    className="related-service-link"
+                    onClick={() => navigate('resell-sarees-online')}
+                    aria-label="Explore Reseller Centre"
+                  >
+                    Reseller Centre <ArrowRight size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Reseller Centre */}
+              <div className="related-service-row">
+                <div className="related-service-header">
+                  <span className="related-service-icon"><Store size={20} /></span>
+                  <h3>Reseller Centre</h3>
+                </div>
+                <p>
+                  The Reseller Centre is a dedicated resource hub designed to help you start, manage, and grow your Banarasi sarees and suits business. Access white label catalogs, curated product collections, reseller resources, and business support from one place. Whether you sell through WhatsApp, Instagram, Facebook, marketplaces, or your own website, the Reseller Centre provides the tools and guidance needed to build a profitable reselling business.
+                </p>
+                <button
+                  className="related-service-link"
+                  onClick={() => navigate('resell-sarees-online')}
+                  aria-label="Visit the Reseller Centre"
+                >
+                  Visit Reseller Centre <ArrowRight size={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Core Capability Showcase */}
       <section className="atelier-workflow-light">
         <div className="atelier-container">
