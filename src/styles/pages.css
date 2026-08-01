@@ -85,12 +85,12 @@ button {
 .dropdown-menu a {
   display: block;
   text-decoration: none;
-  padding: 11px 18px;
+  padding: 9px 12px !important;
   width: 100%;
   text-align: left !important;
   background: transparent;
   border: 0 !important;
-  font-size: var(--nav-size) !important;
+  font-size: 13px !important;
   font-weight: var(--nav-weight) !important;
   letter-spacing: 0.02em;
   text-transform: capitalize !important;

@@ -22,6 +22,7 @@
 
 .cw-gold-gradient {
   background: linear-gradient(135deg, #b78646 0%, #d4af37 50%, #8c6227 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
