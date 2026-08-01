@@ -148,7 +148,7 @@ export function SiteHeader({
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Supply</span>
+                  <span className="mega-menu-heading">Learn</span>
                   <AppLink to="weaver-onboarding" navigate={navigate} onClick={() => setDropdownOpen(null)}>Vendor Onboarding</AppLink>
                 </div>
               </div>

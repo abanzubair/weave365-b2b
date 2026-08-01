@@ -209,7 +209,7 @@ export function MobileMenu({
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
                 </AppLink>
 
-                <span className="mobile-mega-heading">Supply</span>
+                <span className="mobile-mega-heading">Learn</span>
                 <AppLink to="weaver-onboarding" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
                 </AppLink>
