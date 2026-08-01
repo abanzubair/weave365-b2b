@@ -1167,7 +1167,7 @@ export default function App({ initialData = {} }) {
 
     const targetPath = href.split('?')[0];
     const isTargetProduct = isProductPathname(targetPath);
-    const targetSegment = isTargetProduct ? 'product' : (href.split('/').filter(Boolean)[0] || 'home').split('?')[0];
+    const targetSegment = isTargetProduct ? 'product' : (href.split('/').filter(Boolean)[0] || 'home').split('?')[0].split('#')[0];
     const cleanTargetPath = targetPath.replace(/\/$/, '') || '/';
     const cleanPathname = pathname.replace(/\/$/, '') || '/';
 
@@ -1189,7 +1189,17 @@ export default function App({ initialData = {} }) {
 
     setMenuOpen(false);
     if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
+      if (href.includes('#')) {
+        const hashAnchor = href.split('#')[1];
+        setTimeout(() => {
+          const el = document.getElementById(hashAnchor);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
+      } else {
+        window.scrollTo(0, 0);
+      }
     }
   }, [router, pathname, search, category, fabric, weave, priceRange]);
 

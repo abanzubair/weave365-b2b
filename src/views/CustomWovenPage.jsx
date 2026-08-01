@@ -8,7 +8,7 @@
  * @module views/CustomWovenPage
  */
 
-import { useState, useId } from 'react';
+import { useState, useId, useEffect } from 'react';
 import { 
   Sliders, 
   Layers, 
@@ -17,6 +17,8 @@ import {
   ShieldCheck, 
   HelpCircle, 
   ChevronDown, 
+  ChevronLeft,
+  ChevronRight,
   FileText, 
   CheckCircle2, 
   Compass, 
@@ -51,6 +53,18 @@ import '../styles/customWoven.css';
 export function CustomWovenPage({ navigate }) {
   const [activeStep, setActiveStep] = useState(1);
   const [openFaq, setOpenFaq] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const targetId = window.location.hash.replace('#', '');
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 200);
+    }
+  }, []);
 
   const [heroLoomType, setHeroLoomType] = useState('handloom');
 
@@ -400,7 +414,7 @@ export function CustomWovenPage({ navigate }) {
       </section>
 
       {/* SHARE ANY OF THE FOLLOWING & TEAM ASSISTANCE */}
-      <section className="cw-section">
+      <section className="cw-section cw-bg-light">
         <div className="cw-container">
           <div className="cw-section-header">
             <h2>Acceptable Design Inputs for Custom Weaving</h2>
@@ -421,107 +435,157 @@ export function CustomWovenPage({ navigate }) {
               </div>
             ))}
           </div>
-
-          {/* TEAM ASSISTANCE BANNER */}
-          <div className="cw-assistance-wrapper">
-            <div className="cw-assistance-header">
-              <div className="cw-assistance-title-row">
-                <h3>How Our Varanasi Weaving Team Assists You</h3>
-                <Award size={36} className="cw-gold-icon cw-badge-icon" />
-              </div>
-              <p>Once we receive your inputs, our weaving team will assist you by:</p>
-            </div>
-
-            <div className="cw-assistance-list">
-              {teamAssistance.map((item, idx) => (
-                <div className="cw-assistance-item" key={idx}>
-                  <div className="cw-assistance-num">{idx + 1}</div>
-                  <div>
-                    <h4>{item.title}</h4>
-                    <p>{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* CUSTOM BANARASI SAREE WEAVING PROCESS */}
-      <section id="weaving-process" className="cw-section cw-bg-light">
+      {/* TEAM ASSISTANCE — OVERDRIVE EDITORIAL LAYOUT */}
+      <section className="cw-assist-section">
         <div className="cw-container">
-          <div className="cw-section-header">
+          <div className="cw-assist-grid">
+            {/* Left column — sticky intro with interlocking metrics */}
+              <div className="cw-assist-intro">
+                <div className="cw-assist-intro-inner">
+                  <h3 className="cw-assist-heading">
+                    How Our Varanasi Weaving Team <i>Assists You.</i>
+                  </h3>
+                  <p className="cw-assist-subtitle">
+                    From technical feasibility to final production planning, our master weavers bridge the gap between your conceptual vision and the physical loom.
+                  </p>
+                  
+                  <div className="cw-assist-metrics">
+                    <div className="cw-assist-metric">
+                      <span className="cw-assist-metric-val">100%</span>
+                      <span className="cw-assist-metric-lbl">Design Intent<br />Preserved</span>
+                    </div>
+                    <div className="cw-assist-metric-divider" />
+                    <div className="cw-assist-metric">
+                      <span className="cw-assist-metric-val">7</span>
+                      <span className="cw-assist-metric-lbl">Areas of<br />Expertise</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right column — interactive focus list */}
+              <div className="cw-assist-steps-list" role="list">
+                {teamAssistance.map((item, idx) => (
+                  <div className="cw-assist-step-card" key={idx} role="listitem">
+                    <div className="cw-assist-step-num-bg">{idx + 1}</div>
+                    <div className="cw-assist-step-content">
+                      <span className="cw-assist-step-num">{idx + 1}</span>
+                      <div className="cw-assist-step-body">
+                        <h4>{item.title}</h4>
+                        <p>{item.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+      </section>
+
+      {/* CUSTOM BANARASI SAREE WEAVING PROCESS — UI/UX PRO MAX REDESIGN */}
+      <section id="weaving-process" className="cw-section cw-bg-light cw-process-section-pro">
+        <div className="cw-container">
+          <div className="cw-section-header cw-process-header-pro">
             <h2>Custom Banarasi Saree Weaving Process</h2>
+            <p className="cw-section-subtitle">
+              A transparent, step-by-step journey from initial artwork review to final loom execution and quality inspection.
+            </p>
           </div>
 
-          {/* STEP CONTROLS / TIMELINE TABS */}
-          <div className="cw-step-tabs">
-            {steps.map((st) => (
-              <button
-                key={st.step}
-                type="button"
-                className={`cw-step-tab ${activeStep === st.step ? 'active' : ''}`}
-                onClick={() => setActiveStep(st.step)}
-              >
-                <span className="cw-step-num">Step {st.step}</span>
-                <span className="cw-step-name">{st.short}</span>
-              </button>
-            ))}
+          {/* STEP CONTROLS / TIMELINE TRACK */}
+          <div className="cw-step-tabs-container-pro">
+            <div className="cw-step-tabs-pro">
+              {steps.map((st) => (
+                <button
+                  key={st.step}
+                  type="button"
+                  className={`cw-step-tab-pro ${activeStep === st.step ? 'active' : ''}`}
+                  onClick={() => setActiveStep(st.step)}
+                >
+                  <span className="cw-step-tab-num-pro">0{st.step}</span>
+                  <span className="cw-step-tab-name-pro">{st.short}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* ACTIVE STEP CARD */}
+          {/* ACTIVE STEP BENTO CARD */}
           {(() => {
             const cur = steps.find(s => s.step === activeStep) || steps[0];
             return (
-              <div className="cw-active-step-card">
-                <div className="cw-step-card-header">
-                  <div className="cw-step-badge">STEP 0{cur.step}</div>
-                  <h3>{cur.name}</h3>
+              <div className="cw-active-step-card-pro">
+                <div className="cw-step-card-top-pro">
+                  <div className="cw-step-card-header-pro">
+                    <div className="cw-step-badge-pro">
+                      <span className="cw-step-badge-label">STAGE 0{cur.step} OF 0{steps.length}</span>
+                    </div>
+                    <h3>{cur.name}</h3>
+                  </div>
+                  <p className="cw-step-card-desc-pro">{cur.desc}</p>
                 </div>
 
-                <div className="cw-step-body-fixed">
-                  <p className="cw-step-card-desc">{cur.desc}</p>
-
+                <div className="cw-step-body-pro">
                   {cur.intro && (
-                    <p style={{ fontWeight: 600, color: '#1c1917', marginBottom: '0.75rem', fontSize: 'var(--body-size)' }}>
+                    <p className="cw-step-intro-text-pro">
                       {cur.intro}
                     </p>
                   )}
 
                   {cur.details && cur.details.length > 0 && (
-                    <div className="cw-step-details-box">
-                      <ul>
-                        {cur.details.map((d, i) => (
-                          <li key={i}><Check size={16} className="cw-gold-icon" /> {d}</li>
-                        ))}
-                      </ul>
+                    <div className="cw-step-details-grid-pro">
+                      {cur.details.map((d, i) => (
+                        <div className="cw-step-detail-card-pro" key={i}>
+                          <div className="cw-detail-icon-pill">
+                            <Check size={14} />
+                          </div>
+                          <span>{d}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
 
                   {cur.note && (
-                    <p style={{ fontStyle: 'italic', color: '#574c40', marginTop: '1rem', fontSize: 'var(--body-size)' }}>
-                      {cur.note}
-                    </p>
+                    <div className="cw-step-note-box-pro">
+                      <Info size={16} className="cw-note-icon-pro" />
+                      <span>{cur.note}</span>
+                    </div>
                   )}
                 </div>
 
-                <div className="cw-step-nav-btns">
+                <div className="cw-step-nav-bar-pro">
                   <button
                     type="button"
-                    className="cw-btn-text"
+                    className="cw-step-nav-btn-pro prev"
                     disabled={activeStep === 1}
                     onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                   >
-                    ← Previous Step
+                    <ChevronLeft size={16} /> Previous Step
                   </button>
-                  <span className="cw-step-counter">Step {activeStep} of 7</span>
+
+                  <div className="cw-step-progress-indicator-pro">
+                    <div className="cw-progress-track-dots">
+                      {steps.map(s => (
+                        <span
+                          key={s.step}
+                          className={`cw-progress-dot ${s.step === activeStep ? 'active' : ''} ${s.step < activeStep ? 'completed' : ''}`}
+                          onClick={() => setActiveStep(s.step)}
+                          title={s.name}
+                        />
+                      ))}
+                    </div>
+                    <span className="cw-step-counter-pro">Step {activeStep} of {steps.length}</span>
+                  </div>
+
                   <button
                     type="button"
-                    className="cw-btn-text"
-                    disabled={activeStep === 7}
-                    onClick={() => setActiveStep(Math.min(7, activeStep + 1))}
+                    className="cw-step-nav-btn-pro next"
+                    disabled={activeStep === steps.length}
+                    onClick={() => setActiveStep(Math.min(steps.length, activeStep + 1))}
                   >
-                    Next Step →
+                    Next Step <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
@@ -766,7 +830,7 @@ export function CustomWovenPage({ navigate }) {
       </section>
 
       {/* COMPLETE GUIDE TO BANARASI SAREE WEAVE TECHNIQUES */}
-      <section className="cw-section cw-bg-light">
+      <section id="weaving-techniques" className="cw-section cw-bg-light">
         <div className="cw-container">
           <div className="cw-section-header">
             <h2>Complete Guide to Banarasi Saree Weave Techniques</h2>

@@ -111,7 +111,7 @@ export function SiteHeader({
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
           <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' || route === 'custom-woven' ? 'active' : ''}
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' || route === 'custom-woven' || route === 'handloom-vs-powerloom-guide' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
@@ -126,15 +126,14 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Buy</span>
                   <AppLink to="wholesale-catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>Wholesale</AppLink>
                   <AppLink to="bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>Bulk Enquiry</AppLink>
-                  <AppLink to="custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>Custom Woven</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Sell</span>
-                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Services</AppLink>
-                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
                   <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Reseller Center</AppLink>
+                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
+                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Services</AppLink>
                   <AppLink to="affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>Affiliate Program</AppLink>
                 </div>
               </div>
@@ -143,13 +142,28 @@ export function SiteHeader({
                   <span className="mega-menu-heading">Partner</span>
                   <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Collaboration</AppLink>
                   <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sourcing Partner</AppLink>
+                  <AppLink to="weaver-onboarding" navigate={navigate} onClick={() => setDropdownOpen(null)}>Vendor Onboarding</AppLink>
                   <AppLink to="early-access" navigate={navigate} onClick={() => setDropdownOpen(null)}>WhatsApp Community</AppLink>
                 </div>
               </div>
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Learn</span>
-                  <AppLink to="weaver-onboarding" navigate={navigate} onClick={() => setDropdownOpen(null)}>Vendor Onboarding</AppLink>
+                  <AppLink to="custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>Custom Woven</AppLink>
+                  <AppLink 
+                    to="custom-woven#weaving-techniques" 
+                    navigate={navigate} 
+                    onClick={(e) => {
+                      setDropdownOpen(null);
+                      const el = document.getElementById('weaving-techniques');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  >
+                    Weaving Techniques
+                  </AppLink>
+                  <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} onClick={() => setDropdownOpen(null)}>Handloom vs Powerloom</AppLink>
                 </div>
               </div>
             </div>

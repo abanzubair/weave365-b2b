@@ -180,19 +180,16 @@ export function MobileMenu({
                 <AppLink to="bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
                 </AppLink>
-                <AppLink to="custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven</span>
-                </AppLink>
 
                 <span className="mobile-mega-heading">Sell</span>
-                <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Services</span>
+                <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
                 </AppLink>
                 <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
                 </AppLink>
-                <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
+                <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Services</span>
                 </AppLink>
                 <AppLink to="affiliate-program" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
@@ -205,13 +202,33 @@ export function MobileMenu({
                 <AppLink to="sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
                 </AppLink>
+                <AppLink to="weaver-onboarding" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
+                </AppLink>
                 <AppLink to="early-access" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
                 </AppLink>
 
                 <span className="mobile-mega-heading">Learn</span>
-                <AppLink to="weaver-onboarding" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
+                <AppLink to="custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven</span>
+                </AppLink>
+                <AppLink 
+                  to="custom-woven#weaving-techniques" 
+                  navigate={navigate} 
+                  className="mobile-account-subitem" 
+                  onClick={(e) => {
+                    onClose(e);
+                    const el = document.getElementById('weaving-techniques');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                >
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Weaving Techniques</span>
+                </AppLink>
+                <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Handloom vs Powerloom</span>
                 </AppLink>
               </div>
             </div>
