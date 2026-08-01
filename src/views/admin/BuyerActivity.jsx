@@ -5,7 +5,6 @@ import {
   Filter,
   Copy,
   Check,
-  ExternalLink,
   MessageSquare,
   Mail,
   User,
@@ -657,7 +656,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                     rel="noopener noreferrer"
                                     className="product-title-link"
                                   >
-                                    {p.title} <ExternalLink size={13} />
+                                    {p.title}
                                   </a>
                                   <div className="product-meta">
                                     <span className="qty-tag">Qty: <strong>{p.qty}</strong></span>
