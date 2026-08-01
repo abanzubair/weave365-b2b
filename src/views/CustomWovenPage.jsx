@@ -300,7 +300,6 @@ export function CustomWovenPage({ navigate }) {
                 />
               </div>
               <div className="cw-editorial-caption">
-                <span className="cw-caption-dot" />
                 <span>Varanasi Master Weavers Network</span>
               </div>
             </div>

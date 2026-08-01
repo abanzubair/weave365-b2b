@@ -218,19 +218,12 @@
 .cw-editorial-caption {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: var(--body-size);
   font-weight: 600;
   color: #716a61;
-  padding-left: 0.25rem;
-}
-
-.cw-caption-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #b78646;
-  flex-shrink: 0;
+  text-align: center;
 }
 
 /* DEDICATED LOOM MATRIX CARD CONTAINER */
@@ -643,7 +636,7 @@
   background: #ffffff;
   border: 1px solid rgba(226, 217, 204, 0.8);
   border-radius: 12px;
-  padding: 2.5rem;
+  padding: 1.5rem 2.5rem;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
@@ -1991,10 +1984,13 @@
   font-size: 16px;
   font-weight: var(--h6-weight, 700);
   color: var(--ink);
+  padding: 0.75rem 1.5rem;
 }
 
 .cw-simple-table th.th-param {
   width: 44%;
+  font-family: var(--font-heading);
+  font-size: 20px;
 }
 
 .cw-simple-table th.th-mode {
