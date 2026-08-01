@@ -26,7 +26,9 @@ import {
   Maximize2,
   Minimize2,
   Box,
-  Move
+  Move,
+  MousePointer,
+  MousePointerClick
 } from 'lucide-react';
 
 const DEVICE_PRESETS = [
@@ -95,6 +97,15 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
   const [viewportWidth, setViewportWidth] = useState(1440);
   const [viewportHeight, setViewportHeight] = useState(900);
   const [isRotated, setIsRotated] = useState(false);
+
+  // Mouse Interaction / Element Selection Mode State
+  const [editorMode, setEditorMode] = useState('select'); // 'select' (Element Selector) | 'interact' (Normal Mouse)
+  const editorModeRef = useRef(editorMode);
+
+  useEffect(() => {
+    editorModeRef.current = editorMode;
+    syncIframeTheme();
+  }, [editorMode]);
 
   // DevTools Scale / Zoom state
   const [zoomMode, setZoomMode] = useState('auto'); // 'auto' | '1' | '0.75' | '0.5' | '0.25'
@@ -188,32 +199,44 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
         });
 
         // 2. Inject inspect mode hover/selection styles into iframe
-        if (!doc.getElementById('wysiwyg-inspect-styles') && doc.head) {
-          const style = doc.createElement('style');
-          style.id = 'wysiwyg-inspect-styles';
-          style.innerHTML = `
-            h1, h2, h3, h4, h5, h6, p, button, a, span, label, section, article, div, [data-editable-key] {
-              cursor: pointer !important;
-              transition: outline 0.15s ease, background 0.15s ease !important;
-            }
-            h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover, p:hover, button:hover, a:hover, span:hover, label:hover, [data-editable-key]:hover {
-              outline: 2px dashed #b78646 !important;
-              outline-offset: 3px !important;
-              background-color: rgba(183, 134, 70, 0.08) !important;
-            }
-            .wysiwyg-active-selected {
-              outline: 2px solid #b78646 !important;
-              outline-offset: 3px !important;
-              background-color: rgba(183, 134, 70, 0.15) !important;
-            }
-          `;
-          doc.head.appendChild(style);
+        let styleEl = doc.getElementById('wysiwyg-inspect-styles');
+        if (!styleEl && doc.head) {
+          styleEl = doc.createElement('style');
+          styleEl.id = 'wysiwyg-inspect-styles';
+          doc.head.appendChild(styleEl);
+        }
+
+        if (styleEl) {
+          if (editorModeRef.current === 'select') {
+            styleEl.innerHTML = `
+              h1, h2, h3, h4, h5, h6, p, button, a, span, label, section, article, div, [data-editable-key] {
+                cursor: pointer !important;
+                transition: outline 0.15s ease, background 0.15s ease !important;
+              }
+              h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover, p:hover, button:hover, a:hover, span:hover, label:hover, [data-editable-key]:hover {
+                outline: 2px dashed #b78646 !important;
+                outline-offset: 3px !important;
+                background-color: rgba(183, 134, 70, 0.08) !important;
+              }
+              .wysiwyg-active-selected {
+                outline: 2px solid #b78646 !important;
+                outline-offset: 3px !important;
+                background-color: rgba(183, 134, 70, 0.15) !important;
+              }
+            `;
+          } else {
+            styleEl.innerHTML = '';
+            doc.querySelectorAll('.wysiwyg-active-selected').forEach(el => el.classList.remove('wysiwyg-active-selected'));
+          }
         }
 
         // 3. Attach Universal Click Inspector to iframe body
         if (doc.body && !doc.body.__wysiwygInspectBound) {
           doc.body.__wysiwygInspectBound = true;
           doc.body.addEventListener('click', (e) => {
+            if (editorModeRef.current !== 'select') {
+              return;
+            }
             const target = e.target.closest('h1, h2, h3, h4, h5, h6, p, button, a, span, label, section, article, div, [data-editable-key]');
             if (!target) return;
             e.preventDefault();
@@ -506,8 +529,8 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
       {/* 1. Chrome DevTools Style Responsive Control Toolbar */}
       <div style={{ background: '#1e293b', padding: '10px 16px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         
-        {/* Left: Page Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Left: Page Selector & Interaction Mode Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ color: '#b78646', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={16} />
             Visual Page Editor
@@ -534,6 +557,53 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
               </option>
             ))}
           </select>
+
+          {/* Mode Switcher: Element Selector vs Normal Mouse */}
+          <div style={{ display: 'flex', background: '#0f172a', padding: '3px', borderRadius: '6px', border: '1px solid #334155', gap: '2px' }}>
+            <button
+              onClick={() => setEditorMode('select')}
+              title="Element Selector Mode: Click any element to inspect & edit text, colors, font sizes, or box layout"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 10px',
+                border: 'none',
+                borderRadius: '4px',
+                background: editorMode === 'select' ? '#b78646' : 'transparent',
+                color: editorMode === 'select' ? '#ffffff' : '#94a3b8',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <MousePointerClick size={14} />
+              Element Selector
+            </button>
+
+            <button
+              onClick={() => setEditorMode('interact')}
+              title="Normal Mouse Mode: Interact with links, buttons, dropdowns, and navigate the website freely"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 10px',
+                border: 'none',
+                borderRadius: '4px',
+                background: editorMode === 'interact' ? '#2563eb' : 'transparent',
+                color: editorMode === 'interact' ? '#ffffff' : '#94a3b8',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <MousePointer size={14} />
+              Normal Mouse
+            </button>
+          </div>
         </div>
 
         {/* Center: Chrome DevTools Device & Manual Resolution Controls */}
@@ -738,10 +808,21 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             }}
           >
             {/* Top Canvas Device Bar */}
-            <div style={{ background: '#b78646', color: '#ffffff', fontSize: '12px', padding: '6px 12px', borderTopLeftRadius: '8px', borderTopRightRadius: '8px', fontWeight: '500', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxSizing: 'border-box' }}>
+            <div style={{ background: editorMode === 'interact' ? '#1e40af' : '#b78646', color: '#ffffff', fontSize: '12px', padding: '6px 12px', borderTopLeftRadius: '8px', borderTopRightRadius: '8px', fontWeight: '500', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxSizing: 'border-box', transition: 'background 0.2s ease' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Eye size={13} />
                 Live Website Render: {activePageObj.label} ({numericWidth} × {numericHeight}px {scaleRatio !== 1 ? `· Scaled ${Math.round(scaleRatio * 100)}%` : ''})
+                <span style={{ marginLeft: '8px', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {editorMode === 'interact' ? (
+                    <>
+                      <MousePointer size={11} /> Normal Mouse Mode
+                    </>
+                  ) : (
+                    <>
+                      <MousePointerClick size={11} /> Element Selector Mode
+                    </>
+                  )}
+                </span>
               </span>
               <a href={activePageObj.path} target="_blank" rel="noopener noreferrer" style={{ color: '#ffffff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
                 Open in New Tab <ExternalLink size={11} />
@@ -923,6 +1004,16 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             /* Universal Click Inspector */
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
+              {editorMode === 'interact' && (
+                <div style={{ background: '#1e3a8a33', border: '1px solid #3b82f655', borderRadius: '8px', padding: '12px 14px', color: '#93c5fd', fontSize: '12px', lineHeight: '1.4', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <MousePointer size={18} color="#60a5fa" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong style={{ color: '#ffffff', display: 'block', marginBottom: '2px' }}>Normal Mouse Mode Active</strong>
+                    You can now click buttons, links, dropdowns, and navigate naturally inside the preview iframe. Switch to <strong>Element Selector</strong> mode to pick items for editing.
+                  </div>
+                </div>
+              )}
+
               <div style={{ background: '#0f172a', borderRadius: '8px', border: '1px solid #334155', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
                 {/* Item vs Container Section Target Switcher */}

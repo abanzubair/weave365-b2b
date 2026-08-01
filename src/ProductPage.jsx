@@ -1294,6 +1294,10 @@ export function ProductDetail({
                   Weave Technique: <strong>{product.weave}</strong>
                 </span>
               )}
+              <span>
+                <ShieldCheck size={22} />
+                Business Policy: <strong><a href="https://weave365.com/disclaimer" onClick={(e) => { e.preventDefault(); if (typeof navigate === 'function') { navigate('disclaimer'); } else if (typeof window !== 'undefined') { window.location.href = '/disclaimer'; } }} style={{ color: 'var(--ink)', textDecoration: 'underline', textUnderlineOffset: '3px' }}>View Policy</a></strong>
+              </span>
             </div>
 
             {colorOptions.length > 0 && (
