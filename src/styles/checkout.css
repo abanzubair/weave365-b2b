@@ -546,20 +546,219 @@
   box-shadow: none;
 }
 
-/* Mobile Responsiveness */
+/* Tablet Responsiveness */
 @media (max-width: 992px) {
   .checkout-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
   }
   .checkout-summary-pane {
-    padding: 32px 24px;
-    border-right: none;
-    border-bottom: 1px solid var(--line, #e5e5e5);
+    padding: 24px 20px;
   }
   .checkout-form-pane {
-    padding: 32px 24px;
+    padding: 24px 20px;
+    gap: 24px;
   }
   .checkout-input-row {
     grid-template-columns: 1fr;
+  }
+  .checkout-total-amount {
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .checkout-page-container {
+    background-color: #f8f9fa;
+  }
+  .checkout-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .checkout-summary-pane {
+    padding: 20px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--line, #e8e8e8);
+  }
+  .checkout-brand-header {
+    margin-bottom: 20px;
+    gap: 8px;
+  }
+  .checkout-back-link {
+    font-size: 0.82rem;
+    padding: 4px 0;
+  }
+  .checkout-pay-title {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+  .checkout-total-amount {
+    font-size: 1.75rem;
+    margin-bottom: 20px;
+  }
+  .checkout-items-list {
+    gap: 14px;
+    margin-bottom: 20px;
+    max-height: 240px;
+    padding-right: 4px;
+  }
+  .checkout-item-row {
+    grid-template-columns: 48px 1fr auto;
+    gap: 10px;
+  }
+  .checkout-item-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+  }
+  .checkout-item-name {
+    font-size: 0.85rem;
+    line-height: 1.25;
+  }
+  .checkout-item-variant {
+    font-size: 0.75rem;
+  }
+  .checkout-item-qty {
+    font-size: 0.75rem;
+  }
+  .checkout-item-price {
+    font-size: 0.88rem;
+  }
+  .checkout-financial-table {
+    padding-top: 14px;
+    gap: 8px;
+  }
+  .checkout-summary-row {
+    font-size: 0.84rem;
+  }
+  .checkout-summary-row.total-row {
+    padding-top: 12px;
+    font-size: 0.98rem;
+  }
+  .checkout-footer-notes {
+    margin-top: 20px;
+    padding-top: 14px;
+    font-size: 0.72rem;
+  }
+  /* Form pane: edge-to-edge on mobile */
+  .checkout-form-pane {
+    padding: 20px 16px;
+    border-radius: 12px;
+    gap: 20px;
+  }
+  .checkout-express-pay {
+    gap: 8px;
+  }
+  .checkout-express-btn {
+    height: 44px;
+    font-size: 0.92rem;
+  }
+  .checkout-divider {
+    margin: 4px 0;
+    font-size: 0.78rem;
+  }
+  .checkout-section-title {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  .checkout-form-group {
+    gap: 12px;
+  }
+  .checkout-input,
+  .checkout-select {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+  }
+  .checkout-field label {
+    font-size: 0.78rem;
+  }
+  .checkout-checkbox-label {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+  .shipping-mode-toggle {
+    padding: 3px;
+  }
+  .shipping-mode-btn {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    gap: 6px;
+  }
+  .shipping-mode-info {
+    font-size: 0.76rem;
+    padding: 6px 10px;
+  }
+  .saved-address-option {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .saved-address-text {
+    font-size: 0.82rem;
+  }
+  .payment-method-card {
+    padding: 10px 12px;
+  }
+  .payment-method-title {
+    font-size: 0.84rem;
+  }
+  .payment-method-desc {
+    font-size: 0.74rem;
+  }
+  .upi-qr-box {
+    padding: 12px;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .upi-qr-box img {
+    width: 140px !important;
+    height: 140px !important;
+  }
+  .upi-vpa-code {
+    font-size: 0.82rem;
+    padding: 5px 10px;
+  }
+  .checkout-submit-btn {
+    height: 48px;
+    font-size: 0.96rem;
+    border-radius: 8px;
+  }
+}
+
+/* Small phone screens */
+@media (max-width: 380px) {
+  .checkout-grid {
+    padding: 8px;
+    gap: 8px;
+  }
+  .checkout-summary-pane {
+    padding: 16px 12px;
+  }
+  .checkout-form-pane {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+  .checkout-total-amount {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+  }
+  .checkout-item-row {
+    grid-template-columns: 40px 1fr auto;
+    gap: 8px;
+  }
+  .checkout-item-thumb {
+    width: 40px;
+    height: 40px;
+  }
+  .checkout-item-name {
+    font-size: 0.8rem;
+  }
+  .upi-qr-box img {
+    width: 120px !important;
+    height: 120px !important;
   }
 }
