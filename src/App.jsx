@@ -78,6 +78,7 @@ const AffiliateProgramPage = safeLazy(() => import('./views/AffiliateProgramPage
 const DropshippingPage = safeLazy(() => import('./views/DropshippingPage.jsx').then(m => ({ default: m.DropshippingPage })));
 const ResellerFeaturesPage = safeLazy(() => import('./views/ResellerFeaturesPage.jsx').then(m => ({ default: m.ResellerFeaturesPage })));
 const PartnerProgramPage = safeLazy(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })));
+const CheckoutPage = safeLazy(() => import('./views/CheckoutPage.jsx').then(m => ({ default: m.CheckoutPage })));
 const CustomWovenPage = safeLazy(() => import('./views/CustomWovenPage.jsx').then(m => ({ default: m.CustomWovenPage })));
 const BlogList = safeLazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
 const BlogPost = safeLazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
@@ -1377,6 +1378,27 @@ export default function App({ initialData = {} }) {
           onSignOut={handleSignOut}
           initialTab={searchParams?.get('tab')}
         />
+      );
+    }
+
+    if (route === 'checkout') {
+      return (
+        <Suspense fallback={<div className="section" style={{ minHeight: '60vh', padding: '60px 20px', textAlign: 'center' }}>Loading checkout...</div>}>
+          <CheckoutPage
+            items={cartProducts}
+            priceAccess={priceAccess}
+            user={user}
+            buyerProfile={buyerProfile}
+            pincode={pincode}
+            setPincode={setPincode}
+            codStatus={codStatus}
+            checkPincode={checkPincode}
+            navigate={navigate}
+            updateQuantity={updateQuantity}
+            removeProduct={removeProduct}
+            clearCart={() => setCart([])}
+          />
+        </Suspense>
       );
     }
 

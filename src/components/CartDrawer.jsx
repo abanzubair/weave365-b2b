@@ -108,6 +108,11 @@ export function CartDrawer({
     }
   }, [open, user?.id]);
 
+  const handleGoToCheckout = () => {
+    if (onClose) onClose();
+    if (navigate) navigate('checkout');
+  };
+
   const handlePaymentTriggerClick = () => {
     if (showUpiDetails || addressStep) {
       setShowUpiDetails(false);
@@ -1107,23 +1112,23 @@ export function CartDrawer({
               )}
 
               <div className="cart-action-group">
-                {items.length > 0 && showPayment && !hasUnselectedColors && (
+                {items.length > 0 && !hasUnselectedColors && (
                   <button
                     type="button"
-                    className={`payment-trigger-btn ${showUpiDetails || addressStep ? 'active' : ''}`}
-                    onClick={handlePaymentTriggerClick}
+                    className="cart-drawer-action-btn cart-checkout-btn"
+                    onClick={handleGoToCheckout}
                   >
-                    <CreditCard size={15} /> {showUpiDetails || addressStep ? 'Hide Payment' : 'Make Payment'}
+                    <CreditCard size={16} /> Proceed to Checkout <ArrowRight size={16} />
                   </button>
                 )}
                 <button
                   type="button"
-                  className={`enquiry-submit-btn ${items.length && !hasUnselectedColors ? '' : 'disabled'}`}
+                  className={`cart-drawer-action-btn cart-enquiry-btn ${items.length && !hasUnselectedColors ? '' : 'disabled'}`}
                   onClick={handleEnquiryClick}
                   disabled={!items.length || hasUnselectedColors}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff', borderColor: '#128C7E' } : {}}
                 >
-                  <WhatsappIcon size={15} /> {enquiryState === 'sent' ? 'Sent' : 'Submit Enquiry'}
+                  <WhatsappIcon size={16} /> {enquiryState === 'sent' ? 'Sent' : 'Quick WhatsApp Enquiry'}
                 </button>
               </div>
             </>

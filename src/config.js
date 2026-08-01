@@ -124,7 +124,8 @@ export const NON_PRODUCT_ROUTES = new Set([
   'dropshipping',
   'resell-sarees-online',
   'handloom-vs-powerloom-guide',
-  'custom-woven'
+  'custom-woven',
+  'checkout'
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {
