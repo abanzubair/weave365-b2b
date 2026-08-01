@@ -275,7 +275,7 @@ export function SiteHeader({
                     setDropdownOpen(null);
                   }}
                 >
-                  <span>Order List</span>
+                  <span>Cart</span>
                   {cartProducts.length > 0 && (
                     <span className="premium-badge" style={{ position: 'static', transform: 'none' }}>
                       {cartProducts.length}

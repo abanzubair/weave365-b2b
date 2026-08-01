@@ -262,7 +262,7 @@ export function VariationQuantityDrawer({
               disabled={!totalQuantity}
               onClick={() => onAddToCart(selectedCartRows)}
             >
-              <ShoppingBag size={18} /> Add to order list
+              <ShoppingBag size={18} /> Add to Cart
             </button>
           </div>
         </footer>

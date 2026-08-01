@@ -12,7 +12,7 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  overflow-x: hidden; /* Prevents decorative absolute background shapes from causing horizontal scrolling */
+  overflow-x: clip; /* Prevents decorative background shapes from causing scrollbars without breaking position: sticky */
 }
 
 /* Luxury decorative background shapes */
@@ -84,7 +84,7 @@
   grid-template-columns: 280px 1fr;
   gap: 3.5rem;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   position: relative;
   z-index: 2;
   align-items: start;
@@ -174,18 +174,6 @@
   position: relative;
 }
 
-.legal-content-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-dark));
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-}
-
 .legal-brand-kicker {
   font-family: var(--font-modern-heading);
   font-size: var(--small-size);
@@ -198,7 +186,7 @@
 
 .legal-h1 {
   font-family: var(--font-hero-heading);
-  font-size: var(--h1-size);
+  font-size: var(--h2-size);
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 1.5rem;
@@ -237,8 +225,8 @@
 }
 
 .legal-text-content h2 {
-  font-family: var(--font-heading);
-  font-size: var(--h2-size);
+  font-family: var(--font-body);
+  font-size: var(--h4-size);
   font-weight: 700;
   color: var(--gold-dark);
   margin-top: 2.25rem;

@@ -47,7 +47,6 @@ export function PrivacySecurityPage({ navigate }) {
         <article className="legal-content-card animate-fade-in">
           <div className="legal-brand-kicker">Weave 365 Security</div>
           <h1 className="legal-h1">Portal Privacy & Data Security Policy</h1>
-          <span className="legal-legal-updated-date">Last Updated: May 2026</span>
 
           <div className="legal-text-content">
             <p className="lead">
@@ -56,7 +55,7 @@ export function PrivacySecurityPage({ navigate }) {
 
             <h2>1. Collection of Business Data</h2>
             <p>
-              To offer comprehensive sourcing services, manage wholesale order lists, and verify trade credentials, we collect:
+              To offer comprehensive sourcing services, manage wholesale carts and orders, and verify trade credentials, we collect:
             </p>
             <ul>
               <li><strong>Corporate Identity:</strong> Business Name, Boutique registration certificates, and owner details.</li>

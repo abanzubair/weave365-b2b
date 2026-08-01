@@ -371,7 +371,7 @@ export function Account({
       <section className="section empty-page">
         <LockKeyhole size={34} />
         <h1>Login to open your account area</h1>
-        <p>Your order list, favourites, inquiries and price group stay linked to your buyer account.</p>
+        <p>Your cart, favourites, inquiries and price group stay linked to your buyer account.</p>
         <button className="primary-button" type="button" onClick={openAuth}>Login / Register</button>
       </section>
     );
@@ -431,7 +431,7 @@ export function Account({
           hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} 
         />
         <AccountSummaryCard icon={LockKeyhole} label="My Approved Price Group" value={priceAccess.canViewPrices ? priceAccess.priceLabel : 'Pending'} hint={approvalHint} />
-        <AccountSummaryCard icon={ShoppingBag} label="My Order List" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
+        <AccountSummaryCard icon={ShoppingBag} label="My Cart" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />
       </div>
 

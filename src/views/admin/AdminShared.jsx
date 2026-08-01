@@ -401,7 +401,7 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
 
   const { profile, type } = selectedUserList;
   const isCart = type === 'cart';
-  const title = isCart ? 'Order List Items' : 'Favourites Collection';
+  const title = isCart ? 'Cart Items' : 'Favourites Collection';
   const rows = isCart
     ? (userCartMap.get(profile.id) || [])
     : (userFavoriteMap.get(profile.id) || []);

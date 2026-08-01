@@ -302,7 +302,7 @@ export default function BuyerPipeline({
                 <th>Buyer</th>
                 <th>Type</th>
                 <th>Categories</th>
-                <th>Order List</th>
+                <th>Cart</th>
                 <th>Favourites</th>
                 <th>Approval</th>
                 <th>Dashboard</th>

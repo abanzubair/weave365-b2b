@@ -1367,7 +1367,7 @@ export function ProductDetail({
                   type="button"
                   onClick={() => setVariationDrawerOpen(true)}
                 >
-                  <ShoppingBag size={20} /> Add to order list
+                  <ShoppingBag size={20} /> Add to Cart
                 </button>
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}

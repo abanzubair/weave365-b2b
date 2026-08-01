@@ -48,7 +48,6 @@ export function DisclaimerPage({ navigate }) {
         <article className="legal-content-card animate-fade-in">
           <div className="legal-brand-kicker">Weave 365 Policies</div>
           <h1 className="legal-h1">Saree Sourcing & Product Disclaimer</h1>
-          <span className="legal-legal-updated-date">Last Updated: May 2026</span>
 
           <div className="legal-text-content">
             <p className="lead">
