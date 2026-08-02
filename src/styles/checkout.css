@@ -23,11 +23,11 @@
 .checkout-summary-pane {
   order: 2;
   position: sticky;
-  top: 90px;
+  top: 85px;
   background-color: var(--surface-bg, #fbfbfb);
   border: 1px solid var(--line, #e5e5e5);
   border-radius: 16px;
-  padding: 32px 36px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .checkout-back-link {
@@ -86,23 +86,23 @@
 
 .checkout-total-amount {
   font-family: var(--font-modern-heading);
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   font-weight: 700;
   color: var(--heading, #000000);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   letter-spacing: -0.02em;
 }
 
 .checkout-items-wrapper {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .checkout-items-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-height: 280px;
+  gap: 12px;
+  max-height: 200px;
   overflow-y: auto;
   padding-right: 8px;
   scroll-behavior: smooth;
@@ -218,32 +218,32 @@
 
 .checkout-financial-table {
   border-top: 1px solid var(--line, #e5e5e5);
-  padding-top: 20px;
+  padding-top: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .checkout-summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--muted, #666666);
 }
 
 .checkout-summary-row.total-row {
   border-top: 1px solid var(--line, #e5e5e5);
-  padding-top: 16px;
-  margin-top: 4px;
+  padding-top: 12px;
+  margin-top: 2px;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--heading, #000000);
 }
 
 .checkout-footer-notes {
-  margin-top: 40px;
-  padding-top: 24px;
+  margin-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid var(--line, #e5e5e5);
   font-size: 0.78rem;
   color: #888888;
