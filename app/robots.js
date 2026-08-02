@@ -1,13 +1,15 @@
-
 import { headers } from 'next/headers';
 
 export const runtime = 'edge';
 
 export default async function robots() {
   const headersList = await headers();
-  const host = headersList.get('host') || 'www.weave365.com';
-  const proto = headersList.get('x-forwarded-proto') || 'https';
-  const siteUrl = `${proto}://${host}`;
+  let host = headersList.get('host') || 'www.weave365.com';
+  if (host === 'weave365.com') {
+    host = 'www.weave365.com';
+  }
+  const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`;
+  const siteUrl = rawSiteUrl.replace(/\/$/, '');
 
   return {
     rules: [

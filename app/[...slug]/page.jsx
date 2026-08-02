@@ -869,6 +869,74 @@ export default async function CatchAllPage({ params }) {
     };
   }
 
+  let customWovenSchema = null;
+  if (route === 'custom-woven') {
+    customWovenSchema = {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Custom Woven Banarasi Sarees & Loom Development",
+      "provider": {
+        "@type": "Organization",
+        "name": storeConfig.name || "Weave 365",
+        "url": siteUrl
+      },
+      "serviceType": "Custom Silk Weaving & Private Label Manufacturing",
+      "areaServed": "Global",
+      "description": "Create custom woven Banarasi sarees with loom development, custom color palettes, motif customization, flexible MOQ, and private label production direct from Varanasi master weavers."
+    };
+  }
+
+  let whiteLabelSchema = null;
+  if (route === 'white-label') {
+    whiteLabelSchema = {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "White Label Banarasi Sarees & Suits Brand Program",
+      "provider": {
+        "@type": "Organization",
+        "name": storeConfig.name || "Weave 365",
+        "url": siteUrl
+      },
+      "serviceType": "White Label Saree Supply & Blind Dropshipping",
+      "areaServed": "Global",
+      "description": "Build your high-margin ethnic wear brand with direct Varanasi loom sourcing, unbranded HD image catalogues, white label packaging support, and blind dropshipping."
+    };
+  }
+
+  let affiliateSchema = null;
+  if (route === 'affiliate-program') {
+    affiliateSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Affiliate Partner Program | Earn Upto 15% Commission | Weave 365",
+      "description": "Join the Weave 365 Affiliate Partner Program. Share authentic Banarasi saree and suit collections to earn up to 15% commission on wholesale and reseller orders.",
+      "publisher": {
+        "@type": "Organization",
+        "name": storeConfig.name || "Weave 365",
+        "url": siteUrl
+      }
+    };
+  }
+
+  let comparisonGuideSchema = null;
+  if (route === 'handloom-vs-powerloom-guide') {
+    comparisonGuideSchema = {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Handloom vs Semi Handloom vs Powerloom Guide",
+      "description": "Understand the real difference between handloom, semi handloom and powerloom sarees to choose genuine handwoven textiles direct from Varanasi weavers.",
+      "author": {
+        "@type": "Organization",
+        "name": storeConfig.name || "Weave 365"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": storeConfig.name || "Weave 365",
+        "url": siteUrl
+      }
+    };
+  }
+
   return (
     <>
       {schemas?.productSchema && (
@@ -896,6 +964,34 @@ export default async function CatchAllPage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(resellFaqSchema).replace(/</g, '\\u003c') }}
+        />
+      )}
+
+      {customWovenSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(customWovenSchema).replace(/</g, '\\u003c') }}
+        />
+      )}
+
+      {whiteLabelSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(whiteLabelSchema).replace(/</g, '\\u003c') }}
+        />
+      )}
+
+      {affiliateSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(affiliateSchema).replace(/</g, '\\u003c') }}
+        />
+      )}
+
+      {comparisonGuideSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(comparisonGuideSchema).replace(/</g, '\\u003c') }}
         />
       )}
       <App initialData={initialData} />

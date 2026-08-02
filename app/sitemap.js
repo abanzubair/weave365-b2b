@@ -1,6 +1,5 @@
-
 import { headers } from 'next/headers';
-import { fetchProducts, fetchSupabaseBlogPosts, fetchSupabaseLandingPages } from '../src/productData.js';
+import { fetchProducts, fetchSupabaseBlogPosts, fetchSupabaseLandingPages, fetchSupabasePageSeoSettings } from '../src/productData.js';
 import { getProductCategorySlug } from '../src/config.js';
 import { blogPosts } from '../src/data/blogPosts.js';
 
@@ -8,11 +7,14 @@ export const runtime = 'edge';
 
 export default async function sitemap() {
   const headersList = await headers();
-  const host = headersList.get('host') || 'www.weave365.com';
-  const proto = headersList.get('x-forwarded-proto') || 'https';
-  const siteUrl = `${proto}://${host}`;
+  let host = headersList.get('host') || 'www.weave365.com';
+  if (host === 'weave365.com') {
+    host = 'www.weave365.com';
+  }
+  const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`;
+  const siteUrl = rawSiteUrl.replace(/\/$/, '');
 
-  // Static pages
+  // Core static pages and landing routes
   const staticPages = [
     {
       url: siteUrl,
@@ -27,6 +29,86 @@ export default async function sitemap() {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/new-arrivals`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+
+    // Main B2B & Business Landing Pages
+    {
+      url: `${siteUrl}/custom-woven`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/resell-sarees-online`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/white-label`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/dropshipping`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/affiliate-program`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/handloom-vs-powerloom-guide`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/sourcing-partners`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.75,
+    },
+    {
+      url: `${siteUrl}/bulk-inquiry`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.75,
+    },
+    {
+      url: `${siteUrl}/collaboration`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/weaver-onboarding`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/weaver-registration`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/reviews`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -39,61 +121,89 @@ export default async function sitemap() {
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/new-arrivals`,
+      url: `${siteUrl}/early-access`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
 
+    // Category SEO Routes
     {
-      url: `${siteUrl}/affiliate-program`,
+      url: `${siteUrl}/banarasi-sarees`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
+      changeFrequency: 'weekly',
+      priority: 0.9,
     },
     {
-      url: `${siteUrl}/dropshipping`,
+      url: `${siteUrl}/banarasi-suits`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/banarasi-lehengas`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/sourcing-partners`,
+      url: `${siteUrl}/banarasi-dupattas`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
+      changeFrequency: 'weekly',
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/white-label`,
+      url: `${siteUrl}/banarasi-fabrics`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
+      changeFrequency: 'weekly',
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/weaver-onboarding`,
+      url: `${siteUrl}/under-999`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
+      changeFrequency: 'weekly',
+      priority: 0.85,
     },
+
+    // Policy & Legal Pages
     {
-      url: `${siteUrl}/weaver-registration`,
+      url: `${siteUrl}/shipping-delivery`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
-      url: `${siteUrl}/bulk-inquiry`,
+      url: `${siteUrl}/returns-cancellation`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
     },
+    {
+      url: `${siteUrl}/privacy-security`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${siteUrl}/terms-conditions`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${siteUrl}/disclaimer`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+
+    // Blog Index & Static Categories
     {
       url: `${siteUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    // Blog category pages
     {
       url: `${siteUrl}/blog/category/wholesale-guides`,
       lastModified: new Date(),
@@ -129,11 +239,28 @@ export default async function sitemap() {
   }
 
   const seoLandingSitemaps = activeLandingPages.map((page) => ({
-    url: `${siteUrl}/${page.slug}`,
+    url: `${siteUrl}/${page.slug.replace(/^\//, '')}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.85,
   }));
+
+  // Fetch Admin Page SEO Settings from Supabase
+  let pageSeoSettings = [];
+  try {
+    pageSeoSettings = await fetchSupabasePageSeoSettings();
+  } catch (err) {
+    console.warn('Sitemap: Failed to fetch Supabase page SEO settings:', err.message);
+  }
+
+  const pageSeoMap = new Map();
+  if (Array.isArray(pageSeoSettings)) {
+    pageSeoSettings.forEach((setting) => {
+      if (setting && setting.path) {
+        pageSeoMap.set(setting.path, setting);
+      }
+    });
+  }
 
   // Dynamic pages from product data
   let productPages = [];
@@ -235,7 +362,8 @@ export default async function sitemap() {
     console.warn('Sitemap: Failed to fetch blog posts for sitemap:', error.message || error);
   }
 
-  return [
+  // Combine entries
+  const rawEntries = [
     ...staticPages,
     ...seoLandingSitemaps,
     ...productPages,
@@ -243,4 +371,55 @@ export default async function sitemap() {
     ...blogPostPages,
     ...dynamicCategoryPages,
   ];
+
+  // Dynamic admin SEO custom entries (if admin created a path not in default lists)
+  if (Array.isArray(pageSeoSettings)) {
+    pageSeoSettings.forEach((setting) => {
+      if (setting && setting.path && setting.robotsIndex !== false) {
+        const fullUrl = `${siteUrl}${setting.path === '/' ? '' : setting.path}`;
+        rawEntries.push({
+          url: fullUrl,
+          lastModified: setting.updatedAt ? new Date(setting.updatedAt) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        });
+      }
+    });
+  }
+
+  const sitemapMap = new Map();
+  rawEntries.forEach((entry) => {
+    if (!entry || !entry.url) return;
+    
+    // Extract path to check admin SEO settings
+    let entryPath = '/';
+    try {
+      const parsed = new URL(entry.url);
+      entryPath = parsed.pathname || '/';
+    } catch {
+      entryPath = entry.url.replace(siteUrl, '') || '/';
+    }
+    if (entryPath.length > 1 && entryPath.endsWith('/')) {
+      entryPath = entryPath.slice(0, -1);
+    }
+
+    const adminSeo = pageSeoMap.get(entryPath);
+
+    // If Admin explicitly disabled indexing for this path in Admin Panel, omit from sitemap.xml
+    if (adminSeo && adminSeo.robotsIndex === false) {
+      return;
+    }
+
+    // If Admin configured a custom canonical path, update the URL
+    let finalUrl = entry.url;
+    if (adminSeo && adminSeo.canonicalPath && adminSeo.canonicalPath !== entryPath) {
+      finalUrl = `${siteUrl}${adminSeo.canonicalPath === '/' ? '' : adminSeo.canonicalPath}`;
+    }
+
+    if (!sitemapMap.has(finalUrl)) {
+      sitemapMap.set(finalUrl, { ...entry, url: finalUrl });
+    }
+  });
+
+  return Array.from(sitemapMap.values());
 }
