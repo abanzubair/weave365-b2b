@@ -31,7 +31,7 @@ export function TermsConditionsPage({ navigate }) {
   ];
 
   return (
-    <div className="legal-page-container">
+    <div className="legal-page-container terms-conditions-page" data-page-id="terms-conditions">
       {/* breadcrumbs */}
       <div className="legal-breadcrumbs">
         <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>

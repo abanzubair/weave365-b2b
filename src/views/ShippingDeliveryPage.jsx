@@ -31,7 +31,7 @@ export function ShippingDeliveryPage({ navigate }) {
   ];
 
   return (
-    <div className="legal-page-container">
+    <div className="legal-page-container shipping-delivery-page" data-page-id="shipping-delivery">
       {/* breadcrumbs */}
       <div className="legal-breadcrumbs">
         <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>

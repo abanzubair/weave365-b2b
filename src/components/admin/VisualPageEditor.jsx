@@ -44,15 +44,35 @@ const DEVICE_PRESETS = [
   { id: 'custom', label: 'Custom Pixel Resolution...', width: 1440, height: 900 },
 ];
 
-function getUniqueSelector(el) {
+function getUniqueSelector(el, pageId = '') {
   if (!el || el.tagName === 'BODY' || el.tagName === 'HTML') return '';
   if (el.getAttribute('data-editable-key')) return `[data-editable-key="${el.getAttribute('data-editable-key')}"]`;
   if (el.id) return `#${el.id}`;
   
   let path = [];
   let current = el;
+  let hasPageScope = false;
+
   while (current && current.tagName !== 'BODY' && current.tagName !== 'HTML') {
     let selector = current.tagName.toLowerCase();
+
+    if (current.getAttribute('data-editable-key')) {
+      path.unshift(`[data-editable-key="${current.getAttribute('data-editable-key')}"]`);
+      return path.join(' > ');
+    }
+
+    if (current.getAttribute('data-page-id')) {
+      path.unshift(`[data-page-id="${current.getAttribute('data-page-id')}"]`);
+      hasPageScope = true;
+      break;
+    }
+
+    if (current.id) {
+      path.unshift(`#${current.id}`);
+      hasPageScope = true;
+      break;
+    }
+
     if (current.className && typeof current.className === 'string') {
       const validClasses = current.className.trim().split(/\s+/).filter(c => c && !c.startsWith('wysiwyg') && !c.startsWith('is-'));
       if (validClasses.length > 0) {
@@ -71,6 +91,11 @@ function getUniqueSelector(el) {
     path.unshift(selector);
     current = parent;
   }
+
+  if (!hasPageScope && pageId && pageId !== 'global-theme') {
+    path.unshift(`[data-page-id="${pageId}"]`);
+  }
+
   return path.join(' > ');
 }
 
@@ -246,12 +271,12 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
             target.classList.add('wysiwyg-active-selected');
 
             // Item Selector
-            const iSel = getUniqueSelector(target);
+            const iSel = getUniqueSelector(target, activePage);
             setItemSelector(iSel);
 
             // Container / Section Selector
             const pCont = target.closest('section, article, div[class*="-section"], div[class*="-band"], div.content-wrapper, div.container') || target.parentElement;
-            const cSel = pCont ? getUniqueSelector(pCont) : iSel;
+            const cSel = pCont ? getUniqueSelector(pCont, activePage) : iSel;
             setContainerSelector(cSel);
 
             const activeSel = targetType === 'container' ? cSel : iSel;
@@ -286,6 +311,13 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
         if (currentData.domOverrides) {
           Object.entries(currentData.domOverrides).forEach(([sel, styleObj]) => {
             try {
+              // Ignore legacy un-scoped legal overrides that leak across pages
+              if (
+                (sel.includes('legal-page-container') || sel.includes('legal-content-card') || sel.includes('legal-sidebar') || sel.includes('legal-text-content')) &&
+                !sel.includes('data-page-id')
+              ) {
+                return;
+              }
               const elements = doc.querySelectorAll(sel);
               elements.forEach(el => {
                 if (styleObj.text !== undefined && styleObj.text !== '') el.innerText = styleObj.text;

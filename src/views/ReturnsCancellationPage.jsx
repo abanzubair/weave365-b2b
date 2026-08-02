@@ -31,7 +31,7 @@ export function ReturnsCancellationPage({ navigate }) {
   ];
 
   return (
-    <div className="legal-page-container">
+    <div className="legal-page-container returns-cancellation-page" data-page-id="returns-cancellation">
       {/* breadcrumbs */}
       <div className="legal-breadcrumbs">
         <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>

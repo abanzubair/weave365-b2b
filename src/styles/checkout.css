@@ -10,7 +10,7 @@
 
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1fr 1.1fr;
   align-items: start;
   gap: 32px;
   max-width: 1440px;
@@ -19,9 +19,9 @@
   padding: 32px;
 }
 
-/* Right Pane: Order Summary (Stripe Light/Neutral Right Side) */
+/* Left Pane: Order Summary */
 .checkout-summary-pane {
-  order: 2;
+  order: 1;
   position: -webkit-sticky;
   position: sticky;
   top: 95px;
@@ -270,9 +270,9 @@
   color: var(--heading, #000000);
 }
 
-/* Left Pane: Form & Payments (Stripe Form Side) */
+/* Right Pane: Form & Payments */
 .checkout-form-pane {
-  order: 1;
+  order: 2;
   background-color: var(--paper, #ffffff);
   border: 1px solid var(--line, #e5e5e5);
   border-radius: 16px;

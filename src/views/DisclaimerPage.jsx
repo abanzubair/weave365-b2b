@@ -32,7 +32,7 @@ export function DisclaimerPage({ navigate }) {
   ];
 
   return (
-    <div className="legal-page-container">
+    <div className="legal-page-container disclaimer-page" data-page-id="disclaimer">
       {/* breadcrumbs */}
       <div className="legal-breadcrumbs">
         <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>

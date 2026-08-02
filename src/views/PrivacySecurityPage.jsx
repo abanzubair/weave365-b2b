@@ -31,7 +31,7 @@ export function PrivacySecurityPage({ navigate }) {
   ];
 
   return (
-    <div className="legal-page-container">
+    <div className="legal-page-container privacy-security-page" data-page-id="privacy-security">
       {/* breadcrumbs */}
       <div className="legal-breadcrumbs">
         <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>

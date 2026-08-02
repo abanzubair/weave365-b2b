@@ -80,6 +80,13 @@ export function applyCustomTheme(themeData) {
     if (themeData?.domOverrides) {
       Object.entries(themeData.domOverrides).forEach(([selector, styles]) => {
         try {
+          // Ignore legacy un-scoped legal overrides that leak across pages
+          if (
+            (selector.includes('legal-page-container') || selector.includes('legal-content-card') || selector.includes('legal-sidebar') || selector.includes('legal-text-content')) &&
+            !selector.includes('data-page-id')
+          ) {
+            return;
+          }
           const elements = document.querySelectorAll(selector);
           elements.forEach(el => {
             if (styles.text !== undefined && styles.text !== '') el.innerText = styles.text;

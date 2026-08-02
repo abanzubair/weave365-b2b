@@ -168,6 +168,54 @@ const staticSeoDefaults = [
     metaTitle: 'Free Saree & Suit Dropshipping Program in India | Weave 365',
     metaDescription: 'Start your free Banarasi saree & suit dropshipping business in India. Sourced directly from Varanasi weavers with WhatsApp sharing, catalog downloads, and white-label website tools.',
   },
+  {
+    path: '/custom-woven',
+    label: 'Custom Woven Sarees',
+    metaTitle: 'Custom Woven Sarees & Custom Textile Weaving | Weave 365',
+    metaDescription: 'Order custom woven Banarasi sarees, bespoke patterns, and customized fabric lengths direct from Varanasi master weavers. Minimum order quantities apply.',
+  },
+  {
+    path: '/handloom-vs-powerloom-guide',
+    label: 'Weave Comparison Guide',
+    metaTitle: 'Handloom vs Semi Handloom vs Powerloom Guide | Weave 365',
+    metaDescription: 'Understand the real difference between handloom, semi handloom, and powerloom sarees. Practical guide to selecting authentic handwoven Banarasi textiles.',
+  },
+  {
+    path: '/partner',
+    label: 'Partner Program (Short URL)',
+    metaTitle: 'Wholesale & Reseller Partner Program | Weave 365',
+    metaDescription: 'Join the Weave 365 partner network for wholesale saree sourcing, catalog sharing tools, custom pricing rules, and white-label dropshipping.',
+  },
+  {
+    path: '/wholesale-catalogue',
+    label: 'Wholesale Catalogue (Alias)',
+    metaTitle: 'Wholesale Banarasi Saree & Suit Catalogue | Weave 365',
+    metaDescription: 'Explore the complete wholesale catalog of authentic Banarasi sarees and suits direct from Varanasi weavers.',
+  },
+  {
+    path: '/resell-sarees-online',
+    label: 'Resell Sarees Online',
+    metaTitle: 'Start Reselling Banarasi Sarees Online | Weave 365',
+    metaDescription: 'Learn how to start a high-margin online saree reselling business with zero inventory. Access white-label catalogs, WhatsApp sharing, and blind dropshipping.',
+  },
+  {
+    path: '/order-tracking',
+    label: 'Order Tracking',
+    metaTitle: 'Track Your Wholesale Saree Order | Weave 365',
+    metaDescription: 'Track dispatch, shipment status, and live courier tracking for your wholesale Banarasi saree and suit orders from Varanasi.',
+  },
+  {
+    path: '/checkout',
+    label: 'Checkout',
+    metaTitle: 'Secure Checkout | Wholesale Saree Orders | Weave 365',
+    metaDescription: 'Complete your wholesale order safely with 256-bit SSL encryption. Supports instant UPI transfer, bank transfer, and direct dropship dispatch.',
+  },
+  {
+    path: '/reseller-dashboard',
+    label: 'Reseller Dashboard',
+    metaTitle: 'Reseller Portal & Digital Storefront Tools | Weave 365',
+    metaDescription: 'Manage your reseller catalog, customer leads, custom pricing markups, and dropship dispatches from your central Weave 365 dashboard.',
+  },
 ];
 
 const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {

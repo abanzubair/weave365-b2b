@@ -637,12 +637,12 @@ export function CheckoutPage({
               )}
 
               <div className="checkout-summary-row">
-                <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : (isWholesale ? 'Wholesale Courier' : 'Standard Ground')})</span>
+                <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard'})</span>
                 <span style={{ color: (shippingSpeed === 'expedited' || (isWholesale && shippingFee > 0)) ? '#0f172a' : '#16a34a', fontWeight: '500' }}>
                   {shippingSpeed === 'expedited'
-                    ? `${formatMoney(expeditedShippingFee)} (${billedWeightKg} kg)`
+                    ? formatMoney(expeditedShippingFee)
                     : isWholesale
-                    ? `${formatMoney(standardShippingFee)} (${billedWeightKg} kg)`
+                    ? formatMoney(standardShippingFee)
                     : formPincode ? 'FREE (Pan-India)' : 'Calculated at checkout'}
                 </span>
               </div>
@@ -1074,7 +1074,7 @@ export function CheckoutPage({
             )}
 
             <div className="checkout-section-title" style={{ marginTop: '20px' }}>
-              <Truck size={18} /> Delivery Speed & Shipping Method
+              <Truck size={18} /> Shipping Method
             </div>
 
             <div className="shipping-speed-group">
@@ -1092,7 +1092,7 @@ export function CheckoutPage({
                   />
                   <div className="shipping-speed-text">
                     <div>
-                      <strong>{isWholesale ? 'Wholesale Order:' : 'Standard Shipping:'}</strong>{' '}
+                      <strong>Standard Shipping:</strong>{' '}
                       {isWholesale ? 'Additional Courier Charges Apply' : 'Free Across India'}
                     </div>
                     <div className="shipping-delivery-days">
