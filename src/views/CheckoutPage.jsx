@@ -169,8 +169,12 @@ export function CheckoutPage({
     }
   };
 
-  // Weight & Shipping Fee calculation (₹150 per kg, ceiled for any fraction)
-  const { totalWeightKg, billedWeightKg, expeditedShippingFee, shippingFee } = useMemo(() => {
+  const isWholesale = priceAccess?.priceGroup === 'wholesale';
+
+  // Weight & Shipping Fee calculation
+  // Wholesale: Standard = ₹60/kg (ceiled for any fraction), Express = ₹150/kg
+  // Retail/Reseller: Standard = FREE, Express = ₹150/kg
+  const { totalWeightKg, billedWeightKg, standardShippingFee, expeditedShippingFee, shippingFee } = useMemo(() => {
     let totalGrams = 0;
     (items || []).forEach((item) => {
       const qty = Number(item.quantity) || 1;
@@ -185,16 +189,18 @@ export function CheckoutPage({
 
     const totalKg = totalGrams / 1000;
     const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
-    const expeditedFee = billedKg * 150;
-    const actualFee = shippingSpeed === 'expedited' ? expeditedFee : 0;
+    const stdFee = isWholesale ? billedKg * 60 : 0;
+    const expFee = billedKg * 150;
+    const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
     return {
       totalWeightKg: totalKg,
       billedWeightKg: billedKg,
-      expeditedShippingFee: expeditedFee,
+      standardShippingFee: stdFee,
+      expeditedShippingFee: expFee,
       shippingFee: actualFee,
     };
-  }, [items, shippingSpeed]);
+  }, [items, shippingSpeed, isWholesale]);
 
   // Financial calculations
   const canViewPrices = priceAccess?.canViewPrices !== false;
@@ -207,7 +213,6 @@ export function CheckoutPage({
     let disc = 0;
     let baseTotal = 0;
 
-    const isWholesale = priceAccess?.priceGroup === 'wholesale';
     if (isWholesale) {
       const groups = {};
       items.forEach((item) => {
@@ -589,10 +594,12 @@ export function CheckoutPage({
               )}
 
               <div className="checkout-summary-row">
-                <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard Ground'})</span>
-                <span style={{ color: shippingSpeed === 'expedited' ? '#0f172a' : '#16a34a', fontWeight: '500' }}>
+                <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : (isWholesale ? 'Wholesale Courier' : 'Standard Ground')})</span>
+                <span style={{ color: (shippingSpeed === 'expedited' || (isWholesale && shippingFee > 0)) ? '#0f172a' : '#16a34a', fontWeight: '500' }}>
                   {shippingSpeed === 'expedited'
                     ? `${formatMoney(expeditedShippingFee)} (${billedWeightKg} kg)`
+                    : isWholesale
+                    ? `${formatMoney(standardShippingFee)} (${billedWeightKg} kg)`
                     : formPincode ? 'FREE (Pan-India)' : 'Calculated at checkout'}
                 </span>
               </div>
@@ -1041,8 +1048,13 @@ export function CheckoutPage({
                     onChange={() => setShippingSpeed('standard')}
                   />
                   <div className="shipping-speed-text">
-                    <div><strong>Standard Shipping:</strong> Free Across India</div>
-                    <div className="shipping-delivery-days">Estimated Delivery: <strong>4–5 Business Days</strong></div>
+                    <div>
+                      <strong>{isWholesale ? 'Wholesale Order:' : 'Standard Shipping:'}</strong>{' '}
+                      {isWholesale ? 'Additional Courier Charges Apply' : 'Free Across India'}
+                    </div>
+                    <div className="shipping-delivery-days">
+                      Estimated Delivery: <strong>{isWholesale ? '8–10 Business Days' : '4–5 Business Days'}</strong>
+                    </div>
                   </div>
                 </div>
               </label>
