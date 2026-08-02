@@ -24,7 +24,7 @@
   order: 2;
   position: -webkit-sticky;
   position: sticky;
-  top: 80px;
+  top: 112px;
   background-color: var(--surface-bg, #fbfbfb);
   border: 1px solid var(--line, #e5e5e5);
   border-radius: 16px;
