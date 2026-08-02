@@ -1,5 +1,5 @@
-import { fetchProducts } from '../../../../src/productData.js';
-import { getProductCategorySlug, storeConfig, siteUrl } from '../../../../src/config.js';
+import { fetchProducts } from '../../../src/productData.js';
+import { getProductCategorySlug, storeConfig, siteUrl } from '../../../src/config.js';
 
 export const runtime = 'edge';
 export const revalidate = 21600; // Cache for 6 hours (6 * 3600 seconds)

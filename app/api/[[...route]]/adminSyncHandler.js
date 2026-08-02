@@ -91,7 +91,7 @@ export async function POST(request) {
     }
 
     // 3. Trigger central sync implementation with secure database client
-    const { syncSheetsToSupabase } = await import('../../../../src/productData.js');
+    const { syncSheetsToSupabase } = await import('../../../src/productData.js');
     await syncSheetsToSupabase(supabase);
     const timestamp = new Date().toISOString();
 

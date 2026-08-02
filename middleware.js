@@ -5,11 +5,15 @@ export function middleware(request) {
   const host = request.headers.get('host');
   const path = url.pathname;
 
-  // Skip redirect for search engine verification/crawling files (robots.txt, sitemap.xml, google verification files)
-  // to ensure they can be served on their respective domains.
+  // Rewrite /sitemap.xml to the unified Edge API sitemap handler
+  if (path === '/sitemap.xml' || path === '/sitemap') {
+    url.pathname = '/api/sitemap.xml';
+    return NextResponse.rewrite(url);
+  }
+
+  // Skip redirect for static robots.txt and google verification files
   if (
     path === '/robots.txt' || 
-    path.includes('sitemap') || 
     (path.startsWith('/google') && path.endsWith('.html'))
   ) {
     return NextResponse.next();
