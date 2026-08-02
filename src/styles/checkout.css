@@ -137,23 +137,23 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #0f172a;
+  background-color: #64748b;
   color: #ffffff;
-  border: 2px solid #ffffff;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   animation: scrollArrowPulse 2s infinite;
 }
 
 .checkout-scroll-indicator:hover {
-  background-color: #2563eb;
+  background-color: #475569;
   transform: translateX(-50%) scale(1.12);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 16px rgba(71, 85, 105, 0.3);
 }
 
 @keyframes scrollArrowPulse {

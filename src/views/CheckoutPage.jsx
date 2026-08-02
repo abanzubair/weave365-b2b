@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   HelpCircle,
   ChevronDown,
+  ArrowDown,
   X,
   Smartphone,
 } from 'lucide-react';
@@ -621,7 +622,7 @@ export function CheckoutPage({
                   title="Scroll down for more cards"
                   aria-label="Scroll down for more cards"
                 >
-                  <ChevronDown size={16} />
+                  <ArrowDown size={16} />
                 </button>
               )}
             </div>
