@@ -408,6 +408,12 @@
   color: #0f172a;
 }
 
+.shipping-delivery-days {
+  font-size: 0.82rem;
+  color: #475569;
+  margin-top: 2px;
+}
+
 /* Form Styles */
 .checkout-form-group {
   display: flex;

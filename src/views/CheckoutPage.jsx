@@ -1041,7 +1041,8 @@ export function CheckoutPage({
                     onChange={() => setShippingSpeed('standard')}
                   />
                   <div className="shipping-speed-text">
-                    <strong>Standard Shipping:</strong> Free Across India (Estimated Delivery: <strong>4–5 Business Days</strong>)
+                    <div><strong>Standard Shipping:</strong> Free Across India</div>
+                    <div className="shipping-delivery-days">Estimated Delivery: <strong>4–5 Business Days</strong></div>
                   </div>
                 </div>
               </label>
@@ -1059,7 +1060,8 @@ export function CheckoutPage({
                     onChange={() => setShippingSpeed('expedited')}
                   />
                   <div className="shipping-speed-text">
-                    <strong>Expedited Shipping:</strong> Additional Courier Charges Apply (Estimated Delivery: <strong>2–3 Business Days</strong>)
+                    <div><strong>Expedited Shipping:</strong> Additional Courier Charges Apply</div>
+                    <div className="shipping-delivery-days">Estimated Delivery: <strong>2–3 Business Days</strong></div>
                   </div>
                 </div>
               </label>
