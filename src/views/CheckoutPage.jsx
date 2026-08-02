@@ -14,11 +14,8 @@ import {
   Copy,
   Check,
   ShoppingBag,
-  HelpCircle,
-  ChevronDown,
   ArrowDown,
   X,
-  Smartphone,
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
@@ -28,7 +25,7 @@ import {
   calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
-import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
+// import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
@@ -43,8 +40,6 @@ export function CheckoutPage({
   codStatus,
   checkPincode,
   navigate,
-  updateQuantity,
-  removeProduct,
   clearCart,
 }) {
   // Shipping Mode: 'standard' | 'dropship'
