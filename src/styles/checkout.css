@@ -10,7 +10,7 @@
 
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1.1fr 1fr;
   align-items: start;
   gap: 32px;
   max-width: 1440px;
@@ -19,8 +19,11 @@
   padding: 32px;
 }
 
-/* Left Pane: Order Summary (Stripe Light/Neutral Left Side) */
+/* Right Pane: Order Summary (Stripe Light/Neutral Right Side) */
 .checkout-summary-pane {
+  order: 2;
+  position: sticky;
+  top: 100px;
   background-color: var(--surface-bg, #fbfbfb);
   border: 1px solid var(--line, #e5e5e5);
   border-radius: 16px;
@@ -202,8 +205,9 @@
   color: var(--heading, #000000);
 }
 
-/* Right Pane: Form & Payments (Stripe Form Side) */
+/* Left Pane: Form & Payments (Stripe Form Side) */
 .checkout-form-pane {
+  order: 1;
   background-color: var(--paper, #ffffff);
   border: 1px solid var(--line, #e5e5e5);
   border-radius: 16px;
@@ -306,13 +310,37 @@
 }
 
 .shipping-mode-info {
-  font-size: 0.8rem;
-  color: #666666;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.shipping-mode-info.standard {
   background-color: #f8fafc;
-  border-left: 3px solid var(--brand-primary, #b78646);
-  padding: 8px 12px;
-  border-radius: 0 4px 4px 0;
-  line-height: 1.4;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.shipping-mode-info.standard .shipping-info-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.shipping-mode-info.dropship {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-weight: 500;
+}
+
+.shipping-mode-info.dropship .shipping-info-icon {
+  color: #16a34a;
+  flex-shrink: 0;
 }
 
 /* Section Title */
@@ -324,6 +352,60 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Shipping Speed Selection Cards */
+.shipping-speed-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.shipping-speed-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shipping-speed-card:hover {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.shipping-speed-card.selected {
+  border: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+.shipping-speed-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.shipping-speed-left input[type="radio"] {
+  margin-top: 3px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.shipping-speed-text {
+  font-size: 0.88rem;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.shipping-speed-text strong {
+  color: #0f172a;
 }
 
 /* Form Styles */
@@ -554,6 +636,8 @@
     padding: 20px;
   }
   .checkout-summary-pane {
+    position: static;
+    top: auto;
     padding: 24px 20px;
   }
   .checkout-form-pane {

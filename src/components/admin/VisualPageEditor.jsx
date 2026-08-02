@@ -505,6 +505,10 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
     { id: 'early-access', label: 'Early Access Page', path: '/early-access' },
     { id: 'about', label: 'About Us', path: '/about' },
     { id: 'contact', label: 'Contact Us', path: '/contact' },
+    { id: 'disclaimer', label: 'Disclaimer', path: '/disclaimer' },
+    { id: 'shipping-delivery', label: 'Shipping & Delivery', path: '/shipping-delivery' },
+    { id: 'returns-cancellation', label: 'Returns & Cancellation', path: '/returns-cancellation' },
+    { id: 'privacy-security', label: 'Privacy & Security', path: '/privacy-security' },
     { id: 'terms-conditions', label: 'Terms & Conditions', path: '/terms-conditions' },
     { id: 'global-theme', label: '🎨 Global Colors & Typography', path: '/' },
   ];

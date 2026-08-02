@@ -48,6 +48,8 @@ export function CheckoutPage({
 }) {
   // Shipping Mode: 'standard' | 'dropship'
   const [shippingMode, setShippingMode] = useState('standard');
+  // Shipping Speed: 'standard' (Free) | 'expedited' (₹150/kg)
+  const [shippingSpeed, setShippingSpeed] = useState('standard');
 
   // Address & User contact state
   const [addresses, setAddresses] = useState([]);
@@ -167,12 +169,43 @@ export function CheckoutPage({
     }
   };
 
+  // Weight & Shipping Fee calculation (₹150 per kg, ceiled for any fraction)
+  const { totalWeightKg, billedWeightKg, expeditedShippingFee, shippingFee } = useMemo(() => {
+    let totalGrams = 0;
+    (items || []).forEach((item) => {
+      const qty = Number(item.quantity) || 1;
+      const rawW = item.product?.weight;
+      let grams = 800; // default saree/suit set weight is 800g (0.8 kg)
+      if (rawW && !isNaN(Number(rawW))) {
+        const num = Number(rawW);
+        grams = num > 15 ? num : num * 1000;
+      }
+      totalGrams += Math.round(grams) * qty;
+    });
+
+    const totalKg = totalGrams / 1000;
+    const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
+    const expeditedFee = billedKg * 150;
+    const actualFee = shippingSpeed === 'expedited' ? expeditedFee : 0;
+
+    return {
+      totalWeightKg: totalKg,
+      billedWeightKg: billedKg,
+      expeditedShippingFee: expeditedFee,
+      shippingFee: actualFee,
+    };
+  }, [items, shippingSpeed]);
+
   // Financial calculations
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const { subtotal, discount, total } = useMemo(() => {
     if (!canViewPrices || !items.length) {
       return { subtotal: 0, discount: 0, total: 0 };
     }
+
+    let sub = 0;
+    let disc = 0;
+    let baseTotal = 0;
 
     const isWholesale = priceAccess?.priceGroup === 'wholesale';
     if (isWholesale) {
@@ -203,18 +236,21 @@ export function CheckoutPage({
           sum += itemPrice * item.quantity * discountFactor;
         });
       });
-      const roundedTotal = Math.round(sum);
-      return { subtotal: roundedTotal, discount: 0, total: roundedTotal };
+      sub = Math.round(sum);
+      disc = 0;
+      baseTotal = sub;
     } else {
-      const sub = items.reduce(
+      sub = items.reduce(
         (sum, item) =>
           sum + (customerPrice(item.variant?.prices, priceAccess) || 0) * item.quantity,
         0
       );
-      const disc = calculateComboDiscount(items, priceAccess);
-      return { subtotal: sub, discount: disc, total: Math.max(0, sub - disc) };
+      disc = calculateComboDiscount(items, priceAccess);
+      baseTotal = Math.max(0, sub - disc);
     }
-  }, [canViewPrices, items, priceAccess]);
+
+    return { subtotal: sub, discount: disc, total: baseTotal + shippingFee };
+  }, [canViewPrices, items, priceAccess, shippingFee]);
 
   const upiId = storeConfig.upiId || 'weave365@upi';
   const rawUpiUrl = useMemo(
@@ -527,9 +563,8 @@ export function CheckoutPage({
                     <div className="checkout-item-details">
                       <div className="checkout-item-name">{item.product?.title}</div>
                       <div className="checkout-item-variant">
-                        Color: {item.selectedColorName || 'Standard'} {item.variant?.code ? `• SKU: ${item.variant.code}` : ''}
+                        Color: {item.selectedColorName || 'Standard'} {item.variant?.code ? `• SKU: ${item.variant.code}` : ''} • Qty: {item.quantity}
                       </div>
-                      <div className="checkout-item-qty">Qty: {item.quantity}</div>
                     </div>
                     <div className="checkout-item-price">
                       {formatMoney(itemUnitPrice * item.quantity)}
@@ -554,21 +589,23 @@ export function CheckoutPage({
               )}
 
               <div className="checkout-summary-row">
-                <span>Shipping & Dispatch</span>
-                <span style={{ color: '#16a34a', fontWeight: '500' }}>
-                  {formPincode ? 'Pan-India Delivery' : 'Calculated at checkout'}
+                <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard Ground'})</span>
+                <span style={{ color: shippingSpeed === 'expedited' ? '#0f172a' : '#16a34a', fontWeight: '500' }}>
+                  {shippingSpeed === 'expedited'
+                    ? `${formatMoney(expeditedShippingFee)} (${billedWeightKg} kg)`
+                    : formPincode ? 'FREE (Pan-India)' : 'Calculated at checkout'}
                 </span>
               </div>
 
               <div className="checkout-summary-row total-row">
-                <span>Total due</span>
+                <span>Total</span>
                 <span>{formatMoney(total)}</span>
               </div>
             </div>
           </div>
 
           <div className="checkout-footer-notes">
-            <span>Powered by <strong>Weave365 Commerce</strong></span>
+            <span>Powered by <strong>Weave365</strong></span>
             <div className="checkout-footer-links">
               <a href="/terms-conditions" target="_blank" rel="noreferrer">Terms</a>
               <a href="/privacy-security" target="_blank" rel="noreferrer">Privacy</a>
@@ -578,38 +615,6 @@ export function CheckoutPage({
 
         {/* Right Pane: Stripe-Style Checkout Form */}
         <div className="checkout-form-pane">
-          {/* Express Payment Button */}
-          <div className="checkout-express-pay">
-            <button
-              type="button"
-              className="checkout-express-btn"
-              onClick={handleExpressPayClick}
-            >
-              <QrCode size={18} /> Express UPI / Instant Bank Pay
-            </button>
-            {showExpressPayNotice && (
-              <div
-                style={{
-                  textAlign: 'center',
-                  backgroundColor: '#fef3c7',
-                  color: '#92400e',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  marginTop: '8px',
-                  border: '1px solid #fde68a',
-                  animation: 'fadeIn 0.2s ease-in'
-                }}
-              >
-                Express Payment is coming soon! Please complete your delivery details below.
-              </div>
-            )}
-            <div className="checkout-divider">
-              <span>Or complete delivery details</span>
-            </div>
-          </div>
-
           {/* Shipping Mode Segmented Control (Standard vs Dropshipping) */}
           <div className="shipping-mode-control">
             <div className="shipping-mode-label">Select Shipping Method</div>
@@ -619,20 +624,28 @@ export function CheckoutPage({
                 className={`shipping-mode-btn ${shippingMode === 'standard' ? 'active' : ''}`}
                 onClick={() => setShippingMode('standard')}
               >
-                <Truck size={16} /> Standard Shipping
+                <Truck size={16} /> Ship to
               </button>
               <button
                 type="button"
                 className={`shipping-mode-btn ${shippingMode === 'dropship' ? 'active' : ''}`}
                 onClick={() => setShippingMode('dropship')}
               >
-                <Package size={16} /> Direct Dropshipping
+                <Package size={16} /> Dropship to
               </button>
             </div>
-            <div className="shipping-mode-info">
-              {shippingMode === 'standard'
-                ? 'Direct dispatch to your business or home address with standard Weave365 invoice.'
-                : 'White-label dispatch directly to your end customer. Weave365 prices & supplier branding will be completely omitted.'}
+            <div className={`shipping-mode-info ${shippingMode}`}>
+              {shippingMode === 'dropship' ? (
+                <>
+                  <ShieldCheck size={16} className="shipping-info-icon" />
+                  <span>100% white label dispatch, no weave 365 branding or pricing included.</span>
+                </>
+              ) : (
+                <>
+                  <Truck size={16} className="shipping-info-icon" />
+                  <span>Direct dispatch to your business or home address with standard Weave365 invoice.</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -827,12 +840,12 @@ export function CheckoutPage({
               /* Direct Dropshipping Form */
               <>
                 <div className="checkout-section-title">
-                  <Package size={18} /> Reseller (Sender) Details
+                  <Package size={18} /> Reseller Details (Sender)
                 </div>
 
                 <div className="checkout-input-row">
                   <div className="checkout-field">
-                    <label htmlFor="sender-name">Your Store / Business Name *</label>
+                    <label htmlFor="sender-name">Business Name *</label>
                     <input
                       id="sender-name"
                       type="text"
@@ -844,7 +857,7 @@ export function CheckoutPage({
                     />
                   </div>
                   <div className="checkout-field">
-                    <label htmlFor="sender-phone">Your Phone Number *</label>
+                    <label htmlFor="sender-phone">Phone Number *</label>
                     <input
                       id="sender-phone"
                       type="tel"
@@ -857,37 +870,22 @@ export function CheckoutPage({
                   </div>
                 </div>
 
-                <div className="checkout-input-row">
-                  <div className="checkout-field">
-                    <label htmlFor="sender-address">Sender Address Line *</label>
-                    <input
-                      id="sender-address"
-                      type="text"
-                      className="checkout-input"
-                      placeholder="Street / Area for shipping label"
-                      value={senderAddress}
-                      onChange={(e) => setSenderAddress(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="checkout-field">
-                    <label htmlFor="sender-pincode">Sender Pincode *</label>
-                    <input
-                      id="sender-pincode"
-                      type="text"
-                      className="checkout-input"
-                      placeholder="6-digit pincode"
-                      maxLength={6}
-                      value={senderPincode}
-                      onChange={(e) => setSenderPincode(e.target.value)}
-                      required
-                    />
-                  </div>
+                <div className="checkout-field">
+                  <label htmlFor="sender-address">Address Line *</label>
+                  <input
+                    id="sender-address"
+                    type="text"
+                    className="checkout-input"
+                    placeholder="Street / Area for shipping label"
+                    value={senderAddress}
+                    onChange={(e) => setSenderAddress(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="checkout-input-row">
                   <div className="checkout-field">
-                    <label htmlFor="sender-city">Sender City *</label>
+                    <label htmlFor="sender-city">City *</label>
                     <input
                       id="sender-city"
                       type="text"
@@ -899,7 +897,7 @@ export function CheckoutPage({
                     />
                   </div>
                   <div className="checkout-field">
-                    <label htmlFor="sender-state">Sender State *</label>
+                    <label htmlFor="sender-state">State *</label>
                     <input
                       id="sender-state"
                       type="text"
@@ -912,13 +910,33 @@ export function CheckoutPage({
                   </div>
                 </div>
 
+                <div className="checkout-input-row">
+                  <div className="checkout-field">
+                    <label htmlFor="sender-pincode">Pincode *</label>
+                    <input
+                      id="sender-pincode"
+                      type="text"
+                      className="checkout-input"
+                      placeholder="6-digit pincode"
+                      maxLength={6}
+                      value={senderPincode}
+                      onChange={(e) => setSenderPincode(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="checkout-field">
+                    <label>Country</label>
+                    <input type="text" className="checkout-input" value="India" disabled />
+                  </div>
+                </div>
+
                 <div className="checkout-section-title" style={{ marginTop: '16px' }}>
-                  <Truck size={18} /> Customer (Recipient) Delivery Address
+                  <Truck size={18} /> Customer Delivery Address (Recipient)
                 </div>
 
                 <div className="checkout-input-row">
                   <div className="checkout-field">
-                    <label htmlFor="recipient-name">Customer Full Name *</label>
+                    <label htmlFor="recipient-name">Full Name *</label>
                     <input
                       id="recipient-name"
                       type="text"
@@ -930,7 +948,7 @@ export function CheckoutPage({
                     />
                   </div>
                   <div className="checkout-field">
-                    <label htmlFor="recipient-phone">Customer Mobile Number *</label>
+                    <label htmlFor="recipient-phone">Mobile Number *</label>
                     <input
                       id="recipient-phone"
                       type="tel"
@@ -944,7 +962,7 @@ export function CheckoutPage({
                 </div>
 
                 <div className="checkout-field">
-                  <label htmlFor="recipient-addr1">Customer Street Address *</label>
+                  <label htmlFor="recipient-addr1">Street Address *</label>
                   <input
                     id="recipient-addr1"
                     type="text"
@@ -983,41 +1001,72 @@ export function CheckoutPage({
                   </div>
                 </div>
 
-                <div className="checkout-field">
-                  <label htmlFor="recipient-pincode">Customer Pincode *</label>
-                  <input
-                    id="recipient-pincode"
-                    type="text"
-                    className="checkout-input"
-                    placeholder="6-digit pincode"
-                    maxLength={6}
-                    value={formPincode}
-                    onChange={(e) => handlePincodeChange(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="checkout-field">
-                  <label htmlFor="packing-pref">Packaging & Branding Instruction</label>
-                  <select
-                    id="packing-pref"
-                    className="checkout-select"
-                    value={packingPreference}
-                    onChange={(e) => setPackingPreference(e.target.value)}
-                  >
-                    <option value="Blind Packaging (Zero Supplier Branding / No Price Tags)">
-                      Blind Packaging (Zero supplier branding / No price tags)
-                    </option>
-                    <option value="Include Custom Reseller Note">
-                      Include Custom Reseller Note
-                    </option>
-                  </select>
+                <div className="checkout-input-row">
+                  <div className="checkout-field">
+                    <label htmlFor="recipient-pincode">Pincode *</label>
+                    <input
+                      id="recipient-pincode"
+                      type="text"
+                      className="checkout-input"
+                      placeholder="6-digit pincode"
+                      maxLength={6}
+                      value={formPincode}
+                      onChange={(e) => handlePincodeChange(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="checkout-field">
+                    <label>Country</label>
+                    <input type="text" className="checkout-input" value="India" disabled />
+                  </div>
                 </div>
               </>
             )}
 
+            <div className="checkout-section-title" style={{ marginTop: '20px' }}>
+              <Truck size={18} /> Delivery Speed & Shipping Method
+            </div>
+
+            <div className="shipping-speed-group">
+              <label
+                className={`shipping-speed-card ${shippingSpeed === 'standard' ? 'selected' : ''}`}
+                onClick={() => setShippingSpeed('standard')}
+              >
+                <div className="shipping-speed-left">
+                  <input
+                    type="radio"
+                    name="shipping_speed"
+                    value="standard"
+                    checked={shippingSpeed === 'standard'}
+                    onChange={() => setShippingSpeed('standard')}
+                  />
+                  <div className="shipping-speed-text">
+                    <strong>Standard Shipping:</strong> Free Across India (Estimated Delivery: <strong>4–5 Business Days</strong>)
+                  </div>
+                </div>
+              </label>
+
+              <label
+                className={`shipping-speed-card ${shippingSpeed === 'expedited' ? 'selected' : ''}`}
+                onClick={() => setShippingSpeed('expedited')}
+              >
+                <div className="shipping-speed-left">
+                  <input
+                    type="radio"
+                    name="shipping_speed"
+                    value="expedited"
+                    checked={shippingSpeed === 'expedited'}
+                    onChange={() => setShippingSpeed('expedited')}
+                  />
+                  <div className="shipping-speed-text">
+                    <strong>Expedited Shipping:</strong> Additional Courier Charges Apply (Estimated Delivery: <strong>2–3 Business Days</strong>)
+                  </div>
+                </div>
+              </label>
+            </div>
+
             {/* Payment Method Details */}
-            <div className="checkout-section-title" style={{ marginTop: '16px' }}>
+            <div className="checkout-section-title" style={{ marginTop: '20px' }}>
               <CreditCard size={18} /> Payment Details
             </div>
 
@@ -1096,12 +1145,9 @@ export function CheckoutPage({
               {isSubmitting ? (
                 'Processing Order...'
               ) : (
-                <>
-                  <WhatsappIcon size={20} />
-                  {shippingMode === 'dropship'
-                    ? `Place Dropship Order • ${formatMoney(total)}`
-                    : `Pay ${formatMoney(total)}`}
-                </>
+                shippingMode === 'dropship'
+                  ? `Place Dropship Order • ${formatMoney(total)}`
+                  : `Pay ${formatMoney(total)}`
               )}
             </button>
 
@@ -1183,7 +1229,7 @@ export function CheckoutPage({
             </div>
 
             <div className="upi-vpa-code" style={{ width: '100%', boxSizing: 'border-box' }}>
-              {storeConfig.upiId || 'weave365@upi'}
+              {storeConfig.upiId}
             </div>
 
             <button
@@ -1195,7 +1241,7 @@ export function CheckoutPage({
               }}
               style={{ width: '100%', backgroundColor: '#16a34a', marginTop: '8px' }}
             >
-              <WhatsappIcon size={20} /> I Have Paid • Confirm Order
+              I Have Paid • Confirm Order
             </button>
           </div>
         </div>
