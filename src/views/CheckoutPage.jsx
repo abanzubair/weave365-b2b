@@ -2,7 +2,7 @@
  * Dedicated Stripe-Inspired Checkout Page Component
  * Handles both Standard Shipping & White-Label Direct Dropshipping.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ArrowLeft,
   CheckCircle,
@@ -96,6 +96,35 @@ export function CheckoutPage({
   const [showQrModal, setShowQrModal] = useState(false);
   const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState('');
   const [activeDeliveryDetails, setActiveDeliveryDetails] = useState(null);
+
+  // Scroll detection for product cards in order summary
+  const itemsListRef = useRef(null);
+  const [canScrollMore, setCanScrollMore] = useState(false);
+
+  const checkScrollState = () => {
+    const el = itemsListRef.current;
+    if (el) {
+      const hasScrollableContent = el.scrollHeight > el.clientHeight + 4;
+      const isNotAtBottom = el.scrollTop + el.clientHeight < el.scrollHeight - 10;
+      setCanScrollMore(hasScrollableContent && isNotAtBottom);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollState();
+    const timer = setTimeout(checkScrollState, 350);
+    window.addEventListener('resize', checkScrollState);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkScrollState);
+    };
+  }, [items]);
+
+  const handleScrollMore = () => {
+    if (itemsListRef.current) {
+      itemsListRef.current.scrollBy({ top: 140, behavior: 'smooth' });
+    }
+  };
 
   const handleExpressPayClick = () => {
     setShowExpressPayNotice(true);
@@ -557,26 +586,44 @@ export function CheckoutPage({
             <div className="checkout-total-amount">{formatMoney(total)}</div>
 
             {/* Cart Items List */}
-            <div className="checkout-items-list">
-              {items.map((item, idx) => {
-                const itemUnitPrice = customerPrice(item.variant?.prices, priceAccess) || 0;
-                const itemImg = item.selectedColorImage || item.variant?.image || item.product?.images?.[0] || fallbackProductImage;
+            <div className="checkout-items-wrapper">
+              <div
+                className="checkout-items-list"
+                ref={itemsListRef}
+                onScroll={checkScrollState}
+              >
+                {items.map((item, idx) => {
+                  const itemUnitPrice = customerPrice(item.variant?.prices, priceAccess) || 0;
+                  const itemImg = item.selectedColorImage || item.variant?.image || item.product?.images?.[0] || fallbackProductImage;
 
-                return (
-                  <div className="checkout-item-row" key={`${item.productGroupKey}-${item.variantCode}-${idx}`}>
-                    <img src={itemImg} alt={item.product?.title || 'Product'} className="checkout-item-thumb" />
-                    <div className="checkout-item-details">
-                      <div className="checkout-item-name">{item.product?.title}</div>
-                      <div className="checkout-item-variant">
-                        Color: {item.selectedColorName || 'Standard'} {item.variant?.code ? `• SKU: ${item.variant.code}` : ''} • Qty: {item.quantity}
+                  return (
+                    <div className="checkout-item-row" key={`${item.productGroupKey}-${item.variantCode}-${idx}`}>
+                      <img src={itemImg} alt={item.product?.title || 'Product'} className="checkout-item-thumb" />
+                      <div className="checkout-item-details">
+                        <div className="checkout-item-name">{item.product?.title}</div>
+                        <div className="checkout-item-variant">
+                          Color: {item.selectedColorName || 'Standard'} {item.variant?.code ? `• SKU: ${item.variant.code}` : ''} • Qty: {item.quantity}
+                        </div>
+                      </div>
+                      <div className="checkout-item-price">
+                        {formatMoney(itemUnitPrice * item.quantity)}
                       </div>
                     </div>
-                    <div className="checkout-item-price">
-                      {formatMoney(itemUnitPrice * item.quantity)}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {canScrollMore && (
+                <button
+                  type="button"
+                  className="checkout-scroll-indicator"
+                  onClick={handleScrollMore}
+                  title="Scroll down for more cards"
+                  aria-label="Scroll down for more cards"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              )}
             </div>
 
             {/* Financial Summary Table */}
