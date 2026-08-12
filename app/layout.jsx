@@ -93,12 +93,12 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: 'https://assets.weave365.com/assets/banner/favicon.svg',
-        type: 'image/svg+xml',
+        url: 'https://assets.weave365.com/assets/banner/favicon.ico',
+        type: 'image/x-icon',
       },
     ],
-    shortcut: 'https://assets.weave365.com/assets/banner/favicon.svg',
-    apple: 'https://assets.weave365.com/assets/banner/favicon.svg',
+    shortcut: 'https://assets.weave365.com/assets/banner/favicon.ico',
+    apple: 'https://assets.weave365.com/assets/banner/favicon.ico',
   },
 };
 
@@ -109,7 +109,6 @@ export default function RootLayout({ children }) {
     cormorant.variable,
     marcellus.variable,
   ].join(' ');
-
 
   return (
     <html lang="en" data-scroll-behavior="smooth" className={fontClasses} suppressHydrationWarning>
@@ -126,9 +125,9 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-4K369BHS5L');
           `}
         </Script>
-        <link rel="icon" type="image/svg+xml" href="https://assets.weave365.com/assets/banner/favicon.svg" />
-        <link rel="shortcut icon" href="https://assets.weave365.com/assets/banner/favicon.svg" />
-        <link rel="apple-touch-icon" href="https://assets.weave365.com/assets/banner/favicon.svg" />
+        <link rel="icon" type="image/x-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
+        <link rel="shortcut icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
+        <link rel="apple-touch-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />

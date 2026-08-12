@@ -33,6 +33,15 @@ const nextConfig = {
     ...localIPs,
     ...localIPs.map(ip => `${ip}:3000`)
   ],
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: 'https://assets.weave365.com/assets/banner/favicon.ico',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
