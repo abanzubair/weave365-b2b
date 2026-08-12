@@ -188,7 +188,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
         "name": "Weave 365",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png"
+          "url": "https://assets.weave365.com/assets/banner/Weave365.svg"
         }
       },
       "datePublished": post.date || new Date().toISOString(),

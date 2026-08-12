@@ -222,7 +222,7 @@ const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, 
   const pluralName = categoryName === 'Under 999' ? categoryName : (categoryName.endsWith('s') ? categoryName : `${categoryName}s`);
   return {
     path: `/${slug}`,
-    label: `Category: ${pluralName}`,
+    label: pluralName,
     metaTitle: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
     metaDescription: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
   };
@@ -422,7 +422,7 @@ export default function SeoSettings({
                 >
                   <span className="admin-custom-select-value">
                     {selectedDefaultSeo
-                      ? `${selectedDefaultSeo.label} (${selectedDefaultSeo.path})`
+                      ? selectedDefaultSeo.label
                       : pageSeoPath || 'Select a page...'}
                   </span>
                   <ChevronDown size={16} className={`admin-custom-select-icon ${isSeoSelectOpen ? 'open' : ''}`} />
@@ -441,7 +441,7 @@ export default function SeoSettings({
                             setIsSeoSelectOpen(false);
                           }}
                         >
-                          {page.label} ({page.path})
+                          {page.label}
                         </button>
                       );
                     })}

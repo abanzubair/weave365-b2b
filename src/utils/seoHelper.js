@@ -27,13 +27,13 @@ export async function getSeoMetadata(path, defaultMetadata) {
     const siteUrl = 'https://www.weave365.com';
     const canonicalUrl = canonical.startsWith('http') ? canonical : `${siteUrl}${canonical === '/' ? '' : canonical}`;
     
-    let imageUrl = override.imageUrl || defaultMetadata.openGraph?.images?.[0]?.url || 'https://assets.weave365.com/assets/banner/favicon.svg';
+    let imageUrl = override.imageUrl || defaultMetadata.openGraph?.images?.[0]?.url || 'https://assets.weave365.com/assets/banner/Weave365.svg';
     if (imageUrl && imageUrl.startsWith('/')) {
       imageUrl = `${siteUrl}${imageUrl}`;
     }
 
     // Apply Cloudflare API proxying if appropriate
-    if (imageUrl && imageUrl !== 'https://assets.weave365.com/assets/banner/favicon.svg') {
+    if (imageUrl && imageUrl !== 'https://assets.weave365.com/assets/banner/Weave365.svg') {
       if (imageUrl.includes('weave365.in') || imageUrl.includes('assets.weave365.com') || imageUrl.includes('r2.cloudflarestorage.com')) {
         imageUrl = `${siteUrl}/api/image?url=${encodeURIComponent(imageUrl)}`;
       }

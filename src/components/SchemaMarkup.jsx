@@ -11,9 +11,9 @@ export default function SchemaMarkup() {
         url: siteUrl,
         logo: {
           "@type": "ImageObject",
-          url: "https://assets.weave365.com/assets/banner/favicon.svg",
-          width: 800,
-          height: 800,
+          url: "https://assets.weave365.com/assets/banner/Weave365.svg",
+          width: 539,
+          height: 100,
         },
         description:
           "Weave 365 is India's trusted B2B wholesale platform for premium Banarasi sarees, suits, lehengas and ethnic fabrics.",

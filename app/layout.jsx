@@ -66,9 +66,9 @@ export const metadata = {
     siteName: "Weave 365",
     images: [
       {
-        url: "https://assets.weave365.com/assets/banner/favicon.svg",
-        width: 800,
-        height: 800,
+        url: "https://assets.weave365.com/assets/banner/Weave365.svg",
+        width: 539,
+        height: 100,
         alt: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
       },
     ],
@@ -80,7 +80,7 @@ export const metadata = {
     title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
     description:
       "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
-    images: ["https://assets.weave365.com/assets/banner/favicon.svg"],
+    images: ["https://assets.weave365.com/assets/banner/Weave365.svg"],
   },
   robots: {
     index: true,
@@ -126,6 +126,9 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-4K369BHS5L');
           `}
         </Script>
+        <link rel="icon" type="image/svg+xml" href="https://assets.weave365.com/assets/banner/favicon.svg" />
+        <link rel="shortcut icon" href="https://assets.weave365.com/assets/banner/favicon.svg" />
+        <link rel="apple-touch-icon" href="https://assets.weave365.com/assets/banner/favicon.svg" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />

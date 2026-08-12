@@ -1352,34 +1352,16 @@
   border-bottom: none !important;
 }
 
-/* Logo: normal at top */
-.site-header.home-header:not(.scrolled) .brand-logo {
-  filter: var(--hero-logo-filter, none) !important;
-  transition: filter 0.3s ease;
-}
-
-@supports (-webkit-mask-image: url('')) or (mask-image: url('')) {
-  html[style*="--hero-logo-color"] .site-header.home-header:not(.scrolled) .brand-logo {
-    filter: none !important;
-    background-color: var(--hero-logo-color) !important;
-    -webkit-mask-image: url('../../assets/Weave365.svg');
-    mask-image: url('../../assets/Weave365.svg');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 62.25' width='400' height='62.25'/>") !important;
-  }
-}
-
+/* Logo: always clean and natural without overlay mask */
+.site-header.home-header .brand-logo,
+.site-header.home-header:not(.scrolled) .brand-logo,
 .site-header.home-header.scrolled .brand-logo {
   filter: none !important;
   background-color: transparent !important;
   mask-image: none !important;
   -webkit-mask-image: none !important;
   content: normal !important;
+  transition: filter 0.3s ease;
 }
 
 /* Nav links: dark (or dynamic custom color) at top, premium ink when scrolled */

@@ -182,10 +182,10 @@
 }
 
 .brand-logo {
-  height: 24px; /* Prominent premium logo height on desktop */
+  height: 28px; /* Balanced premium logo height on desktop */
   width: auto;
   object-fit: contain;
-  transition: filter 0.3s ease;
+  transition: filter 0.3s ease, height 0.3s ease;
 }
 
 .brand-divider {
