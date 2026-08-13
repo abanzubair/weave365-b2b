@@ -109,14 +109,14 @@ export default function RootLayout({ children }) {
         <link
           rel="preload"
           as="image"
-          href="https://assets.weave365.com/assets/banner/deskH.webp"
+          href="/deskH.webp"
           media="(min-width: 768px)"
           fetchPriority="high"
         />
         <link
           rel="preload"
           as="image"
-          href="https://assets.weave365.com/assets/banner/mobH.webp"
+          href="/mobH.webp"
           media="(max-width: 767px)"
           fetchPriority="high"
         />
