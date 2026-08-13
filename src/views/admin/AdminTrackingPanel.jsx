@@ -460,7 +460,7 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                           {copyFeedback[inquiry.id] ? <Check size={12} className="admin-text-green" /> : <Copy size={12} />}
                         </button>
                         <a 
-                          href={`/order-tracking?id=${inquiry.id}`}
+                          href={`/order-tracking/${inquiry.id}`}
                           target="_blank" 
                           rel="noreferrer"
                           className="admin-icon-btn-ghost"
