@@ -5,7 +5,6 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
-import { storeConfig } from '../config.js';
 import {
   customerPrice,
   fallbackProductImage,

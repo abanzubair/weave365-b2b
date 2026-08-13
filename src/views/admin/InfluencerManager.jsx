@@ -9,13 +9,10 @@ import {
   CreditCard,
   DollarSign,
   TrendingUp,
-  Percent,
   Eye,
   Globe,
   Smartphone,
-  Laptop,
-  ExternalLink,
-  BarChart3
+  Laptop
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { formatMoney } from '../../storefrontShared.jsx';

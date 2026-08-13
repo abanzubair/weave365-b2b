@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowRight, Share2, HelpCircle } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 
 export function ResellerOnboardingWalkthrough({ user, buyerProfile, priceAccess }) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);

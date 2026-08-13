@@ -1,20 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { DEFAULT_THEME_SETTINGS, applyCustomTheme, getCustomContent } from '../../utils/themeEngine.js';
+import { DEFAULT_THEME_SETTINGS, applyCustomTheme } from '../../utils/themeEngine.js';
 import { fetchSiteCustomizer, saveSiteCustomizer } from '../../productData.js';
 import { 
   Save, 
   RotateCcw, 
   Check, 
-  Monitor, 
-  Tablet, 
-  Smartphone, 
   Sparkles, 
   RefreshCw, 
   Palette, 
   Type, 
-  FileText, 
   Layers, 
   Eye,
   ExternalLink,
@@ -24,9 +20,7 @@ import {
   AlignCenter,
   AlignRight,
   Maximize2,
-  Minimize2,
   Box,
-  Move,
   MousePointer,
   MousePointerClick
 } from 'lucide-react';

@@ -9,7 +9,7 @@ import { X, LogOut, ArrowLeft, Eye, EyeOff, Mail, Lock, ShieldCheck, ArrowRight,
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { syncProfileFromUser } from '../utils/profileHelpers.js';
-import { applyAutoApprovalToBuyerProfile, isVaranasiPincode } from '../utils/buyerAccess.js';
+import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style={{ display: 'inline-block', verticalAlign: 'middle', color: '#25D366' }} aria-hidden="true">

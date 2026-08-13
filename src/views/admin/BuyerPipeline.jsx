@@ -3,26 +3,14 @@ import {
   Users,
   ShoppingBag,
   Heart,
-  MessageSquareText,
-  BarChart3,
-  LineChart,
-  Store,
-  UserRound,
   Copy,
   Check,
-  RefreshCw,
-  FileSpreadsheet,
   Search,
-  MoreHorizontal,
   Download,
 } from 'lucide-react';
-import { isVaranasiPincode, normalizeBuyerType } from '../../utils/buyerAccess.js';
+import { normalizeBuyerType } from '../../utils/buyerAccess.js';
 import {
-  monthKey,
-  buildMonthlySeries,
   joinByUser,
-  MetricCard,
-  MiniBarChart,
 } from './AdminShared.jsx';
 
 export default function BuyerPipeline({

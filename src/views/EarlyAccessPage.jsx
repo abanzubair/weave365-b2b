@@ -6,7 +6,7 @@
  * Submissions can be reviewed and actioned from the Admin panel → Early Access tab.
  */
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Building2, 
   Store, 
@@ -18,7 +18,6 @@ import {
   Handshake, 
   Tag, 
   Palette, 
-  Check, 
   ArrowRight,
   Loader2,
   CheckCircle2

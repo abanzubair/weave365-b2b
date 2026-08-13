@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, RotateCcw, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
 
 export function ReturnsCancellationPage({ navigate }) {

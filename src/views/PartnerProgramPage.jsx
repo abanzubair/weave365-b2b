@@ -16,29 +16,21 @@ import {
   ArrowRight,
   BadgeCheck,
   Boxes,
-  Building2,
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
   Coins,
   Compass,
   Factory,
-  Handshake,
-  Layers,
   PackageCheck,
   PackagePlus,
-  Percent,
-  QrCode,
   ScanSearch,
   ShieldCheck,
   Sparkles,
   Store,
   Tags,
   Truck,
-  Users,
-  Zap,
 } from 'lucide-react';
-import { siteUrl } from '../config.js';
 
 // Configuration data for White Label & Sourcing Partner pages
 const partnerPages = {

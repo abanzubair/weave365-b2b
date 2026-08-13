@@ -1,18 +1,12 @@
 import { useState, useMemo } from 'react';
 import {
-  FileText,
   Truck,
   Printer,
   Search,
-  ExternalLink,
   Copy,
   Check,
-  Filter,
   RefreshCw,
-  Clock,
-  PackageCheck
 } from 'lucide-react';
-import { supabase } from '../../supabaseClient.js';
 
 /**
  * InvoiceCourierManager Component

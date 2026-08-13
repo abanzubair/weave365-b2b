@@ -25,9 +25,7 @@ import {
   calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
-// import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
-import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
 
 export function CheckoutPage({

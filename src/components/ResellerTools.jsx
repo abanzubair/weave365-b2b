@@ -11,7 +11,6 @@ import {
   Trash2, 
   Settings, 
   MessageSquare, 
-  Eye,
   Calendar,
   Save,
   ExternalLink,

@@ -5,7 +5,7 @@
  * PAN India delivery pincode check status, and dynamic WhatsApp checkouts.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard, Store, MapPin } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Plus, Zap, CreditCard, Store } from 'lucide-react';
 import { storeConfig, getProductCategorySlug } from '../config.js';
 import {
   customerPrice,

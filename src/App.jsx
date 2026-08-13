@@ -6,8 +6,7 @@
  * catalog caching, currency states, and client-side page navigation routing.
  * Houses universal shell items like the top alert bars, navigation headers, sidebar drawers, and the footer.
  */
-import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
-import { createPortal } from 'react-dom';
+import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';

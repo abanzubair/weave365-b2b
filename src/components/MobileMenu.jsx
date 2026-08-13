@@ -21,7 +21,6 @@ import {
   Briefcase,
   Globe,
   Info,
-  Star,
   Shield,
 } from 'lucide-react';
 

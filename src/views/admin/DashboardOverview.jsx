@@ -6,11 +6,9 @@ import {
   Calendar,
   Clock,
   LineChart,
-  Users,
   Check,
   RefreshCw,
   Printer,
-  Eye,
   Database,
 } from 'lucide-react';
 

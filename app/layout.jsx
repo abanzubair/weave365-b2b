@@ -1,5 +1,5 @@
 import '../src/styles.css';
-import { storeConfig, siteUrl } from '../src/config.js';
+import { siteUrl } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
 import Script from 'next/script';
 import { 

@@ -26,10 +26,7 @@ import {
   Star,
   ZoomIn,
   X,
-  Plus,
-  HelpCircle,
   Check,
-  Loader,
 } from 'lucide-react';
 import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
@@ -41,9 +38,6 @@ import {
   fallbackProductImage,
   formatMoney,
   formatWeight,
-  normalizePincodeInput,
-  useCurrency,
-  calculateComboDiscount,
 } from './storefrontShared.jsx';
 import { Newsletter } from './components/Newsletter.jsx';
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';

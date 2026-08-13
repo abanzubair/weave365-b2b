@@ -5,7 +5,6 @@
  */
 import { BellRing } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 export function Newsletter() {

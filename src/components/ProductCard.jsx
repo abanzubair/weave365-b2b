@@ -16,14 +16,11 @@ import {
   Palette,
   Share2,
   ShoppingBag,
-  User,
   X,
   Zap,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
-import { storeConfig } from '../config.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import {
   fallbackProductImage,
   buildSingleProductWhatsappUrl,

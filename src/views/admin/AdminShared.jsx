@@ -1,18 +1,10 @@
 import { createPortal } from 'react-dom';
 import {
-  BarChart3,
-  Bookmark,
-  ClipboardList,
-  Heart,
-  LineChart,
-  ShoppingBag,
-  Users,
-  MessageSquareText,
   Copy,
   ExternalLink,
 } from 'lucide-react';
 import { adminEmails, getProductCategorySlug } from '../../config.js';
-import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
+import { supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 

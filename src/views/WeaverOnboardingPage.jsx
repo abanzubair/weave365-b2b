@@ -15,7 +15,6 @@ import {
   Globe, 
   Shield, 
   Handshake, 
-  ShieldCheck, 
   AlertTriangle,
   UserCheck,
   MessageSquare,

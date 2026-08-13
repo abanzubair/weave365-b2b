@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowRight } from 'lucide-react';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 
 export function WeaveComparisonGuidePage({ navigate }) {

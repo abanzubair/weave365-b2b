@@ -6,8 +6,8 @@
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
-import { ArrowRight, User, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, ShoppingBag, Truck, LayoutGrid, ArrowDown, Grid, Tag, Globe, Gem, MapPin, Layers, Calendar, Clock } from 'lucide-react';
-import { fallbackProductImage, expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
+import { ArrowRight, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, LayoutGrid, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from 'lucide-react';
+import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
@@ -16,14 +16,11 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { BenefitStrip, Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
-import resellerImage from '../../assets/reseller_premium_catalog_display.webp';
-import brandCollabImage from '../../assets/brand_collaboration.webp';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
 import { storeConfig, seoCategoryMap, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
-import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { OverlapHero } from '../components/OverlapHero.jsx';
 

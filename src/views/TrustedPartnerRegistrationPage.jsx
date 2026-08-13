@@ -19,8 +19,6 @@ import {
   CheckCircle2,
   ClipboardCheck,
   ShieldCheck,
-  Lock,
-  Unlock,
   RefreshCw,
   AlertCircle,
   Languages

@@ -16,14 +16,11 @@ import {
   MapPin,
   Building,
   Phone,
-  Tag,
   Globe,
   Smartphone,
   Laptop,
   Bot,
-  BarChart3,
   TrendingUp,
-  ShieldCheck,
   Download
 } from 'lucide-react';
 import { getProductCategorySlug } from '../../config.js';

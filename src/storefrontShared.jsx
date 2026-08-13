@@ -4,10 +4,8 @@
  * 1. The central stateless business logic library (currency math, WhatsApp message formatting, image proxying).
  * 2. A backward-compatibility import/re-export gateway for extracted visual components.
  */
-import { memo, useMemo, useState, useEffect } from 'react';
 import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
-import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import {
   CURRENCIES,
   CurrencyManager,

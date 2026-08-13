@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, ShieldAlert, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
 
 export function DisclaimerPage({ navigate }) {

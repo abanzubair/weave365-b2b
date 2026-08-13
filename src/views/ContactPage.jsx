@@ -15,11 +15,9 @@ import {
   Youtube, 
   Linkedin,
   ArrowRight,
-  ExternalLink,
   ChevronRight
 } from 'lucide-react';
-import { siteUrl } from '../config.js';
-import { storeConfig } from '../config.js';
+import { siteUrl, storeConfig } from '../config.js';
 
 function PinterestIcon({ size = 20, className = "" }) {
   return (

@@ -10,7 +10,6 @@ import {
   Building,
   Calendar,
   CheckCircle,
-  Clock,
   Trash2,
   ExternalLink,
 } from 'lucide-react';

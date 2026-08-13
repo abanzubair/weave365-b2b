@@ -20,8 +20,7 @@ import {
   ChevronDown, 
   ShoppingBag,
   Truck,
-  HeartHandshake,
-  Sparkles
+  HeartHandshake
 } from 'lucide-react';
 import '../styles/dropshipping.css';
 

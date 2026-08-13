@@ -8,22 +8,18 @@
  * @module views/CustomWovenPage
  */
 
-import { useState, useId, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Sliders, 
   Layers, 
   Sparkles, 
   Clock, 
   ShieldCheck, 
-  HelpCircle, 
   ChevronDown, 
   ChevronLeft,
   ChevronRight,
   FileText, 
-  CheckCircle2, 
   Compass, 
   Cpu, 
-  ArrowRight, 
   Send, 
   Award, 
   Box, 
@@ -31,14 +27,10 @@ import {
   Image as ImageIcon, 
   Check, 
   Info,
-  DollarSign,
   IndianRupee,
   Palette,
   Feather,
-  RefreshCw,
   Building2,
-  Package,
-  MessageSquare,
   Tag,
   Crown,
   Store,
@@ -46,7 +38,6 @@ import {
   Globe,
   Gift
 } from 'lucide-react';
-import { storeConfig } from '../config.js';
 import { AppLink } from '../components/AppLink.jsx';
 import '../styles/customWoven.css';
 

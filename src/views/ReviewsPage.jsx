@@ -6,7 +6,7 @@
  * Integrates directly with Supabase table `service_reviews` with a client-side localStorage fallback.
  */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Award, ChevronRight, Plus, HelpCircle, Check, Loader } from 'lucide-react';
+import { Award, Plus, HelpCircle, Check, Loader } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import SliderCaptcha from '../components/SliderCaptcha.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';

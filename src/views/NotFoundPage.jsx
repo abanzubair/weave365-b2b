@@ -7,7 +7,7 @@
  * App.jsx client-side fallback for unknown routes.
  */
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Home, Package } from 'lucide-react';
+import { Search, Home, Package } from 'lucide-react';
 
 export function NotFoundPage() {
   const router = useRouter();
