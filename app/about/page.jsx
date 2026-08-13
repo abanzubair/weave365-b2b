@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import AboutClient from './AboutClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -11,8 +12,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/about', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function AboutPage() {
-  return <AboutClient />;
+  return (
+    <Suspense fallback={null}>
+      <AboutClient />
+    </Suspense>
+  );
 }

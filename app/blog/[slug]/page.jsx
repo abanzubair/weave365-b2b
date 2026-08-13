@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import BlogPostClient from './BlogPostClient.jsx';
 import { siteUrl } from '../../../src/config.js';
 import { blogPosts } from '../../../src/data/blogPosts.js';
@@ -30,5 +31,9 @@ export const runtime = 'edge';
 
 export default async function BlogPostPage({ params }) {
   const resolvedParams = await params;
-  return <BlogPostClient slug={resolvedParams?.slug} />;
+  return (
+    <Suspense fallback={null}>
+      <BlogPostClient slug={resolvedParams?.slug} />
+    </Suspense>
+  );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import ContactClient from './ContactClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -11,8 +12,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/contact', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function ContactPage() {
-  return <ContactClient />;
+  return (
+    <Suspense fallback={null}>
+      <ContactClient />
+    </Suspense>
+  );
 }

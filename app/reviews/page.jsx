@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import ReviewsClient from './ReviewsClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -11,8 +12,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/reviews', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function ReviewsPage() {
-  return <ReviewsClient />;
+  return (
+    <Suspense fallback={null}>
+      <ReviewsClient />
+    </Suspense>
+  );
 }

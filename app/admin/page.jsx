@@ -1,16 +1,18 @@
+import { Suspense } from 'react';
 import AdminClient from './AdminClient.jsx';
 
 export const metadata = {
-  title: 'Admin Portal | Weave 365',
-  description: 'Administrative portal for Weave 365. Manage products, blogs, reviews, and vendors.',
+  title: 'Admin Dashboard | Weave 365',
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export const runtime = 'edge';
-
 export default function AdminPage() {
-  return <AdminClient />;
+  return (
+    <Suspense fallback={null}>
+      <AdminClient />
+    </Suspense>
+  );
 }

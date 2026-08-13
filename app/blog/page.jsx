@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import BlogClient from './BlogClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -11,8 +12,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/blog', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function BlogPage() {
-  return <BlogClient />;
+  return (
+    <Suspense fallback={null}>
+      <BlogClient />
+    </Suspense>
+  );
 }

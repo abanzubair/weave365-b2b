@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import RegistrationClient from './RegistrationClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -17,8 +18,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/weaver-registration', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function WeaverRegistrationPage() {
-  return <RegistrationClient />;
+  return (
+    <Suspense fallback={null}>
+      <RegistrationClient />
+    </Suspense>
+  );
 }

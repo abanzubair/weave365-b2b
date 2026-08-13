@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import OnboardingClient from './OnboardingClient.jsx';
 import { siteUrl } from '../../src/config.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
@@ -11,8 +12,10 @@ export async function generateMetadata() {
   return getSeoMetadata('/weaver-onboarding', defaultMeta);
 }
 
-export const runtime = 'edge';
-
 export default function WeaverOnboardingPageRoute() {
-  return <OnboardingClient />;
+  return (
+    <Suspense fallback={null}>
+      <OnboardingClient />
+    </Suspense>
+  );
 }
