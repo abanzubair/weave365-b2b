@@ -2,6 +2,7 @@ import App from '../../src/App.jsx';
 import { cache } from 'react';
 import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRoutes, siteUrl } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSupabaseLandingPages } from '../../src/productData.js';
+import { fetchDirectoryConfigRemote } from '../../src/utils/directoryService.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 import { notFound, redirect } from 'next/navigation';
@@ -111,18 +112,20 @@ function toSerializable(value) {
 }
 
 const getInitialData = cache(async () => {
-  const [productsResult, heroResult, configResult, blogsResult, landingPagesResult] = await Promise.allSettled([
+  const [productsResult, heroResult, configResult, blogsResult, landingPagesResult, directoryResult] = await Promise.allSettled([
     fetchProducts(),
     fetchHeroData(),
     fetchConfigOptions(),
     fetchSupabaseBlogPosts(),
     fetchSupabaseLandingPages(),
+    fetchDirectoryConfigRemote(),
   ]);
 
   const products = productsResult.status === 'fulfilled' ? productsResult.value : [];
   const heroSlides = heroResult.status === 'fulfilled' ? heroResult.value : [];
   const configOptions = configResult.status === 'fulfilled' ? configResult.value : defaultConfigOptions;
   const dbPosts = blogsResult.status === 'fulfilled' ? blogsResult.value : [];
+  const directoryConfig = directoryResult.status === 'fulfilled' ? directoryResult.value : null;
   
   let landingPages = landingPagesResult.status === 'fulfilled' ? landingPagesResult.value : [];
   if (landingPages.length === 0) {
@@ -138,6 +141,7 @@ const getInitialData = cache(async () => {
     configOptions,
     dbPosts,
     landingPages,
+    directoryConfig,
     status: productError ? 'error' : 'ready',
     error: productError?.message || '',
   });

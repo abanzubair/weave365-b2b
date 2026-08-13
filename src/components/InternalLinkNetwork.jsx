@@ -53,27 +53,30 @@ export function DynamicIcon({ name, size = 18, className = 'col-icon' }) {
   return <IconComp size={size} className={className} />;
 }
 
-export function InternalLinkNetwork({ navigate, setCategory }) {
-  const [config, setConfig] = useState(DEFAULT_DIRECTORY_CONFIG);
+export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
+  const [config, setConfig] = useState(() => initialConfig || getDirectoryConfigLocal() || DEFAULT_DIRECTORY_CONFIG);
 
   useEffect(() => {
-    // 1. Load local config first for instant cache display
-    const cached = getDirectoryConfigLocal();
-    if (cached) {
-      setConfig(cached);
+    // 1. If initialConfig wasn't passed, fall back to local storage cache
+    if (!initialConfig) {
+      const cached = getDirectoryConfigLocal();
+      if (cached && JSON.stringify(cached) !== JSON.stringify(config)) {
+        setConfig(cached);
+      }
     }
 
-    // 2. Fetch remote config synchronously/async on mount to update live
+    // 2. Fetch remote config and update state ONLY if content has changed
     void fetchDirectoryConfigRemote().then(remoteData => {
-      if (remoteData) setConfig(remoteData);
+      if (remoteData && JSON.stringify(remoteData) !== JSON.stringify(config)) {
+        setConfig(remoteData);
+      }
     });
 
     // 3. Listen for Admin Panel instant updates
     const handleUpdate = (e) => {
-      if (e.detail) {
-        setConfig(e.detail);
-      } else {
-        setConfig(getDirectoryConfigLocal());
+      const nextData = e.detail || getDirectoryConfigLocal();
+      if (nextData) {
+        setConfig(nextData);
       }
     };
 
@@ -81,7 +84,7 @@ export function InternalLinkNetwork({ navigate, setCategory }) {
     return () => {
       window.removeEventListener(DIRECTORY_UPDATED_EVENT, handleUpdate);
     };
-  }, []);
+  }, [initialConfig, config]);
 
   const getHref = (link) => {
     if (link.path) return link.path;

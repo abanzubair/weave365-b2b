@@ -230,6 +230,8 @@
   align-items: center;
   gap: clamp(18px, 2.5vw, 32px);
   margin: 0 auto;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .main-nav button,
@@ -246,7 +248,8 @@
   white-space: nowrap;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  line-height: normal;
+  line-height: 1.2;
+  box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   cursor: pointer;
   transition: color 0.3s ease, border-color 0.3s ease;

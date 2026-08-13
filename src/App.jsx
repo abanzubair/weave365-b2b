@@ -1626,7 +1626,7 @@ export default function App({ initialData = {} }) {
         </ErrorBoundary>
       </main>
 
-      {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} />}
+      {!isSharedPage && route !== 'admin' && <InternalLinkNetwork navigate={navigate} setCategory={setCategory} initialConfig={initialData?.directoryConfig} />}
       {!isSharedPage && route === 'home' && <ReviewStrip navigate={navigate} />}
       {!isSharedPage && route !== 'admin' && <Footer navigate={navigate} scrollToSection={scrollToSection} />}
       {!isSharedPage && (
