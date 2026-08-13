@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect } from 'react';
-import { WeaverOnboardingPage } from '../../src/views/WeaverOnboardingPage.jsx';
-import { useStorefront } from '../../src/store/useStorefront.js';
-import { SiteHeader } from '../../src/components/SiteHeader.jsx';
-import { Footer } from '../../src/components/Footer.jsx';
-import { AuthModal } from '../../src/components/AuthModal.jsx';
-import { isSupabaseConfigured, supabase } from '../../src/supabaseClient.js';
+import { BlogPost } from '../../../src/views/BlogPost.jsx';
+import { useStorefront } from '../../../src/store/useStorefront.js';
+import { SiteHeader } from '../../../src/components/SiteHeader.jsx';
+import { Footer } from '../../../src/components/Footer.jsx';
+import { AuthModal } from '../../../src/components/AuthModal.jsx';
+import { CartDrawer } from '../../../src/components/CartDrawer.jsx';
+import { isSupabaseConfigured, supabase } from '../../../src/supabaseClient.js';
+import { fetchSupabaseBlogPosts } from '../../../src/productData.js';
 import { useRouter } from 'next/navigation';
 
-export default function OnboardingClient() {
+export default function BlogPostClient({ slug }) {
   const router = useRouter();
   const {
     user,
@@ -18,6 +20,10 @@ export default function OnboardingClient() {
     setBuyerProfile,
     authOpen,
     setAuthOpen,
+    cartOpen,
+    setCartOpen,
+    blogs,
+    setBlogs,
   } = useStorefront();
 
   useEffect(() => {
@@ -44,15 +50,23 @@ export default function OnboardingClient() {
     return () => data.subscription.unsubscribe();
   }, [setUser, setBuyerProfile]);
 
-  const navigate = (route) => {
+  useEffect(() => {
+    if (blogs.length === 0) {
+      fetchSupabaseBlogPosts().then(setBlogs).catch(console.error);
+    }
+  }, [blogs.length, setBlogs]);
+
+  const navigate = (route, postSlug) => {
     if (route === 'home') router.push('/');
+    else if (route === 'blog' && postSlug) router.push(`/blog/${postSlug}`);
     else router.push(`/${route}`);
   };
 
   return (
     <>
-      <SiteHeader route="weaver-onboarding" navigate={navigate} />
-      <WeaverOnboardingPage openAuth={() => router.push('/weaver-registration')} />
+      <SiteHeader route="blog" navigate={navigate} />
+      <BlogPost postSlug={slug} navigate={navigate} blogs={blogs} />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} navigate={navigate} />
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}

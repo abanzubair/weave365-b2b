@@ -17,7 +17,7 @@ export function DropdownPortal({ anchorRef, isOpen, children, offsetY = 12, clas
   });
 
   useIsomorphicLayoutEffect(() => {
-    if (isOpen && anchorRef.current) {
+    if (isOpen && anchorRef?.current) {
       const rect = anchorRef.current.getBoundingClientRect();
       const dropdownEl = dropdownRef.current;
       const dropdownWidth = dropdownEl ? dropdownEl.getBoundingClientRect().width : 210;

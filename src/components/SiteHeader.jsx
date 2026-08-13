@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ChevronDown, Search, ShoppingBag, User, LogOut } from 'lucide-react';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
@@ -5,6 +6,11 @@ import { storeConfig } from '../config.js';
 import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
 import { useStorefront } from '../store/useStorefront.js';
+
+import brandLogo from '../../assets/Weave365.svg';
+import { assetSrc } from '../utils/assetSrc.js';
+
+const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
 
 export const pluralizeCategory = (cat) => {
   if (!cat) return '';
@@ -23,22 +29,31 @@ export const pluralizeCategory = (cat) => {
 export function SiteHeader(props) {
   const store = useStorefront();
 
+  const internalCategoriesRef = useRef(null);
+  const internalPartnerNavRef = useRef(null);
+  const internalProfileRef = useRef(null);
+  const internalCurrencyRef = useRef(null);
+
   const route = props.route;
   const scrolled = props.scrolled ?? store.scrolled;
   const pastHero = props.pastHero ?? store.pastHero;
   const menuOpen = props.menuOpen ?? store.menuOpen;
   const setMenuOpen = props.setMenuOpen ?? store.setMenuOpen;
-  const brandLogoSrc = props.brandLogoSrc;
+  const brandLogoSrc = props.brandLogoSrc || assetSrc(brandLogo);
   const navigate = props.navigate;
   const dropdownOpen = props.dropdownOpen ?? store.dropdownOpen;
   const setDropdownOpen = props.setDropdownOpen ?? store.setDropdownOpen;
-  const categoriesRef = props.categoriesRef;
-  const categories = props.categories || [];
+  const categoriesRef = props.categoriesRef || internalCategoriesRef;
+  const categories = (props.categories && props.categories.length > 0)
+    ? props.categories
+    : (store.configOptions?.categories?.length > 0
+      ? ['All', ...store.configOptions.categories]
+      : defaultCategoryNames);
   const setCategory = props.setCategory;
-  const partnerNavRef = props.partnerNavRef;
+  const partnerNavRef = props.partnerNavRef || internalPartnerNavRef;
   const searchActive = props.searchActive ?? store.searchActive;
   const setSearchActive = props.setSearchActive ?? store.setSearchActive;
-  const profileRef = props.profileRef;
+  const profileRef = props.profileRef || internalProfileRef;
   const user = props.user ?? store.user;
   const buyerProfile = props.buyerProfile ?? store.buyerProfile;
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
@@ -48,7 +63,7 @@ export function SiteHeader(props) {
   const setAuthOpen = props.setAuthOpen ?? store.setAuthOpen;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
   const cartProducts = props.cartProducts || [];
-  const currencyRef = props.currencyRef;
+  const currencyRef = props.currencyRef || internalCurrencyRef;
   const activeCurrency = props.activeCurrency || CURRENCIES[0];
   const currentCurrency = props.currentCurrency || CURRENCIES[0].code;
   return (
@@ -72,7 +87,7 @@ export function SiteHeader(props) {
         onClick={(e) => {
           if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
             e.preventDefault();
-            navigate('home');
+            if (navigate) navigate('home');
           }
         }}
       >
@@ -101,8 +116,8 @@ export function SiteHeader(props) {
               <button type="button"
                 key={cat}
                 onClick={() => {
-                  setCategory(cat);
-                  navigate('catalogue', null, null, { category: cat });
+                  if (setCategory) setCategory(cat);
+                  if (navigate) navigate('catalogue', null, null, { category: cat });
                   setDropdownOpen(null);
                 }}
               >

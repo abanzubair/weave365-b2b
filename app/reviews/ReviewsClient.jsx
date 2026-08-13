@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { WeaverOnboardingPage } from '../../src/views/WeaverOnboardingPage.jsx';
+import { ReviewsPage } from '../../src/views/ReviewsPage.jsx';
 import { useStorefront } from '../../src/store/useStorefront.js';
 import { SiteHeader } from '../../src/components/SiteHeader.jsx';
 import { Footer } from '../../src/components/Footer.jsx';
 import { AuthModal } from '../../src/components/AuthModal.jsx';
+import { CartDrawer } from '../../src/components/CartDrawer.jsx';
 import { isSupabaseConfigured, supabase } from '../../src/supabaseClient.js';
 import { useRouter } from 'next/navigation';
 
-export default function OnboardingClient() {
+export default function ReviewsClient() {
   const router = useRouter();
   const {
     user,
@@ -18,6 +19,8 @@ export default function OnboardingClient() {
     setBuyerProfile,
     authOpen,
     setAuthOpen,
+    cartOpen,
+    setCartOpen,
   } = useStorefront();
 
   useEffect(() => {
@@ -51,8 +54,9 @@ export default function OnboardingClient() {
 
   return (
     <>
-      <SiteHeader route="weaver-onboarding" navigate={navigate} />
-      <WeaverOnboardingPage openAuth={() => router.push('/weaver-registration')} />
+      <SiteHeader route="reviews" navigate={navigate} />
+      <ReviewsPage navigate={navigate} user={user} />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} navigate={navigate} />
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}

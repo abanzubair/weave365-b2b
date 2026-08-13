@@ -9,7 +9,7 @@
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ChevronDown, Bookmark, Search, ShoppingBag, User, ArrowRight, LogOut } from 'lucide-react';
+import { Search, ShoppingBag } from 'lucide-react';
 import { fetchProducts, fetchHeroData, fetchConfigOptions, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSiteCustomizer } from './productData.js';
 import { applyCustomTheme } from './utils/themeEngine.js';
 import { blogPosts } from './data/blogPosts.js';
@@ -75,13 +75,7 @@ const DropshippingPage = dynamic(() => import('./views/DropshippingPage.jsx').th
 const ResellerFeaturesPage = dynamic(() => import('./views/ResellerFeaturesPage.jsx').then(m => ({ default: m.ResellerFeaturesPage })), { ssr: false });
 const PartnerProgramPage = dynamic(() => import('./views/PartnerProgramPage.jsx').then(m => ({ default: m.PartnerProgramPage })), { ssr: false });
 const CheckoutPage = dynamic(() => import('./views/CheckoutPage.jsx').then(m => ({ default: m.CheckoutPage })), { ssr: false });
-const CustomWovenPage = dynamic(() => import('./views/CustomWovenPage.jsx').then(m => ({ default: m.CustomWovenPage })), { ssr: false });
-const BlogList = safeLazy(() => import('./views/BlogList.jsx').then(m => ({ default: m.BlogList })));
-const BlogPost = safeLazy(() => import('./views/BlogPost.jsx').then(m => ({ default: m.BlogPost })));
-const AboutPage = safeLazy(() => import('./views/AboutPage.jsx').then(m => ({ default: m.AboutPage })));
-const ReviewsPage = safeLazy(() => import('./views/ReviewsPage.jsx').then(m => ({ default: m.ReviewsPage })));
 const EarlyAccessPage = dynamic(() => import('./views/EarlyAccessPage.jsx').then(m => ({ default: m.EarlyAccessPage })), { ssr: false });
-const ContactPage = safeLazy(() => import('./views/ContactPage.jsx').then(m => ({ default: m.ContactPage })));
 const OurOfferings = dynamic(() => import('./views/OurOfferings.jsx').then(m => ({ default: m.OurOfferings })), { ssr: false });
 const NotFoundPage = dynamic(() => import('./views/NotFoundPage.jsx').then(m => ({ default: m.NotFoundPage })), { ssr: false });
 const DisclaimerPage = dynamic(() => import('./views/DisclaimerPage.jsx').then(m => ({ default: m.DisclaimerPage })), { ssr: false });
@@ -1538,12 +1532,6 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'contact') return <ContactPage navigate={navigate} />;
-
-    if (route === 'about') return <AboutPage navigate={navigate} />;
-    
-    if (route === 'reviews') return <ReviewsPage navigate={navigate} user={user} />;
-
     if (route === 'early-access') return <EarlyAccessPage navigate={navigate} />;
 
     if (route === 'disclaimer') return <DisclaimerPage navigate={navigate} />;
@@ -1555,16 +1543,6 @@ export default function App({ initialData = {} }) {
     if (route === 'privacy-security') return <PrivacySecurityPage navigate={navigate} />;
 
     if (route === 'terms-conditions') return <TermsConditionsPage navigate={navigate} />;
-
-
-
-
-    if (route === 'blog') {
-      if (blogPostSlug) {
-        return <BlogPost postSlug={blogPostSlug} navigate={navigate} blogs={blogs} />;
-      }
-      return <BlogList navigate={navigate} blogs={blogs} />;
-    }
 
     if (route === 'collaboration') return <OurOfferings navigate={navigate} openAuth={() => setAuthOpen(true)} />;
 
