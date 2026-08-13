@@ -26,6 +26,10 @@ export function OverlapHero({ navigate }) {
                 alt="Explore Collection"
                 className="overlap-hero-img"
                 draggable="false"
+                fetchPriority="high"
+                decoding="async"
+                width={768}
+                height={960}
               />
             </picture>
           </div>

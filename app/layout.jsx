@@ -5,7 +5,6 @@ import Script from 'next/script';
 import { 
   Cormorant_Garamond, 
   Manrope, 
-  Cormorant, 
   Marcellus
 } from 'next/font/google';
 
@@ -23,20 +22,12 @@ const manrope = Manrope({
   display: 'swap',
 });
 
-const cormorant = Cormorant({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-cormorant-next',
-  display: 'swap',
-});
-
 const marcellus = Marcellus({
   subsets: ['latin'],
   weight: ['400'],
   variable: '--font-marcellus-next',
   display: 'swap',
 });
-
 
 export const metadata = {
   title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
@@ -106,7 +97,6 @@ export default function RootLayout({ children }) {
   const fontClasses = [
     cormorantGaramond.variable,
     manrope.variable,
-    cormorant.variable,
     marcellus.variable,
   ].join(' ');
 
@@ -114,9 +104,25 @@ export default function RootLayout({ children }) {
     <html lang="en" data-scroll-behavior="smooth" className={fontClasses} suppressHydrationWarning>
       <head>
         <SchemaMarkup />
+        <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://assets.weave365.com" />
+        <link
+          rel="preload"
+          as="image"
+          href="https://assets.weave365.com/assets/banner/deskH.webp"
+          media="(min-width: 768px)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="https://assets.weave365.com/assets/banner/mobH.webp"
+          media="(max-width: 767px)"
+          fetchPriority="high"
+        />
         {/* Google tag (gtag.js) */}
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L" />
-        <Script id="google-analytics">
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -132,7 +138,6 @@ export default function RootLayout({ children }) {
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
         )}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
