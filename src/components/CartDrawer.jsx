@@ -21,21 +21,24 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
 
-export function CartDrawer({
-  open,
-  onClose,
-  items,
-  updateQuantity,
-  removeProduct,
-  addCartColor,
-  pincode,
-  setPincode,
-  codStatus,
-  checkPincode,
-  priceAccess,
-  user,
-  navigate,
-}) {
+import { useStorefront } from '../store/useStorefront.js';
+
+export function CartDrawer(props) {
+  const store = useStorefront();
+
+  const open = props.open ?? store.cartOpen;
+  const onClose = props.onClose || (() => store.setCartOpen(false));
+  const items = props.items || [];
+  const updateQuantity = props.updateQuantity;
+  const removeProduct = props.removeProduct;
+  const addCartColor = props.addCartColor;
+  const pincode = props.pincode ?? store.pincode;
+  const setPincode = props.setPincode || store.setPincode;
+  const codStatus = props.codStatus ?? store.codStatus;
+  const checkPincode = props.checkPincode;
+  const priceAccess = props.priceAccess;
+  const user = props.user ?? store.user;
+  const navigate = props.navigate;
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const [copied, setCopied] = useState(false);

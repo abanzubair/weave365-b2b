@@ -10,15 +10,19 @@ const scrollToSection = (id) => {
   if (el) el.scrollIntoView({ behavior: 'smooth' });
 };
 
-export function SearchOverlay({
-  searchActive,
-  setSearchActive,
-  search,
-  setSearch,
-  navigate,
-  visibleProducts,
-  priceAccess
-}) {
+import { useStorefront } from '../store/useStorefront.js';
+
+export function SearchOverlay(props) {
+  const store = useStorefront();
+
+  const searchActive = props.searchActive ?? store.searchActive;
+  const setSearchActive = props.setSearchActive || store.setSearchActive;
+  const search = props.search || '';
+  const setSearch = props.setSearch;
+  const navigate = props.navigate;
+  const visibleProducts = props.visibleProducts || [];
+  const priceAccess = props.priceAccess;
+
   if (!searchActive) return null;
 
   return (

@@ -65,10 +65,7 @@ const Catalog = safeLazy(() => import('./CatalogPage.jsx').then(m => ({ default:
 const ProductDetailWrapper = safeLazy(() => import('./ProductPage.jsx').then(m => ({ default: m.ProductDetailWrapper })));
 const BulkInquiry = dynamic(() => import('./views/BulkInquiry.jsx').then(m => ({ default: m.BulkInquiry })), { ssr: false });
 const OrderTracking = dynamic(() => import('./views/OrderTracking.jsx').then(m => ({ default: m.OrderTracking })), { ssr: false });
-const Admin = dynamic(() => import('./views/Admin.jsx').then(m => ({ default: m.Admin })), { ssr: false });
 const Account = dynamic(() => import('./views/Account.jsx').then(m => ({ default: m.Account })), { ssr: false });
-const WeaverOnboardingPage = dynamic(() => import('./views/WeaverOnboardingPage.jsx').then(m => ({ default: m.WeaverOnboardingPage })), { ssr: false });
-const TrustedPartnerRegistrationPage = dynamic(() => import('./views/TrustedPartnerRegistrationPage.jsx').then(m => ({ default: m.TrustedPartnerRegistrationPage })), { ssr: false });
 const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').then(m => ({ default: m.ResellerDashboard })), { ssr: false });
 const NewArrivalsPage = safeLazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
 const SeoLandingPage = safeLazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
@@ -263,10 +260,40 @@ export default function App({ initialData = {} }) {
     }
   }, [pathname, searchParams]);
 
-  const [landingPages, setLandingPages] = useState(() => {
-    let pages = initialData.landingPages || [];
-    if (pages.length === 0) {
-      pages = Object.entries(seoLandingPages).map(([slug, page]) => ({
+  // Lifted global states from Zustand storefront store
+  const {
+    user, setUser,
+    buyerProfile, setBuyerProfile,
+    vendorOnboarding, setVendorOnboarding,
+    authOpen, setAuthOpen,
+    authInitialMode, setAuthInitialMode,
+    cartOpen, setCartOpen,
+    menuOpen, setMenuOpen,
+    searchActive, setSearchActive,
+    cart, setCart,
+    favorites, setFavorites,
+    products, setProducts,
+    status, setStatus,
+    error, setError,
+    heroSlides, setHeroSlides,
+    blogs, setBlogs,
+    configOptions, setConfigOptions,
+    pageSeoSettings, setPageSeoSettings,
+    landingPages, setLandingPages,
+    dropdownOpen, setDropdownOpen,
+    scrolled, setScrolled,
+    pastHero, setPastHero,
+    siteCustomizer, setSiteCustomizer,
+    pincode, setPincode,
+    codStatus, setCodStatus,
+  } = useStorefront();
+
+  // Initialize landingPages fallback if empty
+  useEffect(() => {
+    if (initialData.landingPages?.length) {
+      setLandingPages(initialData.landingPages);
+    } else if (!landingPages || landingPages.length === 0) {
+      const fallback = Object.entries(seoLandingPages).map(([slug, page]) => ({
         slug,
         metaTitle: page.metaTitle,
         metaDescription: page.metaDescription,
@@ -285,15 +312,17 @@ export default function App({ initialData = {} }) {
         filter: page.filter || {},
         comparisonSections: page.comparisonSections || []
       }));
+      setLandingPages(fallback);
     }
-    return pages;
-  });
+  }, [initialData.landingPages]);
+
+  const activeLandingPages = landingPages || [];
 
   const isProductPathname = useCallback((path) => {
     const segments = path.split('/').filter(Boolean);
-    const isLanding = landingPages.some(p => p.slug === segments[0]);
+    const isLanding = activeLandingPages.some(p => p.slug === segments[0]);
     return segments.length === 2 && !NON_PRODUCT_ROUTES.has(segments[0]) && !isLanding;
-  }, [landingPages]);
+  }, [activeLandingPages]);
 
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
@@ -304,7 +333,7 @@ export default function App({ initialData = {} }) {
     }
   }
   
-  const isLandingPage = landingPages.some(p => p.slug === pathSegments[0]);
+  const isLandingPage = activeLandingPages.some(p => p.slug === pathSegments[0]);
   const isProductRoute = pathSegments.length === 2 && !NON_PRODUCT_ROUTES.has(pathSegments[0]) && !isLandingPage;
   const route = pendingRoute || (isProductRoute ? 'product' : (pathSegments[0] || 'home'));
   const productId = pendingProductId || (route === 'product' ? decodeURIComponent(pathSegments[1] || '') : null);
@@ -316,27 +345,22 @@ export default function App({ initialData = {} }) {
 
   const hasInitialData = Boolean(initialData?.hydrated);
   const brandLogoSrc = assetSrc(brandLogo);
-  const [products, setProducts] = useState(() => initialData.products || []);
-  const [status, setStatus] = useState(() => initialData.status || (initialData.products ? 'ready' : 'loading'));
-  const [error, setError] = useState(() => initialData.error || '');
 
-  // Lifted dynamic global states using Zustand storefront store
-  const {
-    user, setUser,
-    buyerProfile, setBuyerProfile,
-    vendorOnboarding, setVendorOnboarding,
-    authOpen, setAuthOpen,
-    authInitialMode, setAuthInitialMode,
-    cartOpen, setCartOpen,
-    menuOpen, setMenuOpen,
-    searchActive, setSearchActive,
-    cart, setCart,
-    favorites, setFavorites,
-  } = useStorefront();
+  // Sync initial server data into store on mount
+  useEffect(() => {
+    if (initialData.products?.length && products.length === 0) setProducts(initialData.products);
+    if (initialData.status) setStatus(initialData.status);
+    if (initialData.error) setError(initialData.error);
+    if (initialData.heroSlides?.length && heroSlides.length === 0) setHeroSlides(initialData.heroSlides);
+    if (initialData.configOptions && !configOptions.categories?.length) setConfigOptions(initialData.configOptions);
+    if (initialData.dbPosts?.length && blogs.length === 0) {
+      const slugMap = new Map();
+      blogPosts.forEach((post) => slugMap.set(post.slug, post));
+      initialData.dbPosts.forEach((post) => slugMap.set(post.slug, post));
+      setBlogs(Array.from(slugMap.values()));
+    }
+  }, [initialData]);
 
-  const [pincode, setPincode] = useState('');
-  const [codStatus, setCodStatus] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(null);
   const categoriesRef = useRef(null);
   const partnerNavRef = useRef(null);
   const profileRef = useRef(null);
@@ -344,21 +368,6 @@ export default function App({ initialData = {} }) {
   const currencyRef = useRef(null);
   const [searchPos, setSearchPos] = useState({ top: 0, left: 0, width: 0 });
 
-
-  const [heroSlides, setHeroSlides] = useState(() => initialData.heroSlides || []);
-  const [blogs, setBlogs] = useState(() => {
-    const serverBlogs = initialData.dbPosts || [];
-    const slugMap = new Map();
-    blogPosts.forEach((post) => slugMap.set(post.slug, post));
-    serverBlogs.forEach((post) => slugMap.set(post.slug, post));
-    return Array.from(slugMap.values());
-  });
-  const [configOptions, setConfigOptions] = useState(() => (
-    initialData.configOptions || { priceRanges: [], categories: [], fabrics: [], weaves: [] }
-  ));
-  const [pageSeoSettings, setPageSeoSettings] = useState([]);
-  const [scrolled, setScrolled] = useState(false);
-  const [pastHero, setPastHero] = useState(false);
   const isAdmin = Boolean(
     (user?.email && adminEmails.includes(String(user.email).toLowerCase())) ||
     buyerProfile?.role === 'admin'
@@ -379,8 +388,6 @@ export default function App({ initialData = {} }) {
   );
 
 
-
-  const [siteCustomizer, setSiteCustomizer] = useState(null);
 
   useEffect(() => {
     fetchSiteCustomizer()
@@ -1414,25 +1421,6 @@ export default function App({ initialData = {} }) {
       );
     }
 
-    if (route === 'admin') {
-      return (
-        <ErrorBoundary>
-          <Admin
-            user={user}
-            buyerProfile={buyerProfile}
-            onProfileChange={setBuyerProfile}
-            openAuth={() => setAuthOpen(true)}
-            blogs={blogs}
-            setBlogs={setBlogs}
-            products={pricedProducts}
-            landingPages={landingPages}
-            setLandingPages={setLandingPages}
-            navigate={navigate}
-          />
-        </ErrorBoundary>
-      );
-    }
-
     if (route === 'reseller-dashboard') {
       return (
         <ResellerDashboard
@@ -1567,10 +1555,6 @@ export default function App({ initialData = {} }) {
     if (route === 'privacy-security') return <PrivacySecurityPage navigate={navigate} />;
 
     if (route === 'terms-conditions') return <TermsConditionsPage navigate={navigate} />;
-
-    if (route === 'weaver-onboarding') return <WeaverOnboardingPage openAuth={() => navigate('weaver-registration')} />;
-
-    if (route === 'weaver-registration') return <TrustedPartnerRegistrationPage />;
 
 
 

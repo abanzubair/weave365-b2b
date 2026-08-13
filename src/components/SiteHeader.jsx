@@ -4,6 +4,7 @@ import { AppLink } from './AppLink.jsx';
 import { storeConfig } from '../config.js';
 import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
+import { useStorefront } from '../store/useStorefront.js';
 
 export const pluralizeCategory = (cat) => {
   if (!cat) return '';
@@ -19,36 +20,37 @@ export const pluralizeCategory = (cat) => {
   return cat + 's';
 };
 
-export function SiteHeader({
-  route,
-  scrolled,
-  pastHero,
-  menuOpen,
-  setMenuOpen,
-  brandLogoSrc,
-  navigate,
-  dropdownOpen,
-  setDropdownOpen,
-  categoriesRef,
-  categories,
-  setCategory,
-  partnerNavRef,
-  searchActive,
-  setSearchActive,
-  profileRef,
-  user,
-  buyerProfile,
-  vendorOnboarding,
-  isAdmin,
-  favoritesCount,
-  handleSignOut,
-  setAuthOpen,
-  setCartOpen,
-  cartProducts,
-  currencyRef,
-  activeCurrency,
-  currentCurrency,
-}) {
+export function SiteHeader(props) {
+  const store = useStorefront();
+
+  const route = props.route;
+  const scrolled = props.scrolled ?? store.scrolled;
+  const pastHero = props.pastHero ?? store.pastHero;
+  const menuOpen = props.menuOpen ?? store.menuOpen;
+  const setMenuOpen = props.setMenuOpen ?? store.setMenuOpen;
+  const brandLogoSrc = props.brandLogoSrc;
+  const navigate = props.navigate;
+  const dropdownOpen = props.dropdownOpen ?? store.dropdownOpen;
+  const setDropdownOpen = props.setDropdownOpen ?? store.setDropdownOpen;
+  const categoriesRef = props.categoriesRef;
+  const categories = props.categories || [];
+  const setCategory = props.setCategory;
+  const partnerNavRef = props.partnerNavRef;
+  const searchActive = props.searchActive ?? store.searchActive;
+  const setSearchActive = props.setSearchActive ?? store.setSearchActive;
+  const profileRef = props.profileRef;
+  const user = props.user ?? store.user;
+  const buyerProfile = props.buyerProfile ?? store.buyerProfile;
+  const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
+  const isAdmin = props.isAdmin;
+  const favoritesCount = props.favoritesCount ?? store.favorites.length;
+  const handleSignOut = props.handleSignOut;
+  const setAuthOpen = props.setAuthOpen ?? store.setAuthOpen;
+  const setCartOpen = props.setCartOpen ?? store.setCartOpen;
+  const cartProducts = props.cartProducts || [];
+  const currencyRef = props.currencyRef;
+  const activeCurrency = props.activeCurrency || CURRENCIES[0];
+  const currentCurrency = props.currentCurrency || CURRENCIES[0].code;
   return (
     <header className={`site-header ${route === 'home' || route === 'about' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
       <button 

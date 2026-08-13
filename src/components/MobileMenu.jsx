@@ -45,20 +45,23 @@ const pluralizeCategory = (cat) => {
   return cat + 's';
 };
 
-export function MobileMenu({ 
-  onClose, 
-  navigate, 
-  setCategory, 
-  user,
-  categories = [],
-  openAuth,
-  setCartOpen,
-  cartCount,
-  favoritesCount,
-  onSignOut,
-  vendorOnboarding,
-  isAdmin
-}) {
+import { useStorefront } from '../store/useStorefront.js';
+
+export function MobileMenu(props) {
+  const store = useStorefront();
+
+  const onClose = props.onClose || (() => store.setMenuOpen(false));
+  const navigate = props.navigate;
+  const setCategory = props.setCategory;
+  const user = props.user ?? store.user;
+  const categories = props.categories || [];
+  const openAuth = props.openAuth || (() => store.setAuthOpen(true));
+  const setCartOpen = props.setCartOpen || store.setCartOpen;
+  const cartCount = props.cartCount ?? store.cart.length;
+  const favoritesCount = props.favoritesCount ?? store.favorites.length;
+  const onSignOut = props.onSignOut;
+  const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
+  const isAdmin = props.isAdmin;
   const currentCurrency = useCurrency();
   const [accountOpen, setAccountOpen] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
