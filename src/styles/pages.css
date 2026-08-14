@@ -4074,6 +4074,10 @@ button {
   display: block !important;
 }
 
+.account-dashboard-grid.tab-active-vendor-stock .panel-vendor-stock {
+  display: block !important;
+}
+
 .influencer-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

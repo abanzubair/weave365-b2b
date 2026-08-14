@@ -117,8 +117,14 @@ export async function fetchDirectoryConfigRemote() {
     }
 
     if (data && data.config && Array.isArray(data.config.columns)) {
-      localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(data.config));
-      window.dispatchEvent(new CustomEvent(DIRECTORY_UPDATED_EVENT, { detail: data.config }));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(data.config));
+          window.dispatchEvent(new CustomEvent(DIRECTORY_UPDATED_EVENT, { detail: data.config }));
+        } catch (storageErr) {
+          console.warn('[directoryService] Local storage sync error:', storageErr);
+        }
+      }
       return data.config;
     }
   } catch (err) {
@@ -133,8 +139,14 @@ export async function fetchDirectoryConfigRemote() {
 export async function saveDirectoryConfig(newConfig) {
   try {
     // 1. Save to local storage for instant feedback
-    localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(newConfig));
-    window.dispatchEvent(new CustomEvent(DIRECTORY_UPDATED_EVENT, { detail: newConfig }));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(newConfig));
+        window.dispatchEvent(new CustomEvent(DIRECTORY_UPDATED_EVENT, { detail: newConfig }));
+      } catch (storageErr) {
+        console.warn('[directoryService] Local storage save error:', storageErr);
+      }
+    }
 
     // 2. Save to Supabase if configured
     if (isSupabaseConfigured) {

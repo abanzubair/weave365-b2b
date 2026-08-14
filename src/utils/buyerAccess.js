@@ -5,6 +5,7 @@
  * and tracks account approval status mapping to direct SQL/Supabase profiles.
  */
 export const PRICE_GROUPS = {
+  vendor: 'Wholesale Price',
   wholesale: 'Wholesale Price',
   reseller: 'Reseller Price',
   guest: 'Price',
@@ -14,6 +15,7 @@ export const PRICE_GROUPS = {
 const VARANASI_PINCODE_PREFIXES = ['221'];
 
 export function normalizeBuyerType(value) {
+  if (value === 'vendor') return 'vendor';
   if (value === 'reseller') return 'reseller';
   if (value === 'user') return 'user';
   return 'wholesale';
@@ -25,15 +27,16 @@ export function isVaranasiPincode(value) {
 }
 
 export function applyAutoApprovalToBuyerProfile(profile) {
-  const buyerType = normalizeBuyerType(profile?.buyer_type);
+  const isVendor = profile?.buyer_subtype?.toLowerCase().includes('vendor') || profile?.buyer_type === 'vendor';
+  const buyerType = isVendor ? 'vendor' : normalizeBuyerType(profile?.buyer_type);
   const blockedByPincode = isVaranasiPincode(profile?.pincode);
   const isUser = profile?.buyer_subtype === 'User (MOQ: 1 Pc)' || buyerType === 'user';
 
   return {
     ...profile,
-    buyer_type: isUser ? 'user' : buyerType,
+    buyer_type: isVendor ? 'vendor' : (isUser ? 'user' : buyerType),
     approval_status: blockedByPincode ? 'pending' : 'approved',
-    price_group: blockedByPincode ? 'pending' : (isUser ? 'guest' : buyerType),
+    price_group: blockedByPincode ? 'pending' : (isUser ? 'guest' : (isVendor ? 'wholesale' : buyerType)),
   };
 }
 
@@ -62,7 +65,9 @@ export function getBuyerAccess(user, buyerProfile) {
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
   let buyerType = normalizeBuyerType(profile.buyer_type);
-  if (profile.buyer_subtype === 'User (MOQ: 1 Pc)') {
+  if (profile.buyer_subtype?.toLowerCase().includes('vendor') || profile.buyer_type === 'vendor') {
+    buyerType = 'vendor';
+  } else if (profile.buyer_subtype === 'User (MOQ: 1 Pc)') {
     buyerType = 'user';
   }
   const approvalStatus = profile.approval_status || 'pending';

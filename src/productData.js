@@ -174,11 +174,11 @@ export async function parseProductCsv(text) {
       id: groupKey,
       groupKey,
       categoryCode: codeInfo.category,
-      vendorCode: codeInfo.vendor,
+      vendorCode: row.VID || row.vid || row['Vendor ID'] || row['Vendor Code'] || codeInfo.vendor,
       designCode: codeInfo.design,
       category,
       subCategory: row['Sub Category'],
-      partner: row.Partner || row.partner || '',
+      partner: row.Partner || row.partner || row['Vendor Name'] || row.Vendor || '',
       style: row.Style,
       occasion: row.Occasion,
       fabric: row.Fabric,
@@ -704,11 +704,11 @@ export async function autoSyncIfNeeded() {
     
     const lastSync = data?.updated_at ? new Date(data.updated_at) : new Date(0);
     const now = new Date();
-    const diffMinutes = (now - lastSync) / (1000 * 60);
+    const diffHours = (now - lastSync) / (1000 * 60 * 60);
 
-    // Auto sync every 15 minutes
-    if (diffMinutes > 15) {
-      console.log('Auto-syncing sheets to Supabase...');
+    // Auto sync every 6 hours
+    if (diffHours > 6) {
+      console.log('Auto-syncing sheets to Supabase (6-hour interval)...');
       await syncSheetsToSupabase();
     }
   } catch (err) {
@@ -722,6 +722,7 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
   isSyncing = true;
   
   try {
+    const Papa = (await import('papaparse')).default;
     const fetchText = async (url) => {
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Fetch failed for ${url}`);
@@ -758,7 +759,6 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     // 1. Parse products CSV to JSON
     let parsedProductsJson = null;
     try {
-      const Papa = (await import('papaparse')).default;
       const mainProducts = await parseProductCsv(products);
       const productMap = new Map(mainProducts.map(p => [p.groupKey, p]));
 

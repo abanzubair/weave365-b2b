@@ -18,10 +18,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle, Boxes } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
+import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
 
@@ -70,17 +71,38 @@ export function Account({
   priceAccess,
   cartItems,
   favoriteProducts,
+  products = [],
   navigate,
   openAuth,
   updateQuantity,
   onSignOut,
   initialTab,
 }) {
-  const [activeTab, setActiveTab] = useState(() => initialTab || 'orders');
+  const isVendor = buyerProfile?.buyer_type === 'vendor' ||
+                   user?.user_metadata?.buyer_profile?.buyer_type === 'vendor' ||
+                   user?.buyer_profile?.buyer_type === 'vendor' ||
+                   buyerProfile?.buyer_subtype?.toLowerCase().includes('vendor') ||
+                   user?.user_metadata?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
+                   user?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
+                   priceAccess?.buyerType === 'vendor' ||
+                   Boolean(buyerProfile?.vendor_code) ||
+                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code) ||
+                   user?.role === 'admin';
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') return 'vendor-stock';
+    if (initialTab) return initialTab;
+    if (isVendor) return 'vendor-stock';
+    return 'orders';
+  });
 
   useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab);
+      if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
+        setActiveTab('vendor-stock');
+      } else {
+        setActiveTab(initialTab);
+      }
     }
   }, [initialTab]);
 
@@ -437,6 +459,15 @@ export function Account({
 
       {/* Premium Account Tabs for Responsive Screens */}
       <div className="account-tabs-bar">
+        {isVendor && (
+          <button type="button" 
+            className={`account-tab-btn ${activeTab === 'vendor-stock' ? 'active' : ''}`}
+            onClick={() => setActiveTab('vendor-stock')}
+          >
+            <Boxes size={16} />
+            <span>Stock & Price</span>
+          </button>
+        )}
         <button type="button" 
           className={`account-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => setActiveTab('orders')}
@@ -1244,6 +1275,16 @@ export function Account({
                 </div>
               </div>
             )}
+          </article>
+        )}
+
+        {activeTab === 'vendor-stock' && (
+          <article className="account-panel panel-vendor-stock" style={{ gridColumn: '1 / -1', width: '100%', background: 'transparent', padding: 0, border: 'none', boxShadow: 'none' }}>
+            <VendorStockPanel
+              user={user}
+              buyerProfile={buyerProfile}
+              products={products}
+            />
           </article>
         )}
       </div>

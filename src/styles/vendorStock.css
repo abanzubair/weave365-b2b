@@ -1,0 +1,574 @@
+/* ==========================================================================
+   Vendor Product Stock & Availability Stylesheet
+   Theme: Luxury B2B Varanasi Loom Network (Gold, Emerald, Crimson, Indigo, Dark Charcoal)
+   ========================================================================== */
+
+.account-dashboard-grid.tab-active-vendor-stock .panel-vendor-stock,
+.account-panel.panel-vendor-stock {
+  display: block !important;
+}
+
+.vendor-stock-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Card */
+.vendor-stock-header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #faf8f5 100%);
+  border: 1px solid #e7e2d7;
+  border-radius: 12px;
+  padding: 24px 28px;
+  color: #1a1612;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.vendor-stock-header-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #b8860b, #e6ca65, #b8860b);
+}
+
+.vendor-stock-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.vendor-stock-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #996515;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vendor-stock-heading {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1612;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.3px;
+}
+
+.vendor-identity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdf8ee;
+  border: 1px solid rgba(184, 134, 11, 0.35);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2b2319;
+}
+
+.vendor-vid-code {
+  background: #b8860b;
+  color: #ffffff;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  letter-spacing: 0.5px;
+}
+
+.vendor-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vendor-vid-select {
+  background: #ffffff;
+  border: 1px solid #dcd5c9;
+  color: #1a1612;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendor-vid-select:focus {
+  border-color: #b8860b;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12);
+}
+
+.vendor-vid-select option {
+  background: #ffffff;
+  color: #1a1612;
+}
+
+/* Stats Ribbon */
+.vendor-stock-stats-ribbon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #ece6da;
+}
+
+.vendor-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vendor-stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1612;
+}
+
+.vendor-stat-num.ready { color: #15803d; }
+.vendor-stat-num.preorder { color: #b45309; }
+.vendor-stat-num.outofstock { color: #b91c1c; }
+.vendor-stat-num.backsoon { color: #7e22ce; }
+
+.vendor-stat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Controls / Filter Bar */
+.vendor-stock-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #ffffff;
+  border: 1px solid #e7e2d7;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.vendor-stock-search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.vendor-search-input-wrap {
+  flex: 1;
+  min-width: 160px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vendor-search-icon {
+  position: absolute;
+  left: 10px;
+  color: #8c827a;
+  pointer-events: none;
+}
+
+.vendor-stock-search-input {
+  width: 100%;
+  padding: 7px 10px 7px 32px;
+  border: 1px solid #dcd5c9;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #faf8f5;
+  color: #1a1612;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.vendor-stock-search-input:focus {
+  outline: none;
+  border-color: #b8860b;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.12);
+}
+
+.vendor-filter-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  background: #f4f0e8;
+  color: #5c534a;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vendor-filter-tab:hover {
+  background: #ebe4d8;
+  color: #1a1612;
+}
+
+.vendor-filter-tab.active {
+  background: #1f1b16;
+  color: #f7f5f0;
+  border-color: #1f1b16;
+}
+
+.vendor-filter-tab.active.ready-tab {
+  background: #1b8042;
+  border-color: #1b8042;
+  color: #ffffff;
+}
+
+.vendor-filter-tab.active.preorder-tab {
+  background: #b8860b;
+  border-color: #b8860b;
+  color: #ffffff;
+}
+
+.vendor-filter-tab.active.out-tab {
+  background: #c93b2b;
+  border-color: #c93b2b;
+  color: #ffffff;
+}
+
+.vendor-filter-tab.active.backsoon-tab {
+  background: #6a3cbc;
+  border-color: #6a3cbc;
+  color: #ffffff;
+}
+
+/* Product Cards Grid */
+.vendor-stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.vendor-product-card {
+  background: #ffffff;
+  border: 1px solid #e7e2d7;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.vendor-card-main {
+  display: flex;
+  padding: 16px;
+  gap: 16px;
+  border-bottom: 1px solid #f2eee6;
+}
+
+a.vendor-card-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.vendor-card-img-wrap {
+  width: 88px;
+  height: 110px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f7f5f0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.vendor-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vendor-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.vendor-card-code-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.vendor-card-code {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: #1a1612;
+  background: #f4f0e8;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.vendor-card-category {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8c827a;
+}
+
+.vendor-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1a1612;
+  line-height: 1.35;
+  margin: 2px 0 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vendor-card-details {
+  font-size: 12px;
+  color: #6b6259;
+}
+
+.vendor-card-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: #b8860b;
+  margin-top: auto;
+}
+
+/* Availability Option Radios */
+.vendor-stock-action-block {
+  padding: 16px;
+  background: #faf8f5;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vendor-stock-options-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #73695f;
+}
+
+.vendor-stock-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.vendor-stock-radio-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1.5px solid #e0d8cc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+  text-align: left;
+}
+
+.vendor-stock-radio-btn:hover {
+  border-color: #b8860b;
+  background: #fffdfa;
+}
+
+.vendor-stock-radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #a89f94;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.vendor-stock-radio-btn.selected .vendor-stock-radio-dot {
+  border-color: currentColor;
+}
+
+.vendor-stock-radio-dot::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
+}
+
+.vendor-stock-radio-btn.selected .vendor-stock-radio-dot::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.vendor-stock-radio-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2b251f;
+  line-height: 1.2;
+}
+
+/* Individual Selected States */
+.vendor-stock-radio-btn.ready.selected {
+  background: #eafaf1;
+  border-color: #1b8042;
+  color: #1b8042;
+}
+.vendor-stock-radio-btn.ready.selected .vendor-stock-radio-text {
+  color: #1b8042;
+}
+
+.vendor-stock-radio-btn.preorder.selected {
+  background: #fff9e6;
+  border-color: #b8860b;
+  color: #b8860b;
+}
+.vendor-stock-radio-btn.preorder.selected .vendor-stock-radio-text {
+  color: #b8860b;
+}
+
+.vendor-stock-radio-btn.outofstock.selected {
+  background: #fdf0ee;
+  border-color: #c93b2b;
+  color: #c93b2b;
+}
+.vendor-stock-radio-btn.outofstock.selected .vendor-stock-radio-text {
+  color: #c93b2b;
+}
+
+.vendor-stock-radio-btn.backsoon.selected {
+  background: #f5f0fd;
+  border-color: #6a3cbc;
+  color: #6a3cbc;
+}
+.vendor-stock-radio-btn.backsoon.selected .vendor-stock-radio-text {
+  color: #6a3cbc;
+}
+
+/* Timestamp & Saved Row */
+.vendor-stock-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: #7d7369;
+  padding-top: 4px;
+  border-top: 1px dashed #e7e0d3;
+}
+
+.vendor-timestamp-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.vendor-timestamp-val {
+  font-weight: 700;
+  color: #2b251f;
+}
+
+.vendor-saved-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #1b8042;
+  font-weight: 700;
+  font-size: 11.5px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Empty State */
+.vendor-stock-empty {
+  text-align: center;
+  padding: 48px 24px;
+  background: #ffffff;
+  border: 1px dashed #dcd5c9;
+  border-radius: 12px;
+  color: #73695f;
+}
+
+.vendor-stock-empty h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1612;
+  margin: 12px 0 6px 0;
+}
+
+.vendor-stock-empty p {
+  font-size: 14px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* Storefront Badge Styling */
+.status-badge.tag-ready-stock {
+  background: #eafaf1;
+  color: #1b8042;
+  border: 1px solid rgba(27, 128, 66, 0.25);
+}
+
+.status-badge.tag-pre-order {
+  background: #fff9e6;
+  color: #b8860b;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+.status-badge.tag-out-of-stock {
+  background: #fdf0ee;
+  color: #c93b2b;
+  border: 1px solid rgba(201, 59, 43, 0.3);
+}
+
+.status-badge.tag-back-soon {
+  background: #f5f0fd;
+  color: #6a3cbc;
+  border: 1px solid rgba(106, 60, 188, 0.25);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .vendor-stock-header-card {
+    padding: 20px 18px;
+  }
+  .vendor-stock-grid {
+    grid-template-columns: 1fr;
+  }
+  .vendor-stock-options-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

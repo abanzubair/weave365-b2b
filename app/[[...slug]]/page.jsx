@@ -3,12 +3,13 @@ import { cache } from 'react';
 import { storeConfig, NON_PRODUCT_ROUTES, getProductCategorySlug, seoCategoryRoutes, siteUrl } from '../../src/config.js';
 import { fetchConfigOptions, fetchHeroData, fetchProducts, fetchSupabaseBlogPosts, fetchSupabasePageSeoSettings, fetchSupabaseLandingPages } from '../../src/productData.js';
 import { fetchDirectoryConfigRemote } from '../../src/utils/directoryService.js';
+import { fetchVendorStockOverrides, applyStockOverridesToProducts } from '../../src/utils/vendorStockService.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { blogPosts } from '../../src/data/blogPosts.js';
 import { notFound, redirect } from 'next/navigation';
 import { isSupabaseConfigured, supabase } from '../../src/supabaseClient.js';
 
-export const revalidate = 900; // Cache and revalidate at most every 15 minutes
+export const revalidate = 21600; // Cache and revalidate at most every 6 hours (6 * 3600 seconds)
 export const runtime = 'edge';
 
 const defaultConfigOptions = { priceRanges: [], categories: [], fabrics: [], weaves: [] };
@@ -112,16 +113,21 @@ function toSerializable(value) {
 }
 
 const getInitialData = cache(async () => {
-  const [productsResult, heroResult, configResult, blogsResult, landingPagesResult, directoryResult] = await Promise.allSettled([
+  const [productsResult, heroResult, configResult, blogsResult, landingPagesResult, directoryResult, stockOverridesResult] = await Promise.allSettled([
     fetchProducts(),
     fetchHeroData(),
     fetchConfigOptions(),
     fetchSupabaseBlogPosts(),
     fetchSupabaseLandingPages(),
     fetchDirectoryConfigRemote(),
+    fetchVendorStockOverrides(),
   ]);
 
-  const products = productsResult.status === 'fulfilled' ? productsResult.value : [];
+  let products = productsResult.status === 'fulfilled' ? productsResult.value : [];
+  const stockOverrides = stockOverridesResult.status === 'fulfilled' ? stockOverridesResult.value : {};
+  if (stockOverrides && Object.keys(stockOverrides).length > 0) {
+    products = applyStockOverridesToProducts(products, stockOverrides);
+  }
   const heroSlides = heroResult.status === 'fulfilled' ? heroResult.value : [];
   const configOptions = configResult.status === 'fulfilled' ? configResult.value : defaultConfigOptions;
   const dbPosts = blogsResult.status === 'fulfilled' ? blogsResult.value : [];

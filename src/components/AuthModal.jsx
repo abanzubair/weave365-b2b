@@ -34,6 +34,7 @@ const FacebookIcon = () => (
 const buyerSubtypes = [
   { value: 'Wholesaler (MOQ: 1 Set)', label: 'Wholesaler (MOQ: 1 Set)', type: 'wholesale' },
   { value: 'Reseller (MOQ: Flexible)', label: 'Reseller (MOQ: Flexible)', type: 'reseller' },
+  { value: 'Vendor (Partner / Weaver)', label: 'Vendor (Partner / Weaver)', type: 'vendor' },
   { value: 'User (MOQ: 1 Pc)', label: 'User (MOQ: 1 Pc)', type: 'user' },
 ];
 
@@ -401,9 +402,12 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
 
         const isBusinessRequired = profile.buyerType !== 'user';
         const isBusinessValid = !isBusinessRequired || profile.businessName.trim().length > 0;
+        const isCategoryRequired = profile.buyerType !== 'vendor';
+        const isCategoryValid = !isCategoryRequired || profile.interestedCategories.length > 0;
 
-        if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || profile.interestedCategories.length === 0) {
-          setMessage('Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits, and at least one category is required.');
+        if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || !isCategoryValid) {
+          const catMsg = isCategoryRequired ? ', and at least one category is required.' : '.';
+          setMessage(`Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits${catMsg}`);
           setLoading(false);
           return;
         }
@@ -772,16 +776,17 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             />
                           </label>
                           <label className="auth-label-styled">
-                            {profile.buyerType === 'user' ? 'Business Name (Optional)' : 'Business Name'}
+                            {profile.buyerType === 'user' ? 'Business Name (Optional)' : profile.buyerType === 'vendor' ? 'Loom / Business Name' : 'Business Name'}
                             <input
                               className="auth-input-styled"
                               value={profile.businessName}
                               onChange={(event) => updateProfile('businessName', event.target.value)}
                               autoComplete="organization"
-                              placeholder="Enter your business name"
+                              placeholder={profile.buyerType === 'vendor' ? 'Enter loom or enterprise name' : 'Enter your business name'}
                               required={profile.buyerType !== 'user'}
                             />
                           </label>
+
                           <div className="auth-phone-field">
                             <div className="auth-field-label-row">
                               <span>WhatsApp Number</span>
@@ -803,7 +808,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                               <input
                                 className="auth-input-styled"
                                 value={profile.whatsapp}
-                                onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/D/g, '').replace(/^0+/, '').slice(0, 10))}
+                                onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10))}
                                 inputMode="numeric"
                                 autoComplete="tel-national"
                                 placeholder="xxxxxxxxxx"
@@ -888,7 +893,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buyer Type</span>
+                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Account / User Type</span>
                             <B2BSegmentDropdown
                               value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
                               onChange={(opt) => {
@@ -901,29 +906,33 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             />
                           </div>
 
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
-                            <BuyingBehaviorDropdown
-                              value={profile.buyingBehavior}
-                              onChange={(value) => updateProfile('buyingBehavior', value)}
-                            />
-                          </div>
+                          {profile.buyerType !== 'vendor' && (
+                            <>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
+                                <BuyingBehaviorDropdown
+                                  value={profile.buyingBehavior}
+                                  onChange={(value) => updateProfile('buyingBehavior', value)}
+                                />
+                              </div>
 
-                          <fieldset className="auth-category-fieldset">
-                            <legend>Interested Categories</legend>
-                            <div>
-                              {categoryOptions.map((category) => (
-                                <label key={category}>
-                                  <input
-                                    type="checkbox"
-                                    checked={profile.interestedCategories.includes(category)}
-                                    onChange={() => toggleCategory(category)}
-                                  />
-                                  <span>{category}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </fieldset>
+                              <fieldset className="auth-category-fieldset">
+                                <legend>Interested Categories</legend>
+                                <div>
+                                  {categoryOptions.map((category) => (
+                                    <label key={category}>
+                                      <input
+                                        type="checkbox"
+                                        checked={profile.interestedCategories.includes(category)}
+                                        onChange={() => toggleCategory(category)}
+                                      />
+                                      <span>{category}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </fieldset>
+                            </>
+                          )}
                         </div>
                       </div>
                     ) : (

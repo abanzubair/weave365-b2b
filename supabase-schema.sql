@@ -40,6 +40,8 @@ alter table public.profiles add column if not exists interested_categories jsonb
 alter table public.profiles add column if not exists price_group text default 'pending';
 alter table public.profiles add column if not exists approval_status text default 'pending';
 alter table public.profiles add column if not exists role text default 'customer';
+alter table public.profiles add column if not exists vendor_code text;
+alter table public.profiles add column if not exists partner_name text;
 alter table public.profiles add column if not exists created_at timestamptz default now();
 alter table public.profiles add column if not exists updated_at timestamptz default now();
 
@@ -1231,4 +1233,39 @@ create policy "Admin select site analytics"
   on public.site_analytics for select
   to authenticated
   using (public.is_admin() or true);
+
+-- ========================================================
+-- Vendor Product Stock & Availability Overrides Table
+-- ========================================================
+create table if not exists public.vendor_product_stock (
+  product_id text primary key,
+  vendor_code text,
+  vendor_name text,
+  stock_status text not null,
+  stock_status_label text not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_by text,
+  updated_by_name text,
+  updated_at_ist text not null
+);
+
+create index if not exists vendor_product_stock_vendor_code_idx on public.vendor_product_stock (vendor_code);
+create index if not exists vendor_product_stock_stock_status_idx on public.vendor_product_stock (stock_status);
+create index if not exists vendor_product_stock_updated_at_idx on public.vendor_product_stock (updated_at desc);
+
+alter table public.vendor_product_stock enable row level security;
+
+drop policy if exists "Public read vendor product stock" on public.vendor_product_stock;
+create policy "Public read vendor product stock"
+  on public.vendor_product_stock for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Public modify vendor product stock" on public.vendor_product_stock;
+create policy "Public modify vendor product stock"
+  on public.vendor_product_stock for all
+  to anon, authenticated
+  using (true)
+  with check (true);
+
 

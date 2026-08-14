@@ -43,6 +43,7 @@
 @import './styles/whatsappFloat.css';
 @import './styles/resellerFeatures.css';
 @import './styles/customWoven.css';
+@import './styles/vendorStock.css';
 
 .search-lock {
   overflow: hidden !important;

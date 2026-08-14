@@ -53,6 +53,7 @@ import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
 import { useStorefront } from './store/useStorefront.js';
 import { validateReferralCode, setStoredReferralCode, getStoredReferralCode, clearStoredReferralCode } from './utils/influencerHelpers.js';
 import { trackSiteTraffic } from './utils/trafficTracker.js';
+import { fetchVendorStockOverrides, applyStockOverridesToProducts, VENDOR_STOCK_UPDATED_EVENT } from './utils/vendorStockService.js';
 
 // Eagerly loaded components for fast rendering above the fold
 import { Home, homeCategoryNames } from './views/Home.jsx';
@@ -408,9 +409,15 @@ export default function App({ initialData = {} }) {
     let isActive = true;
 
     fetchProducts()
-      .then((items) => {
+      .then(async (items) => {
         if (!isActive) return;
-        setProducts(items);
+        try {
+          const overrides = await fetchVendorStockOverrides();
+          const syncedItems = applyStockOverridesToProducts(items, overrides);
+          setProducts(syncedItems);
+        } catch {
+          setProducts(items);
+        }
         setStatus('ready');
       })
       .catch((err) => {
@@ -418,6 +425,14 @@ export default function App({ initialData = {} }) {
         setError(err.message || 'Unable to load products.');
         setStatus('error');
       });
+
+    // Listen for live vendor stock updates across tabs and views
+    const handleStockUpdate = (e) => {
+      if (e.detail) {
+        setProducts((prev) => applyStockOverridesToProducts(prev, e.detail));
+      }
+    };
+    window.addEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
 
     fetchHeroData()
       .then((data) => {
@@ -1371,6 +1386,7 @@ export default function App({ initialData = {} }) {
           priceAccess={priceAccess}
           cartItems={cartProducts}
           favoriteProducts={favoriteProducts}
+          products={products}
           navigate={navigate}
           openAuth={() => setAuthOpen(true)}
           updateQuantity={updateQuantity}

@@ -25,6 +25,8 @@ export function profileRowFromUser(user) {
     business_name: buyerProfile.business_name || '',
     buyer_type: buyerProfile.buyer_type || 'wholesale',
     buyer_subtype: buyerProfile.buyer_subtype || '',
+    vendor_code: buyerProfile.vendor_code || '',
+    partner_name: buyerProfile.partner_name || '',
     buying_behavior: buyerProfile.buying_behavior || 'instant',
     city: buyerProfile.city || '',
     pincode: buyerProfile.pincode || '',
@@ -41,24 +43,13 @@ export async function syncProfileFromUser(user) {
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
 
-  const { data: existing, error: readError } = await supabase
+  // Use atomic upsert with ignoreDuplicates: true so concurrent sign-in / registration
+  // events do not trigger unique constraint race conditions (SQL state 23505).
+  const { error } = await supabase
     .from('profiles')
-    .select('id')
-    .eq('id', user.id)
-    .maybeSingle();
+    .upsert(profileRow, { onConflict: 'id', ignoreDuplicates: true });
 
-  if (readError) return { error: readError };
-
-  if (!existing) {
-    return supabase
-      .from('profiles')
-      .insert(profileRow);
-  }
-
-  // To prevent overwriting admin updates or direct database edits with stale user metadata
-  // from the Supabase Auth session on every page refresh, we should not blindly overwrite
-  // the profile row if it already exists.
-  return { error: null };
+  return { error: error || null };
 }
 
 export async function loadProfileForUser(user) {
