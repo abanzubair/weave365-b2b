@@ -319,7 +319,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       <div className="vendor-stock-dashboard">
         <div className="vendor-stock-header-card">
           <div className="vendor-stock-kicker">
-            <Boxes size={14} /> Name: Stock & Price
+            <Boxes size={14} /> Stock & Availability
           </div>
           <h2 className="vendor-stock-heading">Vendor Stock & Availability Portal</h2>
           <div style={{ background: '#faf8f5', borderRadius: '10px', padding: '32px 24px', textAlign: 'center', marginTop: '12px', border: '1px dashed #dcd5c9' }}>

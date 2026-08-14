@@ -465,7 +465,7 @@ export function Account({
             onClick={() => setActiveTab('vendor-stock')}
           >
             <Boxes size={16} />
-            <span>Stock & Price</span>
+            <span>Stock</span>
           </button>
         )}
         <button type="button" 
