@@ -344,7 +344,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       {/* Header Card */}
       <div className="vendor-stock-header-card">
         <div className="vendor-stock-header-top">
-          <div>
+          <div className="vendor-stock-title-wrap">
             <h2 className="vendor-stock-heading">Product Availability Portal</h2>
             <div className="vendor-identity-pill">
               {currentVendorInfo.vid && currentVendorInfo.vid !== 'N/A' && (
@@ -379,10 +379,6 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
         {/* Real-Time Stats Ribbon */}
         <div className="vendor-stock-stats-ribbon">
           <div className="vendor-stat-item">
-            <span className="vendor-stat-num">{stats.total}</span>
-            <span className="vendor-stat-label">Total Products</span>
-          </div>
-          <div className="vendor-stat-item">
             <span className="vendor-stat-num ready">{stats.ready}</span>
             <span className="vendor-stat-label">Ready Stock</span>
           </div>
@@ -397,6 +393,10 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
           <div className="vendor-stat-item">
             <span className="vendor-stat-num backsoon">{stats.backsoon}</span>
             <span className="vendor-stat-label">Back Soon</span>
+          </div>
+          <div className="vendor-stat-item">
+            <span className="vendor-stat-num">{stats.total}</span>
+            <span className="vendor-stat-label">Total Products</span>
           </div>
         </div>
       </div>
@@ -484,6 +484,18 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
             const lastUpdatedText = override?.updatedAtIST || (override?.updatedAt ? formatISTDateTime(override.updatedAt) : null);
             const image = product.images?.[1] || product.images?.[0] || fallbackProductImage;
 
+            const rawCost = product.cost ?? 
+              product.prices?.cost ?? 
+              product.variants?.[0]?.prices?.cost ?? 
+              product.raw?.Cost ?? 
+              product.raw?.cost ?? 
+              product.raw?.['Cost Price'] ?? 
+              product.raw?.['Cost'] ?? 
+              product.raw?.['cost_price'] ?? 
+              product.cost_price;
+
+            const costNumber = rawCost != null && rawCost !== '' ? Number(String(rawCost).replace(/[^\d.]/g, '')) : null;
+
             return (
               <div className="vendor-product-card" key={pKey}>
                 <AppLink to="product" productId={product.id} className="vendor-card-main vendor-card-link">
@@ -495,6 +507,11 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
                       <span className="vendor-card-code">{pKey}</span>
                       <span className="vendor-card-category">{product.category || 'Saree'}</span>
                     </div>
+                    {costNumber != null && costNumber > 0 && (
+                      <div className="vendor-card-price-row">
+                        <span className="vendor-card-price-val">₹{costNumber.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
                     <div className="vendor-card-title" title={product.title}>
                       {product.title}
                     </div>

@@ -240,6 +240,17 @@ export async function parseProductCsv(text) {
         const val = String(row[key] || '').replace(/[^\d.]/g, '');
         return val ? Number(val) : 0;
       })(),
+      cost: (function() {
+        const key = Object.keys(row).find(k => {
+          const lo = k.trim().toLowerCase().replace(/[\s_-]+/g, '');
+          return lo === 'cost' || lo === 'costprice';
+        });
+        if (key && row[key]) {
+          const num = Number(String(row[key]).replace(/[^\d.]/g, ''));
+          return Number.isFinite(num) && num > 0 ? num : null;
+        }
+        return null;
+      })(),
       raw: row,
     };
 
@@ -464,6 +475,7 @@ function parseRowMediaAndVariants(row) {
             single: parsePrice(row[moneyColumns.single]),
             cod: parsePrice(row[moneyColumns.cod]),
             offer: parsePrice(row[moneyColumns.offer]),
+            cost: parsePrice(row.Cost || row.cost || row['Cost Price'] || row['Cost'] || ''),
           },
         });
       }
@@ -488,6 +500,7 @@ function parseRowMediaAndVariants(row) {
         single: parsePrice(row[moneyColumns.single]),
         cod: parsePrice(row[moneyColumns.cod]),
         offer: parsePrice(row[moneyColumns.offer]),
+        cost: parsePrice(row.Cost || row.cost || row['Cost Price'] || row['Cost'] || ''),
       },
     });
     
