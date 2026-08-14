@@ -276,7 +276,8 @@
 
 .vendor-card-main {
   display: flex;
-  padding: 16px;
+  align-items: flex-start;
+  padding: 10px;
   gap: 16px;
   border-bottom: 1px solid #f2eee6;
 }
@@ -288,11 +289,12 @@ a.vendor-card-link {
 }
 
 .vendor-card-img-wrap {
-  width: 88px;
-  height: 110px;
-  border-radius: 8px;
+  width: 124px;
+  height: 155px;
+  border-radius: 10px;
   overflow: hidden;
   background: #f7f5f0;
+  border: 1px solid #ede8df;
   flex-shrink: 0;
   position: relative;
 }
@@ -301,14 +303,21 @@ a.vendor-card-link {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.vendor-card-main:hover .vendor-card-img {
+  transform: scale(1.04);
 }
 
 .vendor-card-meta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 6px;
   flex: 1;
   min-width: 0;
+  padding-top: 2px;
 }
 
 .vendor-card-code-row {
@@ -341,7 +350,7 @@ a.vendor-card-link {
   font-weight: 700;
   color: #1a1612;
   line-height: 1.35;
-  margin: 2px 0 4px 0;
+  margin: 20px 0 6px 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

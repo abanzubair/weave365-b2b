@@ -345,10 +345,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       <div className="vendor-stock-header-card">
         <div className="vendor-stock-header-top">
           <div>
-            <div className="vendor-stock-kicker">
-              <Boxes size={14} /> Name: Stock & Price
-            </div>
-            <h2 className="vendor-stock-heading">Product Stock & Availability Portal</h2>
+            <h2 className="vendor-stock-heading">Product Availability Portal</h2>
             <div className="vendor-identity-pill">
               {currentVendorInfo.vid && currentVendorInfo.vid !== 'N/A' && (
                 <span className="vendor-vid-code">{currentVendorInfo.vid}</span>
@@ -383,7 +380,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
         <div className="vendor-stock-stats-ribbon">
           <div className="vendor-stat-item">
             <span className="vendor-stat-num">{stats.total}</span>
-            <span className="vendor-stat-label">Total Designs</span>
+            <span className="vendor-stat-label">Total Products</span>
           </div>
           <div className="vendor-stat-item">
             <span className="vendor-stat-num ready">{stats.ready}</span>
@@ -391,7 +388,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
           </div>
           <div className="vendor-stat-item">
             <span className="vendor-stat-num preorder">{stats.preorder}</span>
-            <span className="vendor-stat-label">Pre-Order</span>
+            <span className="vendor-stat-label">Pre Order</span>
           </div>
           <div className="vendor-stat-item">
             <span className="vendor-stat-num outofstock">{stats.out}</span>
@@ -485,7 +482,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
             }
 
             const lastUpdatedText = override?.updatedAtIST || (override?.updatedAt ? formatISTDateTime(override.updatedAt) : null);
-            const image = product.images?.[0] || fallbackProductImage;
+            const image = product.images?.[1] || product.images?.[0] || fallbackProductImage;
 
             return (
               <div className="vendor-product-card" key={pKey}>
