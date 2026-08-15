@@ -44,7 +44,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
   // Check administrative privilege
   const userEmail = String(user?.email || '').toLowerCase().trim();
-  const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin';
+  const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin' || user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
 
   // Vendor identity from profile
   const profileBusinessName = String(buyerProfile?.business_name || user?.user_metadata?.buyer_profile?.business_name || user?.buyer_profile?.business_name || '').trim();
@@ -507,6 +507,12 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
                       <span className="vendor-card-code">{pKey}</span>
                       <span className="vendor-card-category">{product.category || 'Saree'}</span>
                     </div>
+                    {(product.vendorCode || product.partner) && (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11.5px', background: '#f5f0e6', padding: '2px 8px', borderRadius: '4px', color: '#5a4f43', fontWeight: '600', margin: '3px 0' }}>
+                        {product.vendorCode && <span style={{ fontFamily: 'monospace', color: '#1a1612', background: '#e8e0d0', padding: '0 4px', borderRadius: '2px' }}>{product.vendorCode}</span>}
+                        <span>{product.partner || 'Loom Partner'}</span>
+                      </div>
+                    )}
                     {costNumber != null && costNumber > 0 && (
                       <div className="vendor-card-price-row">
                         <span className="vendor-card-price-val">₹{costNumber.toLocaleString('en-IN')}</span>

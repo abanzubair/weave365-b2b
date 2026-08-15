@@ -25,6 +25,7 @@ import { ResellerTools } from '../components/ResellerTools.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
+import { adminEmails } from '../config.js';
 
 function titleCase(value) {
   return String(value || 'pending')
@@ -78,7 +79,11 @@ export function Account({
   onSignOut,
   initialTab,
 }) {
-  const isVendor = buyerProfile?.buyer_type === 'vendor' ||
+  const userEmail = String(user?.email || '').toLowerCase().trim();
+  const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin' || user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
+
+  const isVendor = isAdmin ||
+                   buyerProfile?.buyer_type === 'vendor' ||
                    user?.user_metadata?.buyer_profile?.buyer_type === 'vendor' ||
                    user?.buyer_profile?.buyer_type === 'vendor' ||
                    buyerProfile?.buyer_subtype?.toLowerCase().includes('vendor') ||
@@ -86,8 +91,7 @@ export function Account({
                    user?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
                    priceAccess?.buyerType === 'vendor' ||
                    Boolean(buyerProfile?.vendor_code) ||
-                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code) ||
-                   user?.role === 'admin';
+                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code);
 
   const [activeTab, setActiveTab] = useState(() => {
     if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') return 'vendor-stock';
@@ -465,7 +469,7 @@ export function Account({
             onClick={() => setActiveTab('vendor-stock')}
           >
             <Boxes size={16} />
-            <span>Stock</span>
+            <span>{isAdmin ? 'Stock Availability' : 'Stock'}</span>
           </button>
         )}
         <button type="button" 

@@ -30,6 +30,7 @@ import {
   Activity,
   Printer,
   Palette,
+  Boxes,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -50,6 +51,7 @@ import EnquiresManager from './admin/EnquiresManager.jsx';
 import InfluencerManager from './admin/InfluencerManager.jsx';
 import BuyerActivity from './admin/BuyerActivity.jsx';
 import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
+import AdminStockManager from './admin/AdminStockManager.jsx';
 
 import { storeConfig } from '../config.js';
 
@@ -85,8 +87,15 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [adminData, setAdminData] = useState(emptyAdminData);
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
-  // Tab control: 'dashboard' | 'pipeline' | 'blogs' | 'seo' | 'reviews' | 'partners' | 'tracking' | 'early-access'
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Tab control: 'dashboard' | 'pipeline' | 'blogs' | 'seo' | 'reviews' | 'partners' | 'tracking' | 'early-access' | 'stock'
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      if (urlTab === 'stock' || urlTab === 'vendor-stock' || urlTab === 'inventory') return 'stock';
+      if (urlTab) return urlTab;
+    }
+    return 'dashboard';
+  });
 
   // Reviews moderation state
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -544,6 +553,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'buyer-activity', label: 'Buyer Activity', icon: Activity, badge: null },
         { key: 'tracking', label: 'Order', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
+        { key: 'stock', label: 'Stock Availability', icon: Boxes, badge: null },
         { key: 'invoice-slip', label: 'Invoice', icon: Printer, badge: null },
         { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
         { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
@@ -743,6 +753,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               inquiries={enquiryRows}
               products={products}
               loadAdminData={loadAdminData}
+            />
+          )}
+
+          {activeTab === 'stock' && (
+            <AdminStockManager
+              products={products}
+              user={user}
+              buyerProfile={buyerProfile}
             />
           )}
 

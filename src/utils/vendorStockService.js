@@ -261,7 +261,13 @@ export async function saveVendorProductStock({
 /**
  * Batch updates multiple products for a vendor.
  */
+/**
+ * Batch updates multiple products for one or more vendors.
+ * Supports passing `items` array [{ productId, vendorCode, vendorName }]
+ * or `productIds` array with fallback `vendorCode` / `vendorName`.
+ */
 export async function batchSaveVendorStock({
+  items = [],
   productIds = [],
   vendorCode = '',
   vendorName = '',
@@ -269,8 +275,12 @@ export async function batchSaveVendorStock({
   userId = null,
   userName = ''
 }) {
-  if (!productIds.length || !stockStatus) {
-    return { success: false, error: 'Product IDs and stock status are required' };
+  const targetItems = items.length > 0 
+    ? items 
+    : productIds.map(pid => ({ productId: pid, vendorCode, vendorName }));
+
+  if (!targetItems.length || !stockStatus) {
+    return { success: false, error: 'Target products and stock status are required' };
   }
 
   const opt = STOCK_STATUS_OPTIONS.find((o) => o.key === stockStatus) || STOCK_STATUS_OPTIONS[0];
@@ -282,11 +292,17 @@ export async function batchSaveVendorStock({
   const newOverrides = { ...currentOverrides };
   const dbRows = [];
 
-  for (const pid of productIds) {
-    const item = {
+  for (const item of targetItems) {
+    const pid = item.productId || item.id;
+    if (!pid) continue;
+
+    const vCode = String(item.vendorCode || vendorCode || '').trim();
+    const vName = String(item.vendorName || vendorName || '').trim();
+
+    const updateObj = {
       productId: pid,
-      vendorCode: String(vendorCode || '').trim(),
-      vendorName: String(vendorName || '').trim(),
+      vendorCode: vCode,
+      vendorName: vName,
       stockStatus: opt.key,
       stockStatusLabel: opt.label,
       updatedAt: timestampISO,
@@ -294,16 +310,16 @@ export async function batchSaveVendorStock({
       updatedByName: String(userName || '').trim(),
       updatedAtIST: timestampIST,
     };
-    newOverrides[pid] = item;
+    newOverrides[pid] = updateObj;
     dbRows.push({
       product_id: pid,
-      vendor_code: item.vendorCode,
-      vendor_name: item.vendorName,
-      stock_status: item.stockStatus,
-      stock_status_label: item.stockStatusLabel,
+      vendor_code: updateObj.vendorCode,
+      vendor_name: updateObj.vendorName,
+      stock_status: updateObj.stockStatus,
+      stock_status_label: updateObj.stockStatusLabel,
       updated_at: timestampISO,
-      updated_by: item.updatedBy,
-      updated_by_name: item.updatedByName,
+      updated_by: updateObj.updatedBy,
+      updated_by_name: updateObj.updatedByName,
       updated_at_ist: timestampIST,
     });
   }
@@ -324,7 +340,7 @@ export async function batchSaveVendorStock({
     }
   }
 
-  return { success: true, count: productIds.length };
+  return { success: true, count: targetItems.length };
 }
 
 /**
