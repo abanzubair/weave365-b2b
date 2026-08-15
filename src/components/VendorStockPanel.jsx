@@ -171,8 +171,8 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
   const vendorProducts = useMemo(() => {
     if (isAdmin && selectedVendorKey === 'all') return catalogProducts;
 
-    const matchedPartner = (autoMatchedVendor?.partner || profilePartner || profileBusinessName || '').toLowerCase().trim();
-    const matchedVid = (autoMatchedVendor?.vid !== 'N/A' ? autoMatchedVendor?.vid : profileVid || '').trim();
+    const matchedPartner = String(autoMatchedVendor?.partner || profilePartner || profileBusinessName || '').toLowerCase().trim();
+    const matchedVid = String((autoMatchedVendor?.vid && autoMatchedVendor.vid !== 'N/A') ? autoMatchedVendor.vid : (profileVid || '')).trim();
 
     return catalogProducts.filter((p) => {
       const pVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
@@ -215,7 +215,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       };
     }
     if (autoMatchedVendor) return autoMatchedVendor;
-    const found = vendorOptions.find(v => v.key === selectedVendorKey || v.vid === (profileVid || selectedVendorKey) || v.partner.toLowerCase() === (profilePartner || selectedVendorKey).toLowerCase());
+    const found = vendorOptions.find(v => v.key === selectedVendorKey || v.vid === (profileVid || selectedVendorKey) || String(v.partner || '').toLowerCase() === String(profilePartner || selectedVendorKey || '').toLowerCase());
     if (found) return found;
     return {
       vid: profileVid || selectedVendorKey || '02',

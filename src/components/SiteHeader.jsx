@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ChevronDown, Search, ShoppingBag, User, LogOut } from 'lucide-react';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
@@ -34,9 +34,35 @@ export function SiteHeader(props) {
   const internalProfileRef = useRef(null);
   const internalCurrencyRef = useRef(null);
 
+  const [internalScrolled, setInternalScrolled] = useState(false);
+  const [internalPastHero, setInternalPastHero] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+      const isScrolled = scrollPos > 20;
+      const isPastHero = scrollPos > 400;
+      setInternalScrolled(isScrolled);
+      setInternalPastHero(isPastHero);
+      if (store.setScrolled && store.scrolled !== isScrolled) {
+        store.setScrolled(isScrolled);
+      }
+      if (store.setPastHero && store.pastHero !== isPastHero) {
+        store.setPastHero(isPastHero);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [store]);
+
   const route = props.route;
-  const scrolled = props.scrolled ?? store.scrolled;
-  const pastHero = props.pastHero ?? store.pastHero;
+  const scrolled = props.scrolled !== undefined ? props.scrolled : (store.scrolled || internalScrolled);
+  const pastHero = props.pastHero !== undefined ? props.pastHero : (store.pastHero || internalPastHero);
   const menuOpen = props.menuOpen ?? store.menuOpen;
   const setMenuOpen = props.setMenuOpen ?? store.setMenuOpen;
   const brandLogoSrc = props.brandLogoSrc || assetSrc(brandLogo);

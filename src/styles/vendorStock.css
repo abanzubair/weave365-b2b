@@ -555,30 +555,6 @@ a.vendor-card-link {
   margin: 0 auto;
 }
 
-/* Storefront Badge Styling */
-.status-badge.tag-ready-stock {
-  background: #eafaf1;
-  color: #1b8042;
-  border: 1px solid rgba(27, 128, 66, 0.25);
-}
-
-.status-badge.tag-pre-order {
-  background: #fff9e6;
-  color: #b8860b;
-  border: 1px solid rgba(184, 134, 11, 0.3);
-}
-
-.status-badge.tag-out-of-stock {
-  background: #fdf0ee;
-  color: #c93b2b;
-  border: 1px solid rgba(201, 59, 43, 0.3);
-}
-
-.status-badge.tag-back-soon {
-  background: #f5f0fd;
-  color: #6a3cbc;
-  border: 1px solid rgba(106, 60, 188, 0.25);
-}
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {

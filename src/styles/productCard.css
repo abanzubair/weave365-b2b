@@ -104,6 +104,10 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
+.tag-back-soon {
+  background: #9e8cc4;
+}
+
 .image-button {
   width: 100%;
   aspect-ratio: 3 / 4;
