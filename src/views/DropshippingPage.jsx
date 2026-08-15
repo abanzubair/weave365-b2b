@@ -22,6 +22,7 @@ import {
   Truck,
   HeartHandshake
 } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/dropshipping.css';
 
 export function DropshippingPage({ navigate, openAuth }) {
@@ -137,6 +138,7 @@ export function DropshippingPage({ navigate, openAuth }) {
     <div className="dropshipping-page-container">
       {/* Hero Section */}
       <section className="dropshipping-hero">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Dropshipping Program' }]} navigate={navigate} contained={true} />
         <div className="dropshipping-hero-inner">
           <div className="dropshipping-hero-content">
             <span className="dropshipping-kicker">Free to Start · No Inventory Required</span>

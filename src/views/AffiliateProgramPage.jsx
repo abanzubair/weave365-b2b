@@ -23,6 +23,7 @@ import {
   ChevronDown,
   LineChart
 } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/affiliateProgramPage.css';
 
 export function AffiliateProgramPage({ user, navigate, openAuth }) {
@@ -109,6 +110,7 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
     <div className="affiliate-page-container">
       {/* 1. Hero Section */}
       <section className="affiliate-hero">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Affiliate Program' }]} navigate={navigate} contained={true} />
         <div className="affiliate-hero-inner">
           <div className="affiliate-hero-content">
             <span className="affiliate-hero-kicker">Free to Join &bull; Zero Investment</span>

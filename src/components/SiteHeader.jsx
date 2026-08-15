@@ -93,7 +93,7 @@ export function SiteHeader(props) {
   const activeCurrency = props.activeCurrency || CURRENCIES[0];
   const currentCurrency = props.currentCurrency || CURRENCIES[0].code;
   return (
-    <header className={`site-header ${route === 'home' || route === 'about' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
+    <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
       <button 
         className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
         type="button" 

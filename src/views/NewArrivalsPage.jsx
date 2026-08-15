@@ -24,6 +24,7 @@ import { ProductCard } from '../components/ProductCard.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import { checkProductPriceInRange } from '../storefrontShared.jsx';
 
 export function NewArrivalsPage({
@@ -238,8 +239,20 @@ export function NewArrivalsPage({
     setVisibleCount(getPageSize());
   };
 
+  const breadcrumbItems = useMemo(() => {
+    const items = [
+      { name: 'Home', url: '/', route: 'home' },
+      { name: 'New Arrivals', url: '/new-arrivals', route: 'new-arrivals' }
+    ];
+    if (category && category !== 'All') {
+      items.push({ name: category });
+    }
+    return items;
+  }, [category]);
+
   return (
     <section className="section catalog-page">
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
       <h1 className="sr-only">Latest Banarasi Sarees and Suits - New Arrivals</h1>
       {openDropdown && (
         <div 

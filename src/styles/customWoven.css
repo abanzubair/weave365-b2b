@@ -100,7 +100,7 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  padding: clamp(2.5rem, 5vw, 4.5rem) 0;
+  padding: 0 0 clamp(2.5rem, 5vw, 4.5rem) 0;
 }
 
 .cw-hero-editorial-grid {

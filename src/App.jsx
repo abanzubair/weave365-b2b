@@ -71,6 +71,7 @@ const ResellerDashboard = dynamic(() => import('./views/ResellerDashboard.jsx').
 const NewArrivalsPage = safeLazy(() => import('./views/NewArrivalsPage.jsx').then(m => ({ default: m.NewArrivalsPage })));
 const SeoLandingPage = safeLazy(() => import('./views/SeoLandingPage.jsx').then(m => ({ default: m.SeoLandingPage })));
 const WeaveComparisonGuidePage = safeLazy(() => import('./views/WeaveComparisonGuidePage.jsx').then(m => ({ default: m.WeaveComparisonGuidePage })));
+const CustomWovenPage = safeLazy(() => import('./views/CustomWovenPage.jsx').then(m => ({ default: m.CustomWovenPage })));
 const AffiliateProgramPage = dynamic(() => import('./views/AffiliateProgramPage.jsx').then(m => ({ default: m.AffiliateProgramPage })), { ssr: false });
 const DropshippingPage = dynamic(() => import('./views/DropshippingPage.jsx').then(m => ({ default: m.DropshippingPage })), { ssr: false });
 const ResellerFeaturesPage = dynamic(() => import('./views/ResellerFeaturesPage.jsx').then(m => ({ default: m.ResellerFeaturesPage })), { ssr: false });

@@ -227,39 +227,12 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       document.head.appendChild(faqScript);
     }
 
-    // 3. BreadcrumbList Schema
-    const breadcrumbListItems = [
-      { name: 'Home', url: '/' },
-      { name: 'Insights & Blogs', url: '/blog' },
-      ...(post.category ? [{ name: post.category, url: `/blog/category/${slugifyCategory(post.category)}` }] : []),
-      { name: post.title, url: `/blog/${post.slug}` }
-    ];
-
-    const breadcrumbSchema = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": breadcrumbListItems.map((item, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "name": item.name,
-        "item": `${window.location.origin}${item.url}`
-      }))
-    };
-
-    const breadcrumbScript = document.createElement('script');
-    breadcrumbScript.type = 'application/ld+json';
-    breadcrumbScript.id = 'blog-breadcrumb-ld-json';
-    breadcrumbScript.text = JSON.stringify(breadcrumbSchema);
-    document.head.appendChild(breadcrumbScript);
-
     // Clean up injected rich scripts to prevent duplicates or crawler confusion
     return () => {
       const oldArticleScript = document.getElementById('blog-article-ld-json');
       if (oldArticleScript) oldArticleScript.remove();
       const oldFaqScript = document.getElementById('blog-faq-ld-json');
       if (oldFaqScript) oldFaqScript.remove();
-      const oldBreadcrumbScript = document.getElementById('blog-breadcrumb-ld-json');
-      if (oldBreadcrumbScript) oldBreadcrumbScript.remove();
     };
   }, [post]);
 

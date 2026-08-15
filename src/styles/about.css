@@ -33,38 +33,6 @@
   align-items: flex-start;
 }
 
-.about-breadcrumbs {
-  font-family: var(--font-ui);
-  font-size: var(--small-size);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.about-breadcrumbs a {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.2s ease;
-  font-weight: 550;
-}
-
-.about-breadcrumbs a:hover {
-  color: var(--gold);
-}
-
-.about-breadcrumbs .separator {
-  color: var(--line);
-}
-
-.about-breadcrumbs .current {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 .hero-headline {
   font-family: var(--font-heading);
   font-size: var(--h1-size);

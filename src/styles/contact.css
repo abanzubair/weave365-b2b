@@ -13,47 +13,12 @@
 .contact-page-container {
   min-height: 100vh;
   background: #ffffff;
-  padding: clamp(40px, 6vw, 64px) var(--site-padding) 60px var(--site-padding);
+  padding: 0 var(--site-padding) 60px var(--site-padding);
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   overflow: hidden;
-}
-
-/* BREADCRUMB NAVIGATION */
-.contact-breadcrumbs {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  font-family: var(--font-hero-body);
-  font-size: var(--small-size);
-  letter-spacing: 0.05em;
-  width: 100%;
-  max-width: 1200px;
-}
-
-.contact-breadcrumbs a {
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
-  font-weight: 550;
-}
-
-.contact-breadcrumbs a:hover {
-  color: var(--gold);
-}
-
-.contact-breadcrumbs .breadcrumb-divider {
-  color: var(--line);
-}
-
-.contact-breadcrumbs .active {
-  color: var(--gold-dark);
-  font-weight: 600;
 }
 
 /* MAIN CONTENT STRUCTURE */

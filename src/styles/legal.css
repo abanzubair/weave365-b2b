@@ -7,7 +7,7 @@
 .legal-page-container {
   min-height: 100vh;
   background: radial-gradient(circle at 10% 20%, var(--cream) 0%, var(--paper) 90%);
-  padding: 4rem var(--site-padding) var(--section-gap) var(--site-padding);
+  padding: 0 var(--site-padding) var(--section-gap) var(--site-padding);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,42 +40,6 @@
   background: radial-gradient(circle, rgba(183, 134, 70, 0.06) 0%, rgba(255, 255, 255, 0) 70%);
   z-index: 0;
   pointer-events: none;
-}
-
-/* BREADCRUMB NAVIGATION */
-.legal-breadcrumbs {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap; /* Prevents breadcrumbs from overflowing on narrow mobile devices */
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  font-family: var(--font-hero-body);
-  font-size: var(--small-size);
-  letter-spacing: 0.05em;
-  width: 100%;
-  max-width: 1200px;
-}
-
-.legal-breadcrumbs a {
-  color: var(--muted);
-  text-decoration: none;
-  transition: none;
-}
-
-.legal-breadcrumbs a:hover {
-  color: var(--muted);
-  transition: none;
-}
-
-.legal-breadcrumbs .breadcrumb-divider {
-  color: var(--line);
-}
-
-.legal-breadcrumbs .active {
-  color: var(--gold-dark);
-  font-weight: 500;
 }
 
 /* LAYOUT CONTAINER */
@@ -406,10 +370,6 @@
   
   .legal-content-card {
     padding: 2rem 1.5rem;
-  }
-  
-  .legal-breadcrumbs {
-    margin-bottom: 1.5rem;
   }
 }
 

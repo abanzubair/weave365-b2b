@@ -27,6 +27,7 @@ import {
   FileText,
   HeartHandshake
 } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/resellerFeatures.css';
 
 export function ResellerFeaturesPage({ user, navigate, openAuth }) {
@@ -78,6 +79,7 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
     <div className="reseller-features-container">
       {/* 1. Hero Section */}
       <section className="rf-hero">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Reseller Features' }]} navigate={navigate} contained={true} />
         <div className="rf-hero-inner">
           <div className="rf-hero-content">
             <span className="rf-hero-kicker">Multi-Tier B2B Reseller Platform</span>

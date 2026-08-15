@@ -128,29 +128,6 @@ export function BlogList({ navigate, blogs = [] }) {
           })),
         };
 
-    // 2. BreadcrumbList schema
-    const breadcrumbItems = isCategory
-      ? [
-          { name: 'Home', item: `${origin}/` },
-          { name: 'Insights & Blogs', item: `${origin}/blog` },
-          { name: activeCategory, item: pageUrl },
-        ]
-      : [
-          { name: 'Home', item: `${origin}/` },
-          { name: 'Insights & Blogs', item: `${origin}/blog` },
-        ];
-
-    const breadcrumbSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: breadcrumbItems.map((bc, idx) => ({
-        '@type': 'ListItem',
-        position: idx + 1,
-        name: bc.name,
-        item: bc.item,
-      })),
-    };
-
     const inject = (id, schema) => {
       let el = document.getElementById(id);
       if (!el) {
@@ -163,13 +140,10 @@ export function BlogList({ navigate, blogs = [] }) {
     };
 
     inject('blog-list-page-ld-json', pageSchema);
-    inject('blog-list-breadcrumb-ld-json', breadcrumbSchema);
 
     return () => {
-      ['blog-list-page-ld-json', 'blog-list-breadcrumb-ld-json'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-      });
+      const el = document.getElementById('blog-list-page-ld-json');
+      if (el) el.remove();
     };
   }, [activeCategory, blogs]);
 

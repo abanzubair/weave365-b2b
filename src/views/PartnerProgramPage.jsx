@@ -31,6 +31,7 @@ import {
   Tags,
   Truck,
 } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 // Configuration data for White Label & Sourcing Partner pages
 const partnerPages = {
@@ -327,6 +328,13 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
     <div className="partner-atelier-view">
       {/* Hero Master Section */}
       <section className="atelier-hero-section">
+        <Breadcrumb 
+          items={[
+            { name: 'Home', url: '/', route: 'home' }, 
+            { name: activeType === 'white-label' ? 'White Label Brands' : 'Sourcing Partners' }
+          ]} 
+          navigate={navigate} 
+        />
         <div className="atelier-hero-grid">
           <div className="atelier-hero-content">
             <span className="atelier-badge">{page.badge}</span>

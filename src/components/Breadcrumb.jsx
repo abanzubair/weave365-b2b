@@ -1,17 +1,18 @@
 import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import { siteUrl } from '../config.js';
 
 /**
- * Premium Breadcrumb navigation component with integrated JSON-LD schema.
+ * Premium Unified Breadcrumb navigation component with integrated JSON-LD schema.
  * 
  * @param {Object} props
- * @param {Array} props.items - Array of trail elements e.g. [{ name: 'Home', url: '/' }]
+ * @param {Array} props.items - Array of trail elements e.g. [{ name: 'Home', url: '/', route: 'home' }]
  * @param {Function} [props.navigate] - Optional router callback
+ * @param {string} [props.className] - Optional extra class names
+ * @param {boolean} [props.contained] - Optional flag to add horizontal container padding
  */
-export default function Breadcrumb({ items, navigate }) {
+export function Breadcrumb({ items, navigate, className = '', contained = false }) {
   if (!items || items.length === 0) return null;
-
-
 
   // Construct structured data schema
   const schemaData = {
@@ -21,7 +22,7 @@ export default function Breadcrumb({ items, navigate }) {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": item.url ? (item.url.startsWith('http') ? item.url : `${siteUrl}${item.url}`) : `${siteUrl}/`
+      "item": item.url ? (item.url.startsWith('http') ? item.url : `${siteUrl}${item.url.startsWith('/') ? '' : '/'}${item.url}`) : `${siteUrl}/`
     }))
   };
 
@@ -31,7 +32,10 @@ export default function Breadcrumb({ items, navigate }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
-      <nav className="premium-breadcrumb" aria-label="Breadcrumb">
+      <nav 
+        className={`premium-breadcrumb ${contained ? 'contained' : ''} ${className}`.trim()} 
+        aria-label="Breadcrumb"
+      >
         <ol className="breadcrumb-list">
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
@@ -68,7 +72,11 @@ export default function Breadcrumb({ items, navigate }) {
                 ) : (
                   <span className="breadcrumb-text">{item.name}</span>
                 )}
-                {!isLast && <span className="breadcrumb-separator">/</span>}
+                {!isLast && (
+                  <span className="breadcrumb-separator" aria-hidden="true">
+                    <ChevronRight size={10} className="breadcrumb-chevron" strokeWidth={2.2} />
+                  </span>
+                )}
               </li>
             );
           })}
@@ -77,3 +85,5 @@ export default function Breadcrumb({ items, navigate }) {
     </>
   );
 }
+
+export default Breadcrumb;

@@ -112,47 +112,6 @@ export function Catalog({
 
   usePageSeo(finalSeoConfig);
 
-  // Google JSON-LD BreadcrumbList Schema injection
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
- 
-    const schemaItems = [
-      { name: 'Home', url: '/' },
-      { name: title || 'Wholesale Saree Catalogue', url: '/catalogue' }
-    ];
-    if (category && category !== 'All') {
-      schemaItems.push({ name: category, url: `/catalogue` });
-    }
-    if (fabric && fabric !== 'All') {
-      schemaItems.push({ name: fabric, url: `/catalogue` });
-    }
-    if (weave && weave !== 'All') {
-      schemaItems.push({ name: weave, url: `/catalogue` });
-    }
- 
-    const breadcrumbSchema = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": schemaItems.map((item, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "name": item.name,
-        "item": `${window.location.origin}${item.url}`
-      }))
-    };
- 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'catalog-breadcrumb-ld-json';
-    script.text = JSON.stringify(breadcrumbSchema);
-    document.head.appendChild(script);
- 
-    return () => {
-      const oldScript = document.getElementById('catalog-breadcrumb-ld-json');
-      if (oldScript) oldScript.remove();
-    };
-  }, [title, category, fabric, weave]);
-
   const closeWithAnimation = () => {
     if (isClosing) return;
     setIsClosing(true);

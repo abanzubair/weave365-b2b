@@ -18,6 +18,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { siteUrl, storeConfig } from '../config.js';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 function PinterestIcon({ size = 20, className = "" }) {
   return (
@@ -368,12 +369,7 @@ export function ContactPage({ navigate }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} 
       />
 
-      {/* LUXURY HERO BREADCRUMB */}
-      <div className="contact-breadcrumbs">
-        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
-        <ChevronRight size={12} className="breadcrumb-divider" />
-        <span className="active">Contact Us</span>
-      </div>
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Contact Us' }]} navigate={navigate} />
 
       <ContactSection navigate={navigate} />
     </div>

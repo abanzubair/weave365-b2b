@@ -5,11 +5,18 @@
  */
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCart, priceAccess }) {
+  const breadcrumbItems = [
+    { name: 'Home', url: '/', route: 'home' },
+    { name: 'Favourites' }
+  ];
+
   if (!user) {
     return (
       <section className="section empty-page">
+        <Breadcrumb items={breadcrumbItems} navigate={navigate} />
         <h1>Login to see your favourite sarees</h1>
         <p>Your saved designs will stay linked to your account.</p>
         <button type="button" className="primary-button" onClick={openAuth}>
@@ -30,6 +37,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
 
   return (
     <section className="section catalog-page">
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
       <h1 className="sr-only">Your Saved Banarasi Sarees and Suits</h1>
       <div className="favorites-header">
         <SectionTitle title="Favourite Items" align="left" />

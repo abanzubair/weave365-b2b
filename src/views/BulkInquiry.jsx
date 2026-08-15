@@ -18,6 +18,7 @@ import {
 import { storeConfig } from '../config.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 const initialInquiry = {
   name: '',
@@ -65,6 +66,8 @@ export function BulkInquiry({ navigate }) {
 
   return (
     <section className="bulk-inquiry-page">
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Wholesale Bulk Inquiry' }]} navigate={navigate} />
+
       <div className="bulk-inquiry-hero">
         <div>
           <span className="pill">Wholesale Bulk Inquiry</span>

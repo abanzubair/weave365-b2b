@@ -42,7 +42,7 @@
 .skeleton-breadcrumb {
   display: flex;
   gap: 12px;
-  margin: 0 0 28px;
+  margin: 0.5rem 0 1.25rem;
 }
 
 .skeleton-breadcrumb-item {

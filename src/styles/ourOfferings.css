@@ -12,77 +12,14 @@
   position: relative;
 }
 
-/* ── Breadcrumb Bar ───────────────────────────────────────── */
-.offerings-breadcrumb-bar {
-  padding: 0 0 32px 0;
-  width: 100%;
-  position: relative;
-  z-index: 10;
-}
-
-.breadcrumb-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.breadcrumb-link {
-  background: none;
-  border: none;
-  color: var(--muted, #6d5946);
-  opacity: 0.6;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: 500;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  transition: none;
-  padding: 0;
-}
-
-.breadcrumb-link:hover {
-  color: var(--muted, #6d5946);
-  opacity: 0.6;
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: 500;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  transition: none;
-  transform: none;
-}
-
-.breadcrumb-separator {
-  color: var(--line, #eadbc8);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.breadcrumb-current {
-  color: var(--gold-dark, #805d31);
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: 600;
-  letter-spacing: inherit;
-  text-transform: inherit;
-}
-
 /* ── Minimalist Hero Section ────────────────────────────────── */
 .offerings-hero-section {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120px 24px 100px; /* Elegant vertical padding for spacious editorial text-only layout */
+  padding: 0 24px 100px;
   background: linear-gradient(180deg, var(--surface-soft, #faf6f0) 0%, var(--paper, #ffffff) 100%);
   overflow: hidden;
   border-bottom: 1px solid var(--line, #eadbc8);

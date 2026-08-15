@@ -18,48 +18,6 @@
   overflow-x: hidden;
 }
 
-.seo-landing-page .premium-breadcrumb {
-  padding: 0.5rem var(--site-padding) 0.25rem;
-}
-
-/* Breadcrumbs Styling */
-.seo-breadcrumbs {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.25rem 5% 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: var(--small-size);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: 400;
-}
-
-.seo-breadcrumbs a {
-  color: #666;
-  text-decoration: none;
-  transition: none;
-  font-weight: 550;
-}
-
-.seo-breadcrumbs a:hover {
-  color: #666;
-  transition: none;
-}
-
-.seo-breadcrumbs .chevron {
-  color: #ccc;
-  flex-shrink: 0;
-}
-
-.seo-breadcrumbs span.current {
-  color: var(--gold-dark, #805d31);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 /* Hero Section */
 .seo-landing-hero {
   max-width: 1200px;

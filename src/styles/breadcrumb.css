@@ -1,0 +1,135 @@
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL UNIFORM BREADCRUMBS DESIGN SYSTEM — Weave365
+   Sophisticated editorial luxury aesthetic with uniform typography,
+   fluid container alignment, and smooth micro-interactions.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.premium-breadcrumb {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 1.25rem auto;
+  padding: 1.25rem 0 0 0;
+  position: relative;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+/* Modifier when breadcrumb sits inside a full-bleed view that lacks side padding */
+.premium-breadcrumb.contained {
+  padding: 1.25rem var(--site-padding, 1.5rem) 0 var(--site-padding, 1.5rem);
+}
+
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.35rem 0.5rem;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted, #6d5946);
+  white-space: nowrap;
+}
+
+.breadcrumb-link,
+.breadcrumb-link-btn {
+  color: var(--muted, #6d5946);
+  opacity: 0.72;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.breadcrumb-link:hover,
+.breadcrumb-link-btn:hover,
+.breadcrumb-link:focus-visible,
+.breadcrumb-link-btn:focus-visible {
+  color: var(--gold-dark, #805d31);
+  opacity: 1;
+  text-decoration: none;
+  outline: none;
+}
+
+.breadcrumb-text {
+  color: var(--muted, #6d5946);
+  opacity: 0.72;
+}
+
+.breadcrumb-separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(183, 134, 70, 0.45);
+  user-select: none;
+  line-height: 1;
+}
+
+.breadcrumb-chevron {
+  display: block;
+  flex-shrink: 0;
+  color: rgba(183, 134, 70, 0.5);
+}
+
+.breadcrumb-item.active .breadcrumb-current {
+  color: var(--ink, #1a1a1a);
+  font-weight: 600;
+  opacity: 1;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile & Tablet Optimizations */
+@media (max-width: 768px) {
+  .premium-breadcrumb {
+    margin-bottom: 1rem;
+    padding-top: 0.75rem;
+  }
+
+  .premium-breadcrumb.contained {
+    padding: 0.75rem var(--site-padding, 1rem) 0 var(--site-padding, 1rem);
+  }
+
+  .breadcrumb-list {
+    gap: 0.3rem 0.45rem;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+
+  .breadcrumb-item {
+    gap: 0.45rem;
+  }
+
+  .breadcrumb-item.active .breadcrumb-current {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-item.active .breadcrumb-current {
+    max-width: 170px;
+  }
+}

@@ -23,6 +23,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import SliderCaptcha from '../components/SliderCaptcha';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 const buyerTypes = [
   { id: 'wholesaler', label: 'Wholesaler', icon: Building2 },
@@ -215,6 +216,7 @@ export function EarlyAccessPage({ navigate }) {
       </div>
 
       <div className="early-access-container">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Early Access' }]} navigate={navigate} />
         
         {submitted ? (
           <div className="early-access-success-card animate-fade-in" role="status" aria-live="polite">

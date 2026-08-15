@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function DisclaimerPage({ navigate }) {
   const [openFaq, setOpenFaq] = React.useState(null);
@@ -33,12 +34,7 @@ export function DisclaimerPage({ navigate }) {
 
   return (
     <div className="legal-page-container disclaimer-page" data-page-id="disclaimer">
-      {/* breadcrumbs */}
-      <div className="legal-breadcrumbs">
-        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
-        <ChevronRight size={12} className="breadcrumb-divider" />
-        <span className="active">Disclaimer</span>
-      </div>
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Trade Disclaimer' }]} navigate={navigate} />
 
       <div className="legal-layout">
         {/* reusable sidebar */}

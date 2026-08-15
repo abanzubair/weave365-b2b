@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronRight, ChevronDown, ArrowRight } from 'lucide-react';
 import { seoLandingPages } from '../data/seoLandingPages.js';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function WeaveComparisonGuidePage({ navigate }) {
   const pageData = seoLandingPages['handloom-vs-powerloom-guide'] || {};
@@ -55,12 +56,7 @@ export function WeaveComparisonGuidePage({ navigate }) {
         />
       )}
 
-      {/* Editorial Breadcrumbs */}
-      <nav className="weave-guide-breadcrumb" aria-label="breadcrumb">
-        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
-        <ChevronRight size={12} />
-        <span>Weave Guide</span>
-      </nav>
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Weave Guide' }]} navigate={navigate} />
 
       {/* Magazine Hero */}
       <header className="weave-guide-hero">

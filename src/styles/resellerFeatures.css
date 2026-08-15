@@ -14,7 +14,7 @@
 
 /* 1. Asymmetric Hero Section */
 .rf-hero {
-  padding: 4.5rem 0;
+  padding: 0 0 4.5rem 0;
   border-bottom: 1px solid #e8ded0;
   position: relative;
   background: linear-gradient(180deg, #fcfaf6 0%, #faf7f2 100%);

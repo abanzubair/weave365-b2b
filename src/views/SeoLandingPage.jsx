@@ -183,26 +183,6 @@ export function SeoLandingPage({
     );
   }
 
-  // Generate dynamic JSON-LD Breadcrumb Schema
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": siteUrl
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": pageData.h1,
-        "item": `${siteUrl}/${pageData.slug}`
-      }
-    ]
-  };
-
   // Generate dynamic JSON-LD FAQ Schema
   const faqSchema = {
     "@context": "https://schema.org",

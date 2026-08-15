@@ -20,6 +20,7 @@ import {
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [searchId, setSearchId] = useState('');
@@ -186,6 +187,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   if (!inquiryId) {
     return (
       <div className="order-tracking-container">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Order Tracking' }]} navigate={navigate} />
         <div className="order-tracking-card">
           <h2 className="order-tracking-title">Track Your Order</h2>
           <p className="order-tracking-subtitle">
@@ -214,15 +216,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   return (
     <div className="order-tracking-container">
-      {/* Header back link */}
-      <button 
-        type="button" 
-        onClick={() => navigate('home')} 
-        className="btn-back-catalog"
-        style={{ marginBottom: '1.5rem', borderWidth: 0, paddingLeft: 0 }}
-      >
-        <ArrowLeft size={16} /> Back to Home
-      </button>
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Order Tracking', url: '/order-tracking', route: 'order-tracking' }, { name: inquiryId }]} navigate={navigate} />
 
       {loading && (
         <div className="order-tracking-card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>

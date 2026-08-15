@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 
 export function ShippingDeliveryPage({ navigate }) {
   const [openFaq, setOpenFaq] = React.useState(null);
@@ -32,12 +33,7 @@ export function ShippingDeliveryPage({ navigate }) {
 
   return (
     <div className="legal-page-container shipping-delivery-page" data-page-id="shipping-delivery">
-      {/* breadcrumbs */}
-      <div className="legal-breadcrumbs">
-        <a href="/" onClick={(e) => { e.preventDefault(); navigate('home'); }}>Home</a>
-        <ChevronRight size={12} className="breadcrumb-divider" />
-        <span className="active">Shipping & Delivery</span>
-      </div>
+      <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Shipping & Delivery' }]} navigate={navigate} />
 
       <div className="legal-layout">
         {/* reusable sidebar */}

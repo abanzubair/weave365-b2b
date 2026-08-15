@@ -9,7 +9,7 @@ import {
   Award
 } from 'lucide-react';
 import { ContactSection } from './ContactPage.jsx';
-
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/ourOfferings.css';
 
 export function OurOfferings({ navigate, openAuth }) {
@@ -75,6 +75,7 @@ export function OurOfferings({ navigate, openAuth }) {
       />
 
       <section className="offerings-hero-section">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Brand Partnership' }]} navigate={navigate} contained={true} />
 
         <div className="offerings-hero-content">
           <div className="editorial-hero-text">

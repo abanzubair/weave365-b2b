@@ -39,6 +39,7 @@ import {
   Gift
 } from 'lucide-react';
 import { AppLink } from '../components/AppLink.jsx';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/customWoven.css';
 
 export function CustomWovenPage({ navigate }) {
@@ -253,6 +254,7 @@ export function CustomWovenPage({ navigate }) {
       {/* ATELIER EDITORIAL HERO SECTION */}
       <section className="cw-editorial-hero">
         <div className="cw-container">
+          <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Custom Woven Sarees' }]} navigate={navigate} />
           <div className="cw-hero-editorial-grid">
             {/* LEFT COLUMN: EDITORIAL NARRATIVE & CONTENT */}
             <div className="cw-hero-editorial-main">
