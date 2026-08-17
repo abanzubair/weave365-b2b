@@ -38,6 +38,7 @@ import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
 // Import split sub-components
 import DashboardOverview from './admin/DashboardOverview.jsx';
+import '../styles/admin.css';
 import BuyerPipeline from './admin/BuyerPipeline.jsx';
 import BlogManager from './admin/BlogManager.jsx';
 import SeoSettings from './admin/SeoSettings.jsx';

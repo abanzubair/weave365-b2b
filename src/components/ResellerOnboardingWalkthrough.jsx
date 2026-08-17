@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ArrowRight } from 'lucide-react';
+import '../styles/onboardingWalkthrough.css';
 
 export function ResellerOnboardingWalkthrough({ user, buyerProfile, priceAccess }) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);

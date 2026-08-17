@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight, ShieldAlert, Truck, RotateCcw, ShieldCheck, FileText } from 'lucide-react';
+import '../styles/legal.css';
 
 export function LegalSidebar({ activeTab, navigate }) {
   const menuItems = [

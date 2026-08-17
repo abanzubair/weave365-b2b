@@ -60,6 +60,26 @@ export function SiteHeader(props) {
     };
   }, [store]);
 
+  const dropdownOpen = props.dropdownOpen ?? store.dropdownOpen;
+  const setDropdownOpen = props.setDropdownOpen ?? store.setDropdownOpen;
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.nav-item-dropdown')) {
+        setDropdownOpen(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [dropdownOpen, setDropdownOpen]);
+
   const route = props.route;
   const scrolled = props.scrolled !== undefined ? props.scrolled : (store.scrolled || internalScrolled);
   const pastHero = props.pastHero !== undefined ? props.pastHero : (store.pastHero || internalPastHero);
@@ -67,8 +87,6 @@ export function SiteHeader(props) {
   const setMenuOpen = props.setMenuOpen ?? store.setMenuOpen;
   const brandLogoSrc = props.brandLogoSrc || assetSrc(brandLogo);
   const navigate = props.navigate;
-  const dropdownOpen = props.dropdownOpen ?? store.dropdownOpen;
-  const setDropdownOpen = props.setDropdownOpen ?? store.setDropdownOpen;
   const categoriesRef = props.categoriesRef || internalCategoriesRef;
   const categories = (props.categories && props.categories.length > 0)
     ? props.categories

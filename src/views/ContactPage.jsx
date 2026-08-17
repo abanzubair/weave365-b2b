@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { siteUrl, storeConfig } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/contact.css';
 
 function PinterestIcon({ size = 20, className = "" }) {
   return (

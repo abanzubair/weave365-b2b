@@ -1,6 +1,7 @@
 import '../src/styles.css';
 import { siteUrl } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
+import { AppShell } from '../src/components/AppShell.jsx';
 import Script from 'next/script';
 
 
@@ -114,7 +115,11 @@ export default function RootLayout({ children }) {
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
         )}
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <AppShell>
+          {children}
+        </AppShell>
+      </body>
     </html>
   );
 }

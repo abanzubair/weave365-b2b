@@ -4,6 +4,7 @@
  * Displays beneath details/catalogues to maximize B2B buyer conversion and reliability signals.
  */
 import { Truck, Tag, ShieldCheck, Headphones } from 'lucide-react';
+import '../styles/productTrustStrip.css';
 
 const productTrustItems = [
   { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Secure shipping across India & overseas' },

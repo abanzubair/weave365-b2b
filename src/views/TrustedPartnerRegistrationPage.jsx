@@ -26,6 +26,7 @@ import {
 import artisanImage from '../../assets/artisan_at_loom_premium.webp';
 import { assetSrc } from '../utils/assetSrc.js';
 import SliderCaptcha from '../components/SliderCaptcha.jsx';
+import '../styles/weaverRegistrationPage.css';
 
 // Global polyfill layer to protect edge runtime client evaluation from process.env reference errors.
 if (typeof globalThis !== 'undefined' && !globalThis.process) {
@@ -107,15 +108,18 @@ export function TrustedPartnerRegistrationPage() {
   const heroImage = assetSrc(artisanImage);
   
   // Language state & helper
-  const [lang, setLang] = useState(() => {
+  const [lang, setLang] = useState('en');
+
+  useEffect(() => {
     try {
-      return localStorage.getItem('weave365_lang') || 'en';
+      const savedLang = localStorage.getItem('weave365_lang');
+      if (savedLang && savedLang !== 'en') {
+        setLang(savedLang);
+      }
     } catch (e) {
-      return 'en';
+      // Ignore localStorage access errors
     }
-  });
-
-
+  }, []);
 
   const t = (key) => {
     return translations[lang]?.[key] || translations['en']?.[key] || key;

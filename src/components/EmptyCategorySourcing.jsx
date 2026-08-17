@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Sparkles, PackageCheck, Send, ArrowRight, ShieldCheck, HelpCircle, ChevronDown, Check } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
+import '../styles/emptyCategorySourcing.css';
 
 // Dynamic persona configurations for empty categories to optimize SEO and search intent
 const categoryPersonas = {

@@ -6,6 +6,7 @@
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
+import '../styles/enquiryPopup.css';
 
 export function EnquiryPopup({ open, onClose, whatsappUrl }) {
   if (!open) return null;

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 import { getProductCategorySlug } from '../config.js';
+import '../styles/resellerTools.css';
 
 export function ResellerTools({ user, buyerProfile }) {
   const [activeTab, setActiveTab] = useState('shares');

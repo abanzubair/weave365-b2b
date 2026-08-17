@@ -8,6 +8,7 @@
  */
 import { useRouter } from 'next/navigation';
 import { Search, Home, Package } from 'lucide-react';
+import '../styles/notFound.css';
 
 export function NotFoundPage() {
   const router = useRouter();

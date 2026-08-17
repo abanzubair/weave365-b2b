@@ -23,6 +23,7 @@ import {
 import { storeConfig, siteUrl } from '../config.js';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/about.css';
 
 export function AboutPage({ navigate }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);

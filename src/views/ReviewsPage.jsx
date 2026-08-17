@@ -13,6 +13,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { siteUrl } from '../config.js';
 import { Testimonials } from '../components/ui/testimonials-columns-1.jsx';
+import '../styles/reviews.css';
 
 export function SharpStar({ size = 24, fill = 'none', stroke = 'currentColor', strokeWidth = 2, className = '' }) {
   return (

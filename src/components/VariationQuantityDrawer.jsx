@@ -11,6 +11,7 @@ import {
   formatMoney,
 } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
+import '../styles/variationQuantityDrawer.css';
 
 function buildQuantityMap(options) {
   return options.reduce((map, option) => ({ ...map, [option.key]: 0 }), {});

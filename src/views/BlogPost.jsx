@@ -18,6 +18,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';
 import { getStoredReferralCode } from '../utils/influencerHelpers.js';
+import '../styles/blog.css';
 
 const slugifyCategory = (cat) => {
   if (!cat) return '';

@@ -31,7 +31,9 @@ import {
   Tags,
   Truck,
 } from 'lucide-react';
+import { storeConfig, siteUrl } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/partnerProgram.css';
 
 // Configuration data for White Label & Sourcing Partner pages
 const partnerPages = {

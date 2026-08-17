@@ -25,6 +25,7 @@ import {
 import { assetSrc } from '../utils/assetSrc.js';
 const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
+import '../styles/weaverOnboardingPage.css';
 
 export function WeaverOnboardingPage({ openAuth }) {
   return (

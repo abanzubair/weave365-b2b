@@ -1,4 +1,5 @@
 import React from 'react';
+import '../styles/productSkeleton.css';
 
 export default function ProductPageSkeleton() {
   return (

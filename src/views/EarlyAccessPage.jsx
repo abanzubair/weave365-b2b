@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import SliderCaptcha from '../components/SliderCaptcha';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/earlyAccess.css';
 
 const buyerTypes = [
   { id: 'wholesaler', label: 'Wholesaler', icon: Building2 },

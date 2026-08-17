@@ -272,6 +272,13 @@
   align-items: center;
 }
 
+.profile-dropdown-container .dropdown-menu,
+.currency-dropdown-container .dropdown-menu {
+  left: auto !important;
+  right: 0 !important;
+  transform: translateY(12px) !important;
+}
+
 .main-nav svg {
   transition: transform 0.2s ease;
 }

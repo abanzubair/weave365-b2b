@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Tag
 } from 'lucide-react';
+import '../styles/vendorStock.css';
 import { 
   STOCK_STATUS_OPTIONS, 
   formatISTDateTime, 

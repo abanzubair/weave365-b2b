@@ -54,7 +54,7 @@ export function DynamicIcon({ name, size = 18, className = 'col-icon' }) {
 }
 
 export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
-  const [config, setConfig] = useState(() => initialConfig || getDirectoryConfigLocal() || DEFAULT_DIRECTORY_CONFIG);
+  const [config, setConfig] = useState(() => initialConfig || DEFAULT_DIRECTORY_CONFIG);
 
   useEffect(() => {
     // 1. If initialConfig wasn't passed, check local storage cache

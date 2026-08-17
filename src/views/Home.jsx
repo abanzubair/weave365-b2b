@@ -13,7 +13,7 @@ import { StateMessage } from '../components/StateMessage.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { BenefitStrip, Stat } from '../components/Strips.jsx';
+import { Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
@@ -23,6 +23,8 @@ import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { AppLink } from '../components/AppLink.jsx';
 import { OverlapHero } from '../components/OverlapHero.jsx';
+import '../styles/blog.css';
+import '../styles/heroPremium.css';
 
 export const SHOW_OVERLAP_HERO = true;
 
@@ -807,34 +809,6 @@ export function Home({
       <ResellerGrowth imageUrl={resellerSectionImage} navigate={navigate} />
 
       <BrandCollaboration imageUrl={brandCollabSectionImage} weaverImageUrl={weaverSectionImage} navigate={navigate} />
-
-      {/* <BenefitStrip /> */}
-
-      {/* <section className="reseller-band">
-        <div>
-          <h2>Built for Business. Made for Resellers.</h2>
-          <p>Join thousands of retailers who trust {storeConfig.name} wholesale for premium quality sarees.</p>
-          <div className="reseller-actions">
-            <button type="button" className="gold-button" onClick={() => navigate('bulk-inquiry')}>
-              Bulk Inquiry <ArrowRight size={17} />
-            </button>
-            <button type="button" className="reseller-link-button" onClick={openAuth}>
-              Register Now
-            </button>
-          </div>
-        </div>
-        <ul>
-          <li>
-            <ShieldCheck /> <span><strong>Exclusive Wholesale Prices</strong>Best rates guaranteed for our registered buyers.</span>
-          </li>
-          <li>
-            <PackageCheck /> <span><strong>Wide Range of Collections</strong>Sarees for every occasion and customer demand.</span>
-          </li>
-          <li>
-            <Award /> <span><strong>Reliable Partnership</strong>We grow when you grow. That's our promise.</span>
-          </li>
-        </ul>
-      </section> */}
 
       {/* Weave 365 Insights Section */}
       <section className="home-blog-section">

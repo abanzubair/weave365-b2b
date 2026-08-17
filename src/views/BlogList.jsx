@@ -15,6 +15,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ArrowRight, Calendar, Clock, User, Filter, Search, X } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
+import '../styles/blog.css';
 
 const slugifyCategory = (cat) => {
   return cat.toLowerCase().trim().replace(/\s+/g, '-');

@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
+import '../styles/resellerGrowth.css';
 
 export function ResellerGrowth({ imageUrl, navigate }) {
   return (

@@ -1,28 +1,4 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Tag, HeartHandshake, PackageCheck, ShieldCheck } from 'lucide-react';
-
-const benefitStripItems = [
-  { icon: PackageCheck, title: '1000+ Designs Available', copy: 'Wide catalog depth for every market' },
-  { icon: ShieldCheck, title: '500+ Active Buyers', copy: 'Trusted by repeat wholesale customers' },
-  { icon: Tag, title: '10+ Years in Banaras Network', copy: 'Strong sourcing relationships and local reach' },
-  { icon: HeartHandshake, title: '95% Repeat Buyer Rate', copy: 'Reliable products, pricing, and dispatch' },
-];
-
-export function BenefitStrip() {
-  return (
-    <section className="benefit-strip">
-      {benefitStripItems.map(({ icon: Icon, title, copy }) => (
-        <div key={title}>
-          <Icon strokeWidth={1.5} />
-          <span>
-            <strong>{title}</strong>
-            {copy}
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
 
 export function Stat({ icon, value, label }) {
   // Parse target number and suffix (e.g. "1000+" -> 1000 and "+", "95%" -> 95 and "%")
@@ -58,7 +34,7 @@ export function Stat({ icon, value, label }) {
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
-          
+
           const duration = 1600; // Smooth 1.6s animation
           const startTime = performance.now();
 
@@ -67,7 +43,7 @@ export function Stat({ icon, value, label }) {
             // Smooth easeOutQuad
             const easeProgress = progress * (2 - progress);
             const current = Math.floor(easeProgress * target);
-            
+
             setCount(current);
 
             if (progress < 1) {

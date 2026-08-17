@@ -21,6 +21,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/orderTracking.css';
 
 export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [searchId, setSearchId] = useState('');

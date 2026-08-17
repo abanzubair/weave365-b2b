@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
+import '../styles/brandCollaboration.css';
 
 export function BrandCollaboration({ imageUrl, navigate }) {
   return (

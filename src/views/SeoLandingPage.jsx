@@ -11,6 +11,7 @@ import { StateMessage } from '../components/StateMessage.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { siteUrl } from '../config.js';
 import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
+import '../styles/seoLandingPages.css';
 
 const getCollectionTagline = (itemSlug) => {
   switch (itemSlug) {

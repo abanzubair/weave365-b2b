@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { Star, MessageSquare } from 'lucide-react';
+import '../styles/reviewStrip.css';
 
 export function ReviewStrip({ navigate }) {
   const handleClick = (e) => {

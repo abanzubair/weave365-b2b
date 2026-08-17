@@ -4,6 +4,7 @@ import { assetSrc } from '../utils/assetSrc.js';
 // Assets
 import mobHeroImage from '../../assets/mobH.webp';
 import deskHeroImage from '../../assets/deskH.webp';
+import '../styles/overlapHero.css';
 
 export function OverlapHero({ navigate }) {
   const desktopImage = assetSrc(deskHeroImage);

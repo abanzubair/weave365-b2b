@@ -27,6 +27,7 @@ import {
 } from '../storefrontShared.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
+import '../styles/checkout.css';
 
 export function CheckoutPage({
   items = [],
