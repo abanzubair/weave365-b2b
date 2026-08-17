@@ -93,15 +93,37 @@ export function AppShell({ children }) {
       .catch((err) => console.error('Error loading custom theme:', err));
   }, []);
 
-  // Lazy-load products & config options if not populated
+  // Lazy-load products & config options only when needed
   useEffect(() => {
+    // Skip eager product fetch on purely static text/policy pages
+    const staticTextPages = [
+      '/privacy-security',
+      '/terms-conditions',
+      '/disclaimer',
+      '/shipping-delivery',
+      '/returns-cancellation',
+      '/about',
+      '/contact',
+    ];
+    if (staticTextPages.includes(pathname)) {
+      return;
+    }
+
     if (products.length === 0) {
-      fetchProducts().then(setProducts).catch(console.error);
+      fetchProducts()
+        .then((prods) => {
+          if (prods && prods.length > 0) setProducts(prods);
+        })
+        .catch(console.error);
     }
     if (!configOptions || configOptions.categories?.length === 0) {
-      fetchConfigOptions().then(setConfigOptions).catch(console.error);
+      fetchConfigOptions()
+        .then((cfg) => {
+          if (cfg) setConfigOptions(cfg);
+        })
+        .catch(console.error);
     }
-  }, [products.length, configOptions, setProducts, setConfigOptions]);
+  }, [pathname, products.length, configOptions, setProducts, setConfigOptions]);
 
   // Supabase Auth Listener
   useEffect(() => {

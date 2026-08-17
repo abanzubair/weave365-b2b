@@ -178,7 +178,7 @@ export default async function ProductPage({ params }) {
     try {
       const { data, error } = await supabase
         .from('product_reviews')
-        .select('*')
+        .select('reviewer_name, rating, comment, title, created_at')
         .eq('product_id', product.id)
         .eq('status', 'approved')
         .order('created_at', { ascending: false });

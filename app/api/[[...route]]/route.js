@@ -18,12 +18,14 @@ import { GET as googleShoppingGet } from './googleShoppingHandler.js';
 import { GET as vendorRegistrationGet, POST as vendorRegistrationPost } from './vendorRegistrationHandler.js';
 import { POST as adminSyncPost } from './adminSyncHandler.js';
 import { generateSitemapXml } from './sitemapHandler.js';
+import { GET as catalogGet } from './catalogHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
   const routeKey = (resolvedParams?.route || []).join('/');
 
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
+  if (routeKey === 'catalog') return catalogGet(request);
   if (routeKey === 'early-access') return earlyAccessGet(request);
   if (routeKey === 'image') return imageGet(request);
   if (routeKey === 'storefront') return storefrontGet(request);

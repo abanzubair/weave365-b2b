@@ -8,9 +8,12 @@
  * @module productData
  */
 
+import { cache } from 'react';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import { seoLandingPages } from './data/seoLandingPages.js';
+
+const safeCache = typeof cache === 'function' ? cache : (fn) => fn;
 
 const moneyColumns = {
   mrp: 'B2B',
@@ -23,20 +26,101 @@ const moneyColumns = {
 // In-memory cache for Edge Worker isolates to prevent CPU limit exceeded (Error 1102) on Cloudflare Pages
 const memoryCache = new Map();
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const BROWSER_CACHE_PREFIX = 'weave_cache_';
+const BROWSER_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function getBrowserStorageCache(key) {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(`${BROWSER_CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && (Date.now() - parsed.timestamp < BROWSER_CACHE_TTL_MS)) {
+      return parsed.data;
+    }
+  } catch (e) {
+    // Ignore sessionStorage errors
+  }
+  return null;
+}
+
+function setBrowserStorageCache(key, data) {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(`${BROWSER_CACHE_PREFIX}${key}`, JSON.stringify({
+      data,
+      timestamp: Date.now(),
+    }));
+  } catch (e) {
+    // Ignore sessionStorage quota errors
+  }
+}
 
 export function clearProductDataCache() {
   memoryCache.clear();
+  if (typeof window !== 'undefined') {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith(BROWSER_CACHE_PREFIX)) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => sessionStorage.removeItem(k));
+    } catch (e) {
+      // Ignore
+    }
+  }
 }
 
 async function fetchSyncedJsonCached(id, ttlMs = DEFAULT_CACHE_TTL_MS) {
   const cacheKey = `json_${id}`;
+
+  // 1. In-memory cache check (fastest)
   const cached = memoryCache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp < ttlMs)) {
     return cached.data;
   }
+
+  // 2. Client-side persistent cache check (sessionStorage)
+  const storageData = getBrowserStorageCache(id);
+  if (storageData !== null) {
+    memoryCache.set(cacheKey, { data: storageData, timestamp: Date.now() });
+    return storageData;
+  }
+
+  // 3. Client-side CDN-cached Edge API fetch (/api/catalog?type=...)
+  if (typeof window !== 'undefined') {
+    try {
+      const typeMap = {
+        products_json: 'products',
+        config_json: 'config',
+        hero_json: 'hero',
+        site_customizer_json: 'customizer',
+      };
+      const apiType = typeMap[id];
+      if (apiType) {
+        const res = await fetch(`/api/catalog?type=${apiType}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data !== null) {
+            memoryCache.set(cacheKey, { data, timestamp: Date.now() });
+            setBrowserStorageCache(id, data);
+            return data;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`[Data] /api/catalog fallback for ${id}:`, e.message);
+    }
+  }
+
+  // 4. Server-side Supabase direct fetch
   const data = await fetchSyncedJson(id);
   if (data !== null) {
     memoryCache.set(cacheKey, { data, timestamp: Date.now() });
+    setBrowserStorageCache(id, data);
   } else if (cached) {
     return cached.data;
   }
@@ -62,17 +146,17 @@ async function fetchSyncedJson(id) {
   return null;
 }
 
-export async function fetchConfigOptions() {
+export const fetchConfigOptions = safeCache(async function fetchConfigOptions() {
   const cachedJson = await fetchSyncedJsonCached('config_json');
   if (cachedJson) return cachedJson;
   return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
-}
+});
 
-export async function fetchSiteCustomizer() {
+export const fetchSiteCustomizer = safeCache(async function fetchSiteCustomizer() {
   const cachedJson = await fetchSyncedJsonCached('site_customizer_json');
   if (cachedJson) return cachedJson;
   return null;
-}
+});
 
 export async function saveSiteCustomizer(customizerData) {
   if (!supabase) throw new Error('Supabase client is not configured');
@@ -88,13 +172,13 @@ export async function saveSiteCustomizer(customizerData) {
   return true;
 }
 
-export async function fetchProducts() {
+export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     return cachedJson;
   }
   return [];
-}
+});
 
 export async function parseProductCsv(text) {
   const Papa = (await import('papaparse')).default;
@@ -698,13 +782,13 @@ function unique(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
 
-export async function fetchHeroData() {
+export const fetchHeroData = safeCache(async function fetchHeroData() {
   const cachedJson = await fetchSyncedJsonCached('hero_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     return cachedJson;
   }
   return [];
-}
+});
 
 let isSyncing = false;
 
@@ -938,11 +1022,16 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
   }
 }
 
-export async function fetchSupabaseBlogPosts() {
+export const fetchSupabaseBlogPosts = safeCache(async function fetchSupabaseBlogPosts() {
   const cacheKey = 'db_blog_posts';
   const cached = memoryCache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
     return cached.data;
+  }
+  const storageData = getBrowserStorageCache(cacheKey);
+  if (storageData !== null) {
+    memoryCache.set(cacheKey, { data: storageData, timestamp: Date.now() });
+    return storageData;
   }
   if (!isSupabaseConfigured) return [];
   try {
@@ -972,12 +1061,13 @@ export async function fetchSupabaseBlogPosts() {
       createdAt: row.created_at,
     }));
     memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    setBrowserStorageCache(cacheKey, result);
     return result;
   } catch (err) {
     console.error('Error fetching Supabase blog posts:', err);
     return cached ? cached.data : [];
   }
-}
+});
 
 function normalizeSeoPath(path) {
   const cleaned = String(path || '/').trim();
@@ -986,11 +1076,16 @@ function normalizeSeoPath(path) {
   return withSlash.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
 }
 
-export async function fetchSupabasePageSeoSettings() {
+export const fetchSupabasePageSeoSettings = safeCache(async function fetchSupabasePageSeoSettings() {
   const cacheKey = 'db_page_seo_settings';
   const cached = memoryCache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
     return cached.data;
+  }
+  const storageData = getBrowserStorageCache(cacheKey);
+  if (storageData !== null) {
+    memoryCache.set(cacheKey, { data: storageData, timestamp: Date.now() });
+    return storageData;
   }
   if (!isSupabaseConfigured) return [];
   try {
@@ -1016,12 +1111,13 @@ export async function fetchSupabasePageSeoSettings() {
       updatedAt: row.updated_at,
     }));
     memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    setBrowserStorageCache(cacheKey, result);
     return result;
   } catch (err) {
     console.error('Error fetching Supabase page SEO settings:', err);
     return cached ? cached.data : [];
   }
-}
+});
 
 export async function saveSupabasePageSeoSetting(setting) {
   if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
@@ -1054,6 +1150,9 @@ export async function saveSupabasePageSeoSetting(setting) {
 
   if (error) throw error;
   memoryCache.delete('db_page_seo_settings');
+  if (typeof window !== 'undefined') {
+    try { sessionStorage.removeItem(`${BROWSER_CACHE_PREFIX}db_page_seo_settings`); } catch (e) {}
+  }
   return data;
 }
 
@@ -1089,14 +1188,22 @@ export async function saveSupabaseBlogPost(post) {
 
   if (error) throw error;
   memoryCache.delete('db_blog_posts');
+  if (typeof window !== 'undefined') {
+    try { sessionStorage.removeItem(`${BROWSER_CACHE_PREFIX}db_blog_posts`); } catch (e) {}
+  }
   return data;
 }
 
-export async function fetchSupabaseLandingPages() {
+export const fetchSupabaseLandingPages = safeCache(async function fetchSupabaseLandingPages() {
   const cacheKey = 'db_landing_pages';
   const cached = memoryCache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp < DEFAULT_CACHE_TTL_MS)) {
     return cached.data;
+  }
+  const storageData = getBrowserStorageCache(cacheKey);
+  if (storageData !== null) {
+    memoryCache.set(cacheKey, { data: storageData, timestamp: Date.now() });
+    return storageData;
   }
 
   const staticPages = Object.entries(seoLandingPages).map(([slug, page]) => ({
@@ -1127,6 +1234,7 @@ export async function fetchSupabaseLandingPages() {
   if (!isSupabaseConfigured) {
     const res = Array.from(pagesMap.values());
     memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+    setBrowserStorageCache(cacheKey, res);
     return res;
   }
 
@@ -1139,6 +1247,7 @@ export async function fetchSupabaseLandingPages() {
       console.warn('Unable to select from landing_pages:', error.message);
       const res = Array.from(pagesMap.values());
       memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+      setBrowserStorageCache(cacheKey, res);
       return res;
     }
 
@@ -1169,14 +1278,16 @@ export async function fetchSupabaseLandingPages() {
     dbPages.forEach(p => pagesMap.set(p.slug, p));
     const result = Array.from(pagesMap.values());
     memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    setBrowserStorageCache(cacheKey, result);
     return result;
   } catch (err) {
     console.error('Failed to fetch dynamic landing pages:', err);
     const res = Array.from(pagesMap.values());
     memoryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+    setBrowserStorageCache(cacheKey, res);
     return res;
   }
-}
+});
 
 export async function saveSupabaseLandingPage(page) {
   if (!isSupabaseConfigured) throw new Error('Supabase is not configured');
@@ -1218,6 +1329,9 @@ export async function saveSupabaseLandingPage(page) {
 
   if (error) throw error;
   memoryCache.delete('db_landing_pages');
+  if (typeof window !== 'undefined') {
+    try { sessionStorage.removeItem(`${BROWSER_CACHE_PREFIX}db_landing_pages`); } catch (e) {}
+  }
   return data;
 }
 
@@ -1232,5 +1346,8 @@ export async function deleteSupabaseLandingPage(slug) {
 
   if (error) throw error;
   memoryCache.delete('db_landing_pages');
+  if (typeof window !== 'undefined') {
+    try { sessionStorage.removeItem(`${BROWSER_CACHE_PREFIX}db_landing_pages`); } catch (e) {}
+  }
   return data;
 }
