@@ -7,7 +7,7 @@
   display: flex;
   min-height: calc(100vh - 58px);
   background-color: #f4f5f7;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter, 'Inter', system-ui, -apple-system, sans-serif);
   color: #111827;
   position: relative;
 }

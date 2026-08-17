@@ -33,14 +33,36 @@ import { AppLink } from './AppLink.jsx';
 
 import { adminEmails } from '../config.js';
 
+function normalizeVendorCode(vid) {
+  if (!vid || vid === 'all' || vid === 'N/A') return '';
+  const clean = String(vid).trim();
+  const digits = clean.replace(/\D/g, '');
+  if (!digits) return clean.toUpperCase();
+  return `V${digits.padStart(2, '0')}`;
+}
+
 export function VendorStockPanel({ user, buyerProfile, products = [] }) {
   const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length > 0 ? products : []));
   const [stockOverrides, setStockOverrides] = useState(() => getVendorStockLocal());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !Array.isArray(products) || products.length === 0);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [justSavedId, setJustSavedId] = useState(null);
 
+  // Sync products if prop updates or fetch if initially empty
+  useEffect(() => {
+    if (Array.isArray(products) && products.length > 0) {
+      setCatalogProducts(products);
+      setLoading(false);
+    } else if (catalogProducts.length === 0) {
+      setLoading(true);
+      fetchProducts()
+        .then((data) => setCatalogProducts(data || []))
+        .catch((err) => console.error('[VendorStockPanel] Error loading products:', err))
+        .finally(() => setLoading(false));
+    }
+  }, [products]);
 
   // Check administrative privilege
   const userEmail = String(user?.email || '').toLowerCase().trim();
@@ -56,17 +78,19 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
   const vendorOptions = useMemo(() => {
     const map = new Map();
     for (const p of catalogProducts) {
-      const vid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const rawVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const normVid = normalizeVendorCode(rawVid);
       const partner = String(p.partner || p.raw?.Partner || p.raw?.partner || '').trim();
-      if (!vid && !partner) continue;
+      if (!normVid && !partner) continue;
       
-      const key = `${vid}:::${partner}`;
+      const key = `${normVid || rawVid}:::${partner}`;
       if (!map.has(key)) {
         map.set(key, {
           key,
-          vid: vid || 'N/A',
+          vid: normVid || rawVid || 'N/A',
+          rawVid: rawVid || 'N/A',
           partner: partner || 'Partner',
-          displayName: vid && partner ? `${vid} ${partner}` : (vid ? `Vendor ${vid}` : partner),
+          displayName: normVid && partner ? `${normVid} ${partner}` : (normVid ? `Vendor ${normVid}` : partner),
           count: 1
         });
       } else {
@@ -79,6 +103,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       list.unshift({
         key: 'all',
         vid: 'all',
+        rawVid: 'all',
         partner: 'All Catalog Designs',
         displayName: `All Designs (${catalogProducts.length})`,
         count: catalogProducts.length
@@ -89,6 +114,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
   // Automatic Google Sheet match resolution (by Partner Name, Business Name, Full Name, Email, or VID)
   const autoMatchedVendor = useMemo(() => {
+    const normProfileVid = normalizeVendorCode(profileVid);
     if (profileBusinessName) {
       const found = vendorOptions.find(v => v.partner.toLowerCase() === profileBusinessName.toLowerCase());
       if (found) return found;
@@ -101,8 +127,8 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       const found = vendorOptions.find(v => v.partner.toLowerCase() === profileFullName.toLowerCase());
       if (found) return found;
     }
-    if (profileVid) {
-      const found = vendorOptions.find(v => v.vid === profileVid);
+    if (normProfileVid) {
+      const found = vendorOptions.find(v => normalizeVendorCode(v.vid) === normProfileVid || v.rawVid === profileVid);
       if (found) return found;
     }
     // Check if any product in the catalog contains vendor email in raw CSV columns
@@ -114,7 +140,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       if (matchedProd) {
         const vid = String(matchedProd.vendorCode || matchedProd.raw?.VID || '').trim();
         const partner = String(matchedProd.partner || matchedProd.raw?.Partner || '').trim();
-        return { key: `${vid}:::${partner}`, vid: vid || 'N/A', partner: partner || profileBusinessName || 'Partner', displayName: `${vid} ${partner}`.trim(), count: 1 };
+        return { key: `${normalizeVendorCode(vid) || vid}:::${partner}`, vid: normalizeVendorCode(vid) || vid || 'N/A', partner: partner || profileBusinessName || 'Partner', displayName: `${vid} ${partner}`.trim(), count: 1 };
       }
     }
     return null;
@@ -173,19 +199,23 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
     const matchedPartner = String(autoMatchedVendor?.partner || profilePartner || profileBusinessName || '').toLowerCase().trim();
     const matchedVid = String((autoMatchedVendor?.vid && autoMatchedVendor.vid !== 'N/A') ? autoMatchedVendor.vid : (profileVid || '')).trim();
+    const normMatchedVid = normalizeVendorCode(matchedVid);
 
     return catalogProducts.filter((p) => {
-      const pVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const rawPVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const normPVid = normalizeVendorCode(rawPVid);
       const pPartner = String(p.partner || p.raw?.Partner || p.raw?.partner || '').toLowerCase().trim();
       const pEmail = String(p.raw?.['Vendor Email'] || p.raw?.['Email'] || '').toLowerCase().trim();
 
-      // If matched by partner/business name, strictly match that partner
+      // If matched by partner/business name, match that partner
       if (matchedPartner && pPartner === matchedPartner) return true;
 
-      // If matched by specific VID (e.g. V01)
-      if (matchedVid && matchedVid !== 'all' && pVid === matchedVid) {
-        if (!matchedPartner || pPartner === matchedPartner || !pPartner) {
-          return true;
+      // If matched by normalized VID (e.g. V02 matches V02, 02, v02, 2)
+      if (normMatchedVid && normMatchedVid !== 'ALL') {
+        if (normPVid === normMatchedVid || rawPVid === matchedVid) {
+          if (!matchedPartner || !pPartner || pPartner === matchedPartner) {
+            return true;
+          }
         }
       }
 
@@ -195,8 +225,11 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       if (isAdmin && selectedVendorKey) {
         if (selectedVendorKey.includes(':::')) {
           const [sVid, sPartner] = selectedVendorKey.split(':::');
-          if (pVid === sVid && (!sPartner || pPartner === sPartner.toLowerCase())) return true;
-        } else if (pVid === selectedVendorKey || pPartner === selectedVendorKey.toLowerCase()) {
+          const normSVid = normalizeVendorCode(sVid);
+          const vidMatches = normPVid === normSVid || rawPVid === sVid;
+          const partnerMatches = !sPartner || pPartner === sPartner.toLowerCase();
+          if (vidMatches && partnerMatches) return true;
+        } else if (normPVid === normalizeVendorCode(selectedVendorKey) || rawPVid === selectedVendorKey || pPartner === selectedVendorKey.toLowerCase()) {
           return true;
         }
       }
@@ -204,6 +237,16 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       return false;
     });
   }, [catalogProducts, selectedVendorKey, autoMatchedVendor, profileVid, profilePartner, profileBusinessName, userEmail, isAdmin]);
+
+  // Extract distinct categories available for this vendor
+  const vendorCategories = useMemo(() => {
+    const counts = {};
+    for (const p of vendorProducts) {
+      const cat = p.category ? p.category.trim() : 'Saree';
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
+    return counts;
+  }, [vendorProducts]);
 
   // Current vendor display name
   const currentVendorInfo = useMemo(() => {
@@ -215,16 +258,16 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       };
     }
     if (autoMatchedVendor) return autoMatchedVendor;
-    const found = vendorOptions.find(v => v.key === selectedVendorKey || v.vid === (profileVid || selectedVendorKey) || String(v.partner || '').toLowerCase() === String(profilePartner || selectedVendorKey || '').toLowerCase());
+    const found = vendorOptions.find(v => v.key === selectedVendorKey || normalizeVendorCode(v.vid) === normalizeVendorCode(profileVid || selectedVendorKey) || String(v.partner || '').toLowerCase() === String(profilePartner || selectedVendorKey || '').toLowerCase());
     if (found) return found;
     return {
-      vid: profileVid || selectedVendorKey || '02',
+      vid: profileVid || selectedVendorKey || 'V02',
       partner: profilePartner || profileBusinessName || 'Loom Partner',
       displayName: profileVid && profilePartner ? `${profileVid} ${profilePartner}` : (profileVid ? `Vendor ${profileVid}` : (profilePartner || profileBusinessName || 'Assigned Vendor'))
     };
   }, [vendorOptions, selectedVendorKey, autoMatchedVendor, profileVid, profilePartner, profileBusinessName, isAdmin]);
 
-  // Apply search query and status tab filter
+  // Apply category filter, search query and status tab filter
   const displayedProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     return vendorProducts.filter((p) => {
@@ -244,6 +287,13 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
         return false;
       }
 
+      if (selectedCategory !== 'all') {
+        const pCat = String(p.category || 'Saree').toLowerCase();
+        if (pCat !== selectedCategory.toLowerCase()) {
+          return false;
+        }
+      }
+
       if (query) {
         const codeMatch = String(pKey || '').toLowerCase().includes(query) ||
                           String(p.vendorCode || '').toLowerCase().includes(query) ||
@@ -256,7 +306,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
       return true;
     });
-  }, [vendorProducts, stockOverrides, searchQuery, statusFilter]);
+  }, [vendorProducts, stockOverrides, searchQuery, statusFilter, selectedCategory]);
 
   // Calculate statistics for the active vendor products
   const stats = useMemo(() => {
@@ -452,6 +502,32 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
             Back Soon ({stats.backsoon})
           </button>
         </div>
+
+        {/* Category Filter Pills (when vendor has products in multiple categories) */}
+        {Object.keys(vendorCategories).length > 1 && (
+          <div className="vendor-category-tabs-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', fontWeight: '600', color: '#78716c', marginRight: '4px' }}>Category:</span>
+            <button
+              type="button"
+              className={`vendor-filter-tab ${selectedCategory === 'all' ? 'active' : ''}`}
+              style={{ fontSize: '12px', padding: '4px 12px' }}
+              onClick={() => setSelectedCategory('all')}
+            >
+              All Categories ({vendorProducts.length})
+            </button>
+            {Object.entries(vendorCategories).map(([catName, catCount]) => (
+              <button
+                key={catName}
+                type="button"
+                className={`vendor-filter-tab ${selectedCategory.toLowerCase() === catName.toLowerCase() ? 'active' : ''}`}
+                style={{ fontSize: '12px', padding: '4px 12px' }}
+                onClick={() => setSelectedCategory(catName)}
+              >
+                {catName} ({catCount})
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Products Grid */}

@@ -77,10 +77,16 @@ CREATE POLICY "directory settings public read" ON public.site_directory_settings
 DROP POLICY IF EXISTS "directory settings admin modify" ON public.site_directory_settings;
 CREATE POLICY "directory settings admin modify" ON public.site_directory_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
 
+let inMemoryConfig = null;
+let inFlightFetch = null;
+
 /**
  * Loads current directory configuration synchronously from localStorage or default.
  */
 export function getDirectoryConfigLocal() {
+  if (inMemoryConfig && Array.isArray(inMemoryConfig.columns)) {
+    return inMemoryConfig;
+  }
   if (typeof window === 'undefined') {
     return DEFAULT_DIRECTORY_CONFIG;
   }
@@ -89,6 +95,7 @@ export function getDirectoryConfigLocal() {
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed && Array.isArray(parsed.columns)) {
+        inMemoryConfig = parsed;
         return parsed;
       }
     }
@@ -101,36 +108,48 @@ export function getDirectoryConfigLocal() {
 /**
  * Fetches directory configuration from Supabase and syncs with local cache.
  */
-export async function fetchDirectoryConfigRemote() {
+export async function fetchDirectoryConfigRemote(force = false) {
   if (!isSupabaseConfigured) return getDirectoryConfigLocal();
-  
-  try {
-    const { data, error } = await supabase
-      .from('site_directory_settings')
-      .select('config')
-      .eq('id', 'main')
-      .maybeSingle();
-
-    if (error) {
-      console.warn('[directoryService] Remote fetch error (using cache):', error.message);
-      return getDirectoryConfigLocal();
-    }
-
-    if (data && data.config && Array.isArray(data.config.columns)) {
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(data.config));
-          window.dispatchEvent(new CustomEvent(DIRECTORY_UPDATED_EVENT, { detail: data.config }));
-        } catch (storageErr) {
-          console.warn('[directoryService] Local storage sync error:', storageErr);
-        }
-      }
-      return data.config;
-    }
-  } catch (err) {
-    console.error('[directoryService] Unexpected fetch error:', err);
+  if (!force && inMemoryConfig && Array.isArray(inMemoryConfig.columns)) {
+    return inMemoryConfig;
   }
-  return getDirectoryConfigLocal();
+  if (!force && inFlightFetch) {
+    return inFlightFetch;
+  }
+  
+  inFlightFetch = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_directory_settings')
+        .select('config')
+        .eq('id', 'main')
+        .maybeSingle();
+
+      if (error) {
+        console.warn('[directoryService] Remote fetch error (using cache):', error.message);
+        return getDirectoryConfigLocal();
+      }
+
+      if (data && data.config && Array.isArray(data.config.columns)) {
+        inMemoryConfig = data.config;
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(DIRECTORY_STORAGE_KEY, JSON.stringify(data.config));
+          } catch (storageErr) {
+            console.warn('[directoryService] Local storage sync error:', storageErr);
+          }
+        }
+        return data.config;
+      }
+    } catch (err) {
+      console.error('[directoryService] Unexpected fetch error:', err);
+    } finally {
+      inFlightFetch = null;
+    }
+    return getDirectoryConfigLocal();
+  })();
+
+  return inFlightFetch;
 }
 
 /**

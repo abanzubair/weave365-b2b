@@ -57,18 +57,20 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
   const [config, setConfig] = useState(() => initialConfig || getDirectoryConfigLocal() || DEFAULT_DIRECTORY_CONFIG);
 
   useEffect(() => {
-    // 1. If initialConfig wasn't passed, fall back to local storage cache
+    // 1. If initialConfig wasn't passed, check local storage cache
     if (!initialConfig) {
       const cached = getDirectoryConfigLocal();
-      if (cached && JSON.stringify(cached) !== JSON.stringify(config)) {
+      if (cached) {
         setConfig(cached);
       }
+    } else {
+      setConfig(initialConfig);
     }
 
-    // 2. Fetch remote config and update state ONLY if content has changed
+    // 2. Fetch remote config once on mount if needed
     void fetchDirectoryConfigRemote().then(remoteData => {
-      if (remoteData && JSON.stringify(remoteData) !== JSON.stringify(config)) {
-        setConfig(remoteData);
+      if (remoteData) {
+        setConfig(prev => (JSON.stringify(prev) !== JSON.stringify(remoteData) ? remoteData : prev));
       }
     });
 
@@ -84,7 +86,7 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
     return () => {
       window.removeEventListener(DIRECTORY_UPDATED_EVENT, handleUpdate);
     };
-  }, [initialConfig, config]);
+  }, [initialConfig]);
 
   const getHref = (link) => {
     if (link.path) return link.path;

@@ -44,6 +44,14 @@ import { fetchProducts } from '../../productData.js';
 import { fallbackProductImage } from '../../storefrontShared.jsx';
 import { AppLink } from '../../components/AppLink.jsx';
 
+function normalizeVendorCode(vid) {
+  if (!vid || vid === 'all' || vid === 'N/A') return '';
+  const clean = String(vid).trim();
+  const digits = clean.replace(/\D/g, '');
+  if (!digits) return clean.toUpperCase();
+  return `V${digits.padStart(2, '0')}`;
+}
+
 export default function AdminStockManager({
   products = [],
   user,
@@ -116,17 +124,19 @@ export default function AdminStockManager({
   const vendorOptions = useMemo(() => {
     const map = new Map();
     for (const p of catalogProducts) {
-      const vid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const rawVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const normVid = normalizeVendorCode(rawVid);
       const partner = String(p.partner || p.raw?.Partner || p.raw?.partner || '').trim();
-      if (!vid && !partner) continue;
+      if (!normVid && !partner) continue;
 
-      const key = `${vid}:::${partner}`;
+      const key = `${normVid || rawVid}:::${partner}`;
       if (!map.has(key)) {
         map.set(key, {
           key,
-          vid: vid || 'N/A',
+          vid: normVid || rawVid || 'N/A',
+          rawVid: rawVid || 'N/A',
           partner: partner || 'Loom Partner',
-          displayName: vid && partner ? `${vid} - ${partner}` : (vid ? `Vendor ${vid}` : partner),
+          displayName: normVid && partner ? `${normVid} - ${partner}` : (normVid ? `Vendor ${normVid}` : partner),
           count: 1,
         });
       } else {
@@ -163,7 +173,8 @@ export default function AdminStockManager({
 
     return catalogProducts.filter((p) => {
       const pKey = p.id || p.groupKey;
-      const pVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const rawPVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').trim();
+      const normPVid = normalizeVendorCode(rawPVid);
       const pPartner = String(p.partner || p.raw?.Partner || p.raw?.partner || '').toLowerCase().trim();
       const currentStatus = getProductEffectiveStatus(p);
 
@@ -171,10 +182,13 @@ export default function AdminStockManager({
       if (selectedVendorKey !== 'all') {
         if (selectedVendorKey.includes(':::')) {
           const [sVid, sPartner] = selectedVendorKey.split(':::');
-          if (pVid !== sVid || (sPartner && pPartner !== sPartner.toLowerCase())) {
+          const normSVid = normalizeVendorCode(sVid);
+          const vidMatches = normPVid === normSVid || rawPVid === sVid;
+          const partnerMatches = !sPartner || pPartner === sPartner.toLowerCase();
+          if (!vidMatches || !partnerMatches) {
             return false;
           }
-        } else if (pVid !== selectedVendorKey && pPartner !== selectedVendorKey.toLowerCase()) {
+        } else if (normPVid !== normalizeVendorCode(selectedVendorKey) && rawPVid !== selectedVendorKey && pPartner !== selectedVendorKey.toLowerCase()) {
           return false;
         }
       }

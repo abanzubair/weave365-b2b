@@ -2,32 +2,7 @@ import '../src/styles.css';
 import { siteUrl } from '../src/config.js';
 import SchemaMarkup from '../src/components/SchemaMarkup.jsx';
 import Script from 'next/script';
-import { 
-  Cormorant_Garamond, 
-  Manrope, 
-  Marcellus
-} from 'next/font/google';
 
-const cormorantGaramond = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-cormorant-garamond-next',
-  display: 'swap',
-});
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-manrope-next',
-  display: 'swap',
-});
-
-const marcellus = Marcellus({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-marcellus-next',
-  display: 'swap',
-});
 
 export const metadata = {
   title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
@@ -94,16 +69,16 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  const fontClasses = [
-    cormorantGaramond.variable,
-    manrope.variable,
-    marcellus.variable,
-  ].join(' ');
-
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={fontClasses} suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <SchemaMarkup />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Marcellus&display=swap"
+          rel="stylesheet"
+        />
         <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://assets.weave365.com" />
         <link
