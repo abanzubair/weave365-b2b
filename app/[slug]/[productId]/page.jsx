@@ -5,6 +5,7 @@ import { isSupabaseConfigured, supabase } from '../../../src/supabaseClient.js';
 import ProductPageClient from './ProductPageClient.jsx';
 
 export const revalidate = 3600;
+export const runtime = 'edge';
 
 function generateProductSchemas(product, activeReviews = []) {
   if (!product) return null;

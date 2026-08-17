@@ -5,6 +5,7 @@ import { siteUrl } from '../../src/config.js';
 import CatalogueClient from './CatalogueClient.jsx';
 
 export const revalidate = 3600;
+export const runtime = 'edge';
 
 export async function generateMetadata({ searchParams }) {
   const resolvedSearchParams = await searchParams;

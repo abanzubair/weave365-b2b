@@ -7,6 +7,7 @@ import CatalogueClient from '../catalogue/CatalogueClient.jsx';
 import SeoLandingPageClient from './SeoLandingPageClient.jsx';
 
 export const revalidate = 3600;
+export const runtime = 'edge';
 
 function getStaticLandingPagesFallback() {
   return Object.entries(seoLandingPages).map(([slug, page]) => ({

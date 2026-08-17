@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import OrderTrackingClient from '../OrderTrackingClient.jsx';
 
+export const runtime = 'edge';
+
 export const metadata = {
   title: 'Wholesale Order & Inquiry Tracking | Weave 365',
   robots: {

@@ -5,6 +5,7 @@ import { fetchSupabaseBlogPosts } from '../../../../src/productData.js';
 import BlogClient from '../../BlogClient.jsx';
 
 export const revalidate = 3600;
+export const runtime = 'edge';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

@@ -6,6 +6,7 @@ import { getSeoMetadata } from '../../../src/utils/seoHelper.js';
 import BlogPostClient from './BlogPostClient.jsx';
 
 export const revalidate = 3600;
+export const runtime = 'edge';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
