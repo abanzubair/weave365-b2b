@@ -16,7 +16,12 @@
     "NEXT_PUBLIC_STORE_EMAIL": "weave365@gmail.com",
     "NEXT_PUBLIC_STORE_PHONE": "9919101369",
     "NEXT_PUBLIC_STORE_WHATSAPP": "919919101369",
-    "NEXT_PUBLIC_ADMIN_EMAILS": "abanzubair@gmail.com"
+    "NEXT_PUBLIC_ADMIN_EMAILS": "abanzubair@gmail.com",
+    "GOOGLE_SHEET_PRODUCTS_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=0&single=true&output=csv",
+    "GOOGLE_SHEET_HERO_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0sRjHxpdyuxJ6KsXmnEKnakC8ryFTDSSZozFRhfXPfI82PYYQqDlk2fNPBMptKit3hVXEAdxeagLq/pub?gid=0&single=true&output=csv",
+    "GOOGLE_SHEET_CONFIG_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=2140935109&single=true&output=csv",
+    "GOOGLE_SHEET_UNDER_999_URL": "https://docs.google.com/spreadsheets/d/1GrBfACVQWO_UWb455W2eqMrrJV_iMkQAnvKyG4np4bI/gviz/tq?tqx=out:csv&sheet=Under999",
+    "GOOGLE_SHEET_SUIT_URL": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRX1gaMx_CdSX-ozTHYarKfGNtsAsBTsvqvLoexBjR5FxEYiWVY3JlZKK6AD4g-KigjwOLOk5JvXDQ-/pub?gid=1506466857&single=true&output=csv"
   },
   "observability": {
     "enabled": true
