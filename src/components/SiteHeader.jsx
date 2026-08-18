@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { ChevronDown, Search, ShoppingBag, User, LogOut } from 'lucide-react';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
-import { storeConfig } from '../config.js';
+import { storeConfig, getCategorySlug } from '../config.js';
 import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
 import { useStorefront } from '../store/useStorefront.js';
@@ -156,18 +156,25 @@ export function SiteHeader(props) {
             CATEGORIES <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={categoriesRef} isOpen={dropdownOpen === 'categories'}>
-            {categories.map((cat) => (
-              <button type="button"
-                key={cat}
-                onClick={() => {
-                  if (setCategory) setCategory(cat);
-                  if (navigate) navigate('catalogue', null, null, { category: cat });
-                  setDropdownOpen(null);
-                }}
-              >
-                {pluralizeCategory(cat)}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const isAll = cat === 'All' || cat === 'all';
+              const targetSlug = isAll ? 'catalogue' : getCategorySlug(cat);
+              const targetHref = isAll ? '/catalogue' : `/${targetSlug}`;
+              return (
+                <AppLink
+                  key={cat}
+                  to={targetSlug}
+                  href={targetHref}
+                  navigate={navigate}
+                  onClick={() => {
+                    if (setCategory) setCategory(cat);
+                    setDropdownOpen(null);
+                  }}
+                >
+                  {pluralizeCategory(cat)}
+                </AppLink>
+              );
+            })}
           </DropdownPortal>
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>

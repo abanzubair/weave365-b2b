@@ -169,12 +169,12 @@ export default function EmptyCategorySourcing({ categoryName = 'Banarasi', navig
     {
       title: 'Banarasi Sarees',
       tagline: 'Authentic silk handloom & powerloom masterpieces',
-      slug: 'banarasi-sarees'
+      slug: 'sarees'
     },
     {
       title: 'Banarasi Suits',
       tagline: 'Premium unstitched fabric sets & salwar materials',
-      slug: 'banarasi-suits'
+      slug: 'suits'
     },
     {
       title: 'Under 999 Store',

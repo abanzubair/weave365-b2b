@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import { fetchProducts, fetchConfigOptions } from '../../src/productData.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
-import { siteUrl } from '../../src/config.js';
+import { siteUrl, getCategorySlug } from '../../src/config.js';
 import CatalogueClient from './CatalogueClient.jsx';
 
 export const revalidate = 3600;
@@ -22,10 +23,11 @@ export async function generateMetadata({ searchParams }) {
     description = `Explore wholesale Banarasi sarees matching "${search}" at direct-from-weaver wholesale prices with flexible MOQ for resellers and boutiques.`;
     canonical = `/catalogue?search=${encodeURIComponent(search)}`;
   } else if (category && category !== 'all' && category !== 'All') {
+    const catSlug = getCategorySlug(category);
     const prettyCategory = category.charAt(0).toUpperCase() + category.slice(1);
     title = `Wholesale Banarasi ${prettyCategory} Collection | Weave 365`;
     description = `Shop premium wholesale Banarasi ${prettyCategory} direct from Varanasi weavers. High quality, flexible MOQ, and worldwide delivery for resellers.`;
-    canonical = `/catalogue?category=${encodeURIComponent(category)}`;
+    canonical = `/${catSlug}`;
   } else if (fabric && fabric !== 'all' && fabric !== 'All') {
     const prettyFabric = fabric.charAt(0).toUpperCase() + fabric.slice(1);
     title = `Pure ${prettyFabric} Silk Banarasi Sarees Wholesale | Weave 365`;
@@ -47,7 +49,24 @@ export async function generateMetadata({ searchParams }) {
   return getSeoMetadata(canonical, defaultMeta);
 }
 
-export default async function CataloguePage() {
+export default async function CataloguePage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const category = resolvedSearchParams?.category;
+
+  if (category && category.toLowerCase() !== 'all') {
+    const slug = getCategorySlug(category);
+    if (slug) {
+      const remainingParams = new URLSearchParams();
+      for (const [key, val] of Object.entries(resolvedSearchParams)) {
+        if (key !== 'category' && val) {
+          remainingParams.set(key, val);
+        }
+      }
+      const q = remainingParams.toString();
+      redirect(`/${slug}${q ? `?${q}` : ''}`);
+    }
+  }
+
   const [products, configOptions] = await Promise.all([
     fetchProducts().catch(() => []),
     fetchConfigOptions().catch(() => null),

@@ -17,7 +17,7 @@ import { Stat } from '../components/Strips.jsx';
 import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
 import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
 import weaverImage from '../../assets/artisan_at_loom_premium.webp';
-import { storeConfig, seoCategoryMap, siteUrl } from '../config.js';
+import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
@@ -663,22 +663,18 @@ export function Home({
         <SectionTitle title="Shop By Category" align="left" />
         <div className="category-grid">
           {homeCategoryNames.map((name, index) => {
-            // seoCategoryMap imported from config.js
-            const targetHref = seoCategoryMap[name.toLowerCase()]
-              ? `/${seoCategoryMap[name.toLowerCase()]}`
-              : `/catalogue?category=${name.toLowerCase()}`;
+            const slug = getCategorySlug(name);
+            const targetHref = `/${slug}`;
 
             return (
-              <a
+              <AppLink
                 key={name}
+                to={slug}
                 href={targetHref}
                 className="category-card"
-                onClick={(e) => {
-                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
-                    e.preventDefault();
-                    setCategory(name);
-                    navigate('catalogue', null, null, { category: name });
-                  }
+                navigate={navigate}
+                onClick={() => {
+                  if (setCategory) setCategory(name);
                 }}
                 style={{ textDecoration: 'none' }}
               >
@@ -693,7 +689,7 @@ export function Home({
                 />
                 <span>{name}</span>
                 <ArrowRight size={18} />
-              </a>
+              </AppLink>
             );
           })}
         </div>
@@ -888,7 +884,7 @@ export function Home({
         <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>
           <div className="seo-compact-left">
             <h2>Trusted Banarasi Saree Supplier</h2>
-            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk buyers</a>, sourcing partners, and white label brands. Our portal is designed specifically to supply <a href="/banarasi-sarees" onClick={(e) => handleLinkClick(e, 'banarasi-sarees')} className="seo-inline-link">wholesale Banarasi sarees</a> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and <a href="/dropshipping" onClick={(e) => handleLinkClick(e, 'dropshipping')} className="seo-inline-link">reliable dropshipping support</a>.</p>
+            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <AppLink to="bulk-inquiry" navigate={navigate} className="seo-inline-link">bulk buyers</AppLink>, sourcing partners, and white label brands. Our portal is designed specifically to supply <AppLink to="sarees" navigate={navigate} className="seo-inline-link">wholesale Banarasi sarees</AppLink> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and <AppLink to="dropshipping" navigate={navigate} className="seo-inline-link">reliable dropshipping support</AppLink>.</p>
             <button
               type="button"
               className="seo-expand-trigger"

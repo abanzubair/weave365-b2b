@@ -10,8 +10,14 @@ import { checkProductPriceInRange } from '../../src/storefrontShared.jsx';
 import { sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import { upsertCart, persistCart, persistFavorites } from '../../src/utils/cartHelpers.js';
 import { homeCategoryNames } from '../../src/views/Home.jsx';
+import { getCategorySlug } from '../../src/config.js';
 
-export default function CatalogueClient({ initialProducts = [], initialConfigOptions = null }) {
+export default function CatalogueClient({
+  initialProducts = [],
+  initialConfigOptions = null,
+  initialCategory = null,
+  categorySlug = null,
+}) {
   const searchParams = useSearchParams();
   const navigate = useAppNavigate();
 
@@ -90,16 +96,25 @@ export default function CatalogueClient({ initialProducts = [], initialConfigOpt
     return ['All', ...Array.from(set).sort()];
   }, [rawProducts, config.priceRanges]);
 
-  const urlCategory = searchParams?.get('category') || 'all';
+  const urlCategory = searchParams?.get('category') || initialCategory || 'all';
   const urlFabric = searchParams?.get('fabric') || 'all';
   const urlWeave = searchParams?.get('weave') || 'all';
   const urlPriceRange = searchParams?.get('priceRange') || 'all';
   const urlSearch = searchParams?.get('search') || '';
 
   const activeCategory = useMemo(() => {
-    const matched = categories.find((c) => c.toLowerCase() === urlCategory.toLowerCase());
-    return matched || 'All';
-  }, [categories, urlCategory]);
+    const catQuery = searchParams?.get('category');
+    if (catQuery) {
+      const matched = categories.find((c) => c.toLowerCase() === catQuery.toLowerCase());
+      if (matched) return matched;
+    }
+    if (initialCategory) {
+      const matched = categories.find((c) => c.toLowerCase() === initialCategory.toLowerCase());
+      if (matched) return matched;
+      return initialCategory;
+    }
+    return 'All';
+  }, [categories, searchParams, initialCategory]);
 
   const activeFabric = useMemo(() => {
     const matched = fabrics.find((f) => f.toLowerCase() === urlFabric.toLowerCase());
@@ -127,9 +142,23 @@ export default function CatalogueClient({ initialProducts = [], initialConfigOpt
 
   const setFilterParam = useCallback(
     (key, val) => {
-      navigate('catalogue', null, null, { [key]: val });
+      if (key === 'category') {
+        if (val === 'All' || val === 'all') {
+          navigate('catalogue', null, null, { category: 'All' });
+        } else {
+          const catSlug = getCategorySlug(val);
+          navigate(catSlug, null, null, { category: val });
+        }
+      } else {
+        if (activeCategory && activeCategory !== 'All') {
+          const catSlug = getCategorySlug(activeCategory);
+          navigate(catSlug, null, null, { [key]: val, category: activeCategory });
+        } else {
+          navigate('catalogue', null, null, { [key]: val });
+        }
+      }
     },
-    [navigate]
+    [navigate, activeCategory]
   );
 
   const filteredProducts = useMemo(() => {

@@ -28,7 +28,7 @@ import {
   X,
   Check,
 } from 'lucide-react';
-import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
+import { storeConfig, getProductCategorySlug, getCategorySlug, siteUrl } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
 import { ResellerShareModal } from './components/ResellerShareModal.jsx';
 import {
@@ -1010,7 +1010,7 @@ export function ProductDetail({
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
     { name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', search: '' } },
-    ...(product.category ? [{ name: product.category, url: '/catalogue', route: 'catalogue', routeOptions: { category: product.category, fabric: 'All', weave: 'All', search: '' } }] : []),
+    ...(product.category ? [{ name: product.category, url: `/${getCategorySlug(product.category)}`, route: getCategorySlug(product.category), routeOptions: { category: product.category, fabric: 'All', weave: 'All', search: '' } }] : []),
     { name: product.title }
   ];
 

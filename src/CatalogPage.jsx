@@ -12,7 +12,7 @@ import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
 import { usePageSeo } from './hooks/usePageSeo.js';
-import { seoCategoryMap } from './config.js';
+import { seoCategoryMap, getCategorySlug } from './config.js';
 
 export function Catalog({
   title,
@@ -72,7 +72,7 @@ export function Catalog({
       seoTitle = `Wholesale Banarasi ${pluralCategory} Online | Weave 365`;
       seoDesc = `Buy handwoven premium Banarasi ${category.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`;
       
-      const cleanSlug = seoCategoryMap[category.toLowerCase()];
+      const cleanSlug = getCategorySlug(category);
       if (cleanSlug) {
         seoCanonical = `/${cleanSlug}`;
       } else {
@@ -185,7 +185,8 @@ export function Catalog({
     } else {
       items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', price: 'All', search: '' } });
       if (category && category !== 'All') {
-        items.push({ name: category, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric: 'All', weave: 'All', price: 'All', search: '' } });
+        const catSlug = getCategorySlug(category);
+        items.push({ name: category, url: `/${catSlug}`, route: catSlug, routeOptions: { category, fabric: 'All', weave: 'All', price: 'All', search: '' } });
       }
     }
 
@@ -272,7 +273,12 @@ export function Catalog({
                   onClick={() => {
                     setCategory(name);
                     setVisibleCount(getPageSize());
-                    navigate('catalogue', null, null, { category: name });
+                    if (name === 'All' || name === 'all') {
+                      navigate('catalogue', null, null, { category: 'All' });
+                    } else {
+                      const catSlug = getCategorySlug(name);
+                      navigate(catSlug, null, null, { category: name });
+                    }
                     closeWithAnimation();
                   }}
                 >

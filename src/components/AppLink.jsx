@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { getProductCategorySlug } from '../config.js';
+import { getProductCategorySlug, seoCategoryRoutes, getCategorySlug, getCategoryFromSlug } from '../config.js';
 
 /**
  * AppLink Component
@@ -43,11 +43,17 @@ export function AppLink({
     } else if (to === 'wholesale-catalogue') {
       url = '/wholesale-catalogue';
     } else if (to === 'catalogue') {
-      url = '/catalogue';
+      if (navOptions.category && navOptions.category !== 'All' && navOptions.category !== 'all') {
+        url = `/${getCategorySlug(navOptions.category)}`;
+      } else {
+        url = '/catalogue';
+      }
+    } else if (Object.keys(seoCategoryRoutes).includes(to) || getCategoryFromSlug(to)) {
+      url = `/${getCategorySlug(to) || to}`;
     }
 
     return url;
-  }, [to, productId, customHref]);
+  }, [to, productId, customHref, navOptions.category]);
 
   // 2. Handle Left Click Interception
   const handleClick = (e) => {

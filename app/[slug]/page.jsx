@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { fetchProducts, fetchConfigOptions, fetchSupabaseLandingPages } from '../../src/productData.js';
-import { seoCategoryRoutes, siteUrl } from '../../src/config.js';
+import { seoCategoryRoutes, seoCategoryMap, getCategorySlug, siteUrl } from '../../src/config.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
 import CatalogueClient from '../catalogue/CatalogueClient.jsx';
@@ -38,6 +38,7 @@ export async function generateMetadata({ params }) {
   // 1. Dynamic Category Routes
   if (Object.keys(seoCategoryRoutes).includes(slug)) {
     const categoryName = seoCategoryRoutes[slug];
+    const canonicalSlug = getCategorySlug(categoryName) || slug;
     const pluralName =
       categoryName === 'Under 999'
         ? categoryName
@@ -47,14 +48,14 @@ export async function generateMetadata({ params }) {
     const defaultMeta = {
       title: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
       description: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
-      alternates: { canonical: `${siteUrl}/${slug}` },
+      alternates: { canonical: `${siteUrl}/${canonicalSlug}` },
       openGraph: {
         title: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
         description: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
-        url: `${siteUrl}/${slug}`,
+        url: `${siteUrl}/${canonicalSlug}`,
       },
     };
-    return getSeoMetadata(`/${slug}`, defaultMeta);
+    return getSeoMetadata(`/${canonicalSlug}`, defaultMeta);
   }
 
   // 2. SEO Landing Pages
@@ -80,12 +81,20 @@ export async function generateMetadata({ params }) {
   return { title: 'Page Not Found | Weave 365' };
 }
 
-export default async function SlugPage({ params }) {
+export default async function SlugPage({ params, searchParams }) {
   const resolvedParams = await params;
   const slug = resolvedParams?.slug || '';
 
   // 1. If it's a category route
   if (Object.keys(seoCategoryRoutes).includes(slug)) {
+    const categoryName = seoCategoryRoutes[slug];
+    const canonicalSlug = getCategorySlug(categoryName) || slug;
+    if (slug !== canonicalSlug) {
+      const resolvedSearchParams = await searchParams;
+      const q = resolvedSearchParams ? new URLSearchParams(resolvedSearchParams).toString() : '';
+      redirect(`/${canonicalSlug}${q ? `?${q}` : ''}`);
+    }
+
     const [products, configOptions] = await Promise.all([
       fetchProducts().catch(() => []),
       fetchConfigOptions().catch(() => null),
@@ -95,6 +104,8 @@ export default async function SlugPage({ params }) {
       <CatalogueClient
         initialProducts={products}
         initialConfigOptions={configOptions}
+        initialCategory={categoryName}
+        categorySlug={canonicalSlug}
       />
     );
   }

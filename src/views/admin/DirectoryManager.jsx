@@ -26,6 +26,7 @@ import {
   DIRECTORY_TABLE_SQL,
   DEFAULT_DIRECTORY_CONFIG
 } from '../../utils/directoryService.js';
+import { getCategorySlug } from '../../config.js';
 
 const AVAILABLE_ICONS = [
   'Compass', 'Grid', 'BookOpen', 'Briefcase', 'Layers',
@@ -155,7 +156,8 @@ export default function DirectoryManager() {
         const target = field === 'target' ? value : updatedLink.target;
 
         if (type === 'category') {
-          updatedLink.path = `/catalogue?category=${encodeURIComponent(target || '')}`;
+          const catSlug = getCategorySlug(target || '');
+          updatedLink.path = catSlug ? `/${catSlug}` : `/catalogue?category=${encodeURIComponent(target || '')}`;
         } else if (type === 'blog-guide') {
           updatedLink.path = `/blog/${target || ''}`;
         } else if (type === 'route') {

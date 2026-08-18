@@ -40,6 +40,56 @@ const nextConfig = {
         destination: 'https://assets.weave365.com/assets/banner/favicon.ico',
         permanent: false,
       },
+      {
+        source: '/banarasi-sarees',
+        destination: '/sarees',
+        permanent: true,
+      },
+      {
+        source: '/banarasi-suits',
+        destination: '/suits',
+        permanent: true,
+      },
+      {
+        source: '/banarasi-lehengas',
+        destination: '/lehengas',
+        permanent: true,
+      },
+      {
+        source: '/banarasi-dupattas',
+        destination: '/dupattas',
+        permanent: true,
+      },
+      {
+        source: '/banarasi-fabrics',
+        destination: '/fabrics',
+        permanent: true,
+      },
+      {
+        source: '/saree',
+        destination: '/sarees',
+        permanent: true,
+      },
+      {
+        source: '/suit',
+        destination: '/suits',
+        permanent: true,
+      },
+      {
+        source: '/lehenga',
+        destination: '/lehengas',
+        permanent: true,
+      },
+      {
+        source: '/dupatta',
+        destination: '/dupattas',
+        permanent: true,
+      },
+      {
+        source: '/fabric',
+        destination: '/fabrics',
+        permanent: true,
+      },
     ];
   },
 };

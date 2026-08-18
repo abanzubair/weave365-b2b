@@ -29,6 +29,7 @@ import {
   DIRECTORY_UPDATED_EVENT,
   DEFAULT_DIRECTORY_CONFIG
 } from '../utils/directoryService.js';
+import { getCategorySlug } from '../config.js';
 
 const ICON_MAP = {
   Compass,
@@ -90,7 +91,10 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
 
   const getHref = (link) => {
     if (link.path) return link.path;
-    if (link.type === 'category') return `/catalogue?category=${encodeURIComponent(link.target || '')}`;
+    if (link.type === 'category') {
+      const slug = getCategorySlug(link.target || '');
+      return slug ? `/${slug}` : `/catalogue?category=${encodeURIComponent(link.target || '')}`;
+    }
     if (link.type === 'blog-guide') return `/blog/${link.target || ''}`;
     if (link.type === 'custom_url') return link.target || link.path || '#';
     return link.target ? (link.target.startsWith('/') ? link.target : `/${link.target}`) : '#';
@@ -103,10 +107,11 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
     const targetRoute = link.type;
     const param = link.target;
 
-    if (targetRoute === 'category' && setCategory) {
+    if (targetRoute === 'category') {
       e.preventDefault();
-      setCategory(param);
-      navigate('catalogue');
+      if (setCategory) setCategory(param);
+      const slug = getCategorySlug(param);
+      navigate(slug || 'catalogue');
     } else if (targetRoute === 'blog-guide') {
       e.preventDefault();
       navigate('blog', param);

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getProductCategorySlug, seoCategoryRoutes } from '../config.js';
+import { getProductCategorySlug, seoCategoryRoutes, getCategorySlug, getCategoryFromSlug } from '../config.js';
 
 export const slugifyPartner = (name) => {
   if (!name) return '';
@@ -34,7 +34,30 @@ export function useAppNavigate() {
       const s = navOptions.search !== undefined ? navOptions.search : currentSearchParams.get('search');
       if (s) params.set('search', s);
       const cat = navOptions.category !== undefined ? navOptions.category : currentSearchParams.get('category');
-      if (cat && cat !== 'All' && cat !== 'all') params.set('category', cat.toLowerCase());
+      const fab = navOptions.fabric !== undefined ? navOptions.fabric : currentSearchParams.get('fabric');
+      if (fab && fab !== 'All' && fab !== 'all') params.set('fabric', fab.toLowerCase());
+      const wve = navOptions.weave !== undefined ? navOptions.weave : currentSearchParams.get('weave');
+      if (wve && wve !== 'All' && wve !== 'all') params.set('weave', wve.toLowerCase());
+      const prc = navOptions.priceRange !== undefined ? navOptions.priceRange : currentSearchParams.get('priceRange');
+      if (prc && prc !== 'All' && prc !== 'all') params.set('priceRange', prc);
+
+      if (cat && cat !== 'All' && cat !== 'all') {
+        const catSlug = getCategorySlug(cat);
+        const q = params.toString();
+        href = `/${catSlug}${q ? `?${q}` : ''}`;
+      } else {
+        const q = params.toString();
+        href = `/catalogue${q ? `?${q}` : ''}`;
+      }
+    } else if (Object.keys(seoCategoryRoutes).includes(nextRoute) || getCategoryFromSlug(nextRoute)) {
+      const catSlug = getCategorySlug(nextRoute) || nextRoute;
+      const currentSearchParams =
+        typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search)
+          : new URLSearchParams();
+      const params = new URLSearchParams();
+      const s = navOptions.search !== undefined ? navOptions.search : currentSearchParams.get('search');
+      if (s) params.set('search', s);
       const fab = navOptions.fabric !== undefined ? navOptions.fabric : currentSearchParams.get('fabric');
       if (fab && fab !== 'All' && fab !== 'all') params.set('fabric', fab.toLowerCase());
       const wve = navOptions.weave !== undefined ? navOptions.weave : currentSearchParams.get('weave');
@@ -42,17 +65,7 @@ export function useAppNavigate() {
       const prc = navOptions.priceRange !== undefined ? navOptions.priceRange : currentSearchParams.get('priceRange');
       if (prc && prc !== 'All' && prc !== 'all') params.set('priceRange', prc);
       const q = params.toString();
-      href = `/catalogue${q ? `?${q}` : ''}`;
-    } else if (Object.keys(seoCategoryRoutes).includes(nextRoute)) {
-      const currentSearchParams =
-        typeof window !== 'undefined'
-          ? new URLSearchParams(window.location.search)
-          : new URLSearchParams();
-      const params = new URLSearchParams();
-      const fab = navOptions.fabric !== undefined ? navOptions.fabric : currentSearchParams.get('fabric');
-      if (fab && fab !== 'All' && fab !== 'all') params.set('fabric', fab.toLowerCase());
-      const q = params.toString();
-      href = `/${nextRoute}${q ? `?${q}` : ''}`;
+      href = `/${catSlug}${q ? `?${q}` : ''}`;
     }
 
     router.push(href, { scroll: false });

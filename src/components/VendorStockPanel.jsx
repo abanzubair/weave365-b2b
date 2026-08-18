@@ -282,6 +282,8 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       partner: profilePartner || profileBusinessName || 'Loom Partner',
       displayName: profileVid && profilePartner ? `${profileVid} ${profilePartner}` : (profileVid ? `Vendor ${profileVid}` : (profilePartner || profileBusinessName || 'Assigned Vendor'))
     };
+  }, [isAdmin, selectedVendorKey, autoMatchedVendor, vendorOptions, profileVid, profilePartner, profileBusinessName]);
+
   // Fast vendor code to partner name lookup
   const vendorNameMap = useMemo(() => {
     const map = new Map();

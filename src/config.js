@@ -62,15 +62,26 @@ export const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
 
 /**
  * Maps SEO-friendly URL slugs → category names.
- * Used to resolve routes like /banarasi-sarees into category filters.
+ * Used to resolve routes like /sarees into category filters.
  */
 export const seoCategoryRoutes = {
+  'sarees': 'Saree',
+  'suits': 'Suit',
+  'dupattas': 'Dupatta',
+  'lehengas': 'Lehenga',
+  'fabrics': 'Fabric',
+  'under-999': 'Under 999',
+  // Backward compatibility / legacy aliases:
+  'saree': 'Saree',
+  'suit': 'Suit',
+  'dupatta': 'Dupatta',
+  'lehenga': 'Lehenga',
+  'fabric': 'Fabric',
   'banarasi-sarees': 'Saree',
   'banarasi-suits': 'Suit',
   'banarasi-lehengas': 'Lehenga',
   'banarasi-dupattas': 'Dupatta',
   'banarasi-fabrics': 'Fabric',
-  'under-999': 'Under 999',
 };
 
 /**
@@ -78,20 +89,47 @@ export const seoCategoryRoutes = {
  * Inverse of seoCategoryRoutes, used to build clean URLs during navigation.
  */
 export const seoCategoryMap = {
-  'saree': 'banarasi-sarees',
-  'sarees': 'banarasi-sarees',
-  'suit': 'banarasi-suits',
-  'suits': 'banarasi-suits',
-  'lehenga': 'banarasi-lehengas',
-  'lehengas': 'banarasi-lehengas',
-  'dupatta': 'banarasi-dupattas',
-  'dupattas': 'banarasi-dupattas',
-  'fabric': 'banarasi-fabrics',
-  'fabrics': 'banarasi-fabrics',
+  'saree': 'sarees',
+  'sarees': 'sarees',
+  'suit': 'suits',
+  'suits': 'suits',
+  'lehenga': 'lehengas',
+  'lehengas': 'lehengas',
+  'dupatta': 'dupattas',
+  'dupattas': 'dupattas',
+  'fabric': 'fabrics',
+  'fabrics': 'fabrics',
   'under 999': 'under-999',
   'under-999': 'under-999',
 };
 
+/**
+ * Resolves a category name to its canonical URL slug (e.g. 'Saree' -> 'sarees', 'Under 999' -> 'under-999').
+ */
+export function getCategorySlug(categoryName) {
+  if (!categoryName) return '';
+  const clean = String(categoryName).trim().toLowerCase();
+  if (seoCategoryMap[clean]) {
+    return seoCategoryMap[clean];
+  }
+  if (clean === 'all') return 'catalogue';
+  if (clean.endsWith('s')) {
+    return clean.replace(/\s+/g, '-');
+  }
+  return `${clean}s`.replace(/\s+/g, '-');
+}
+
+/**
+ * Resolves a URL slug to its canonical category name (e.g. 'sarees' -> 'Saree', 'under-999' -> 'Under 999').
+ */
+export function getCategoryFromSlug(slug) {
+  if (!slug) return null;
+  const clean = String(slug).trim().toLowerCase();
+  if (seoCategoryRoutes[clean]) {
+    return seoCategoryRoutes[clean];
+  }
+  return null;
+}
 
 export const NON_PRODUCT_ROUTES = new Set([
   'home',
@@ -125,7 +163,18 @@ export const NON_PRODUCT_ROUTES = new Set([
   'resell-sarees-online',
   'handloom-vs-powerloom-guide',
   'custom-woven',
-  'checkout'
+  'checkout',
+  'sarees',
+  'suits',
+  'dupattas',
+  'lehengas',
+  'fabrics',
+  'under-999',
+  'banarasi-sarees',
+  'banarasi-suits',
+  'banarasi-dupattas',
+  'banarasi-lehengas',
+  'banarasi-fabrics',
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {

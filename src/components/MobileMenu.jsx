@@ -24,7 +24,7 @@ import {
   Shield,
 } from 'lucide-react';
 
-import { storeConfig } from '../config.js';
+import { storeConfig, getCategorySlug } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
@@ -143,21 +143,28 @@ export function MobileMenu(props) {
             
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
-                {categories.map((cat) => (
-                  <button type="button" 
-                    key={cat} 
-                    className="mobile-account-subitem" 
-                    onClick={() => {
-                      setCategory(cat);
-                      navigate('catalogue', null, null, { category: cat });
-                      onClose();
-                    }}
-                  >
-                    <span className="subitem-label" style={{ paddingLeft: '8px' }}>
-                      {pluralizeCategory(cat)}
-                    </span>
-                  </button>
-                ))}
+                {categories.map((cat) => {
+                  const isAll = cat === 'All' || cat === 'all';
+                  const targetSlug = isAll ? 'catalogue' : getCategorySlug(cat);
+                  const targetHref = isAll ? '/catalogue' : `/${targetSlug}`;
+                  return (
+                    <AppLink
+                      key={cat}
+                      to={targetSlug}
+                      href={targetHref}
+                      className="mobile-account-subitem"
+                      navigate={navigate}
+                      onClick={() => {
+                        if (setCategory) setCategory(cat);
+                        onClose();
+                      }}
+                    >
+                      <span className="subitem-label" style={{ paddingLeft: '8px' }}>
+                        {pluralizeCategory(cat)}
+                      </span>
+                    </AppLink>
+                  );
+                })}
               </div>
             </div>
           </div>
