@@ -238,19 +238,20 @@ export default function CatalogueClient({
 
   const addToCart = useCallback(
     (product, variant, quantity = 1, colorSelection = {}) => {
-      if (!user) {
-        setAuthOpen(true);
-        return;
-      }
       setCart((currentCart) => {
         const next = upsertCart(currentCart, product, variant, quantity, colorSelection);
-        void persistCart(next, user.id);
+        if (user) {
+          void persistCart(next, user.id);
+        } else {
+          try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
+        }
         return next;
       });
       setCartOpen(true);
     },
-    [user, setCart, setCartOpen, setAuthOpen]
+    [user, setCart, setCartOpen]
   );
+
 
   const toggleFavorite = useCallback(
     (product) => {

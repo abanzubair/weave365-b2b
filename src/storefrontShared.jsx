@@ -13,6 +13,8 @@ import {
   formatMoney,
   formatWeight,
   customerPrice,
+  calculateHybridProductPrice,
+  calculateHybridCartTotals,
   parsePositiveNumber,
   checkProductPriceInRange
 } from './utils/priceUtils.js';
@@ -24,11 +26,14 @@ export {
   formatMoney,
   formatWeight,
   customerPrice,
+  calculateHybridProductPrice,
+  calculateHybridCartTotals,
   parsePositiveNumber,
   checkProductPriceInRange,
   priceForBuyer,
   priceNoticeForAccess
 };
+
 
 
 export const fallbackProductImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -161,118 +166,53 @@ export function formatAddressBlock(address) {
 
 export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, screenshotUrl, address, isPayment = false) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const isWholesale = priceAccess?.priceGroup === 'wholesale';
 
-  if (isWholesale && canViewPrices) {
-    const groups = {};
-    items.forEach((item) => {
-      const key = item.productGroupKey;
-      if (!groups[key]) {
-        groups[key] = [];
+  const { groups, total: calculatedTotal } = calculateHybridCartTotals(items, priceAccess);
+  const finalTotal = total != null ? total : calculatedTotal;
+
+  const itemLines = groups.map((group) => {
+    const firstItem = group.items[0];
+    if (!firstItem) return '';
+
+    const product = group.product || firstItem.product;
+    const variant = group.variant || firstItem.variant;
+    const catSlug = getProductCategorySlug(product.id, product.category);
+    const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(product.id)}`;
+    const pricing = group.pricing || calculateHybridProductPrice(product, group.items);
+
+    let priceSummary = '';
+    if (canViewPrices && pricing.totalPrice > 0) {
+      if (pricing.completeSets > 0 && pricing.extraPieces === 0) {
+        priceSummary = ` | Qty: ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''} (${pricing.totalQty} pcs) | Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.wholesalePrice)}/pc in Set)`;
+      } else if (pricing.completeSets === 0) {
+        priceSummary = ` | Qty: ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''} | Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.resellerPrice)}/pc)`;
+      } else {
+        priceSummary = ` | Qty: ${pricing.totalQty} pcs (${pricing.completeSets} Set @ Wholesale ${formatMoney(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} extra pcs @ Reseller ${formatMoney(pricing.resellerPrice)}/pc) | Price: ${formatMoney(pricing.totalPrice)}`;
       }
-      groups[key].push(item);
-    });
-
-    const itemLines = Object.entries(groups).map(([productId, groupItems]) => {
-      const firstItem = groupItems[0];
-      if (!firstItem) return '';
-
-      const setQty = firstItem.quantity;
-      const totalColors = firstItem.product.totalColors ?? (firstItem.product.variants?.length || 1);
-      const isUnder999 = String(firstItem.product?.category || '').toLowerCase() === 'under 999';
-      const discountFactor = isUnder999 ? 1.0 : (setQty >= 10 ? 0.95 : (setQty >= 5 ? 0.98 : 1.0));
-
-      let baseSetPrice = 0;
-      groupItems.forEach((item) => {
-        baseSetPrice += customerPrice(item.variant.prices, priceAccess) || 0;
-      });
-      if (groupItems.length < totalColors && groupItems.length > 0) {
-        baseSetPrice = (baseSetPrice / groupItems.length) * totalColors;
-      }
-
-      const discountedSetPrice = baseSetPrice * discountFactor;
-      const groupTotalPrice = discountedSetPrice * setQty;
-
-      const catSlug = getProductCategorySlug(firstItem.product.id, firstItem.product.category);
-      const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(firstItem.product.id)}`;
-
-      if (isUnder999) {
-        const totalPcs = groupItems.reduce((sum, item) => sum + item.quantity, 0);
-        let groupTotalPricePcs = 0;
-        groupItems.forEach((item) => {
-          groupTotalPricePcs += (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity;
-        });
-        const details = groupItems.map(item => `${item.selectedColorName}: ${item.quantity}pc`).join(', ');
-        return [
-          `${firstItem.product.title}`,
-          productUrl,
-          `Code: ${firstItem.variant.code} | Qty: ${totalPcs} pc${totalPcs === 1 ? '' : 's'} (${details}) | Price: ${formatMoney(groupTotalPricePcs)}`
-        ].join('\n');
-      }
-
-      return [
-        `${firstItem.product.title}`,
-        productUrl,
-        `Code: ${firstItem.variant.code} | Qty: ${setQty} Set${setQty === 1 ? '' : 's'} (${totalColors} colors) | Price: ${formatMoney(groupTotalPrice)} (${formatMoney(discountedSetPrice)}/Set)`
-      ].join('\n');
-    }).filter(Boolean);
-
-    const greeting = isPayment 
-      ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
-      : `Hello ${storeConfig.name}, I want to enquire about these sarees:`;
-
-    const itemSection = itemLines.join('\n\n');
-
-    const summarySection = [
-      total != null ? `Total: ${formatMoney(total)} (Excluding GST & Shipping)` : '',
-      pincode ? `Pincode: ${pincode}` : '',
-      codStatus === 'available' ? 'COD checked: Available' : '',
-    ].filter(Boolean).join('\n');
-
-    const mainParts = [greeting, ''];
-    let itemsAndSummary = '';
-    if (itemSection && summarySection) {
-      itemsAndSummary = `${itemSection}\n${summarySection}`;
     } else {
-      itemsAndSummary = itemSection || summarySection;
-    }
-    if (itemsAndSummary) {
-      mainParts.push(itemsAndSummary);
+      priceSummary = ` | Qty: ${pricing.totalQty} pcs`;
     }
 
-    const blocks = [];
-    blocks.push(mainParts.join('\n'));
+    const colorDetails = group.items
+      .filter((it) => it.selectedColorName && it.selectedColorName !== 'Select Color')
+      .map((it) => `${it.selectedColorName}: ${it.quantity}pc`)
+      .join(', ');
 
-    if (address) {
-      blocks.push(formatAddressBlock(address));
-    }
+    return [
+      `${product.title}`,
+      productUrl,
+      `Code: ${variant.code}${priceSummary}${colorDetails ? ` (${colorDetails})` : ''}`
+    ].join('\n');
+  }).filter(Boolean);
 
-    if (screenshotUrl) {
-      blocks.push(`Payment Screenshot: ${screenshotUrl}`);
-    }
-
-    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(blocks.filter(Boolean).join('\n\n'))}`;
-  }
-
-  const discount = calculateComboDiscount(items, priceAccess);
-  const subtotal = items.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0);
-
-  // Fallback for non-wholesale users
   const greeting = isPayment 
-    ? `Hello ${storeConfig.name}, I have made the payment for these sarees:`
-    : `Hello ${storeConfig.name}, I want to enquire about these sarees:`;
+    ? `Hello ${storeConfig.name}, I have made the payment for these items:`
+    : `Hello ${storeConfig.name}, I want to enquire about these items:`;
 
-  const itemSection = items.map((item) => {
-    const price = customerPrice(item.variant.prices, priceAccess);
-    const color = item.selectedColorName ? ` | Color: ${item.selectedColorName}` : '';
-    const priceText = canViewPrices && price != null ? ` | Price: ${formatMoney(price)}` : '';
-    return `${item.product.title} | Code: ${item.variant.code}${color} | Qty: ${item.quantity}${priceText}`;
-  }).join('\n');
+  const itemSection = itemLines.join('\n\n');
 
   const summarySection = [
-    discount > 0 ? `Subtotal: ${formatMoney(subtotal)}` : '',
-    discount > 0 ? `Combo Discount: -${formatMoney(discount)}` : '',
-    canViewPrices && total != null ? `Total: ${formatMoney(total)}` : '',
+    canViewPrices && finalTotal != null ? `Total: ${formatMoney(finalTotal)} (Excluding GST & Shipping)` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean).join('\n');
@@ -302,52 +242,28 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(blocks.filter(Boolean).join('\n\n'))}`;
 }
 
-export function buildSingleProductWhatsappUrl(product, variant, quantity, pincode, codStatus, priceAccess) {
-  const price = customerPrice(variant.prices, priceAccess);
+export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pincode, codStatus, priceAccess) {
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const isWholesale = priceAccess?.priceGroup === 'wholesale';
+  const pricing = calculateHybridProductPrice(product, quantity, variant);
   const catSlug = getProductCategorySlug(product.id, product.category);
   const productUrl = `${siteUrl}/${catSlug}/${product.id}`;
 
-  if (isWholesale && canViewPrices && price != null) {
-    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
-    const isSet = quantity > 1 && !isUnder999;
-    const unitLabel = isSet ? 'Set' : 'pc';
-    const finalPrice = isSet ? price * quantity : price;
-
-    const lines = [
-      `Hello ${storeConfig.name},`,
-      `I want to buy this catalog: `,
-      `${product.title}`,
-      isUnder999
-        ? `Code: ${variant.code} | Quant: 1 pc | price : ${formatMoney(price)} (Excluding GST & Shipping)`
-        : `Code: ${variant.code} | Color: ${quantity}\nQuant: 1 ${unitLabel} | price : ${formatMoney(finalPrice)} (Excluding GST & Shipping)`
-    ];
-    lines.push('', `Product Link: ${productUrl}`);
-    return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
+  let priceText = '';
+  if (canViewPrices && pricing.totalPrice > 0) {
+    if (pricing.completeSets > 0 && pricing.extraPieces === 0) {
+      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.wholesalePrice)}/pc in ${pricing.completeSets} Set${pricing.completeSets > 1 ? 's' : ''})`;
+    } else if (pricing.completeSets === 0) {
+      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${formatMoney(pricing.resellerPrice)}/pc for ${pricing.totalQty} pc${pricing.totalQty > 1 ? 's' : ''})`;
+    } else {
+      priceText = `Price: ${formatMoney(pricing.totalPrice)} (${pricing.completeSets} Set @ ${formatMoney(pricing.wholesalePrice)}/pc + ${pricing.extraPieces} pcs @ ${formatMoney(pricing.resellerPrice)}/pc)`;
+    }
   }
-
-  // Fallback for Guest/Reseller accounts
-  const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
-  const discount = (!isWholesale && product.comboDiscount > 0) ? Math.floor(quantity / 2) * product.comboDiscount : 0;
-  const subtotal = price * quantity;
-  const finalPrice = subtotal - discount;
-
-  const priceText = canViewPrices && price != null
-    ? (discount > 0
-        ? `Price: ${formatMoney(price)} /pc | Subtotal: ${formatMoney(subtotal)} | Combo Discount: -${formatMoney(discount)} | Total: ${formatMoney(finalPrice)}`
-        : (isUnder999
-            ? `Price: ${formatMoney(price)} /pc`
-            : `Price: ${formatMoney(price)} /pc | Price ${formatMoney(price * quantity)} /set`))
-    : '';
 
   const lines = [
     `Hello ${storeConfig.name},`,
     `I want to buy this catalog:`,
     `${product.title}`,
-    isUnder999
-      ? `Code: ${variant.code} | Quant: ${quantity} pc`
-      : `Code: ${variant.code} | Color: ${quantity}`,
+    `Code: ${variant.code} | Quantity: ${quantity} pc${quantity === 1 ? '' : 's'}`,
     priceText,
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
@@ -357,6 +273,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity, pincod
 
   return `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
+
 
 export function normalizePincodeInput(value) {
   return String(value).replace(/\D/g, '').slice(0, 6);

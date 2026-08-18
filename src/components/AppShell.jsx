@@ -219,8 +219,8 @@ export function AppShell({ children }) {
   // Load Saved Cart & Favorites on User Change
   useEffect(() => {
     if (!user) {
-      setCart([]);
-      setFavorites([]);
+      setCart(readLocal('cart_guest'));
+      setFavorites(readLocal('favorites_guest'));
       return;
     }
 
@@ -320,6 +320,8 @@ export function AppShell({ children }) {
         }
         if (user) {
           void persistCart(next, user.id);
+        } else {
+          try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
         }
         return next;
       });
@@ -333,6 +335,8 @@ export function AppShell({ children }) {
         const next = currentCart.filter((entry) => entry.productGroupKey !== productGroupKey);
         if (user) {
           void persistCart(next, user.id);
+        } else {
+          try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
         }
         return next;
       });
@@ -352,7 +356,11 @@ export function AppShell({ children }) {
       if (unselectedItem) {
         setCart((currentCart) => {
           const next = changeCartColor(currentCart, unselectedItem, color.name);
-          if (user) void persistCart(next, user.id);
+          if (user) {
+            void persistCart(next, user.id);
+          } else {
+            try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
+          }
           return next;
         });
       } else {
@@ -366,7 +374,11 @@ export function AppShell({ children }) {
         ];
         setCart((currentCart) => {
           const next = upsertCartSelections(currentCart, item.product, selectedRows);
-          if (user) void persistCart(next, user.id);
+          if (user) {
+            void persistCart(next, user.id);
+          } else {
+            try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
+          }
           return next;
         });
       }

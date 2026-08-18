@@ -1,24 +1,21 @@
 /**
  * Buyer Access Utilities
  * Purpose: Implements partner authentication & business permission rules.
- * Governs wholesale/reseller price visibility, checks against Varanasi geotargeting blocks,
- * and tracks account approval status mapping to direct SQL/Supabase profiles.
+ * Manages access for Customers (Hybrid Wholesale/Reseller pricing) and Artisan/Weaver Vendor Partners.
  */
 export const PRICE_GROUPS = {
-  vendor: 'Wholesale Price',
+  vendor: 'Vendor Partner',
+  customer: 'Hybrid Wholesale & Reseller',
   wholesale: 'Wholesale Price',
   reseller: 'Reseller Price',
   guest: 'Price',
-  user: 'Price',
 };
 
 const VARANASI_PINCODE_PREFIXES = ['221'];
 
 export function normalizeBuyerType(value) {
   if (value === 'vendor') return 'vendor';
-  if (value === 'reseller') return 'reseller';
-  if (value === 'user') return 'user';
-  return 'wholesale';
+  return 'customer';
 }
 
 export function isVaranasiPincode(value) {
@@ -28,15 +25,14 @@ export function isVaranasiPincode(value) {
 
 export function applyAutoApprovalToBuyerProfile(profile) {
   const isVendor = profile?.buyer_subtype?.toLowerCase().includes('vendor') || profile?.buyer_type === 'vendor';
-  const buyerType = isVendor ? 'vendor' : normalizeBuyerType(profile?.buyer_type);
+  const buyerType = isVendor ? 'vendor' : 'customer';
   const blockedByPincode = isVaranasiPincode(profile?.pincode);
-  const isUser = profile?.buyer_subtype === 'User (MOQ: 1 Pc)' || buyerType === 'user';
 
   return {
     ...profile,
-    buyer_type: isVendor ? 'vendor' : (isUser ? 'user' : buyerType),
+    buyer_type: buyerType,
     approval_status: blockedByPincode ? 'pending' : 'approved',
-    price_group: blockedByPincode ? 'pending' : (isUser ? 'guest' : (isVendor ? 'wholesale' : buyerType)),
+    price_group: blockedByPincode ? 'pending' : 'approved',
   };
 }
 
@@ -51,7 +47,7 @@ export function getBuyerAccess(user, buyerProfile) {
       canViewPrices: true,
       reason: 'logged_out',
       message: '',
-      buyerType: '',
+      buyerType: 'guest',
       priceGroup: 'guest',
       priceLabel: 'Price',
       approvalStatus: 'guest',
@@ -60,43 +56,19 @@ export function getBuyerAccess(user, buyerProfile) {
       buyerName: null,
       buyerPhone: null,
       buyerPincode: null,
+      isVendor: false,
     };
   }
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
-  let buyerType = normalizeBuyerType(profile.buyer_type);
-  if (profile.buyer_subtype?.toLowerCase().includes('vendor') || profile.buyer_type === 'vendor') {
-    buyerType = 'vendor';
-  } else if (profile.buyer_subtype === 'User (MOQ: 1 Pc)') {
-    buyerType = 'user';
-  }
-  const approvalStatus = profile.approval_status || 'pending';
+  const isVendor = profile.buyer_subtype?.toLowerCase().includes('vendor') || profile.buyer_type === 'vendor';
+  const buyerType = isVendor ? 'vendor' : 'customer';
+  const approvalStatus = profile.approval_status || 'approved';
   
   // Geotargeting block check for Varanasi pincodes
   const blockedByPincode = isVaranasiPincode(profile.pincode);
-  
-  // If explicitly suspended, rejected, or a pending Varanasi competitor
   const isRestricted = approvalStatus === 'suspended' || approvalStatus === 'rejected' || (blockedByPincode && approvalStatus === 'pending');
-  
-  // To view wholesale or reseller prices, the buyer's account must be fully approved by the admin and not restricted.
-  // Otherwise, they default to guest (D2C) pricing.
-  const isApproved = approvalStatus === 'approved';
-  
-  let priceGroup = 'guest';
-  if (isApproved && !isRestricted) {
-    const profilePriceGroup = profile.price_group || profile.buyer_type;
-    if (profile.buyer_subtype === 'User (MOQ: 1 Pc)' || profilePriceGroup === 'user') {
-      priceGroup = 'guest';
-    } else if (profilePriceGroup === 'reseller') {
-      priceGroup = 'reseller';
-    } else if (profilePriceGroup === 'wholesale') {
-      priceGroup = 'wholesale';
-    } else {
-      priceGroup = buyerType === 'user' ? 'guest' : buyerType;
-    }
-  }
-  
-  const canViewPrices = true;
+  const isApproved = approvalStatus === 'approved' && !isRestricted;
 
   let message = '';
   if (approvalStatus === 'rejected') message = 'Your buyer account needs review. Showing prices.';
@@ -105,12 +77,13 @@ export function getBuyerAccess(user, buyerProfile) {
 
   return {
     isLoggedIn: true,
-    canViewPrices,
+    canViewPrices: true,
     reason: isRestricted ? approvalStatus : (isApproved ? 'approved' : approvalStatus),
     message,
     buyerType,
-    priceGroup,
-    priceLabel: PRICE_GROUPS[priceGroup] || 'Price',
+    isVendor,
+    priceGroup: isApproved ? 'approved' : 'pending',
+    priceLabel: 'Wholesale & Reseller',
     approvalStatus,
     blockedByVaranasiPincode: blockedByPincode,
     userId: user.id || null,
@@ -118,26 +91,17 @@ export function getBuyerAccess(user, buyerProfile) {
     buyerName: profile.business_name || profile.full_name || null,
     buyerPhone: profile.whatsapp || profile.whatsapp_number || null,
     buyerPincode: profile.pincode || null,
-    resellerDashboardEnabled: Boolean(profile.reseller_dashboard_enabled),
+    resellerDashboardEnabled: true,
   };
 }
 
 export function priceForBuyer(prices = {}, buyerAccess) {
   if (!buyerAccess || !buyerAccess.canViewPrices) return null;
-
-  if (buyerAccess.priceGroup === 'guest') {
-    return prices.single || 0;
-  }
-
-  if (buyerAccess.priceGroup === 'reseller') {
-    // Reseller pricing → B2R column, fallback to B2B if B2R is missing
-    return prices.b2r || prices.mrp || 0;
-  }
-
-  // Wholesale pricing → B2B column
-  return prices.mrp || prices.offer || 0;
+  // Return wholesale price as standard base price; hybrid calculation computes reseller vs wholesale on quantity
+  return prices.mrp || prices.offer || prices.b2r || prices.single || 0;
 }
 
 export function priceNoticeForAccess(buyerAccess) {
   return buyerAccess?.message || 'Login to view price';
 }
+

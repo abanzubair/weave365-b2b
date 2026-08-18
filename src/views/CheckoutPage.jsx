@@ -19,12 +19,14 @@ import {
 } from 'lucide-react';
 import { storeConfig } from '../config.js';
 import {
+  calculateHybridCartTotals,
   customerPrice,
   formatMoney,
   buildWhatsappUrl,
   calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
+
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
 import '../styles/checkout.css';
@@ -193,11 +195,24 @@ export function CheckoutPage({
     }
   };
 
-  const isWholesale = priceAccess?.priceGroup === 'wholesale';
+  // Financial calculations
+  const canViewPrices = priceAccess?.canViewPrices !== false;
+  const { subtotal, discount, baseTotal, productPricing } = useMemo(() => {
+    if (!canViewPrices || !items.length) {
+      return { subtotal: 0, discount: 0, baseTotal: 0, productPricing: {} };
+    }
+    const totals = calculateHybridCartTotals(items, priceAccess);
+    return {
+      subtotal: totals.subtotal,
+      discount: totals.discount,
+      baseTotal: totals.total,
+      productPricing: totals.productPricing || {},
+    };
+  }, [canViewPrices, items, priceAccess]);
+
+  const hasSets = Object.values(productPricing || {}).some((p) => p.completeSets > 0);
 
   // Weight & Shipping Fee calculation
-  // Wholesale: Standard = ₹60/kg (ceiled for any fraction), Express = ₹150/kg
-  // Retail/Reseller: Standard = FREE, Express = ₹150/kg
   const { totalWeightKg, billedWeightKg, standardShippingFee, expeditedShippingFee, shippingFee } = useMemo(() => {
     let totalGrams = 0;
     (items || []).forEach((item) => {
@@ -213,7 +228,8 @@ export function CheckoutPage({
 
     const totalKg = totalGrams / 1000;
     const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
-    const stdFee = isWholesale ? billedKg * 60 : 0;
+    // Standard shipping: ₹60/kg across all orders (Free shipping temporarily disabled)
+    const stdFee = billedKg * 60;
     const expFee = billedKg * 150;
     const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
@@ -224,62 +240,11 @@ export function CheckoutPage({
       expeditedShippingFee: expFee,
       shippingFee: actualFee,
     };
-  }, [items, shippingSpeed, isWholesale]);
+  }, [items, shippingSpeed]);
 
-  // Financial calculations
-  const canViewPrices = priceAccess?.canViewPrices !== false;
-  const { subtotal, discount, total } = useMemo(() => {
-    if (!canViewPrices || !items.length) {
-      return { subtotal: 0, discount: 0, total: 0 };
-    }
 
-    let sub = 0;
-    let disc = 0;
-    let baseTotal = 0;
+  const total = baseTotal + shippingFee;
 
-    if (isWholesale) {
-      const groups = {};
-      items.forEach((item) => {
-        const key = item.productGroupKey;
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(item);
-      });
-
-      let sum = 0;
-      Object.values(groups).forEach((groupItems) => {
-        const firstItem = groupItems[0];
-        if (!firstItem) return;
-        const setQty = firstItem.quantity;
-        const isUnder999 =
-          String(firstItem.product?.category || '').toLowerCase() === 'under 999';
-        const discountFactor = isUnder999
-          ? 1.0
-          : setQty >= 10
-          ? 0.95
-          : setQty >= 5
-          ? 0.98
-          : 1.0;
-
-        groupItems.forEach((item) => {
-          const itemPrice = customerPrice(item.variant?.prices, priceAccess) || 0;
-          sum += itemPrice * item.quantity * discountFactor;
-        });
-      });
-      sub = Math.round(sum);
-      disc = 0;
-      baseTotal = sub;
-    } else {
-      sub = items.reduce(
-        (sum, item) =>
-          sum + (customerPrice(item.variant?.prices, priceAccess) || 0) * item.quantity,
-        0
-      );
-      disc = calculateComboDiscount(items, priceAccess);
-      baseTotal = Math.max(0, sub - disc);
-    }
-
-    return { subtotal: sub, discount: disc, total: baseTotal + shippingFee };
-  }, [canViewPrices, items, priceAccess, shippingFee]);
 
   const upiId = storeConfig.upiId || 'weave365@upi';
   const rawUpiUrl = useMemo(
@@ -637,14 +602,14 @@ export function CheckoutPage({
 
               <div className="checkout-summary-row">
                 <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard'})</span>
-                <span style={{ color: (shippingSpeed === 'expedited' || (isWholesale && shippingFee > 0)) ? '#0f172a' : '#16a34a', fontWeight: '500' }}>
+                <span style={{ color: '#0f172a', fontWeight: '500' }}>
                   {shippingSpeed === 'expedited'
                     ? formatMoney(expeditedShippingFee)
-                    : isWholesale
-                    ? formatMoney(standardShippingFee)
-                    : formPincode ? 'FREE (Pan-India)' : 'Calculated at checkout'}
+                    : formatMoney(standardShippingFee)}
                 </span>
               </div>
+
+
 
               <div className="checkout-summary-row total-row">
                 <span>Total</span>
@@ -1092,12 +1057,15 @@ export function CheckoutPage({
                   <div className="shipping-speed-text">
                     <div>
                       <strong>Standard Shipping:</strong>{' '}
-                      {isWholesale ? 'Additional Courier Charges Apply' : 'Free Across India'}
+                      {formatMoney(standardShippingFee)}
                     </div>
                     <div className="shipping-delivery-days">
-                      Estimated Delivery: <strong>{isWholesale ? '8–10 Business Days' : '4–5 Business Days'}</strong>
+                      Estimated Delivery: <strong>{hasSets ? '6–8 Business Days' : '4–5 Business Days'}</strong>
                     </div>
+
+
                   </div>
+
                 </div>
               </label>
 

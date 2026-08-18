@@ -23,7 +23,7 @@ export function profileRowFromUser(user) {
     whatsapp_country_code: buyerProfile.whatsapp_country_code || '',
     whatsapp_number: buyerProfile.whatsapp_number || '',
     business_name: buyerProfile.business_name || '',
-    buyer_type: buyerProfile.buyer_type || 'wholesale',
+    buyer_type: buyerProfile.buyer_type === 'vendor' ? 'vendor' : 'customer',
     buyer_subtype: buyerProfile.buyer_subtype || '',
     vendor_code: buyerProfile.vendor_code || '',
     partner_name: buyerProfile.partner_name || '',
@@ -31,8 +31,8 @@ export function profileRowFromUser(user) {
     city: buyerProfile.city || '',
     pincode: buyerProfile.pincode || '',
     interested_categories: buyerProfile.interested_categories || [],
-    price_group: buyerProfile.price_group || buyerProfile.buyer_type || 'pending',
-    approval_status: buyerProfile.approval_status || 'pending',
+    price_group: buyerProfile.price_group || 'approved',
+    approval_status: buyerProfile.approval_status || 'approved',
     updated_at: new Date().toISOString(),
   });
 }

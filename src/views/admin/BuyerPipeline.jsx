@@ -97,13 +97,12 @@ export default function BuyerPipeline({
   };
 
   const getBuyerTypeLabel = (type) => {
-    if (!type) return '';
+    if (!type) return 'Customer';
     const lower = type.toLowerCase();
-    if (lower === 'wholesale') return 'Wholesaler';
-    if (lower === 'reseller') return 'Reseller';
-    if (lower === 'user') return 'User';
-    return type.charAt(0).toUpperCase() + type.slice(1);
+    if (lower === 'vendor') return 'Vendor Partner';
+    return 'Customer';
   };
+
 
   const getBuyingBehaviorLabel = (behavior) => {
     if (!behavior) return '';
@@ -243,11 +242,11 @@ export default function BuyerPipeline({
             onChange={(e) => setUserTypeFilter(e.target.value)}
             className="pipeline-filter-select"
           >
-            <option value="all">All Types</option>
-            <option value="wholesale">Wholesalers</option>
-            <option value="reseller">Resellers</option>
-            <option value="user">Users</option>
+            <option value="all">All Accounts</option>
+            <option value="customer">Customers</option>
+            <option value="vendor">Vendor Partners</option>
           </select>
+
           <select
             value={userSortField}
             onChange={(e) => setUserSortField(e.target.value)}
@@ -303,11 +302,8 @@ export default function BuyerPipeline({
                 const favoriteRows = userFavoriteMap.get(profile.id) || [];
 
                 const currentStatusVal =
-                  profile.approval_status === 'approved' && profile.price_group === 'wholesale' ? 'approved-wholesale' :
-                    profile.approval_status === 'approved' && profile.price_group === 'reseller' ? 'approved-reseller' :
-                      profile.approval_status === 'approved' && profile.price_group === 'user' ? 'approved-user' :
-                        profile.approval_status === 'pending' ? 'pending' :
-                          profile.approval_status === 'suspended' ? 'suspended' : 'pending';
+                  profile.approval_status === 'approved' ? 'approved' :
+                    profile.approval_status === 'suspended' ? 'suspended' : 'pending';
 
                 return (
                   <tr key={profile.id}>
@@ -347,7 +343,7 @@ export default function BuyerPipeline({
                     </td>
                     <td>
                       <span className="pipeline-type-label">
-                        {profile.buyer_type || 'Not set'}
+                        {getBuyerTypeLabel(profile.buyer_type)}
                       </span>
                     </td>
                     <td>
@@ -418,12 +414,8 @@ export default function BuyerPipeline({
                           value={currentStatusVal}
                           onChange={async (e) => {
                             const val = e.target.value;
-                            if (val === 'approved-wholesale') {
-                              await updateBuyerPriceAccess(profile, 'approved', 'wholesale');
-                            } else if (val === 'approved-reseller') {
-                              await updateBuyerPriceAccess(profile, 'approved', 'reseller');
-                            } else if (val === 'approved-user') {
-                              await updateBuyerPriceAccess(profile, 'approved', 'user');
+                            if (val === 'approved') {
+                              await updateBuyerPriceAccess(profile, 'approved', 'approved');
                             } else if (val === 'pending') {
                               await updateBuyerPriceAccess(profile, 'pending', 'pending');
                             } else if (val === 'suspended') {
@@ -432,16 +424,15 @@ export default function BuyerPipeline({
                           }}
                           className="pipeline-action-select"
                         >
-                          <option value="approved-wholesale">Wholesale</option>
-                          <option value="approved-reseller">Reseller</option>
-                          <option value="approved-user">User</option>
-                          <option value="pending">Hold</option>
+                          <option value="approved">Approve</option>
+                          <option value="pending">Pending</option>
                           <option value="suspended">Suspend</option>
                         </select>
                       </div>
                     </td>
                   </tr>
                 );
+
               })}
               {displayedProfiles.length === 0 && (
                 <tr>

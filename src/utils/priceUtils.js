@@ -111,6 +111,110 @@ export function customerPrice(prices, priceAccess) {
   return priceForBuyer(prices, priceAccess);
 }
 
+export function calculateHybridProductPrice(product, groupItemsOrQty = 1, customVariant = null) {
+  if (!product) {
+    return {
+      setSize: 1,
+      totalQty: 0,
+      completeSets: 0,
+      extraPieces: 0,
+      wholesalePrice: 0,
+      resellerPrice: 0,
+      wholesaleTotal: 0,
+      resellerTotal: 0,
+      totalPrice: 0,
+    };
+  }
+
+  const setSize = product.totalColors || product.colorOptions?.length || product.variants?.length || 1;
+  const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+
+  const firstPrices = customVariant?.prices
+    || (Array.isArray(groupItemsOrQty) && groupItemsOrQty[0]?.variant?.prices)
+    || product.variants?.[0]?.prices
+    || {};
+
+  const wholesalePrice = Number(firstPrices.mrp || firstPrices.offer || 0);
+  const resellerPrice = Number(firstPrices.b2r || firstPrices.single || wholesalePrice);
+
+  const totalQty = Array.isArray(groupItemsOrQty)
+    ? groupItemsOrQty.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0)
+    : Math.max(0, Number(groupItemsOrQty) || 0);
+
+  if (isUnder999 || setSize <= 1) {
+    const totalPrice = totalQty * wholesalePrice;
+    return {
+      setSize: 1,
+      totalQty,
+      completeSets: totalQty,
+      extraPieces: 0,
+      wholesalePrice,
+      resellerPrice,
+      wholesaleTotal: totalPrice,
+      resellerTotal: 0,
+      totalPrice,
+    };
+  }
+
+  const completeSets = Math.floor(totalQty / setSize);
+  const extraPieces = totalQty % setSize;
+  const wholesaleTotal = completeSets * setSize * wholesalePrice;
+  const resellerTotal = extraPieces * resellerPrice;
+  const totalPrice = wholesaleTotal + resellerTotal;
+
+  return {
+    setSize,
+    totalQty,
+    completeSets,
+    extraPieces,
+    wholesalePrice,
+    resellerPrice,
+    wholesaleTotal,
+    resellerTotal,
+    totalPrice,
+  };
+}
+
+export function calculateHybridCartTotals(items = [], priceAccess) {
+  if (!items || !items.length) {
+    return { subtotal: 0, discount: 0, total: 0, groups: [] };
+  }
+
+  const groupMap = new Map();
+  items.forEach((item) => {
+    const key = item.productGroupKey || item.product?.id || 'unknown';
+    const group = groupMap.get(key) || {
+      key,
+      product: item.product,
+      variant: item.variant,
+      colorOptions: item.colorOptions || item.product?.colorOptions || [],
+      items: [],
+    };
+    group.items.push(item);
+    groupMap.set(key, group);
+  });
+
+  let subtotal = 0;
+  const groups = [];
+
+  groupMap.forEach((group) => {
+    const pricing = calculateHybridProductPrice(group.product, group.items);
+    subtotal += pricing.totalPrice;
+    groups.push({
+      ...group,
+      pricing,
+    });
+  });
+
+  const roundedSubtotal = Math.round(subtotal);
+  return {
+    subtotal: roundedSubtotal,
+    discount: 0,
+    total: roundedSubtotal,
+    groups,
+  };
+}
+
 export function parsePositiveNumber(value) {
   const num = Number(value);
   return num > 0 ? num : 0;

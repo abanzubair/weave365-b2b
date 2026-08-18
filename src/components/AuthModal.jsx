@@ -31,20 +31,8 @@ const FacebookIcon = () => (
   </svg>
 );
 
-const buyerSubtypes = [
-  { value: 'Wholesaler (MOQ: 1 Set)', label: 'Wholesaler (MOQ: 1 Set)', type: 'wholesale' },
-  { value: 'Reseller (MOQ: Flexible)', label: 'Reseller (MOQ: Flexible)', type: 'reseller' },
-  { value: 'Vendor (Partner / Weaver)', label: 'Vendor (Partner / Weaver)', type: 'vendor' },
-  { value: 'User (MOQ: 1 Pc)', label: 'User (MOQ: 1 Pc)', type: 'user' },
-];
-
-
-const buyingBehaviors = [
-  { value: 'instant', label: 'Immediate' },
-  { value: 'order_basis', label: 'Order Basis' },
-];
-
 const countryCodes = [
+
   { value: '+91', label: 'India +91' },
   { value: '+1', label: 'USA / Canada +1' },
   { value: '+44', label: 'UK +44' },
@@ -68,141 +56,8 @@ function toTitleCaseName(value) {
     .join(' ');
 }
 
-function B2BSegmentDropdown({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleOutsideClick = (e) => {
-      if (!e.target.closest('.custom-b2b-dropdown-container')) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isOpen]);
 
-  const selectedOpt = buyerSubtypes.find(opt => opt.value === value);
 
-  const handleSelect = (opt) => {
-    onChange(opt);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="custom-select-container custom-b2b-dropdown-container">
-      <button
-        type="button"
-        className="custom-select-trigger"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span className="custom-select-value">
-          {selectedOpt ? selectedOpt.label : 'Select Segment'}
-        </span>
-        <svg
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`custom-select-chevron ${isOpen ? 'open' : ''}`}
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="custom-select-overlay" role="listbox">
-          {buyerSubtypes.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
-              onClick={() => handleSelect(opt)}
-              role="option"
-              aria-selected={value === opt.value}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BuyingBehaviorDropdown({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleOutsideClick = (e) => {
-      if (!e.target.closest('.custom-behavior-dropdown-container')) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isOpen]);
-
-  const selectedOpt = buyingBehaviors.find(opt => opt.value === value);
-
-  const handleSelect = (opt) => {
-    onChange(opt.value);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="custom-select-container custom-behavior-dropdown-container">
-      <button
-        type="button"
-        className="custom-select-trigger"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span className="custom-select-value">
-          {selectedOpt ? selectedOpt.label : 'Select Buying Behaviour'}
-        </span>
-        <svg
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`custom-select-chevron ${isOpen ? 'open' : ''}`}
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="custom-select-overlay" role="listbox">
-          {buyingBehaviors.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={`custom-select-option ${value === opt.value ? 'selected' : ''}`}
-              onClick={() => handleSelect(opt)}
-              role="option"
-              aria-selected={value === opt.value}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function ErrorAlert({ message }) {
   if (!message) return null;
@@ -252,12 +107,12 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     countryCode: '+91',
     whatsapp: '',
     businessName: '',
-    buyerType: 'wholesale',
-    buyerSubtype: 'Wholesaler (MOQ: 1 Set)',
+    buyerType: 'customer',
+    buyerSubtype: '',
     buyingBehavior: 'instant',
     city: '',
     pincode: '',
-    interestedCategories: [],
+    interestedCategories: ['Saree'],
   });
   const [message, setMessage] = useState('');
   const [tempDemoUser, setTempDemoUser] = useState(null);
@@ -304,13 +159,13 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
-      buyer_type: profile.buyerType,
-      buyer_subtype: profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)',
+      buyer_type: 'customer',
+      buyer_subtype: '',
       buying_behavior: profile.buyingBehavior,
       city: profile.city.trim(),
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,
-      price_group: profile.buyerType,
+      price_group: 'approved',
       approval_status: 'approved',
     });
   }
@@ -747,6 +602,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                 <ErrorAlert message={message} />
               </>
             ) : (
+
               <>
                 <div className="auth-header" style={{ marginBottom: '24px' }}>
                   <h2 style={{ fontFamily: "var(--font-heading)", fontSize: '32px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)' }}>
@@ -754,17 +610,19 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                     <span style={{ color: 'var(--gold)', fontFamily: 'serif', fontSize: '28px', lineHeight: 1 }}>✦</span>
                   </h2>
                   <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)' }}>
-                    {mode === 'login' ? 'Login to continue your journey' : 'Access premium factory pricing & live inventory'}
+                    {mode === 'login' ? 'Login to continue your journey' : 'Access hybrid wholesale & reseller rates'}
                   </p>
                 </div>
 
                 <form onSubmit={submit}>
                   <fieldset disabled={loading} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
-                    {mode === 'register' ? (
-                      <div className="auth-register-columns">
+
+                    {isRegister ? (
+                      <div className="auth-register-columns-wrap">
                         <div className="auth-column">
+
                           <label className="auth-label-styled">
-                            Full Name
+                            Full Name *
                             <input
                               className="auth-input-styled"
                               value={profile.fullName}
@@ -776,49 +634,67 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             />
                           </label>
                           <label className="auth-label-styled">
-                            {profile.buyerType === 'user' ? 'Business Name (Optional)' : profile.buyerType === 'vendor' ? 'Loom / Business Name' : 'Business Name'}
+                            Business / Store Name (Optional)
                             <input
                               className="auth-input-styled"
                               value={profile.businessName}
                               onChange={(event) => updateProfile('businessName', event.target.value)}
                               autoComplete="organization"
-                              placeholder={profile.buyerType === 'vendor' ? 'Enter loom or enterprise name' : 'Enter your business name'}
-                              required={profile.buyerType !== 'user'}
+                              placeholder="Enter your store or business name (optional)"
                             />
                           </label>
 
                           <div className="auth-phone-field">
                             <div className="auth-field-label-row">
-                              <span>WhatsApp Number</span>
-                              <small>Format: {profile.countryCode} xxxxxxxxxx</small>
+                              <span>WhatsApp Number *</span>
                             </div>
-                            <div>
+                            <div className="auth-phone-inputs">
                               <select
-                                className="auth-input-styled"
                                 value={profile.countryCode}
                                 onChange={(event) => updateProfile('countryCode', event.target.value)}
-                                aria-label="Country code"
-                                required
-                                style={{ paddingRight: '24px' }}
                               >
                                 {countryCodes.map((item) => (
                                   <option key={item.value} value={item.value}>{item.label}</option>
                                 ))}
                               </select>
                               <input
-                                className="auth-input-styled"
                                 value={profile.whatsapp}
-                                onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10))}
+                                onChange={(event) => updateProfile('whatsapp', event.target.value.replace(/\D/g, '').slice(0, 10))}
                                 inputMode="numeric"
                                 autoComplete="tel-national"
                                 placeholder="xxxxxxxxxx"
-                                pattern="[0-9]{10}"
                                 required
                               />
                             </div>
                           </div>
+
                           <label className="auth-label-styled">
-                            Email
+                            City, State *
+                            <input
+                              className="auth-input-styled"
+                              value={profile.city}
+                              onChange={(event) => updateProfile('city', event.target.value)}
+                              placeholder="e.g. Varanasi, Uttar Pradesh"
+                              required
+                            />
+                          </label>
+
+                          <label className="auth-label-styled">
+                            Pincode *
+                            <input
+                              className="auth-input-styled"
+                              value={profile.pincode}
+                              onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
+                              inputMode="numeric"
+                              placeholder="6-digit pincode"
+                              required
+                            />
+                          </label>
+                        </div>
+
+                        <div className="auth-column">
+                          <label className="auth-label-styled">
+                            Email *
                             <input
                               className="auth-input-styled"
                               value={email}
@@ -830,111 +706,22 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             />
                           </label>
                           <label className="auth-label-styled">
-                            Password
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
-                              <input
-                                className="auth-input-styled"
-                                value={password}
-                                onChange={(event) => setPassword(event.target.value)}
-                                type={showPassword ? 'text' : 'password'}
-                                autoComplete="new-password"
-                                minLength="6"
-                                placeholder="Minimum 6 characters"
-                                required
-                                style={{ paddingRight: '40px', width: '100%' }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(prev => !prev)}
-                                style={{
-                                  position: 'absolute',
-                                  right: '10px',
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: 'var(--muted, #78716c)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  padding: '4px',
-                                }}
-                              >
-                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                              </button>
-                            </div>
-                          </label>
-                        </div>
-
-                        <div className="auth-column">
-                          <div className="auth-phone-field">
-                            <div className="auth-field-label-row">
-                              <span>City, State & Pincode *</span>
-                            </div>
-                            <div className="auth-city-pincode-inputs">
-                              <input
-                                className="auth-input-styled"
-                                value={profile.city}
-                                onChange={(event) => updateProfile('city', event.target.value)}
-                                placeholder="City name, State name"
-                                autoComplete="address-level2"
-                                required
-                              />
-                              <input
-                                className="auth-input-styled"
-                                value={profile.pincode}
-                                onChange={(event) => updateProfile('pincode', normalizePincodeInput(event.target.value))}
-                                inputMode="numeric"
-                                autoComplete="postal-code"
-                                placeholder="Pincode"
-                                required
-                              />
-                            </div>
-                            <span className="auth-city-pincode-note">For delivery zone mapping. Full address not required.</span>
-                          </div>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Account / User Type</span>
-                            <B2BSegmentDropdown
-                              value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
-                              onChange={(opt) => {
-                                setProfile(current => ({
-                                  ...current,
-                                  buyerType: opt.type,
-                                  buyerSubtype: opt.value
-                                }));
-                              }}
+                            Password *
+                            <input
+                              className="auth-input-styled"
+                              value={password}
+                              onChange={(event) => setPassword(event.target.value)}
+                              type="password"
+                              autoComplete="new-password"
+                              minLength="6"
+                              placeholder="Min. 6 characters"
+                              required
                             />
-                          </div>
+                          </label>
 
-                          {profile.buyerType !== 'vendor' && (
-                            <>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--ink)' }}>Buying Behaviour</span>
-                                <BuyingBehaviorDropdown
-                                  value={profile.buyingBehavior}
-                                  onChange={(value) => updateProfile('buyingBehavior', value)}
-                                />
-                              </div>
-
-                              <fieldset className="auth-category-fieldset">
-                                <legend>Interested Categories</legend>
-                                <div>
-                                  {categoryOptions.map((category) => (
-                                    <label key={category}>
-                                      <input
-                                        type="checkbox"
-                                        checked={profile.interestedCategories.includes(category)}
-                                        onChange={() => toggleCategory(category)}
-                                      />
-                                      <span>{category}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </fieldset>
-                            </>
-                          )}
                         </div>
                       </div>
+
                     ) : (
                       <>
                         <label className="auth-label-styled">
@@ -960,10 +747,8 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                               onChange={(event) => setPassword(event.target.value)}
                               type={showPassword ? 'text' : 'password'}
                               autoComplete="current-password"
-                              minLength="6"
                               placeholder="Enter your password"
                               required
-                              style={{ paddingRight: '48px' }}
                             />
                             <button
                               type="button"

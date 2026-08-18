@@ -4,9 +4,9 @@
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, X, Sparkles } from 'lucide-react';
 import {
-  customerPrice,
+  calculateHybridProductPrice,
   fallbackProductImage,
   formatMoney,
 } from '../storefrontShared.jsx';
@@ -51,29 +51,26 @@ export function VariationQuantityDrawer({
           name,
           image,
           variant,
-          price: customerPrice(variant?.prices || {}, priceAccess),
         });
       }
       return acc;
     }, []);
-  }, [colorOptions, priceAccess, product.images, product.variants]);
+  }, [colorOptions, product.images, product.variants]);
 
   const [activeKey, setActiveKey] = useState(rows[0]?.key || '');
   const [quantities, setQuantities] = useState(() => buildQuantityMap(rows));
-  const [setQuantityVal, setSetQuantityVal] = useState(1);
+  const [setQuantityVal, setSetQuantityVal] = useState(0);
 
   useEffect(() => {
-    const isWholesale = priceAccess?.priceGroup === 'wholesale';
-    if (isWholesale && !isSoldAsPc) {
-      setSetQuantityVal(1);
-      const initialMap = rows.reduce((map, option) => ({ ...map, [option.key]: 1 }), {});
-      setQuantities(initialMap);
-    } else {
-      setQuantities(buildQuantityMap(rows));
-    }
+    const initialMap = buildQuantityMap(rows);
     const activeRow = rows.find((row) => row.name === selectedColorName || row.image === selectedImage) || rows[0];
-    setActiveKey(activeRow?.key || '');
-  }, [rows, selectedColorName, selectedImage, priceAccess?.priceGroup, isSoldAsPc]);
+    if (activeRow) {
+      initialMap[activeRow.key] = 1;
+    }
+    setQuantities(initialMap);
+    setActiveKey(activeRow?.key || rows[0]?.key || '');
+    setSetQuantityVal(0);
+  }, [rows, selectedColorName, selectedImage]);
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -96,10 +93,14 @@ export function VariationQuantityDrawer({
 
   const selectedRow = rows.find((row) => row.key === activeKey) || rows[0];
   const canViewPrices = priceAccess?.canViewPrices !== false;
-  const subtotal = canViewPrices
-    ? rows.reduce((total, row) => total + (row.price || 0) * (quantities[row.key] || 0), 0)
-    : null;
   const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
+
+  const pricing = useMemo(() => {
+    return calculateHybridProductPrice(product, totalQuantity, product?.variants?.[0]);
+  }, [product, totalQuantity]);
+
+  const subtotal = canViewPrices ? pricing.totalPrice : null;
+
   const selectedCartRows = useMemo(
     () => rows.reduce((acc, row) => {
       const quantity = quantities[row.key] || 0;
@@ -126,8 +127,8 @@ export function VariationQuantityDrawer({
   const handleSetQuantityChange = useCallback((nextVal) => {
     const val = Math.max(0, nextVal);
     setSetQuantityVal(val);
-    setQuantities((current) => {
-      const next = { ...current };
+    setQuantities(() => {
+      const next = {};
       rows.forEach((row) => {
         next[row.key] = val;
       });
@@ -142,6 +143,9 @@ export function VariationQuantityDrawer({
 
   if (!open) return null;
 
+  const isUnder999 = String(product?.category || '').toLowerCase() === 'under 999';
+  const showSetStepper = !isUnder999 && !isSoldAsPc && rows.length > 1;
+
   return (
     <div className="variation-drawer-shell" role="presentation" onMouseDown={onClose}>
       <aside
@@ -152,7 +156,7 @@ export function VariationQuantityDrawer({
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="variation-drawer-head">
-          <h2 id="variation-drawer-title">Select variations and quantity</h2>
+          <h2 id="variation-drawer-title">Select Variations & Quantity</h2>
           <button type="button" aria-label="Close variation selector" onClick={onClose}>
             <X size={20} />
           </button>
@@ -183,10 +187,10 @@ export function VariationQuantityDrawer({
           </section>
 
           <section className="variation-quantity-section" aria-label="Color quantities">
-            {priceAccess?.priceGroup === 'wholesale' && !isSoldAsPc && (
+            {showSetStepper && (
               <div className="wholesale-set-stepper-container" style={{
-                margin: '0 0 20px 0',
-                padding: '16px',
+                margin: '0 0 16px 0',
+                padding: '14px 16px',
                 background: '#fcf8f0',
                 borderRadius: '8px',
                 border: '1px solid #ebd3b4',
@@ -195,11 +199,9 @@ export function VariationQuantityDrawer({
                 alignItems: 'center'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <strong style={{ fontSize: 'var(--body-size)', color: '#8c6239' }}>Quantity</strong>
-                  <span style={{ fontSize: 'var(--small-size)', color: '#a08060' }}>
-                    1 Set = 1 piece of each color variant ({rows.length} pcs total)
-                  </span>
+                  <strong style={{ fontSize: 'var(--body-size)', color: '#8c6239' }}>Quick Full Set (1 pc each color)</strong>
                 </div>
+
                 <div className="quantity-stepper" style={{ background: '#fff' }} aria-label="Set quantity">
                   <button type="button" onClick={() => handleSetQuantityChange(setQuantityVal - 1)} aria-label="Decrease sets">
                     <Minus size={16} />
@@ -211,10 +213,12 @@ export function VariationQuantityDrawer({
                 </div>
               </div>
             )}
-            <h3>Colors</h3>
+
+            <h3>Colors & Pieces</h3>
             <div className="variation-quantity-list">
               {rows.map((row) => {
                 const quantity = quantities[row.key] || 0;
+                const unitPrice = totalQuantity >= pricing.setSize ? pricing.wholesalePrice : pricing.resellerPrice;
 
                 return (
                   <div className="variation-quantity-row" key={row.key}>
@@ -226,33 +230,49 @@ export function VariationQuantityDrawer({
                       {row.name}
                     </button>
                     <span className="variation-row-price">
-                      {row.price != null ? formatMoney(row.price) : priceNoticeForAccess(priceAccess)}
+                      {canViewPrices ? formatMoney(unitPrice) : priceNoticeForAccess(priceAccess)}
                     </span>
-                    {priceAccess?.priceGroup === 'wholesale' && !isSoldAsPc ? (
-                      <span className="wholesale-qty-display" style={{ fontSize: 'var(--body-size)', color: 'var(--muted)', fontWeight: '600', paddingRight: '12px' }}>
-                        {quantity} {quantity === 1 ? 'pc' : 'pcs'}
-                      </span>
-                    ) : (
-                      <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
-                        <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
-                          <Minus size={16} />
-                        </button>
-                        <output>{quantity}</output>
-                        <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
+                      <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
+                        <Minus size={16} />
+                      </button>
+                      <output>{quantity}</output>
+                      <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
             </div>
+
+            {totalQuantity > 0 && canViewPrices && pricing.setSize > 1 && (
+              <div style={{
+                marginTop: '12px',
+                padding: '10px 14px',
+                borderRadius: '6px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                fontSize: '13px',
+                color: '#334155'
+              }}>
+                {pricing.completeSets > 0 && pricing.extraPieces === 0 && (
+                  <span>✓ <strong>{pricing.completeSets} Set{pricing.completeSets > 1 ? 's' : ''} ({pricing.totalQty} pcs)</strong> at Wholesale Rate ({formatMoney(pricing.wholesalePrice)}/pc)</span>
+                )}
+                {pricing.completeSets === 0 && (
+                  <span>ℹ️ <strong>{pricing.totalQty} pc{pricing.totalQty > 1 ? 's' : ''}</strong> at Reseller Rate ({formatMoney(pricing.resellerPrice)}/pc). Add {pricing.setSize - pricing.totalQty} more pc{pricing.setSize - pricing.totalQty > 1 ? 's' : ''} for Wholesale price!</span>
+                )}
+                {pricing.completeSets > 0 && pricing.extraPieces > 0 && (
+                  <span>✓ <strong>{pricing.completeSets} Set</strong> @ Wholesale ({formatMoney(pricing.wholesalePrice)}/pc) + <strong>{pricing.extraPieces} extra pc{pricing.extraPieces > 1 ? 's' : ''}</strong> @ Reseller ({formatMoney(pricing.resellerPrice)}/pc)</span>
+                )}
+              </div>
+            )}
           </section>
         </div>
 
         <footer className="variation-drawer-foot">
           <div className="drawer-subtotal-row">
-            <span>Subtotal</span>
+            <span>Subtotal ({totalQuantity} pc{totalQuantity === 1 ? '' : 's'})</span>
             <strong>{subtotal != null ? formatMoney(subtotal) : priceNoticeForAccess(priceAccess)}</strong>
           </div>
           <div className="drawer-action-row">
@@ -270,3 +290,4 @@ export function VariationQuantityDrawer({
     </div>
   );
 }
+

@@ -26,7 +26,8 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
-import { syncProfileFromUser } from '../utils/profileHelpers.js';
+import { syncProfileFromUser, loadProfileForUser } from '../utils/profileHelpers.js';
+
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
 
 const GoogleIcon = () => (
@@ -49,12 +50,6 @@ const FacebookIcon = () => (
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
   </svg>
 );
-
-const customerSubtypes = [
-  { value: 'Wholesaler (MOQ: 1 Set)', label: 'Wholesaler (MOQ: 1 Set)', type: 'wholesale' },
-  { value: 'Reseller (MOQ: Flexible)', label: 'Reseller (MOQ: Flexible)', type: 'reseller' },
-  { value: 'User (MOQ: 1 Pc)', label: 'User (MOQ: 1 Pc)', type: 'user' },
-];
 
 const countryCodes = [
   { value: '+91', label: 'India +91' },
@@ -105,8 +100,8 @@ export function SignupPage({
     countryCode: '+91',
     whatsapp: '',
     businessName: '',
-    buyerType: 'wholesale',
-    buyerSubtype: 'Wholesaler (MOQ: 1 Set)',
+    buyerType: 'customer',
+    buyerSubtype: '',
     buyingBehavior: 'instant',
     city: '',
     pincode: '',
@@ -127,8 +122,8 @@ export function SignupPage({
       setSignupType('customer');
       setProfile((prev) => ({
         ...prev,
-        buyerType: 'wholesale',
-        buyerSubtype: 'Wholesaler (MOQ: 1 Set)',
+        buyerType: 'customer',
+        buyerSubtype: '',
       }));
     }
   }, [initialType]);
@@ -168,8 +163,8 @@ export function SignupPage({
     } else {
       setProfile((prev) => ({
         ...prev,
-        buyerType: 'wholesale',
-        buyerSubtype: 'Wholesaler (MOQ: 1 Set)',
+        buyerType: 'customer',
+        buyerSubtype: '',
       }));
     }
   }
@@ -182,16 +177,17 @@ export function SignupPage({
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
-      buyer_type: profile.buyerType,
-      buyer_subtype: profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)',
+      buyer_type: profile.buyerType === 'vendor' ? 'vendor' : 'customer',
+      buyer_subtype: profile.buyerSubtype || '',
       buying_behavior: profile.buyingBehavior,
       city: profile.city.trim(),
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,
-      price_group: profile.buyerType,
+      price_group: 'approved',
       approval_status: 'approved',
     });
   }
+
 
   async function handleForgotPassword(event) {
     event.preventDefault();
@@ -295,22 +291,15 @@ export function SignupPage({
         const cleanName = toTitleCaseName(profile.fullName);
         const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
 
-        const isBusinessRequired = profile.buyerType !== 'user';
-        const isBusinessValid = !isBusinessRequired || profile.businessName.trim().length > 0;
-        const isCategoryRequired = profile.buyerType !== 'vendor';
-        const isCategoryValid = !isCategoryRequired || profile.interestedCategories.length > 0;
-
         if (
           !cleanName ||
-          !isBusinessValid ||
           !profile.city.trim() ||
           cleanWhatsapp.length !== 10 ||
           normalizePincodeInput(profile.pincode).length !== 6 ||
-          !isCategoryValid
+          (signupType === 'partner' && !profile.businessName.trim())
         ) {
-          const catMsg = isCategoryRequired ? ', and at least one category selection is required.' : '.';
           setMessage(
-            `Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits${catMsg}`
+            'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
           );
           setLoading(false);
           return;
@@ -367,9 +356,7 @@ export function SignupPage({
         setLoading(false);
       } else {
         if (mode === 'register') {
-          if (profile.buyerType === 'reseller' || profile.buyerType === 'wholesale') {
-            localStorage.setItem('just_registered_b2b', 'true');
-          }
+          localStorage.setItem('just_registered_b2b', 'true');
 
           if (!result.data.session) {
             setMessage('verification-email-sent');
@@ -390,8 +377,12 @@ export function SignupPage({
             }, 800);
           }
         } else {
-          if (result.data.user && setUser) {
-            setUser(result.data.user);
+          const loggedUser = result.data.user;
+          if (setUser) setUser(loggedUser);
+          await syncProfileFromUser(loggedUser);
+          const profileData = await loadProfileForUser(loggedUser);
+          if (setBuyerProfile && profileData.profile) {
+            setBuyerProfile(profileData.profile);
           }
           navigate('home');
         }
@@ -484,9 +475,9 @@ export function SignupPage({
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setMessage(''); }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#64748b', fontSize: '16px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}
                 >
-                  <ArrowLeft size={14} /> Back to Login
+                  <ArrowLeft size={16} /> Back to Login
                 </button>
                 <h2 className="signup-form-title">Reset your password</h2>
                 <p className="signup-form-subtitle">
@@ -513,23 +504,24 @@ export function SignupPage({
               </form>
 
               {message === 'reset-link-sent' && (
-                <p style={{ marginTop: '16px', color: '#16a34a', fontSize: '13.5px', fontWeight: '500' }}>
+                <p style={{ marginTop: '16px', color: '#16a34a', fontSize: '16px', fontWeight: '500' }}>
                   ✓ Reset link sent! Please check your email inbox and spam folder.
                 </p>
               )}
               {message === 'demo-reset-sent' && (
                 <div style={{ marginTop: '16px' }}>
-                  <p style={{ color: '#ca8a04', fontSize: '13.5px' }}>Demo mode: click below to simulate password reset.</p>
+                  <p style={{ color: '#ca8a04', fontSize: '16px' }}>Demo mode: click below to simulate password reset.</p>
                   <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
                     Simulate Reset Link →
                   </button>
                 </div>
               )}
               {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && (
-                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '13.5px' }}>
+                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '16px' }}>
                   {message}
                 </div>
               )}
+
             </div>
           ) : mode === 'reset-password' ? (
             /* Reset Password Mode */
@@ -567,7 +559,7 @@ export function SignupPage({
                 </button>
               </form>
               {message && (
-                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '13.5px' }}>
+                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '16px' }}>
                   {message}
                 </div>
               )}
@@ -649,7 +641,7 @@ export function SignupPage({
                 </button>
 
                 {message && (
-                  <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <AlertCircle size={16} style={{ flexShrink: 0 }} />
                     <span>{message}</span>
                   </div>
@@ -775,10 +767,6 @@ export function SignupPage({
                   <h2 className="signup-form-title">
                     {signupType === 'partner' ? 'Partner Registration' : 'Create an account'}
                   </h2>
-
-                  <div className="signup-role-badge">
-                    <span>{signupType === 'partner' ? 'Partner / Weaver' : 'Customer'}</span>
-                  </div>
                 </div>
                 <p className="signup-form-subtitle">
                   {signupType === 'partner'
@@ -809,9 +797,7 @@ export function SignupPage({
                     <label className="signup-label">
                       {signupType === 'partner'
                         ? 'Loom / Enterprise Name *'
-                        : profile.buyerType === 'user'
-                        ? 'Business Name (Optional)'
-                        : 'Business / Boutique Name *'}
+                        : 'Business / Store Name (Optional)'}
                     </label>
                     <input
                       type="text"
@@ -820,32 +806,29 @@ export function SignupPage({
                       placeholder={
                         signupType === 'partner'
                           ? 'Enter loom or enterprise name'
-                          : profile.buyerType === 'user'
-                          ? 'Optional store name'
-                          : 'Enter your business name'
+                          : 'Optional store name'
                       }
                       autoComplete="organization"
-                      required={signupType === 'partner' || profile.buyerType !== 'user'}
+                      required={signupType === 'partner'}
                       className="signup-input"
                     />
                   </div>
 
-                  {/* WhatsApp Number with Country Code */}
-                  <div className="signup-field signup-field-full">
-                    <label className="signup-label">
-                      <span>WhatsApp Number *</span>
-                      <span className="signup-label-subtext">Format: 10 digits</span>
-                    </label>
+
+
+
+                  {/* WhatsApp Number */}
+                  <div className="signup-field">
+                    <label className="signup-label">WhatsApp Number *</label>
                     <div className="signup-input-phone-group">
                       <select
                         className="signup-select"
                         value={profile.countryCode}
                         onChange={(e) => updateProfile('countryCode', e.target.value)}
-                        aria-label="Country Code"
                       >
-                        {countryCodes.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
+                        {countryCodes.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
                           </option>
                         ))}
                       </select>
@@ -853,68 +836,33 @@ export function SignupPage({
                         type="tel"
                         value={profile.whatsapp}
                         onChange={(e) =>
-                          updateProfile('whatsapp', e.target.value.replace(/\D/g, '').slice(0, 10))
+                          updateProfile(
+                            'whatsapp',
+                            e.target.value.replace(/\D/g, '').slice(0, 10)
+                          )
                         }
-                        placeholder="xxxxxxxxxx"
-                        pattern="[0-9]{10}"
+                        placeholder="10-digit number"
+                        autoComplete="tel-national"
                         required
                         className="signup-input"
                       />
                     </div>
                   </div>
 
-                  {/* Email */}
-                  <div className="signup-field">
-                    <label className="signup-label">Your email *</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      autoComplete="email"
-                      required
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Password */}
-                  <div className="signup-field">
-                    <label className="signup-label">Password *</label>
-                    <div className="signup-input-wrapper">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        autoComplete="new-password"
-                        required
-                        minLength={6}
-                        className="signup-input"
-                      />
-                      <button
-                        type="button"
-                        className="signup-password-toggle"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Toggle password visibility"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* City & State */}
+                  {/* City, State */}
                   <div className="signup-field">
                     <label className="signup-label">City, State *</label>
                     <input
                       type="text"
                       value={profile.city}
                       onChange={(e) => updateProfile('city', e.target.value)}
-                      placeholder="e.g. Surat, Gujarat"
+                      placeholder="e.g. Varanasi, Uttar Pradesh"
                       autoComplete="address-level2"
                       required
                       className="signup-input"
                     />
                   </div>
+
 
                   {/* Pincode */}
                   <div className="signup-field">
@@ -922,52 +870,55 @@ export function SignupPage({
                     <input
                       type="text"
                       value={profile.pincode}
-                      onChange={(e) => updateProfile('pincode', normalizePincodeInput(e.target.value))}
+                      onChange={(e) =>
+                        updateProfile('pincode', normalizePincodeInput(e.target.value))
+                      }
                       placeholder="6-digit pincode"
                       inputMode="numeric"
-                      maxLength={6}
                       required
                       className="signup-input"
                     />
                   </div>
 
-                  {/* Account / User Type (Customer Only) */}
-                  {signupType === 'customer' && (
-                    <div className="signup-field">
-                      <label className="signup-label">Account / User Type *</label>
-                      <select
-                        className="signup-select"
-                        value={profile.buyerSubtype || 'Wholesaler (MOQ: 1 Set)'}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const found = customerSubtypes.find((item) => item.value === val);
-                          updateProfile('buyerSubtype', val);
-                          if (found) updateProfile('buyerType', found.type);
-                        }}
-                      >
-                        {customerSubtypes.map((sub) => (
-                          <option key={sub.value} value={sub.value}>
-                            {sub.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  {/* Email */}
+                  <div className="signup-field">
+                    <label className="signup-label">Email Address *</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      required
+                      className="signup-input"
+                    />
+                  </div>
 
-                  {/* Buying Behaviour (Customer Only) */}
-                  {signupType === 'customer' && (
-                    <div className="signup-field">
-                      <label className="signup-label">Buying Behaviour *</label>
-                      <select
-                        className="signup-select"
-                        value={profile.buyingBehavior}
-                        onChange={(e) => updateProfile('buyingBehavior', e.target.value)}
+                  {/* Password */}
+                  <div className="signup-field signup-field-full">
+                    <label className="signup-label">Password *</label>
+                    <div className="signup-input-wrapper">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        autoComplete="new-password"
+                        minLength={6}
+                        required
+                        className="signup-input"
+                        style={{ paddingRight: '44px' }}
+                      />
+                      <button
+                        type="button"
+                        className="signup-password-toggle"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        <option value="instant">Immediate Purchase</option>
-                        <option value="order_basis">Order Basis</option>
-                      </select>
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
-                  )}
+                  </div>
 
                   {/* Interested Categories (Customer Only) */}
                   {signupType === 'customer' && (
@@ -992,6 +943,7 @@ export function SignupPage({
                   )}
                 </div>
 
+
                 <button type="submit" className="signup-submit-btn" disabled={loading}>
                   {loading ? (
                     <><Loader2 size={16} className="auth-spinner" /> Creating Account...</>
@@ -1001,11 +953,12 @@ export function SignupPage({
                 </button>
 
                 {message && (
-                  <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
                     <span>{message}</span>
                   </div>
                 )}
+
 
                 <div className="signup-switch-link">
                   Already have an account?{' '}

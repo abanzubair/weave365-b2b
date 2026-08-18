@@ -1231,23 +1231,15 @@
     margin-bottom: 16px !important;
   }
 
-  .product-price-layout {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
+  .product-price-container {
     gap: 8px !important;
   }
 
-  .price-pipe {
-    display: none !important;
+  .product-price-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
   }
 
-  .price-piece-block,
-  .price-set-block {
-    display: flex !important;
-    align-items: baseline !important;
-    gap: 4px !important;
-  }
 
   .price-value {
     font-size: 28px !important;

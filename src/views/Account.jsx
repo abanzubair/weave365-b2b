@@ -452,14 +452,15 @@ export function Account({
       <div className="account-summary-grid">
         <AccountSummaryCard 
           icon={UserRound} 
-          label="My Buyer Type" 
-          value={buyerProfile?.buyer_subtype ? titleCase(buyerProfile.buyer_subtype) : titleCase(priceAccess.buyerType)} 
+          label="Account Type" 
+          value={isVendor ? 'Vendor Partner' : 'Customer'} 
           hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} 
         />
-        <AccountSummaryCard icon={LockKeyhole} label="My Approved Price Group" value={priceAccess.canViewPrices ? priceAccess.priceLabel : 'Pending'} hint={approvalHint} />
+        <AccountSummaryCard icon={LockKeyhole} label="Pricing Tier" value={priceAccess.canViewPrices ? 'Hybrid Wholesale & Reseller' : 'Pending'} hint={approvalHint} />
         <AccountSummaryCard icon={ShoppingBag} label="My Cart" value={`${cartItems.length} row${cartItems.length === 1 ? '' : 's'}`} hint={total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)} />
         <AccountSummaryCard icon={Heart} label="My Favourites" value={favoriteProducts.length} hint="Saved designs" />
       </div>
+
 
       {/* Premium Account Tabs for Responsive Screens */}
       <div className="account-tabs-bar">

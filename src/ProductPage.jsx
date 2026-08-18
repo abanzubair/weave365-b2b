@@ -448,8 +448,11 @@ export function ProductDetail({
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
   );
-  const displayPrice = useMemo(() => customerPrice(variant.prices, priceAccess), [priceAccess, variant.prices]);
-  const canViewPrice = displayPrice != null && displayPrice > 0;
+  const wholesalePrice = Number(variant?.prices?.mrp || variant?.prices?.offer || 0);
+  const resellerPrice = Number(variant?.prices?.b2r || variant?.prices?.single || wholesalePrice);
+  const displayPrice = resellerPrice;
+  const canViewPrice = (wholesalePrice > 0 || resellerPrice > 0) && priceAccess?.canViewPrices !== false;
+  const setPrice = wholesalePrice * totalColors;
 
   const pcSetVal = useMemo(() => {
     const rawVal = String(product.raw?.['Pc / Set'] || '').trim().toLowerCase();
@@ -472,9 +475,10 @@ export function ProductDetail({
   const moqMultiplier = isSoldAsPc ? 1 : totalColors;
 
   const isSaree = String(product.category || '').toLowerCase() === 'saree';
+  const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
   const longDescriptionSections = useMemo(() => {
-    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
     const sections = [
+
       {
         id: 'fabric',
         label: 'Fabric Details',
@@ -1179,44 +1183,25 @@ export function ProductDetail({
             <div className="price-moq-row">
               <div className="main-price-wrap">
                 {canViewPrice ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {priceAccess?.priceLabel && (
-                      <span className="price-label-badge" style={{ fontSize: 'var(--small-size)', textTransform: 'uppercase', color: '#b8924a', letterSpacing: '1.2px', fontWeight: '700' }}>
-                        {priceAccess.priceLabel}
-                      </span>
-                    )}
-                    <div className="product-price-layout">
-                      <div className="price-piece-block">
-                        <span className="price-value">{formatMoney(displayPrice)}</span>
+                  <div className="product-price-container">
+                    <div className="product-price-row">
+                      <div className="price-main-display">
+                        <span className="price-value">{formatMoney(resellerPrice)}</span>
                         <span className="price-unit">/pc</span>
-                        {canViewPrice && String(product.category || '').toLowerCase() !== 'under 999' && (
-                          (priceAccess?.priceGroup === 'wholesale' && (totalColors <= 1 || isSoldAsPc)) ||
-                          priceAccess?.priceGroup === 'reseller'
-                        ) && (
-                          <div className="moq-badge">
-                            {priceAccess?.priceGroup === 'wholesale'
-                              ? `MOQ: 1 ${moqUnit}`
-                              : (priceAccess?.priceGroup === 'reseller'
-                                  ? (isSoldAsPc ? `MOQ: 1 ${moqUnit}` : 'Flexible MOQ')
-                                  : (isSoldAsBoth ? 'Flexible MOQ' : `MOQ 1 ${moqUnit}`))}
-                          </div>
-                        )}
                       </div>
-                      {priceAccess?.priceGroup === 'wholesale' && totalColors > 1 && !isSoldAsPc && String(product.category || '').toLowerCase() !== 'under 999' && (
-                        <div className="price-set-block">
-                          <span className="price-pipe"></span>
-                          <span className="price-value price-value-set">{formatMoney(displayPrice * totalColors)}</span>
-                          <span className="price-unit price-unit-set">/Set ({totalColors} pcs)</span>
-                          {canViewPrice && (
-                            <div className="moq-badge">
-                              MOQ: 1 Set
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
+
+                    {totalColors > 1 && !isUnder999 && (
+                      <div className="product-price-row wholesale-row">
+                        <div className="price-set-display">
+                          <span className="price-set-amount">{formatMoney(setPrice)}</span>
+                          <span className="price-set-meta">/Set ({totalColors} pcs · {formatMoney(wholesalePrice)}/pc)</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
+
                   <button type="button" className="guest-price-notice" onClick={openAuth}>
                     <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
                   </button>
@@ -1224,32 +1209,15 @@ export function ProductDetail({
               </div>
             </div>
 
-            {priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest' ? (
-              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
-                Excluding GST • <span className="free-shipping-highlight">Free Shipping in India</span>
-              </span>
-            ) : (
-              <span className="gst-disclaimer" style={{ marginTop: '8px', marginBottom: '12px' }}>
-                <span className="free-shipping-highlight">Excluding GST & Shipping</span>
-              </span>
-            )}
+            <div className="gst-disclaimer">
+              <span>Excluding GST</span>
+              <span className="bullet-sep">•</span>
+              <span className="shipping-note-badge">Shipping calculated at checkout</span>
 
-            {canViewPrice && priceAccess?.priceGroup === 'wholesale' && String(product.category || '').toLowerCase() !== 'under 999' && (
-              <div className="tiered-pricing-card">
-                <div className="tier-column">
-                  <div className="tier-label">1 - 4 {isSoldAsBoth ? 'Set' : moqUnit}</div>
-                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier)} <span className="unit">/{moqUnitShort}</span></div>
-                </div>
-                <div className="tier-column">
-                  <div className="tier-label">5 - 9 {isSoldAsBoth ? 'Set' : moqUnit}</div>
-                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier * 0.98)} <span className="unit">/{moqUnitShort}</span></div>
-                </div>
-                <div className="tier-column">
-                  <div className="tier-label">10+ {isSoldAsBoth ? 'Set' : moqUnit}</div>
-                  <div className="tier-price">{formatMoney(displayPrice * moqMultiplier * 0.95)} <span className="unit">/{moqUnitShort}</span></div>
-                </div>
-              </div>
-            )}
+            </div>
+
+
+
 
             <div className="international-courier-note">
               <Globe size={16} />
@@ -1257,6 +1225,7 @@ export function ProductDetail({
                 International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper.
               </span>
             </div>
+
 
             {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
               <p className="b2b-shipping-note" style={{ 
@@ -1370,7 +1339,7 @@ export function ProductDetail({
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
                 </button>
-                {(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale') && priceAccess?.canViewPrices ? (
+                {priceAccess?.canViewPrices ? (
                   <div className="share-dropdown-container" ref={shareMenuRef}>
                     <button
                       className="secondary-action-btn reseller-share-dropdown-trigger"
@@ -1434,10 +1403,11 @@ export function ProductDetail({
                 <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
                 <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
                 {String(product.category || '').toLowerCase() !== 'under 999' && (
-                  <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                  <span>✓ MOQ: 1 pc / 1 Set</span>
                 )}
               </div>
             </div>
+
           </aside>
         </div>
 
@@ -2005,7 +1975,7 @@ export function ProductDetail({
         />
       )}
 
-      {(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale') && priceAccess?.canViewPrices && (
+      {priceAccess?.canViewPrices && (
         <ResellerWhatsappShare
           showTrigger={false}
           open={whatsappShareOpen}

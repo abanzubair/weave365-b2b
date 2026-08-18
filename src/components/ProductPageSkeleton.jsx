@@ -60,8 +60,7 @@ export default function ProductPageSkeleton() {
           {/* GST Disclaimer */}
           <div className="skeleton-disclaimer skeleton-shimmer"></div>
 
-          {/* Tiered Pricing Block */}
-          <div className="tiered-pricing-card skeleton-tiered-pricing skeleton-shimmer"></div>
+
 
           {/* Quick Facts */}
           <div className="quick-facts">

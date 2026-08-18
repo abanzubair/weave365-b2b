@@ -54,34 +54,34 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
   );
 
   const addToCart = useCallback((product, variant, quantity = 1, colorSelection = {}) => {
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
     setCart((currentCart) => {
       const next = upsertCart(currentCart, product, variant, quantity, colorSelection);
-      void persistCart(next, user.id);
+      if (user) {
+        void persistCart(next, user.id);
+      } else {
+        try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
+      }
       return next;
     });
     setCartOpen(true);
-  }, [user, setCart, setCartOpen, setAuthOpen]);
+  }, [user, setCart, setCartOpen]);
 
   const addCartSelections = useCallback((product, selections) => {
     const selectedRows = selections.filter((selection) => selection?.variant && selection.quantity > 0);
     if (!selectedRows.length) return;
 
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-
     setCart((currentCart) => {
       const next = upsertCartSelections(currentCart, product, selectedRows);
-      void persistCart(next, user.id);
+      if (user) {
+        void persistCart(next, user.id);
+      } else {
+        try { localStorage.setItem('cart_guest', JSON.stringify(next)); } catch (e) {}
+      }
       return next;
     });
     setCartOpen(true);
-  }, [user, setCart, setCartOpen, setAuthOpen]);
+  }, [user, setCart, setCartOpen]);
+
 
   const toggleFavorite = useCallback((product) => {
     if (!user) {
