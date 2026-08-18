@@ -190,6 +190,15 @@ export default function AdminStockManager({
     return 'ready-stock';
   }, [stockOverrides]);
 
+  // Fast vendor code to partner name lookup
+  const vendorNameMap = useMemo(() => {
+    const map = new Map();
+    for (const v of vendorOptions) {
+      if (v.vid && v.partner) map.set(v.vid, v.partner.toLowerCase());
+    }
+    return map;
+  }, [vendorOptions]);
+
   // Filtered Products
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -233,11 +242,12 @@ export default function AdminStockManager({
         return false;
       }
 
-      // 4. Search query
+      // 4. Search query (SKU, VID, Vendor/Partner Name, Title, Category, Fabric, Weave, Variant)
       if (query) {
         const idMatch = String(pKey || '').toLowerCase().includes(query);
-        const vidMatch = pVid.toLowerCase().includes(query);
-        const partnerMatch = pPartner.includes(query);
+        const vidMatch = (normPVid && normPVid.toLowerCase().includes(query)) || (rawPVid && rawPVid.toLowerCase().includes(query));
+        const knownPartner = (normPVid && vendorNameMap.get(normPVid)) || '';
+        const partnerMatch = pPartner.includes(query) || knownPartner.includes(query) || String(p.raw?.['Vendor Name'] || p.raw?.Vendor || '').toLowerCase().includes(query);
         const titleMatch = String(p.title || '').toLowerCase().includes(query);
         const catMatch = String(p.category || '').toLowerCase().includes(query);
         const fabricMatch = String(p.fabric || '').toLowerCase().includes(query);
@@ -251,7 +261,7 @@ export default function AdminStockManager({
 
       return true;
     });
-  }, [catalogProducts, searchQuery, selectedVendorKey, selectedCategory, statusFilter, getProductEffectiveStatus]);
+  }, [catalogProducts, searchQuery, selectedVendorKey, selectedCategory, statusFilter, getProductEffectiveStatus, vendorNameMap]);
 
   // Sorted Products
   const sortedProducts = useMemo(() => {

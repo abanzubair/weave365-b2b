@@ -282,7 +282,14 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       partner: profilePartner || profileBusinessName || 'Loom Partner',
       displayName: profileVid && profilePartner ? `${profileVid} ${profilePartner}` : (profileVid ? `Vendor ${profileVid}` : (profilePartner || profileBusinessName || 'Assigned Vendor'))
     };
-  }, [vendorOptions, selectedVendorKey, autoMatchedVendor, profileVid, profilePartner, profileBusinessName, isAdmin]);
+  // Fast vendor code to partner name lookup
+  const vendorNameMap = useMemo(() => {
+    const map = new Map();
+    for (const v of vendorOptions) {
+      if (v.vid && v.partner) map.set(normalizeVendorCode(v.vid).toLowerCase(), v.partner.toLowerCase());
+    }
+    return map;
+  }, [vendorOptions]);
 
   // Apply category filter, search query and status tab filter
   const displayedProducts = useMemo(() => {
@@ -312,18 +319,26 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       }
 
       if (query) {
+        const rawVid = String(p.vendorCode || p.raw?.VID || p.raw?.vid || '').toLowerCase();
+        const normVid = normalizeVendorCode(rawVid).toLowerCase();
+        const partnerName = String(p.partner || p.raw?.Partner || p.raw?.partner || p.raw?.['Vendor Name'] || p.raw?.Vendor || '').toLowerCase();
+        const knownPartner = (normVid && vendorNameMap.get(normVid)) || '';
+
         const codeMatch = String(pKey || '').toLowerCase().includes(query) ||
-                          String(p.vendorCode || '').toLowerCase().includes(query) ||
+                          rawVid.includes(query) ||
+                          normVid.includes(query) ||
                           (p.variants || []).some(v => String(v.code || '').toLowerCase().includes(query));
+        const partnerMatch = partnerName.includes(query) || knownPartner.includes(query);
         const titleMatch = String(p.title || '').toLowerCase().includes(query);
         const categoryMatch = String(p.category || '').toLowerCase().includes(query);
         const fabricMatch = String(p.fabric || '').toLowerCase().includes(query);
-        if (!codeMatch && !titleMatch && !categoryMatch && !fabricMatch) return false;
+        const weaveMatch = String(p.weave || '').toLowerCase().includes(query);
+        if (!codeMatch && !partnerMatch && !titleMatch && !categoryMatch && !fabricMatch && !weaveMatch) return false;
       }
 
       return true;
     });
-  }, [vendorProducts, stockOverrides, searchQuery, statusFilter, selectedCategory]);
+  }, [vendorProducts, stockOverrides, searchQuery, statusFilter, selectedCategory, vendorNameMap]);
 
   // Calculate statistics for the active vendor products
   const stats = useMemo(() => {
