@@ -491,7 +491,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
             <input
               type="text"
               className="vendor-stock-search-input"
-              placeholder="Search code, fabric..."
+              placeholder="Search designs, vendor, fabric..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

@@ -526,7 +526,7 @@ export default function AdminStockManager({
             <input
               type="text"
               className="admin-stock-search-input"
-              placeholder="Search by Design Code / SKU, Fabric, Title, VID, Loom..."
+              placeholder="Search designs, vendor, fabric..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
