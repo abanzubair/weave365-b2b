@@ -778,9 +778,6 @@ export function SignupPage({
 
                   <div className="signup-role-badge">
                     <span>{signupType === 'partner' ? 'Partner / Weaver' : 'Customer'}</span>
-                    <button type="button" onClick={() => setSignupType(null)}>
-                      Change
-                    </button>
                   </div>
                 </div>
                 <p className="signup-form-subtitle">
