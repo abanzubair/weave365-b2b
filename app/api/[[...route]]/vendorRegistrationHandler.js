@@ -228,7 +228,7 @@ async function sendNotificationEmail(reviewData) {
           <div class="email-body">
             <div class="welcome-text">
               <p>Hello Admin,</p>
-              <p>A new supplier has completed the <strong>Step 1: Submit Products for Review</strong> onboarding form on <strong>/weaver-registration</strong>. Please find the application details below:</p>
+              <p>A new supplier has completed the <strong>Partner Registration</strong> onboarding form on <strong>/signup?type=partner</strong>. Please find the application details below:</p>
             </div>
             
             <div class="section-title">Supplier Information</div>

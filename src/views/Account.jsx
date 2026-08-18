@@ -398,7 +398,7 @@ export function Account({
         <LockKeyhole size={34} />
         <h1>Login to open your account area</h1>
         <p>Your cart, favourites, inquiries and price group stay linked to your buyer account.</p>
-        <button className="primary-button" type="button" onClick={openAuth}>Login / Register</button>
+        <button className="primary-button" type="button" onClick={() => navigate ? navigate('signup') : (openAuth && openAuth())}>Login / Register</button>
       </section>
     );
   }

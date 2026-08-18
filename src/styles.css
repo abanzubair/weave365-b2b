@@ -9,6 +9,7 @@
 @import './styles/internalLinkNetwork.css';
 @import './styles/newsletter.css';
 @import './styles/whatsappFloat.css';
+@import './styles/signupPage.css';
 
 .search-lock {
   overflow: hidden !important;

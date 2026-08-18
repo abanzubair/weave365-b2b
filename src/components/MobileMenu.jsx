@@ -101,7 +101,7 @@ export function MobileMenu(props) {
       { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
       { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
     ] : [
-      { icon: <User size={18} />, label: 'Login / Register', action: () => { openAuth(); onClose(); } },
+      { icon: <User size={18} />, label: 'Login / Register', action: () => { navigate('signup'); onClose(); } },
     ]),
   ];
 

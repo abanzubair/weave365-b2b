@@ -153,7 +153,6 @@ export const NON_PRODUCT_ROUTES = new Set([
   'new-arrivals',
   'sourcing-partners',
   'white-label',
-  'weaver-registration',
   'weaver-onboarding',
   'collaboration',
   'admin',

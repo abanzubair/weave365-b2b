@@ -120,12 +120,7 @@ const staticSeoDefaults = [
     metaTitle: 'Weaver Onboarding: Sell Direct | Weave 365',
     metaDescription: 'Join Weave 365 as a verified weaver. Get fast onboarding, secure payments, and premium digital tools to showcase your looms to global wholesale buyers.',
   },
-  {
-    path: '/weaver-registration',
-    label: 'Weaver Registration',
-    metaTitle: 'Weaver Partner Registration | Weave 365',
-    metaDescription: 'Share your craft, capacity, and product details for manual review by the Weave 365 team. Become a weaver partner.',
-  },
+
   {
     path: '/white-label',
     label: 'White Label Brands',

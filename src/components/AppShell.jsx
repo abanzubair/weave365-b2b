@@ -408,12 +408,14 @@ export function AppShell({ children }) {
 
   const isAdminRoute = pathname.startsWith('/admin');
   const isSharedRoute = pathname.startsWith('/s/') || pathname === '/s';
+  const isAuthRoute = pathname.startsWith('/signup') || pathname.startsWith('/login') || pathname.startsWith('/register');
+  const hideShellSections = isAdminRoute || isSharedRoute || isAuthRoute;
 
   const routeName = pathname === '/' ? 'home' : pathname.slice(1);
 
   return (
     <>
-      {!isAdminRoute && !isSharedRoute && (
+      {!hideShellSections && (
         <SiteHeader
           route={routeName}
           menuOpen={menuOpen}
@@ -438,7 +440,7 @@ export function AppShell({ children }) {
         />
       )}
 
-      {!isAdminRoute && !isSharedRoute && (
+      {!hideShellSections && (
         <SearchOverlay
           searchActive={searchActive}
           setSearchActive={setSearchActive}
@@ -448,7 +450,7 @@ export function AppShell({ children }) {
         />
       )}
 
-      {menuOpen && !isAdminRoute && !isSharedRoute && (
+      {menuOpen && !hideShellSections && (
         <MobileMenu
           onClose={() => setMenuOpen(false)}
           navigate={navigate}
@@ -471,15 +473,15 @@ export function AppShell({ children }) {
         </ErrorBoundary>
       </main>
 
-      {!isAdminRoute && !isSharedRoute && (
+      {!hideShellSections && (
         <InternalLinkNetwork navigate={navigate} />
       )}
 
-      {!isAdminRoute && !isSharedRoute && (
+      {!hideShellSections && (
         <Footer navigate={navigate} scrollToSection={scrollToSection} />
       )}
 
-      {!isAdminRoute && !isSharedRoute && (
+      {!hideShellSections && (
         <CartDrawer
           open={cartOpen}
           onClose={() => setCartOpen(false)}
@@ -510,13 +512,15 @@ export function AppShell({ children }) {
         initialMode={authInitialMode}
       />
 
-      <ResellerOnboardingWalkthrough
-        user={user}
-        buyerProfile={buyerProfile}
-        priceAccess={priceAccess}
-      />
+      {!hideShellSections && (
+        <ResellerOnboardingWalkthrough
+          user={user}
+          buyerProfile={buyerProfile}
+          priceAccess={priceAccess}
+        />
+      )}
 
-      {!isAdminRoute && !isSharedRoute && <WhatsAppFloat />}
+      {!hideShellSections && <WhatsAppFloat />}
     </>
   );
 }

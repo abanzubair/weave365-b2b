@@ -27,7 +27,15 @@ const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-h
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
 import '../styles/weaverOnboardingPage.css';
 
-export function WeaverOnboardingPage({ openAuth }) {
+export function WeaverOnboardingPage({ openAuth, navigate }) {
+  const handlePartnerSignup = () => {
+    if (navigate) {
+      navigate('signup', 'partner');
+    } else if (openAuth) {
+      openAuth();
+    }
+  };
+
   return (
     <div className="weaver-page-container">
       {/* A. Hero Section */}
@@ -45,7 +53,7 @@ export function WeaverOnboardingPage({ openAuth }) {
               <button 
                 type="button" 
                 className="gold-button large"
-                onClick={openAuth}
+                onClick={handlePartnerSignup}
               >
                 Register as Weaver <ArrowRight size={18} />
               </button>
@@ -98,7 +106,7 @@ export function WeaverOnboardingPage({ openAuth }) {
           <p className="notice-desc">
             To start listing your handloom products on our B2B catalog, you must first register through our verification portal. Our vendor relations team will review your workshop and artisan credentials.
           </p>
-          <button type="button" className="notice-cta-button" onClick={openAuth}>
+          <button type="button" className="notice-cta-button" onClick={handlePartnerSignup}>
             Register Now
           </button>
         </div>
@@ -112,7 +120,7 @@ export function WeaverOnboardingPage({ openAuth }) {
         </div>
         
         <div className="steps-grid">
-          <div className="step-item clickable-step" onClick={openAuth}>
+          <div className="step-item clickable-step" onClick={handlePartnerSignup}>
             <div className="step-card-header">
               <span className="step-num">01</span>
               <div className="step-icon-box"><UserCheck size={20} /></div>
@@ -241,7 +249,7 @@ export function WeaverOnboardingPage({ openAuth }) {
       <section className="weaver-final-cta">
         <h2>Ready to showcase your craft?</h2>
         <p>Join our network of verified weavers and heritage artisans today.</p>
-        <button type="button" className="gold-button large" onClick={openAuth}>
+        <button type="button" className="gold-button large" onClick={handlePartnerSignup}>
           Register as Weaver
         </button>
       </section>

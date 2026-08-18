@@ -253,7 +253,7 @@ export function SiteHeader(props) {
         </AppLink>
       </nav>
 
-      <button className="icon-button mobile-search-button" type="button" onClick={() => navigate('catalogue')}>
+      <button className="icon-button mobile-search-button" type="button" onClick={() => setSearchActive(true)} aria-label="Search">
         <Search size={20} />
       </button>
 
@@ -373,7 +373,7 @@ export function SiteHeader(props) {
               <>
                 <button type="button"
                   onClick={() => {
-                    setAuthOpen(true);
+                    navigate('signup');
                     setDropdownOpen(null);
                   }}
                 >
