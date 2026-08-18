@@ -84,22 +84,34 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
       const partner = String(p.partner || p.raw?.Partner || p.raw?.partner || '').trim();
       if (!normVid && !partner) continue;
       
-      const key = `${normVid || rawVid}:::${partner}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          key,
+      const primaryKey = normVid || partner.toLowerCase();
+      if (!map.has(primaryKey)) {
+        map.set(primaryKey, {
+          key: primaryKey,
           vid: normVid || rawVid || 'N/A',
           rawVid: rawVid || 'N/A',
-          partner: partner || 'Partner',
-          displayName: normVid && partner ? `${normVid} ${partner}` : (normVid ? `Vendor ${normVid}` : partner),
+          partner: partner || '',
           count: 1
         });
       } else {
-        const item = map.get(key);
+        const item = map.get(primaryKey);
         item.count += 1;
+        if (!item.partner && partner) {
+          item.partner = partner;
+        }
       }
     }
-    const list = Array.from(map.values()).sort((a, b) => a.vid.localeCompare(b.vid, undefined, { numeric: true }));
+    const list = Array.from(map.values()).map(item => {
+      const pName = item.partner || (item.vid !== 'N/A' ? '' : 'Partner');
+      const displayName = item.vid !== 'N/A' && pName
+        ? `${item.vid} ${pName}`
+        : (item.vid !== 'N/A' ? `Vendor ${item.vid}` : pName || 'Partner');
+      return {
+        ...item,
+        partner: pName || 'Partner',
+        displayName,
+      };
+    }).sort((a, b) => a.vid.localeCompare(b.vid, undefined, { numeric: true }));
     if (list.length > 0 && isAdmin) {
       list.unshift({
         key: 'all',
@@ -224,7 +236,11 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
       // Admin manual dropdown selection
       if (isAdmin && selectedVendorKey) {
-        if (selectedVendorKey.includes(':::')) {
+        if (selectedVendorKey === 'all') return true;
+        const normSelected = normalizeVendorCode(selectedVendorKey);
+        if (normSelected) {
+          if (normPVid === normSelected || rawPVid === selectedVendorKey) return true;
+        } else if (selectedVendorKey.includes(':::')) {
           const [sVid, sPartner] = selectedVendorKey.split(':::');
           const normSVid = normalizeVendorCode(sVid);
           const vidMatches = normPVid === normSVid || rawPVid === sVid;
