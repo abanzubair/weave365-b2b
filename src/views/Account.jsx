@@ -25,6 +25,7 @@ import { ResellerTools } from '../components/ResellerTools.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
+import { isProfileComplete } from '../utils/profileHelpers.js';
 import { adminEmails } from '../config.js';
 
 function titleCase(value) {
@@ -448,6 +449,42 @@ export function Account({
           </button>
         </div>
       </div>
+
+      {!isProfileComplete(user, buyerProfile) && (
+        <div style={{
+          background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+          border: '1.5px solid #fde68a',
+          borderRadius: '14px',
+          padding: '16px 20px',
+          marginTop: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap',
+          boxShadow: '0 2px 8px rgba(245, 158, 11, 0.08)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '22px' }}>⚠️</span>
+            <div>
+              <strong style={{ color: '#92400e', fontSize: '15px', display: 'block', marginBottom: '2px' }}>
+                Your B2B Profile is incomplete
+              </strong>
+              <span style={{ color: '#b45309', fontSize: '13px' }}>
+                Please provide your WhatsApp number, City, and Pincode to activate your wholesale account and pricing access.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="primary-button"
+            style={{ padding: '8px 18px', fontSize: '13.5px', whiteSpace: 'nowrap' }}
+            onClick={() => navigate ? navigate('signup?mode=complete-profile') : (window.location.href = '/signup?mode=complete-profile')}
+          >
+            Complete Profile Now →
+          </button>
+        </div>
+      )}
 
       <div className="account-summary-grid">
         <AccountSummaryCard 

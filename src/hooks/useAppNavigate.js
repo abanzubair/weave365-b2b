@@ -25,22 +25,26 @@ export function useAppNavigate() {
       href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
     } else if (nextRoute === 'blog' && productId) {
       href = `/blog/${encodeURIComponent(productId)}`;
-    } else if (nextRoute === 'signup' || nextRoute === 'register' || nextRoute === 'login') {
-      const params = new URLSearchParams();
-      if (nextRoute === 'login' || navOptions.mode === 'login') {
-        params.set('mode', 'login');
-      } else if (nextRoute === 'register' || navOptions.mode === 'register') {
-        params.set('mode', 'register');
-      } else if (navOptions.mode) {
-        params.set('mode', navOptions.mode);
+    } else if (nextRoute === 'signup' || nextRoute.startsWith('signup?') || nextRoute === 'register' || nextRoute === 'login') {
+      if (nextRoute.startsWith('signup?')) {
+        href = `/${nextRoute}`;
+      } else {
+        const params = new URLSearchParams();
+        if (nextRoute === 'login' || navOptions.mode === 'login') {
+          params.set('mode', 'login');
+        } else if (nextRoute === 'register' || navOptions.mode === 'register') {
+          params.set('mode', 'register');
+        } else if (navOptions.mode) {
+          params.set('mode', navOptions.mode);
+        }
+        if (productId) {
+          params.set('type', productId);
+        } else if (navOptions.type) {
+          params.set('type', navOptions.type);
+        }
+        const q = params.toString();
+        href = `/signup${q ? `?${q}` : ''}`;
       }
-      if (productId) {
-        params.set('type', productId);
-      } else if (navOptions.type) {
-        params.set('type', navOptions.type);
-      }
-      const q = params.toString();
-      href = `/signup${q ? `?${q}` : ''}`;
     } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue') {
       const currentSearchParams =
         typeof window !== 'undefined'

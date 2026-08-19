@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
-import { syncProfileFromUser, loadProfileForUser } from '../utils/profileHelpers.js';
+import { syncProfileFromUser, loadProfileForUser, isProfileComplete } from '../utils/profileHelpers.js';
 
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
 
@@ -123,7 +123,10 @@ export function SignupPage({
   initialMode = 'login',
   initialType = null,
 }) {
-  const [mode, setMode] = useState(initialMode); // 'register' | 'login' | 'forgot-password' | 'reset-password'
+  const profileComplete = isProfileComplete(user, buyerProfile);
+  const isOnboarding = Boolean(user && !profileComplete) || initialMode === 'complete-profile';
+
+  const [mode, setMode] = useState(() => (isOnboarding ? 'complete-profile' : initialMode)); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
   const [signupType, setSignupType] = useState(initialType); // null (step 1) | 'customer' | 'partner'
   
   const [email, setEmail] = useState('');
@@ -152,7 +155,6 @@ export function SignupPage({
   useEffect(() => {
     if (initialType === 'partner') {
       setSignupType('partner');
-      setMode('register');
       setProfile((prev) => ({
         ...prev,
         buyerType: 'vendor',
@@ -160,7 +162,6 @@ export function SignupPage({
       }));
     } else if (initialType === 'customer') {
       setSignupType('customer');
-      setMode('register');
       setProfile((prev) => ({
         ...prev,
         buyerType: 'customer',
@@ -169,13 +170,34 @@ export function SignupPage({
     }
   }, [initialType]);
 
+  // Pre-fill authenticated Google/User info
   useEffect(() => {
-    document.title = mode === 'register' ? 'Weave 365 Sign-up' : 'Weave 365 Sign-in';
-  }, [mode]);
+    if (user?.email) {
+      setEmail(user.email);
+    }
+    const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
+    if (googleName) {
+      setProfile((prev) => ({
+        ...prev,
+        fullName: prev.fullName || toTitleCaseName(googleName),
+      }));
+    }
+    if (user && !isProfileComplete(user, buyerProfile)) {
+      setMode('complete-profile');
+    }
+  }, [user, buyerProfile]);
 
   useEffect(() => {
-    if (initialMode) setMode(initialMode);
-  }, [initialMode]);
+    if (isOnboarding || mode === 'complete-profile') {
+      document.title = 'Complete Your Profile - Weave 365';
+    } else {
+      document.title = mode === 'register' ? 'Weave 365 Sign-up' : 'Weave 365 Sign-in';
+    }
+  }, [mode, isOnboarding]);
+
+  useEffect(() => {
+    if (initialMode && !user) setMode(initialMode);
+  }, [initialMode, user]);
 
   function updateProfile(field, value) {
     setProfile((current) => ({ ...current, [field]: value }));
@@ -228,7 +250,6 @@ export function SignupPage({
       approval_status: 'approved',
     });
   }
-
 
   async function handleForgotPassword(event) {
     event.preventDefault();
@@ -298,7 +319,7 @@ export function SignupPage({
         await supabase.auth.signInWithOAuth({
           provider,
           options: {
-            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/account` : undefined,
+            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/signup?mode=complete-profile` : undefined,
           },
         });
       } catch (err) {
@@ -325,6 +346,61 @@ export function SignupPage({
       if (mode === 'reset-password') {
         await handleResetPassword(event);
         setLoading(false);
+        return;
+      }
+
+      // Handle Post-Google Onboarding / Complete Profile
+      if (mode === 'complete-profile' || (user && !profileComplete)) {
+        const cleanName = toTitleCaseName(profile.fullName);
+        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+
+        if (
+          !cleanName ||
+          !profile.city.trim() ||
+          cleanWhatsapp.length !== 10 ||
+          normalizePincodeInput(profile.pincode).length !== 6 ||
+          (signupType === 'partner' && !profile.businessName.trim())
+        ) {
+          setMessage(
+            'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
+          );
+          setLoading(false);
+          return;
+        }
+
+        const newProfile = buildBuyerProfile();
+
+        if (isSupabaseConfigured) {
+          const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
+            data: {
+              buyer_profile: newProfile,
+              full_name: cleanName,
+            },
+          });
+
+          if (authErr) {
+            setMessage(authErr.message);
+            setLoading(false);
+            return;
+          }
+
+          const targetUser = updatedAuth?.user || user;
+          if (setUser) setUser(targetUser);
+
+          const profileResult = await syncProfileFromUser(targetUser);
+          if (profileResult.error) {
+            console.error('Profile sync error:', profileResult.error);
+          }
+        }
+
+        if (setBuyerProfile) {
+          setBuyerProfile(newProfile);
+        }
+
+        setMessage('Profile completed successfully! Redirecting...');
+        setTimeout(() => {
+          navigate(signupType === 'partner' ? 'account' : 'home');
+        }, 700);
         return;
       }
 
@@ -425,7 +501,12 @@ export function SignupPage({
           if (setBuyerProfile && profileData.profile) {
             setBuyerProfile(profileData.profile);
           }
-          navigate('home');
+          if (isProfileComplete(loggedUser, profileData.profile)) {
+            navigate('home');
+          } else {
+            setMode('complete-profile');
+            setLoading(false);
+          }
         }
       }
     } catch (err) {
@@ -530,7 +611,7 @@ export function SignupPage({
                 <button
                   type="button"
                   onClick={() => { setMode('login'); setMessage(''); }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#64748b', fontSize: '16px', cursor: 'pointer', padding: 0, marginBottom: '8px' }}
+                  className="signup-back-btn"
                 >
                   <ArrowLeft size={16} /> Back to Login
                 </button>
@@ -559,21 +640,22 @@ export function SignupPage({
               </form>
 
               {message === 'reset-link-sent' && (
-                <p style={{ marginTop: '16px', color: '#16a34a', fontSize: '16px', fontWeight: '500' }}>
+                <p className="signup-alert-success">
                   ✓ Reset link sent! Please check your email inbox and spam folder.
                 </p>
               )}
               {message === 'demo-reset-sent' && (
                 <div style={{ marginTop: '16px' }}>
-                  <p style={{ color: '#ca8a04', fontSize: '16px' }}>Demo mode: click below to simulate password reset.</p>
+                  <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
                   <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
                     Simulate Reset Link →
                   </button>
                 </div>
               )}
               {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && (
-                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '16px' }}>
-                  {message}
+                <div className="signup-alert-error">
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span>{message}</span>
                 </div>
               )}
 
@@ -614,12 +696,67 @@ export function SignupPage({
                 </button>
               </form>
               {message && (
-                <div style={{ marginTop: '14px', color: '#dc2626', fontSize: '16px' }}>
-                  {message}
+                <div className="signup-alert-error">
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span>{message}</span>
                 </div>
               )}
             </div>
-          ) : mode === 'login' ? (
+          ) : user && profileComplete && mode !== 'register' ? (
+            /* =================================================================
+               Already Logged In (Profile Complete) View
+               ================================================================= */
+            <div className="signup-form-view-wrapper">
+              <div className="signup-form-centered-body">
+                <div className="signup-form-header">
+                  <div className="signup-form-title-row">
+                    <h2 className="signup-form-title">You're signed in</h2>
+                  </div>
+                  <p className="signup-form-subtitle">
+                    Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your verified B2B textile account is active.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginTop: '12px' }}>
+                  <button
+                    type="button"
+                    className="signup-submit-btn"
+                    onClick={() => navigate('catalogue')}
+                  >
+                    Browse Wholesale Catalogue <ArrowRight size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className="signup-google-btn"
+                    onClick={() => navigate('account')}
+                    style={{ justifyContent: 'center' }}
+                  >
+                    Go to My Account
+                  </button>
+                </div>
+
+                <div className="signup-switch-link" style={{ marginTop: '16px' }}>
+                  Want to switch accounts?{' '}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (isSupabaseConfigured) await supabase.auth.signOut();
+                      if (setUser) setUser(null);
+                      if (setBuyerProfile) setBuyerProfile(null);
+                      setMode('login');
+                      setMessage('');
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+
+              <div className="signup-form-bottom-footer">
+                <LegalDisclaimer />
+              </div>
+            </div>
+          ) : mode === 'login' && !isOnboarding ? (
             /* =================================================================
                Login View
                ================================================================= */
@@ -739,7 +876,9 @@ export function SignupPage({
             <div className="signup-form-view-wrapper">
               <div className="signup-form-centered-body">
                 <div className="signup-form-header">
-                  <h2 className="signup-form-title">Create an account</h2>
+                  <h2 className="signup-form-title">
+                    {isOnboarding ? 'Complete your profile' : 'Create an account'}
+                  </h2>
                   <p className="signup-form-subtitle">
                     Select your profile type to access tailored pricing, MOQ terms, and textile tools.
                   </p>
@@ -785,48 +924,76 @@ export function SignupPage({
                   </div>
                 </div>
 
-                <div className="signup-divider">
-                  <span>or</span>
-                </div>
+                {!isOnboarding && (
+                  <>
+                    <div className="signup-divider">
+                      <span>or</span>
+                    </div>
 
-                <GoogleButton
-                  onClick={() => handleSocialLogin('google')}
-                  text="Sign up with Google"
-                />
+                    <GoogleButton
+                      onClick={() => handleSocialLogin('google')}
+                      text="Sign up with Google"
+                    />
+                  </>
+                )}
               </div>
 
               <div className="signup-form-bottom-footer">
                 <LegalDisclaimer />
 
-                <div className="signup-switch-link">
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('login');
-                      setMessage('');
-                    }}
-                  >
-                    Sign in
-                  </button>
-                </div>
+                {isOnboarding && user?.email ? (
+                  <div className="signup-switch-link">
+                    Signed in as {user.email} •{' '}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (isSupabaseConfigured) await supabase.auth.signOut();
+                        if (setUser) setUser(null);
+                        if (setBuyerProfile) setBuyerProfile(null);
+                        setMode('login');
+                        setMessage('');
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="signup-switch-link">
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('login');
+                        setMessage('');
+                      }}
+                    >
+                      Sign in
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
             /* =================================================================
-               Step 2: Signup Form (Customer or Partner)
+               Step 2: Signup / Complete Profile Form (Customer or Partner)
                ================================================================= */
             <div className="signup-form-view-wrapper">
               <div className="signup-form-centered-body">
                 <div className="signup-form-header">
                   <div className="signup-form-title-row">
                     <h2 className="signup-form-title">
-                      {signupType === 'partner' ? 'Partner Registration' : 'Create an account'}
+                      {signupType === 'partner'
+                        ? 'Partner Registration'
+                        : isOnboarding
+                        ? 'Complete Your Profile'
+                        : 'Create an account'}
                     </h2>
                   </div>
                   <p className="signup-form-subtitle">
                     {signupType === 'partner'
                       ? 'Join Varanasi’s verified weaver network and supply direct to global boutiques.'
+                      : isOnboarding
+                      ? 'Provide your business details to unlock wholesale catalog access.'
                       : 'Access verified factory prices, live inventory, and flexible MOQ orders in one place.'}
                   </p>
                 </div>
@@ -938,7 +1105,14 @@ export function SignupPage({
 
                   {/* Email */}
                   <div className="signup-field">
-                    <label className="signup-label">Email Address *</label>
+                    <label className="signup-label">
+                      <span>Email Address *</span>
+                      {isOnboarding && (
+                        <span className="signup-verified-badge">
+                          <Check size={11} /> Google Verified
+                        </span>
+                      )}
+                    </label>
                     <input
                       type="email"
                       value={email}
@@ -946,35 +1120,38 @@ export function SignupPage({
                       placeholder="you@example.com"
                       autoComplete="email"
                       required
+                      disabled={isOnboarding}
                       className="signup-input"
                     />
                   </div>
 
-                  {/* Password */}
-                  <div className="signup-field signup-field-full">
-                    <label className="signup-label">Password *</label>
-                    <div className="signup-input-wrapper">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Minimum 6 characters"
-                        autoComplete="new-password"
-                        minLength={6}
-                        required
-                        className="signup-input"
-                        style={{ paddingRight: '44px' }}
-                      />
-                      <button
-                        type="button"
-                        className="signup-password-toggle"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
+                  {/* Password (Only for standard email registrations, not Google onboarding) */}
+                  {!isOnboarding && (
+                    <div className="signup-field signup-field-full">
+                      <label className="signup-label">Password *</label>
+                      <div className="signup-input-wrapper">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Minimum 6 characters"
+                          autoComplete="new-password"
+                          minLength={6}
+                          required
+                          className="signup-input"
+                          style={{ paddingRight: '44px' }}
+                        />
+                        <button
+                          type="button"
+                          className="signup-password-toggle"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Interested Categories (Customer Only) */}
                   {signupType === 'customer' && (
@@ -1002,7 +1179,9 @@ export function SignupPage({
 
                 <button type="submit" className="signup-submit-btn" disabled={loading}>
                   {loading ? (
-                    <><Loader2 size={16} className="auth-spinner" /> Creating Account...</>
+                    <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
+                  ) : isOnboarding ? (
+                    'Complete Registration & Continue'
                   ) : (
                     'Get Started'
                   )}
@@ -1019,18 +1198,36 @@ export function SignupPage({
               <div className="signup-form-bottom-footer">
                 <LegalDisclaimer />
 
-                <div className="signup-switch-link">
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('login');
-                      setMessage('');
-                    }}
-                  >
-                    Sign in
-                  </button>
-                </div>
+                {isOnboarding && user?.email ? (
+                  <div className="signup-switch-link">
+                    Signed in as {user.email} •{' '}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (isSupabaseConfigured) await supabase.auth.signOut();
+                        if (setUser) setUser(null);
+                        if (setBuyerProfile) setBuyerProfile(null);
+                        setMode('login');
+                        setMessage('');
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="signup-switch-link">
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('login');
+                        setMessage('');
+                      }}
+                    >
+                      Sign in
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

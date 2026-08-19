@@ -68,3 +68,26 @@ export async function loadProfileForUser(user) {
 
   return { profile: data || fallbackProfile, error };
 }
+
+export function isProfileComplete(user, buyerProfile) {
+  if (!user) return false;
+  const profile = buyerProfile || user.user_metadata?.buyer_profile || user.buyer_profile;
+  if (!profile) return false;
+
+  const fullName = String(profile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
+  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(-10);
+  const city = String(profile.city || '').trim();
+  const pincode = String(profile.pincode || '').replace(/\D/g, '').slice(0, 6);
+
+  if (!fullName || whatsapp.length !== 10 || !city || pincode.length !== 6) {
+    return false;
+  }
+
+  // If partner / vendor, business name is required
+  const isVendor = profile.buyer_type === 'vendor' || profile.buyer_subtype?.toLowerCase().includes('vendor');
+  if (isVendor && !String(profile.business_name || '').trim()) {
+    return false;
+  }
+
+  return true;
+}
