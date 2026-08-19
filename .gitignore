@@ -7,9 +7,11 @@ build/
 .next/
 .vercel/
 
-# Environment
+# Environment & Secrets
 .env
 .env.*
+client_secret*.json
+*.secret.json
 
 # Logs
 npm-debug.log*

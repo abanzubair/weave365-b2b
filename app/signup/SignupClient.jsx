@@ -16,7 +16,7 @@ export default function SignupClient() {
     setBuyerProfile,
   } = useStorefront();
 
-  const initialMode = searchParams?.get('mode') || 'register';
+  const initialMode = searchParams?.get('mode') || 'login';
   const initialType = searchParams?.get('type') || null;
 
   return (
