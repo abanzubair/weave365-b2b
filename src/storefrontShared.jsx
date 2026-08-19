@@ -116,9 +116,25 @@ export function uniqueProductShareImages(product, variant, fallbackImage) {
 }
 
 export async function fileFromImageUrl(imageUrl, filename) {
+  let response = null;
   const fetchUrl = imageUrl.startsWith('http') ? `/api/image?url=${encodeURIComponent(imageUrl)}` : imageUrl;
-  const response = await fetch(fetchUrl);
-  if (!response.ok) throw new Error('Unable to prepare product image');
+  try {
+    response = await fetch(fetchUrl);
+  } catch (err) {
+    // Proxy fetch failed, will try direct fetch
+  }
+
+  if (!response || !response.ok) {
+    if (imageUrl.startsWith('http')) {
+      try {
+        response = await fetch(imageUrl);
+      } catch (directErr) {
+        // Direct fetch failed
+      }
+    }
+  }
+
+  if (!response || !response.ok) throw new Error('Unable to prepare product image');
 
   const blob = await response.blob();
   const type = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';

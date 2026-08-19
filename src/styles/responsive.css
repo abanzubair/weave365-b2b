@@ -1241,22 +1241,27 @@
   }
 
 
-  .price-value {
+  .product-view .price-value,
+  .product-price-container .price-value {
     font-size: 28px !important;
   }
 
-  .price-unit {
-    font-size: 24px !important;
+  .product-view .price-unit,
+  .product-price-container .price-unit {
+    font-size: 14px !important;
+    font-weight: 500 !important;
   }
 
-  .price-value-set {
+  .product-view .price-value-set,
+  .product-price-container .price-value-set {
     font-size: 20px !important;
     color: var(--muted) !important;
     font-weight: 600 !important;
   }
 
-  .price-unit-set {
-    font-size: 14px !important;
+  .product-view .price-unit-set,
+  .product-price-container .price-unit-set {
+    font-size: 13px !important;
     color: var(--muted) !important;
   }
 

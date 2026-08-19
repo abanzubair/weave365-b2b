@@ -47,6 +47,16 @@ export async function POST(request, { params }) {
   if (routeKey === 'storefront') return storefrontPost(request);
   if (routeKey === 'vendor-registration') return vendorRegistrationPost(request);
   if (routeKey === 'admin/sync') return adminSyncPost(request);
-
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }

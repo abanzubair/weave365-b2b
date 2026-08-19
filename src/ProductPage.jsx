@@ -53,6 +53,7 @@ import { getStoredReferralCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import SliderCaptcha from './components/SliderCaptcha.jsx';
 import { SharpStar } from './views/ReviewsPage.jsx';
+import './styles/resellerTools.css';
 
 export function ProductDetailWrapper(props) {
   const product = props.productsById?.get(props.productId) || props.products[0] || null;
@@ -131,8 +132,10 @@ export function ProductDetail({
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, []);
 
@@ -864,22 +867,54 @@ export function ProductDetail({
       zip.file('product-details.txt', detailsLines.join('\n'));
 
       const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-      const promises = product.images.map(async (url, index) => {
-        // Route requests through our native API proxy to bypass client-side CORS issues
-        const fetchUrl = url.startsWith('http') ? `/api/image?url=${encodeURIComponent(url)}` : url;
-        const response = await fetch(fetchUrl);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const blob = await response.blob();
-        const filename = `${safeTitle}-${index + 1}.jpg`;
-        zip.file(filename, blob);
-      });
+      const validImages = Array.from(new Set(product.images || [])).filter(Boolean);
+      let successCount = 0;
 
-      await Promise.all(promises);
+      await Promise.allSettled(
+        validImages.map(async (url, index) => {
+          try {
+            let blob = null;
+            if (url.startsWith('http')) {
+              try {
+                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(url)}`);
+                if (proxyRes.ok) {
+                  blob = await proxyRes.blob();
+                }
+              } catch (proxyErr) {
+                console.warn(`Proxy fetch failed for image ${index + 1}, trying direct:`, proxyErr);
+              }
+            }
+
+            if (!blob) {
+              const directRes = await fetch(url);
+              if (directRes.ok) {
+                blob = await directRes.blob();
+              }
+            }
+
+            if (blob) {
+              const ext = blob.type?.includes('png') ? 'png' : blob.type?.includes('webp') ? 'webp' : 'jpg';
+              const filename = `${safeTitle}-${index + 1}.${ext}`;
+              zip.file(filename, blob);
+              successCount++;
+            }
+          } catch (imgErr) {
+            console.warn(`Failed to process image ${index + 1}:`, imgErr);
+          }
+        })
+      );
+
+      if (successCount === 0 && validImages.length > 0) {
+        throw new Error('Failed to download image assets');
+      }
+
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-images.zip`);
+      saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-catalogue.zip`);
 
       // 4. Log download locally
       localStorage.setItem(localKey, 'true');
+      setToastMessage('Catalogue downloaded successfully');
+      setTimeout(() => setToastMessage(''), 3000);
     } catch (error) {
       console.error('Error downloading images:', error);
       alert('Failed to download images. They might be hosted on a server that restricts direct downloads.');

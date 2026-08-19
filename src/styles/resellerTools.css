@@ -732,7 +732,6 @@
   justify-content: center;
   margin: 0 auto 0.75rem;
 }
-
 .reseller-success-box h3 {
   font-family: var(--font-hero-heading);
   font-size: 1.0625rem;
@@ -754,8 +753,11 @@
 .reseller-copy-row input {
   flex: 1;
   background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
   font-family: monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
@@ -832,10 +834,11 @@
   right: 0;
   left: auto;
   width: max-content;
-  min-width: 220px;
+  min-width: 200px;
+  max-width: calc(100vw - 32px);
   background: #ffffff;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 
     0 20px 48px rgba(31, 20, 13, 0.16),
     0 8px 16px rgba(31, 20, 13, 0.06);

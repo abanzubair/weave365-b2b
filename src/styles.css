@@ -10,6 +10,8 @@
 @import './styles/newsletter.css';
 @import './styles/whatsappFloat.css';
 @import './styles/signupPage.css';
+@import './styles/resellerTools.css';
+@import './styles/resellerWhatsappShare.css';
 
 .search-lock {
   overflow: hidden !important;

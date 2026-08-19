@@ -58,17 +58,19 @@ export function ResellerWhatsappShare({
     }
   }
 
-  const isApprovedReseller = priceAccess?.canViewPrices && (priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'wholesale');
-  const basePrice = customerPrice(variant?.prices, priceAccess);
+  const isApprovedReseller = Boolean(priceAccess?.canViewPrices);
+  const activeVariant = variant || product?.variants?.[0] || {};
+  const basePrice = customerPrice(activeVariant?.prices, priceAccess)
+    || Number(activeVariant?.prices?.mrp || activeVariant?.prices?.b2r || activeVariant?.prices?.single || activeVariant?.prices?.offer || product?.mrp || product?.price || product?.variants?.[0]?.prices?.mrp || product?.variants?.[0]?.prices?.b2r || 0);
   const safeQuantity = Math.max(1, Number(quantity) || 1);
   const shareImages = useMemo(
-    () => uniqueProductShareImages(product, variant, imageUrl),
+    () => uniqueProductShareImages(product, activeVariant, imageUrl),
     [
       imageUrl, 
       product?.id, 
       product?.images?.join(','), 
-      variant?.code, 
-      variant?.image
+      activeVariant?.code, 
+      activeVariant?.image
     ],
   );
 
@@ -82,12 +84,12 @@ export function ResellerWhatsappShare({
   const message = useMemo(
     () => buildCustomerProductMessage({
       product,
-      variant,
+      variant: activeVariant,
       quantity: safeQuantity,
       selectedColorName,
       customerPriceValue,
     }),
-    [customerPriceValue, product, safeQuantity, selectedColorName, variant],
+    [customerPriceValue, product, safeQuantity, selectedColorName, activeVariant],
   );
   const whatsappUrl = useMemo(() => buildWhatsappShareUrl(message), [message]);
 
@@ -99,7 +101,7 @@ export function ResellerWhatsappShare({
       
       void Promise.allSettled(
         shareImages.map((img, i) =>
-          fileFromImageUrl(img, safeFileName(`${product.title}-${variant.code}-${i + 1}`)),
+          fileFromImageUrl(img, safeFileName(`${product?.title || 'product'}-${activeVariant?.code || i + 1}-${i + 1}`)),
         ),
       ).then((results) => {
         if (isActive) {
@@ -121,9 +123,9 @@ export function ResellerWhatsappShare({
       setIsPreparingImages(false);
     }
     return () => { isActive = false; };
-  }, [open, shareImagesKey, isApprovedReseller, product.title, variant.code]);
+  }, [open, shareImagesKey, isApprovedReseller, product?.title, activeVariant?.code]);
 
-  if (!isApprovedReseller || !basePrice || !variant) return null;
+  if (!isApprovedReseller || !product) return null;
 
   async function copyMessage() {
     try {

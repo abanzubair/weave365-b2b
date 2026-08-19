@@ -925,8 +925,11 @@
     line-height: 1.1;
   }
 
-  .info-left strong span {
+  .info-left strong span,
+  .info-left strong .price-unit {
     font-size: 10px;
+    font-weight: 600;
+    color: var(--muted, #78716c);
   }
 
   .info-left small {
