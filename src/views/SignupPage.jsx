@@ -124,9 +124,15 @@ export function SignupPage({
   initialType = null,
 }) {
   const profileComplete = isProfileComplete(user, buyerProfile);
-  const isOnboarding = Boolean(user && !profileComplete) || initialMode === 'complete-profile';
+  const isOnboarding = Boolean(user && (!profileComplete || initialMode === 'complete-profile' || initialMode === 'completion-profile'));
 
-  const [mode, setMode] = useState(() => (isOnboarding ? 'complete-profile' : initialMode)); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
+  const [mode, setMode] = useState(() =>
+    isOnboarding
+      ? 'complete-profile'
+      : initialMode === 'complete-profile' || initialMode === 'completion-profile'
+      ? 'login'
+      : initialMode
+  ); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
   const [signupType, setSignupType] = useState(initialType); // null (step 1) | 'customer' | 'partner'
   
   const [email, setEmail] = useState('');
@@ -150,6 +156,34 @@ export function SignupPage({
     interestedCategories: ['Saree'],
     rememberMe: false,
   });
+
+  async function handleSignOut() {
+    setLoading(true);
+    try {
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut();
+      }
+      localStorage.removeItem('sareeva_user');
+      localStorage.removeItem('just_registered_b2b');
+      if (setUser) setUser(null);
+      if (setBuyerProfile) setBuyerProfile(null);
+      setEmail('');
+      setPassword('');
+      setSignupType(null);
+      setMode('login');
+      setMessage('');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/signup');
+      }
+      if (navigate) {
+        navigate('signup');
+      }
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Sync initial type when passed via props / query params
   useEffect(() => {
@@ -196,7 +230,13 @@ export function SignupPage({
   }, [mode, isOnboarding]);
 
   useEffect(() => {
-    if (initialMode && !user) setMode(initialMode);
+    if (initialMode && !user) {
+      setMode(
+        initialMode === 'complete-profile' || initialMode === 'completion-profile'
+          ? 'login'
+          : initialMode
+      );
+    }
   }, [initialMode, user]);
 
   function updateProfile(field, value) {
@@ -739,13 +779,7 @@ export function SignupPage({
                   Want to switch accounts?{' '}
                   <button
                     type="button"
-                    onClick={async () => {
-                      if (isSupabaseConfigured) await supabase.auth.signOut();
-                      if (setUser) setUser(null);
-                      if (setBuyerProfile) setBuyerProfile(null);
-                      setMode('login');
-                      setMessage('');
-                    }}
+                    onClick={handleSignOut}
                   >
                     Sign out
                   </button>
@@ -857,7 +891,7 @@ export function SignupPage({
                   />
 
                   {message && (
-                    <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="signup-alert-error">
                       <AlertCircle size={16} style={{ flexShrink: 0 }} />
                       <span>{message}</span>
                     </div>
@@ -946,13 +980,7 @@ export function SignupPage({
                     Signed in as {user.email} •{' '}
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (isSupabaseConfigured) await supabase.auth.signOut();
-                        if (setUser) setUser(null);
-                        if (setBuyerProfile) setBuyerProfile(null);
-                        setMode('login');
-                        setMessage('');
-                      }}
+                      onClick={handleSignOut}
                     >
                       Sign out
                     </button>
@@ -1187,7 +1215,7 @@ export function SignupPage({
                   )}
                 </button>
                   {message && (
-                    <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(220, 38, 38, 0.08)', color: '#dc2626', fontSize: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="signup-alert-error">
                       <AlertCircle size={18} style={{ flexShrink: 0 }} />
                       <span>{message}</span>
                     </div>
@@ -1203,13 +1231,7 @@ export function SignupPage({
                     Signed in as {user.email} •{' '}
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (isSupabaseConfigured) await supabase.auth.signOut();
-                        if (setUser) setUser(null);
-                        if (setBuyerProfile) setBuyerProfile(null);
-                        setMode('login');
-                        setMessage('');
-                      }}
+                      onClick={handleSignOut}
                     >
                       Sign out
                     </button>

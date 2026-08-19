@@ -450,7 +450,9 @@
 .signup-category-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 4px;
 }
 
 .signup-category-pill {
@@ -467,8 +469,8 @@
 .signup-category-pill span {
   display: inline-flex;
   align-items: center;
-  padding: 7px 14px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  border-radius: 999px;
   font-size: 13.5px;
   font-weight: 500;
   background: #f8fafc;
@@ -495,7 +497,7 @@
 
 .signup-submit-btn {
   width: 100%;
-  height: 52px;
+  height: 48px;
   border-radius: 12px;
   border: none;
   background: #4f46e5;
@@ -510,7 +512,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 16px;
   transition: all 0.2s ease;
   box-shadow: none;
 }
@@ -881,7 +883,7 @@
 
   .signup-hero-mobile-title {
     font-family: 'Outfit', 'Manrope', var(--font-heading), system-ui, sans-serif;
-    font-size: clamp(25px, 6.5vw, 28px);
+    font-size: clamp(26px, 6.5vw, 29px);
     font-weight: 700;
     color: #ffffff;
     margin: 0;
@@ -962,7 +964,7 @@
   }
 
   .signup-form-subtitle {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.35;
     text-align: center;
     color: #64748b;
@@ -973,59 +975,61 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 8px;
+    gap: 12px;
   }
 
   .signup-field {
-    gap: 2px;
+    gap: 4px;
   }
 
   .signup-label {
-    font-size: 13.5px;
+    font-size: 14.5px;
     font-weight: 600;
     color: #334155;
   }
 
   .signup-label-subtext {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 400;
     color: #94a3b8;
   }
 
   .signup-input,
   .signup-select {
-    height: 38px;
-    font-size: 14px;
+    height: 40px;
+    font-size: 15px;
     border-radius: 10px;
     padding: 0 12px;
   }
 
   .signup-input::placeholder {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .signup-category-pills {
-    gap: 6px;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 4px;
   }
 
   .signup-category-pill span {
-    font-size: 13px;
-    padding: 5px 12px;
+    font-size: 14px;
+    padding: 6px 14px;
     border-radius: 999px;
     font-weight: 500;
   }
 
   .signup-options-row {
-    font-size: 12.5px;
+    font-size: 13.5px;
     margin-top: -2px;
   }
 
   .signup-remember-label {
-    font-size: 12.5px;
+    font-size: 13.5px;
   }
 
   .signup-forgot-btn {
-    font-size: 12.5px;
+    font-size: 13.5px;
   }
 
   .signup-role-selection-grid {
@@ -1039,39 +1043,39 @@
   }
 
   .signup-role-card-title {
-    font-size: 14.5px;
+    font-size: 15.5px;
   }
 
   .signup-role-card-tag {
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 7px;
   }
 
   .signup-role-card-desc {
-    font-size: 12.5px;
+    font-size: 13.5px;
     margin-bottom: 8px;
   }
 
   .signup-role-card-features li {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .signup-role-card-btn {
-    font-size: 12.5px;
+    font-size: 13.5px;
     padding: 7px 10px;
   }
 
   .signup-form-grid {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 10px;
   }
 
   .signup-submit-btn {
     border-radius: 999px;
-    height: 38px;
-    font-size: 14.5px;
+    height: 44px;
+    font-size: 15.5px;
     font-weight: 600;
-    margin-top: 3px;
+    margin-top: 14px;
     flex-shrink: 0;
   }
 
@@ -1081,73 +1085,73 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding-top: 10px;
-    padding-bottom: 6px;
+    gap: 10px;
+    padding-top: 18px;
+    padding-bottom: 8px;
     flex-shrink: 0;
   }
 
   .signup-divider {
-    margin: 12px 0 10px;
+    margin: 14px 0 12px;
   }
 
   .signup-divider span {
-    font-size: 12px;
+    font-size: 13px;
     padding: 0 8px;
   }
 
   .signup-google-btn {
-    height: 38px;
-    padding: 0 12px;
-    font-size: 13.5px;
+    height: 42px;
+    padding: 0 14px;
+    font-size: 14.5px;
     border-radius: 999px;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
 
   .signup-legal-disclaimer {
-    font-size: 11.5px;
-    line-height: 1.4;
-    margin: 0;
-    padding: 0 4px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 6px 0 2px;
+    padding: 0 8px;
     text-align: center;
     flex-shrink: 0;
   }
 
   .signup-switch-link {
-    margin: 0;
+    margin: 4px 0 0;
     padding: 2px 0 4px;
-    font-size: 13.5px;
+    font-size: 14.5px;
     text-align: center;
     flex-shrink: 0;
   }
 
   .signup-switch-link button {
-    font-size: 13.5px;
+    font-size: 14.5px;
   }
 
   .signup-back-btn {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .signup-alert-error {
-    font-size: 13px;
+    font-size: 14px;
     padding: 8px 12px;
   }
 
   .signup-alert-success {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .signup-demo-notice {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .signup-status-title {
-    font-size: 18px;
+    font-size: 19px;
   }
 
   .signup-status-desc {
-    font-size: 14px;
+    font-size: 15px;
   }
 }
 
