@@ -7,11 +7,9 @@ build/
 .next/
 .vercel/
 
-# Environment & Secrets
+# Environment
 .env
 .env.*
-client_secret*.json
-*.secret.json
 
 # Logs
 npm-debug.log*
@@ -48,3 +46,6 @@ supabase/.temp/
 
 # Impeccable cache
 .impeccable/
+
+#googel cloud console
+client_secret_Google_Cloud.json

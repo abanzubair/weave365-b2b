@@ -1193,7 +1193,7 @@ export function ProductDetail({
               <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
             </button>
             <h1 className="product-title-serif">{product.title}</h1>
-
+{/* 
             {product.partner && (
               <div
                 className="trusted-partner-card-v2"
@@ -1209,7 +1209,7 @@ export function ProductDetail({
                   <span className="partner-name-v2">{product.partner}</span>
                 </div>
               </div>
-            )}
+            )} */}
 
             <div className="product-code-new">
               Code: <strong>{variant.code}</strong>
