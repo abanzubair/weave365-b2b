@@ -14,6 +14,12 @@ import { applyCustomTheme } from '../utils/themeEngine.js';
 import { fetchSiteCustomizer, fetchProducts, fetchConfigOptions } from '../productData.js';
 import { clearStoredReferralCode, setStoredReferralCode } from '../utils/influencerHelpers.js';
 import { useAppNavigate } from '../hooks/useAppNavigate.js';
+import {
+  fetchVendorStockOverrides,
+  getVendorStockLocal,
+  applyStockOverridesToProducts,
+  VENDOR_STOCK_UPDATED_EVENT,
+} from '../utils/vendorStockService.js';
 
 import { SiteHeader } from './SiteHeader.jsx';
 import { SearchOverlay } from './SearchOverlay.jsx';
@@ -124,6 +130,34 @@ export function AppShell({ children }) {
         .catch(console.error);
     }
   }, [pathname, products.length, configOptions, setProducts, setConfigOptions]);
+
+  // Live Vendor Stock Availability Synchronization
+  useEffect(() => {
+    const handleStockUpdate = (e) => {
+      const overrides = e.detail || getVendorStockLocal();
+      const currentProds = useStorefront.getState().products;
+      if (currentProds && currentProds.length > 0) {
+        const updated = applyStockOverridesToProducts(currentProds, overrides);
+        setProducts(updated);
+      }
+    };
+    window.addEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+
+    // Initial background fetch to ensure fresh stock status from Supabase
+    fetchVendorStockOverrides()
+      .then((overrides) => {
+        if (overrides && Object.keys(overrides).length > 0) {
+          const currentProds = useStorefront.getState().products;
+          if (currentProds && currentProds.length > 0) {
+            const updated = applyStockOverridesToProducts(currentProds, overrides);
+            setProducts(updated);
+          }
+        }
+      })
+      .catch((err) => console.warn('[AppShell] Vendor stock hydration notice:', err?.message || err));
+
+    return () => window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+  }, [setProducts]);
 
   // Supabase Auth Listener
   useEffect(() => {

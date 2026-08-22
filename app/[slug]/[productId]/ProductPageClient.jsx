@@ -7,6 +7,7 @@ import { useAppNavigate } from '../../../src/hooks/useAppNavigate.js';
 import { getBuyerAccess } from '../../../src/utils/buyerAccess.js';
 import { upsertCart, upsertCartSelections, persistCart, persistFavorites } from '../../../src/utils/cartHelpers.js';
 import { serviceablePincodes } from '../../../src/config.js';
+import { getVendorStockLocal, applyStockOverridesToProducts } from '../../../src/utils/vendorStockService.js';
 
 export default function ProductPageClient({ productId, initialProduct, initialAllProducts = [] }) {
   const navigate = useAppNavigate();
@@ -36,9 +37,18 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
 
   const productsById = useMemo(() => {
     const map = new Map();
-    allProducts.forEach((p) => map.set(p.id, p));
+    const overrides = typeof window !== 'undefined' ? getVendorStockLocal() : {};
+    allProducts.forEach((p) => {
+      const overridden = (overrides && overrides[p.id])
+        ? applyStockOverridesToProducts([p], overrides)[0]
+        : p;
+      map.set(p.id, overridden);
+    });
     if (initialProduct && !map.has(initialProduct.id)) {
-      map.set(initialProduct.id, initialProduct);
+      const overriddenInit = (overrides && overrides[initialProduct.id])
+        ? applyStockOverridesToProducts([initialProduct], overrides)[0]
+        : initialProduct;
+      map.set(initialProduct.id, overriddenInit);
     }
     return map;
   }, [allProducts, initialProduct]);

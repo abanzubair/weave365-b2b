@@ -86,7 +86,7 @@ export const ProductCard = memo(function ProductCard({
     });
   }, [product.statusTags, canViewPrice, isUnder999]);
 
-  const showReadyStockBadge = isUnder999;
+  const showReadyStockBadge = product.isReadyStock || (isUnder999 && !product.isOutOfStock);
   const showColorBadge = colorCount > 1;
   const showRightInfo = showColorBadge || showReadyStockBadge;
 
@@ -148,6 +148,10 @@ export const ProductCard = memo(function ProductCard({
 
   const handleBuyNowClick = (e) => {
     if (e) e.stopPropagation();
+    if (product.isOutOfStock) {
+      handleEnquiryClick(e);
+      return;
+    }
     if (typeof addToCart === 'function') {
       const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
       addToCart(product, selectedVariant, 1, { colorName: defaultColor });
@@ -254,7 +258,7 @@ export const ProductCard = memo(function ProductCard({
             onClick={handleBuyNowClick}
             className="buy-card-btn"
           >
-            <ShoppingBag size={15} /> BUY
+            <ShoppingBag size={15} /> {product.isOutOfStock ? 'ENQUIRE' : 'BUY'}
           </button>
           <button type="button"
             className="add-to-bag-btn options-trigger-btn"

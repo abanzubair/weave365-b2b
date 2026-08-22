@@ -32,6 +32,42 @@ const cdnCacheHeaders = {
   ...corsHeaders,
 };
 
+function applyStockOverrides(products, stockRows) {
+  if (!Array.isArray(products) || !Array.isArray(stockRows) || !stockRows.length) return products;
+  const map = new Map();
+  for (const row of stockRows) {
+    if (row.product_id) {
+      map.set(row.product_id, row);
+    }
+  }
+  return products.map((product) => {
+    const key = product.id || product.groupKey;
+    const override = map.get(key);
+    if (!override) return product;
+    const stockKey = override.stock_status;
+    const stockLabel = override.stock_status_label;
+    const nonStockTags = (product.statusTags || []).filter(
+      (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(tag.key)
+    );
+    const updatedTags = [
+      { key: stockKey, label: stockLabel },
+      ...nonStockTags,
+    ];
+    return {
+      ...product,
+      stockStatusOverride: stockKey,
+      stockStatusLabel: stockLabel,
+      stockLastUpdatedIST: override.updated_at_ist,
+      stockLastUpdated: override.updated_at,
+      statusTags: updatedTags,
+      isOutOfStock: stockKey === 'out-of-stock',
+      isReadyStock: stockKey === 'ready-stock',
+      isPreOrder: stockKey === 'pre-order',
+      isBackSoon: stockKey === 'back-soon',
+    };
+  });
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -53,10 +89,15 @@ export async function GET(request) {
     };
 
     if (type === 'all') {
-      const { data, error } = await supabase
-        .from('sheet_data')
-        .select('id, csv_data')
-        .in('id', ['products_json', 'config_json', 'hero_json', 'site_customizer_json']);
+      const [{ data, error }, { data: stockData }] = await Promise.all([
+        supabase
+          .from('sheet_data')
+          .select('id, csv_data')
+          .in('id', ['products_json', 'config_json', 'hero_json', 'site_customizer_json']),
+        supabase
+          .from('vendor_product_stock')
+          .select('*'),
+      ]);
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -74,7 +115,12 @@ export async function GET(request) {
 
       (data || []).forEach((row) => {
         try {
-          if (row.id === 'products_json' && row.csv_data) result.products = JSON.parse(row.csv_data);
+          if (row.id === 'products_json' && row.csv_data) {
+            const rawProds = JSON.parse(row.csv_data);
+            result.products = Array.isArray(stockData) && stockData.length > 0
+              ? applyStockOverrides(rawProds, stockData)
+              : rawProds;
+          }
           if (row.id === 'config_json' && row.csv_data) result.config = JSON.parse(row.csv_data);
           if (row.id === 'hero_json' && row.csv_data) result.hero = JSON.parse(row.csv_data);
           if (row.id === 'site_customizer_json' && row.csv_data) result.customizer = JSON.parse(row.csv_data);
@@ -84,6 +130,42 @@ export async function GET(request) {
       });
 
       return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: cdnCacheHeaders,
+      });
+    }
+
+    if (type === 'products') {
+      const [{ data, error }, { data: stockData }] = await Promise.all([
+        supabase
+          .from('sheet_data')
+          .select('csv_data')
+          .eq('id', 'products_json')
+          .single(),
+        supabase
+          .from('vendor_product_stock')
+          .select('*'),
+      ]);
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+
+      let products = [];
+      try {
+        products = JSON.parse(data?.csv_data || '[]');
+      } catch (e) {
+        products = [];
+      }
+
+      if (Array.isArray(stockData) && stockData.length > 0) {
+        products = applyStockOverrides(products, stockData);
+      }
+
+      return new Response(JSON.stringify(products), {
         status: 200,
         headers: cdnCacheHeaders,
       });
@@ -103,8 +185,7 @@ export async function GET(request) {
       });
     }
 
-    // Return the pre-stringified JSON directly without re-parsing to save CPU
-    const rawJson = data?.csv_data || (type === 'products' || type === 'hero' ? '[]' : '{}');
+    const rawJson = data?.csv_data || (type === 'hero' ? '[]' : '{}');
 
     return new Response(rawJson, {
       status: 200,

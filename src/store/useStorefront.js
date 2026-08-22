@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getVendorStockLocal, applyStockOverridesToProducts } from '../utils/vendorStockService.js';
 
 const resolveArrayUpdate = (nextValue, currentValue) => {
   const currentArray = Array.isArray(currentValue) ? currentValue : [];
@@ -56,7 +57,15 @@ export const useStorefront = create((set) => ({
   configOptions: { priceRanges: [], categories: [], fabrics: [], weaves: [] },
   pageSeoSettings: [],
   landingPages: [],
-  setProducts: (products) => set({ products }),
+  setProducts: (products) => {
+    const current = useStorefront.getState().products;
+    const resolved = typeof products === 'function' ? products(current) : products;
+    const localOverrides = getVendorStockLocal();
+    const finalProducts = (localOverrides && Object.keys(localOverrides).length > 0 && Array.isArray(resolved))
+      ? applyStockOverridesToProducts(resolved, localOverrides)
+      : (Array.isArray(resolved) ? resolved : []);
+    set({ products: finalProducts });
+  },
   setStatus: (status) => set({ status }),
   setError: (error) => set({ error }),
   setHeroSlides: (heroSlides) => set({ heroSlides }),

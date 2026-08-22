@@ -1824,6 +1824,33 @@ button {
   padding: 4px 10px;
   border-radius: 6px;
   font-family: var(--font-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stock-badge.out-of-stock {
+  color: #c93b2b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.stock-badge.pre-order {
+  color: #b8860b;
+  background: #fefce8;
+  border-color: #fef08a;
+}
+
+.stock-badge.back-soon {
+  color: #6a3cbc;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.stock-badge.ready-stock {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
 }
 
 .product-short-desc-premium {

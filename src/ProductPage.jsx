@@ -1214,7 +1214,15 @@ export function ProductDetail({
 
             <div className="product-meta-header">
               <span className="sku-badge">CODE: {variant.code}</span>
-              <span className="stock-badge">Ready to Ship</span>
+              {product.isOutOfStock || product.stockStatusOverride === 'out-of-stock' ? (
+                <span className="stock-badge out-of-stock">Out of Stock</span>
+              ) : product.isPreOrder || product.stockStatusOverride === 'pre-order' ? (
+                <span className="stock-badge pre-order">Pre-Order</span>
+              ) : product.isBackSoon || product.stockStatusOverride === 'back-soon' ? (
+                <span className="stock-badge back-soon">Back Soon</span>
+              ) : (
+                <span className="stock-badge ready-stock">Ready to Ship</span>
+              )}
             </div>
 
             <div className="price-moq-row">
@@ -1374,14 +1382,16 @@ export function ProductDetail({
                   onClick={handleEnquiryClick}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
                 >
-                  <WhatsappIcon size={19} /> {enquiryState === 'sent' ? 'Sent' : 'WhatsApp Order'}
+                  <WhatsappIcon size={19} /> {enquiryState === 'sent' ? 'Sent' : (product.isOutOfStock ? 'Enquire on WhatsApp' : 'WhatsApp Order')}
                 </button>
                 <button
                   className="catalog-add-button"
                   type="button"
                   onClick={() => setVariationDrawerOpen(true)}
+                  disabled={product.isOutOfStock}
+                  style={product.isOutOfStock ? { opacity: 0.6, cursor: 'not-allowed', background: '#9ca3af' } : {}}
                 >
-                  <ShoppingBag size={19} /> Add to Cart
+                  <ShoppingBag size={19} /> {product.isOutOfStock ? 'Out of Stock' : (product.isPreOrder ? 'Pre-Order Now' : 'Add to Cart')}
                 </button>
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
                   <Download size={17} /> {isDownloading ? 'Zipping...' : 'Download Photos'}

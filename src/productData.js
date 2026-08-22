@@ -175,6 +175,40 @@ export async function saveSiteCustomizer(customizerData) {
 export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('weave365_vendor_product_stock');
+        if (raw) {
+          const overrides = JSON.parse(raw);
+          if (overrides && Object.keys(overrides).length > 0) {
+            return cachedJson.map((product) => {
+              const key = product.id || product.groupKey;
+              const override = overrides[key];
+              if (!override) return product;
+              const stockKey = override.stockStatus;
+              const stockLabel = override.stockStatusLabel;
+              const nonStockTags = (product.statusTags || []).filter(
+                (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(tag.key)
+              );
+              return {
+                ...product,
+                stockStatusOverride: stockKey,
+                stockStatusLabel: stockLabel,
+                stockLastUpdatedIST: override.updatedAtIST,
+                stockLastUpdated: override.updatedAt,
+                statusTags: [{ key: stockKey, label: stockLabel }, ...nonStockTags],
+                isOutOfStock: stockKey === 'out-of-stock',
+                isReadyStock: stockKey === 'ready-stock',
+                isPreOrder: stockKey === 'pre-order',
+                isBackSoon: stockKey === 'back-soon',
+              };
+            });
+          }
+        }
+      } catch (e) {
+        // Fallback to cachedJson
+      }
+    }
     return cachedJson;
   }
   return [];
