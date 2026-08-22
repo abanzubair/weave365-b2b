@@ -172,16 +172,47 @@ export async function saveSiteCustomizer(customizerData) {
   return true;
 }
 
+function normalizeLoadedProduct(product) {
+  if (!product) return product;
+  let statusTags = (product.statusTags || []).map((tag) => {
+    if (tag && tag.key === 'new-arrivals') {
+      return { key: 'new-arrival', label: 'New Arrival' };
+    }
+    return tag;
+  });
+
+  const hasNewArrivalTag = statusTags.some((t) => t.key === 'new-arrival');
+  let isNew = Boolean(product.isNew || hasNewArrivalTag);
+
+  if (!isNew && product.stockInDate) {
+    const stockTime = new Date(product.stockInDate).getTime();
+    if (!isNaN(stockTime) && (Date.now() - stockTime) <= 30 * 24 * 60 * 60 * 1000) {
+      isNew = true;
+    }
+  }
+
+  if (isNew && !hasNewArrivalTag) {
+    statusTags = [{ key: 'new-arrival', label: 'New Arrival' }, ...statusTags];
+  }
+
+  return {
+    ...product,
+    isNew,
+    statusTags: dedupeStatusTags(statusTags),
+  };
+}
+
 export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
+    const normalizedProducts = cachedJson.map(normalizeLoadedProduct);
     if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('weave365_vendor_product_stock');
         if (raw) {
           const overrides = JSON.parse(raw);
           if (overrides && Object.keys(overrides).length > 0) {
-            return cachedJson.map((product) => {
+            return normalizedProducts.map((product) => {
               const key = product.id || product.groupKey;
               const override = overrides[key];
               if (!override) return product;
@@ -206,10 +237,10 @@ export const fetchProducts = safeCache(async function fetchProducts() {
           }
         }
       } catch (e) {
-        // Fallback to cachedJson
+        // Fallback to normalizedProducts
       }
     }
-    return cachedJson;
+    return normalizedProducts;
   }
   return [];
 });
@@ -386,15 +417,16 @@ export async function parseProductCsv(text) {
     const isReadyStock = statusKeys.has('ready-stock');
     const isDealOfDay = statusKeys.has('todays-deal');
     const isTopSeller = statusKeys.has('bestseller');
-    const isManualNew = statusKeys.has('new-arrival');
+    const isManualNew = statusKeys.has('new-arrival') || statusKeys.has('new-arrivals');
     const isArchived = statusKeys.has('archived');
 
-    const isDateNew = product.stockInDate
-      ? (now - product.stockInDate) <= 15 * 24 * 60 * 60 * 1000
+    const stockTime = product.stockInDate ? new Date(product.stockInDate).getTime() : NaN;
+    const isDateNew = !isNaN(stockTime)
+      ? (now.getTime() - stockTime) <= 30 * 24 * 60 * 60 * 1000
       : false;
 
     const isNew = isManualNew || isDateNew;
-    const statusTags = isDateNew && !isManualNew
+    const statusTags = isNew && !isManualNew
       ? dedupeStatusTags([{ key: 'new-arrival', label: 'New Arrival' }, ...baseStatusTags])
       : baseStatusTags;
     const normalizedColorOptions = dedupeColorOptions(product.colorOptions).map((entry) => ({
@@ -690,20 +722,37 @@ function normalizeStatusTag(value) {
 
   const tagMap = {
     'new arrival': { key: 'new-arrival', label: 'New Arrival' },
+    'new arrivals': { key: 'new-arrival', label: 'New Arrival' },
+    'new': { key: 'new-arrival', label: 'New Arrival' },
+    'new launch': { key: 'new-arrival', label: 'New Arrival' },
+    'new launches': { key: 'new-arrival', label: 'New Arrival' },
+    'latest': { key: 'new-arrival', label: 'New Arrival' },
+    'latest arrival': { key: 'new-arrival', label: 'New Arrival' },
+    'latest arrivals': { key: 'new-arrival', label: 'New Arrival' },
     'best seller': { key: 'bestseller', label: 'Best Seller' },
     'bestseller': { key: 'bestseller', label: 'Best Seller' },
+    'best sellers': { key: 'bestseller', label: 'Best Seller' },
+    'bestsellers': { key: 'bestseller', label: 'Best Seller' },
     'top seller': { key: 'bestseller', label: 'Best Seller' },
     'top-seller': { key: 'bestseller', label: 'Best Seller' },
+    'top sellers': { key: 'bestseller', label: 'Best Seller' },
     'high demand': { key: 'high-demand', label: 'High Demand' },
+    'high-demand': { key: 'high-demand', label: 'High Demand' },
     'fast moving': { key: 'high-demand', label: 'High Demand' },
+    'fast-moving': { key: 'high-demand', label: 'High Demand' },
     'low moq': { key: 'low-moq', label: 'Low MOQ' },
+    'low-moq': { key: 'low-moq', label: 'Low MOQ' },
     'pre-order': { key: 'pre-order', label: 'Pre-Order' },
     'preorder': { key: 'pre-order', label: 'Pre-Order' },
     'ready stock': { key: 'ready-stock', label: 'Ready Stock' },
+    'ready-stock': { key: 'ready-stock', label: 'Ready Stock' },
     'todays deal': { key: 'todays-deal', label: "Today's Deal" },
+    'today deal': { key: 'todays-deal', label: "Today's Deal" },
+    'today deals': { key: 'todays-deal', label: "Today's Deal" },
     'deals of the day': { key: 'todays-deal', label: "Today's Deal" },
     'deal of the day': { key: 'todays-deal', label: "Today's Deal" },
     'out of stock': { key: 'out-of-stock', label: 'Out of Stock' },
+    'out-of-stock': { key: 'out-of-stock', label: 'Out of Stock' },
     'archived': { key: 'archived', label: 'Archived' },
   };
 

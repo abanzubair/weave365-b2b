@@ -4,22 +4,17 @@
  * Displays grouped items, hybrid pricing status, interactive color swatch additions,
  * quantity steppers, and seamless links to Checkout and WhatsApp Enquiry.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { X, ArrowRight, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from 'lucide-react';
 import { getProductCategorySlug } from '../config.js';
 import {
   calculateHybridCartTotals,
   customerPrice,
-  buildWhatsappUrl,
   fallbackProductImage,
   formatMoney,
 } from '../storefrontShared.jsx';
 
-import { WhatsappIcon } from './WhatsappIcon.jsx';
-import { EnquiryPopup } from './EnquiryPopup.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
-import { recordReferral } from '../utils/influencerHelpers.js';
 import { useStorefront } from '../store/useStorefront.js';
 
 function HorizontalScrollRow({ className, children, ...props }) {
@@ -68,9 +63,6 @@ export function CartDrawer(props) {
   const codStatus = props.codStatus ?? store.codStatus;
   const priceAccess = props.priceAccess;
   const navigate = props.navigate;
-
-  const [enquiryState, setEnquiryState] = useState('idle');
-  const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const drawerBodyRef = useRef(null);
 
   const canViewPrices = priceAccess?.canViewPrices !== false;
@@ -93,11 +85,6 @@ export function CartDrawer(props) {
   const hasUnselectedColors = useMemo(() => {
     return items.some((item) => item.selectedColorName === 'Select Color');
   }, [items]);
-
-  const whatsappUrl = useMemo(
-    () => buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, undefined, null),
-    [codStatus, items, pincode, priceAccess, total],
-  );
 
   const groupedItems = useMemo(() => {
     const groups = new Map();
@@ -139,97 +126,12 @@ export function CartDrawer(props) {
     if (navigate) navigate('wholesale-catalogue');
   };
 
-  async function handleEnquiryClick() {
-    if (hasUnselectedColors) {
-      alert('Please select a color for all items before making an enquiry.');
-      return;
-    }
-    if (enquiryState === 'sending' || items.length === 0) return;
-    setEnquiryState('sending');
-
-    if (isSupabaseConfigured) {
-      try {
-        const enquiryItems = items.map((item) => {
-          const categorySlug = item.product
-            ? getProductCategorySlug(item.product.id || item.product.groupKey, item.product.category)
-            : 'catalogue';
-          const pId = item.productGroupKey || item.product?.id || item.product?.groupKey;
-          const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
-
-          return {
-            product_id: item.productGroupKey,
-            product_title: item.product.title,
-            variant_code: item.variant.code,
-            color: item.selectedColorName,
-            quantity: item.quantity,
-            price: customerPrice(item.variant.prices, priceAccess),
-            product_url: productUrl,
-          };
-        });
-
-        const { data: inquiryData, error: inquiryErr } = await supabase
-          .from('inquiries')
-          .insert({
-            user_id: priceAccess?.userId || undefined,
-            email: priceAccess?.userEmail || undefined,
-            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-            phone: priceAccess?.buyerPhone || undefined,
-            pincode: pincode || priceAccess?.buyerPincode || undefined,
-            inquiry_type: 'cart',
-            status: 'new',
-            message: `Enquiry for ${items.length} items in cart`,
-            items: enquiryItems,
-          })
-          .select('id')
-          .single();
-
-        if (inquiryErr) throw inquiryErr;
-
-        if (inquiryData?.id) {
-          const saleAmount = items.reduce(
-            (sum, it) =>
-              sum +
-              (Number(customerPrice(it.variant.prices, priceAccess)) || 0) *
-                (Number(it.quantity) || 1),
-            0
-          );
-          void recordReferral({
-            inquiryId: inquiryData.id,
-            buyerId: priceAccess?.userId || null,
-            buyerName: priceAccess?.buyerName || 'Guest Buyer',
-            items: enquiryItems,
-            saleAmount: saleAmount,
-          });
-        }
-
-        fetch('/api/inquiry-notification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            buyer_name: priceAccess?.buyerName || 'Guest Buyer',
-            email: priceAccess?.userEmail || undefined,
-            phone: priceAccess?.buyerPhone || undefined,
-            pincode: pincode || priceAccess?.buyerPincode || undefined,
-            message: `Enquiry for ${items.length} items in cart`,
-            items: enquiryItems,
-          }),
-        }).catch((err) => console.error('Failed to send inquiry email notification:', err));
-      } catch (err) {
-        console.error('Failed to log inquiry to Supabase:', err);
-      }
-    }
-
-    setEnquiryState('sent');
-    setEnquiryPopupOpen(true);
-  }
-
   // Prevent background scrolling when drawer is open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
-      setEnquiryState('idle');
     }
     return () => {
       document.body.style.overflow = '';
@@ -449,7 +351,7 @@ export function CartDrawer(props) {
               <div className="totals-line main-total-line">
                 <div>
                   <span className="total-label">Estimated Total</span>
-                  <span className="total-tax-note">Excl. GST & Shipping</span>
+                  <span className="total-tax-note">Excluding GST & Shipping</span>
                 </div>
                 <strong className="total-value">
                   {total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}
@@ -473,31 +375,9 @@ export function CartDrawer(props) {
                 <span>Proceed to Checkout</span>
                 <ArrowRight size={16} />
               </button>
-
-              <button
-                type="button"
-                className="cart-enquiry-btn-secondary"
-                onClick={handleEnquiryClick}
-                disabled={hasUnselectedColors || enquiryState === 'sending'}
-              >
-                <WhatsappIcon size={17} />
-                <span>
-                  {enquiryState === 'sent'
-                    ? 'Inquiry Sent'
-                    : enquiryState === 'sending'
-                    ? 'Sending...'
-                    : 'Order via WhatsApp'}
-                </span>
-              </button>
             </div>
           </div>
         )}
-
-        <EnquiryPopup
-          open={enquiryPopupOpen}
-          onClose={() => setEnquiryPopupOpen(false)}
-          whatsappUrl={whatsappUrl}
-        />
       </aside>
     </div>
   );

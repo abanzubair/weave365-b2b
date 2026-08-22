@@ -5,6 +5,7 @@
  * volume-based B2B order calculators, shipping/FAQ accordions, and WhatsApp inquiry triggers.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Award,
   Bookmark,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ArrowRight,
   Download,
   Gift,
   Globe,
@@ -22,8 +24,10 @@ import {
   PackageCheck,
   Share2,
   ShoppingBag,
+  Store,
   Sparkles,
   Star,
+  TrendingUp,
   ZoomIn,
   X,
   Check,
@@ -609,17 +613,29 @@ export function ProductDetail({
       }
     }
   }, [product.id, colorOptions, product.variants]);
-  const productStatusTags = useMemo(
-    () => (product.statusTags || []).filter((tag) => {
-      const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+  const productStatusTags = useMemo(() => {
+    let tags = (product.statusTags || []).map((tag) => {
+      if (tag && tag.key === 'new-arrivals') {
+        return { key: 'new-arrival', label: 'New Arrival' };
+      }
+      return tag;
+    });
+
+    if (product.isNew && !tags.some((t) => t.key === 'new-arrival')) {
+      tags = [{ key: 'new-arrival', label: 'New Arrival' }, ...tags];
+    }
+
+    const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
+    const inventoryStockKeys = new Set(['out-of-stock', 'ready-stock', 'pre-order', 'back-soon']);
+    return tags.filter((tag) => {
       if (tag.key === 'bestseller') return false;
+      if (inventoryStockKeys.has(tag.key)) return false;
       if (tag.key === 'low-moq' && isUnder999) return false;
       if (!canViewPrice && tag.key === 'low-moq') return false;
       if (tag.key === 'low-moq' && priceAccess?.priceGroup === 'reseller' && priceAccess?.canViewPrices) return false;
       return true;
-    }),
-    [product.statusTags, canViewPrice, priceAccess, product.category],
-  );
+    });
+  }, [product.statusTags, product.isNew, canViewPrice, priceAccess, product.category]);
   const related = useMemo(() => {
     let others = products.filter((item) => item.id !== product.id && item.category === product.category);
     
@@ -773,9 +789,46 @@ export function ProductDetail({
     [galleryHeight],
   );
 
-  function handleEnquiryClick() {
-    if (totalColors > 1) {
-      addToCart(product, variant, 1, { colorName: 'Select Color' });
+  const [showBuyPanel, setShowBuyPanel] = useState(false);
+  const [showSellPanel, setShowSellPanel] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const sheetRef = useRef(null);
+  const popoverWrapperRef = useRef(null);
+
+  const handleClosePanel = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowBuyPanel(false);
+      setShowSellPanel(false);
+      setIsClosing(false);
+    }, 180);
+  }, []);
+
+  useEffect(() => {
+    if (!showBuyPanel && !showSellPanel) return;
+    const handleClickOutside = (e) => {
+      if (popoverWrapperRef.current && !popoverWrapperRef.current.contains(e.target)) {
+        handleClosePanel();
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClosePanel();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showBuyPanel, showSellPanel, handleClosePanel]);
+
+  function handleBuyNow() {
+    if (product.isOutOfStock) return;
+    const colorToUse = selectedColorName || variant?.color || (totalColors > 1 ? 'Select Color' : '');
+    if (colorToUse) {
+      addToCart(product, variant, 1, { colorName: colorToUse });
     } else {
       addToCart(product, variant, 1);
     }
@@ -1276,164 +1329,275 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className="product-logistics-info">
-              <div className="tax-shipping-line">
-                <span className="tax-item">Excl. GST</span>
-                <span className="bullet-sep">•</span>
-                <span className="shipping-note-badge">Free Shipping</span>
-              </div>
-              <div className="international-hint">
-                <Globe size={18} className="globe-hint-icon" />
-                <span>International air cargo available; freight rates reduce per unit with larger volume.</span>
-              </div>
-              {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
-                <div className="b2b-custom-hint">
-                  Need custom bulk freight or specific timelines? WhatsApp us your order quantity and destination pin code.
+            <div className={`product-middle-details ${(showSellPanel || showBuyPanel) ? 'blurred-details' : ''}`}>
+              <div className="product-logistics-info">
+                <div className="tax-shipping-line">
+                  <span className="tax-item">Excluding GST</span>
+                  <span className="bullet-sep">•</span>
+                  <span className="shipping-note-badge">Free Shipping</span>
                 </div>
-              )}
-            </div>
-
-            <div className="product-specs-list">
-              {String(product.category || '').toLowerCase() !== 'under 999' && (
-                <span className="spec-item-clean">
-                  <Layers size={18} className="spec-icon" />
-                  <span>Colors in set: <strong>{totalColors}</strong></span>
-                </span>
-              )}
-              <span className="spec-item-clean">
-                <ShoppingBag size={18} className="spec-icon" />
-                <span>Weight per piece: <strong>{formatWeight(singleWeight)}</strong></span>
-              </span>
-              {product.weave && (
-                <span className="spec-item-clean">
-                  <Sparkles size={18} className="spec-icon" />
-                  <span>Weave Technique: <strong>{product.weave}</strong></span>
-                </span>
-              )}
-              <span className="spec-item-clean">
-                <ShieldCheck size={18} className="spec-icon" />
-                <span>Quality & Terms: <strong>
-                  <a
-                    href="https://weave365.com/disclaimer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (typeof navigate === 'function') {
-                        navigate('disclaimer');
-                      } else if (typeof window !== 'undefined') {
-                        window.location.href = '/disclaimer';
-                      }
-                    }}
-                    className="policy-link"
-                  >
-                    View Policy ↗
-                  </a>
-                </strong></span>
-              </span>
-            </div>
-
-            {colorOptions.length > 0 && (
-              <section className="product-variation-card" aria-labelledby="product-variation-heading">
-                <div className="variation-card-head">
-                  <div className="variation-title-group">
-                    <h2 id="product-variation-heading">Color:</h2>
-                    <span className="active-color-name">{selectedColorName || 'Selected'}</span>
-                    <span className="color-count-pill">{colorOptions.length} Colors</span>
+                <div className="international-hint">
+                  <Globe size={18} className="globe-hint-icon" />
+                  <span>International air cargo available; freight rates reduce per unit with larger volume.</span>
+                </div>
+                {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
+                  <div className="b2b-custom-hint">
+                    Need custom bulk freight or specific timelines? WhatsApp us your order quantity and destination pin code.
                   </div>
-                  <button type="button" className="view-drawer-link" onClick={() => setVariationDrawerOpen(true)}>
-                    View Color Grid ↗
-                  </button>
-                </div>
-                <div className="color-swatch-row clean-scroll" role="list" aria-label="Available colors">
-                  {colorOptions.map((option, index) => {
-                    const optionName = option.name || `Color ${index + 1}`;
-                    const isSelected = selectedColorName === option.name || selectedImage === option.image;
+                )}
+              </div>
 
-                    return (
-                      <button
-                        key={`${optionName}-${option.image || index}`}
-                        type="button"
-                        className={`swatch-btn ${isSelected ? 'active' : ''}`}
-                        onClick={() => handleColorChange(option.name)}
-                        aria-label={`Select ${optionName}`}
-                        title={optionName}
-                      >
-                        <img
-                          src={option.image || fallbackProductImage}
-                          alt={optionName}
-                          loading="lazy"
-                          decoding="async"
-                          width={48}
-                          height={48}
-                          onError={(e) => { e.target.style.opacity = '0'; }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+              <div className="product-specs-list">
+                {String(product.category || '').toLowerCase() !== 'under 999' && (
+                  <span className="spec-item-clean">
+                    <Layers size={18} className="spec-icon" />
+                    <span>Colors in set: <strong>{totalColors}</strong></span>
+                  </span>
+                )}
+                <span className="spec-item-clean">
+                  <ShoppingBag size={18} className="spec-icon" />
+                  <span>Weight per piece: <strong>{formatWeight(singleWeight)}</strong></span>
+                </span>
+                {product.weave && (
+                  <span className="spec-item-clean">
+                    <Sparkles size={18} className="spec-icon" />
+                    <span>Weave Technique: <strong>{product.weave}</strong></span>
+                  </span>
+                )}
+                <span className="spec-item-clean">
+                  <ShieldCheck size={18} className="spec-icon" />
+                  <span>Quality & Terms: <strong>
+                    <a
+                      href="https://weave365.com/disclaimer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (typeof navigate === 'function') {
+                          navigate('disclaimer');
+                        } else if (typeof window !== 'undefined') {
+                          window.location.href = '/disclaimer';
+                        }
+                      }}
+                      className="policy-link"
+                    >
+                      View Policy ↗
+                    </a>
+                  </strong></span>
+                </span>
+              </div>
+
+              {colorOptions.length > 0 && (
+                <section className="product-variation-card" aria-labelledby="product-variation-heading">
+                  <div className="variation-card-head">
+                    <div className="variation-title-group">
+                      <h2 id="product-variation-heading">Color:</h2>
+                      <span className="active-color-name">{selectedColorName || 'Selected'}</span>
+                      <span className="color-count-pill">{colorOptions.length} Colors</span>
+                    </div>
+                    <button type="button" className="view-drawer-link" onClick={() => setVariationDrawerOpen(true)}>
+                      View Color Grid ↗
+                    </button>
+                  </div>
+                  <div className="color-swatch-row clean-scroll" role="list" aria-label="Available colors">
+                    {colorOptions.map((option, index) => {
+                      const optionName = option.name || `Color ${index + 1}`;
+                      const isSelected = selectedColorName === option.name || selectedImage === option.image;
+
+                      return (
+                        <button
+                          key={`${optionName}-${option.image || index}`}
+                          type="button"
+                          className={`swatch-btn ${isSelected ? 'active' : ''}`}
+                          onClick={() => handleColorChange(option.name)}
+                          aria-label={`Select ${optionName}`}
+                          title={optionName}
+                        >
+                          <img
+                            src={option.image || fallbackProductImage}
+                            alt={optionName}
+                            loading="lazy"
+                            decoding="async"
+                            width={48}
+                            height={48}
+                            onError={(e) => { e.target.style.opacity = '0'; }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </div>
 
             <div className="product-main-actions">
-              <div className="product-secondary-actions">
-                <button
-                  type="button"
-                  className="whatsapp-button"
-                  onClick={handleEnquiryClick}
-                  style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
-                >
-                  <WhatsappIcon size={19} /> {enquiryState === 'sent' ? 'Sent' : (product.isOutOfStock ? 'Enquire on WhatsApp' : 'WhatsApp Order')}
-                </button>
-                <button
-                  className="catalog-add-button"
-                  type="button"
-                  onClick={() => setVariationDrawerOpen(true)}
-                  disabled={product.isOutOfStock}
-                  style={product.isOutOfStock ? { opacity: 0.6, cursor: 'not-allowed', background: '#9ca3af' } : {}}
-                >
-                  <ShoppingBag size={19} /> {product.isOutOfStock ? 'Out of Stock' : (product.isPreOrder ? 'Pre-Order Now' : 'Add to Cart')}
-                </button>
-                <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
-                  <Download size={17} /> {isDownloading ? 'Zipping...' : 'Download Photos'}
-                </button>
-                {priceAccess?.canViewPrices ? (
-                  <div className="share-dropdown-container" ref={shareMenuRef}>
-                    <button
-                      className="secondary-action-btn reseller-share-dropdown-trigger"
-                      type="button"
-                      onClick={() => setShareMenuOpen(!shareMenuOpen)}
-                    >
-                      <Share2 size={17} /> Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
-                    </button>
-                    {shareMenuOpen && (
-                      <div className="share-dropdown-menu">
-                        <button
-                          type="button"
-                          className="share-dropdown-item"
-                          onClick={() => {
-                            setShareMenuOpen(false);
-                            setWhatsappShareOpen(true);
-                          }}
-                        >
-                          <Share2 size={16} /> Share with Customer
-                        </button>
-                        <button
-                          type="button"
-                          className="share-dropdown-item"
-                          onClick={() => {
-                            setShareMenuOpen(false);
-                            setShowShareModal(true);
-                          }}
-                        >
-                          <Layers size={16} /> Get White-Label Link
-                        </button>
+              <div className={`product-actions-popover-wrapper ${(showSellPanel || showBuyPanel) ? 'has-active-panel' : ''}`} ref={popoverWrapperRef}>
+                <div className="product-secondary-actions">
+                  <div className={`product-action-col sell-col ${showSellPanel ? 'active-col' : ''}`}>
+                    {showSellPanel && (
+                      <div className={`product-page-popover sell-popover ${isClosing ? 'closing' : ''}`} ref={sheetRef}>
+                        <div className="sheet-header">
+                          <span className="sheet-title">Reseller Tools</span>
+                          <button type="button" className="sheet-close" onClick={handleClosePanel} aria-label="Close panel">
+                            <X size={16} strokeWidth={2.5} />
+                          </button>
+                        </div>
+
+                        <div className="sheet-list">
+                          <button
+                            type="button"
+                            className="sheet-item reseller-primary"
+                            onClick={() => {
+                              handleClosePanel();
+                              if (priceAccess?.canViewPrices) {
+                                setWhatsappShareOpen(true);
+                              } else {
+                                handleRestrictedAction('Share', shareProductPage);
+                              }
+                            }}
+                          >
+                            <div className="item-icon share"><Share2 size={20} /></div>
+                            <div className="item-copy">
+                              <strong>Share</strong>
+                              <span>Share catalog on WhatsApp</span>
+                            </div>
+                            <ChevronRight size={18} className="item-chevron" />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="sheet-item"
+                            onClick={async () => {
+                              if (isDownloading) return;
+                              handleClosePanel();
+                              handleRestrictedAction('Download', downloadImagesAsZip);
+                            }}
+                            disabled={isDownloading}
+                          >
+                            <div className="item-icon download"><Download size={20} /></div>
+                            <div className="item-copy">
+                              <strong>{isDownloading ? 'Downloading...' : 'Download'}</strong>
+                              <span>Download photos & specs (ZIP)</span>
+                            </div>
+                            <ChevronRight size={18} className="item-chevron" />
+                          </button>
+
+                          {priceAccess?.canViewPrices && (
+                            <button
+                              type="button"
+                              className="sheet-item"
+                              onClick={() => {
+                                handleClosePanel();
+                                setShowShareModal(true);
+                              }}
+                            >
+                              <div className="item-icon link"><Store size={20} /></div>
+                              <div className="item-copy">
+                                <strong>White-Label</strong>
+                                <span>Get white-label store link</span>
+                              </div>
+                              <ChevronRight size={18} className="item-chevron" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (showSellPanel) {
+                          handleClosePanel();
+                        } else {
+                          setShowBuyPanel(false);
+                          setShowSellPanel(true);
+                        }
+                      }}
+                      className="buy-card-btn sell-card-btn page-action-sell-btn"
+                    >
+                      <Store size={18} /> SELL
+                    </button>
                   </div>
-                ) : (
-                  <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductPage)}>
-                    <Share2 size={17} /> Share
-                  </button>
-                )}
+
+                  <div className={`product-action-col buy-col ${showBuyPanel ? 'active-col' : ''}`}>
+                    {showBuyPanel && (
+                      <div className={`product-page-popover buy-popover ${isClosing ? 'closing' : ''}`} ref={sheetRef}>
+                        <div className="sheet-header">
+                          <span className="sheet-title">Buy Options</span>
+                          <button type="button" className="sheet-close" onClick={handleClosePanel} aria-label="Close panel">
+                            <X size={16} strokeWidth={2.5} />
+                          </button>
+                        </div>
+
+                        <div className="sheet-list">
+                          <button
+                            type="button"
+                            className={`sheet-item ${product.isOutOfStock ? 'disabled' : ''}`}
+                            onClick={() => {
+                              handleClosePanel();
+                              handleBuyNow();
+                            }}
+                            disabled={product.isOutOfStock}
+                          >
+                            <div className="item-icon package"><PackageCheck size={20} /></div>
+                            <div className="item-copy">
+                              <strong>Buy Now</strong>
+                              <span>{product.isOutOfStock ? 'Currently out of stock' : 'Add to bag & checkout'}</span>
+                            </div>
+                            <ChevronRight size={18} className="item-chevron" />
+                          </button>
+
+                          <button
+                            type="button"
+                            className={`sheet-item ${product.isOutOfStock ? 'disabled' : ''}`}
+                            onClick={() => {
+                              handleClosePanel();
+                              setVariationDrawerOpen(true);
+                            }}
+                            disabled={product.isOutOfStock}
+                          >
+                            <div className="item-icon bag"><ShoppingBag size={20} /></div>
+                            <div className="item-copy">
+                              <strong>Add to Cart</strong>
+                              <span>{product.isOutOfStock ? 'Currently out of stock' : 'Add item to your cart'}</span>
+                            </div>
+                            <ChevronRight size={18} className="item-chevron" />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="sheet-item"
+                            onClick={(e) => {
+                              handleClosePanel();
+                              const url = buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess);
+                              window.open(url, '_blank');
+                            }}
+                          >
+                            <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
+                            <div className="item-copy">
+                              <strong>Enquiry</strong>
+                              <span>Chat with us on WhatsApp</span>
+                            </div>
+                            <ChevronRight size={18} className="item-chevron" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="add-to-bag-btn buy-trigger-btn page-action-buy-btn"
+                      onClick={() => {
+                        if (showBuyPanel) {
+                          handleClosePanel();
+                        } else {
+                          setShowSellPanel(false);
+                          setShowBuyPanel(true);
+                        }
+                      }}
+                    >
+                      <ShoppingBag size={18} /> BUY
+                    </button>
+                  </div>
+                </div>
               </div>
               <p className="buyer-note">
                 <LockKeyhole size={14} /> Registered wholesale buyers can download photos and share catalogs
@@ -1450,6 +1614,60 @@ export function ProductDetail({
                 )}
               </div>
             )}
+
+            {/* Suggested Selling & Your Gross Profit Card */}
+            {(() => {
+              const retailMin = Math.round((displayPrice * 1.45) / 50) * 50 - 1;
+              const retailMax = Math.round((displayPrice * 1.65) / 50) * 50 - 1;
+              const profitMin = retailMin - displayPrice;
+              const profitMax = retailMax - displayPrice;
+              const marginMin = retailMin > 0 ? Math.round((profitMin / retailMin) * 100) : 30;
+              const marginMax = retailMax > 0 ? Math.round((profitMax / retailMax) * 100) : 40;
+
+              return (
+                <div className="reseller-profit-card">
+                  <div className="reseller-profit-header">
+                    <h3 className="reseller-profit-card-title">Suggested Selling &amp; Your Gross Profit</h3>
+                    {canViewPrice && (
+                      <span className="reseller-margin-tag">{marginMin}% – {marginMax}% Margin</span>
+                    )}
+                  </div>
+
+                  {canViewPrice ? (
+                    <>
+                      <div className="profit-metrics-list">
+                        <div className="profit-metric-row">
+                          <span className="profit-metric-label">Weave 365 Price:</span>
+                          <strong className="profit-metric-value">{formatMoney(displayPrice)}</strong>
+                        </div>
+                        <div className="profit-metric-row">
+                          <span className="profit-metric-label">Suggested Selling:</span>
+                          <strong className="profit-metric-value">{formatMoney(retailMin)} – {formatMoney(retailMax)}</strong>
+                        </div>
+                        <div className="profit-metric-row row-profit">
+                          <span className="profit-metric-label">Your Gross Profit:</span>
+                          <strong className="profit-metric-value profit-highlight">{formatMoney(profitMin)} – {formatMoney(profitMax)}</strong>
+                        </div>
+                      </div>
+
+                      {totalColors > 1 && (
+                        <div className="profit-fullset-row">
+                          <span className="fullset-label">Full Set ({totalColors} PCs)</span>
+                          <strong className="fullset-value">
+                            {formatMoney(setPrice)}{' '}
+                            <span className="fullset-unit-rate">({formatMoney(wholesalePrice)} /pc)</span>
+                          </strong>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="reseller-profit-locked-note">
+                      Login to view wholesale buying prices and gross profit margins.
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
 
 
           </aside>

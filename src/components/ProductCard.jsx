@@ -11,12 +11,12 @@ import { createPortal } from 'react-dom';
 import {
   Bookmark,
   ChevronRight,
-  Heart,
-  Layers,
-  Menu,
+  Download,
+  PackageCheck,
   Palette,
   Share2,
   ShoppingBag,
+  Store,
   X,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
@@ -52,6 +52,7 @@ export const ProductCard = memo(function ProductCard({
   const isPriceLocked = !canViewPrice;
   const colorCount = product.totalColors || product.variants?.length || 1;
   const setPrice = wholesalePrice * colorCount;
+  const isOutOfStock = Boolean(product.isOutOfStock || product.stockStatusOverride === 'out-of-stock');
 
   const descriptiveAlt = useMemo(() => {
     const parts = [];
@@ -71,19 +72,33 @@ export const ProductCard = memo(function ProductCard({
   const canResellerShare = priceAccess?.canViewPrices !== false;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
+  const [showBuyPanel, setShowBuyPanel] = useState(false);
+  const [showSellPanel, setShowSellPanel] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
   const filteredStatusTags = useMemo(() => {
-    return (product.statusTags || []).filter((tag) => {
+    let tags = (product.statusTags || []).map((tag) => {
+      if (tag && tag.key === 'new-arrivals') {
+        return { key: 'new-arrival', label: 'New Arrival' };
+      }
+      return tag;
+    });
+
+    if (product.isNew && !tags.some((t) => t.key === 'new-arrival')) {
+      tags = [{ key: 'new-arrival', label: 'New Arrival' }, ...tags];
+    }
+
+    return tags.filter((tag) => {
       if (tag.key === 'bestseller') return false;
+      if (tag.key === 'ready-stock') return false;
       if (tag.key === 'low-moq' && isUnder999) return false;
       if (!canViewPrice && tag.key === 'low-moq') return false;
       return true;
     });
-  }, [product.statusTags, canViewPrice, isUnder999]);
+  }, [product.statusTags, product.isNew, canViewPrice, isUnder999]);
 
   const showColorBadge = colorCount > 1;
   const showRightInfo = showColorBadge;
@@ -103,13 +118,14 @@ export const ProductCard = memo(function ProductCard({
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
-      setShowOptions(false);
+      setShowBuyPanel(false);
+      setShowSellPanel(false);
       setIsClosing(false);
     }, 250); // Match CSS animation duration
   };
 
   useEffect(() => {
-    if (!showOptions) return;
+    if (!showBuyPanel && !showSellPanel) return;
 
     const handleOutsideClick = (e) => {
       // If click is inside the sheet itself, don't close
@@ -142,7 +158,135 @@ export const ProductCard = memo(function ProductCard({
       document.removeEventListener('touchstart', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showOptions, isMobile]);
+  }, [showBuyPanel, showSellPanel, isMobile]);
+
+  const handleDownloadPhotos = async () => {
+    if (!priceAccess?.userId && typeof openAuth === 'function') {
+      handleClose();
+      openAuth();
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+
+      const [{ default: JSZip }, { saveAs }] = await Promise.all([
+        import('jszip'),
+        import('file-saver'),
+      ]);
+      const zip = new JSZip();
+
+      const isSaree = String(product.category || '').toLowerCase() === 'saree';
+      const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
+      const isWholesaler = priceAccess?.priceGroup === 'wholesale';
+      const shippingLine = isWholesaler ? 'Excluded: GST & Shipping' : 'Included: Free Shipping in India (Excluding GST)';
+      let priceText = 'On request';
+      if (resellerPrice > 0) {
+        priceText = `${formatMoney(resellerPrice)} /pc`;
+      }
+
+      const detailsLines = [
+        `Code: ${selectedVariant?.code || 'N/A'}`,
+        `Price: ${priceText}`,
+        shippingLine,
+        '',
+        `${product.title}`,
+        '',
+        `Description:`,
+        product.description || product.summary || 'No description available.',
+        '',
+        `Specifications:`,
+        `- Fabric: ${product.fabric || ''}`,
+        `- Work: ${product.work || ''}`,
+        `- Pattern: ${product.pattern || ''}`,
+        `- Occasion: ${product.occasion || ''}`,
+        `- Weave: ${product.weave || ''}`,
+        `- Purity: ${product.purity || ''}`,
+        `- Type: ${product.type || ''}`,
+        `- Length: ${lengthText}`,
+        '',
+        `Disclaimer: Slight variations in color, fabric, and weaving are possible. Model images are for reference only.`
+      ];
+      zip.file('product-details.txt', detailsLines.join('\n'));
+
+      const safeTitle = product.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      const validImages = Array.from(new Set(product.images || [])).filter(Boolean);
+      let successCount = 0;
+
+      await Promise.allSettled(
+        validImages.map(async (url, index) => {
+          try {
+            let blob = null;
+            if (url.startsWith('http')) {
+              try {
+                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(url)}`);
+                if (proxyRes.ok) {
+                  blob = await proxyRes.blob();
+                }
+              } catch (proxyErr) {
+                console.warn(`Proxy fetch failed for image ${index + 1}:`, proxyErr);
+              }
+            }
+
+            if (!blob) {
+              const directRes = await fetch(url);
+              if (directRes.ok) {
+                blob = await directRes.blob();
+              }
+            }
+
+            if (blob) {
+              const ext = blob.type?.includes('png') ? 'png' : blob.type?.includes('webp') ? 'webp' : 'jpg';
+              const filename = `${safeTitle}-${index + 1}.${ext}`;
+              zip.file(filename, blob);
+              successCount++;
+            }
+          } catch (imgErr) {
+            console.warn(`Failed to process image ${index + 1}:`, imgErr);
+          }
+        })
+      );
+
+      if (successCount === 0 && validImages.length > 0) {
+        throw new Error('Failed to download image assets');
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-catalogue.zip`);
+      handleClose();
+    } catch (error) {
+      console.error('Error downloading images:', error);
+      alert('Failed to download images. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleBuyNowDirect = (e) => {
+    if (e) e.stopPropagation();
+    handleClose();
+    if (product.isOutOfStock) {
+      handleEnquiryClick(e);
+      return;
+    }
+    if (typeof addToCart === 'function') {
+      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
+      addToCart(product, selectedVariant, 1, { colorName: defaultColor });
+    }
+  };
+
+  const handleAddToCartOnly = (e) => {
+    if (e) e.stopPropagation();
+    handleClose();
+    if (product.isOutOfStock) {
+      handleEnquiryClick(e);
+      return;
+    }
+    if (typeof addToCart === 'function') {
+      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
+      addToCart(product, selectedVariant, 1, { colorName: defaultColor });
+    }
+  };
 
   const handleBuyNowClick = (e) => {
     if (e) e.stopPropagation();
@@ -248,90 +392,138 @@ export const ProductCard = memo(function ProductCard({
         <div className="card-actions-new has-reseller-share">
           <button
             type="button"
-            onClick={handleBuyNowClick}
-            className="buy-card-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowBuyPanel(false);
+              setShowSellPanel(true);
+            }}
+            className="buy-card-btn sell-card-btn"
           >
-            <ShoppingBag size={15} /> {product.isOutOfStock ? 'ENQUIRE' : 'BUY'}
+            <Store size={15} /> SELL
           </button>
           <button type="button"
-            className="add-to-bag-btn options-trigger-btn"
-            onClick={() => setShowOptions(true)}
+            className="add-to-bag-btn buy-trigger-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSellPanel(false);
+              setShowBuyPanel(true);
+            }}
           >
-            <Menu size={16} /> OPTIONS
+            <ShoppingBag size={15} /> BUY
           </button>
         </div>
 
       </div>
 
-      {showOptions && (() => {
+      {showSellPanel && (() => {
         const content = (
           <div className={`card-options-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
             <div className={`card-options-sheet ${isClosing ? 'closing' : ''}`} ref={sheetRef} onClick={e => e.stopPropagation()}>
               <div className="sheet-header">
-
                 <div className="sheet-handle" />
-                <span className="sheet-title">Product Options</span>
-                <button type="button" className="sheet-close" onClick={handleClose}>
+                <span className="sheet-title">Reseller Tools</span>
+                <button type="button" className="sheet-close" onClick={handleClose} aria-label="Close panel">
                   <X size={16} strokeWidth={2.5} />
                 </button>
               </div>
 
               <div className="sheet-list">
-                <button type="button" className="sheet-item" onClick={() => { handleClose(); handleEnquiryClick(); }}>
-                  <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
+                <button
+                  type="button"
+                  className="sheet-item reseller-primary"
+                  onClick={() => {
+                    handleClose();
+                    setShowResellerWhatsapp(true);
+                  }}
+                >
+                  <div className="item-icon share"><Share2 size={20} /></div>
                   <div className="item-copy">
-                    <strong>Buy Now</strong>
-                    <span>Place your order on WhatsApp</span>
+                    <strong>Share</strong>
+                    <span>Share catalog on WhatsApp</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button type="button" className="sheet-item" onClick={() => { handleClose(); handleBuyNowClick(); }}>
+                <button
+                  type="button"
+                  className="sheet-item"
+                  onClick={async () => {
+                    if (isDownloading) return;
+                    await handleDownloadPhotos();
+                  }}
+                  disabled={isDownloading}
+                >
+                  <div className="item-icon download"><Download size={20} /></div>
+                  <div className="item-copy">
+                    <strong>{isDownloading ? 'Downloading...' : 'Download'}</strong>
+                    <span>Download photos & specs</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+        return isMobile ? createPortal(content, document.body) : content;
+      })()}
+
+      {showBuyPanel && (() => {
+        const content = (
+          <div className={`card-options-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
+            <div className={`card-options-sheet ${isClosing ? 'closing' : ''}`} ref={sheetRef} onClick={e => e.stopPropagation()}>
+              <div className="sheet-header">
+                <div className="sheet-handle" />
+                <span className="sheet-title">Buy Options</span>
+                <button type="button" className="sheet-close" onClick={handleClose} aria-label="Close panel">
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              <div className="sheet-list">
+                <button
+                  type="button"
+                  className={`sheet-item ${isOutOfStock ? 'disabled' : ''}`}
+                  onClick={handleBuyNowDirect}
+                  disabled={isOutOfStock}
+                >
+                  <div className="item-icon package"><PackageCheck size={20} /></div>
+                  <div className="item-copy">
+                    <strong>Buy Now</strong>
+                    <span>{isOutOfStock ? 'Currently out of stock' : 'Add to bag & checkout'}</span>
+                  </div>
+                  <ChevronRight size={18} className="item-chevron" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`sheet-item ${isOutOfStock ? 'disabled' : ''}`}
+                  onClick={handleAddToCartOnly}
+                  disabled={isOutOfStock}
+                >
                   <div className="item-icon bag"><ShoppingBag size={20} /></div>
                   <div className="item-copy">
                     <strong>Add to Cart</strong>
-                    <span>Save and shop later</span>
+                    <span>{isOutOfStock ? 'Currently out of stock' : 'Add item to your cart'}</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
 
-                <button type="button" className="sheet-item" onClick={() => { handleClose(); toggleFavorite(product); }}>
-                  <div className="item-icon heart"><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></div>
+                <button
+                  type="button"
+                  className="sheet-item"
+                  onClick={(e) => {
+                    handleClose();
+                    handleEnquiryClick(e);
+                  }}
+                >
+                  <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
                   <div className="item-copy">
-                    <strong>{isFavorite ? 'Remove from Favourite' : 'Add to Favourite'}</strong>
-                    <span>Save to your wishlist</span>
+                    <strong>Enquiry</strong>
+                    <span>Chat with us on WhatsApp</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
-
-                {priceAccess?.canViewPrices && (
-                  <>
-                    <div className="sheet-divider" />
-
-                    <button type="button"
-                      className="sheet-item reseller-primary"
-                      onClick={() => { handleClose(); setShowResellerWhatsapp(true); }}
-                    >
-                      <div className="item-icon share"><Share2 size={20} /></div>
-                      <div className="item-copy">
-                        <strong>Share with Customer</strong>
-                        <span>Share with your own markup</span>
-                      </div>
-                      <ChevronRight size={18} className="item-chevron" />
-                    </button>
-
-                    {canResellerShare && (
-                      <button type="button" className="sheet-item" onClick={() => { handleClose(); setShowShareModal(true); }}>
-                        <div className="item-icon link"><Layers size={20} /></div>
-                        <div className="item-copy">
-                          <strong>White-label Link</strong>
-                          <span>Add product to your website</span>
-                        </div>
-                        <ChevronRight size={18} className="item-chevron" />
-                      </button>
-                    )}
-                  </>
-                )}
               </div>
             </div>
           </div>

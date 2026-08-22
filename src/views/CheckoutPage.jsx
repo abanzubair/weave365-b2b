@@ -228,8 +228,8 @@ export function CheckoutPage({
 
     const totalKg = totalGrams / 1000;
     const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
-    // Standard shipping: ₹60/kg across all orders (Free shipping temporarily disabled)
-    const stdFee = billedKg * 60;
+    // Standard shipping: Free across all orders
+    const stdFee = 0;
     const expFee = billedKg * 150;
     const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
@@ -602,10 +602,10 @@ export function CheckoutPage({
 
               <div className="checkout-summary-row">
                 <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard'})</span>
-                <span style={{ color: '#0f172a', fontWeight: '500' }}>
+                <span style={{ color: shippingSpeed === 'standard' ? '#16a34a' : '#0f172a', fontWeight: shippingSpeed === 'standard' ? '600' : '500' }}>
                   {shippingSpeed === 'expedited'
                     ? formatMoney(expeditedShippingFee)
-                    : formatMoney(standardShippingFee)}
+                    : 'FREE'}
                 </span>
               </div>
 
@@ -1057,15 +1057,12 @@ export function CheckoutPage({
                   <div className="shipping-speed-text">
                     <div>
                       <strong>Standard Shipping:</strong>{' '}
-                      {formatMoney(standardShippingFee)}
+                      <span style={{ color: '#16a34a', fontWeight: '600' }}>FREE</span>
                     </div>
                     <div className="shipping-delivery-days">
                       Estimated Delivery: <strong>{hasSets ? '6–8 Business Days' : '4–5 Business Days'}</strong>
                     </div>
-
-
                   </div>
-
                 </div>
               </label>
 

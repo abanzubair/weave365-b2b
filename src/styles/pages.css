@@ -1455,7 +1455,7 @@ button {
 .spec-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   position: relative;
 }
 
@@ -1469,10 +1469,11 @@ button {
 }
 
 .spec-value {
-  font-size: 14.5px;
+  font-size: 13.5px;
   color: var(--ink);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
+  font-family: var(--font-ui);
 }
 
 .specs-panel-divider {
@@ -1501,7 +1502,7 @@ button {
 .sourcing-head h4 {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1511,7 +1512,7 @@ button {
 .sourcing-desc {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: clamp(14px, 1.05vw, 15px);
   line-height: 1.6;
   color: var(--muted);
 }
@@ -1519,9 +1520,9 @@ button {
 .sourcing-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 8px 14px;
   font-family: var(--font-ui);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--gold-dark);
   text-transform: uppercase;
@@ -1530,12 +1531,13 @@ button {
 
 .specs-disclaimer-note {
   font-family: var(--font-ui);
-  font-size: 12.5px;
+  font-size: clamp(13.5px, 1.05vw, 15px);
   line-height: 1.55;
   color: var(--muted);
   background: #faf8f5;
-  padding: 10px 14px;
+  padding: 11px 15px;
   border-radius: 6px;
+  border: 1px solid rgba(183, 134, 70, 0.14);
 }
 
 .specs-disclaimer-note .disclaimer-tag {
@@ -2616,13 +2618,297 @@ button {
   margin: 20px 0 16px;
 }
 
+/* Suggested Selling & Your Gross Profit Card */
+.reseller-profit-card {
+  margin-top: 20px;
+  background: #faf8f5;
+  border: 1px solid rgba(183, 134, 70, 0.2);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.reseller-profit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.reseller-profit-card-title {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: clamp(15.5px, 1.2vw, 17px);
+  font-weight: 700;
+  color: var(--ink, #1f1a16);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.reseller-margin-tag {
+  font-family: var(--font-ui);
+  font-size: clamp(11.5px, 0.95vw, 12px);
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(21, 128, 61, 0.08);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.profit-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profit-metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profit-metric-label {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: clamp(14px, 1.05vw, 15px);
+  color: #554c42;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.profit-metric-value {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: clamp(14.5px, 1.1vw, 15.5px);
+  font-weight: 700;
+  color: var(--ink, #1f1a16);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* Strategic Semantic Color Highlights */
+.profit-metric-row.row-profit .profit-metric-label {
+  color: #1f1a16;
+  font-weight: 600;
+}
+
+.profit-metric-value.profit-highlight {
+  color: #15803d; /* High-contrast botanical profit green */
+  font-weight: 800;
+}
+
+.profit-fullset-row {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(183, 134, 70, 0.18);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fullset-label {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: clamp(14px, 1.05vw, 15px);
+  font-weight: 700;
+  color: var(--ink, #1f1a16);
+  line-height: 1.5;
+}
+
+.fullset-value {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: clamp(14.5px, 1.1vw, 15.5px);
+  font-weight: 700;
+  color: var(--ink, #1f1a16);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.fullset-unit-rate {
+  color: var(--gold-dark, #805d31);
+  font-weight: 600;
+  font-size: clamp(13.5px, 1vw, 14px);
+}
+
+.reseller-profit-locked-note {
+  font-family: var(--font-ui, var(--font-body));
+  font-size: var(--small-size, 13px);
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+  .reseller-profit-card {
+    padding: 14px 14px;
+    margin-top: 16px;
+  }
+}
+
+/* Middle Details Area Blur (From 'Excluding GST' down to color swatches when popover opens) */
+.product-middle-details {
+  transition: filter 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  will-change: filter, opacity;
+}
+
+.product-middle-details.blurred-details {
+  filter: blur(4.5px);
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Product Actions Local Popover (anchored specifically above the active SELL or BUY button) */
+.product-actions-popover-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+}
+
+.product-actions-popover-wrapper.has-active-panel {
+  position: relative;
+  z-index: 1000;
+}
+
 .product-secondary-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  position: relative;
+  width: 100%;
+}
+
+.product-action-col {
+  position: relative;
+  width: 100%;
+}
+
+.product-action-col.active-col {
+  z-index: 1001;
+}
+
+.product-page-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  width: 100%;
+  min-width: 220px;
+  z-index: 1002;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(191, 146, 87, 0.2);
+  padding: 6px 0 8px;
+  animation: pagePopoverSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.product-page-popover.sell-popover {
+  left: 0;
+  transform-origin: bottom left;
+}
+
+.product-page-popover.buy-popover {
+  right: 0;
+  left: auto;
+  transform-origin: bottom right;
+}
+
+.product-page-popover.closing {
+  animation: pagePopoverFadeOut 0.18s ease-in forwards;
+}
+
+.product-page-popover .sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px 6px;
+  position: relative;
+  border-bottom: 1px solid rgba(191, 146, 87, 0.08);
+}
+
+.product-page-popover .sheet-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #bf9257;
+}
+
+.product-page-popover .sheet-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(191, 146, 87, 0.05);
+  border: 1px solid rgba(191, 146, 87, 0.1);
+  color: #bf9257;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.product-page-popover .sheet-close:hover {
+  background: rgba(191, 146, 87, 0.15);
+  transform: rotate(90deg);
+}
+
+.product-page-popover .sheet-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 6px 2px;
+  gap: 2px;
+}
+
+.product-page-popover .sheet-item {
+  padding: 8px 8px;
+  gap: 8px;
+}
+
+.product-page-popover .item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.product-page-popover .item-copy strong {
+  font-size: 12.5px;
+}
+
+.product-page-popover .item-copy span {
+  font-size: 10px;
+}
+
+@keyframes pagePopoverSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pagePopoverFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
 }
 
 .catalog-add-button,
+.buy-now-button,
 .whatsapp-button,
 .secondary-action-btn {
   width: 100% !important;
@@ -2642,6 +2928,88 @@ button {
   cursor: pointer;
   box-sizing: border-box;
   transition: all 0.2s ease;
+}
+
+.page-action-sell-btn,
+.page-action-buy-btn {
+  width: 100% !important;
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  font-family: var(--font-ui) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.page-action-sell-btn {
+  border: 1.5px solid rgba(183, 134, 70, 0.28) !important;
+  background: rgba(183, 134, 70, 0.08) !important;
+  color: var(--gold-dark, #805d31) !important;
+  box-shadow: none !important;
+}
+
+.page-action-sell-btn:hover {
+  background: rgba(183, 134, 70, 0.16) !important;
+  border-color: var(--gold-dark, #805d31) !important;
+  color: #64441c !important;
+  transform: translateY(-1px) !important;
+}
+
+.page-action-buy-btn {
+  border: 1.5px solid #d6d3cd !important;
+  background: #ffffff !important;
+  color: #4b453e !important;
+  box-shadow: none !important;
+}
+
+.page-action-buy-btn:hover {
+  background: #f5f3ef !important;
+  border-color: #a8a29e !important;
+  color: #1f1a16 !important;
+  transform: translateY(-1px) !important;
+}
+
+.page-action-sell-btn:active,
+.page-action-buy-btn:active {
+  transform: scale(0.98) !important;
+}
+
+.buy-now-button {
+  background: var(--ink, #1f1a16) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ink, #1f1a16) !important;
+  box-shadow: 0 2px 8px rgba(31, 26, 22, 0.12);
+}
+
+.buy-now-button:hover {
+  background: #38312b !important;
+  border-color: #38312b !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(31, 26, 22, 0.2);
+  transform: translateY(-1px);
+}
+
+.buy-now-button:active {
+  transform: translateY(0);
+}
+
+.buy-now-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9ca3af !important;
+  border-color: #9ca3af !important;
+  transform: none;
+  box-shadow: none;
 }
 
 .catalog-add-button {
@@ -2723,7 +3091,7 @@ button {
 
 .product-summary-text {
   font-family: var(--font-body);
-  font-size: 14.5px;
+  font-size: clamp(14px, 1.05vw, 15px);
   line-height: 1.65;
   color: var(--ink);
   margin: 0 0 10px 0;
@@ -2734,17 +3102,18 @@ button {
   align-items: center;
   gap: 6px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: clamp(13.5px, 1.05vw, 15px);
+  line-height: 1.5;
   color: var(--muted);
   background: #faf8f5;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid rgba(183, 134, 70, 0.12);
+  border: 1px solid rgba(183, 134, 70, 0.14);
 }
 
 .saree-length-pill strong {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .product-actions-row {

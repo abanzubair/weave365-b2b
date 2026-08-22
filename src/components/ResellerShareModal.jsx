@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink } from 'lucide-react';
+import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles } from 'lucide-react';
 import { resellerService } from '../services/resellerService';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
 import { storeConfig } from '../config.js';
+import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 /**
  * Modal for resellers to add a product to their white-label catalog.
@@ -85,46 +86,42 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
       <div className="reseller-modal" onClick={e => e.stopPropagation()}>
         
         <div className="reseller-modal-header">
-          <h2><Share2 size={18} /> Add to Catalog</h2>
-          <button type="button" onClick={onClose} className="reseller-modal-close"><X size={18} /></button>
+          <h2><Store size={18} /> White-Label Catalog</h2>
+          <button type="button" onClick={onClose} className="reseller-modal-close" aria-label="Close modal"><X size={18} /></button>
         </div>
 
         <div className="reseller-modal-content">
           {!priceAccess?.resellerDashboardEnabled ? (
-            <div className="reseller-success-box" style={{ background: '#fef2f2', borderColor: '#fca5a5' }}>
-              <h3 style={{ color: '#991b1b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                White-label Website Disabled
+            <div className="reseller-activation-card">
+              <div className="reseller-activation-icon">
+                <Store size={22} />
+              </div>
+              <h3 className="reseller-activation-title">
+                Activate White-Label Store
               </h3>
-              <p style={{ color: '#b91c1c', margin: '0.5rem 0 1rem 0', fontSize: 'var(--small-size)', lineHeight: '1.4' }}>
-                Your white-label website is currently disabled. To enable it and start sharing, please contact us.
+              <p className="reseller-activation-desc">
+                White-label storefronts let you showcase curated catalogs under your own brand with custom profit margins. This is a premium paid feature — connect with our team on WhatsApp to explore pricing plans and get your store activated.
               </p>
               <a
-                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi, my reseller white-label website is disabled. Please help me enable it.')}`}
+                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi Weave 365, I would like to inquire about pricing and plans to activate my premium reseller white-label storefront.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="reseller-btn-whatsapp"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  background: '#128C7E',
-                  color: '#fff',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  textDecoration: 'none',
-                  textAlign: 'center'
-                }}
+                className="reseller-activation-btn"
               >
-                Contact Us via WhatsApp
+                <WhatsappIcon size={18} />
+                <span>Inquire Pricing & Activate</span>
               </a>
             </div>
           ) : needsSetup ? (
-            <div className="reseller-success-box" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
-              <h3 style={{ color: '#92400e' }}>Set Up Your Store First</h3>
-              <p style={{ color: '#a16207' }}>
-                Go to <strong>Account → Reseller Tools → Settings</strong> and create your store name & slug before sharing products.
+            <div className="reseller-activation-card">
+              <div className="reseller-activation-icon setup">
+                <Sparkles size={24} />
+              </div>
+              <h3 className="reseller-activation-title">
+                Set Up Your Store Name
+              </h3>
+              <p className="reseller-activation-desc">
+                Please configure your store name & link in <strong>Account → Reseller Tools → Settings</strong> before adding products to your catalog.
               </p>
             </div>
           ) : !done ? (

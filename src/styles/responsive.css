@@ -1567,6 +1567,7 @@
     }
   }
 
+  .product-secondary-actions .buy-now-button,
   .product-secondary-actions .whatsapp-button,
   .product-secondary-actions .catalog-add-button,
   .product-secondary-actions .secondary-action-btn,
@@ -1592,7 +1593,7 @@
   }
 
   .product-summary-text {
-    font-size: 13.5px !important;
+    font-size: clamp(13.5px, 1vw, 14.5px) !important;
     line-height: 1.6 !important;
   }
 

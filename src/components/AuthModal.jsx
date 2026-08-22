@@ -118,6 +118,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
   const [tempDemoUser, setTempDemoUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const isRegister = mode === 'register';
 
   // Track open prop to reset mode/message inline during render (no stale flash)
   const [prevOpen, setPrevOpen] = useState(open);
