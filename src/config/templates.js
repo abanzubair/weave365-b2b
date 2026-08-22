@@ -11,7 +11,7 @@ export const PREMADE_TEMPLATES = [
     badgeType: 'ready',
     status: 'ready',
     description: 'A high-converting, mobile-first luxury studio & boutique template with quick drawers, hero video banner, bento collections, and instant WhatsApp ordering.',
-    previewImage: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
+    previewImage: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop',
     techStack: ['Next.js 14', 'Tailwind CSS', 'TypeScript', 'Cart Drawer'],
     features: [
       'Live auto-sync with your Weave365 products & custom markups',

@@ -144,59 +144,35 @@ export function ResellerTools({ user, buyerProfile }) {
 
   return (
     <div className="rt-container">
-      {/* Executive Boutique Command Banner */}
+      {/* Distilled Store Header */}
       <div className="rt-header">
         <div className="rt-header-main">
           <div className="rt-header-left">
-            <div className="rt-status-row">
-              <span className="rt-status-pill">
-                <span className={`rt-status-dot ${externalWebsiteUrl ? 'live' : 'pending'}`}></span>
-                {externalWebsiteUrl ? 'Live Store Online' : 'Store Link Pending'}
-              </span>
-              <span className="rt-sync-badge">
-                <Sparkles size={12} /> Auto-Sync Active
-              </span>
-            </div>
-
             <h2 className="rt-store-name">{storefront?.store_name || 'My Reseller Boutique'}</h2>
 
-            <div className="rt-store-link-row">
-              {externalWebsiteUrl ? (
-                <div className="rt-url-chip" onClick={copyWebsiteLink} title="Click to copy link">
-                  <Globe size={13} className="rt-url-icon" />
-                  <span className="rt-url-text">{externalWebsiteUrl}</span>
-                  <span className="rt-url-copy-hint">{copied ? 'Copied!' : 'Copy'}</span>
-                </div>
-              ) : (
-                <span className="rt-unlinked-text">
-                  Choose a template below or configure your external website to start selling.
-                </span>
-              )}
-            </div>
+            {externalWebsiteUrl ? (
+              <div className="rt-url-chip" onClick={copyWebsiteLink} title="Click to copy store link">
+                <Globe size={13} className="rt-url-icon" />
+                <span className="rt-url-text">{externalWebsiteUrl}</span>
+                <span className="rt-url-copy-hint">{copied ? 'Copied' : 'Copy'}</span>
+              </div>
+            ) : (
+              <span className="rt-unlinked-text">
+                Select a template below or enter your website URL in settings.
+              </span>
+            )}
           </div>
 
           <div className="rt-header-actions">
             {externalWebsiteUrl ? (
-              <>
-                <button 
-                  type="button" 
-                  onClick={copyWebsiteLink} 
-                  className="rt-action-btn glass" 
-                  title="Copy store link to clipboard"
-                >
-                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                  <span>{copied ? 'Link Copied' : 'Copy Link'}</span>
-                </button>
-                <a 
-                  href={externalWebsiteUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="rt-action-btn primary"
-                >
-                  <span>Visit Live Store</span>
-                  <ExternalLink size={14} />
-                </a>
-              </>
+              <a 
+                href={externalWebsiteUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="rt-action-btn primary"
+              >
+                <span>Open Live Store ↗</span>
+              </a>
             ) : (
               <button 
                 type="button" 
@@ -210,31 +186,23 @@ export function ResellerTools({ user, buyerProfile }) {
           </div>
         </div>
 
-        {/* Quick Glance Stats Strip */}
+        {/* Distilled Metadata Strip */}
         <div className="rt-header-stats-strip">
-          <div className="rt-stat-item">
-            <Package size={14} className="rt-stat-icon" />
-            <span className="rt-stat-label">Catalog Products:</span>
-            <span className="rt-stat-value">{shares.filter(s => s.is_active).length} Active</span>
-          </div>
-          <div className="rt-stat-divider" />
-          <div className="rt-stat-item">
-            <LayoutTemplate size={14} className="rt-stat-icon" />
-            <span className="rt-stat-label">Store Theme:</span>
-            <span className="rt-stat-value">
-              {PREMADE_TEMPLATES.find(t => t.id === selectedTemplateId)?.name || 'VRTX Modern Studio'}
-            </span>
-          </div>
-          <div className="rt-stat-divider" />
-          <div className="rt-stat-item">
-            <CheckCircle2 size={14} className="rt-stat-icon text-emerald-400" />
-            <span className="rt-stat-label">Profit Markup:</span>
-            <span className="rt-stat-value">Protected & Active</span>
-          </div>
+          <span className="rt-stat-item">
+            <strong>{shares.filter(s => s.is_active).length}</strong> Products in Catalog
+          </span>
+          <span className="rt-stat-divider" />
+          <span className="rt-stat-item">
+            Theme: <strong>{PREMADE_TEMPLATES.find(t => t.id === selectedTemplateId)?.name || 'VRTX Modern Studio'}</strong>
+          </span>
+          <span className="rt-stat-divider" />
+          <span className="rt-stat-item" style={{ color: '#166534' }}>
+            ✓ Wholesale Costs Confidential
+          </span>
         </div>
       </div>
 
-      {/* Segmented Control Navigation Tabs */}
+      {/* Navigation Tabs */}
       <div className="rt-tabs-bar">
         <div className="rt-tabs">
           <button 
@@ -243,7 +211,7 @@ export function ResellerTools({ user, buyerProfile }) {
             className={`rt-tab ${activeTab === 'templates' ? 'active' : ''}`}
           >
             <LayoutTemplate size={15} /> 
-            <span>Pre-Made Templates</span>
+            <span>Store Templates</span>
           </button>
           <button 
             type="button"
@@ -251,8 +219,7 @@ export function ResellerTools({ user, buyerProfile }) {
             className={`rt-tab ${activeTab === 'shares' ? 'active' : ''}`}
           >
             <Package size={15} /> 
-            <span>Catalog Products</span>
-            <span className="rt-tab-counter">{shares.filter(s => s.is_active).length}</span>
+            <span>Catalog ({shares.filter(s => s.is_active).length})</span>
           </button>
           <button 
             type="button"
@@ -260,7 +227,7 @@ export function ResellerTools({ user, buyerProfile }) {
             className={`rt-tab ${activeTab === 'storefront' ? 'active' : ''}`}
           >
             <Settings size={15} /> 
-            <span>Website & API Settings</span>
+            <span>Website Settings</span>
           </button>
         </div>
       </div>
@@ -270,9 +237,9 @@ export function ResellerTools({ user, buyerProfile }) {
         <div className="rt-templates-section">
           <div className="rt-section-header">
             <div>
-              <h3 className="rt-section-title">Choose a Storefront Template</h3>
+              <h3 className="rt-section-title">Storefront Templates</h3>
               <p className="rt-section-subtitle">
-                Select from our curated boutique templates. Each template connects automatically to your Weave365 products, retail markups, and WhatsApp inquiries with zero setup.
+                Choose a ready design for your boutique. Sarees added from Weave365 sync automatically with your retail markup prices and WhatsApp checkout.
               </p>
             </div>
           </div>
@@ -289,7 +256,7 @@ export function ResellerTools({ user, buyerProfile }) {
                     <div className="rt-template-badges">
                       {isSelected && (
                         <span className="rt-tmpl-badge active">
-                          <CheckCircle2 size={12} /> Active Choice
+                          <CheckCircle2 size={12} /> Active
                         </span>
                       )}
                       <span className={`rt-tmpl-badge ${tmpl.badgeType}`}>
@@ -302,23 +269,15 @@ export function ResellerTools({ user, buyerProfile }) {
                     <div className="rt-template-top">
                       <span className="rt-template-category">{tmpl.category}</span>
                       <h4 className="rt-template-title">{tmpl.name}</h4>
-                      <p className="rt-template-tagline">{tmpl.tagline}</p>
                     </div>
 
                     <p className="rt-template-desc">{tmpl.description}</p>
 
-                    {/* Tech Stack Pills */}
-                    <div className="rt-template-stack">
-                      {tmpl.techStack.map((tech) => (
-                        <span key={tech} className="rt-stack-pill">{tech}</span>
-                      ))}
-                    </div>
-
-                    {/* Feature Highlights */}
+                    {/* Key Feature Highlights */}
                     <div className="rt-template-features">
-                      {tmpl.features.slice(0, 3).map((feat, idx) => (
+                      {tmpl.features.slice(0, 2).map((feat, idx) => (
                         <div key={idx} className="rt-template-feature-row">
-                          <Sparkles size={13} className="rt-feature-bullet" />
+                          <CheckCircle2 size={13} className="rt-feature-bullet" />
                           <span>{feat}</span>
                         </div>
                       ))}
@@ -334,7 +293,7 @@ export function ResellerTools({ user, buyerProfile }) {
                             className={`rt-tmpl-btn ${isSelected ? 'selected' : 'primary'}`}
                           >
                             {isSelected ? (
-                              <><Check size={14} /> Active Template</>
+                              <><Check size={14} /> Active</>
                             ) : (
                               'Select Template'
                             )}
@@ -344,7 +303,7 @@ export function ResellerTools({ user, buyerProfile }) {
                             onClick={() => setGuideTemplate(tmpl)}
                             className="rt-tmpl-btn secondary"
                           >
-                            <Globe size={14} /> View Store Link
+                            <Globe size={14} /> Details
                           </button>
                         </>
                       ) : (
@@ -369,9 +328,9 @@ export function ResellerTools({ user, buyerProfile }) {
             <div className="rt-empty-icon-wrap">
               <Package size={32} />
             </div>
-            <h4>No products added to your catalog yet</h4>
+            <h4>Your store catalog is currently empty</h4>
             <p>
-              Browse any product on Weave365 and click <strong>White-Label</strong> or <strong>Add to My Catalog</strong> to publish it to your external website with your custom pricing markup.
+              Browse sarees or textiles on Weave365 and click <strong>Add to My Store</strong> on any design. Set your profit markup and it will immediately appear on your boutique website.
             </p>
           </div>
         ) : (
@@ -393,17 +352,17 @@ export function ResellerTools({ user, buyerProfile }) {
                 className="rt-filter-select"
               >
                 <option value="all">All Products</option>
-                <option value="live">Active Only</option>
-                <option value="removed">Removed</option>
+                <option value="live">Visible on Website</option>
+                <option value="removed">Hidden / Removed</option>
               </select>
               <select 
                 value={sortBy} 
                 onChange={e => setSortBy(e.target.value)}
                 className="rt-filter-select"
               >
-                <option value="newest">Newest Added</option>
-                <option value="oldest">Oldest Added</option>
-                <option value="a-z">Product Name (A-Z)</option>
+                <option value="newest">Newest Added First</option>
+                <option value="oldest">Oldest Added First</option>
+                <option value="a-z">Product Name (A to Z)</option>
               </select>
             </div>
 
@@ -421,7 +380,7 @@ export function ResellerTools({ user, buyerProfile }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <strong>{share.title || 'Untitled Product'}</strong>
                         <span className={`rt-badge ${share.is_active ? 'on' : 'off'}`}>
-                          {share.is_active ? 'Active on Store' : 'Removed'}
+                          {share.is_active ? 'Visible on Website' : 'Hidden'}
                         </span>
                       </div>
                       <span className="rt-link-meta">
@@ -437,7 +396,7 @@ export function ResellerTools({ user, buyerProfile }) {
                           type="button" 
                           onClick={() => handleDeactivate(share.id)} 
                           className="rt-icon-btn danger" 
-                          title="Remove from your website catalog"
+                          title="Remove from your boutique website"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -509,10 +468,10 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
             <LayoutTemplate size={20} className="rt-modal-icon" />
             <div>
               <h3>{template.name}</h3>
-              <p>{template.category}</p>
+              <p>Storefront Template Design</p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rt-modal-close">
+          <button type="button" onClick={onClose} className="rt-modal-close" aria-label="Close modal">
             <X size={18} />
           </button>
         </div>
@@ -522,7 +481,7 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
           <div className="rt-modal-status-banner">
             <div className="rt-status-pill">
               <span className="rt-status-dot live"></span>
-              {isSelected ? 'Currently Selected Template' : 'Available Template'}
+              {isSelected ? 'Currently Selected Template' : 'Available Storefront Template'}
             </div>
             <p className="rt-modal-status-text">
               {template.description}
@@ -531,7 +490,7 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
 
           {/* Your Live Store Link Box */}
           <div className="rt-store-link-box">
-            <span className="rt-store-link-label">Your Store Website Link:</span>
+            <span className="rt-store-link-label">Your Live Storefront Link:</span>
             <div className="rt-store-link-input-group">
               <input 
                 type="text" 
@@ -559,7 +518,7 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
                 <ExternalLink size={14} /> Open Live Store
               </a>
               <span className="rt-store-link-tip">
-                Share this link on your WhatsApp Status, Instagram Bio, or customer groups!
+                Share this link on your WhatsApp Status, Instagram Bio, or broadcast groups to take customer orders.
               </span>
             </div>
           </div>
@@ -570,21 +529,21 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
               <Sparkles size={18} className="rt-easy-icon" />
               <div>
                 <strong>Automatic Product Sync</strong>
-                <p>Every product you add from Weave365 appears instantly with high-res photos.</p>
+                <p>Every saree or textile added from Weave365 appears on your site with high-resolution imagery.</p>
               </div>
             </div>
             <div className="rt-easy-feature-card">
               <CheckCircle2 size={18} className="rt-easy-icon" />
               <div>
-                <strong>Your Profit Markups Protected</strong>
-                <p>Wholesale costs are hidden. Customers only see your customized selling prices.</p>
+                <strong>Protected Profit Margins</strong>
+                <p>Customers only see your customized selling prices. Wholesale purchase costs remain completely confidential.</p>
               </div>
             </div>
             <div className="rt-easy-feature-card">
               <Package size={18} className="rt-easy-icon" />
               <div>
-                <strong>Direct WhatsApp Ordering</strong>
-                <p>Customer checkout orders and questions come directly to your WhatsApp number.</p>
+                <strong>Direct WhatsApp Orders</strong>
+                <p>Customer checkout orders and questions route straight to your WhatsApp number.</p>
               </div>
             </div>
           </div>
@@ -603,7 +562,7 @@ function TemplateDetailsModal({ template, storefront, user, origin, onClose, onS
               }}
               className="rt-btn-primary"
             >
-              <Check size={16} /> Choose {template.name} as My Store Template
+              <Check size={16} /> Use {template.name} for My Boutique
             </button>
           )}
         </div>
@@ -674,25 +633,26 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
         <div className="rt-settings-form-head">
           <Globe size={20} className="rt-settings-head-icon" />
           <div>
-            <h4>External Website Configuration</h4>
-            <p>Connect the external website where you host your boutique.</p>
+            <h4>External Website & Domain Setup</h4>
+            <p>Configure where your boutique website is hosted so your product links and share buttons connect properly.</p>
           </div>
         </div>
 
         <div className="rt-form-row">
-          <label htmlFor="rt-store-name">Store / Brand Name *</label>
+          <label htmlFor="rt-store-name">Boutique / Store Name *</label>
           <input 
             id="rt-store-name" 
             type="text" 
             required 
             value={formData.store_name} 
             onChange={e => update('store_name', e.target.value)} 
-            placeholder="e.g. Aria Heritage Textiles" 
+            placeholder="e.g. Aria Heritage Sarees" 
           />
+          <span className="rt-field-hint">Displayed as the main brand title on your boutique website.</span>
         </div>
 
         <div className="rt-form-row">
-          <label htmlFor="rt-custom-domain">External Website Link (Storefront URL) *</label>
+          <label htmlFor="rt-custom-domain">External Website URL *</label>
           <div className="rt-input-with-icon">
             <Globe size={16} className="rt-input-prefix-icon" />
             <input 
@@ -700,17 +660,17 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
               type="text" 
               value={formData.custom_domain} 
               onChange={e => update('custom_domain', e.target.value)} 
-              placeholder="e.g. https://myboutique.com or https://mystore.myshopify.com" 
+              placeholder="e.g. https://myboutique.com or https://ecom-template-1-tau.vercel.app" 
               className="rt-input-has-prefix"
             />
           </div>
           <span className="rt-field-hint">
-            Enter the full link where your external website is hosted. When you add products from Weave365, all share links and previews will point here.
+            Paste your live store URL. When you share products with customers, all links will direct here.
           </span>
         </div>
 
         <div className="rt-form-row">
-          <label htmlFor="rt-slug">Store Identifier / API Slug *</label>
+          <label htmlFor="rt-slug">Store Identifier (Slug) *</label>
           <input 
             id="rt-slug" 
             type="text" 
@@ -719,7 +679,7 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
             onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
             placeholder="my-boutique-slug" 
           />
-          <span className="rt-field-hint">A unique identifier used for your API endpoints and product feeds.</span>
+          <span className="rt-field-hint">A unique short name used to identify your store catalog in links and data feeds.</span>
         </div>
 
         <button type="submit" disabled={saving} className={`rt-save-btn ${saved ? 'saved' : ''}`}>
@@ -732,13 +692,13 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
         <div className="rt-integration-header">
           <div className="rt-integration-title">
             <Code size={18} />
-            <h4>Connect Your External Website (API Feed)</h4>
+            <h4>Live JSON Products Feed (For Custom Developers)</h4>
           </div>
           <span className="rt-api-badge">REST API</span>
         </div>
 
         <p className="rt-integration-desc">
-          Whenever you add products from Weave365, they are automatically published with your custom markup. Your external website can consume the live product catalog JSON feed directly:
+          If you or your developer are building a custom website from scratch, consume your live products directly from this endpoint:
         </p>
 
         <div className="rt-api-endpoint-box">
@@ -762,14 +722,14 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
             <Sparkles size={16} className="rt-point-icon" />
             <div>
               <strong>Instant Catalog Sync</strong>
-              <span>Any product added, updated, or removed from your Weave365 Business Center updates in real-time in this feed.</span>
+              <span>Adding or editing products in Weave365 updates this feed immediately in real time.</span>
             </div>
           </div>
           <div className="rt-integration-point">
-            <Sparkles size={16} className="rt-point-icon" />
+            <CheckCircle2 size={16} className="rt-point-icon" style={{ color: '#166534' }} />
             <div>
-              <strong>Custom Markup Pricing Included</strong>
-              <span>Product prices are pre-calculated with your profit markup, hiding Weave365 wholesale base prices.</span>
+              <strong>Protected Profit Margins</strong>
+              <span>Wholesale base prices are never exposed; buyer prices are pre-calculated with your profit markup.</span>
             </div>
           </div>
         </div>
@@ -777,3 +737,5 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
     </div>
   );
 }
+
+
