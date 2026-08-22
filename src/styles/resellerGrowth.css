@@ -83,3 +83,9 @@
     margin: 0 auto;
   }
 }
+
+@media (max-width: 480px) {
+  .reseller-visual-side .gallery-frame-container {
+    max-width: 270px;
+  }
+}

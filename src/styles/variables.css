@@ -53,100 +53,85 @@
   --accent-gold: #c69e6a;
 
   /* Viewport & Container Tokens */
-  --container-max-mobile: 358px;
-  --container-max-tablet: 720px;
+  --container-max-mobile: 100%;
+  --container-max-tablet: 100%;
   --container-max-desktop: 1320px;
-  --container-max-large: 1600px;
-  --container-width: var(--container-max-mobile);
+  --container-max-large: 1560px;
+  --container-max-ultrawide: 1720px;
+  --container-width: 100%;
 
-  /* Typography Scale Tokens (Default: Mobile 390px baseline) */
-  --h1-size: 32px;
+  /* Fluid Typography Scale Tokens with Responsive clamp() */
+  --h1-size: clamp(28px, 4.5vw, 48px);
   --h1-weight: 700;
 
-  --h2-size: 28px;
+  --h2-size: clamp(22px, 3.5vw, 38px);
   --h2-weight: 700;
 
-  --h3-size: 24px;
+  --h3-size: clamp(18px, 2.4vw, 30px);
   --h3-weight: 600;
 
-  --h4-size: 20px;
+  --h4-size: clamp(16px, 1.8vw, 22px);
   --h4-weight: 600;
 
-  --h5-size: 18px;
+  --h5-size: clamp(15px, 1.4vw, 18px);
   --h5-weight: 600;
 
-  --h6-size: 16px;
+  --h6-size: clamp(13px, 1.1vw, 15px);
   --h6-weight: 600;
 
-  --body-large-size: 16px;
+  --body-large-size: clamp(15px, 1.3vw, 18px);
   --body-large-weight: 400;
 
-  --body-size: 16px;
+  --body-size: clamp(14px, 1.1vw, 16px);
   --body-weight: 400;
 
-  --small-size: 14px;
+  --small-size: clamp(12px, 0.95vw, 13.5px);
   --small-weight: 400;
 
-  --caption-size: 12px;
+  --caption-size: clamp(11px, 0.85vw, 12.5px);
   --caption-weight: 400;
 
-  --button-size: 16px;
+  --button-size: clamp(13.5px, 1.1vw, 16px);
   --button-weight: 600;
 
-  --nav-size: 16px;
+  --nav-size: clamp(12px, 1vw, 14px);
   --nav-weight: 500;
 
-  /* Legacy aliases for backward compatibility */
-  --site-padding: clamp(16px, 4vw, 48px);
-  --section-gap: clamp(40px, 6vw, 90px);
+  /* Touch Target & Spacing Tokens */
+  --min-touch-target: 44px;
+  --site-padding: clamp(14px, 3.5vw, 48px);
+  --section-gap: clamp(32px, 5vw, 80px);
 }
 
 /* Tablet (768px Viewport Baseline) */
 @media (min-width: 768px) {
   :root {
-    --container-width: var(--container-max-tablet);
+    --container-width: 100%;
+    --site-padding: clamp(20px, 3.5vw, 40px);
   }
 }
 
-/* Desktop/Laptop (1440px Viewport Baseline) */
+/* Desktop/Laptop (1200px Viewport Baseline) */
 @media (min-width: 1200px) {
   :root {
     --container-width: var(--container-max-desktop);
-
-    --h1-size: 48px;
-    --h2-size: 40px;
-    --h3-size: 32px;
-    --h4-size: 24px;
-    --h5-size: 20px;
-    --h6-size: 18px;
-
-    --body-large-size: 18px;
-    --body-size: 16px;
-    --small-size: 14px;
-    --caption-size: 13px;
-    --button-size: 16px;
-    --nav-size: 16px;
+    --site-padding: clamp(32px, 3.5vw, 48px);
   }
 }
 
-/* Large Desktop (1920px Viewport Baseline) */
-@media (min-width: 1750px) {
+/* Large Desktop (1600px Viewport Baseline) */
+@media (min-width: 1600px) {
   :root {
     --container-width: var(--container-max-large);
+    --site-padding: clamp(40px, 4vw, 64px);
+  }
+}
 
-    --h1-size: 48px;
-    --h2-size: 40px;
-    --h3-size: 32px;
-    --h4-size: 24px;
-    --h5-size: 20px;
-    --h6-size: 18px;
-
-    --body-large-size: 18px;
-    --body-size: 16px;
-    --small-size: 14px;
-    --caption-size: 14px;
-    --button-size: 18px;
-    --nav-size: 18px;
+/* Ultra-Wide Desktop (1920px+ Viewport Baseline) */
+@media (min-width: 1920px) {
+  :root {
+    --container-width: var(--container-max-ultrawide);
+    --site-padding: clamp(48px, 4.5vw, 80px);
   }
 }
 
@@ -288,23 +273,22 @@ nav, .nav-link, .nav-item {
   max-width: var(--container-width);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: var(--site-padding);
+  padding-right: var(--site-padding);
+  box-sizing: border-box;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-::-webkit-scrollbar {
-  display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-html, body {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-img {
-  display: block;
+/* Fluid Media Defaults */
+img, video, svg, canvas {
   max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Touch & Tap highlight resets */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
 }
 

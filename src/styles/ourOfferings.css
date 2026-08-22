@@ -686,6 +686,23 @@
   }
 }
 
+@media (max-width: 480px) {
+  .offerings-hero-content {
+    padding: 0;
+  }
+  .hero-title-luxury {
+    font-size: clamp(24px, 7vw, 32px);
+  }
+  .minimal-ink-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+  .artisan-image-luxury {
+    height: 260px;
+  }
+}
+
 /* Centering wrapper for reused ContactSection */
 .offerings-contact-wrapper {
   width: 100%;
@@ -700,7 +717,7 @@
 
 @media (max-width: 768px) {
   .offerings-contact-wrapper {
-    padding: 60px 20px;
+    padding: 60px var(--site-padding);
   }
 }
 

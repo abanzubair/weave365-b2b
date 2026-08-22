@@ -1404,6 +1404,25 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .dropshipping-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .features-showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .showcase-main-column {
+    grid-template-columns: 1fr 1fr;
+    padding: 28px;
+    gap: 28px;
+  }
+  .dropshipping-profit-alert .alert-box {
+    padding: 28px 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .dropshipping-hero {
     padding: 30px 16px 40px;

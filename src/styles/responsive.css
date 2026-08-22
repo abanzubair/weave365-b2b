@@ -7,21 +7,97 @@
   display: none !important;
 }
 
-/* Fix for 1920x1080 screens to show exactly 5 cards in rails */
-@media screen and (min-width: 1440px) {
-  .scrollable-row>* {
-    flex: 0 0 calc((100% - (var(--rail-gap, 10px) * 4)) / 5) !important;
-  }
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE PRODUCT RAILS & CATALOG GRIDS (320px to 2560px+)
+   ═══════════════════════════════════════════════════════════════ */
 
+/* Default Mobile Grid (320px - 767px) */
+.catalog-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.scrollable-row > * {
+  flex: 0 0 calc((100% - var(--rail-gap, 8px)) / 2) !important;
+  max-width: calc((100% - var(--rail-gap, 8px)) / 2) !important;
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media screen and (min-width: 768px) {
   .catalog-grid {
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+  .scrollable-row > * {
+    flex: 0 0 calc((100% - (var(--rail-gap, 12px) * 2)) / 3) !important;
+    max-width: calc((100% - (var(--rail-gap, 12px) * 2)) / 3) !important;
   }
 }
 
-/* Mobile & Tablet Responsiveness */
-@media screen and (max-width: 820px) {
+/* Small Laptop / Intermediate (1024px - 1319px) */
+@media screen and (min-width: 1024px) {
+  .catalog-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+  .scrollable-row > * {
+    flex: 0 0 calc((100% - (var(--rail-gap, 16px) * 3)) / 4) !important;
+    max-width: calc((100% - (var(--rail-gap, 16px) * 3)) / 4) !important;
+  }
+  .main-nav {
+    gap: clamp(10px, 1.4vw, 20px) !important;
+  }
+  .main-nav button,
+  .main-nav a {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em !important;
+  }
+}
+
+/* Standard Laptop & Desktop (1320px - 1599px) */
+@media screen and (min-width: 1320px) {
+  .catalog-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+  }
+  .scrollable-row > * {
+    flex: 0 0 calc((100% - (var(--rail-gap, 18px) * 4)) / 5) !important;
+    max-width: calc((100% - (var(--rail-gap, 18px) * 4)) / 5) !important;
+  }
+}
+
+/* Large Desktop / Full HD (1600px - 1919px) */
+@media screen and (min-width: 1600px) {
+  .catalog-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+  }
+  .scrollable-row > * {
+    flex: 0 0 calc((100% - (var(--rail-gap, 20px) * 4)) / 5) !important;
+    max-width: calc((100% - (var(--rail-gap, 20px) * 4)) / 5) !important;
+  }
+}
+
+/* Ultra-Wide Desktop (1920px+) */
+@media screen and (min-width: 1920px) {
+  .catalog-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+  }
+  .scrollable-row > * {
+    flex: 0 0 calc((100% - (var(--rail-gap, 24px) * 5)) / 6) !important;
+    max-width: calc((100% - (var(--rail-gap, 24px) * 5)) / 6) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile & Tablet Header / Shell Navigation (≤ 1023px)
+   ═══════════════════════════════════════════════════════════════ */
+@media screen and (max-width: 1023px) {
   :root {
-    --site-padding: 20px;
+    --site-padding: clamp(16px, 3.5vw, 28px);
   }
 
   /* Top Bar */
@@ -44,7 +120,6 @@
     overflow: hidden;
     white-space: nowrap;
   }
-
 
   .marquee-track {
     display: flex;
@@ -168,7 +243,7 @@
     align-items: center !important;
     gap: 10px !important;
     margin-left: auto !important;
-    margin-right: -15px !important;
+    margin-right: 0 !important;
   }
 
   .header-actions-premium .premium-search-trigger {
@@ -214,20 +289,21 @@
     align-items: center !important;
     justify-content: center !important;
     padding: 6px !important;
-    margin-left: 0 !important;
+    margin-left: 6px !important;
     margin-right: -4px !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     color: var(--ink) !important;
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
   }
 
   .hamburger-btn .hamburger-svg {
     width: 24px !important;
     height: 24px !important;
   }
-
-
 
   .search-box-wrapper {
     display: none !important;
@@ -239,14 +315,19 @@
 
   /* Hero Section */
   .hero {
-    height: calc(100svh - 38px) !important;
-    margin-top: -64px;
-    padding-top: 64px;
-    /* Maintain content position while allowing background to bleed up */
-    min-height: 500px;
-    max-height: none;
-    display: grid;
+    height: 100vh !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     isolation: isolate;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   .hero::after {
@@ -378,6 +459,19 @@
   .category-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .category-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+  }
+
+  @media screen and (max-width: 360px) {
+    .category-grid {
+      gap: 6px;
+    }
   }
 
   .category-card span {
@@ -547,11 +641,18 @@
 
   /* Footer */
   .footer {
-    grid-template-columns: 1fr;
-    padding: 36px var(--site-padding) 30px;
-    gap: 28px;
+    grid-template-columns: repeat(3, 1fr) !important;
+    padding: 36px var(--site-padding) 30px !important;
+    gap: 28px 20px !important;
     text-align: left;
     align-items: start;
+  }
+
+  @media screen and (max-width: 640px) {
+    .footer {
+      grid-template-columns: 1fr !important;
+      gap: 28px !important;
+    }
   }
 
   .footer>div {
@@ -559,9 +660,8 @@
   }
 
   .footer>div:first-child,
-  .footer>div:nth-child(5),
   .footer-bottom {
-    grid-column: 1 / -1;
+    grid-column: 1 / -1 !important;
   }
 
   .footer-brand {
@@ -700,10 +800,12 @@
   /* Newsletter */
 
 
-  /* Product Rails: exactly 2 cards per screen on mobile (no peeking) */
-  .scrollable-row>* {
-    flex: 0 0 calc((100% - 8px) / 2) !important;
-    max-width: calc((100% - 8px) / 2) !important;
+  /* Product Rails: 2 cards on mobile, 3 cards on tablet */
+  @media screen and (max-width: 767px) {
+    .scrollable-row>* {
+      flex: 0 0 calc((100% - 8px) / 2) !important;
+      max-width: calc((100% - 8px) / 2) !important;
+    }
   }
 
   /* Premium floating arrows positioned safely inside screen edges to prevent X-axis overflow */
@@ -1031,11 +1133,13 @@
     }
   }
 
-  /* --- Product Grid: 2 columns, tight gap --- */
-  .catalog-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px;
-    margin-top: 16px;
+  /* --- Product Grid: 2 columns on mobile, 3 on tablet --- */
+  @media screen and (max-width: 767px) {
+    .catalog-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 8px;
+      margin-top: 16px;
+    }
   }
 
   /* --- Product Card: compact mobile layout --- */
@@ -1082,23 +1186,31 @@
   }
 }
 
-/* Very Narrow Screens (< 380px) */
+/* Very Narrow Screens (< 380px, e.g. iPhone SE 320x568, Galaxy 360x800) */
 @media screen and (max-width: 380px) {
   :root {
-    --site-padding: 16px;
+    --site-padding: 12px;
   }
 
   .section-title h2 {
-    font-size: 28px !important;
-    /* Smaller titles to fit viewport */
+    font-size: clamp(22px, 6.5vw, 28px) !important;
   }
 
   .deal-copy h2 {
-    font-size: 26px !important;
+    font-size: clamp(20px, 6vw, 26px) !important;
   }
 
   .hero h1 {
-    font-size: 32px !important;
+    font-size: clamp(26px, 7.5vw, 32px) !important;
+  }
+
+  .catalog-grid {
+    gap: 6px !important;
+  }
+
+  .scrollable-row {
+    --rail-gap: 6px !important;
+    gap: 6px !important;
   }
 }
 
@@ -1118,10 +1230,10 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PRODUCT PAGE — Mobile Optimization (UI/UX Pro Max)
+   PRODUCT PAGE — Tablet & Mobile Optimization (UI/UX Pro Max)
    Touch targets ≥ 44px · Fluid grid scaling · Premium spacing
    ═══════════════════════════════════════════════════════════════ */
-@media screen and (max-width: 820px) {
+@media screen and (max-width: 1023px) {
   .product-view {
     width: 100% !important;
     padding: 0 var(--site-padding) 40px !important;
@@ -1395,6 +1507,12 @@
   .product-secondary-actions {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
+  }
+
+  @media screen and (max-width: 360px) {
+    .product-secondary-actions {
+      grid-template-columns: 1fr !important;
+    }
   }
 
   .product-secondary-actions .whatsapp-button,

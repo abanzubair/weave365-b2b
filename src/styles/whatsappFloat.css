@@ -43,10 +43,10 @@
 
 @media (max-width: 768px) {
   .wa-float {
-    bottom: 20px;
-    right: 20px;
-    width: 46px;
-    height: 46px;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    right: calc(20px + env(safe-area-inset-right));
+    width: 48px;
+    height: 48px;
   }
   .wa-float svg {
     width: 22px;

@@ -581,6 +581,10 @@
 }
 
 @media (max-width: 500px) {
+  .early-access-form-card {
+    padding: 24px 16px;
+    border-radius: 12px;
+  }
 
   .buyer-type-grid,
   .buying-preference-flex {
@@ -588,7 +592,7 @@
   }
 
   .early-access-header h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.35rem, 5.5vw, 1.5rem);
     font-weight: 600;
   }
 

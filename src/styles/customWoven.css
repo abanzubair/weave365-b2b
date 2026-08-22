@@ -2056,6 +2056,7 @@
 @media (max-width: 768px) {
   .cw-simple-table-card {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .cw-simple-table th.th-param {
     min-width: 280px;

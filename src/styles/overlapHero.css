@@ -1,66 +1,85 @@
-/* Overlap Hero Component CSS */
+/* ═══════════════════════════════════════════════════════════════
+   OVERLAP HERO — Impeccable Luxury Polish
+   ═══════════════════════════════════════════════════════════════ */
 
 .overlap-hero {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
   background-color: #eae5df;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .overlap-hero-container {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
   background-color: #eae5df;
   display: flex;
   flex-direction: column; /* Mobile layout: image on top, text panel below */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Background/Image Layer - Mobile: full width with header clearance spacing */
 .overlap-hero-bg-layer {
   position: relative;
   width: 100%;
-  flex: 1;
-  min-height: 320px;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: clamp(300px, 48vh, 420px);
   background-color: #eae5df;
-  padding: 72px 16px 0 16px;
+  padding: 56px 16px 0 16px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  overflow: hidden;
 }
 
 /* Static Mobile Card Wrapper */
 .overlap-hero-card {
   background-color: transparent;
   width: 100%;
-  flex: 1;
+  max-width: 480px;
+  height: 100%;
   padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   box-shadow: none;
+  min-height: 0;
 }
 
 /* Images alignment */
 .overlap-hero-picture {
   display: block;
   width: 100%;
-  flex: 1;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: clamp(260px, 44vh, 380px);
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(31, 20, 13, 0.08);
+  min-height: 0;
 }
 
 .overlap-hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 20%;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 /* Editorial Content Split Panel */
@@ -71,10 +90,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px 20px 36px;
+  padding: clamp(16px, 2.4vh, 24px) 20px calc(24px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   pointer-events: auto;
-  flex-shrink: 0;
+  flex: 1 1 auto;
 }
 
 /* Text and details container inside panel */
@@ -90,31 +109,38 @@
 .overlap-hero-tagline {
   font-family: var(--font-heading);
   font-style: normal;
-  font-size: clamp(22px, 5.8vw, 28px);
+  font-size: clamp(20px, 5.4vw, 26px);
   color: var(--ink, #1a1a1a);
-  line-height: 1.22;
+  line-height: 1.2;
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.overlap-hero-tagline br {
+  display: none;
 }
 
 .overlap-hero-divider {
-  width: 44px;
+  width: 36px;
   height: 1.5px;
   background-color: var(--gold-dark, #805d31);
-  margin: 10px 0 12px;
+  margin: 6px 0 8px;
+  border-radius: 1px;
 }
 
 .overlap-hero-description {
   display: block;
   font-family: var(--font-body);
   font-style: normal;
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 400;
-  color: var(--muted, #554e47);
-  line-height: 1.55;
-  margin: 0 0 14px 0;
-  max-width: 94%;
+  color: #4a433d;
+  line-height: 1.45;
+  margin: 0 0 10px 0;
+  max-width: 400px;
+  text-wrap: pretty;
 }
 
 .overlap-hero-highlights {
@@ -122,12 +148,12 @@
   flex-wrap: wrap;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--gold-dark, #805d31);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   align-items: center;
   gap: 6px;
 }
@@ -141,6 +167,7 @@
 .overlap-hero-highlights .divider-dot {
   color: var(--gold-dark, #805d31);
   font-weight: bold;
+  opacity: 0.7;
 }
 
 /* Action button */
@@ -148,27 +175,47 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 28px;
+  padding: 0 26px;
+  height: 42px;
+  min-height: 42px;
   border: 1.5px solid var(--ink, #1a1a1a);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--ink, #1a1a1a);
   color: #ffffff;
   font-family: var(--font-ui);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-decoration: none;
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              background 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 .overlap-hero-btn:hover {
   background: #000000;
   border-color: #000000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
-/* Desktop layout constraints */
+.overlap-hero-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.overlap-hero-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP SPLIT-SCREEN LAYOUT (≥ 768px)
+   ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
   .overlap-hero {
     height: 100vh;
@@ -181,10 +228,12 @@
     flex-direction: row; /* Desktop layout: split screen */
   }
 
-  /* Full bleed panel on desktop (deactivates mobile card layout) */
+  /* Full bleed panel on desktop */
   .overlap-hero-bg-layer {
-    width: 60vw; /* Take up 60% width on desktop */
+    width: 58vw; /* 58% width on desktop */
     height: 100%;
+    max-height: none;
+    flex: none;
     padding: 0;
     background-color: transparent;
     min-height: 0;
@@ -193,6 +242,7 @@
   .overlap-hero-card {
     background-color: transparent;
     padding: 0;
+    max-width: none;
     box-shadow: none;
     display: block;
     height: 100%;
@@ -200,57 +250,77 @@
 
   .overlap-hero-picture {
     height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
     display: block;
     border-radius: 0;
+    box-shadow: none;
   }
 
   .overlap-hero-img {
-    object-position: 25% center; /* Shift the image towards the right to show the left side more */
+    object-position: 25% center;
     border-radius: 0;
   }
 
   .overlap-hero-content-layer {
-    width: 40vw; /* Take up 40% width on desktop */
+    width: 42vw;
     height: 100%;
+    max-height: none;
+    flex: none;
     border-left: 1px solid rgba(0, 0, 0, 0.08);
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    padding: 4rem 3.5rem;
+    padding: clamp(3rem, 5vw, 5rem) clamp(2.5rem, 4vw, 4.5rem);
   }
 
   .overlap-hero-content-right {
     align-items: flex-start;
     text-align: left;
-    max-width: 100%;
+    max-width: 500px;
+    width: 100%;
   }
 
   .overlap-hero-tagline {
-    font-size: clamp(1.8rem, 2.5vw, 2.8rem);
-    line-height: 1.25;
+    font-size: clamp(1.9rem, 2.7vw, 3.1rem);
+    font-weight: 500;
+    line-height: 1.18;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
   }
 
   .overlap-hero-divider {
-    margin: 1.5rem 0;
-    width: 50px;
+    margin: 1.4rem 0;
+    width: 48px;
+    height: 2px;
     align-self: flex-start;
   }
 
   .overlap-hero-description {
-    display: block; /* Shown on desktop */
-    max-width: 425px;
-    font-size: 1.45rem;
+    display: block;
+    max-width: 460px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #4a433d;
+    margin-bottom: 1.5rem;
+    text-wrap: pretty;
   }
 
   .overlap-hero-highlights {
-    display: flex; /* Shown on desktop */
+    display: flex;
     justify-content: flex-start;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
     margin-bottom: 2rem;
+    gap: 8px;
   }
 
   .overlap-hero-btn {
-    padding: 0.85rem 2.2rem;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 32px;
     font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    border-radius: 8px;
   }
 }
 
@@ -271,7 +341,7 @@
 .dark-mode .overlap-hero-description {
   color: rgba(255, 255, 255, 0.75);
 }
-.dark-mode .dark-mode .overlap-hero-highlights {
+.dark-mode .overlap-hero-highlights {
   color: rgba(255, 255, 255, 0.5);
 }
 .dark-mode .overlap-hero-btn {

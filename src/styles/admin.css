@@ -6348,6 +6348,7 @@
 .admin-stock-table-wrap {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-stock-table {

@@ -53,7 +53,7 @@
 }
 
 /* Mobile & Tablet Responsiveness */
-@media screen and (max-width: 820px) {
+@media screen and (max-width: 991px) {
   .product-trust-strip {
     grid-template-columns: 1fr !important;
     gap: 16px !important;

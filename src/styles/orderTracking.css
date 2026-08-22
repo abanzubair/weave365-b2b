@@ -450,9 +450,21 @@
 }
 
 @media (max-width: 640px) {
+  .order-tracking-container {
+    padding: 0 1rem;
+  }
   .order-tracking-card {
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
     border-radius: 16px;
+  }
+  .lookup-input-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .lookup-btn {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.75rem;
   }
   .tracking-steps-container {
     padding: 0;
