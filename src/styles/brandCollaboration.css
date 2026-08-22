@@ -9,23 +9,17 @@
   border-top: 1px solid rgba(183, 134, 70, 0.08);
   border-bottom: 1px solid rgba(183, 134, 70, 0.08);
   box-sizing: border-box;
-}
-
-@media (min-width: 1025px) {
-  .brand-collab-section {
-    min-height: 92vh;
-    min-height: 92svh;
-    display: flex;
-    flex-direction: column;
-  }
+  padding: 64px 0;
+  width: 100%;
 }
 
 .brand-collab-layout {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr; /* Asymmetric grid */
+  grid-template-columns: 0.9fr 1.1fr;
   width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
-  height: 100%;
+  gap: 48px;
+  align-items: center;
   box-sizing: border-box;
 }
 
@@ -34,20 +28,20 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100%;
-  padding: 40px;
+  padding: 0;
   box-sizing: border-box;
-  border-right: 1px solid rgba(183, 134, 70, 0.08);
+  border-right: none;
 }
 
 .gallery-frame-container {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 
 
@@ -73,7 +67,7 @@
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0.1em;
-  text-align: center;
+  text-align: left;
   z-index: 2;
   text-transform: uppercase;
 }
@@ -84,14 +78,14 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 60px 6% 40px 6%;
-  background: var(--cream, #f7f4ee);
+  padding: 0;
+  background: transparent;
   position: relative;
   box-sizing: border-box;
 }
 
 .content-wrapper {
-  max-width: 680px;
+  max-width: 100%;
   width: 100%;
 }
 
@@ -206,33 +200,39 @@
 
 @media (max-width: 1024px) {
   .brand-collab-section {
-    height: auto;
-    min-height: auto;
-    padding: 0;
+    padding: 48px 0;
   }
   
   .brand-collab-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
   }
   
   .brand-collab-visual-side {
     height: auto;
-    padding: 60px 20px;
+    padding: 0;
+    justify-content: center;
     border-right: none;
-    border-bottom: 1px solid rgba(183, 134, 70, 0.08);
+    border-bottom: none;
   }
   
   .gallery-frame-container {
-    max-width: 300px;
+    max-width: 360px;
+    align-items: center;
+  }
+
+  .gallery-caption {
+    text-align: center;
   }
   
   .brand-collab-content-side {
-    padding: 60px 40px;
-    align-items: center;
+    padding: 0;
+    align-items: flex-start;
   }
   
   .content-wrapper {
-    max-width: 600px;
+    max-width: 100%;
   }
 }
 

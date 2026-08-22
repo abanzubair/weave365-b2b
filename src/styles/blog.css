@@ -1064,18 +1064,10 @@
 
 /* --- HOME PAGE SECTION --- */
 .home-blog-section {
-  padding: 6rem 2% 5rem;
-  max-width: 1440px;
+  padding: 5rem 0;
+  width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-@media (min-width: 1920px) {
-  .home-blog-section {
-    max-width: 1800px;
-    padding-left: 6%;
-    padding-right: 6%;
-  }
 }
 
 .home-blog-header {

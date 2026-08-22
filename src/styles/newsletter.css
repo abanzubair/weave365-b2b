@@ -8,7 +8,7 @@
   grid-template-columns: 1.1fr 0.9fr;
   gap: 60px;
   align-items: center;
-  padding: 56px max(48px, calc((100vw - 1280px) / 2));
+  padding: 56px max(48px, calc((100vw - 1440px) / 2));
   background: #FAF9F6; /* Clean premium off-white warm-paper backdrop */
   position: relative;
   overflow: hidden;
