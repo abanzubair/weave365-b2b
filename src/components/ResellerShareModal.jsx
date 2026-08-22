@@ -1,14 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Copy, Check, Share2, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles } from 'lucide-react';
-import { resellerService } from '../services/resellerService';
+import { X, Copy, Check, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles, Globe } from 'lucide-react';
+import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 /**
- * Modal for resellers to add a product to their white-label catalog.
- * The shareable link always points to the reseller's storefront slug.
+ * Modal for resellers to add a product to their external website catalog.
  */
 export function ResellerShareModal({ product, variant, user, priceAccess, onClose }) {
   const [markupType, setMarkupType] = useState('percentage');
@@ -17,28 +16,22 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
   const [done, setDone] = useState(false);
   const [storeSlug, setStoreSlug] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [needsSetup, setNeedsSetup] = useState(false);
-  const [origin, setOrigin] = useState('');
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
-
   const [customDomain, setCustomDomain] = useState(null);
 
-  // Load the reseller's storefront slug
+  // Load the reseller's storefront settings
   useEffect(() => {
-    async function loadSlug() {
+    async function loadStorefront() {
+      if (!user?.id) return;
       const { data } = await resellerService.getStorefront(user.id);
       if (data?.slug) {
         setStoreSlug(data.slug);
-        if (data.custom_domain) setCustomDomain(data.custom_domain);
-      } else {
-        setNeedsSetup(true);
+      }
+      if (data?.custom_domain) {
+        setCustomDomain(data.custom_domain);
       }
     }
-    loadSlug();
-  }, [user.id]);
+    loadStorefront();
+  }, [user?.id]);
 
   const basePrice = useMemo(() => {
     const prices = variant?.prices || product?.variants?.[0]?.prices || {};
@@ -51,9 +44,11 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
     return Math.round(Number(markupValue));
   }, [basePrice, markupType, markupValue]);
 
-  const shareLink = customDomain ? `https://${customDomain.replace(/\/+$/, '')}` : '';
+  const rawWebsiteUrl = customDomain || '';
+  const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
 
   const handleAdd = async () => {
+    if (!user?.id) return;
     setIsCreating(true);
     try {
       const { error } = await resellerService.addToCatalog(user.id, {
@@ -69,14 +64,15 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
       setDone(true);
     } catch (err) {
       console.error('Error adding to catalog:', err);
-      alert('Failed to add product. Please try again.');
+      alert('Failed to add product: ' + (err.message || 'Please try again.'));
     } finally {
       setIsCreating(false);
     }
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareLink);
+    if (!externalWebsiteUrl) return;
+    navigator.clipboard.writeText(externalWebsiteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -86,7 +82,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
       <div className="reseller-modal" onClick={e => e.stopPropagation()}>
         
         <div className="reseller-modal-header">
-          <h2><Store size={18} /> White-Label Catalog</h2>
+          <h2><Store size={18} /> Add to My Reseller Store</h2>
           <button type="button" onClick={onClose} className="reseller-modal-close" aria-label="Close modal"><X size={18} /></button>
         </div>
 
@@ -97,38 +93,26 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 <Store size={22} />
               </div>
               <h3 className="reseller-activation-title">
-                Activate White-Label Store
+                Activate Reseller Business Center
               </h3>
               <p className="reseller-activation-desc">
-                White-label storefronts let you showcase curated catalogs under your own brand with custom profit margins. This is a premium paid feature — connect with our team on WhatsApp to explore pricing plans and get your store activated.
+                Publish curated catalogs to your website with custom profit margins. Connect with our team on WhatsApp to activate your business center.
               </p>
               <a
-                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi Weave 365, I would like to inquire about pricing and plans to activate my premium reseller white-label storefront.')}`}
+                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi Weave 365, I would like to inquire about activating my reseller business center.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="reseller-activation-btn"
               >
                 <WhatsappIcon size={18} />
-                <span>Inquire Pricing & Activate</span>
+                <span>Inquire & Activate</span>
               </a>
-            </div>
-          ) : needsSetup ? (
-            <div className="reseller-activation-card">
-              <div className="reseller-activation-icon setup">
-                <Sparkles size={24} />
-              </div>
-              <h3 className="reseller-activation-title">
-                Set Up Your Store Name
-              </h3>
-              <p className="reseller-activation-desc">
-                Please configure your store name & link in <strong>Account → Reseller Tools → Settings</strong> before adding products to your catalog.
-              </p>
             </div>
           ) : !done ? (
             <>
               <div className="reseller-price-preview">
                 <div className="reseller-price-box base">
-                  <span>Base Price</span>
+                  <span>Your Base Price</span>
                   <strong>{formatMoney(basePrice)}</strong>
                 </div>
                 <div className="reseller-price-box customer">
@@ -158,49 +142,62 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                   <input type="number" value={markupValue} onChange={e => setMarkupValue(e.target.value)} placeholder="Enter value" />
                 </div>
                 <p className="reseller-form-hint">
-                  {markupType === 'percentage' && `Adds ${markupValue}% to your base price.`}
-                  {markupType === 'fixed_amount' && `Adds ${formatMoney(markupValue)} to base price.`}
-                  {markupType === 'exact_price' && `Final customer price: ${formatMoney(markupValue)}.`}
+                  {markupType === 'percentage' && `Adds ${markupValue}% profit to your base cost.`}
+                  {markupType === 'fixed_amount' && `Adds ${formatMoney(markupValue)} profit to your base cost.`}
+                  {markupType === 'exact_price' && `Customer price set to ${formatMoney(markupValue)}.`}
                 </p>
               </div>
 
               <button type="button" onClick={handleAdd} disabled={isCreating} className="reseller-btn-primary" style={{ width: '100%' }}>
-                {isCreating ? 'Adding…' : `Add to My Catalog — ${formatMoney(calculatedCustomerPrice)}`}
+                {isCreating ? 'Adding Product…' : `Publish to My Website — ${formatMoney(calculatedCustomerPrice)}`}
               </button>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="reseller-success-box">
                 <div className="reseller-success-icon"><Check size={20} strokeWidth={3} /></div>
-                <h3>Added to Your Catalog!</h3>
-                <p>Share the link below — all your products appear on one page.</p>
+                <h3>Product Added Successfully!</h3>
+                <p>This product is now active in your reseller catalog with your custom markup price of <strong>{formatMoney(calculatedCustomerPrice)}</strong>.</p>
               </div>
 
-              <div className="reseller-form-group">
-                <label>Your White-label Link</label>
-                <div className="reseller-copy-row">
-                  <input type="text" readOnly value={shareLink} />
-                  <button type="button" onClick={copyToClipboard} className="reseller-btn-primary" style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>
-                    {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Copy</>}
-                  </button>
+              {externalWebsiteUrl ? (
+                <>
+                  <div className="reseller-form-group">
+                    <label>Your Connected Website</label>
+                    <div className="reseller-copy-row">
+                      <input type="text" readOnly value={externalWebsiteUrl} />
+                      <button type="button" onClick={copyToClipboard} className="reseller-btn-primary" style={{ padding: '0.5rem 0.75rem', whiteSpace: 'nowrap' }}>
+                        {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Copy</>}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <a 
+                      href={`https://wa.me/?text=${encodeURIComponent(`Check out our new collection at: ${externalWebsiteUrl}`)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="reseller-btn-whatsapp"
+                    >
+                      WhatsApp
+                    </a>
+                    <a href={externalWebsiteUrl} target="_blank" rel="noopener noreferrer" className="reseller-btn-outline" style={{ justifyContent: 'center' }}>
+                      <ExternalLink size={16} /> Visit Website
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.875rem', color: '#475569' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 600, color: '#0f172a' }}>
+                    <Globe size={16} /> Set Your Website Link
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', lineHeight: '1.4' }}>
+                    You can link your external store in <strong>Account → Business Center → Settings</strong> to enable instant website previews and automatic share links.
+                  </p>
                 </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <a 
-                  href={`https://wa.me/?text=${encodeURIComponent(`Check out my catalog: ${shareLink}`)}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="reseller-btn-whatsapp"
-                >
-                  WhatsApp
-                </a>
-                <a href={shareLink} target="_blank" rel="noopener noreferrer" className="reseller-btn-outline" style={{ justifyContent: 'center' }}>
-                  <ExternalLink size={16} /> Preview
-                </a>
-              </div>
+              )}
               
-              <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: 'var(--button-size)' }}>
-                Close
+              <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: 'var(--button-size)', marginTop: '0.5rem' }}>
+                Done
               </button>
             </div>
           )}

@@ -57,9 +57,10 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
     const domain = searchParams.get('domain');
+    const resellerId = searchParams.get('reseller_id') || searchParams.get('userId');
 
-    if (!slug && !domain) {
-      return new Response(JSON.stringify({ error: 'Missing store query parameter (slug or domain)' }), {
+    if (!slug && !domain && !resellerId) {
+      return new Response(JSON.stringify({ error: 'Missing store query parameter (slug, domain, or reseller_id)' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -68,7 +69,15 @@ export async function GET(request) {
     let storefront = null;
 
     // 1. Resolve Storefront Branding & Settings
-    if (slug) {
+    if (resellerId) {
+      const { data } = await supabase
+        .from('reseller_storefronts')
+        .select('*')
+        .eq('reseller_id', resellerId)
+        .eq('is_active', true)
+        .maybeSingle();
+      storefront = data;
+    } else if (slug) {
       const { data } = await supabase
         .from('reseller_storefronts')
         .select('*')
@@ -78,7 +87,7 @@ export async function GET(request) {
       storefront = data;
     } else if (domain) {
       // Try exact and normalized custom domain variations matching the requested domain
-      const cleanDomain = domain.toLowerCase().trim();
+      const cleanDomain = domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
       const { data: stores } = await supabase
         .from('reseller_storefronts')
         .select('*')
@@ -88,8 +97,7 @@ export async function GET(request) {
         storefront = stores.find(s => {
           if (!s.custom_domain) return false;
           const sDom = s.custom_domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-          const reqDom = cleanDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-          return sDom === reqDom || sDom.includes(reqDom) || reqDom.includes(sDom);
+          return sDom === cleanDomain || sDom.includes(cleanDomain) || cleanDomain.includes(sDom);
         });
       }
     }

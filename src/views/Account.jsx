@@ -992,17 +992,18 @@ export function Account({
         </article>
 
         {priceAccess.resellerDashboardEnabled && (
-          <article className="account-panel account-panel-highlight panel-reseller" style={{ border: '1px solid var(--primary-color)' }}>
-            <div className="account-panel-head">
+          <article className="account-panel panel-reseller" style={{ border: '1px solid var(--line)', borderRadius: '12px', background: 'white' }}>
+            <div className="account-panel-head" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--line)', paddingBottom: '1rem' }}>
               <span><UserRound size={18} /> My Reseller Business Center</span>
-            </div>
-            <div style={{ padding: '1.5rem', background: 'var(--bg-light)', borderRadius: '8px', marginTop: '1rem' }}>
-              <h2 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>White-Label Storefront</h2>
-              <p className="account-muted" style={{ marginBottom: '1.5rem' }}>Manage your personalized catalog, themes, and customer shares in a dedicated, unbranded environment.</p>
-              <button type="button" className="primary-button" onClick={() => navigate('reseller-dashboard')}>
-                Open Business Center
+              <button 
+                type="button" 
+                onClick={() => navigate('reseller-dashboard')}
+                style={{ fontSize: '0.8125rem', padding: '6px 12px' }}
+              >
+                Expand to Fullscreen ↗
               </button>
             </div>
+            <ResellerTools user={user} buyerProfile={buyerProfile} />
           </article>
         )}
 

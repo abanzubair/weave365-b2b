@@ -1,7 +1,7 @@
 /**
  * ResellerTools Component
  * Purpose: Handles the back-office dashboard for registered boutique resellers.
- * Manages product listings, pricing markups, live customer leads, and storefront settings (custom logos/slugs/themes).
+ * Manages external website links, catalog items added from Weave365, pricing markups, and API integration feeds.
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
@@ -10,48 +10,60 @@ import {
   Check, 
   Trash2, 
   Settings, 
-  MessageSquare, 
   Calendar,
   Save,
   ExternalLink,
-  Search
+  Search,
+  Globe,
+  Code,
+  Sparkles,
+  ArrowRight,
+  Package,
+  LayoutTemplate,
+  Terminal,
+  BookOpen,
+  Layers,
+  X,
+  CheckCircle2,
+  FolderGit2
 } from 'lucide-react';
-import { resellerService } from '../services/resellerService';
+import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { getProductCategorySlug } from '../config.js';
+import { PREMADE_TEMPLATES } from '../config/templates.js';
 import '../styles/resellerTools.css';
 
 export function ResellerTools({ user, buyerProfile }) {
-  const [activeTab, setActiveTab] = useState('shares');
+  const [activeTab, setActiveTab] = useState('templates');
   const [shares, setShares] = useState([]);
   const [storefront, setStorefront] = useState(null);
-  const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState('');
+  const [guideTemplate, setGuideTemplate] = useState(null);
 
   // Catalog List State
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
-  const [visibleCount, setVisibleCount] = useState(10);
-
+  const [visibleCount, setVisibleCount] = useState(15);
 
   useEffect(() => {
-    setOrigin(window.location.origin);
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
   }, []);
 
   useEffect(() => {
     async function loadData() {
+      if (!user?.id) return;
       setLoading(true);
       try {
-        const [sharesRes, storefrontRes, inquiriesRes] = await Promise.all([
+        const [sharesRes, storefrontRes] = await Promise.all([
           resellerService.getResellerShares(user.id),
           resellerService.getStorefront(user.id),
-          resellerService.getResellerInquiries(user.id)
         ]);
         if (sharesRes.data) setShares(sharesRes.data);
         if (storefrontRes.data) setStorefront(storefrontRes.data);
-        if (inquiriesRes.data) setInquiries(inquiriesRes.data);
       } catch (err) {
         console.error('Error loading reseller data:', err);
       } finally {
@@ -59,21 +71,35 @@ export function ResellerTools({ user, buyerProfile }) {
       }
     }
     loadData();
-  }, [user.id]);
+  }, [user?.id]);
 
-  const catalogLink = storefront?.custom_domain ? `https://${storefront.custom_domain.replace(/\/+$/, '')}` : null;
+  const rawWebsiteUrl = storefront?.custom_domain || '';
+  const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
+  const selectedTemplateId = storefront?.theme_settings?.template_id || 'ecom-template-1';
 
-  const copyCatalogLink = () => {
-    if (!catalogLink) return;
-    navigator.clipboard.writeText(catalogLink);
+  const copyWebsiteLink = () => {
+    if (!externalWebsiteUrl) return;
+    navigator.clipboard.writeText(externalWebsiteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDeleteInquiry = async (id) => {
-    const { error } = await resellerService.deleteInquiry(id);
-    if (!error) {
-      setInquiries(prev => prev.filter(inq => inq.id !== id));
+  const handleSelectTemplate = async (templateId) => {
+    if (!user?.id) return;
+    try {
+      const currentThemeSettings = storefront?.theme_settings || {};
+      const updates = {
+        theme_settings: {
+          ...currentThemeSettings,
+          template_id: templateId
+        }
+      };
+      const { data, error } = await resellerService.updateStorefront(user.id, updates);
+      if (!error && data) {
+        setStorefront(data);
+      }
+    } catch (err) {
+      console.error('Error updating selected template:', err);
     }
   };
 
@@ -109,60 +135,202 @@ export function ResellerTools({ user, buyerProfile }) {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     if (scrollHeight - scrollTop <= clientHeight + 50) {
       if (visibleCount < processedShares.length) {
-        setVisibleCount(prev => prev + 10);
+        setVisibleCount(prev => prev + 15);
       }
     }
   };
 
-  if (loading) return <p className="rt-loading">Loading reseller tools…</p>;
-
+  if (loading) return <p className="rt-loading">Loading business center…</p>;
 
   return (
     <div className="rt-container">
-      {/* Compact Header Bar */}
+      {/* External Website Connection Banner */}
       <div className="rt-header">
         <div className="rt-header-left">
-          <h3>Reseller Tools</h3>
-          <span className="rt-header-sub">Your white-label catalog</span>
+          <div className="rt-header-badge-row">
+            <span className="rt-status-pill">
+              <span className={`rt-status-dot ${externalWebsiteUrl ? 'live' : 'pending'}`}></span>
+              {externalWebsiteUrl ? 'Website Connected' : 'Website Not Linked'}
+            </span>
+          </div>
+          <h3>{storefront?.store_name || 'My Reseller Business Center'}</h3>
+          <span className="rt-header-sub">
+            {externalWebsiteUrl ? (
+              <span className="rt-website-url-text">{externalWebsiteUrl}</span>
+            ) : (
+              'Connect your external website to display added products and sync catalog'
+            )}
+          </span>
         </div>
+
         <div className="rt-header-right">
-          {catalogLink && (
+          {externalWebsiteUrl ? (
             <>
-              <button type="button" onClick={copyCatalogLink} className="rt-header-link" title="Copy catalog link">
+              <button 
+                type="button" 
+                onClick={copyWebsiteLink} 
+                className="rt-header-link" 
+                title="Copy website link"
+              >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied!' : 'Copy Link'}
               </button>
-              <a href={catalogLink} target="_blank" rel="noopener noreferrer" className="rt-header-link">
-                <ExternalLink size={14} /> View
+              <a 
+                href={externalWebsiteUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="rt-header-link primary"
+              >
+                <ExternalLink size={14} /> Visit Website
               </a>
             </>
+          ) : (
+            <button 
+              type="button" 
+              onClick={() => setActiveTab('storefront')} 
+              className="rt-header-link primary"
+            >
+              <Globe size={14} /> Link Website
+            </button>
           )}
         </div>
       </div>
 
-      {/* Compact Tabs */}
+      {/* Navigation Tabs */}
       <div className="rt-tabs">
-        {[
-          { key: 'shares', icon: LinkIcon, label: 'Catalog Items' },
-          { key: 'storefront', icon: Settings, label: 'Settings' },
-          { key: 'inquiries', icon: MessageSquare, label: 'Leads' },
-        ].map(tab => (
-          <button type="button"
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`rt-tab ${activeTab === tab.key ? 'active' : ''}`}
-          >
-            <tab.icon size={14} /> {tab.label}
-          </button>
-        ))}
+        <button 
+          type="button"
+          onClick={() => setActiveTab('templates')}
+          className={`rt-tab ${activeTab === 'templates' ? 'active' : ''}`}
+        >
+          <LayoutTemplate size={15} /> 
+          <span>Pre-Made Templates</span>
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveTab('shares')}
+          className={`rt-tab ${activeTab === 'shares' ? 'active' : ''}`}
+        >
+          <Package size={15} /> 
+          <span>Catalog Products ({shares.filter(s => s.is_active).length})</span>
+        </button>
+        <button 
+          type="button"
+          onClick={() => setActiveTab('storefront')}
+          className={`rt-tab ${activeTab === 'storefront' ? 'active' : ''}`}
+        >
+          <Settings size={15} /> 
+          <span>Website & API Settings</span>
+        </button>
       </div>
 
-      {/* Tab Content */}
+      {/* Tab 0: Pre-Made Storefront Templates */}
+      {activeTab === 'templates' && (
+        <div className="rt-templates-view">
+          <div className="rt-templates-header">
+            <div>
+              <h4>Choose a Pre-Made E-Commerce Template</h4>
+              <p>
+                Select from our collection of ready-to-deploy storefront templates. Each template connects automatically to your Weave365 products and custom pricing markups.
+              </p>
+            </div>
+          </div>
+
+          <div className="rt-templates-grid">
+            {PREMADE_TEMPLATES.map((tmpl) => {
+              const isSelected = selectedTemplateId === tmpl.id;
+              const isReady = tmpl.status === 'ready';
+
+              return (
+                <div key={tmpl.id} className={`rt-template-card ${isSelected ? 'selected' : ''}`}>
+                  <div className="rt-template-preview-wrap">
+                    <img src={tmpl.previewImage} alt={tmpl.name} className="rt-template-preview-img" />
+                    <div className="rt-template-badges">
+                      {isSelected && (
+                        <span className="rt-tmpl-badge active">
+                          <CheckCircle2 size={12} /> Active Choice
+                        </span>
+                      )}
+                      <span className={`rt-tmpl-badge ${tmpl.badgeType}`}>
+                        {tmpl.badge}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rt-template-body">
+                    <div className="rt-template-top">
+                      <span className="rt-template-category">{tmpl.category}</span>
+                      <h3 className="rt-template-title">{tmpl.name}</h3>
+                      <p className="rt-template-tagline">{tmpl.tagline}</p>
+                    </div>
+
+                    <p className="rt-template-desc">{tmpl.description}</p>
+
+                    {/* Tech Stack Pills */}
+                    <div className="rt-template-stack">
+                      {tmpl.techStack.map((tech) => (
+                        <span key={tech} className="rt-stack-pill">{tech}</span>
+                      ))}
+                    </div>
+
+                    {/* Feature Highlights */}
+                    <div className="rt-template-features">
+                      {tmpl.features.slice(0, 3).map((feat, idx) => (
+                        <div key={idx} className="rt-template-feature-row">
+                          <Sparkles size={13} className="rt-feature-bullet" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="rt-template-actions">
+                      {isReady ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTemplate(tmpl.id)}
+                            className={`rt-tmpl-btn ${isSelected ? 'selected' : 'primary'}`}
+                          >
+                            {isSelected ? (
+                              <><Check size={14} /> Active Template</>
+                            ) : (
+                              'Select Template'
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setGuideTemplate(tmpl)}
+                            className="rt-tmpl-btn secondary"
+                          >
+                            <Globe size={14} /> View Store Link
+                          </button>
+                        </>
+                      ) : (
+                        <button type="button" disabled className="rt-tmpl-btn disabled">
+                          Coming Soon
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 1: Catalog Items Added to Website */}
       {activeTab === 'shares' && (
         shares.length === 0 ? (
-          <div className="rt-empty">
-            <LinkIcon size={20} />
-            <p>No products in your catalog. Use <strong>White-label Link</strong> on any product to add it.</p>
+          <div className="rt-empty-state-card">
+            <div className="rt-empty-icon-wrap">
+              <Package size={32} />
+            </div>
+            <h4>No products added to your catalog yet</h4>
+            <p>
+              Browse any product on Weave365 and click <strong>White-Label</strong> or <strong>Add to My Catalog</strong> to publish it to your external website with your custom pricing markup.
+            </p>
           </div>
         ) : (
           <div className="rt-shares-container">
@@ -171,7 +339,7 @@ export function ResellerTools({ user, buyerProfile }) {
                 <Search size={16} />
                 <input 
                   type="text" 
-                  placeholder="Search products..." 
+                  placeholder="Search your catalog products..." 
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="rt-filter-input"
@@ -182,8 +350,8 @@ export function ResellerTools({ user, buyerProfile }) {
                 onChange={e => setFilterStatus(e.target.value)}
                 className="rt-filter-select"
               >
-                <option value="all">All Status</option>
-                <option value="live">Live</option>
+                <option value="all">All Products</option>
+                <option value="live">Active Only</option>
                 <option value="removed">Removed</option>
               </select>
               <select 
@@ -191,124 +359,213 @@ export function ResellerTools({ user, buyerProfile }) {
                 onChange={e => setSortBy(e.target.value)}
                 className="rt-filter-select"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="a-z">Name (A-Z)</option>
+                <option value="newest">Newest Added</option>
+                <option value="oldest">Oldest Added</option>
+                <option value="a-z">Product Name (A-Z)</option>
               </select>
             </div>
 
-            <div className="rt-link-list" onScroll={handleScroll} style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-              {processedShares.slice(0, visibleCount).map((share) => (
-                <div key={share.id} className={`rt-link-row ${!share.is_active ? 'rt-row-inactive' : ''}`}>
-                  <div className="rt-link-info">
-                    <strong>{share.title || 'Untitled Product'}</strong>
-                    <span className="rt-link-meta">
-                      <Calendar size={11} />
-                      {new Date(share.created_at).toLocaleDateString()}
-                      <span className={`rt-badge ${share.is_active ? 'on' : 'off'}`}>
-                        {share.is_active ? 'Live' : 'Removed'}
+            <div className="rt-link-list" onScroll={handleScroll} style={{ maxHeight: '550px', overflowY: 'auto' }}>
+              {processedShares.slice(0, visibleCount).map((share) => {
+                const markupLabel = share.default_markup_type === 'percentage' 
+                  ? `+${share.default_markup_value}% markup`
+                  : share.default_markup_type === 'fixed_amount'
+                    ? `+₹${share.default_markup_value} markup`
+                    : 'Custom price';
+
+                return (
+                  <div key={share.id} className={`rt-link-row ${!share.is_active ? 'rt-row-inactive' : ''}`}>
+                    <div className="rt-link-info">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <strong>{share.title || 'Untitled Product'}</strong>
+                        <span className={`rt-badge ${share.is_active ? 'on' : 'off'}`}>
+                          {share.is_active ? 'Active on Store' : 'Removed'}
+                        </span>
+                      </div>
+                      <span className="rt-link-meta">
+                        <Calendar size={12} />
+                        <span>Added: {new Date(share.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span className="rt-dot"></span>
+                        <span className="rt-markup-tag">{markupLabel}</span>
                       </span>
-                    </span>
+                    </div>
+                    <div className="rt-link-actions">
+                      {share.is_active && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleDeactivate(share.id)} 
+                          className="rt-icon-btn danger" 
+                          title="Remove from your website catalog"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="rt-link-actions">
-                    {share.is_active && (
-                      <button type="button" onClick={() => handleDeactivate(share.id)} className="rt-icon-btn danger" title="Remove from catalog">
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {processedShares.length === 0 && (
-                <div className="rt-empty" style={{ padding: '2rem 0' }}>
-                   <p>No products match your filters.</p>
+                <div className="rt-empty" style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
+                  <p>No products match your current search or filter.</p>
                 </div>
               )}
             </div>
             
             {visibleCount < processedShares.length && (
-              <div style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--reseller-muted)', fontSize: 'var(--small-size)' }}>
-                Scroll for more...
+              <div style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--muted)', fontSize: '0.8125rem' }}>
+                Scroll down to load more products...
               </div>
             )}
           </div>
         )
       )}
 
-
+      {/* Tab 2: Website & API Settings */}
       {activeTab === 'storefront' && (
-        <StorefrontSettings storefront={storefront} user={user} origin={origin} onUpdate={setStorefront} />
+        <StorefrontSettings 
+          storefront={storefront} 
+          user={user} 
+          origin={origin} 
+          onUpdate={setStorefront} 
+        />
       )}
 
-      {activeTab === 'inquiries' && (
-        inquiries.length === 0 ? (
-          <div className="rt-empty">
-            <MessageSquare size={20} />
-            <p>WhatsApp inquiries from your customers will appear here.</p>
-          </div>
-        ) : (
-          <div className="rt-link-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-            {inquiries.map((inq) => {
-              const productId = inq.items?.[0]?.product_id || inq.product_id;
-              const displayTitle = inq.items?.[0]?.product_title || inq.message || inq.customer_name || 'WhatsApp Enquiry';
-              
-              return (
-              <div key={inq.id} className="rt-link-row">
-                <div className="rt-link-info">
-                  <strong>{displayTitle}</strong>
-                  <span className="rt-link-meta">
-                    <Calendar size={11} />
-                    {new Date(inq.created_at).toLocaleString()}
-                    {inq.status && (
-                      <span className={`rt-badge ${inq.status === 'new' ? 'on' : 'off'}`}>
-                        {inq.status.toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="rt-link-actions" style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-                  <a 
-                    href={productId ? `/${getProductCategorySlug(productId)}/${productId}` : '#'} 
-                    target={productId ? "_blank" : "_self"}
-                    rel="noopener noreferrer"
-                    className="rt-header-link" 
-                    style={{ 
-                      background: productId ? 'var(--reseller-primary)' : '#94a3b8', 
-                      borderColor: 'transparent', 
-                      color: 'white', 
-                      textDecoration: 'none',
-                      pointerEvents: productId ? 'auto' : 'none',
-                      opacity: productId ? 1 : 0.7
-                    }}
-                    title={productId ? "View Product on Weave 365" : "This was a general catalog inquiry or an older lead without a linked product"}
-                  >
-                    <ExternalLink size={14} /> {productId ? 'Product' : 'General'}
-                  </a>
-                  <a 
-                    href={inq.customer_phone ? `https://wa.me/${inq.customer_phone}` : `https://web.whatsapp.com/`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="rt-header-link"
-                    style={{ background: '#25D366', color: 'white', borderColor: 'transparent', textDecoration: 'none' }}
-                    title="Reply on WhatsApp"
-                  >
-                    <MessageSquare size={14} /> Reply
-                  </a>
-                  <button type="button" 
-                    onClick={() => handleDeleteInquiry(inq.id)} 
-                    className="rt-icon-btn danger" 
-                    title="Delete Lead"
-                    style={{ padding: '0.375rem 0.5rem', marginLeft: '0.25rem' }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-              );
-            })}
-          </div>
-        )
+      {/* Simplified Storefront Details & Link Modal */}
+      {guideTemplate && (
+        <TemplateDetailsModal 
+          template={guideTemplate}
+          storefront={storefront}
+          user={user}
+          origin={origin}
+          onClose={() => setGuideTemplate(null)}
+          onSelectTemplate={handleSelectTemplate}
+          isSelected={selectedTemplateId === guideTemplate.id}
+        />
       )}
+    </div>
+  );
+}
+
+function TemplateDetailsModal({ template, storefront, user, origin, onClose, onSelectTemplate, isSelected }) {
+  const [copiedLink, setCopiedLink] = useState(false);
+  const slug = storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : 'my-boutique');
+  const baseOrigin = origin || (typeof window !== 'undefined' ? window.location.origin : 'https://weave365.in');
+  const rawCustomDomain = storefront?.custom_domain || '';
+  const liveStoreUrl = rawCustomDomain ? normalizeWebsiteUrl(rawCustomDomain) : `${baseOrigin}/s/${slug}`;
+
+  const copyStoreLink = () => {
+    navigator.clipboard.writeText(liveStoreUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  return (
+    <div className="rt-modal-overlay" onClick={onClose}>
+      <div className="rt-modal-card" onClick={e => e.stopPropagation()}>
+        <div className="rt-modal-header">
+          <div className="rt-modal-header-left">
+            <LayoutTemplate size={20} className="rt-modal-icon" />
+            <div>
+              <h3>{template.name}</h3>
+              <p>{template.category}</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="rt-modal-close">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="rt-modal-content">
+          {/* Active Status Badge */}
+          <div className="rt-modal-status-banner">
+            <div className="rt-status-pill">
+              <span className="rt-status-dot live"></span>
+              {isSelected ? 'Currently Selected Template' : 'Available Template'}
+            </div>
+            <p className="rt-modal-status-text">
+              {template.description}
+            </p>
+          </div>
+
+          {/* Your Live Store Link Box */}
+          <div className="rt-store-link-box">
+            <span className="rt-store-link-label">Your Store Website Link:</span>
+            <div className="rt-store-link-input-group">
+              <input 
+                type="text" 
+                readOnly 
+                value={liveStoreUrl} 
+                className="rt-store-url-field"
+                onClick={e => e.currentTarget.select()}
+              />
+              <button 
+                type="button" 
+                onClick={copyStoreLink} 
+                className="rt-btn-copy-link"
+              >
+                {copiedLink ? <Check size={15} /> : <Copy size={15} />}
+                {copiedLink ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
+            <div className="rt-store-link-actions">
+              <a 
+                href={liveStoreUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="rt-btn-visit-store"
+              >
+                <ExternalLink size={14} /> Open Live Store
+              </a>
+              <span className="rt-store-link-tip">
+                Share this link on your WhatsApp Status, Instagram Bio, or customer groups!
+              </span>
+            </div>
+          </div>
+
+          {/* Automatic Features */}
+          <div className="rt-easy-features-grid">
+            <div className="rt-easy-feature-card">
+              <Sparkles size={18} className="rt-easy-icon" />
+              <div>
+                <strong>Automatic Product Sync</strong>
+                <p>Every product you add from Weave365 appears instantly with high-res photos.</p>
+              </div>
+            </div>
+            <div className="rt-easy-feature-card">
+              <CheckCircle2 size={18} className="rt-easy-icon" />
+              <div>
+                <strong>Your Profit Markups Protected</strong>
+                <p>Wholesale costs are hidden. Customers only see your customized selling prices.</p>
+              </div>
+            </div>
+            <div className="rt-easy-feature-card">
+              <Package size={18} className="rt-easy-icon" />
+              <div>
+                <strong>Direct WhatsApp Ordering</strong>
+                <p>Customer checkout orders and questions come directly to your WhatsApp number.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rt-modal-footer">
+          <button type="button" onClick={onClose} className="rt-btn-secondary">
+            Close
+          </button>
+          {!isSelected && (
+            <button
+              type="button"
+              onClick={() => {
+                onSelectTemplate(template.id);
+                onClose();
+              }}
+              className="rt-btn-primary"
+            >
+              <Check size={16} /> Choose {template.name} as My Store Template
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -316,29 +573,51 @@ export function ResellerTools({ user, buyerProfile }) {
 function StorefrontSettings({ storefront, user, origin, onUpdate }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copiedApiUrl, setCopiedApiUrl] = useState(false);
+
   const [formData, setFormData] = useState({
     store_name: storefront?.store_name || '',
-    slug: storefront?.slug || '',
-    whatsapp: storefront?.whatsapp || '',
-    logo_url: storefront?.logo_url || '',
-    theme_color: storefront?.theme_color || 'theme-classic-luxury',
+    slug: storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : 'my-boutique'),
     custom_domain: storefront?.custom_domain || '',
   });
 
+  const apiUrl = useMemo(() => {
+    const base = origin || (typeof window !== 'undefined' ? window.location.origin : 'https://weave365.in');
+    const param = formData.custom_domain 
+      ? `domain=${encodeURIComponent(formData.custom_domain.replace(/^https?:\/\//, '').replace(/\/+$/, ''))}`
+      : `slug=${encodeURIComponent(formData.slug || 'my-store')}`;
+    return `${base}/api/storefront?${param}`;
+  }, [origin, formData.custom_domain, formData.slug]);
+
+  const copyApiUrl = () => {
+    navigator.clipboard.writeText(apiUrl);
+    setCopiedApiUrl(true);
+    setTimeout(() => setCopiedApiUrl(false), 2000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
     try {
-      const { data, error } = await resellerService.updateStorefront(user.id, formData);
+      const cleanSlug = (formData.slug || 'my-store').toLowerCase().trim().replace(/[^a-z0-9-]/g, '');
+      const cleanDomain = formData.custom_domain ? formData.custom_domain.trim() : '';
+
+      const updates = {
+        store_name: formData.store_name.trim() || 'My Reseller Boutique',
+        slug: cleanSlug,
+        custom_domain: cleanDomain,
+        is_active: true,
+      };
+
+      const { data, error } = await resellerService.updateStorefront(user.id, updates);
       if (error) throw error;
       onUpdate(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      console.error('Error updating storefront:', err);
-      alert('Failed to save: ' + err.message);
+      console.error('Error updating storefront settings:', err);
+      alert('Failed to save settings: ' + (err.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -347,55 +626,112 @@ function StorefrontSettings({ storefront, user, origin, onUpdate }) {
   const update = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
 
   return (
-    <form onSubmit={handleSubmit} className="rt-settings-form">
-      <div className="rt-form-row">
-        <label htmlFor="rt-store-name">Store Name</label>
-        <input id="rt-store-name" type="text" required value={formData.store_name} onChange={e => update('store_name', e.target.value)} placeholder="My Premium Textiles" />
-      </div>
-      <div className="rt-form-row">
-        <label htmlFor="rt-slug">URL Slug</label>
-        <input id="rt-slug" type="text" required value={formData.slug} onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="my-store" />
-        <span className="rt-field-hint">Unique identifier for your storefront (e.g. your-name)</span>
-      </div>
-      <div className="rt-form-row">
-        <label htmlFor="rt-custom-domain">Custom Domain (Optional)</label>
-        <input id="rt-custom-domain" type="text" value={formData.custom_domain} onChange={e => update('custom_domain', e.target.value.trim().toLowerCase().replace(/https?:\/\//, ''))} placeholder="e.g. mystore.com" />
-      </div>
-      <div className="rt-form-row">
-        <label htmlFor="rt-whatsapp">WhatsApp</label>
-        <input id="rt-whatsapp" type="text" required value={formData.whatsapp} onChange={e => update('whatsapp', e.target.value)} placeholder="919876543210" />
-      </div>
-      <div className="rt-form-row">
-        <label htmlFor="rt-logo">Logo URL</label>
-        <input id="rt-logo" type="text" value={formData.logo_url} onChange={e => update('logo_url', e.target.value)} placeholder="https://..." />
-      </div>
-      
-      <div className="rt-form-row">
-        <label>Store Theme</label>
-        <div className="rt-theme-grid">
-          {[
-            { id: 'theme-classic-luxury', label: 'Classic Luxury', colors: ['#1C1917', '#CA8A04'] },
-            { id: 'theme-midnight-royal', label: 'Midnight Royal', colors: ['#1E3A8A', '#CA8A04'] },
-            { id: 'theme-rose-silk', label: 'Rose Silk', colors: ['#7F1D1D', '#E11D48'] },
-            { id: 'theme-emerald-weave', label: 'Emerald Weave', colors: ['#064E3B', '#059669'] },
-          ].map(t => (
-            <div 
-              key={t.id} 
-              className={`rt-theme-card ${formData.theme_color === t.id ? 'selected' : ''}`}
-              onClick={() => update('theme_color', t.id)}
+    <div className="rt-settings-layout">
+      {/* Main Settings Form */}
+      <form onSubmit={handleSubmit} className="rt-settings-form">
+        <div className="rt-settings-form-head">
+          <Globe size={20} className="rt-settings-head-icon" />
+          <div>
+            <h4>External Website Configuration</h4>
+            <p>Connect the external website where you host your boutique.</p>
+          </div>
+        </div>
+
+        <div className="rt-form-row">
+          <label htmlFor="rt-store-name">Store / Brand Name *</label>
+          <input 
+            id="rt-store-name" 
+            type="text" 
+            required 
+            value={formData.store_name} 
+            onChange={e => update('store_name', e.target.value)} 
+            placeholder="e.g. Aria Heritage Textiles" 
+          />
+        </div>
+
+        <div className="rt-form-row">
+          <label htmlFor="rt-custom-domain">External Website Link (Storefront URL) *</label>
+          <div className="rt-input-with-icon">
+            <Globe size={16} className="rt-input-prefix-icon" />
+            <input 
+              id="rt-custom-domain" 
+              type="text" 
+              value={formData.custom_domain} 
+              onChange={e => update('custom_domain', e.target.value)} 
+              placeholder="e.g. https://myboutique.com or https://mystore.myshopify.com" 
+              className="rt-input-has-prefix"
+            />
+          </div>
+          <span className="rt-field-hint">
+            Enter the full link where your external website is hosted. When you add products from Weave365, all share links and previews will point here.
+          </span>
+        </div>
+
+        <div className="rt-form-row">
+          <label htmlFor="rt-slug">Store Identifier / API Slug *</label>
+          <input 
+            id="rt-slug" 
+            type="text" 
+            required 
+            value={formData.slug} 
+            onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
+            placeholder="my-boutique-slug" 
+          />
+          <span className="rt-field-hint">A unique identifier used for your API endpoints and product feeds.</span>
+        </div>
+
+        <button type="submit" disabled={saving} className={`rt-save-btn ${saved ? 'saved' : ''}`}>
+          {saved ? <><Check size={16} /> Settings Saved Successfully</> : saving ? 'Saving Changes…' : <><Save size={16} /> Save Website Settings</>}
+        </button>
+      </form>
+
+      {/* Website API Integration Guide */}
+      <div className="rt-integration-card">
+        <div className="rt-integration-header">
+          <div className="rt-integration-title">
+            <Code size={18} />
+            <h4>Connect Your External Website (API Feed)</h4>
+          </div>
+          <span className="rt-api-badge">REST API</span>
+        </div>
+
+        <p className="rt-integration-desc">
+          Whenever you add products from Weave365, they are automatically published with your custom markup. Your external website can consume the live product catalog JSON feed directly:
+        </p>
+
+        <div className="rt-api-endpoint-box">
+          <div className="rt-api-endpoint-label">Live JSON Products Endpoint:</div>
+          <div className="rt-api-endpoint-row">
+            <code className="rt-api-url">{apiUrl}</code>
+            <button 
+              type="button" 
+              onClick={copyApiUrl} 
+              className="rt-api-copy-btn"
+              title="Copy API URL"
             >
-              <div className="rt-theme-preview" style={{ background: t.colors[0] }}>
-                <div className="rt-theme-accent" style={{ background: t.colors[1] }} />
-              </div>
-              <span>{t.label}</span>
+              {copiedApiUrl ? <Check size={14} /> : <Copy size={14} />}
+              {copiedApiUrl ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+        </div>
+
+        <div className="rt-integration-points">
+          <div className="rt-integration-point">
+            <Sparkles size={16} className="rt-point-icon" />
+            <div>
+              <strong>Instant Catalog Sync</strong>
+              <span>Any product added, updated, or removed from your Weave365 Business Center updates in real-time in this feed.</span>
             </div>
-          ))}
+          </div>
+          <div className="rt-integration-point">
+            <Sparkles size={16} className="rt-point-icon" />
+            <div>
+              <strong>Custom Markup Pricing Included</strong>
+              <span>Product prices are pre-calculated with your profit markup, hiding Weave365 wholesale base prices.</span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <button type="submit" disabled={saving} className={`rt-save-btn ${saved ? 'saved' : ''}`}>
-        {saved ? <><Check size={14} /> Saved</> : saving ? 'Saving…' : <><Save size={14} /> Save Settings</>}
-      </button>
-    </form>
+    </div>
   );
 }

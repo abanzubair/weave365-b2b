@@ -10,6 +10,21 @@
 import { supabase } from '../supabaseClient';
 
 /**
+ * Normalizes an external website URL to ensure it has a valid https protocol and no trailing slashes.
+ * @param {string} url - Input website URL or domain
+ * @returns {string} Normalized URL (e.g. 'https://myboutique.com')
+ */
+export function normalizeWebsiteUrl(url) {
+  if (!url) return '';
+  let clean = String(url).trim();
+  if (!clean) return '';
+  if (!/^https?:\/\//i.test(clean)) {
+    clean = 'https://' + clean;
+  }
+  return clean.replace(/\/+$/, '');
+}
+
+/**
  * Service for Reseller White-label operations
  */
 export const resellerService = {
