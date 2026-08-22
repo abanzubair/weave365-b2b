@@ -144,94 +144,135 @@ export function ResellerTools({ user, buyerProfile }) {
 
   return (
     <div className="rt-container">
-      {/* External Website Connection Banner */}
+      {/* Executive Boutique Command Banner */}
       <div className="rt-header">
-        <div className="rt-header-left">
-          <div className="rt-header-badge-row">
-            <span className="rt-status-pill">
-              <span className={`rt-status-dot ${externalWebsiteUrl ? 'live' : 'pending'}`}></span>
-              {externalWebsiteUrl ? 'Website Connected' : 'Website Not Linked'}
-            </span>
-          </div>
-          <h3>{storefront?.store_name || 'My Reseller Business Center'}</h3>
-          <span className="rt-header-sub">
-            {externalWebsiteUrl ? (
-              <span className="rt-website-url-text">{externalWebsiteUrl}</span>
-            ) : (
-              'Connect your external website to display added products and sync catalog'
-            )}
-          </span>
-        </div>
+        <div className="rt-header-main">
+          <div className="rt-header-left">
+            <div className="rt-status-row">
+              <span className="rt-status-pill">
+                <span className={`rt-status-dot ${externalWebsiteUrl ? 'live' : 'pending'}`}></span>
+                {externalWebsiteUrl ? 'Live Store Online' : 'Store Link Pending'}
+              </span>
+              <span className="rt-sync-badge">
+                <Sparkles size={12} /> Auto-Sync Active
+              </span>
+            </div>
 
-        <div className="rt-header-right">
-          {externalWebsiteUrl ? (
-            <>
+            <h2 className="rt-store-name">{storefront?.store_name || 'My Reseller Boutique'}</h2>
+
+            <div className="rt-store-link-row">
+              {externalWebsiteUrl ? (
+                <div className="rt-url-chip" onClick={copyWebsiteLink} title="Click to copy link">
+                  <Globe size={13} className="rt-url-icon" />
+                  <span className="rt-url-text">{externalWebsiteUrl}</span>
+                  <span className="rt-url-copy-hint">{copied ? 'Copied!' : 'Copy'}</span>
+                </div>
+              ) : (
+                <span className="rt-unlinked-text">
+                  Choose a template below or configure your external website to start selling.
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="rt-header-actions">
+            {externalWebsiteUrl ? (
+              <>
+                <button 
+                  type="button" 
+                  onClick={copyWebsiteLink} 
+                  className="rt-action-btn glass" 
+                  title="Copy store link to clipboard"
+                >
+                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copied ? 'Link Copied' : 'Copy Link'}</span>
+                </button>
+                <a 
+                  href={externalWebsiteUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="rt-action-btn primary"
+                >
+                  <span>Visit Live Store</span>
+                  <ExternalLink size={14} />
+                </a>
+              </>
+            ) : (
               <button 
                 type="button" 
-                onClick={copyWebsiteLink} 
-                className="rt-header-link" 
-                title="Copy website link"
+                onClick={() => setActiveTab('storefront')} 
+                className="rt-action-btn primary"
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? 'Copied!' : 'Copy Link'}
+                <Globe size={14} />
+                <span>Configure Website</span>
               </button>
-              <a 
-                href={externalWebsiteUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="rt-header-link primary"
-              >
-                <ExternalLink size={14} /> Visit Website
-              </a>
-            </>
-          ) : (
-            <button 
-              type="button" 
-              onClick={() => setActiveTab('storefront')} 
-              className="rt-header-link primary"
-            >
-              <Globe size={14} /> Link Website
-            </button>
-          )}
+            )}
+          </div>
+        </div>
+
+        {/* Quick Glance Stats Strip */}
+        <div className="rt-header-stats-strip">
+          <div className="rt-stat-item">
+            <Package size={14} className="rt-stat-icon" />
+            <span className="rt-stat-label">Catalog Products:</span>
+            <span className="rt-stat-value">{shares.filter(s => s.is_active).length} Active</span>
+          </div>
+          <div className="rt-stat-divider" />
+          <div className="rt-stat-item">
+            <LayoutTemplate size={14} className="rt-stat-icon" />
+            <span className="rt-stat-label">Store Theme:</span>
+            <span className="rt-stat-value">
+              {PREMADE_TEMPLATES.find(t => t.id === selectedTemplateId)?.name || 'VRTX Modern Studio'}
+            </span>
+          </div>
+          <div className="rt-stat-divider" />
+          <div className="rt-stat-item">
+            <CheckCircle2 size={14} className="rt-stat-icon text-emerald-400" />
+            <span className="rt-stat-label">Profit Markup:</span>
+            <span className="rt-stat-value">Protected & Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="rt-tabs">
-        <button 
-          type="button"
-          onClick={() => setActiveTab('templates')}
-          className={`rt-tab ${activeTab === 'templates' ? 'active' : ''}`}
-        >
-          <LayoutTemplate size={15} /> 
-          <span>Pre-Made Templates</span>
-        </button>
-        <button 
-          type="button"
-          onClick={() => setActiveTab('shares')}
-          className={`rt-tab ${activeTab === 'shares' ? 'active' : ''}`}
-        >
-          <Package size={15} /> 
-          <span>Catalog Products ({shares.filter(s => s.is_active).length})</span>
-        </button>
-        <button 
-          type="button"
-          onClick={() => setActiveTab('storefront')}
-          className={`rt-tab ${activeTab === 'storefront' ? 'active' : ''}`}
-        >
-          <Settings size={15} /> 
-          <span>Website & API Settings</span>
-        </button>
+      {/* Segmented Control Navigation Tabs */}
+      <div className="rt-tabs-bar">
+        <div className="rt-tabs">
+          <button 
+            type="button"
+            onClick={() => setActiveTab('templates')}
+            className={`rt-tab ${activeTab === 'templates' ? 'active' : ''}`}
+          >
+            <LayoutTemplate size={15} /> 
+            <span>Pre-Made Templates</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => setActiveTab('shares')}
+            className={`rt-tab ${activeTab === 'shares' ? 'active' : ''}`}
+          >
+            <Package size={15} /> 
+            <span>Catalog Products</span>
+            <span className="rt-tab-counter">{shares.filter(s => s.is_active).length}</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => setActiveTab('storefront')}
+            className={`rt-tab ${activeTab === 'storefront' ? 'active' : ''}`}
+          >
+            <Settings size={15} /> 
+            <span>Website & API Settings</span>
+          </button>
+        </div>
       </div>
 
       {/* Tab 0: Pre-Made Storefront Templates */}
       {activeTab === 'templates' && (
-        <div className="rt-templates-view">
-          <div className="rt-templates-header">
+        <div className="rt-templates-section">
+          <div className="rt-section-header">
             <div>
-              <h4>Choose a Pre-Made E-Commerce Template</h4>
-              <p>
-                Select from our collection of ready-to-deploy storefront templates. Each template connects automatically to your Weave365 products and custom pricing markups.
+              <h3 className="rt-section-title">Choose a Storefront Template</h3>
+              <p className="rt-section-subtitle">
+                Select from our curated boutique templates. Each template connects automatically to your Weave365 products, retail markups, and WhatsApp inquiries with zero setup.
               </p>
             </div>
           </div>
@@ -260,7 +301,7 @@ export function ResellerTools({ user, buyerProfile }) {
                   <div className="rt-template-body">
                     <div className="rt-template-top">
                       <span className="rt-template-category">{tmpl.category}</span>
-                      <h3 className="rt-template-title">{tmpl.name}</h3>
+                      <h4 className="rt-template-title">{tmpl.name}</h4>
                       <p className="rt-template-tagline">{tmpl.tagline}</p>
                     </div>
 
@@ -319,6 +360,7 @@ export function ResellerTools({ user, buyerProfile }) {
           </div>
         </div>
       )}
+
 
       {/* Tab 1: Catalog Items Added to Website */}
       {activeTab === 'shares' && (

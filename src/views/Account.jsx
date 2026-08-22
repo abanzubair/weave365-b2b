@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle, Boxes } from 'lucide-react';
+import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle, Boxes, Store } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
@@ -992,15 +992,18 @@ export function Account({
         </article>
 
         {priceAccess.resellerDashboardEnabled && (
-          <article className="account-panel panel-reseller" style={{ border: '1px solid var(--line)', borderRadius: '12px', background: 'white' }}>
-            <div className="account-panel-head" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--line)', paddingBottom: '1rem' }}>
-              <span><UserRound size={18} /> My Reseller Business Center</span>
+          <article className="account-panel panel-reseller" style={{ border: '1px solid var(--line, #e2e8f0)', borderRadius: '16px', background: '#ffffff', padding: '1.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+            <div className="account-panel-head" style={{ marginBottom: '1.25rem', borderBottom: '1px solid var(--line, #f1f5f9)', paddingBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '1.125rem', color: 'var(--ink, #0f172a)' }}>
+                <Store size={19} className="text-sky-600" /> My Reseller Business Center
+              </span>
               <button 
                 type="button" 
                 onClick={() => navigate('reseller-dashboard')}
-                style={{ fontSize: '0.8125rem', padding: '6px 12px' }}
+                className="rt-action-btn glass"
+                style={{ fontSize: '0.8125rem', padding: '6px 14px', background: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
               >
-                Expand to Fullscreen ↗
+                <span>Expand to Fullscreen ↗</span>
               </button>
             </div>
             <ResellerTools user={user} buyerProfile={buyerProfile} />
