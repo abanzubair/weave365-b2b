@@ -11,25 +11,44 @@
 
 .reseller-editorial-section {
   background-color: var(--white, #ffffff) !important;
+  width: 100%;
+}
+
+.reseller-editorial-section .brand-collab-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1380px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  box-sizing: border-box;
 }
 
 .reseller-content-side {
   background: var(--white, #ffffff) !important;
   border-right: 1px solid rgba(183, 134, 70, 0.08) !important;
+  padding: 60px 48px 60px 16px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .reseller-visual-side {
   border-right: none !important;
+  padding: 60px 16px 60px 48px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
 
 /* Symmetrical height & spacing lock on desktop */
 @media (min-width: 1025px) {
   .reseller-editorial-section {
-    min-height: 92vh;
-    min-height: 92svh;
+    min-height: 80vh;
+    min-height: 80svh;
     display: flex;
     flex-direction: column;
+    justify-content: center;
   }
 }
 
@@ -38,17 +57,18 @@
   .reseller-editorial-section .brand-collab-layout {
     display: flex;
     flex-direction: column-reverse; /* Visual stack on top for mobile flow */
+    padding: 0 20px;
   }
 
   .reseller-content-side {
     border-right: none !important;
     border-top: 1px solid rgba(183, 134, 70, 0.08) !important;
-    padding: 60px 40px !important;
+    padding: 40px 10px !important;
   }
 
   .reseller-visual-side {
     height: auto !important;
-    padding: 60px 20px !important;
-    border-bottom: 1px solid rgba(183, 134, 70, 0.08) !important;
+    padding: 40px 10px !important;
+    border-bottom: none !important;
   }
 }

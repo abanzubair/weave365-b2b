@@ -456,6 +456,12 @@ export function ProductDetail({
   const displayPrice = resellerPrice;
   const canViewPrice = (wholesalePrice > 0 || resellerPrice > 0) && priceAccess?.canViewPrices !== false;
   const setPrice = wholesalePrice * totalColors;
+  const setSavingsAmount = resellerPrice > wholesalePrice && totalColors > 1
+    ? (resellerPrice - wholesalePrice) * totalColors
+    : 0;
+  const setSavingsPercent = resellerPrice > wholesalePrice
+    ? Math.round(((resellerPrice - wholesalePrice) / resellerPrice) * 100)
+    : 0;
 
   const pcSetVal = useMemo(() => {
     const rawVal = String(product.raw?.['Pc / Set'] || '').trim().toLowerCase();
@@ -654,12 +660,7 @@ export function ProductDetail({
         })),
     [product, related],
   );
-  const detailRows = useMemo(
-    () => [
-      ['Description', product.description],
-    ],
-    [product.description],
-  );
+
 
   const explorationData = useMemo(() => {
     const currentFabric = (product.fabric || '').trim();
@@ -1130,7 +1131,7 @@ export function ProductDetail({
               )}
             </div>
 
-            <div className="product-specs-card">
+            <div className="product-specs-panel">
               <div className="specs-grid">
                 {[
                   ['Style', product.style],
@@ -1151,28 +1152,28 @@ export function ProductDetail({
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="product-disclaimer-box desktop-disclaimer-only">
-              <p>
-                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. <strong>Model/Cover image is for reference only.</strong> Making a payment indicates your agreement to this.
-              </p>
-            </div>
+              <div className="specs-panel-divider" />
 
-            <div className="global-sourcing-card desktop-sourcing-only">
-              <div className="card-header">
-                <Globe className="globe-icon-gold" size={20} />
-                <h3>Global B2B Sourcing</h3>
+              <div className="specs-sourcing-block">
+                <div className="sourcing-head">
+                  <Globe size={18} className="sourcing-icon" />
+                  <h4>Global B2B Sourcing</h4>
+                </div>
+                <p className="sourcing-desc">
+                  {product.metaDescription || product.summary || "Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. Fast WhatsApp ordering is available for India and global B2B orders."}
+                </p>
+                <div className="sourcing-badges">
+                  <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
+                  <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
+                  {String(product.category || '').toLowerCase() !== 'under 999' && (
+                    <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
+                  )}
+                </div>
               </div>
-              <p>
-                {product.metaDescription || product.summary || "Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. Fast WhatsApp ordering is available for India and global B2B orders."}
-              </p>
-              <div className="card-footer-badges">
-                <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
-                <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                {String(product.category || '').toLowerCase() !== 'under 999' && (
-                  <span>✓ {priceAccess?.priceGroup === 'wholesale' ? `MOQ: 1 ${moqUnit}` : (isSoldAsBoth ? 'Piece & Set MOQ' : `MOQ 1 ${moqUnit}`)}</span>
-                )}
+
+              <div className="specs-disclaimer-note">
+                <span className="disclaimer-tag">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. <strong>Model/Cover image is for reference only.</strong> Making a payment indicates your agreement to this.
               </div>
             </div>
           </div>
@@ -1211,32 +1212,56 @@ export function ProductDetail({
               </div>
             )} */}
 
-            <div className="product-code-new">
-              Code: <strong>{variant.code}</strong>
+            <div className="product-meta-header">
+              <span className="sku-badge">CODE: {variant.code}</span>
+              <span className="stock-badge">Ready to Ship</span>
             </div>
 
             <div className="price-moq-row">
               <div className="main-price-wrap">
                 {canViewPrice ? (
-                  <div className="product-price-container">
-                    <div className="product-price-row">
-                      <div className="price-main-display">
-                        <span className="price-value">{formatMoney(resellerPrice)}</span>
-                        <span className="price-unit">/pc</span>
-                      </div>
-                    </div>
+                  <div className="b2b-pricing-grid">
+                    {totalColors > 1 && !isUnder999 ? (
+                      <>
+                        <div className="b2b-price-card wholesale-highlight">
+                          <div className="price-card-header">
+                            <span className="price-card-tag">Wholesale Set</span>
+                            {setSavingsPercent > 0 && (
+                              <span className="savings-badge-pill">Save {setSavingsPercent}%</span>
+                            )}
+                          </div>
+                          <div className="price-card-main">
+                            {formatMoney(setPrice)} <span className="unit">/set</span>
+                          </div>
+                          <div className="price-card-sub">
+                            {totalColors} pcs · {formatMoney(wholesalePrice)}/pc
+                          </div>
+                        </div>
 
-                    {totalColors > 1 && !isUnder999 && (
-                      <div className="product-price-row wholesale-row">
-                        <div className="price-set-display">
-                          <span className="price-set-amount">{formatMoney(setPrice)}</span>
-                          <span className="price-set-meta">/Set ({totalColors} pcs · {formatMoney(wholesalePrice)}/pc)</span>
+                        <div className="b2b-price-card single-piece">
+                          <div className="price-card-header">
+                            <span className="price-card-tag">Single Piece</span>
+                            <span className="moq-badge-pill">Sample</span>
+                          </div>
+                          <div className="price-card-main">
+                            {formatMoney(resellerPrice)} <span className="unit">/pc</span>
+                          </div>
+                          <div className="price-card-sub">MOQ: 1 pc</div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="b2b-price-card single-piece full-width">
+                        <div className="price-card-header">
+                          <span className="price-card-tag">B2B Wholesale Price</span>
+                          <span className="moq-badge-pill">MOQ: 1 {moqUnit}</span>
+                        </div>
+                        <div className="price-card-main">
+                          {formatMoney(resellerPrice)} <span className="unit">/pc</span>
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
-
                   <button type="button" className="guest-price-notice" onClick={openAuth}>
                     <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
                   </button>
@@ -1244,72 +1269,74 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className="gst-disclaimer">
-              <span>Excluding GST</span>
-              <span className="bullet-sep">•</span>
-              <span className="shipping-note-badge">Shipping calculated at checkout</span>
-
+            <div className="product-logistics-info">
+              <div className="tax-shipping-line">
+                <span className="tax-item">Excl. GST</span>
+                <span className="bullet-sep">•</span>
+                <span className="shipping-note-badge">Shipping calculated at checkout</span>
+              </div>
+              <div className="international-hint">
+                <Globe size={18} className="globe-hint-icon" />
+                <span>International air cargo available; freight rates reduce per unit with larger volume.</span>
+              </div>
+              {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
+                <div className="b2b-custom-hint">
+                  Need custom bulk freight or specific timelines? WhatsApp us your order quantity and destination pin code.
+                </div>
+              )}
             </div>
 
-
-
-
-            <div className="international-courier-note">
-              <Globe size={16} />
-              <span>
-                International courier charges depend on weight; as weight increases, the per-unit cost becomes cheaper.
-              </span>
-            </div>
-
-
-            {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
-              <p className="b2b-shipping-note" style={{ 
-                margin: '0 0 12px 0', 
-                fontSize: 'var(--body-size)', 
-                lineHeight: '1.6', 
-                color: 'var(--muted)', 
-                fontFamily: 'var(--font-ui)', 
-                fontWeight: 400
-              }}>
-                For accurate shipping charges and delivery timelines, kindly WhatsApp us your order quantity along with your city and pin code. We will get back to you promptly.
-              </p>
-            )}
-
-            <div className="quick-facts">
+            <div className="product-specs-list">
               {String(product.category || '').toLowerCase() !== 'under 999' && (
-                <span>
-                  <Layers size={22} />Colors in a set: <strong>{totalColors}</strong>
+                <span className="spec-item-clean">
+                  <Layers size={18} className="spec-icon" />
+                  <span>Colors in set: <strong>{totalColors}</strong></span>
                 </span>
               )}
-              <span>
-                <ShoppingBag size={22} /> Weight per piece: <strong>{formatWeight(singleWeight)}</strong>
+              <span className="spec-item-clean">
+                <ShoppingBag size={18} className="spec-icon" />
+                <span>Weight per piece: <strong>{formatWeight(singleWeight)}</strong></span>
               </span>
               {product.weave && (
-                <span className="quick-fact-weave">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--gold-mid)', flexShrink: 0 }}>
-                    <path d="M6 3v18M12 3v18M18 3v18M3 6h18M3 12h18M3 18h18" />
-                  </svg>
-                  Weave Technique: <strong>{product.weave}</strong>
+                <span className="spec-item-clean">
+                  <Sparkles size={18} className="spec-icon" />
+                  <span>Weave Technique: <strong>{product.weave}</strong></span>
                 </span>
               )}
-              <span>
-                <ShieldCheck size={22} />
-                Business Policy: <strong><a href="https://weave365.com/disclaimer" onClick={(e) => { e.preventDefault(); if (typeof navigate === 'function') { navigate('disclaimer'); } else if (typeof window !== 'undefined') { window.location.href = '/disclaimer'; } }} style={{ color: 'var(--ink)', textDecoration: 'underline', textUnderlineOffset: '3px' }}>View Policy</a></strong>
+              <span className="spec-item-clean">
+                <ShieldCheck size={18} className="spec-icon" />
+                <span>Quality & Terms: <strong>
+                  <a
+                    href="https://weave365.com/disclaimer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (typeof navigate === 'function') {
+                        navigate('disclaimer');
+                      } else if (typeof window !== 'undefined') {
+                        window.location.href = '/disclaimer';
+                      }
+                    }}
+                    className="policy-link"
+                  >
+                    View Policy ↗
+                  </a>
+                </strong></span>
               </span>
             </div>
 
             {colorOptions.length > 0 && (
               <section className="product-variation-card" aria-labelledby="product-variation-heading">
                 <div className="variation-card-head">
-                  <h2 id="product-variation-heading">Variations</h2>
-                  <button type="button" onClick={() => setVariationDrawerOpen(true)}>
-                    Select Color
+                  <div className="variation-title-group">
+                    <h2 id="product-variation-heading">Color:</h2>
+                    <span className="active-color-name">{selectedColorName || 'Selected'}</span>
+                    <span className="color-count-pill">{colorOptions.length} Colors</span>
+                  </div>
+                  <button type="button" className="view-drawer-link" onClick={() => setVariationDrawerOpen(true)}>
+                    View Color Grid ↗
                   </button>
                 </div>
-                <p className="selected-color-label">
-                  <strong>Color:</strong> {selectedColorName || 'Selected'}
-                </p>
-                <div className="color-swatch-row" role="list" aria-label="Available colors">
+                <div className="color-swatch-row clean-scroll" role="list" aria-label="Available colors">
                   {colorOptions.map((option, index) => {
                     const optionName = option.name || `Color ${index + 1}`;
                     const isSelected = selectedColorName === option.name || selectedImage === option.image;
@@ -1318,17 +1345,18 @@ export function ProductDetail({
                       <button
                         key={`${optionName}-${option.image || index}`}
                         type="button"
-                        className={isSelected ? 'active' : ''}
+                        className={`swatch-btn ${isSelected ? 'active' : ''}`}
                         onClick={() => handleColorChange(option.name)}
                         aria-label={`Select ${optionName}`}
+                        title={optionName}
                       >
                         <img
                           src={option.image || fallbackProductImage}
                           alt={optionName}
                           loading="lazy"
                           decoding="async"
-                          width={40}
-                          height={40}
+                          width={48}
+                          height={48}
                           onError={(e) => { e.target.style.opacity = '0'; }}
                         />
                       </button>
@@ -1338,22 +1366,6 @@ export function ProductDetail({
               </section>
             )}
 
-            <div className="catalog-table">
-              {detailRows.map(([label, value]) => (
-                <div key={label} className={label.toLowerCase().replace(/\s+/g, '-') + '-row'}>
-                  {label !== 'Description' && <span>{label}</span>}
-                  <strong className={label === 'Description' ? 'description-text' : ''}>
-                    {value || 'On request'}
-                    {label === 'Description' && String(product.category || '').toLowerCase() === 'saree' && (
-                      <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--ink)' }}>
-                        Saree Length: 6.3m (including 85cm Blouse)
-                      </span>
-                    )}
-                  </strong>
-                </div>
-              ))}
-            </div>
-
             <div className="product-main-actions">
               <div className="product-secondary-actions">
                 <button
@@ -1362,17 +1374,17 @@ export function ProductDetail({
                   onClick={handleEnquiryClick}
                   style={enquiryState === 'sent' ? { background: '#128C7E', color: '#fff' } : {}}
                 >
-                  <WhatsappIcon size={20} /> {enquiryState === 'sent' ? 'Sent' : 'Enquiry'}
+                  <WhatsappIcon size={19} /> {enquiryState === 'sent' ? 'Sent' : 'WhatsApp Order'}
                 </button>
                 <button
                   className="catalog-add-button"
                   type="button"
                   onClick={() => setVariationDrawerOpen(true)}
                 >
-                  <ShoppingBag size={20} /> Add to Cart
+                  <ShoppingBag size={19} /> Add to Cart
                 </button>
                 <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Download', downloadImagesAsZip)} disabled={isDownloading}>
-                  <Download size={18} /> {isDownloading ? 'Zipping...' : 'Download'}
+                  <Download size={17} /> {isDownloading ? 'Zipping...' : 'Download Photos'}
                 </button>
                 {priceAccess?.canViewPrices ? (
                   <div className="share-dropdown-container" ref={shareMenuRef}>
@@ -1381,7 +1393,7 @@ export function ProductDetail({
                       type="button"
                       onClick={() => setShareMenuOpen(!shareMenuOpen)}
                     >
-                      <Share2 size={18} /> Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
+                      <Share2 size={17} /> Share <ChevronDown size={14} className={`dropdown-arrow ${shareMenuOpen ? 'open' : ''}`} />
                     </button>
                     {shareMenuOpen && (
                       <div className="share-dropdown-menu">
@@ -1393,7 +1405,7 @@ export function ProductDetail({
                             setWhatsappShareOpen(true);
                           }}
                         >
-                          <Share2 size={18} /> Share with Customer
+                          <Share2 size={16} /> Share with Customer
                         </button>
                         <button
                           type="button"
@@ -1403,45 +1415,33 @@ export function ProductDetail({
                             setShowShareModal(true);
                           }}
                         >
-                          <Layers size={18} /> Get White-Label Link
+                          <Layers size={16} /> Get White-Label Link
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
                   <button className="secondary-action-btn" type="button" onClick={() => handleRestrictedAction('Share', shareProductPage)}>
-                    <Share2 size={18} /> Share
+                    <Share2 size={17} /> Share
                   </button>
                 )}
               </div>
-            </div>
-            <p className="buyer-note">
-              <LockKeyhole size={16} /> Only registered buyers can download and share
-            </p>
-
-
-            <div className="product-disclaimer-box mobile-disclaimer-only">
-              <p>
-                <span className="product-disclaimer-label">Disclaimer:</span> Slight variations in color, fabric, and weaving are possible. Model image is for reference only. Making a payment indicates your agreement to this.
+              <p className="buyer-note">
+                <LockKeyhole size={14} /> Registered wholesale buyers can download photos and share catalogs
               </p>
             </div>
 
-            <div className="global-sourcing-card mobile-sourcing-only">
-              <div className="card-header">
-                <Globe className="globe-icon-gold" size={20} />
-                <h3>Global B2B Sourcing</h3>
-              </div>
-              <p>
-                {product.metaDescription || product.summary || "Source bulk Banarasi sarees and suits direct from Varanasi. Weave 365 is a wholesale supplier providing international shipping to the USA, UK, UAE, Canada, Australia and more. Fast WhatsApp ordering is available for India and global B2B orders."}
-              </p>
-              <div className="card-footer-badges">
-                <span>✓ {product.partner ? 'Artisan Partner' : 'Verified Supplier'}</span>
-                <span>✓ {product.purity && product.purity.toLowerCase() !== 'faux' ? `${product.purity} Quality` : 'Customs Handled'}</span>
-                {String(product.category || '').toLowerCase() !== 'under 999' && (
-                  <span>✓ MOQ: 1 pc / 1 Set</span>
+            {product.description && (
+              <div className="product-summary-block">
+                <p className="product-summary-text">{product.description}</p>
+                {String(product.category || '').toLowerCase() === 'saree' && (
+                  <div className="saree-length-pill">
+                    <strong>Saree Length:</strong> 6.3m (including 85cm Blouse piece)
+                  </div>
                 )}
               </div>
-            </div>
+            )}
+
 
           </aside>
         </div>

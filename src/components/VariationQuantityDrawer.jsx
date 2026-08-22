@@ -4,7 +4,7 @@
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, Plus, ShoppingBag, X, Sparkles } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, X, Check, Info } from 'lucide-react';
 import {
   calculateHybridProductPrice,
   fallbackProductImage,
@@ -188,57 +188,57 @@ export function VariationQuantityDrawer({
 
           <section className="variation-quantity-section" aria-label="Color quantities">
             {showSetStepper && (
-              <div className="wholesale-set-stepper-container" style={{
-                margin: '0 0 16px 0',
-                padding: '14px 16px',
-                background: '#fcf8f0',
-                borderRadius: '8px',
-                border: '1px solid #ebd3b4',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <strong style={{ fontSize: 'var(--body-size)', color: '#8c6239' }}>Quick Full Set (1 pc each color)</strong>
+              <div className="wholesale-set-card">
+                <div className="set-card-info">
+                  <strong>Full Set ({rows.length} pcs)</strong>
+                  <span>1 pc of each available color</span>
                 </div>
 
-                <div className="quantity-stepper" style={{ background: '#fff' }} aria-label="Set quantity">
+                <div className="quantity-stepper" aria-label="Set quantity">
                   <button type="button" onClick={() => handleSetQuantityChange(setQuantityVal - 1)} aria-label="Decrease sets">
-                    <Minus size={16} />
+                    <Minus size={14} />
                   </button>
-                  <output style={{ minWidth: '32px', textAlign: 'center', fontWeight: 'bold' }}>{setQuantityVal}</output>
+                  <output>{setQuantityVal}</output>
                   <button type="button" onClick={() => handleSetQuantityChange(setQuantityVal + 1)} aria-label="Increase sets">
-                    <Plus size={16} />
+                    <Plus size={14} />
                   </button>
                 </div>
               </div>
             )}
 
-            <h3>Colors & Pieces</h3>
+            <h3 className="colors-section-heading">Colors & Quantities</h3>
             <div className="variation-quantity-list">
               {rows.map((row) => {
                 const quantity = quantities[row.key] || 0;
                 const unitPrice = totalQuantity >= pricing.setSize ? pricing.wholesalePrice : pricing.resellerPrice;
 
                 return (
-                  <div className="variation-quantity-row" key={row.key}>
+                  <div className={`variation-quantity-row ${quantity > 0 ? 'has-qty' : ''}`} key={row.key}>
                     <button
                       type="button"
-                      className={`color-name-chip ${row.key === activeKey ? 'active' : ''}`}
+                      className="variation-color-target"
                       onClick={() => selectRow(row)}
                     >
-                      {row.name}
+                      <img
+                        src={row.image}
+                        alt={row.name}
+                        className="row-swatch-thumb"
+                        onError={(e) => { e.currentTarget.src = fallbackProductImage; }}
+                      />
+                      <span className="row-color-title">{row.name}</span>
                     </button>
+
                     <span className="variation-row-price">
                       {canViewPrices ? formatMoney(unitPrice) : priceNoticeForAccess(priceAccess)}
                     </span>
+
                     <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
                       <button type="button" onClick={() => setQuantity(row.key, quantity - 1)} aria-label={`Decrease ${row.name}`}>
-                        <Minus size={16} />
+                        <Minus size={14} />
                       </button>
                       <output>{quantity}</output>
                       <button type="button" onClick={() => setQuantity(row.key, quantity + 1)} aria-label={`Increase ${row.name}`}>
-                        <Plus size={16} />
+                        <Plus size={14} />
                       </button>
                     </div>
                   </div>
@@ -247,23 +247,24 @@ export function VariationQuantityDrawer({
             </div>
 
             {totalQuantity > 0 && canViewPrices && pricing.setSize > 1 && (
-              <div style={{
-                marginTop: '12px',
-                padding: '10px 14px',
-                borderRadius: '6px',
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                fontSize: '13px',
-                color: '#334155'
-              }}>
+              <div className="pricing-tier-status-box">
                 {pricing.completeSets > 0 && pricing.extraPieces === 0 && (
-                  <span>✓ <strong>{pricing.completeSets} Set{pricing.completeSets > 1 ? 's' : ''} ({pricing.totalQty} pcs)</strong> at Wholesale Rate ({formatMoney(pricing.wholesalePrice)}/pc)</span>
+                  <div className="tier-status-message success">
+                    <Check size={15} className="status-icon" />
+                    <span><strong>{pricing.completeSets} Set{pricing.completeSets > 1 ? 's' : ''} ({pricing.totalQty} pcs)</strong> at Wholesale Rate ({formatMoney(pricing.wholesalePrice)}/pc)</span>
+                  </div>
                 )}
                 {pricing.completeSets === 0 && (
-                  <span>ℹ️ <strong>{pricing.totalQty} pc{pricing.totalQty > 1 ? 's' : ''}</strong> at Reseller Rate ({formatMoney(pricing.resellerPrice)}/pc). Add {pricing.setSize - pricing.totalQty} more pc{pricing.setSize - pricing.totalQty > 1 ? 's' : ''} for Wholesale price!</span>
+                  <div className="tier-status-message info">
+                    <Info size={15} className="status-icon" />
+                    <span><strong>{pricing.totalQty} pc{pricing.totalQty > 1 ? 's' : ''}</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice)}/pc). Add {pricing.setSize - pricing.totalQty} more for Wholesale price!</span>
+                  </div>
                 )}
                 {pricing.completeSets > 0 && pricing.extraPieces > 0 && (
-                  <span>✓ <strong>{pricing.completeSets} Set</strong> @ Wholesale ({formatMoney(pricing.wholesalePrice)}/pc) + <strong>{pricing.extraPieces} extra pc{pricing.extraPieces > 1 ? 's' : ''}</strong> @ Reseller ({formatMoney(pricing.resellerPrice)}/pc)</span>
+                  <div className="tier-status-message success">
+                    <Check size={15} className="status-icon" />
+                    <span><strong>{pricing.completeSets} Set</strong> at Wholesale ({formatMoney(pricing.wholesalePrice)}/pc) + <strong>{pricing.extraPieces} extra</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice)}/pc)</span>
+                  </div>
                 )}
               </div>
             )}

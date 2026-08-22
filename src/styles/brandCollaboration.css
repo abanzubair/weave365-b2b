@@ -23,8 +23,11 @@
 .brand-collab-layout {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr; /* Asymmetric grid */
+  max-width: 1380px;
   width: 100%;
+  margin: 0 auto;
   height: 100%;
+  box-sizing: border-box;
 }
 
 /* Left Side: Contained Editorial Gallery Frame */

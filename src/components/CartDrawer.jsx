@@ -480,13 +480,13 @@ export function CartDrawer(props) {
                 onClick={handleEnquiryClick}
                 disabled={hasUnselectedColors || enquiryState === 'sending'}
               >
-                <WhatsappIcon size={16} />
+                <WhatsappIcon size={17} />
                 <span>
                   {enquiryState === 'sent'
                     ? 'Inquiry Sent'
                     : enquiryState === 'sending'
                     ? 'Sending...'
-                    : 'Quick WhatsApp Enquiry'}
+                    : 'Order via WhatsApp'}
                 </span>
               </button>
             </div>

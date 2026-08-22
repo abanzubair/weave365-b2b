@@ -1185,11 +1185,13 @@
     touch-action: manipulation;
   }
 
+  .product-specs-panel,
   .product-specs-card {
     order: 3;
-    margin-top: 12px;
+    margin-top: 16px !important;
     padding: 16px !important;
     border-radius: 10px;
+    gap: 16px !important;
   }
 
   .specs-grid {
@@ -1314,24 +1316,34 @@
     font-size: 10px !important;
   }
 
-  .quick-facts {
+  .b2b-pricing-grid {
+    grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
-    font-size: 16px !important;
-    margin-bottom: 20px !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
+    margin: 4px 0 12px !important;
   }
 
-  .quick-facts span {
-    width: auto !important;
-    box-sizing: border-box !important;
-    padding: 2px 0 !important;
+  .b2b-price-card {
+    padding: 10px 12px !important;
+  }
+
+  .price-card-main {
+    font-size: 20px !important;
+  }
+
+  .price-card-sub {
+    font-size: 11.5px !important;
+  }
+
+  .product-specs-list {
+    grid-template-columns: 1fr !important;
     gap: 8px !important;
+    font-size: 13.5px !important;
+    margin: 14px 0 16px !important;
   }
 
   .product-variation-card {
-    margin: 16px 0 !important;
-    padding: 16px 0 0 !important;
+    margin: 14px 0 !important;
+    padding: 14px 0 0 !important;
   }
 
   .variation-card-head h2 {
@@ -1390,18 +1402,28 @@
   .product-secondary-actions .secondary-action-btn,
   .product-secondary-actions .reseller-share-dropdown-trigger {
     min-height: 46px !important;
-    font-size: 10.5px !important;
-    font-weight: 700 !important;
-    padding: 0 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    padding: 0 8px !important;
     gap: 6px !important;
     white-space: nowrap !important;
-    letter-spacing: 0.2px !important;
+    letter-spacing: 0 !important;
   }
 
   .product-secondary-actions svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 16px !important;
+    height: 16px !important;
     flex-shrink: 0 !important;
+  }
+
+  .product-summary-block {
+    margin-top: 16px !important;
+    padding-top: 14px !important;
+  }
+
+  .product-summary-text {
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
   }
 
 

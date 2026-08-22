@@ -51,22 +51,29 @@ export default function ProductPageSkeleton() {
           {/* Partner Badge */}
           <div className="trusted-partner-card-v2 skeleton-partner-card skeleton-shimmer"></div>
 
-          {/* Product Code */}
-          <div className="product-code-new skeleton-code skeleton-shimmer"></div>
+          {/* Product Meta Header */}
+          <div className="product-meta-header" style={{ marginBottom: '14px' }}>
+            <div className="skeleton-code skeleton-shimmer" style={{ height: '26px', width: '120px', borderRadius: '6px', margin: 0 }}></div>
+            <div className="skeleton-status-badge skeleton-shimmer" style={{ height: '26px', width: '90px', borderRadius: '6px', margin: 0 }}></div>
+          </div>
 
-          {/* Price Block */}
-          <div className="price-moq-row skeleton-price-box skeleton-shimmer"></div>
+          {/* B2B Price Box */}
+          <div className="b2b-pricing-grid" style={{ marginBottom: '14px' }}>
+            <div className="b2b-price-card skeleton-shimmer" style={{ height: '90px', border: 'none' }}></div>
+            <div className="b2b-price-card skeleton-shimmer" style={{ height: '90px', border: 'none' }}></div>
+          </div>
 
-          {/* GST Disclaimer */}
-          <div className="skeleton-disclaimer skeleton-shimmer"></div>
+          {/* Logistics Strip */}
+          <div className="product-logistics-info" style={{ marginBottom: '16px' }}>
+            <div className="skeleton-disclaimer skeleton-shimmer" style={{ width: '220px', height: '16px', borderRadius: '4px', marginBottom: '8px' }}></div>
+            <div className="skeleton-disclaimer skeleton-shimmer" style={{ width: '300px', height: '16px', borderRadius: '4px' }}></div>
+          </div>
 
-
-
-          {/* Quick Facts */}
-          <div className="quick-facts">
-            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '220px' }}></div>
-            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '240px' }}></div>
-            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '200px' }}></div>
+          {/* Product Specs List */}
+          <div className="product-specs-list" style={{ marginBottom: '18px', gap: '16px' }}>
+            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '140px', height: '18px' }}></div>
+            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '160px', height: '18px' }}></div>
+            <div className="skeleton-fact-row skeleton-shimmer" style={{ width: '150px', height: '18px' }}></div>
           </div>
 
           {/* Variations Swatches Card */}
