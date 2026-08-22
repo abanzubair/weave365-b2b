@@ -18,7 +18,6 @@ import {
   Share2,
   ShoppingBag,
   X,
-  Zap,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
@@ -86,9 +85,8 @@ export const ProductCard = memo(function ProductCard({
     });
   }, [product.statusTags, canViewPrice, isUnder999]);
 
-  const showReadyStockBadge = product.isReadyStock || (isUnder999 && !product.isOutOfStock);
   const showColorBadge = colorCount > 1;
-  const showRightInfo = showColorBadge || showReadyStockBadge;
+  const showRightInfo = showColorBadge;
 
 
   const cardRef = useRef(null);
@@ -237,11 +235,6 @@ export const ProductCard = memo(function ProductCard({
 
           {canViewPrice && showRightInfo && (
             <div className="info-right">
-              {showReadyStockBadge && (
-                <div className="info-item">
-                  <Zap size={15} /> Ready Stock
-                </div>
-              )}
               {showColorBadge && (
                 <div className="info-item">
                   <Palette size={15} /> {colorCount} Colors

@@ -2021,6 +2021,11 @@ button {
   background: #dcfce7;
   padding: 2px 7px;
   border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .moq-badge-pill {
@@ -2030,6 +2035,11 @@ button {
   background: var(--surface-soft);
   padding: 2px 7px;
   border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .price-card-main {

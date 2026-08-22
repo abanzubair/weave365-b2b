@@ -1231,11 +1231,21 @@ export function ProductDetail({
                   <div className="b2b-pricing-grid">
                     {totalColors > 1 && !isUnder999 ? (
                       <>
+                        <div className="b2b-price-card single-piece">
+                          <div className="price-card-header">
+                            <span className="price-card-tag">Single Piece</span>
+                          </div>
+                          <div className="price-card-main">
+                            {formatMoney(resellerPrice)} <span className="unit">/pc</span>
+                          </div>
+                          <div className="price-card-sub">MOQ: 1 pc</div>
+                        </div>
+
                         <div className="b2b-price-card wholesale-highlight">
                           <div className="price-card-header">
                             <span className="price-card-tag">Wholesale Set</span>
                             {setSavingsPercent > 0 && (
-                              <span className="savings-badge-pill">Save {setSavingsPercent}%</span>
+                              <span className="savings-badge-pill">{setSavingsPercent}% OFF</span>
                             )}
                           </div>
                           <div className="price-card-main">
@@ -1244,17 +1254,6 @@ export function ProductDetail({
                           <div className="price-card-sub">
                             {totalColors} pcs · {formatMoney(wholesalePrice)}/pc
                           </div>
-                        </div>
-
-                        <div className="b2b-price-card single-piece">
-                          <div className="price-card-header">
-                            <span className="price-card-tag">Single Piece</span>
-                            <span className="moq-badge-pill">Sample</span>
-                          </div>
-                          <div className="price-card-main">
-                            {formatMoney(resellerPrice)} <span className="unit">/pc</span>
-                          </div>
-                          <div className="price-card-sub">MOQ: 1 pc</div>
                         </div>
                       </>
                     ) : (
@@ -1281,7 +1280,7 @@ export function ProductDetail({
               <div className="tax-shipping-line">
                 <span className="tax-item">Excl. GST</span>
                 <span className="bullet-sep">•</span>
-                <span className="shipping-note-badge">Shipping calculated at checkout</span>
+                <span className="shipping-note-badge">Free Shipping</span>
               </div>
               <div className="international-hint">
                 <Globe size={18} className="globe-hint-icon" />

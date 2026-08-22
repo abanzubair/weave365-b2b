@@ -1431,19 +1431,71 @@
   .b2b-pricing-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
-    margin: 4px 0 12px !important;
+    margin: 4px 0 14px !important;
   }
 
   .b2b-price-card {
-    padding: 10px 12px !important;
+    padding: 10px 10px !important;
+    border-radius: 8px !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .price-card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    margin-bottom: 2px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .price-card-tag {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    white-space: nowrap !important;
+    color: var(--gold-dark) !important;
+  }
+
+  .savings-badge-pill {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    padding: 1.5px 5px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .moq-badge-pill {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 1.5px 5px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.2 !important;
   }
 
   .price-card-main {
-    font-size: 20px !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+  }
+
+  .price-card-main .unit {
+    font-size: 13px !important;
+    font-weight: 500 !important;
   }
 
   .price-card-sub {
-    font-size: 11.5px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    white-space: nowrap !important;
   }
 
   .product-specs-list {
