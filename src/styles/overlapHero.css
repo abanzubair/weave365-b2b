@@ -5,14 +5,15 @@
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: #e5dfd9; /* Neutral plaster gray-cream */
+  background-color: #eae5df;
 }
 
 .overlap-hero-container {
   position: relative;
   width: 100%;
-  height: 100%;
-  background-color: #e5dfd9;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #eae5df;
   display: flex;
   flex-direction: column; /* Mobile layout: image on top, text panel below */
 }
@@ -21,19 +22,20 @@
 .overlap-hero-bg-layer {
   position: relative;
   width: 100%;
-  height: 50vh;
+  flex: 1;
   min-height: 320px;
-  flex-shrink: 0;
   background-color: #eae5df;
   padding: 72px 16px 0 16px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Static Mobile Card Wrapper */
 .overlap-hero-card {
   background-color: transparent;
   width: 100%;
-  height: 100%;
+  flex: 1;
   padding: 0;
   box-sizing: border-box;
   display: flex;
@@ -45,7 +47,7 @@
 .overlap-hero-picture {
   display: block;
   width: 100%;
-  flex-grow: 1;
+  flex: 1;
   overflow: hidden;
   border-radius: 6px 6px 0 0;
 }
@@ -64,14 +66,14 @@
 .overlap-hero-content-layer {
   position: relative;
   width: 100%;
-  flex-grow: 1;
   background-color: #eae5df;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px 20px 28px;
+  padding: 24px 20px 36px;
   box-sizing: border-box;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 
 /* Text and details container inside panel */
