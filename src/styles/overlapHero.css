@@ -49,7 +49,7 @@
   width: 100%;
   flex: 1;
   overflow: hidden;
-  border-radius: 6px 6px 0 0;
+  border-radius: 8px;
 }
 
 .overlap-hero-img {
@@ -60,6 +60,7 @@
   display: block;
   user-select: none;
   -webkit-user-drag: none;
+  border-radius: 8px;
 }
 
 /* Editorial Content Split Panel */
@@ -200,10 +201,12 @@
   .overlap-hero-picture {
     height: 100%;
     display: block;
+    border-radius: 0;
   }
 
   .overlap-hero-img {
     object-position: 25% center; /* Shift the image towards the right to show the left side more */
+    border-radius: 0;
   }
 
   .overlap-hero-content-layer {
