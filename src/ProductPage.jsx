@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   ArrowRight,
   Download,
   Gift,
@@ -1511,9 +1512,11 @@ export function ProductDetail({
                           setShowSellPanel(true);
                         }
                       }}
-                      className="buy-card-btn sell-card-btn page-action-sell-btn"
+                      className={`buy-card-btn sell-card-btn page-action-sell-btn ${showSellPanel ? 'is-open' : ''}`}
                     >
-                      <Store size={18} /> SELL
+                      <Store size={18} />
+                      <span>SELL THIS</span>
+                      <ChevronUp size={15} className={`btn-dropdown-chevron ${showSellPanel ? 'rotated' : ''}`} />
                     </button>
                   </div>
 
@@ -1584,7 +1587,7 @@ export function ProductDetail({
 
                     <button
                       type="button"
-                      className="add-to-bag-btn buy-trigger-btn page-action-buy-btn"
+                      className={`add-to-bag-btn buy-trigger-btn page-action-buy-btn ${showBuyPanel ? 'is-open' : ''}`}
                       onClick={() => {
                         if (showBuyPanel) {
                           handleClosePanel();
@@ -1594,7 +1597,9 @@ export function ProductDetail({
                         }
                       }}
                     >
-                      <ShoppingBag size={18} /> BUY
+                      <ShoppingBag size={18} />
+                      <span>BUY NOW</span>
+                      <ChevronUp size={15} className={`btn-dropdown-chevron ${showBuyPanel ? 'rotated' : ''}`} />
                     </button>
                   </div>
                 </div>

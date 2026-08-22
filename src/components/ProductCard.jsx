@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import {
   Bookmark,
   ChevronRight,
+  ChevronDown,
   Download,
   PackageCheck,
   Palette,
@@ -399,7 +400,7 @@ export const ProductCard = memo(function ProductCard({
             }}
             className="buy-card-btn sell-card-btn"
           >
-            <Store size={15} /> SELL
+            <Store size={15} /> SELL THIS
           </button>
           <button type="button"
             className="add-to-bag-btn buy-trigger-btn"
@@ -409,7 +410,7 @@ export const ProductCard = memo(function ProductCard({
               setShowBuyPanel(true);
             }}
           >
-            <ShoppingBag size={15} /> BUY
+            <ShoppingBag size={15} /> BUY NOW
           </button>
         </div>
 

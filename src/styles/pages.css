@@ -2800,8 +2800,12 @@ button {
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(191, 146, 87, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(191, 146, 87, 0.2);
   padding: 6px 0 8px;
   animation: pagePopoverSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pagePopoverSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .product-page-popover.sell-popover {
@@ -2817,6 +2821,7 @@ button {
 
 .product-page-popover.closing {
   animation: pagePopoverFadeOut 0.18s ease-in forwards;
+  animation: pagePopoverFadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .product-page-popover .sheet-header {
@@ -2887,23 +2892,31 @@ button {
 
 @keyframes pagePopoverSlideUp {
   from {
+  0% {
     opacity: 0;
     transform: translateY(10px) scale(0.98);
+    transform: translateY(8px) scale(0.97) translateZ(0);
   }
   to {
+  100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) translateZ(0);
   }
 }
 
 @keyframes pagePopoverFadeOut {
   from {
+  0% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) translateZ(0);
   }
   to {
+  100% {
     opacity: 0;
     transform: translateY(6px) scale(0.98);
+    transform: translateY(6px) scale(0.97) translateZ(0);
   }
 }
 
@@ -2944,7 +2957,8 @@ button {
   font-weight: 800 !important;
   font-family: var(--font-ui) !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
   cursor: pointer !important;
   box-sizing: border-box !important;
   margin: 0 !important;
@@ -2982,6 +2996,35 @@ button {
 .page-action-sell-btn:active,
 .page-action-buy-btn:active {
   transform: scale(0.98) !important;
+}
+
+.btn-dropdown-chevron {
+  opacity: 0.65;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  margin-left: 3px;
+  flex-shrink: 0;
+  transform: rotate(0deg) translateZ(0);
+  transform-origin: center center;
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  will-change: transform;
+}
+
+.page-action-sell-btn:hover .btn-dropdown-chevron,
+.page-action-buy-btn:hover .btn-dropdown-chevron {
+  opacity: 1;
+}
+
+.page-action-sell-btn.is-open .btn-dropdown-chevron,
+.page-action-buy-btn.is-open .btn-dropdown-chevron,
+.btn-dropdown-chevron.rotated {
+  transform: rotate(180deg);
+  transform: rotate(180deg) translateZ(0);
+  opacity: 1;
 }
 
 .buy-now-button {
