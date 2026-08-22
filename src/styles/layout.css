@@ -976,8 +976,8 @@
 .footer {
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr 1fr 0.8fr 1.2fr;
-  gap: clamp(20px, 3vw, 20px);
-  padding: 40px var(--site-padding);
+  gap: clamp(20px, 3vw, 24px);
+  padding: 48px max(48px, calc((100vw - 1440px) / 2)) 24px;
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   border-top: 1px solid var(--surface-strong);
   font-family: var(--font-footer);
