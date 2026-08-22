@@ -23,8 +23,7 @@
 .brand-collab-layout {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr; /* Asymmetric grid */
-  max-width: 1380px;
-  width: 100%;
+  width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
   height: 100%;
   box-sizing: border-box;

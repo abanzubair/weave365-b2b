@@ -932,7 +932,7 @@ button {
   grid-template-columns: 1fr 1.45fr;
   gap: 36px;
   align-items: center;
-  padding: 64px max(48px, calc((100vw - 1280px) / 2));
+  padding: 64px max(48px, calc((100vw - 1440px) / 2));
   /* background: #f4eee9; */
   background: var(--surface);
   margin-top: -40px;

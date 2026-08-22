@@ -12,63 +12,74 @@
 .reseller-editorial-section {
   background-color: var(--white, #ffffff) !important;
   width: 100%;
+  padding: 64px 0;
+  border-top: 1px solid rgba(183, 134, 70, 0.08);
+  border-bottom: 1px solid rgba(183, 134, 70, 0.08);
+  box-sizing: border-box;
 }
 
 .reseller-editorial-section .brand-collab-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 1380px;
-  width: 100%;
+  grid-template-columns: 1.1fr 0.9fr;
+  width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
-  padding: 0 32px;
+  gap: 48px;
+  align-items: center;
   box-sizing: border-box;
 }
 
 .reseller-content-side {
-  background: var(--white, #ffffff) !important;
-  border-right: 1px solid rgba(183, 134, 70, 0.08) !important;
-  padding: 60px 48px 60px 16px !important;
+  background: transparent !important;
+  border-right: none !important;
+  padding: 0 !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.reseller-visual-side {
-  border-right: none !important;
-  padding: 60px 16px 60px 48px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.reseller-content-side .content-wrapper {
+  max-width: 100%;
+  width: 100%;
 }
 
-/* Symmetrical height & spacing lock on desktop */
-@media (min-width: 1025px) {
-  .reseller-editorial-section {
-    min-height: 80vh;
-    min-height: 80svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+.reseller-visual-side {
+  border-right: none !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.reseller-visual-side .gallery-frame-container {
+  max-width: 480px;
+  width: 100%;
+  margin-left: auto;
 }
 
 /* Mobile & Tablet Overrides */
 @media (max-width: 1024px) {
+  .reseller-editorial-section {
+    padding: 48px 0;
+  }
+
   .reseller-editorial-section .brand-collab-layout {
     display: flex;
-    flex-direction: column-reverse; /* Visual stack on top for mobile flow */
-    padding: 0 20px;
+    flex-direction: column-reverse;
+    gap: 36px;
   }
 
   .reseller-content-side {
-    border-right: none !important;
-    border-top: 1px solid rgba(183, 134, 70, 0.08) !important;
-    padding: 40px 10px !important;
+    padding: 0 !important;
   }
 
   .reseller-visual-side {
     height: auto !important;
-    padding: 40px 10px !important;
-    border-bottom: none !important;
+    padding: 0 !important;
+    justify-content: center;
+  }
+
+  .reseller-visual-side .gallery-frame-container {
+    max-width: 360px;
+    margin: 0 auto;
   }
 }
