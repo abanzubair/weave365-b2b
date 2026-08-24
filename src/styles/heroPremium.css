@@ -525,7 +525,7 @@
 
   .premium-hero-subtitle {
     display: block;
-    font-size: clamp(15px, 4.5vw, 18px);
+    font-size: clamp(18px, 5.2vw, 22px);
     line-height: 1.35;
     margin-bottom: 20px;
   }
@@ -552,7 +552,7 @@
     min-width: 0;
     padding: 0 10px;
     height: 44px;
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 500;
     letter-spacing: 0.03em;
     white-space: nowrap;
@@ -575,7 +575,7 @@
     min-width: 0;
     padding: 0 10px;
     height: 44px;
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 500;
     letter-spacing: 0.03em;
     white-space: nowrap;
@@ -595,7 +595,7 @@
 
   .feature-item-desc {
     max-width: 220px;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.45;
   }
 

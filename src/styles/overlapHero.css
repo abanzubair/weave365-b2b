@@ -109,9 +109,9 @@
 .overlap-hero-tagline {
   font-family: var(--font-heading);
   font-style: normal;
-  font-size: clamp(20px, 5.4vw, 26px);
+  font-size: clamp(23px, 6.4vw, 30px);
   color: var(--ink, #1a1a1a);
-  line-height: 1.2;
+  line-height: 1.22;
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -134,10 +134,10 @@
   display: block;
   font-family: var(--font-body);
   font-style: normal;
-  font-size: 13px;
+  font-size: clamp(14px, 3.8vw, 15.5px);
   font-weight: 400;
   color: #4a433d;
-  line-height: 1.45;
+  line-height: 1.48;
   margin: 0 0 10px 0;
   max-width: 400px;
   text-wrap: pretty;
@@ -148,7 +148,7 @@
   flex-wrap: wrap;
   justify-content: center;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: clamp(11px, 2.9vw, 12.5px);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -183,7 +183,7 @@
   background: var(--ink, #1a1a1a);
   color: #ffffff;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: clamp(13px, 3.2vw, 14px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
