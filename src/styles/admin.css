@@ -1151,9 +1151,58 @@
 
 /* Reseller Dashboard Status Badge & Action Toggle */
 .reseller-dashboard-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.reseller-dashboard-status-row {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.reseller-website-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  max-width: 200px;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+
+.reseller-website-link:hover {
+  background-color: #dcfce7;
+  border-color: #86efac;
+  color: #14532d;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.reseller-website-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reseller-website-icon {
+  flex-shrink: 0;
+  color: #16a34a;
+}
+
+.reseller-website-ext-icon {
+  flex-shrink: 0;
+  color: #86efac;
+  margin-left: 1px;
 }
 
 .reseller-dashboard-status {

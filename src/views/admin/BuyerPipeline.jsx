@@ -7,6 +7,8 @@ import {
   Check,
   Search,
   Download,
+  Globe,
+  ExternalLink,
 } from 'lucide-react';
 import { normalizeBuyerType } from '../../utils/buyerAccess.js';
 import {
@@ -36,6 +38,17 @@ export default function BuyerPipeline({
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
+
+  const storefrontsByReseller = useMemo(() => {
+    const list = adminData?.optional?.reseller_storefronts || [];
+    const map = {};
+    list.forEach((sf) => {
+      if (sf?.reseller_id) {
+        map[sf.reseller_id] = sf;
+      }
+    });
+    return map;
+  }, [adminData?.optional?.reseller_storefronts]);
 
   const sortedProfiles = useMemo(() => {
     let profiles = adminData.profiles || [];
@@ -305,6 +318,14 @@ export default function BuyerPipeline({
                   profile.approval_status === 'approved' ? 'approved' :
                     profile.approval_status === 'suspended' ? 'suspended' : 'pending';
 
+                const storefront = storefrontsByReseller[profile.id] || (profile.user_id ? storefrontsByReseller[profile.user_id] : null);
+                const storeSlug = storefront?.slug || profile.reseller_slug || profile.store_slug;
+                const rawCustomDomain = storefront?.custom_domain || profile.custom_domain;
+                const storeUrl = rawCustomDomain
+                  ? (rawCustomDomain.startsWith('http') ? rawCustomDomain : `https://${rawCustomDomain}`)
+                  : (storeSlug ? `/s/${storeSlug}` : null);
+                const storeDisplayName = storefront?.store_name || (storeSlug ? `/s/${storeSlug}` : 'View Store');
+
                 return (
                   <tr key={profile.id}>
                     <td><strong>{sortedProfiles.length - index}</strong></td>
@@ -384,16 +405,31 @@ export default function BuyerPipeline({
                     </td>
                     <td>
                       <div className="reseller-dashboard-cell">
-                        <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
-                          {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                          className={`admin-action-link-btn ${profile.reseller_dashboard_enabled ? 'btn-disable' : 'btn-enable'}`}
-                        >
-                          {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
-                        </button>
+                        <div className="reseller-dashboard-status-row">
+                          <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
+                            {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
+                            className={`admin-action-link-btn ${profile.reseller_dashboard_enabled ? 'btn-disable' : 'btn-enable'}`}
+                          >
+                            {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
+                          </button>
+                        </div>
+                        {storeUrl && (
+                          <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="reseller-website-link"
+                            title={`Open reseller storefront: ${storeDisplayName} (${storeUrl})`}
+                          >
+                            <Globe size={12} className="reseller-website-icon" />
+                            <span className="reseller-website-text">{storeDisplayName}</span>
+                            <ExternalLink size={11} className="reseller-website-ext-icon" />
+                          </a>
+                        )}
                       </div>
                     </td>
                     <td>

@@ -83,11 +83,5 @@ export function isProfileComplete(user, buyerProfile) {
     return false;
   }
 
-  // If partner / vendor, business name is required
-  const isVendor = profile.buyer_type === 'vendor' || profile.buyer_subtype?.toLowerCase().includes('vendor');
-  if (isVendor && !String(profile.business_name || '').trim()) {
-    return false;
-  }
-
   return true;
 }

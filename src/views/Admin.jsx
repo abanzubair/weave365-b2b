@@ -72,6 +72,7 @@ const optionalTables = [
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
   { key: 'influencer_profiles', label: 'Influencer Profiles' },
+  { key: 'reseller_storefronts', label: 'Reseller Storefronts' },
 ];
 
 const emptyAdminData = {

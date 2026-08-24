@@ -635,13 +635,13 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                             />
                           </label>
                           <label className="auth-label-styled">
-                            Business / Store Name (Optional)
+                            Business Name (Optional)
                             <input
                               className="auth-input-styled"
                               value={profile.businessName}
                               onChange={(event) => updateProfile('businessName', event.target.value)}
                               autoComplete="organization"
-                              placeholder="Enter your store or business name (optional)"
+                              placeholder="Enter your business name (optional)"
                             />
                           </label>
 

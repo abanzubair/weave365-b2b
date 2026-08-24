@@ -7,7 +7,7 @@
  */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -80,15 +80,7 @@ function LegalDisclaimer() {
     <p className="signup-legal-disclaimer">
       By continuing, you agree to our{' '}
       <a href="/terms-conditions" target="_blank" rel="noopener noreferrer">
-        Terms of Service
-      </a>
-      {', '}
-      <a href="/privacy-security" target="_blank" rel="noopener noreferrer">
-        Privacy Policy
-      </a>
-      {' & '}
-      <a href="/disclaimer" target="_blank" rel="noopener noreferrer">
-        Disclaimer
+        Terms & Conditions
       </a>
       .
     </p>
@@ -133,7 +125,7 @@ export function SignupPage({
       ? 'login'
       : initialMode
   ); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
-  const [signupType, setSignupType] = useState(initialType); // null (step 1) | 'customer' | 'partner'
+  const [signupType, setSignupType] = useState(() => initialType || 'customer'); // 'customer' | 'partner'
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -157,6 +149,23 @@ export function SignupPage({
     rememberMe: false,
   });
 
+  const [showSignupOptions, setShowSignupOptions] = useState(false);
+  const signupOptionsRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (signupOptionsRef.current && !signupOptionsRef.current.contains(event.target)) {
+        setShowSignupOptions(false);
+      }
+    }
+    if (showSignupOptions) {
+      document.addEventListener('pointerdown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
+    };
+  }, [showSignupOptions]);
+
   async function handleSignOut() {
     setLoading(true);
     try {
@@ -169,7 +178,7 @@ export function SignupPage({
       if (setBuyerProfile) setBuyerProfile(null);
       setEmail('');
       setPassword('');
-      setSignupType(null);
+      setSignupType('customer');
       setMode('login');
       setMessage('');
       if (typeof window !== 'undefined') {
@@ -398,8 +407,7 @@ export function SignupPage({
           !cleanName ||
           !profile.city.trim() ||
           cleanWhatsapp.length !== 10 ||
-          normalizePincodeInput(profile.pincode).length !== 6 ||
-          (signupType === 'partner' && !profile.businessName.trim())
+          normalizePincodeInput(profile.pincode).length !== 6
         ) {
           setMessage(
             'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
@@ -452,8 +460,7 @@ export function SignupPage({
           !cleanName ||
           !profile.city.trim() ||
           cleanWhatsapp.length !== 10 ||
-          normalizePincodeInput(profile.pincode).length !== 6 ||
-          (signupType === 'partner' && !profile.businessName.trim())
+          normalizePincodeInput(profile.pincode).length !== 6
         ) {
           setMessage(
             'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
@@ -587,8 +594,6 @@ export function SignupPage({
                 ? 'Reset password'
                 : mode === 'reset-password'
                 ? 'Set new password'
-                : signupType === 'partner'
-                ? 'Partner Registration'
                 : 'Create an account'}
             </h1>
           </div>
@@ -798,9 +803,6 @@ export function SignupPage({
               <div className="signup-form-centered-body">
                 <div className="signup-form-header">
                   <h2 className="signup-form-title">Welcome back</h2>
-                  <p className="signup-form-subtitle">
-                    Access your orders, saved collections, and live wholesale catalog in one place.
-                  </p>
                 </div>
 
                 <form onSubmit={submit} className="signup-form">
@@ -867,18 +869,48 @@ export function SignupPage({
                     )}
                   </button>
 
-                  <div className="signup-switch-link">
-                    Don't have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('register');
-                        setSignupType(null); // Return to pre-selection
-                        setMessage('');
-                      }}
-                    >
-                      Sign up
-                    </button>
+                  <div className="signup-switch-link-wrapper" ref={signupOptionsRef}>
+                    <div className="signup-switch-link">
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => setShowSignupOptions((prev) => !prev)}
+                        aria-expanded={showSignupOptions}
+                      >
+                        Sign up
+                      </button>
+                    </div>
+
+                    {showSignupOptions && (
+                      <div className="signup-role-popover" role="menu">
+                        <button
+                          type="button"
+                          className="signup-role-popover-btn"
+                          onClick={() => {
+                            selectSignupType('customer');
+                            setMode('register');
+                            setShowSignupOptions(false);
+                            setMessage('');
+                          }}
+                        >
+                          <ShoppingBag size={15} />
+                          <span>Buyer</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="signup-role-popover-btn"
+                          onClick={() => {
+                            selectSignupType('partner');
+                            setMode('register');
+                            setShowSignupOptions(false);
+                            setMessage('');
+                          }}
+                        >
+                          <Store size={15} />
+                          <span>Vendor</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="signup-divider">
@@ -903,127 +935,23 @@ export function SignupPage({
                 <LegalDisclaimer />
               </div>
             </div>
-          ) : signupType === null ? (
-            /* =================================================================
-               Step 1: Pre-Selection Screen (Customer Signup vs Partner Signup)
-               ================================================================= */
-            <div className="signup-form-view-wrapper">
-              <div className="signup-form-centered-body">
-                <div className="signup-form-header">
-                  <h2 className="signup-form-title">
-                    {isOnboarding ? 'Complete your profile' : 'Create an account'}
-                  </h2>
-                  <p className="signup-form-subtitle">
-                    Select your profile type to access tailored pricing, MOQ terms, and textile tools.
-                  </p>
-                </div>
-
-                <div className="signup-role-selection-grid">
-                  {/* 1. Customer Signup Card */}
-                  <div
-                    className="signup-role-card"
-                    onClick={() => selectSignupType('customer')}
-                  >
-                    <div className="signup-role-card-icon">
-                      <ShoppingBag size={20} />
-                    </div>
-                    <span className="signup-role-card-tag">Buyer & Reseller</span>
-                    <h3 className="signup-role-card-title">Customer Signup</h3>
-                    <p className="signup-role-card-desc">
-                      For wholesalers, boutique owners, resellers, and individual buyers purchasing authentic Banarasi textiles.
-                    </p>
-
-                    <button type="button" className="signup-role-card-btn">
-                      Continue as Customer <ArrowRight size={14} />
-                    </button>
-                  </div>
-
-                  {/* 2. Partner Signup Card */}
-                  <div
-                    className="signup-role-card"
-                    onClick={() => selectSignupType('partner')}
-                  >
-                    <div className="signup-role-card-icon">
-                      <Store size={20} />
-                    </div>
-                    <span className="signup-role-card-tag">Weaver Network</span>
-                    <h3 className="signup-role-card-title">Partner Signup</h3>
-                    <p className="signup-role-card-desc">
-                      For Varanasi master weavers, loom owners, and production enterprises selling through Weave 365.
-                    </p>
-
-                    <button type="button" className="signup-role-card-btn">
-                      Continue as Partner <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {!isOnboarding && (
-                  <>
-                    <div className="signup-divider">
-                      <span>or</span>
-                    </div>
-
-                    <GoogleButton
-                      onClick={() => handleSocialLogin('google')}
-                      text="Sign up with Google"
-                    />
-                  </>
-                )}
-              </div>
-
-              <div className="signup-form-bottom-footer">
-                <LegalDisclaimer />
-
-                {isOnboarding && user?.email ? (
-                  <div className="signup-switch-link">
-                    Signed in as {user.email} •{' '}
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                ) : (
-                  <div className="signup-switch-link">
-                    Already have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('login');
-                        setMessage('');
-                      }}
-                    >
-                      Sign in
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
           ) : (
             /* =================================================================
-               Step 2: Signup / Complete Profile Form (Customer or Partner)
+               Signup / Complete Profile Form (Customer or Partner)
                ================================================================= */
             <div className="signup-form-view-wrapper">
               <div className="signup-form-centered-body">
                 <div className="signup-form-header">
                   <div className="signup-form-title-row">
                     <h2 className="signup-form-title">
-                      {signupType === 'partner'
-                        ? 'Partner Registration'
-                        : isOnboarding
-                        ? 'Complete Your Profile'
-                        : 'Create an account'}
+                      {isOnboarding ? 'Complete Your Profile' : 'Create an account'}
                     </h2>
                   </div>
-                  <p className="signup-form-subtitle">
-                    {signupType === 'partner'
-                      ? 'Join Varanasi’s verified weaver network and supply direct to global boutiques.'
-                      : isOnboarding
-                      ? 'Provide your business details to unlock wholesale catalog access.'
-                      : 'Access verified factory prices, live inventory, and flexible MOQ orders in one place.'}
-                  </p>
+                  {isOnboarding && (
+                    <p className="signup-form-subtitle">
+                      Provide your business details to unlock wholesale catalog access.
+                    </p>
+                  )}
                 </div>
 
                 <form onSubmit={submit} className="signup-form">
@@ -1043,24 +971,15 @@ export function SignupPage({
                     />
                   </div>
 
-                  {/* Business / Loom Name */}
+                  {/* Business Name */}
                   <div className="signup-field">
-                    <label className="signup-label">
-                      {signupType === 'partner'
-                        ? 'Loom / Enterprise Name *'
-                        : 'Business / Store Name (Optional)'}
-                    </label>
+                    <label className="signup-label">Business Name (Optional)</label>
                     <input
                       type="text"
                       value={profile.businessName}
                       onChange={(e) => updateProfile('businessName', e.target.value)}
-                      placeholder={
-                        signupType === 'partner'
-                          ? 'Enter loom or enterprise name'
-                          : 'Optional store name'
-                      }
+                      placeholder="Optional business name"
                       autoComplete="organization"
-                      required={signupType === 'partner'}
                       className="signup-input"
                     />
                   </div>
@@ -1177,28 +1096,6 @@ export function SignupPage({
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Interested Categories (Customer Only) */}
-                  {signupType === 'customer' && (
-                    <div className="signup-field signup-field-full">
-                      <label className="signup-label">
-                        <span>Interested Categories *</span>
-                        <span className="signup-label-subtext">Select all that apply</span>
-                      </label>
-                      <div className="signup-category-pills">
-                        {categoryOptions.map((cat) => (
-                          <label key={cat} className="signup-category-pill">
-                            <input
-                              type="checkbox"
-                              checked={profile.interestedCategories.includes(cat)}
-                              onChange={() => toggleCategory(cat)}
-                            />
-                            <span>{cat}</span>
-                          </label>
-                        ))}
                       </div>
                     </div>
                   )}

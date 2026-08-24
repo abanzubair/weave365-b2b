@@ -1,8 +1,19 @@
 /**
- * WhatsAppFloat Component
- * Purpose: Renders a lightweight floating WhatsApp chat button (bottom-right corner).
- * Uses an inline SVG icon — no external dependencies or icon libraries.
+ * @file WhatsAppFloat.jsx
+ * @description Refined floating WhatsApp concierge button with understated multi-intent template selector.
+ * Allows users to choose between Reselling, Buying, and General inquiries with pre-filled
+ * bespoke WhatsApp messages.
  */
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { 
+  X, 
+  Sparkles, 
+  Store, 
+  MessageSquare, 
+  ArrowRight 
+} from 'lucide-react';
 import { storeConfig } from '../config.js';
 
 const WA_SVG = (
@@ -11,21 +22,125 @@ const WA_SVG = (
   </svg>
 );
 
+const TEMPLATES = [
+  {
+    id: 'reselling',
+    title: 'Reselling related',
+    desc: 'Catalog, reseller tools & margins',
+    icon: Sparkles,
+    message: "Hi Weave 365, I am interested in reselling Banarasi sarees and suits. Please share catalogue access, reseller tools & margin details.",
+  },
+  {
+    id: 'buying',
+    title: 'Buying related',
+    desc: 'Wholesale pricing, MOQs & bulk orders',
+    icon: Store,
+    message: "Hi Weave 365, I want to purchase textiles in bulk / wholesale. Please share your latest collection, MOQs & best rates.",
+  },
+  {
+    id: 'general',
+    title: 'General questions',
+    desc: 'Custom weaving, fabrics & support',
+    icon: MessageSquare,
+    message: "Hi Weave 365, I have a general inquiry regarding fabrics, custom weaving, or shipping to my location.",
+  },
+];
+
 export function WhatsAppFloat() {
-  const phone = storeConfig.whatsapp || storeConfig.phone || '';
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  const phone = storeConfig.whatsapp || storeConfig.phone || '9919101369';
   const cleaned = phone.replace(/\D/g, '');
   const fullPhone = cleaned.length === 10 ? `91${cleaned}` : cleaned;
-  const href = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi, I\'m interested in your Banarasi collection.')}`;
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('pointerdown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleSelectTemplate = (templateMessage) => {
+    const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(templateMessage)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setIsOpen(false);
+  };
 
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="wa-float"
-      aria-label="Chat on WhatsApp"
-    >
-      {WA_SVG}
-    </a>
+    <div className="wa-float-container" ref={containerRef}>
+      {isOpen && (
+        <div 
+          className="wa-distilled-popover" 
+          role="dialog" 
+          aria-modal="false"
+          aria-label="WhatsApp quick topics"
+        >
+          <div className="wa-distilled-header">
+            <div className="wa-distilled-title">
+              <span className="wa-distilled-dot" />
+              <span>Chat on WhatsApp</span>
+            </div>
+            <button
+              type="button"
+              className="wa-distilled-close"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close"
+              title="Close"
+            >
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="wa-distilled-list">
+            {TEMPLATES.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="wa-distilled-item"
+                  onClick={() => handleSelectTemplate(item.message)}
+                >
+                  <IconComponent size={16} className="wa-distilled-icon" />
+                  <div className="wa-distilled-text">
+                    <span className="wa-distilled-item-title">{item.title}</span>
+                    <span className="wa-distilled-item-desc">{item.desc}</span>
+                  </div>
+                  <ArrowRight size={13} className="wa-distilled-arrow" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Trigger Button (Original Style Preserved) */}
+      <button
+        type="button"
+        className="wa-float"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-label={isOpen ? "Close WhatsApp menu" : "Chat on WhatsApp"}
+        title={isOpen ? "Close" : "Chat on WhatsApp"}
+        aria-expanded={isOpen}
+      >
+        {WA_SVG}
+      </button>
+    </div>
   );
 }
