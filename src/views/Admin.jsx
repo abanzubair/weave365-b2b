@@ -580,7 +580,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         <LockKeyhole size={34} />
         <h1>Admin Login Required</h1>
         <p>Login with your admin email and password to open the dashboard.</p>
-        <button type="button" className="primary-button" onClick={openAuth}>Login as Admin</button>
+        <button type="button" className="primary-button" onClick={() => navigate ? navigate('signup', null, null, { mode: 'login' }) : openAuth && openAuth()}>Login as Admin</button>
       </section>
     );
   }

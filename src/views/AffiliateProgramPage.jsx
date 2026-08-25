@@ -131,7 +131,9 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
                 onClick={() => {
                   if (user) {
                     navigate('account?tab=influencer');
-                  } else {
+                  } else if (navigate) {
+                    navigate('signup', null, null, { type: 'reseller' });
+                  } else if (openAuth) {
                     openAuth();
                   }
                 }}

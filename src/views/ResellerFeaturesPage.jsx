@@ -47,7 +47,9 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
   const handleStartSharing = () => {
     if (user) {
       navigate('catalogue');
-    } else {
+    } else if (navigate) {
+      navigate('signup', null, null, { type: 'reseller' });
+    } else if (openAuth) {
       openAuth();
     }
   };

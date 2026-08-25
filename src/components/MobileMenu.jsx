@@ -61,7 +61,9 @@ export function MobileMenu(props) {
     : (store.configOptions?.categories?.length > 0
       ? ['All', ...store.configOptions.categories]
       : defaultCategoryNames);
-  const openAuth = props.openAuth || (() => store.setAuthOpen(true));
+  const openAuth = props.openAuth || (() => {
+    if (navigate) navigate('signup');
+  });
   const setCartOpen = props.setCartOpen || store.setCartOpen;
   const cartCount = props.cartCount ?? store.cart.length;
   const favoritesCount = props.favoritesCount ?? store.favorites.length;

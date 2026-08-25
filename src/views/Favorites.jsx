@@ -19,7 +19,7 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
         <Breadcrumb items={breadcrumbItems} navigate={navigate} />
         <h1>Login to see your favourite sarees</h1>
         <p>Your saved designs will stay linked to your account.</p>
-        <button type="button" className="primary-button" onClick={openAuth}>
+        <button type="button" className="primary-button" onClick={() => navigate ? navigate('signup') : openAuth && openAuth()}>
           Login / Register
         </button>
       </section>

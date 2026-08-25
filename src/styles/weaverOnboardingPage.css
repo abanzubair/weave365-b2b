@@ -15,7 +15,7 @@
 }
 
 .weaver-hero-split {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -214,7 +214,7 @@
 /* Notice Section - Clean White Card Warning Redesign */
 .weaver-notice-section {
   padding: 0 2rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 50px auto 10px;
   position: relative;
   z-index: 10;
@@ -292,7 +292,7 @@
 /* Steps Section Redesign (Clean Typographic Grid) */
 .weaver-steps-section {
   padding: 60px 2rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -336,7 +336,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -427,7 +427,7 @@
 }
 
 .onboarding-steps-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -457,7 +457,7 @@
   display: grid;
   grid-template-columns: 360px 1fr 1fr;
   gap: 48px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   align-items: start;
 }

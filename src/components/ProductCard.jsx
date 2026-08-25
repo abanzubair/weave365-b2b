@@ -17,7 +17,6 @@ import {
   Palette,
   Share2,
   ShoppingBag,
-  Store,
   X,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
@@ -162,9 +161,13 @@ export const ProductCard = memo(function ProductCard({
   }, [showBuyPanel, showSellPanel, isMobile]);
 
   const handleDownloadPhotos = async () => {
-    if (!priceAccess?.userId && typeof openAuth === 'function') {
+    if (!priceAccess?.userId) {
       handleClose();
-      openAuth();
+      if (typeof navigate === 'function') {
+        navigate('signup');
+      } else if (typeof openAuth === 'function') {
+        openAuth();
+      }
       return;
     }
 
@@ -413,7 +416,7 @@ export const ProductCard = memo(function ProductCard({
             }}
             className="buy-card-btn sell-card-btn"
           >
-            <Store size={15} /> SELL THIS
+            SELL THIS
           </button>
           <button type="button"
             className="add-to-bag-btn buy-trigger-btn"
@@ -423,7 +426,7 @@ export const ProductCard = memo(function ProductCard({
               setShowBuyPanel(true);
             }}
           >
-            <ShoppingBag size={15} /> BUY NOW
+            BUY NOW
           </button>
         </div>
 

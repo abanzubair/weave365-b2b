@@ -1,6 +1,6 @@
 /* ==================================================
    RESELLER GROWTH — Asymmetrical Gallery Spread
-   Luxury Editorial Design System (Option 1 Redesign)
+   Luxury Editorial Design System
    ================================================== */
 
 .reseller-editorial-section .brand-title .brand-highlight {
@@ -12,7 +12,7 @@
 .reseller-editorial-section {
   background-color: var(--white, #ffffff) !important;
   width: 100%;
-  padding: 64px 0;
+  padding: 80px 0;
   border-top: 1px solid rgba(183, 134, 70, 0.08);
   border-bottom: 1px solid rgba(183, 134, 70, 0.08);
   box-sizing: border-box;
@@ -20,10 +20,10 @@
 
 .reseller-editorial-section .brand-collab-layout {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
+  grid-template-columns: 1fr 1fr;
+  width: min(1600px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
-  gap: 48px;
+  gap: clamp(48px, 5vw, 88px);
   align-items: center;
   box-sizing: border-box;
 }
@@ -38,7 +38,7 @@
 }
 
 .reseller-content-side .content-wrapper {
-  max-width: 100%;
+  max-width: 720px;
   width: 100%;
 }
 
@@ -48,10 +48,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  width: 100%;
 }
 
 .reseller-visual-side .gallery-frame-container {
-  max-width: 480px;
+  max-width: 100%;
   width: 100%;
   margin-left: auto;
 }
@@ -79,13 +80,13 @@
   }
 
   .reseller-visual-side .gallery-frame-container {
-    max-width: 360px;
+    max-width: 480px;
     margin: 0 auto;
   }
 }
 
 @media (max-width: 480px) {
   .reseller-visual-side .gallery-frame-container {
-    max-width: 270px;
+    max-width: 100%;
   }
 }

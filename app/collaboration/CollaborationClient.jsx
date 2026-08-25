@@ -6,7 +6,6 @@ import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
 
 export default function CollaborationClient() {
   const navigate = useAppNavigate();
-  const { setAuthOpen } = useStorefront();
 
-  return <OurOfferings navigate={navigate} openAuth={() => setAuthOpen(true)} />;
+  return <OurOfferings navigate={navigate} openAuth={() => navigate('signup', 'partner')} />;
 }

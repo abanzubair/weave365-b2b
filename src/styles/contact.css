@@ -5,7 +5,7 @@
  */
 
 .contact-hero-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -62,7 +62,7 @@
 
 /* SPLIT LAYOUT FOR FORM + INFO */
 .contact-grid-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;

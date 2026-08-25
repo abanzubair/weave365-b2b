@@ -18,7 +18,6 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -73,7 +72,7 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   return (
@@ -86,7 +85,7 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
       toggleFavorite={toggleFavorite}
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       isTransitioning={false}
     />
   );

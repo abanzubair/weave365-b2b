@@ -54,7 +54,7 @@
 }
 
 .offerings-hero-content {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -153,7 +153,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 48px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -209,7 +209,7 @@
 }
 
 .wl-editorial-layout {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -400,7 +400,7 @@
 }
 
 .weaver-editorial-layout {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;

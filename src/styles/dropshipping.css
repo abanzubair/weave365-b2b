@@ -15,7 +15,7 @@
 }
 
 .dropshipping-hero-inner {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -163,7 +163,7 @@
   border-radius: 8px;
   padding: 24px 32px;
   margin: 40px auto 0;
-  max-width: 1400px;
+  max-width: 1600px;
   box-sizing: border-box;
 }
 
@@ -285,7 +285,7 @@
 /* Benefits Section — Balanced Grid */
 .dropshipping-benefits {
   padding: 80px 2rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -352,7 +352,7 @@
   display: grid;
   grid-template-columns: 1.25fr 0.75fr;
   gap: 40px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   align-items: start;
 }
@@ -650,7 +650,7 @@
 }
 
 .walkthrough-panel {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 .walkthrough-panel {
@@ -1196,7 +1196,7 @@
 }
 
 .seo-copy-inner {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -1327,7 +1327,7 @@
 }
 
 .cta-inner {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;

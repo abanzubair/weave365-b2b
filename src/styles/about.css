@@ -18,7 +18,7 @@
 }
 
 .about-hero-grid {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -97,7 +97,7 @@
 }
 
 .about-metrics-grid {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -224,7 +224,7 @@
 }
 
 .flow-visual-panel {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   min-height: 220px;
@@ -334,7 +334,7 @@
 }
 
 .typographic-story .story-split-grid {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -368,7 +368,7 @@
 }
 
 .standards-cards-grid {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -616,13 +616,13 @@
 }
 
 .about-faq-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
 .about-cta-card-wrapper {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   background-color: var(--cream);
   color: var(--ink);

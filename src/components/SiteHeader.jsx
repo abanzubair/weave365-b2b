@@ -104,7 +104,6 @@ export function SiteHeader(props) {
   const isAdmin = props.isAdmin;
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
-  const setAuthOpen = props.setAuthOpen ?? store.setAuthOpen;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
   const cartProducts = props.cartProducts || [];
   const currencyRef = props.currencyRef || internalCurrencyRef;

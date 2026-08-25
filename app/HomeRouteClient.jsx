@@ -24,7 +24,6 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   // Sync initial SSR data to store if store is empty
@@ -85,7 +84,7 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
 
   const toggleFavorite = useCallback((product) => {
     if (!user) {
-      setAuthOpen(true);
+      navigate('signup');
       return;
     }
 
@@ -100,7 +99,7 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
       void persistFavorites(next, user.id);
       return next;
     });
-  }, [user, setFavorites, setAuthOpen]);
+  }, [user, setFavorites, navigate]);
 
   return (
     <>
@@ -112,7 +111,7 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
         fallbackHeroImage={fallbackProductImage}
         navigate={navigate}
         setCategory={(cat) => navigate('catalogue', null, null, { category: cat })}
-        openAuth={() => setAuthOpen(true)}
+        openAuth={() => navigate('signup')}
         addToCart={addToCart}
         addCartSelections={addCartSelections}
         toggleFavorite={toggleFavorite}

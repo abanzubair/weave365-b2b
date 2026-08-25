@@ -12,6 +12,8 @@
 @import './styles/signupPage.css';
 @import './styles/resellerTools.css';
 @import './styles/resellerWhatsappShare.css';
+@import './styles/brandCollaboration.css';
+@import './styles/resellerGrowth.css';
 
 .search-lock {
   overflow: hidden !important;
@@ -31,7 +33,7 @@
 
 .seo-compact-section {
   padding: 4.5rem 0;
-  width: min(1440px, calc(100% - var(--site-padding, 48px) * 2));
+  width: min(1600px, calc(100% - var(--site-padding, 48px) * 2));
   margin: 0 auto;
   border-top: 1px solid rgba(0,0,0,0.06);
 }

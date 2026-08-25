@@ -18,7 +18,6 @@ export default function SharedClient({ sharedSlug, initialProducts = [] }) {
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   const allProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
@@ -35,7 +34,7 @@ export default function SharedClient({ sharedSlug, initialProducts = [] }) {
   const addToCart = useCallback(
     (product, variant, quantity = 1, colorSelection = {}) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setCart((currentCart) => {
@@ -45,13 +44,13 @@ export default function SharedClient({ sharedSlug, initialProducts = [] }) {
       });
       setCartOpen(true);
     },
-    [user, setCart, setCartOpen, setAuthOpen]
+    [user, setCart, setCartOpen, navigate]
   );
 
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -66,7 +65,7 @@ export default function SharedClient({ sharedSlug, initialProducts = [] }) {
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   return (
@@ -94,7 +93,7 @@ export default function SharedClient({ sharedSlug, initialProducts = [] }) {
       toggleFavorite={toggleFavorite}
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       isTransitioning={false}
     />
   );

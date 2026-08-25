@@ -25,7 +25,6 @@ import { SiteHeader } from './SiteHeader.jsx';
 import { SearchOverlay } from './SearchOverlay.jsx';
 import { MobileMenu } from './MobileMenu.jsx';
 import { CartDrawer } from './CartDrawer.jsx';
-import { AuthModal } from './AuthModal.jsx';
 import { ResellerOnboardingWalkthrough } from './ResellerOnboardingWalkthrough.jsx';
 import { WhatsAppFloat } from './WhatsAppFloat.jsx';
 import { InternalLinkNetwork } from './InternalLinkNetwork.jsx';
@@ -44,10 +43,6 @@ export function AppShell({ children }) {
     setBuyerProfile,
     vendorOnboarding,
     setVendorOnboarding,
-    authOpen,
-    setAuthOpen,
-    authInitialMode,
-    setAuthInitialMode,
     cartOpen,
     setCartOpen,
     menuOpen,
@@ -184,13 +179,12 @@ export function AppShell({ children }) {
       const sessionUser = session?.user || null;
       setUser(sessionUser);
       if (event === 'PASSWORD_RECOVERY') {
-        setAuthInitialMode('reset-password');
-        setAuthOpen(true);
+        navigate('signup', null, null, { mode: 'reset-password' });
       }
     });
 
     return () => data?.subscription?.unsubscribe();
-  }, [setUser, setBuyerProfile, setAuthInitialMode, setAuthOpen]);
+  }, [setUser, setBuyerProfile, navigate]);
 
   // Hydrate User Profile & Influencer Referral
   useEffect(() => {
@@ -478,7 +472,6 @@ export function AppShell({ children }) {
           isAdmin={isAdmin}
           favoritesCount={favoritesCount}
           handleSignOut={handleSignOut}
-          setAuthOpen={setAuthOpen}
           setCartOpen={setCartOpen}
           cartProducts={cartProducts}
           activeCurrency={activeCurrency}
@@ -503,7 +496,7 @@ export function AppShell({ children }) {
           user={user}
           isAdmin={isAdmin}
           priceAccess={priceAccess}
-          openAuth={() => setAuthOpen(true)}
+          openAuth={() => navigate('signup')}
           visibleProducts={products}
           setCartOpen={setCartOpen}
           cartCount={cartCount}
@@ -545,19 +538,6 @@ export function AppShell({ children }) {
           navigate={navigate}
         />
       )}
-
-      <AuthModal
-        open={authOpen}
-        onClose={() => {
-          setAuthOpen(false);
-          setAuthInitialMode('login');
-        }}
-        user={user}
-        setUser={setUser}
-        buyerProfile={buyerProfile}
-        setBuyerProfile={setBuyerProfile}
-        initialMode={authInitialMode}
-      />
 
       {!hideShellSections && (
         <ResellerOnboardingWalkthrough

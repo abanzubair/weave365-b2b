@@ -6,13 +6,13 @@ import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
 
 export default function ResellerFeaturesClient() {
   const navigate = useAppNavigate();
-  const { user, setAuthOpen } = useStorefront();
+  const { user } = useStorefront();
 
   return (
     <ResellerFeaturesPage
       user={user}
       navigate={navigate}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup', null, null, { type: 'reseller' })}
     />
   );
 }

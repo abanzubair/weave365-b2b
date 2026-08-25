@@ -336,7 +336,7 @@ button {
 }
 
 .hero-copy {
-  padding: 80px max(calc(var(--site-padding) + 38px), calc((100vw - 1440px) / 2 + 38px)) 110px;
+  padding: 80px max(calc(var(--site-padding) + 38px), calc((100vw - 1600px) / 2 + 38px)) 110px;
   position: relative;
   z-index: 2;
   display: flex;
@@ -519,7 +519,7 @@ button {
 
 
 .benefit-strip {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 0;
@@ -563,7 +563,7 @@ button {
 }
 
 .deal-section {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   display: grid;
   grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
   gap: 24px;
@@ -826,7 +826,7 @@ button {
 }
 
 .section {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;
   padding: 60px 0;
 }
@@ -933,7 +933,7 @@ button {
   grid-template-columns: 1fr 1.45fr;
   gap: 36px;
   align-items: center;
-  padding: 64px max(48px, calc((100vw - 1440px) / 2));
+  padding: 64px max(48px, calc((100vw - 1600px) / 2));
   /* background: #f4eee9; */
   background: var(--surface);
   margin-top: -40px;
@@ -1411,7 +1411,7 @@ button {
 }
 
 .product-view {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;
   padding: 0 0 54px;
 }
@@ -5532,14 +5532,14 @@ button {
 }
 
 .bulk-inquiry-page {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;
   padding: 0 0 64px;
 }
 
 .admin-page,
 .admin-locked-page {
-  width: min(1440px, calc(100% - var(--site-padding) * 2));
+  width: min(1600px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;
 }
 
@@ -6347,7 +6347,7 @@ button {
   }
 
   .product-view {
-    width: min(1560px, calc(100% - 96px)) !important;
+    width: min(1600px, calc(100% - 96px)) !important;
     padding-top: 20px;
   }
 
@@ -6417,7 +6417,7 @@ button {
 /* --- 1920x1200 style wide desktops: tighten product details column only --- */
 @media screen and (min-width: 1900px) and (min-height: 1121px) and (max-height: 1280px) {
   .product-view {
-    width: min(1560px, calc(100% - 108px)) !important;
+    width: min(1600px, calc(100% - 108px)) !important;
   }
 
   .product-hero-grid {

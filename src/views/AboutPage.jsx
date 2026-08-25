@@ -135,7 +135,7 @@ export function AboutPage({ navigate }) {
 
       {/* 1. COMPREHENSIVE BRAND STORY (Replaces old Hero) */}
       <section className="about-section typographic-story" style={{ padding: '0 var(--site-padding) clamp(40px, 6vw, 64px) var(--site-padding)', backgroundColor: 'var(--paper)', borderBottom: '1px solid var(--line)' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 2rem', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
 
           <div className="story-text-block">
             <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'About Weave 365' }]} navigate={navigate} />

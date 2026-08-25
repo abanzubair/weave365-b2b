@@ -17,8 +17,6 @@ export const useStorefront = create((set) => ({
   setVendorOnboarding: (vendorOnboarding) => set({ vendorOnboarding }),
 
   // UI Shell & Navigation State
-  authOpen: false,
-  authInitialMode: 'login',
   cartOpen: false,
   menuOpen: false,
   searchActive: false,
@@ -26,8 +24,6 @@ export const useStorefront = create((set) => ({
   scrolled: false,
   pastHero: false,
   siteCustomizer: null,
-  setAuthOpen: (authOpen) => set({ authOpen }),
-  setAuthInitialMode: (authInitialMode) => set({ authInitialMode }),
   setCartOpen: (cartOpen) => set({ cartOpen }),
   setMenuOpen: (menuOpen) => set({ menuOpen }),
   setSearchActive: (searchActive) => set({ searchActive }),

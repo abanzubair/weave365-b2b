@@ -32,7 +32,6 @@ export default function CatalogueClient({
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   useEffect(() => {
@@ -256,7 +255,7 @@ export default function CatalogueClient({
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -271,7 +270,7 @@ export default function CatalogueClient({
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   return (
@@ -299,7 +298,7 @@ export default function CatalogueClient({
       toggleFavorite={toggleFavorite}
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       isTransitioning={false}
     />
   );

@@ -839,8 +839,11 @@ export function ProductDetail({
     const userId = priceAccess?.userId;
     const productId = product.id;
     if (!userId) {
-      setToastMessage('Please login to download images');
-      setTimeout(() => setToastMessage(''), 3000);
+      if (typeof navigate === 'function') {
+        navigate('signup');
+      } else if (typeof openAuth === 'function') {
+        openAuth();
+      }
       return;
     }
 
@@ -1336,7 +1339,7 @@ export function ProductDetail({
                     )}
                   </div>
                 ) : (
-                  <button type="button" className="guest-price-notice" onClick={openAuth}>
+                  <button type="button" className="guest-price-notice" onClick={() => navigate ? navigate('signup') : openAuth && openAuth()}>
                     <LockKeyhole size={18} /> {priceNoticeForAccess(priceAccess)}
                   </button>
                 )}
@@ -1954,7 +1957,8 @@ export function ProductDetail({
               className={`reviews-write-btn-minimal ${showReviewForm ? 'active' : ''}`}
               onClick={() => {
                 if (!user && !priceAccess?.userId) {
-                  openAuth();
+                  if (navigate) navigate('signup');
+                  else if (openAuth) openAuth();
                 } else {
                   setShowReviewForm(!showReviewForm);
                 }

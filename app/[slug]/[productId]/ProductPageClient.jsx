@@ -20,7 +20,6 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
     pincode,
     setPincode,
     codStatus,
@@ -101,7 +100,7 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -116,7 +115,7 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   const checkPincode = useCallback(() => {
@@ -135,7 +134,7 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
       toggleFavorite={toggleFavorite}
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       pincode={pincode}
       setPincode={setPincode}
       codStatus={codStatus}

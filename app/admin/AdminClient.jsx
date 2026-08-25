@@ -10,8 +10,6 @@ export default function AdminClient() {
     user,
     buyerProfile,
     setBuyerProfile,
-    setAuthOpen,
-    setAuthInitialMode,
     blogs,
     setBlogs,
     products,
@@ -24,10 +22,7 @@ export default function AdminClient() {
       user={user}
       buyerProfile={buyerProfile}
       onProfileChange={setBuyerProfile}
-      openAuth={() => {
-        setAuthInitialMode('login');
-        setAuthOpen(true);
-      }}
+      openAuth={() => navigate('signup', null, null, { mode: 'login' })}
       blogs={blogs}
       setBlogs={setBlogs}
       products={products}

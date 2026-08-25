@@ -977,7 +977,7 @@
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr 1fr 0.8fr 1.2fr;
   gap: clamp(20px, 3vw, 24px);
-  padding: 48px max(48px, calc((100vw - 1440px) / 2)) 24px;
+  padding: 48px max(48px, calc((100vw - 1600px) / 2)) 24px;
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   border-top: 1px solid var(--surface-strong);
   font-family: var(--font-footer);
@@ -1529,7 +1529,7 @@
   .feature-strip,
   .bulk-inquiry-page,
   .deal-section {
-    width: min(1400px, calc(100% - var(--site-padding) * 2.5)) !important;
+    width: min(1600px, calc(100% - var(--site-padding) * 2.5)) !important;
   }
 
   .why-band,
@@ -1537,13 +1537,13 @@
   .reseller-band,
   .newsletter,
   .footer {
-    padding-left: max(var(--site-padding), calc((100vw - 1400px) / 2)) !important;
-    padding-right: max(var(--site-padding), calc((100vw - 1400px) / 2)) !important;
+    padding-left: max(var(--site-padding), calc((100vw - 1600px) / 2)) !important;
+    padding-right: max(var(--site-padding), calc((100vw - 1600px) / 2)) !important;
   }
 
   .hero-copy {
-    padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1400px) / 2 + 38px)) !important;
-    padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1400px) / 2 + 38px)) !important;
+    padding-left: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1600px) / 2 + 38px)) !important;
+    padding-right: max(calc(1.25 * var(--site-padding) + 38px), calc((100vw - 1600px) / 2 + 38px)) !important;
   }
 
   .top-bar-static,

@@ -55,9 +55,9 @@
   /* Viewport & Container Tokens */
   --container-max-mobile: 100%;
   --container-max-tablet: 100%;
-  --container-max-desktop: 1320px;
-  --container-max-large: 1560px;
-  --container-max-ultrawide: 1720px;
+  --container-max-desktop: 1600px;
+  --container-max-large: 1600px;
+  --container-max-ultrawide: 1600px;
   --container-width: 100%;
 
   /* Fluid Typography Scale Tokens with Responsive clamp() */

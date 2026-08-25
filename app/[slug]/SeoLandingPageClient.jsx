@@ -20,7 +20,6 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
   const addToCart = useCallback(
     (product, variant, quantity = 1, colorSelection = {}) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setCart((currentCart) => {
@@ -57,13 +56,13 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
       });
       setCartOpen(true);
     },
-    [user, setCart, setCartOpen, setAuthOpen]
+    [user, setCart, setCartOpen, navigate]
   );
 
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -78,7 +77,7 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   return (
@@ -93,7 +92,7 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
       toggleFavorite={toggleFavorite}
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       landingPages={allLandingPages}
     />
   );

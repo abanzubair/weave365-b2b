@@ -21,7 +21,6 @@ export default function AccountClient() {
     cart,
     setCart,
     favorites,
-    setAuthOpen,
     setCartOpen,
   } = useStorefront();
 
@@ -104,7 +103,7 @@ export default function AccountClient() {
   const addToCart = useCallback(
     (product, variant, quantity = 1, colorSelection = {}) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setCart((currentCart) => {
@@ -114,7 +113,7 @@ export default function AccountClient() {
       });
       setCartOpen(true);
     },
-    [user, setCart, setCartOpen, setAuthOpen]
+    [user, setCart, setCartOpen, navigate]
   );
 
   const handleSignOut = useCallback(async () => {
@@ -137,7 +136,7 @@ export default function AccountClient() {
       favoriteProducts={favoriteProducts}
       products={products}
       navigate={navigate}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       updateQuantity={updateQuantity}
       addToCart={addToCart}
       onSignOut={handleSignOut}

@@ -17,7 +17,6 @@ export default function FavoritesClient() {
     setFavorites,
     setCart,
     setCartOpen,
-    setAuthOpen,
   } = useStorefront();
 
   const priceAccess = useMemo(() => {
@@ -37,7 +36,7 @@ export default function FavoritesClient() {
   const addToCart = useCallback(
     (product, variant, quantity = 1, colorSelection = {}) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setCart((currentCart) => {
@@ -47,13 +46,13 @@ export default function FavoritesClient() {
       });
       setCartOpen(true);
     },
-    [user, setCart, setCartOpen, setAuthOpen]
+    [user, setCart, setCartOpen, navigate]
   );
 
   const toggleFavorite = useCallback(
     (product) => {
       if (!user) {
-        setAuthOpen(true);
+        navigate('signup');
         return;
       }
       setFavorites((currentFavorites) => {
@@ -68,7 +67,7 @@ export default function FavoritesClient() {
         return next;
       });
     },
-    [user, setFavorites, setAuthOpen]
+    [user, setFavorites, navigate]
   );
 
   return (
@@ -76,7 +75,7 @@ export default function FavoritesClient() {
       products={favoriteProducts}
       user={user}
       navigate={navigate}
-      openAuth={() => setAuthOpen(true)}
+      openAuth={() => navigate('signup')}
       toggleFavorite={toggleFavorite}
       addToCart={addToCart}
       priceAccess={priceAccess}
