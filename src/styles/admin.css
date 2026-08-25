@@ -3930,14 +3930,14 @@
 }
 
 /* ==============================
-   Admin Early Access Manager Section Styles
+   Admin Enquiries Manager Section Styles
    ============================== */
-.admin-early-access-tab {
+.admin-enquiries-tab {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-.admin-ea-header {
+.admin-enq-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3949,29 +3949,29 @@
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
-.admin-ea-header-left {
+.admin-enq-header-left {
   display: flex;
   align-items: center;
   gap: 14px;
 }
-.admin-ea-header-icon {
+.admin-enq-header-icon {
   color: #2563eb;
   flex-shrink: 0;
 }
-.admin-ea-title {
+.admin-enq-title {
   font-size: 24px;
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 3px 0;
   font-family: 'Inter', system-ui, sans-serif;
 }
-.admin-ea-subtitle {
+.admin-enq-subtitle {
   font-size: 14.5px !important;
   font-weight: 400 !important;
   color: #64748b !important;
   margin: 0;
 }
-.admin-ea-refresh-btn {
+.admin-enq-refresh-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -3986,25 +3986,25 @@
   transition: all 0.15s ease;
   font-family: 'Inter', system-ui, sans-serif;
 }
-.admin-ea-refresh-btn:hover {
+.admin-enq-refresh-btn:hover {
   background: #f8fafc;
   color: #0f172a;
   border-color: #94a3b8;
 }
-.admin-ea-filters {
+.admin-enq-filters {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
-.admin-ea-search-wrap {
+.admin-enq-search-wrap {
   position: relative;
   flex: 1;
   min-width: 240px;
   max-width: 360px;
 }
-.admin-ea-search-icon {
+.admin-enq-search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -4012,7 +4012,7 @@
   color: #94a3b8;
   pointer-events: none;
 }
-.admin-ea-search-input {
+.admin-enq-search-input {
   width: 100%;
   height: 40px;
   padding: 9px 14px 9px 38px;
@@ -4026,11 +4026,11 @@
   font-family: 'Inter', system-ui, sans-serif;
   transition: all 0.15s ease;
 }
-.admin-ea-search-input:focus {
+.admin-enq-search-input:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
-.admin-ea-status-filter {
+.admin-enq-status-filter {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -4038,7 +4038,7 @@
   padding: 4px;
   border-radius: 8px;
 }
-.admin-ea-filter-btn {
+.admin-enq-filter-btn {
   padding: 7px 16px;
   font-size: 14px;
   font-weight: 500 !important;
@@ -4050,16 +4050,16 @@
   transition: all 0.15s ease;
   font-family: 'Inter', system-ui, sans-serif;
 }
-.admin-ea-filter-btn:hover {
+.admin-enq-filter-btn:hover {
   color: #0f172a !important;
 }
-.admin-ea-filter-btn.active {
+.admin-enq-filter-btn.active {
   background: #ffffff;
   color: #0f172a !important;
   font-weight: 600 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
-.admin-ea-error {
+.admin-enq-error {
   padding: 12px 16px;
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -4070,17 +4070,7 @@
   align-items: center;
   gap: 8px;
 }
-.admin-ea-loading {
-  padding: 48px;
-  text-align: center;
-  color: #64748b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-.admin-ea-empty {
+.admin-enq-empty {
   padding: 48px;
   text-align: center;
   color: #94a3b8;
@@ -4091,118 +4081,6 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-}
-.admin-ea-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.admin-ea-row-loading {
-  opacity: 0.5;
-  pointer-events: none;
-}
-.admin-ea-date {
-  font-size: 12px;
-  color: #64748b;
-}
-.admin-ea-name {
-  font-size: 13px;
-  color: #0f172a;
-  font-weight: 600;
-}
-.admin-ea-whatsapp-link {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12.5px;
-  color: #16a34a;
-  font-weight: 600;
-  text-decoration: none;
-}
-.admin-ea-whatsapp-link:hover {
-  text-decoration: underline;
-}
-.admin-ea-pref {
-  font-size: 12px;
-  color: #334155;
-}
-.admin-ea-pincode {
-  color: #64748b;
-  font-size: 12px;
-}
-.admin-ea-store-link {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  color: #2563eb;
-  font-weight: 600;
-  text-decoration: none;
-}
-.admin-ea-store-link:hover {
-  text-decoration: underline;
-}
-.admin-ea-no-link {
-  font-size: 12px;
-  color: #94a3b8;
-}
-.admin-ea-status-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 11.5px;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-.ea-status-approved {
-  background: #dcfce7;
-  color: #15803d;
-}
-.ea-status-rejected {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-.ea-status-pending {
-  background: #fef3c7;
-  color: #b45309;
-}
-.admin-ea-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.admin-ea-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-.admin-ea-btn-approve {
-  background: #16a34a;
-  color: #ffffff;
-}
-.admin-ea-btn-approve:hover {
-  background: #15803d;
-}
-.admin-ea-btn-reject {
-  background: #ef4444;
-  color: #ffffff;
-}
-.admin-ea-btn-reject:hover {
-  background: #dc2626;
-}
-.admin-ea-btn-reset {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-}
-.admin-ea-btn-reset:hover {
-  background: #e2e8f0;
-  color: #0f172a;
 }
 
 /* ==========================================================================

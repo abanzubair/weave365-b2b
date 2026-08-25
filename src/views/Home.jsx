@@ -932,7 +932,7 @@ export function Home({
         </div>
       </section>
 
-      <Newsletter />
+      <Newsletter navigate={navigate} />
     </>
   );
 }

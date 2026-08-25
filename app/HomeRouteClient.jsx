@@ -7,7 +7,6 @@ import { useAppNavigate } from '../src/hooks/useAppNavigate.js';
 import { getBuyerAccess } from '../src/utils/buyerAccess.js';
 import { fallbackProductImage } from '../src/storefrontShared.jsx';
 import { upsertCart, upsertCartSelections, persistCart, persistFavorites } from '../src/utils/cartHelpers.js';
-import { ReviewStrip } from '../src/components/ReviewStrip.jsx';
 
 export default function HomeRouteClient({ initialProducts = [], initialHeroSlides = [], initialBlogs = [] }) {
   const navigate = useAppNavigate();
@@ -102,24 +101,21 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
   }, [user, setFavorites, navigate]);
 
   return (
-    <>
-      <Home
-        products={activeProducts}
-        status="ready"
-        error=""
-        heroSlides={activeHeroSlides}
-        fallbackHeroImage={fallbackProductImage}
-        navigate={navigate}
-        setCategory={(cat) => navigate('catalogue', null, null, { category: cat })}
-        openAuth={() => navigate('signup')}
-        addToCart={addToCart}
-        addCartSelections={addCartSelections}
-        toggleFavorite={toggleFavorite}
-        favoriteKeys={favoriteKeySet}
-        priceAccess={priceAccess}
-        blogs={activeBlogs}
-      />
-      <ReviewStrip navigate={navigate} />
-    </>
+    <Home
+      products={activeProducts}
+      status="ready"
+      error=""
+      heroSlides={activeHeroSlides}
+      fallbackHeroImage={fallbackProductImage}
+      navigate={navigate}
+      setCategory={(cat) => navigate('catalogue', null, null, { category: cat })}
+      openAuth={() => navigate('signup')}
+      addToCart={addToCart}
+      addCartSelections={addCartSelections}
+      toggleFavorite={toggleFavorite}
+      favoriteKeys={favoriteKeySet}
+      priceAccess={priceAccess}
+      blogs={activeBlogs}
+    />
   );
 }
