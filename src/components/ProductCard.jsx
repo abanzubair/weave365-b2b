@@ -171,10 +171,11 @@ export const ProductCard = memo(function ProductCard({
     try {
       setIsDownloading(true);
 
-      const [{ default: JSZip }, { saveAs }] = await Promise.all([
+      const [{ default: JSZip }, fileSaverModule] = await Promise.all([
         import('jszip'),
         import('file-saver'),
       ]);
+      const saveAs = fileSaverModule?.saveAs || fileSaverModule?.default || fileSaverModule;
       const zip = new JSZip();
 
       const isSaree = String(product.category || '').toLowerCase() === 'saree';
@@ -253,7 +254,19 @@ export const ProductCard = memo(function ProductCard({
       }
 
       const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${product.title.replace(/\s+/g, '-').toLowerCase()}-catalogue.zip`);
+      const filename = `${product.title.replace(/\s+/g, '-').toLowerCase()}-catalogue.zip`;
+      if (typeof saveAs === 'function') {
+        saveAs(content, filename);
+      } else {
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 40000);
+      }
       handleClose();
     } catch (error) {
       console.error('Error downloading images:', error);
