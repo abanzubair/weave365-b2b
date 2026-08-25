@@ -66,6 +66,15 @@ const countryCodes = [
 
 const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Fabric', 'Under 999'];
 
+const ACCOUNT_ROLE_OPTIONS = [
+  { id: 'customer', label: 'Customer', buyerType: 'customer', buyerSubtype: 'Customer' },
+  { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
+  { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
+  { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
+  { id: 'online_store', label: 'Online Store', buyerType: 'customer', buyerSubtype: 'Online Store' },
+  { id: 'vendor', label: 'Vendor', buyerType: 'vendor', buyerSubtype: 'Vendor' },
+];
+
 function toTitleCaseName(value) {
   return String(value || '')
     .trim()
@@ -125,7 +134,6 @@ export function SignupPage({
       ? 'login'
       : initialMode
   ); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
-  const [signupType, setSignupType] = useState(() => initialType || 'customer'); // 'customer' | 'partner'
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -141,30 +149,14 @@ export function SignupPage({
     whatsapp: '',
     businessName: '',
     buyerType: 'customer',
-    buyerSubtype: '',
+    buyerSubtype: 'Customer',
     buyingBehavior: 'instant',
     city: '',
+    state: '',
     pincode: '',
     interestedCategories: ['Saree'],
     rememberMe: false,
   });
-
-  const [showSignupOptions, setShowSignupOptions] = useState(false);
-  const signupOptionsRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (signupOptionsRef.current && !signupOptionsRef.current.contains(event.target)) {
-        setShowSignupOptions(false);
-      }
-    }
-    if (showSignupOptions) {
-      document.addEventListener('pointerdown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('pointerdown', handleClickOutside);
-    };
-  }, [showSignupOptions]);
 
   async function handleSignOut() {
     setLoading(true);
@@ -178,7 +170,11 @@ export function SignupPage({
       if (setBuyerProfile) setBuyerProfile(null);
       setEmail('');
       setPassword('');
-      setSignupType('customer');
+      setProfile((prev) => ({
+        ...prev,
+        buyerType: 'customer',
+        buyerSubtype: 'Customer',
+      }));
       setMode('login');
       setMessage('');
       if (typeof window !== 'undefined') {
@@ -196,20 +192,22 @@ export function SignupPage({
 
   // Sync initial type when passed via props / query params
   useEffect(() => {
-    if (initialType === 'partner') {
-      setSignupType('partner');
-      setProfile((prev) => ({
-        ...prev,
-        buyerType: 'vendor',
-        buyerSubtype: 'Vendor (Partner / Weaver)',
-      }));
-    } else if (initialType === 'customer') {
-      setSignupType('customer');
-      setProfile((prev) => ({
-        ...prev,
-        buyerType: 'customer',
-        buyerSubtype: '',
-      }));
+    if (initialType) {
+      const lower = String(initialType).toLowerCase().trim();
+      const matched = ACCOUNT_ROLE_OPTIONS.find(
+        (opt) =>
+          opt.id === lower ||
+          opt.buyerType === lower ||
+          opt.buyerSubtype.toLowerCase() === lower ||
+          (lower === 'partner' && opt.id === 'vendor')
+      );
+      if (matched) {
+        setProfile((prev) => ({
+          ...prev,
+          buyerType: matched.buyerType,
+          buyerSubtype: matched.buyerSubtype,
+        }));
+      }
     }
   }, [initialType]);
 
@@ -264,35 +262,24 @@ export function SignupPage({
     });
   }
 
-  function selectSignupType(type) {
-    setSignupType(type);
-    if (type === 'partner') {
-      setProfile((prev) => ({
-        ...prev,
-        buyerType: 'vendor',
-        buyerSubtype: 'Vendor (Partner / Weaver)',
-      }));
-    } else {
-      setProfile((prev) => ({
-        ...prev,
-        buyerType: 'customer',
-        buyerSubtype: '',
-      }));
-    }
-  }
-
   function buildBuyerProfile() {
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const isVendor = profile.buyerType === 'vendor' || String(profile.buyerSubtype || '').toLowerCase().includes('vendor');
+    const combinedCity = profile.state?.trim()
+      ? `${profile.city?.trim()}, ${profile.state?.trim()}`
+      : (profile.city?.trim() || '');
+
     return applyAutoApprovalToBuyerProfile({
       full_name: toTitleCaseName(profile.fullName),
       whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
-      buyer_type: profile.buyerType === 'vendor' ? 'vendor' : 'customer',
-      buyer_subtype: profile.buyerSubtype || '',
+      buyer_type: isVendor ? 'vendor' : 'customer',
+      buyer_subtype: profile.buyerSubtype || 'Customer',
       buying_behavior: profile.buyingBehavior,
-      city: profile.city.trim(),
+      city: combinedCity,
+      state: profile.state?.trim() || '',
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,
       price_group: 'approved',
@@ -406,6 +393,7 @@ export function SignupPage({
         if (
           !cleanName ||
           !profile.city.trim() ||
+          !profile.state.trim() ||
           cleanWhatsapp.length !== 10 ||
           normalizePincodeInput(profile.pincode).length !== 6
         ) {
@@ -447,7 +435,7 @@ export function SignupPage({
 
         setMessage('Profile completed successfully! Redirecting...');
         setTimeout(() => {
-          navigate(signupType === 'partner' ? 'account' : 'home');
+          navigate(profile.buyerType === 'vendor' ? 'account' : 'home');
         }, 700);
         return;
       }
@@ -459,6 +447,7 @@ export function SignupPage({
         if (
           !cleanName ||
           !profile.city.trim() ||
+          !profile.state.trim() ||
           cleanWhatsapp.length !== 10 ||
           normalizePincodeInput(profile.pincode).length !== 6
         ) {
@@ -868,48 +857,17 @@ export function SignupPage({
                     )}
                   </button>
 
-                  <div className="signup-switch-link-wrapper" ref={signupOptionsRef}>
-                    <div className="signup-switch-link">
-                      Don't have an account?{' '}
-                      <button
-                        type="button"
-                        onClick={() => setShowSignupOptions((prev) => !prev)}
-                        aria-expanded={showSignupOptions}
-                      >
-                        Sign up
-                      </button>
-                    </div>
-
-                    {showSignupOptions && (
-                      <div className="signup-role-popover" role="menu">
-                        <button
-                          type="button"
-                          className="signup-role-popover-btn"
-                          onClick={() => {
-                            selectSignupType('customer');
-                            setMode('register');
-                            setShowSignupOptions(false);
-                            setMessage('');
-                          }}
-                        >
-                          <ShoppingBag size={15} />
-                          <span>Buyer</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="signup-role-popover-btn"
-                          onClick={() => {
-                            selectSignupType('partner');
-                            setMode('register');
-                            setShowSignupOptions(false);
-                            setMessage('');
-                          }}
-                        >
-                          <Store size={15} />
-                          <span>Vendor</span>
-                        </button>
-                      </div>
-                    )}
+                  <div className="signup-switch-link">
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('register');
+                        setMessage('');
+                      }}
+                    >
+                      Sign up
+                    </button>
                   </div>
 
                   <div className="signup-divider">
@@ -955,6 +913,45 @@ export function SignupPage({
 
                 <form onSubmit={submit} className="signup-form">
                 <div className="signup-form-grid">
+                  {/* Business Type / Role Selector */}
+                  <div className="signup-field signup-field-full">
+                    <label className="signup-label">
+                      <span>Business Type *</span>
+                    </label>
+                    <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
+                      {ACCOUNT_ROLE_OPTIONS.map((option) => {
+                        const isSelected =
+                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
+                          (option.id === 'vendor' && profile.buyerType === 'vendor');
+                        return (
+                          <label
+                            key={option.id}
+                            className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
+                          >
+                            <input
+                              type="radio"
+                              name="accountRole"
+                              value={option.id}
+                              checked={isSelected}
+                              onChange={() => {
+                                setProfile((prev) => ({
+                                  ...prev,
+                                  buyerType: option.buyerType,
+                                  buyerSubtype: option.buyerSubtype,
+                                }));
+                              }}
+                              className="signup-role-radio-input"
+                            />
+                            <span className="signup-role-custom-radio" aria-hidden="true">
+                              <span className="signup-role-radio-inner" />
+                            </span>
+                            <span className="signup-role-radio-label">{option.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Full Name */}
                   <div className="signup-field">
                     <label className="signup-label">Full Name *</label>
@@ -986,8 +983,8 @@ export function SignupPage({
 
 
 
-                  {/* WhatsApp Number */}
-                  <div className="signup-field">
+                  {/* WhatsApp Number (Full Width for comfortable digits typing) */}
+                  <div className="signup-field signup-field-full">
                     <label className="signup-label">WhatsApp Number *</label>
                     <div className="signup-input-phone-group">
                       <select
@@ -1010,7 +1007,7 @@ export function SignupPage({
                             e.target.value.replace(/\D/g, '').slice(0, 10)
                           )
                         }
-                        placeholder="10-digit number"
+                        placeholder="Enter 10-digit WhatsApp number"
                         autoComplete="tel-national"
                         required
                         className="signup-input"
@@ -1018,15 +1015,29 @@ export function SignupPage({
                     </div>
                   </div>
 
-                  {/* City, State */}
+                  {/* City */}
                   <div className="signup-field">
-                    <label className="signup-label">City, State *</label>
+                    <label className="signup-label">City *</label>
                     <input
                       type="text"
                       value={profile.city}
                       onChange={(e) => updateProfile('city', e.target.value)}
-                      placeholder="e.g. Varanasi, Uttar Pradesh"
+                      placeholder="e.g. Varanasi"
                       autoComplete="address-level2"
+                      required
+                      className="signup-input"
+                    />
+                  </div>
+
+                  {/* State */}
+                  <div className="signup-field">
+                    <label className="signup-label">State *</label>
+                    <input
+                      type="text"
+                      value={profile.state}
+                      onChange={(e) => updateProfile('state', e.target.value)}
+                      placeholder="e.g. Uttar Pradesh"
+                      autoComplete="address-level1"
                       required
                       className="signup-input"
                     />

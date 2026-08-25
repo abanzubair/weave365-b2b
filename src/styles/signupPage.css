@@ -17,6 +17,8 @@
 
 .signup-container {
   width: 100%;
+  height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
   min-height: 100dvh;
   background: #ffffff;
@@ -24,11 +26,12 @@
   box-shadow: none;
   border: none;
   display: grid;
-  grid-template-columns: minmax(400px, 1fr) minmax(520px, 1.35fr);
-  padding: 20px 24px;
-  gap: 48px;
+  grid-template-columns: minmax(400px, 1fr) minmax(540px, 1.25fr);
+  padding: 18px 24px;
+  gap: 40px;
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 
 /* ==========================================================================
@@ -36,15 +39,15 @@
    ========================================================================== */
 
 .signup-hero-card {
-  height: calc(100vh - 40px);
-  height: calc(100dvh - 40px);
+  height: calc(100vh - 36px);
+  height: calc(100dvh - 36px);
   position: sticky;
-  top: 20px;
-  border-radius: 28px;
+  top: 18px;
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 56px 48px;
+  padding: 48px 42px;
   box-sizing: border-box;
   overflow: hidden;
   color: #ffffff;
@@ -126,14 +129,17 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 36px 32px 36px 12px;
+  padding: 16px 28px;
   box-sizing: border-box;
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .signup-form-inner {
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   margin: auto 0;
@@ -142,8 +148,8 @@
 .signup-form-header {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 4px;
+  margin-bottom: 16px;
 }
 
 .signup-form-title-row {
@@ -155,23 +161,20 @@
 
 .signup-form-title {
   font-family: 'Manrope', var(--font-body), system-ui, -apple-system, sans-serif;
-  font-size: clamp(24px, 2.5vw, 30px);
+  font-size: clamp(23px, 2.2vw, 27px);
   font-weight: 700;
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
-
 .signup-form-subtitle {
   font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.45;
   color: #64748b;
   margin: 0;
 }
-
-
 
 /* ==========================================================================
    Form Fields Styling
@@ -180,20 +183,20 @@
 .signup-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
   width: 100%;
 }
 
 .signup-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 11px 16px;
 }
 
 .signup-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
 }
 
@@ -203,7 +206,7 @@
 
 .signup-label {
   font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #1e293b;
   display: flex;
@@ -212,7 +215,7 @@
 }
 
 .signup-label-subtext {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 400;
   color: #94a3b8;
 }
@@ -226,14 +229,14 @@
 
 .signup-input {
   width: 100%;
-  height: 46px;
+  height: 44px;
   padding: 0 14px;
   font-family: var(--font-body, system-ui, sans-serif);
   font-size: 14px;
   color: #0f172a;
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 11px;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -246,26 +249,26 @@
 
 .signup-input::placeholder {
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 .signup-input-phone-group {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 8px;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
   width: 100%;
 }
 
 .signup-select {
-  height: 46px;
+  height: 44px;
   padding: 0 12px;
   font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: #0f172a;
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 11px;
   outline: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -374,14 +377,13 @@
 
 .signup-submit-btn {
   width: 100%;
-  height: 48px;
-  border-radius: 12px;
+  height: 46px;
+  border-radius: 11px;
   border: none;
-  background: #4f46e5;
   background: linear-gradient(135deg, #4338ca 0%, #4f46e5 50%, #6366f1 100%);
   color: #ffffff;
   font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.2px;
   cursor: pointer;
@@ -389,15 +391,15 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 10px;
   transition: all 0.2s ease;
-  box-shadow: none;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
 }
 
 .signup-submit-btn:hover {
   background: linear-gradient(135deg, #3730a3 0%, #4338ca 50%, #4f46e5 100%);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.32);
   transform: translateY(-1px);
-  box-shadow: none;
 }
 
 .signup-submit-btn:active {
@@ -571,10 +573,10 @@
 /* Legal disclaimer */
 .signup-legal-disclaimer {
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 1.4;
   color: #64748b;
   text-align: center;
-  margin: 14px 0 8px;
+  margin: 10px 0 4px;
   padding: 0 4px;
 }
 
@@ -591,27 +593,18 @@
 }
 
 /* Switch Link at bottom */
-.signup-switch-link-wrapper {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 8px;
-}
-
 .signup-switch-link {
   text-align: center;
-  font-size: 14px;
+  font-size: 13.5px;
   color: #64748b;
-  margin-top: 0;
+  margin-top: 4px;
 }
 
 .signup-switch-link button {
   background: none;
   border: none;
   color: #4f46e5;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   padding: 0 4px;
@@ -622,59 +615,115 @@
   text-decoration: underline;
 }
 
-/* 2-Button Popover for Buyer / Vendor selection */
-.signup-role-popover {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+/* ==========================================================================
+   Signup Business Type Radio Cards Grid (6 Roles)
+   ========================================================================== */
+.signup-role-radio-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+
+.signup-role-radio-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 9px 13px;
   background: #ffffff;
-  padding: 6px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.08);
-  z-index: 100;
-  animation: signupPopoverFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-sizing: border-box;
 }
 
-@keyframes signupPopoverFade {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 4px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
+.signup-role-radio-card:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
-.signup-role-popover-btn {
-  display: inline-flex !important;
+.signup-role-radio-card.selected {
+  background: #eef2ff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.signup-role-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.signup-role-custom-radio {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 9px 18px !important;
-  border-radius: 8px !important;
-  border: 1px solid #e2e8f0 !important;
-  background: #f8fafc !important;
-  color: #1e293b !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  white-space: nowrap;
-  text-decoration: none !important;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-.signup-role-popover-btn:hover {
-  background: #4f46e5 !important;
-  border-color: #4f46e5 !important;
-  color: #ffffff !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
-  text-decoration: none !important;
+.signup-role-radio-card.selected .signup-role-custom-radio {
+  border-color: #4f46e5;
+  background: #4f46e5;
+}
+
+.signup-role-radio-inner {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
+.signup-role-radio-card.selected .signup-role-radio-inner {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.signup-role-radio-label {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.signup-role-radio-card.selected .signup-role-radio-label {
+  color: #312e81;
+  font-weight: 600;
+}
+
+@media (max-width: 540px) {
+  .signup-role-radio-group {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .signup-role-radio-card {
+    padding: 9px 10px;
+    gap: 7px;
+  }
+
+  .signup-role-radio-label {
+    font-size: 13px;
+  }
 }
 
 /* Options row: remember me & forgot password */
@@ -1147,6 +1196,7 @@
   }
 
   .signup-input-phone-group {
-    grid-template-columns: 90px 1fr;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
   }
 }

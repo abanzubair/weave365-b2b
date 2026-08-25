@@ -47,6 +47,15 @@ const countryCodes = [
 
 const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Fabric', 'Under 999'];
 
+const ACCOUNT_ROLE_OPTIONS = [
+  { id: 'customer', label: 'Customer', buyerType: 'customer', buyerSubtype: 'Customer' },
+  { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
+  { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
+  { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
+  { id: 'online_store', label: 'Online Store', buyerType: 'customer', buyerSubtype: 'Online Store' },
+  { id: 'vendor', label: 'Vendor', buyerType: 'vendor', buyerSubtype: 'Vendor' },
+];
+
 function toTitleCaseName(value) {
   return String(value || '')
     .trim()
@@ -108,9 +117,10 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
     whatsapp: '',
     businessName: '',
     buyerType: 'customer',
-    buyerSubtype: '',
+    buyerSubtype: 'Customer',
     buyingBehavior: 'instant',
     city: '',
+    state: '',
     pincode: '',
     interestedCategories: ['Saree'],
   });
@@ -154,16 +164,22 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
 
   function buildBuyerProfile() {
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const isVendor = profile.buyerType === 'vendor' || String(profile.buyerSubtype || '').toLowerCase().includes('vendor');
+    const combinedCity = profile.state?.trim()
+      ? `${profile.city?.trim()}, ${profile.state?.trim()}`
+      : (profile.city?.trim() || '');
+
     return applyAutoApprovalToBuyerProfile({
       full_name: toTitleCaseName(profile.fullName),
       whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
-      buyer_type: 'customer',
-      buyer_subtype: '',
+      buyer_type: isVendor ? 'vendor' : 'customer',
+      buyer_subtype: profile.buyerSubtype || 'Customer',
       buying_behavior: profile.buyingBehavior,
-      city: profile.city.trim(),
+      city: combinedCity,
+      state: profile.state?.trim() || '',
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,
       price_group: 'approved',
@@ -261,7 +277,7 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
         const isCategoryRequired = profile.buyerType !== 'vendor';
         const isCategoryValid = !isCategoryRequired || profile.interestedCategories.length > 0;
 
-        if (!cleanName || !isBusinessValid || !profile.city.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || !isCategoryValid) {
+        if (!cleanName || !isBusinessValid || !profile.city.trim() || !profile.state.trim() || cleanWhatsapp.length !== 10 || normalizePincodeInput(profile.pincode).length !== 6 || !isCategoryValid) {
           const catMsg = isCategoryRequired ? ', and at least one category is required.' : '.';
           setMessage(`Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits${catMsg}`);
           setLoading(false);
@@ -619,7 +635,45 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                   <fieldset disabled={loading} style={{ border: 'none', padding: 0, margin: 0, display: 'contents' }}>
 
                     {isRegister ? (
-                      <div className="auth-register-columns-wrap">
+                      <div className="auth-register-columns">
+                        <div className="auth-column" style={{ gridColumn: '1 / -1', width: '100%', marginBottom: '12px' }}>
+                          <label className="auth-label-styled" style={{ marginBottom: '8px' }}>
+                            Business Type *
+                          </label>
+                          <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
+                            {ACCOUNT_ROLE_OPTIONS.map((option) => {
+                              const isSelected =
+                                (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
+                                (option.id === 'vendor' && profile.buyerType === 'vendor');
+                              return (
+                                <label
+                                  key={option.id}
+                                  className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name="modalAccountRole"
+                                    value={option.id}
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      setProfile((prev) => ({
+                                        ...prev,
+                                        buyerType: option.buyerType,
+                                        buyerSubtype: option.buyerSubtype,
+                                      }));
+                                    }}
+                                    className="signup-role-radio-input"
+                                  />
+                                  <span className="signup-role-custom-radio" aria-hidden="true">
+                                    <span className="signup-role-radio-inner" />
+                                  </span>
+                                  <span className="signup-role-radio-label">{option.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+
                         <div className="auth-column">
 
                           <label className="auth-label-styled">
@@ -670,12 +724,23 @@ export function AuthModal({ open, onClose, user, setUser, buyerProfile, setBuyer
                           </div>
 
                           <label className="auth-label-styled">
-                            City, State *
+                            City *
                             <input
                               className="auth-input-styled"
                               value={profile.city}
                               onChange={(event) => updateProfile('city', event.target.value)}
-                              placeholder="e.g. Varanasi, Uttar Pradesh"
+                              placeholder="e.g. Varanasi"
+                              required
+                            />
+                          </label>
+
+                          <label className="auth-label-styled">
+                            State *
+                            <input
+                              className="auth-input-styled"
+                              value={profile.state}
+                              onChange={(event) => updateProfile('state', event.target.value)}
+                              placeholder="e.g. Uttar Pradesh"
                               required
                             />
                           </label>
