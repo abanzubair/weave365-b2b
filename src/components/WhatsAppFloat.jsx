@@ -37,6 +37,12 @@ const TEMPLATES = [
     message: 'Hi! I’m looking to source Banarasi sarees and suits from Varanasi. Please share the details.',
   },
   {
+    id: 'open-a-store',
+    title: 'Open a Store',
+    desc: 'Build Your Business',
+    message: 'Hi! I’m interested in opening a Banarasi saree store in my city. Please share how I can get started.',
+  },
+  {
     id: 'buying',
     title: 'Buying',
     desc: 'Wholesale Orders',
