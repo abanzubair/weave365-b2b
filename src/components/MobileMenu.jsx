@@ -45,6 +45,8 @@ const pluralizeCategory = (cat) => {
   return cat + 's';
 };
 
+const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
+
 import { useStorefront } from '../store/useStorefront.js';
 
 export function MobileMenu(props) {
@@ -54,7 +56,11 @@ export function MobileMenu(props) {
   const navigate = props.navigate;
   const setCategory = props.setCategory;
   const user = props.user ?? store.user;
-  const categories = props.categories || [];
+  const categories = (props.categories && props.categories.length > 0)
+    ? props.categories
+    : (store.configOptions?.categories?.length > 0
+      ? ['All', ...store.configOptions.categories]
+      : defaultCategoryNames);
   const openAuth = props.openAuth || (() => store.setAuthOpen(true));
   const setCartOpen = props.setCartOpen || store.setCartOpen;
   const cartCount = props.cartCount ?? store.cart.length;

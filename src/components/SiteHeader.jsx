@@ -112,19 +112,6 @@ export function SiteHeader(props) {
   const currentCurrency = props.currentCurrency || CURRENCIES[0].code;
   return (
     <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
-      <button 
-        className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
-        type="button" 
-        onClick={() => setMenuOpen(!menuOpen)}
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
-          <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
-          <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
-          <rect className="line line-bottom" x="9" y="16" width="11" height="1.5" rx="0.75" fill="currentColor" />
-        </svg>
-      </button>
-
       <a
         href="/"
         className="brand"
@@ -435,6 +422,19 @@ export function SiteHeader(props) {
             ))}
           </DropdownPortal>
         </div>
+
+        <button 
+          className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
+          type="button" 
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
+            <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
+            <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
+            <rect className="line line-bottom" x="9" y="16" width="11" height="1.5" rx="0.75" fill="currentColor" />
+          </svg>
+        </button>
       </div>
     </header>
   );

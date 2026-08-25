@@ -1,20 +1,15 @@
 /**
  * @file WhatsAppFloat.jsx
- * @description Refined floating WhatsApp concierge button with understated multi-intent template selector.
- * Allows users to choose between Reselling, Buying, and General inquiries with pre-filled
+ * @description Refined floating WhatsApp concierge button with multi-intent template selector.
+ * Allows users to choose between Reselling, Dropshipping, Sourcing, Buying, and Questions with pre-filled
  * bespoke WhatsApp messages.
  */
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { 
-  X, 
-  Sparkles, 
-  Store, 
-  MessageSquare, 
-  ArrowRight 
-} from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { storeConfig } from '../config.js';
+import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 const WA_SVG = (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -25,24 +20,33 @@ const WA_SVG = (
 const TEMPLATES = [
   {
     id: 'reselling',
-    title: 'Reselling related',
-    desc: 'Catalog, reseller tools & margins',
-    icon: Sparkles,
-    message: "Hi Weave 365, I am interested in reselling Banarasi sarees and suits. Please share catalogue access, reseller tools & margin details.",
+    title: 'Reselling',
+    desc: 'Reseller Tools',
+    message: 'Hi! I’m interested in reselling Banarasi sarees and suits. Please share how I can get started.',
+  },
+  {
+    id: 'dropshipping',
+    title: 'Dropshipping',
+    desc: 'No Inventory',
+    message: 'Hi! I’d like to know more about selling Banarasi products without keeping stock. Please share the details.',
+  },
+  {
+    id: 'sourcing',
+    title: 'Sourcing',
+    desc: 'Varanasi Supply',
+    message: 'Hi! I’m looking to source Banarasi sarees and suits from Varanasi. Please share the details.',
   },
   {
     id: 'buying',
-    title: 'Buying related',
-    desc: 'Wholesale pricing, MOQs & bulk orders',
-    icon: Store,
-    message: "Hi Weave 365, I want to purchase textiles in bulk / wholesale. Please share your latest collection, MOQs & best rates.",
+    title: 'Buying',
+    desc: 'Wholesale Orders',
+    message: 'Hi! I’m looking to buy Banarasi sarees and suits. Please share your latest collection and wholesale prices.',
   },
   {
-    id: 'general',
-    title: 'General questions',
-    desc: 'Custom weaving, fabrics & support',
-    icon: MessageSquare,
-    message: "Hi Weave 365, I have a general inquiry regarding fabrics, custom weaving, or shipping to my location.",
+    id: 'questions',
+    title: 'Questions',
+    desc: 'Help & Support',
+    message: 'Hi! I’d like to know about [write your question here]. Please help me.',
   },
 ];
 
@@ -93,7 +97,7 @@ export function WhatsAppFloat() {
         >
           <div className="wa-distilled-header">
             <div className="wa-distilled-title">
-              <span className="wa-distilled-dot" />
+              <WhatsappIcon size={18} className="wa-header-icon" />
               <span>Chat on WhatsApp</span>
             </div>
             <button
@@ -108,24 +112,20 @@ export function WhatsAppFloat() {
           </div>
 
           <div className="wa-distilled-list">
-            {TEMPLATES.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="wa-distilled-item"
-                  onClick={() => handleSelectTemplate(item.message)}
-                >
-                  <IconComponent size={16} className="wa-distilled-icon" />
-                  <div className="wa-distilled-text">
-                    <span className="wa-distilled-item-title">{item.title}</span>
-                    <span className="wa-distilled-item-desc">{item.desc}</span>
-                  </div>
-                  <ArrowRight size={13} className="wa-distilled-arrow" />
-                </button>
-              );
-            })}
+            {TEMPLATES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="wa-distilled-item"
+                onClick={() => handleSelectTemplate(item.message)}
+              >
+                <div className="wa-distilled-text">
+                  <span className="wa-distilled-item-title">{item.title}</span>
+                  <span className="wa-distilled-item-desc">{item.desc}</span>
+                </div>
+                <ArrowRight size={13} className="wa-distilled-arrow" />
+              </button>
+            ))}
           </div>
         </div>
       )}

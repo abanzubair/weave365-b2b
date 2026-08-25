@@ -758,23 +758,22 @@ export function SignupPage({
                     <h2 className="signup-form-title">You're signed in</h2>
                   </div>
                   <p className="signup-form-subtitle">
-                    Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your verified B2B textile account is active.
+                    Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your account is active.
                   </p>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginTop: '12px' }}>
+                <div className="signup-signedin-actions">
                   <button
                     type="button"
-                    className="signup-submit-btn"
+                    className="signup-submit-btn signup-signedin-btn"
                     onClick={() => navigate('catalogue')}
                   >
-                    Browse Wholesale Catalogue <ArrowRight size={16} />
+                    Browse Catalogue <ArrowRight size={16} />
                   </button>
                   <button
                     type="button"
-                    className="signup-google-btn"
+                    className="signup-google-btn signup-signedin-btn"
                     onClick={() => navigate('account')}
-                    style={{ justifyContent: 'center' }}
                   >
                     Go to My Account
                   </button>

@@ -510,6 +510,7 @@ export function AppShell({ children }) {
           favoritesCount={favoritesCount}
           onSignOut={handleSignOut}
           vendorOnboarding={vendorOnboarding}
+          setCategory={(cat) => navigate('catalogue', null, null, { category: cat })}
         />
       )}
 
