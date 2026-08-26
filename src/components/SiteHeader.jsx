@@ -304,34 +304,25 @@ export function SiteHeader(props) {
                     Product Listing
                   </button>
                 )}
-                {isAdmin && (
-                  <>
-                    <button type="button"
-                      onClick={() => {
-                        window.open('/admin?tab=stock', '_blank');
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      Stock Availability
-                    </button>
-                    <button type="button"
-                      onClick={() => {
-                        window.open('/admin', '_blank');
-                        setDropdownOpen(null);
-                      }}
-                    >
-                      Admin Panel
-                    </button>
-                  </>
+                {isAdmin ? (
+                  <button type="button"
+                    onClick={() => {
+                      window.open('/admin', '_blank');
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    Admin Panel
+                  </button>
+                ) : (
+                  <button type="button"
+                    onClick={() => {
+                      navigate('favorites');
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
+                  </button>
                 )}
-                <button type="button"
-                  onClick={() => {
-                    navigate('favorites');
-                    setDropdownOpen(null);
-                  }}
-                >
-                  Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
-                </button>
                 <button type="button"
                   className="profile-dropdown-cart-btn"
                   onClick={() => {

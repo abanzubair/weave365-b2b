@@ -317,6 +317,19 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = products.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
     }
 
+    // Mandatory Curated Product Selection Filter:
+    // API users only receive the products they have selected in their dashboard (or passed via ?skus=)
+    const skusParam = searchParams.get('skus') || searchParams.get('ids');
+    if (skusParam) {
+      const selectedSkus = new Set(skusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+      products = products.filter(p => selectedSkus.has((p.id || p.groupKey || '').toLowerCase()));
+    } else {
+      // Strictly filter to the merchant's dashboard-selected SKUs
+      const curatedSkus = Array.isArray(auth.keyRecord?.selected_skus) ? auth.keyRecord.selected_skus : [];
+      const curatedSet = new Set(curatedSkus.map(s => String(s).trim().toLowerCase()).filter(Boolean));
+      products = products.filter(p => curatedSet.has((p.id || p.groupKey || '').toLowerCase()));
+    }
+
     // Format for Shopify if requested
     const format = searchParams.get('format');
     if (format === 'shopify' || format === 'matrixify') {
@@ -379,6 +392,17 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = applyStockOverrides(products, stockData);
     }
 
+    // Mandatory Curated Stock Filter: Only return stock for selected products (or ?skus=)
+    const stockSkusParam = searchParams.get('skus') || searchParams.get('ids') || searchParams.get('sku');
+    if (stockSkusParam) {
+      const selectedSkus = new Set(stockSkusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+      products = products.filter(p => selectedSkus.has((p.id || p.groupKey || '').toLowerCase()));
+    } else {
+      const curatedSkus = Array.isArray(auth.keyRecord?.selected_skus) ? auth.keyRecord.selected_skus : [];
+      const curatedSet = new Set(curatedSkus.map(s => String(s).trim().toLowerCase()).filter(Boolean));
+      products = products.filter(p => curatedSet.has((p.id || p.groupKey || '').toLowerCase()));
+    }
+
     const stockMap = {};
     products.forEach((p) => {
       const key = p.id || p.groupKey;
@@ -402,11 +426,11 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     });
   }
 
-  // 4. Route: /api/v1/products (Single or filtered product query - Reseller Price Only)
+  // 4. Route: /api/v1/products (Single or Batch product query - Reseller Price Only)
   if (endpoint === 'products' || endpoint === 'product') {
-    const sku = searchParams.get('sku') || searchParams.get('id') || pathSegments[2];
-    if (!sku) {
-      return Response.json({ error: 'Please provide a product SKU via ?sku=... or path /api/v1/products/:sku' }, { status: 400, headers: corsHeaders });
+    const skuParam = searchParams.get('sku') || searchParams.get('id') || searchParams.get('skus') || searchParams.get('ids') || pathSegments[2];
+    if (!skuParam) {
+      return Response.json({ error: 'Please provide product SKU(s) via ?sku=..., ?skus=SKU1,SKU2 or path /api/v1/products/:sku' }, { status: 400, headers: corsHeaders });
     }
 
     const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
@@ -425,9 +449,46 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = applyStockOverrides(products, stockData);
     }
 
-    const matched = products.find(p => (p.id || p.groupKey || '').toLowerCase() === sku.toLowerCase());
+    const skuList = skuParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+    // If multiple SKUs requested (Batch Mode)
+    if (skuList.length > 1) {
+      const skuSet = new Set(skuList);
+      const matchedList = products.filter(p => skuSet.has((p.id || p.groupKey || '').toLowerCase()));
+      return Response.json({
+        status: 'success',
+        total_products: matchedList.length,
+        products: matchedList.map((matched) => {
+          const firstPrices = matched.variants?.[0]?.prices || {};
+          const resellerPrice = Number(firstPrices.b2r || firstPrices.single || matched.resellerPrice || matched.price || 0);
+          return {
+            id: matched.id || matched.groupKey,
+            sku: matched.id || matched.groupKey,
+            title: matched.title || matched.name,
+            category: matched.category || 'Sarees',
+            fabric: matched.fabric || 'Pure Silk',
+            weave: matched.weave || 'Handloom',
+            price: resellerPrice,
+            currency: 'INR',
+            stock_status: matched.stockStatusOverride || (matched.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
+            stock_status_label: matched.stockStatusLabel || (matched.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
+            is_available: !matched.isOutOfStock && !matched.isArchived,
+            colors: matched.colors || [],
+            images: matched.images || [],
+            description: matched.description || '',
+          };
+        }),
+      }, {
+        status: 200,
+        headers: edgeCacheHeaders,
+      });
+    }
+
+    // Single SKU Mode
+    const singleSku = skuList[0];
+    const matched = products.find(p => (p.id || p.groupKey || '').toLowerCase() === singleSku);
     if (!matched) {
-      return Response.json({ error: `Product with SKU '${sku}' not found.` }, { status: 404, headers: corsHeaders });
+      return Response.json({ error: `Product with SKU '${singleSku}' not found.` }, { status: 404, headers: corsHeaders });
     }
 
     const firstPrices = matched.variants?.[0]?.prices || {};

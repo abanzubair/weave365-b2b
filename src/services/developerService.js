@@ -44,7 +44,7 @@ export const TIER_CONFIGS = {
     price: 0,
     monthlyQuota: 2000,
     rateLimitRps: 1,
-    description: 'Bulk catalog feed, stock status sync, and standard rate limit for testing & small boutiques.',
+    description: 'Full API access (Catalog, Stock Sync & Orders) up to 2,000 requests/month for testing and setup.',
   },
   growth: {
     name: 'Growth Partner',
@@ -52,7 +52,7 @@ export const TIER_CONFIGS = {
     price: 699,
     monthlyQuota: 20000,
     rateLimitRps: 5,
-    description: 'Real-time stock sync, automated Order Placement API, stock alert webhooks & priority rate limit.',
+    description: '20,000 requests/month for production stores with frequent 5-15 min stock sync and priority support.',
   },
   pro: {
     name: 'Pro / Scale',
@@ -60,7 +60,7 @@ export const TIER_CONFIGS = {
     price: 1499,
     monthlyQuota: 75000,
     rateLimitRps: 15,
-    description: 'High-speed burst rate limits, dedicated white-label fulfillment queue & multi-store sync.',
+    description: '75,000 requests/month for multi-store portals with priority warehouse dispatch and account manager.',
   },
 };
 
@@ -140,20 +140,21 @@ export const developerService = {
   /**
    * Create a new API Key for a user
    */
-  async createApiKey(userId, { clientName, clientWebsite = '', tier = 'free', customQuota, customRps }) {
+  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps }) {
     if (!isSupabaseConfigured || !userId) throw new Error('Supabase not configured or missing userId');
 
     const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.free;
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
-    const keyPrefix = rawKey.slice(0, 16) + '...';
 
     const insertPayload = {
       user_id: userId,
-      key_prefix: keyPrefix,
+      key_prefix: rawKey,
       key_hash: keyHash,
       client_name: clientName || 'B2B Client Portal',
       client_website: clientWebsite || '',
+      domain_owner_name: domainOwnerName || '',
+      gst_number: gstNumber || '',
       tier: tier,
       monthly_quota: customQuota || tierConfig.monthlyQuota,
       rate_limit_rps: customRps || tierConfig.rateLimitRps,
@@ -161,17 +162,55 @@ export const developerService = {
       allowed_endpoints: ['catalog', 'stock', 'product', 'orders'],
     };
 
-    const { data, error } = await supabase
-      .from('api_keys')
-      .insert([insertPayload])
-      .select()
-      .single();
+    let data, error;
+    try {
+      const res = await supabase
+        .from('api_keys')
+        .insert([insertPayload])
+        .select()
+        .single();
+      data = res.data;
+      error = res.error;
+    } catch (e) {
+      error = e;
+    }
+
+    if (error && (error.message?.includes('domain_owner_name') || error.message?.includes('gst_number') || error.code === 'PGRST204')) {
+      delete insertPayload.domain_owner_name;
+      delete insertPayload.gst_number;
+      const retryRes = await supabase
+        .from('api_keys')
+        .insert([insertPayload])
+        .select()
+        .single();
+      data = retryRes.data;
+      error = retryRes.error;
+    }
 
     if (error) throw error;
 
+    // Sync domain owner name and GST number to user profile
+    try {
+      const profileUpdates = {};
+      if (clientName) profileUpdates.business_name = clientName;
+      if (domainOwnerName) profileUpdates.full_name = domainOwnerName;
+      if (gstNumber) {
+        profileUpdates.gstin = gstNumber;
+        profileUpdates.gst_number = gstNumber;
+      }
+      if (Object.keys(profileUpdates).length > 0) {
+        await supabase
+          .from('profiles')
+          .update(profileUpdates)
+          .eq('id', userId);
+      }
+    } catch (e) {
+      console.warn('[developerService] Profile sync error:', e);
+    }
+
     return {
       keyRecord: data,
-      rawSecretKey: rawKey, // Shown once to user/admin
+      rawSecretKey: rawKey, // Shown to user/admin
     };
   },
 
@@ -183,13 +222,12 @@ export const developerService = {
 
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
-    const keyPrefix = rawKey.slice(0, 16) + '...';
 
     const { data, error } = await supabase
       .from('api_keys')
       .update({
         key_hash: keyHash,
-        key_prefix: keyPrefix,
+        key_prefix: rawKey,
         updated_at: new Date().toISOString(),
       })
       .eq('id', keyId)

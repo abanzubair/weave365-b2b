@@ -343,57 +343,59 @@
 /* 6. Pricing & Tiers Table */
 .api-pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
   align-items: stretch;
 }
 
 .api-pricing-card {
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 2rem;
+  border-radius: 14px;
+  padding: 1.75rem 1.5rem;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   transition: all 0.2s ease;
 }
 
 .api-pricing-card:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
 .api-pricing-card.featured {
   border: 2px solid #0f172a;
-  box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 25px -6px rgba(15, 23, 42, 0.1);
   background: #ffffff;
 }
 
 .api-pricing-card-badge {
   position: absolute;
-  top: -12px;
-  right: 24px;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
   background: #0f172a;
   color: #ffffff;
   font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 4px 12px;
+  padding: 3px 12px;
   border-radius: 9999px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+  white-space: nowrap;
 }
 
 .api-pricing-name {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #0f172a;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.35rem 0;
   letter-spacing: -0.01em;
 }
 
@@ -401,7 +403,7 @@
   font-size: 2rem;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -414,38 +416,29 @@
   color: #64748b;
 }
 
-.api-pricing-desc {
-  font-size: 0.8125rem;
-  color: #64748b;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.5;
-  min-height: 2.5rem;
-}
-
 .api-pricing-features {
   list-style: none;
-  padding: 1.25rem 0 0 0;
-  margin: 0 0 2rem 0;
+  padding: 1rem 0 0 0;
+  margin: 0 0 1.5rem 0;
   border-top: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  font-size: 0.875rem;
+  gap: 10px;
+  font-size: 0.84375rem;
   color: #334155;
   flex: 1;
 }
 
 .api-pricing-features li {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.45;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
 }
 
 .api-pricing-features li svg {
   color: #10b981;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 /* Pricing Action Buttons */

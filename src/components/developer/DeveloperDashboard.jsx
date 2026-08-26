@@ -32,9 +32,18 @@ import {
   HelpCircle,
   Clock,
   ArrowUpRight,
-  Trash2
+  Trash2,
+  BookOpen,
+  Search,
+  Filter,
+  CheckSquare,
+  Square,
+  PackageCheck,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
+import { fetchProducts } from '../../productData.js';
 import '../../styles/developerDashboard.css';
 
 export function DeveloperDashboard({
@@ -58,6 +67,18 @@ export function DeveloperDashboard({
   const [testResponse, setTestResponse] = useState(null);
   const [testStatus, setTestStatus] = useState(null);
 
+  // Curated Catalog Selection State
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [catalogMode, setCatalogMode] = useState(initialKeyRecord?.catalog_mode || 'all');
+  const [selectedSkus, setSelectedSkus] = useState(Array.isArray(initialKeyRecord?.selected_skus) ? initialKeyRecord.selected_skus : []);
+  const [isCuratorGridOpen, setIsCuratorGridOpen] = useState(true);
+  const [curatorSearch, setCuratorSearch] = useState('');
+  const [curatorCategory, setCuratorCategory] = useState('all');
+  const [curatorStockOnly, setCuratorStockOnly] = useState(false);
+  const [savingSelection, setSavingSelection] = useState(false);
+  const [selectionSuccessMsg, setSelectionSuccessMsg] = useState(null);
+
   // Admin Override Form State
   const [adminTier, setAdminTier] = useState(initialKeyRecord?.tier || 'free');
   const [adminQuota, setAdminQuota] = useState(initialKeyRecord?.monthly_quota || 2000);
@@ -66,8 +87,10 @@ export function DeveloperDashboard({
   const [adminSaving, setAdminSaving] = useState(false);
 
   // Key creation state for new users
-  const [newClientName, setNewClientName] = useState(buyerProfile?.business_name || buyerProfile?.full_name || 'My Website');
+  const [newClientName, setNewClientName] = useState(buyerProfile?.business_name || buyerProfile?.full_name || '');
   const [newClientWebsite, setNewClientWebsite] = useState('');
+  const [domainOwnerName, setDomainOwnerName] = useState(buyerProfile?.full_name || user?.user_metadata?.full_name || '');
+  const [gstNumber, setGstNumber] = useState(buyerProfile?.gstin || buyerProfile?.gst_number || '');
   const [creatingKey, setCreatingKey] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newGeneratedSecret, setNewGeneratedSecret] = useState(null);
@@ -87,6 +110,8 @@ export function DeveloperDashboard({
         setAdminQuota(record.monthly_quota || 2000);
         setAdminRps(record.rate_limit_rps || 1);
         setAdminIsActive(record.is_active ?? true);
+        setCatalogMode(record.catalog_mode || 'all');
+        setSelectedSkus(Array.isArray(record.selected_skus) ? record.selected_skus : []);
 
         const stats = await developerService.getUsageStats(record.id, 14, user?.id);
         setUsageStats(stats);
@@ -105,11 +130,121 @@ export function DeveloperDashboard({
       setAdminQuota(initialKeyRecord.monthly_quota || 2000);
       setAdminRps(initialKeyRecord.rate_limit_rps || 1);
       setAdminIsActive(initialKeyRecord.is_active ?? true);
+      setCatalogMode(initialKeyRecord.catalog_mode || 'all');
+      setSelectedSkus(Array.isArray(initialKeyRecord.selected_skus) ? initialKeyRecord.selected_skus : []);
       void developerService.getUsageStats(initialKeyRecord.id, 14, user?.id).then(setUsageStats);
     } else {
       void loadData();
     }
   }, [initialKeyRecord?.id, user?.id]);
+
+  // Load Products for Visual Catalog Curator
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCatalog() {
+      setLoadingProducts(true);
+      try {
+        const prods = await fetchProducts();
+        if (isMounted && Array.isArray(prods)) {
+          setAvailableProducts(prods);
+        }
+      } catch (err) {
+        console.warn('[DeveloperDashboard] Error loading products for curator:', err);
+      } finally {
+        if (isMounted) setLoadingProducts(false);
+      }
+    }
+    void loadCatalog();
+    return () => { isMounted = false; };
+  }, [apiKey?.id]);
+
+  // Categories list derived from products
+  const categoriesList = useMemo(() => {
+    const set = new Set();
+    availableProducts.forEach(p => {
+      if (p.category) set.add(p.category);
+    });
+    return Array.from(set);
+  }, [availableProducts]);
+
+  // Filtered products for visual curator
+  const filteredCuratorProducts = useMemo(() => {
+    return availableProducts.filter(p => {
+      const pSku = (p.id || p.groupKey || '').toLowerCase();
+      const pTitle = (p.title || p.name || '').toLowerCase();
+      const pCat = (p.category || '').toLowerCase();
+      const pFabric = (p.fabric || '').toLowerCase();
+      
+      if (curatorSearch.trim()) {
+        const q = curatorSearch.toLowerCase().trim();
+        const matches = pSku.includes(q) || pTitle.includes(q) || pCat.includes(q) || pFabric.includes(q);
+        if (!matches) return false;
+      }
+      
+      if (curatorCategory !== 'all') {
+        if (pCat !== curatorCategory.toLowerCase()) return false;
+      }
+
+      if (curatorStockOnly) {
+        const isOutOfStock = p.isOutOfStock || p.stockStatusOverride === 'out-of-stock';
+        if (isOutOfStock) return false;
+      }
+
+      return true;
+    });
+  }, [availableProducts, curatorSearch, curatorCategory, curatorStockOnly]);
+
+  const toggleSelectSku = (sku) => {
+    setSelectedSkus(prev => {
+      const skuStr = String(sku);
+      if (prev.includes(skuStr)) {
+        return prev.filter(s => s !== skuStr);
+      } else {
+        return [...prev, skuStr];
+      }
+    });
+  };
+
+  const handleSelectAllFiltered = () => {
+    const filteredSkuSet = new Set(filteredCuratorProducts.map(p => String(p.id || p.groupKey)));
+    setSelectedSkus(prev => {
+      const combined = new Set([...prev, ...filteredSkuSet]);
+      return Array.from(combined);
+    });
+  };
+
+  const handleDeselectAllFiltered = () => {
+    const filteredSkuSet = new Set(filteredCuratorProducts.map(p => String(p.id || p.groupKey)));
+    setSelectedSkus(prev => prev.filter(s => !filteredSkuSet.has(s)));
+  };
+
+  const handleClearAllSelections = () => {
+    setSelectedSkus([]);
+  };
+
+  const handleSaveCatalogSelection = async () => {
+    if (!apiKey?.id) return;
+    setSavingSelection(true);
+    setSelectionSuccessMsg(null);
+    try {
+      const { data, error } = await developerService.updateApiKey(apiKey.id, {
+        catalog_mode: 'curated',
+        selected_skus: selectedSkus,
+      });
+      if (error) throw error;
+      setApiKey(prev => ({
+        ...prev,
+        catalog_mode: 'curated',
+        selected_skus: selectedSkus,
+      }));
+      setSelectionSuccessMsg(`Saved! API & Feed will now sync your ${selectedSkus.length} selected ${selectedSkus.length === 1 ? 'product' : 'products'}.`);
+      setTimeout(() => setSelectionSuccessMsg(null), 4000);
+    } catch (err) {
+      alert('Failed to save catalog selection: ' + err.message);
+    } finally {
+      setSavingSelection(false);
+    }
+  };
 
   const copyToClipboard = (text, fieldId) => {
     if (!text) return;
@@ -121,15 +256,29 @@ export function DeveloperDashboard({
   const handleCreateApiKey = async (e) => {
     e.preventDefault();
     if (!user?.id) return;
+    if (!newClientName || !newClientName.trim()) {
+      alert('Please provide your Business or Storefront name.');
+      return;
+    }
     if (!newClientWebsite || !newClientWebsite.trim()) {
       alert('Please provide your storefront / website URL.');
+      return;
+    }
+    if (!domainOwnerName || !domainOwnerName.trim()) {
+      alert('Please provide the Domain Owner / Developer name.');
+      return;
+    }
+    if (!gstNumber || !gstNumber.trim()) {
+      alert('Please provide your Business GST Number / GSTIN.');
       return;
     }
     setCreatingKey(true);
     try {
       const { keyRecord, rawSecretKey } = await developerService.createApiKey(user.id, {
-        clientName: newClientName,
+        clientName: newClientName.trim(),
         clientWebsite: newClientWebsite.trim(),
+        domainOwnerName: domainOwnerName.trim(),
+        gstNumber: gstNumber.trim().toUpperCase(),
         tier: 'free',
       });
       setApiKey(keyRecord);
@@ -282,7 +431,7 @@ export function DeveloperDashboard({
         </div>
         <h2>Connect Your Storefront via Weave 365 API</h2>
         <p className="dev-empty-desc">
-          Automate live catalog sync, real-time handloom silk saree stock availability, and dropship order management directly with your store.
+          Automate live catalog sync, real-time handloom product stock availability, and dropship order management directly with your store.
         </p>
 
         <div className="dev-empty-perks">
@@ -300,7 +449,7 @@ export function DeveloperDashboard({
         <form onSubmit={handleCreateApiKey} className="dev-new-key-form">
           <div className="dev-form-row">
             <label className="dev-form-label">
-              <span>Business / Storefront Name</span>
+              <span>Business / Storefront Name <span className="dev-required">*</span></span>
               <input
                 type="text"
                 required
@@ -322,6 +471,33 @@ export function DeveloperDashboard({
               />
             </label>
           </div>
+
+          <div className="dev-form-row">
+            <label className="dev-form-label">
+              <span>Domain Owner / Developer Name <span className="dev-required">*</span></span>
+              <input
+                type="text"
+                required
+                value={domainOwnerName}
+                onChange={(e) => setDomainOwnerName(e.target.value)}
+                placeholder="e.g. Rahul Sharma"
+                className="dev-form-input"
+              />
+            </label>
+            <label className="dev-form-label">
+              <span>GST Number / GSTIN <span className="dev-required">*</span></span>
+              <input
+                type="text"
+                required
+                value={gstNumber}
+                onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                placeholder="e.g. 29ABCDE1234F1Z5"
+                maxLength={15}
+                className="dev-form-input"
+              />
+            </label>
+          </div>
+
           <button type="submit" disabled={creatingKey} className="primary-button dev-activate-btn">
             {creatingKey ? <RefreshCw size={16} className="spin-icon" /> : <Zap size={16} />}
             {creatingKey ? 'Generating Key...' : 'Generate API Key'}
@@ -330,6 +506,19 @@ export function DeveloperDashboard({
             Free Starter tier • Instant activation • No credit card required
           </p>
         </form>
+
+        <div className="dev-empty-docs-banner">
+          <BookOpen size={16} className="dev-docs-banner-icon" />
+          <span>Need technical schema, endpoints & tutorials first?</span>
+          <a
+            href="/developer-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-docs-banner-link"
+          >
+            View Developer API Documentation ↗
+          </a>
+        </div>
       </div>
     );
   }
@@ -365,7 +554,7 @@ export function DeveloperDashboard({
       <div className="dev-dashboard-header">
         <div className="dev-header-main">
           <div className="dev-header-title-row">
-            <h1>{apiKey?.client_name || 'Developer API'}</h1>
+            <h1 className="dev-header-title">{apiKey?.client_name || 'Developer API'}</h1>
             <span className={`dev-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
               <span className="dev-status-dot" />
               {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
@@ -375,54 +564,84 @@ export function DeveloperDashboard({
             </span>
           </div>
           {apiKey?.client_website && (
-            <a href={apiKey.client_website} target="_blank" rel="noopener noreferrer" className="dev-client-link">
-              <Globe size={13} /> {apiKey.client_website} <ExternalLink size={11} />
-            </a>
+            <div className="dev-header-meta-row">
+              <a href={apiKey.client_website} target="_blank" rel="noopener noreferrer" className="dev-client-link">
+                <Globe size={13} className="dev-meta-icon" />
+                <span>{apiKey.client_website.replace(/^https?:\/\//, '')}</span>
+                <ExternalLink size={11} className="dev-meta-ext" />
+              </a>
+            </div>
           )}
         </div>
 
         <div className="dev-header-actions">
+          <a
+            href="/developer-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-btn dev-btn-primary"
+            title="Open official REST API documentation & endpoint references"
+          >
+            <BookOpen size={14} />
+            <span>API Docs ↗</span>
+          </a>
           <button
             type="button"
-            className="dev-secondary-btn"
+            className="dev-btn dev-btn-secondary"
             onClick={handleRegenerateKey}
             title="Generate a new API secret"
           >
-            <RefreshCw size={13} /> Regenerate Secret
+            <RefreshCw size={13} />
+            <span>Regenerate</span>
           </button>
           <button
             type="button"
-            className="dev-danger-btn"
+            className="dev-btn dev-btn-danger"
             onClick={handleDeleteApiKey}
             title="Permanently revoke and delete this API key"
           >
-            <Trash2 size={13} /> Delete Key
+            <Trash2 size={13} />
+            <span>Delete</span>
           </button>
         </div>
       </div>
 
-      {/* Secret Key Notification Modal / Banner (When Key is newly generated) */}
+      {/* Secret Key Notification Banner (When Key is newly generated) */}
       {newGeneratedSecret && (
         <div className="dev-new-secret-alert">
+          <button 
+            type="button" 
+            className="dev-close-secret" 
+            onClick={() => setNewGeneratedSecret(null)} 
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
+          
           <div className="dev-alert-left">
             <CheckCircle2 size={18} className="dev-alert-icon" />
             <div className="dev-alert-content">
-              <strong>Your New API Secret Key:</strong>
-              <p>Copy it right now. For security purposes, this secret cannot be displayed again.</p>
+              <strong>New API Secret Key Generated</strong>
+              <p>Your API key is active. You can copy it now or view and manage it anytime below.</p>
             </div>
           </div>
+
           <div className="dev-secret-copy-box">
-            <code>{newGeneratedSecret}</code>
+            <input
+              type="text"
+              readOnly
+              value={newGeneratedSecret}
+              className="dev-secret-key-input"
+            />
             <button
               type="button"
               onClick={() => copyToClipboard(newGeneratedSecret, 'new-secret')}
               className="dev-copy-btn"
             >
-              {copiedField === 'new-secret' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedField === 'new-secret' ? 'Copied' : 'Copy'}
+              {copiedField === 'new-secret' ? <Check size={14} /> : <Copy size={14} />}
+              <span>{copiedField === 'new-secret' ? 'Copied' : 'Copy Key'}</span>
             </button>
           </div>
-          <button type="button" className="dev-close-secret" onClick={() => setNewGeneratedSecret(null)} aria-label="Dismiss">✕</button>
         </div>
       )}
 
@@ -489,16 +708,17 @@ export function DeveloperDashboard({
                 className="dev-icon-btn"
                 onClick={() => setShowKeySecret(!showKeySecret)}
                 title={showKeySecret ? 'Hide Key' : 'Reveal Key'}
+                aria-label={showKeySecret ? 'Hide Key' : 'Reveal Key'}
               >
-                {showKeySecret ? <EyeOff size={14} /> : <Eye size={14} />}
+                {showKeySecret ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
               <button
                 type="button"
                 className="dev-copy-btn"
                 onClick={() => copyToClipboard(revealedKey || apiKey?.key_prefix, 'api-key')}
               >
-                {copiedField === 'api-key' ? <Check size={13} /> : <Copy size={13} />}
-                {copiedField === 'api-key' ? 'Copied' : 'Copy'}
+                {copiedField === 'api-key' ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copiedField === 'api-key' ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
@@ -520,21 +740,253 @@ export function DeveloperDashboard({
                 className="dev-copy-btn"
                 onClick={() => copyToClipboard('https://www.weave365.com/api/v1', 'base-url')}
               >
-                {copiedField === 'base-url' ? <Check size={13} /> : <Copy size={13} />}
-                {copiedField === 'base-url' ? 'Copied' : 'Copy'}
+                {copiedField === 'base-url' ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copiedField === 'base-url' ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 5. Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) */}
+      {/* 5. Curated Catalog Selection & Storefront Sync */}
+      <div className="dev-card dev-curator-card" id="catalog-curator">
+        <div className="dev-card-head">
+          <div className="dev-card-title">
+            <ShoppingBag size={18} />
+            <div>
+              <h3>Curated Catalog Sync</h3>
+              <p className="dev-card-subtitle">
+                Select the specific products you want to sync with your Shopify or WooCommerce storefront.
+              </p>
+            </div>
+          </div>
+          <div className="dev-curator-selected-badge">
+            <span>{selectedSkus.length} {selectedSkus.length === 1 ? 'Product' : 'Products'} Selected</span>
+          </div>
+        </div>
+
+        {!isCuratorGridOpen ? (
+          <div className="dev-curator-compact-all dev-curator-collapsed-bar">
+            <div className="dev-curator-all-status">
+              <span className="dev-pulse-dot" />
+              <span>
+                {selectedSkus.length > 0 ? (
+                  <><strong>Curated Feed Active:</strong> Syncing <strong>{selectedSkus.length}</strong> selected {selectedSkus.length === 1 ? 'product' : 'products'}.</>
+                ) : (
+                  <><strong>No Products Selected:</strong> Pick products below to enable your storefront feed.</>
+                )}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="dev-curate-btn"
+              onClick={() => setIsCuratorGridOpen(true)}
+            >
+              <ChevronDown size={14} />
+              <span>{selectedSkus.length > 0 ? 'Edit Product Selection' : 'Pick Products to Sync'}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="dev-curator-body">
+            {/* Filter Bar */}
+            <div className="dev-curator-toolbar">
+              <div className="dev-curator-search-box">
+                <Search size={15} className="dev-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by title, SKU, category, fabric..."
+                  value={curatorSearch}
+                  onChange={(e) => setCuratorSearch(e.target.value)}
+                  className="dev-curator-search-input"
+                />
+                {curatorSearch && (
+                  <button type="button" onClick={() => setCuratorSearch('')} className="dev-clear-search">✕</button>
+                )}
+              </div>
+
+              <div className="dev-curator-actions">
+                <label className="dev-stock-filter-toggle">
+                  <input
+                    type="checkbox"
+                    checked={curatorStockOnly}
+                    onChange={(e) => setCuratorStockOnly(e.target.checked)}
+                  />
+                  <span>Ready Stock Only</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSelectAllFiltered}
+                  className="dev-action-chip"
+                >
+                  Select Visible
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeselectAllFiltered}
+                  className="dev-action-chip"
+                >
+                  Deselect Visible
+                </button>
+                {selectedSkus.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllSelections}
+                    className="dev-action-chip danger"
+                  >
+                    Clear All ({selectedSkus.length})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsCuratorGridOpen(false)}
+                  className="dev-action-chip"
+                  title="Close product grid"
+                >
+                  <ChevronUp size={13} />
+                  <span>Close List</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Category Chips */}
+            <div className="dev-curator-cats">
+              <button
+                type="button"
+                className={`dev-cat-chip ${curatorCategory === 'all' ? 'active' : ''}`}
+                onClick={() => setCuratorCategory('all')}
+              >
+                All
+              </button>
+              {categoriesList.map(cat => (
+                <button
+                  type="button"
+                  key={cat}
+                  className={`dev-cat-chip ${curatorCategory === cat ? 'active' : ''}`}
+                  onClick={() => setCuratorCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Products Grid */}
+            {loadingProducts ? (
+              <div className="dev-curator-loading">
+                <RefreshCw size={22} className="spin-icon" />
+                <p>Loading catalog...</p>
+              </div>
+            ) : filteredCuratorProducts.length === 0 ? (
+              <div className="dev-curator-empty">
+                <p>No products found matching your filters.</p>
+                <button
+                  type="button"
+                  onClick={() => { setCuratorSearch(''); setCuratorCategory('all'); setCuratorStockOnly(false); }}
+                  className="dev-secondary-btn"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="dev-curator-grid">
+                {filteredCuratorProducts.map(p => {
+                  const sku = String(p.id || p.groupKey);
+                  const isSelected = selectedSkus.includes(sku);
+                  const isOutOfStock = p.isOutOfStock || p.stockStatusOverride === 'out-of-stock';
+                  const firstPrices = p.variants?.[0]?.prices || {};
+                  const price = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
+                  const image = p.images?.[0] || p.image || '/images/placeholder.webp';
+
+                  return (
+                    <div
+                      key={sku}
+                      className={`dev-curator-card-item ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'out-of-stock' : ''}`}
+                      onClick={() => toggleSelectSku(sku)}
+                    >
+                      <div className="dev-item-checkbox-wrap">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // handled by parent onClick
+                          className="dev-item-checkbox"
+                        />
+                      </div>
+                      <div className="dev-item-thumb-wrap">
+                        <img src={image} alt={p.title || p.name} className="dev-item-thumb" loading="lazy" />
+                        <span className={`dev-item-stock-tag ${isOutOfStock ? 'oos' : 'ready'}`}>
+                          {isOutOfStock ? 'OOS' : 'Ready'}
+                        </span>
+                      </div>
+                      <div className="dev-item-info">
+                        <div className="dev-item-sku-row">
+                          <span className="dev-item-sku">SKU: {sku}</span>
+                          <span className="dev-item-price">₹{price.toLocaleString('en-IN')}</span>
+                        </div>
+                        <h4 className="dev-item-title" title={p.title || p.name}>
+                          {p.title || p.name}
+                        </h4>
+                        <div className="dev-item-meta">
+                          <span>{p.category || 'Product'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Sticky Save Bar (Shown when product grid is open) */}
+        {isCuratorGridOpen && (
+          <div className="dev-curator-save-bar">
+            <div className="dev-save-bar-info">
+              <span><strong>{selectedSkus.length}</strong> {selectedSkus.length === 1 ? 'product' : 'products'} selected for sync</span>
+              {selectionSuccessMsg && (
+                <span className="dev-save-success-tag">
+                  <Check size={13} /> {selectionSuccessMsg}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setIsCuratorGridOpen(false)}
+                className="dev-curate-btn"
+                style={{ height: '38px' }}
+              >
+                <ChevronUp size={14} />
+                <span>Close List</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCatalogSelection}
+                disabled={savingSelection}
+                className="dev-btn dev-btn-primary dev-save-selection-btn"
+              >
+                {savingSelection ? <RefreshCw size={14} className="spin-icon" /> : <Check size={14} />}
+                <span>{savingSelection ? 'Saving...' : 'Save Selection'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 6. Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) */}
       <div className="dev-card">
         <div className="dev-card-head">
           <div className="dev-card-title">
             <Code2 size={18} />
             <h3>Platform Integration Guides & Ready-Made Scripts</h3>
           </div>
+          <a
+            href="/developer-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-card-docs-link"
+            title="Read complete REST API documentation and payload schemas"
+          >
+            <ExternalLink size={13} /> Full API Reference
+          </a>
         </div>
 
         <div className="dev-platform-tabs">
@@ -579,9 +1031,9 @@ export function DeveloperDashboard({
           {activePlatformTab === 'woocommerce' && (
             <div>
               <div className="dev-plat-intro">
-                <strong>WooCommerce Auto-Sync Snippet:</strong>
+                <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet:</h4>
                 <p>
-                  Paste this snippet into your theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It will automatically query Weave365 every 2 hours and sync stock status for all sarees matching your SKU numbers.
+                  Paste this snippet into your theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It will automatically query Weave365 every 2 hours and sync stock status for all products matching your SKU numbers.
                 </p>
               </div>
               <div className="dev-code-block-wrap">
@@ -632,39 +1084,42 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
           {activePlatformTab === 'shopify' && (
             <div>
               <div className="dev-plat-intro">
-                <strong>Shopify Automated Integration:</strong>
+                <h4 className="dev-plat-title">Shopify Automated Integration:</h4>
                 <p>
                   Use any Shopify data-sync app (e.g. <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted feed URL below:
                 </p>
               </div>
               <div className="dev-shopify-box">
-                <label>Your Automated Shopify JSON Feed URL:</label>
-                <div className="dev-cred-input-wrap">
+                <label className="dev-shopify-label">Your Automated Shopify JSON Feed URL:</label>
+                <div className="dev-feed-input-group">
                   <input
                     type="text"
                     readOnly
                     value={`https://www.weave365.com/api/v1/catalog?format=shopify`}
-                    className="dev-cred-input"
+                    className="dev-feed-input"
                   />
                   <button
                     type="button"
-                    className="dev-copy-btn"
+                    className="dev-feed-copy-btn"
                     onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog?format=shopify`, 'shopify-url')}
                   >
-                    {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />} Copy Feed URL
+                    {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
                   </button>
                 </div>
                 <div className="dev-shopify-steps">
-                  <div className="step-num">1</div>
-                  <div>In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, choose <em>New Scheduled Feed</em>.</div>
-                </div>
-                <div className="dev-shopify-steps">
-                  <div className="step-num">2</div>
-                  <div>Set Source URL to the URL above and add Header <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
-                </div>
-                <div className="dev-shopify-steps">
-                  <div className="step-num">3</div>
-                  <div>Set schedule to <em>Every 2 hours</em> for automated inventory sync.</div>
+                  <div className="dev-step-item">
+                    <span className="dev-step-num">1</span>
+                    <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, choose <em>New Scheduled Feed</em>.</div>
+                  </div>
+                  <div className="dev-step-item">
+                    <span className="dev-step-num">2</span>
+                    <div className="dev-step-text">Set Source URL to the URL above and add Header <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
+                  </div>
+                  <div className="dev-step-item">
+                    <span className="dev-step-num">3</span>
+                    <div className="dev-step-text">Set schedule to <em>Every 2 hours</em> for automated inventory sync.</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -673,7 +1128,7 @@ if (!wp_next_scheduled('weave365_cron_stock_sync')) {
           {activePlatformTab === 'prestashop' && (
             <div>
               <div className="dev-plat-intro">
-                <strong>PrestaShop Sync Script:</strong>
+                <h4 className="dev-plat-title">PrestaShop Sync Script:</h4>
                 <p>Run via PrestaShop Cron or custom module connector to synchronize warehouse quantities:</p>
               </div>
               <div className="dev-code-block-wrap">
@@ -701,6 +1156,13 @@ if (!empty($data['stock_map'])) {
     echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";
 }`}
                 </pre>
+                <button
+                  type="button"
+                  className="dev-code-copy-btn"
+                  onClick={() => copyToClipboard(`<?php\n// PrestaShop 1.7 / 8.x Stock Synchronizer\nrequire_once dirname(__FILE__) . '/config/config.inc.php';\n\n$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n$ch = curl_init('https://www.weave365.com/api/v1/stock-status');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: $apiKey"]);\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n$res = curl_exec($ch);\ncurl_close($ch);\n\n$data = json_decode($res, true);\nif (!empty($data['stock_map'])) {\n    foreach ($data['stock_map'] as $sku => $item) {\n        $id_product = (int)Db::getInstance()->getValue('SELECT id_product FROM '._DB_PREFIX_.'product WHERE reference = "'.pSQL($sku).'"');\n        if ($id_product) {\n            $qty = !empty($item['is_available']) ? 5 : 0;\n            StockAvailable::setQuantity($id_product, 0, $qty);\n        }\n    }\n    echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";\n}`, 'prestashop-code')}
+                >
+                  {copiedField === 'prestashop-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}
+                </button>
               </div>
             </div>
           )}
@@ -708,7 +1170,7 @@ if (!empty($data['stock_map'])) {
           {activePlatformTab === 'curl' && (
             <div>
               <div className="dev-plat-intro">
-                <strong>cURL Command Examples:</strong>
+                <h4 className="dev-plat-title">cURL Command Examples:</h4>
               </div>
               <div className="dev-code-block-wrap">
                 <pre>
@@ -737,6 +1199,13 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
     "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]
   }'`}
                 </pre>
+                <button
+                  type="button"
+                  className="dev-code-copy-btn"
+                  onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Dropship Order via API (Growth Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560034",\n      "address_line1": "Flat 402, Green Valley",\n      "city": "Bangalore",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]\n  }'`, 'curl-code')}
+                >
+                  {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
+                </button>
               </div>
             </div>
           )}
@@ -744,7 +1213,7 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
           {activePlatformTab === 'javascript' && (
             <div>
               <div className="dev-plat-intro">
-                <strong>Node.js / Fetch Example:</strong>
+                <h4 className="dev-plat-title">Node.js / Fetch Example:</h4>
               </div>
               <div className="dev-code-block-wrap">
                 <pre>
@@ -763,6 +1232,13 @@ async function fetchWeave365Catalog() {
 
 fetchWeave365Catalog();`}
                 </pre>
+                <button
+                  type="button"
+                  className="dev-code-copy-btn"
+                  onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';\n\nasync function fetchWeave365Catalog() {\n  const response = await fetch('https://www.weave365.com/api/v1/catalog', {\n    headers: {\n      'X-API-Key': apiKey,\n    },\n  });\n  const data = await response.json();\n  console.log('Total Products Synced:', data.total_products);\n  return data.products;\n}\n\nfetchWeave365Catalog();`, 'js-code')}
+                >
+                  {copiedField === 'js-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}
+                </button>
               </div>
             </div>
           )}

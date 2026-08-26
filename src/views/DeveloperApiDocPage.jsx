@@ -305,6 +305,15 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
                   Supported Platforms
                 </a>
               </li>
+              <li>
+                <a
+                  href="#curated-catalog"
+                  className={`api-docs-nav-link ${activeSection === 'curated-catalog' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); scrollToSection('curated-catalog'); }}
+                >
+                  Curated Catalog Sync
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -399,13 +408,8 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
           <section id="overview" className="api-docs-section">
             <h2>Overview</h2>
             <p>
-              The Weave365 Developer API is a modern REST API designed for high availability and millisecond responses.
-              It allows B2B resellers and eCommerce storefront owners to seamlessly sync live product catalogs, verify real-time stock availability, and automatically forward customer dropship orders directly to Varanasi handloom weavers for fulfillment.
+              The Weave365 REST API allows B2B resellers and eCommerce storefronts to query live catalog pricing, verify real-time inventory availability, and automate dropship order fulfillment directly with weavers in Varanasi.
             </p>
-
-            <div className="api-docs-callout success">
-              <strong><Zap size={14} style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: '6px', color: '#16a34a' }} /> Fast & Reliable:</strong> Built for high performance and uptime, providing instant stock verification and zero-touch dropship order dispatch.
-            </div>
           </section>
 
           {/* Section: Authentication */}
@@ -475,6 +479,36 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             </div>
           </section>
 
+          {/* Section: Curated Catalog Selection */}
+          <section id="curated-catalog" className="api-docs-section">
+            <h2>Curated Catalog Product Sync</h2>
+            <p>
+              Weave365 is a curated B2B procurement network. To maintain your storefront&apos;s focus, the API only delivers the exact products you choose to list on your store.
+            </p>
+
+            <table className="api-params-table" style={{ marginTop: '0.75rem' }}>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Configuration</th>
+                  <th>API Feed Output</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Dashboard Selection</strong></td>
+                  <td>Checkmark products in <em>Account &rarr; Developer API</em> and click <em>Save Selection</em></td>
+                  <td><code>/api/v1/catalog</code> and <code>/api/v1/stock-status</code> automatically output strictly your chosen products.</td>
+                </tr>
+                <tr>
+                  <td><strong>URL Parameter Override</strong></td>
+                  <td>Pass <code>?skus=100001,100005</code> in the API request URL</td>
+                  <td>Explicit URL query parameters filter the feed directly on demand.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
           {/* Section: Endpoints Reference */}
           <section id="endpoints" className="api-docs-section">
             <h2>API Endpoints Reference</h2>
@@ -507,6 +541,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                       <td>Filter by category (e.g. <code>Kanchipuram Silk</code>, <code>Banarasi Katan</code>).</td>
                     </tr>
                     <tr>
+                      <td><span className="api-param-name">skus</span></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>Filter by specific selected SKUs (comma-separated, e.g. <code>100001,100005,100012</code>). Ideal when only curating selected products.</td>
+                    </tr>
+                    <tr>
                       <td><span className="api-param-name">format</span></td>
                       <td><span className="api-param-type">string (optional)</span></td>
                       <td>Set to <code>shopify</code> to format directly for Shopify Matrixify or automated sync apps.</td>
@@ -519,8 +558,10 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <pre className="api-code-pre">{`{
   "status": "success",
   "tier": "growth",
-  "total_products": 240,
-  "last_synced_at": "2026-08-26T12:00:00Z",
+  "client_name": "My Reseller Store",
+  "catalog_mode": "curated",
+  "total_products": 24,
+  "last_synced_at": "2026-08-27T12:00:00Z",
   "products": [
     {
       "id": "100001",
@@ -559,6 +600,24 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   Ideal for frequent (every 5-15 minute) inventory polling without consuming bandwidth or heavy payloads.
                 </p>
 
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Query Parameters</h4>
+                <table className="api-params-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span className="api-param-name">skus</span></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>Filter stock verification to only specific selected SKUs (comma-separated, e.g. <code>100001,100005</code>).</td>
+                    </tr>
+                  </tbody>
+                </table>
+
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
@@ -595,7 +654,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Single Product Lookup</span>
               </div>
               <div className="api-endpoint-body">
-                <p>Retrieves real-time details, high-resolution imagery, and live stock availability for a specific saree design code / SKU.</p>
+                <p>Retrieves real-time details, high-resolution imagery, and live stock availability for a specific product design code / SKU.</p>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
@@ -679,12 +738,14 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Account & Live Quota Metrics</span>
               </div>
               <div className="api-endpoint-body">
-                <p>Inspect your current API key details, remaining monthly quota, rate limits, and live daily usage statistics.</p>
+                <p>Inspect your current API key details, catalog sync mode, remaining monthly quota, rate limits, and live daily usage statistics.</p>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
   "client_name": "My Reseller Store",
   "tier": "growth",
+  "catalog_mode": "curated",
+  "selected_skus_count": 24,
   "monthly_quota": 20000,
   "quota_used_this_month": 1420,
   "quota_remaining": 18580,
@@ -698,19 +759,46 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
           {/* Section: Rate Limits & Quotas */}
           <section id="rate-limits" className="api-docs-section">
-            <h2>Rate Limits & Quota Rerolling</h2>
+            <h2>Rate Limits & Quotas</h2>
             <p>
-              To protect warehouse capacity and server reliability, all API keys have hourly and monthly limits:
+              Request quotas are allocated per calendar month and reset automatically on the 1st of every month at 00:00 UTC. Choose an inventory polling frequency suited to your plan:
             </p>
 
-            <div className="api-docs-callout">
-              <strong><RefreshCw size={14} style={{ display: 'inline-block', verticalAlign: '-2px', marginRight: '6px', color: '#2563eb' }} /> Monthly Quota Reset:</strong> Request quotas reset automatically on the <strong>1st of every calendar month</strong> at 00:00:00 UTC.
-            </div>
+            <table className="api-params-table" style={{ margin: '1rem 0 1.5rem 0' }}>
+              <thead>
+                <tr>
+                  <th>Sync Frequency</th>
+                  <th>Monthly Requests</th>
+                  <th>Recommended Tier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Every 2 Hours</strong></td>
+                  <td>~360 req / month</td>
+                  <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Runs smoothly all 30 days</td>
+                </tr>
+                <tr>
+                  <td><strong>Every 1 Hour</strong></td>
+                  <td>~720 req / month</td>
+                  <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Fits within 2,000 quota</td>
+                </tr>
+                <tr>
+                  <td><strong>Every 15 Minutes</strong></td>
+                  <td>~2,880 req / month</td>
+                  <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Continuous 24/7 sync</td>
+                </tr>
+                <tr>
+                  <td><strong>Every 5 Minutes</strong></td>
+                  <td>~8,640 req / month</td>
+                  <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Near real-time sync</td>
+                </tr>
+              </tbody>
+            </table>
 
-            <h3>Quota Safety Guard (Out-of-Stock Protection)</h3>
+            <h3>Quota Safety Guard</h3>
             <p>
-              If your account monthly quota is reached, the API safely responds with <code>HTTP 429 Too Many Requests</code> with code <code>QUOTA_EXCEEDED</code>.
-              It will <strong>never</strong> return stale or false stock data, preventing customers on your storefront from buying unavailable items.
+              When your monthly quota is reached, endpoints safely respond with <code>HTTP 429 Too Many Requests</code> (code <code>QUOTA_EXCEEDED</code>) to prevent serving outdated stock availability.
             </p>
 
             <div className="api-code-wrapper">
@@ -733,20 +821,19 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
           {/* Section: Pricing Tiers */}
           <section id="pricing" className="api-docs-section">
             <h2>Pricing Tiers</h2>
-            <p>Transparent pricing tailored for boutiques, growing dropshippers, and enterprise platforms:</p>
+            <p>Select a plan matched to your store&apos;s monthly catalog sync volume:</p>
 
             <div className="api-pricing-grid">
               {/* Tier 1 */}
               <div className="api-pricing-card">
                 <div>
-                  <h3 className="api-pricing-name">Starter (Free)</h3>
+                  <h3 className="api-pricing-name">Starter</h3>
                   <div className="api-pricing-price">₹0 <span>/ month</span></div>
-                  <div className="api-pricing-desc">For testing and low-frequency catalog browsing.</div>
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={16} /> 2,000 requests / month</li>
-                    <li><CheckCircle2 size={16} /> 1 req / second rate limit</li>
-                    <li><CheckCircle2 size={16} /> Full catalog & image feeds</li>
-                    <li><CheckCircle2 size={16} /> Manual order submission</li>
+                    <li><CheckCircle2 size={15} /> 2,000 requests / month</li>
+                    <li><CheckCircle2 size={15} /> Full API Access (Catalog, Stock & Orders)</li>
+                    <li><CheckCircle2 size={15} /> Standard sync (1–2 hr intervals)</li>
+                    <li><CheckCircle2 size={15} /> Ideal for testing & store setup</li>
                   </ul>
                 </div>
                 <a href="/account?tab=developer" className="api-pricing-btn api-pricing-btn-outline">
@@ -760,13 +847,12 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <div>
                   <h3 className="api-pricing-name">Growth Partner</h3>
                   <div className="api-pricing-price">₹699 <span>/ month</span></div>
-                  <div className="api-pricing-desc">For active Shopify, WooCommerce & PrestaShop stores.</div>
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={16} /> <span><strong>20,000 requests / month</strong></span></li>
-                    <li><CheckCircle2 size={16} /> <span><strong>3 req / second rate limit</strong></span></li>
-                    <li><CheckCircle2 size={16} /> <span>Automated Dropship Order API (POST /orders)</span></li>
-                    <li><CheckCircle2 size={16} /> <span>Real-Time Stock Status API</span></li>
-                    <li><CheckCircle2 size={16} /> <span>Priority WhatsApp Dev Support</span></li>
+                    <li><CheckCircle2 size={15} /> 20,000 requests / month</li>
+                    <li><CheckCircle2 size={15} /> 24/7 High-frequency sync (5–15 min)</li>
+                    <li><CheckCircle2 size={15} /> Production volume for active stores</li>
+                    <li><CheckCircle2 size={15} /> Automated dropship order dispatch</li>
+                    <li><CheckCircle2 size={15} /> Priority WhatsApp developer support</li>
                   </ul>
                 </div>
                 <a
@@ -782,15 +868,14 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
               {/* Tier 3 */}
               <div className="api-pricing-card">
                 <div>
-                  <h3 className="api-pricing-name">Pro / Scale</h3>
+                  <h3 className="api-pricing-name">Pro Scale</h3>
                   <div className="api-pricing-price">₹1,499 <span>/ month</span></div>
-                  <div className="api-pricing-desc">For multi-store networks and high-traffic reseller portals.</div>
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={16} /> <span><strong>75,000 requests / month</strong></span></li>
-                    <li><CheckCircle2 size={16} /> <span><strong>10 req / second rate limit</strong></span></li>
-                    <li><CheckCircle2 size={16} /> <span>Real-time webhook notifications</span></li>
-                    <li><CheckCircle2 size={16} /> <span>Custom packaging & branding options</span></li>
-                    <li><CheckCircle2 size={16} /> <span>Dedicated technical account manager</span></li>
+                    <li><CheckCircle2 size={15} /> 75,000 requests / month</li>
+                    <li><CheckCircle2 size={15} /> High-frequency multi-store sync</li>
+                    <li><CheckCircle2 size={15} /> Blind white-label custom packing</li>
+                    <li><CheckCircle2 size={15} /> Priority warehouse dispatch queue</li>
+                    <li><CheckCircle2 size={15} /> Dedicated technical account manager</li>
                   </ul>
                 </div>
                 <a

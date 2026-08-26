@@ -85,7 +85,7 @@ export function Account({
   const userEmail = String(user?.email || '').toLowerCase().trim();
   const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin' || user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
 
-  const isVendor = isAdmin ||
+  const isVendor = !isAdmin && (
                    buyerProfile?.buyer_type === 'vendor' ||
                    user?.user_metadata?.buyer_profile?.buyer_type === 'vendor' ||
                    user?.buyer_profile?.buyer_type === 'vendor' ||
@@ -94,10 +94,12 @@ export function Account({
                    user?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
                    priceAccess?.buyerType === 'vendor' ||
                    Boolean(buyerProfile?.vendor_code) ||
-                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code);
+                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code));
 
   const [activeTab, setActiveTab] = useState(() => {
-    if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') return 'vendor-stock';
+    if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
+      return isVendor ? 'vendor-stock' : 'orders';
+    }
     if (initialTab) return initialTab;
     if (isVendor) return 'vendor-stock';
     return 'orders';
@@ -106,12 +108,12 @@ export function Account({
   useEffect(() => {
     if (initialTab) {
       if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
-        setActiveTab('vendor-stock');
+        setActiveTab(isVendor ? 'vendor-stock' : 'orders');
       } else {
         setActiveTab(initialTab);
       }
     }
-  }, [initialTab]);
+  }, [initialTab, isVendor]);
 
   const [addresses, setAddresses] = useState([]);
   const [addressLoading, setAddressLoading] = useState(false);
@@ -492,7 +494,7 @@ export function Account({
         <AccountSummaryCard 
           icon={UserRound} 
           label="Account Type" 
-          value={isVendor ? 'Vendor Partner' : 'Customer'} 
+          value={isAdmin ? 'Administrator' : (isVendor ? 'Vendor Partner' : 'Customer')} 
           hint={buyerProfile?.pincode ? `PIN ${buyerProfile.pincode}` : ''} 
         />
         <AccountSummaryCard icon={LockKeyhole} label="Pricing Tier" value={priceAccess.canViewPrices ? 'Hybrid Wholesale & Reseller' : 'Pending'} hint={approvalHint} />
@@ -509,7 +511,7 @@ export function Account({
             onClick={() => setActiveTab('vendor-stock')}
           >
             <Boxes size={16} />
-            <span>{isAdmin ? 'Stock Availability' : 'Stock'}</span>
+            <span>Stock</span>
           </button>
         )}
         <button type="button" 

@@ -1474,11 +1474,15 @@ create policy "Public modify vendor product stock"
 create table if not exists public.api_keys (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
-  key_prefix text not null,               -- e.g. "w365_live_9a7f"
+  key_prefix text not null,               -- e.g. "w365_live_9a7f..."
   key_hash text not null unique,          -- SHA-256 hash of secret key
   client_name text not null,              -- e.g. "My Reseller Store"
   client_website text,                    -- e.g. "https://www.example.com"
+  domain_owner_name text,                 -- Domain owner / primary developer
+  gst_number text,                        -- Optional GSTIN / tax registration number
   tier text not null default 'free',      -- 'free', 'growth', 'pro'
+  catalog_mode text not null default 'all', -- 'all' (entire master catalog) or 'curated' (selected_skus only)
+  selected_skus jsonb default '[]'::jsonb, -- array of chosen product SKUs e.g. ["100001", "100005"]
   monthly_quota integer not null default 2000,
   rate_limit_rps integer not null default 1,
   is_active boolean not null default true,
@@ -1488,6 +1492,11 @@ create table if not exists public.api_keys (
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+alter table public.api_keys add column if not exists domain_owner_name text;
+alter table public.api_keys add column if not exists gst_number text;
+alter table public.api_keys add column if not exists catalog_mode text not null default 'all';
+alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
 
 create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
 create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
