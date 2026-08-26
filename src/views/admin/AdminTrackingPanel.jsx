@@ -13,7 +13,10 @@ import {
 import { supabase } from '../../supabaseClient.js';
 
 async function updateSupabaseOrderTracking(id, { status, trackingCarrier, trackingNumber, trackingMessage, sourceTable }) {
-  const table = sourceTable === 'orders' ? 'orders' : 'inquiries';
+  let table = 'inquiries';
+  if (sourceTable === 'api_orders') table = 'api_orders';
+  else if (sourceTable === 'orders') table = 'orders';
+
   const payload = {
     status: status,
     tracking_carrier: trackingCarrier,
@@ -229,12 +232,13 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
     if (typeFilter === 'orders') {
       result = result.filter(i => 
         i._sourceTable === 'orders' || 
+        i._sourceTable === 'api_orders' ||
         i.inquiry_type === 'cart_payment' || 
         i.inquiry_type === 'cart_payment_fallback' ||
         i.inquiry_type === 'reseller_api_order'
       );
     } else if (typeFilter === 'dropship') {
-      result = result.filter(i => i.is_dropship || i.inquiry_type === 'reseller_api_order');
+      result = result.filter(i => i.is_dropship || i._sourceTable === 'api_orders' || i.inquiry_type === 'reseller_api_order');
     }
 
     if (statusFilter !== 'all') {

@@ -57,15 +57,52 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
         }
 
         // Use the secure RPC function to get order tracking by ID
-        const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
-          order_id: inquiryId
-        });
+        let trackingOrder = null;
+        try {
+          const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
+            order_id: inquiryId
+          });
+          if (!rpcError && data && data.length > 0) {
+            trackingOrder = data[0];
+          }
+        } catch (rpcErr) {
+          console.warn('get_order_tracking RPC fallback:', rpcErr);
+        }
 
-        if (rpcError) throw rpcError;
+        // Direct table fallback if RPC is unconfigured or missed api_orders
+        if (!trackingOrder) {
+          const [{ data: apiData }, { data: ordData }, { data: inqData }] = await Promise.all([
+            supabase.from('api_orders').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
+            supabase.from('orders').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
+            supabase.from('inquiries').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
+          ]);
+
+          const found = apiData || ordData || inqData;
+          if (found) {
+            trackingOrder = {
+              ...found,
+              buyer_name: found.recipient_name || found.buyer_name,
+              phone: found.recipient_phone || found.phone,
+              email: found.recipient_email || found.email,
+              pincode: found.recipient_pincode || found.pincode,
+              is_dropship: Boolean(found.is_dropship || apiData),
+              dropship_sender_name: found.sender_name || found.dropship_sender_name,
+              dropship_sender_phone: found.sender_phone || found.dropship_sender_phone,
+              dropship_recipient_name: found.recipient_name || found.dropship_recipient_name,
+              dropship_recipient_phone: found.recipient_phone || found.dropship_recipient_phone,
+              dropship_recipient_address: found.recipient_address || found.dropship_recipient_address,
+              dropship_recipient_city: found.recipient_city || found.dropship_recipient_city,
+              dropship_recipient_state: found.recipient_state || found.dropship_recipient_state,
+              dropship_recipient_pincode: found.recipient_pincode || found.dropship_recipient_pincode,
+              dropship_packing_preference: found.packing_preference || found.dropship_packing_preference,
+              message: found.shipping_notes || found.message,
+            };
+          }
+        }
 
         if (active) {
-          if (data && data.length > 0) {
-            setOrder(data[0]);
+          if (trackingOrder) {
+            setOrder(trackingOrder);
           } else {
             setError('Order tracking ID not found. Please verify your ID or contact support.');
             setOrder(null);

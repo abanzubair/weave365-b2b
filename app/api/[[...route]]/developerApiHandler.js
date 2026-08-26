@@ -557,7 +557,11 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
-    // Query both orders table and legacy inquiries table
+    // Query api_orders, orders, and legacy inquiries tables in parallel
+    let apiOrdersQuery = supabase
+      .from('api_orders')
+      .select('*');
+
     let ordersQuery = supabase
       .from('orders')
       .select('*');
@@ -568,6 +572,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       .eq('inquiry_type', 'reseller_api_order');
 
     if (auth.keyRecord.user_id) {
+      apiOrdersQuery = apiOrdersQuery.eq('user_id', auth.keyRecord.user_id);
       ordersQuery = ordersQuery.eq('user_id', auth.keyRecord.user_id);
       inquiriesQuery = inquiriesQuery.eq('user_id', auth.keyRecord.user_id);
     } else if (auth.keyRecord.client_name) {
@@ -576,21 +581,45 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     }
 
     if (singleOrderId) {
+      apiOrdersQuery = apiOrdersQuery.eq('id', singleOrderId);
       ordersQuery = ordersQuery.eq('id', singleOrderId);
       inquiriesQuery = inquiriesQuery.eq('id', singleOrderId);
     }
 
     if (statusFilter && statusFilter !== 'all') {
+      apiOrdersQuery = apiOrdersQuery.eq('status', statusFilter.toLowerCase());
       ordersQuery = ordersQuery.eq('status', statusFilter.toLowerCase());
       inquiriesQuery = inquiriesQuery.eq('status', statusFilter.toLowerCase());
     }
 
-    const [{ data: ordersData }, { data: inqData }] = await Promise.all([
+    const [{ data: apiOrdersData }, { data: ordersData }, { data: inqData }] = await Promise.all([
+      apiOrdersQuery.order('created_at', { ascending: false }).limit(limit),
       ordersQuery.order('created_at', { ascending: false }).limit(limit),
       inquiriesQuery.order('created_at', { ascending: false }).limit(limit),
     ]);
 
-    const combinedRaw = [...(ordersData || []), ...(inqData || [])];
+    // Normalize api_orders fields to match unified order representation
+    const normalizedApiOrders = (apiOrdersData || []).map(a => ({
+      ...a,
+      _sourceTable: 'api_orders',
+      buyer_name: a.recipient_name,
+      phone: a.recipient_phone,
+      email: a.recipient_email,
+      pincode: a.recipient_pincode,
+      is_dropship: true,
+      dropship_sender_name: a.sender_name,
+      dropship_sender_phone: a.sender_phone,
+      dropship_recipient_name: a.recipient_name,
+      dropship_recipient_phone: a.recipient_phone,
+      dropship_recipient_address: a.recipient_address,
+      dropship_recipient_city: a.recipient_city,
+      dropship_recipient_state: a.recipient_state,
+      dropship_recipient_pincode: a.recipient_pincode,
+      dropship_packing_preference: a.packing_preference,
+      message: a.shipping_notes || a.message,
+    }));
+
+    const combinedRaw = [...normalizedApiOrders, ...(ordersData || []), ...(inqData || [])];
     // Deduplicate by ID
     const seen = new Set();
     const rawOrders = [];
@@ -615,8 +644,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     };
 
     let list = rawOrders.slice(offset, offset + limit).map((o) => {
-      let extractedResellerOrderId = null;
-      if (o.message) {
+      let extractedResellerOrderId = o.reseller_order_id || null;
+      if (!extractedResellerOrderId && o.message) {
         const match = o.message.match(/\[API Dropship Order #([^\]]+)\]/);
         if (match && match[1] !== 'N/A') extractedResellerOrderId = match[1];
       }
@@ -628,7 +657,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         updated_at: o.updated_at,
         status: o.status || 'new',
         status_label: formatStatusLabel(o.status),
-        is_dropship: Boolean(o.is_dropship),
+        is_dropship: Boolean(o.is_dropship || o._sourceTable === 'api_orders'),
         tracking: {
           carrier: o.tracking_carrier || null,
           tracking_number: o.tracking_number || null,
@@ -650,7 +679,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
           phone: o.dropship_sender_phone || null,
         },
         items: o.items || [],
-        notes: o.message || '',
+        notes: o.shipping_notes || o.message || '',
       };
     });
 
@@ -710,6 +739,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         items,
         shipping_notes,
         packing_preference,
+        platform,
       } = body || {};
 
       // Support either 'customer' or 'shipping_address' key
@@ -770,55 +800,85 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
       const senderPhone = sender?.phone || '';
 
-      // Create Order Entry in Supabase Orders Table (with fallback to Inquiries)
-      const orderPayload = {
-        user_id: auth.keyRecord.user_id,
-        buyer_name: cust.name,
-        business_name: senderName,
-        phone: cust.phone,
-        email: cust.email || '',
-        pincode: recipientPincode,
-        message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. Notes: ${shipping_notes || 'Blind packaging'}`,
+      // 1. Primary: Insert into dedicated api_orders table
+      const apiOrderPayload = {
+        api_key_id: auth.keyRecord?.id || null,
+        user_id: auth.keyRecord?.user_id || null,
+        reseller_order_id: reseller_order_id || null,
+        platform: platform || 'api',
+        recipient_name: cust.name,
+        recipient_phone: cust.phone,
+        recipient_email: cust.email || '',
+        recipient_address: recipientAddress,
+        recipient_city: recipientCity,
+        recipient_state: recipientState,
+        recipient_pincode: recipientPincode,
+        sender_name: senderName,
+        sender_phone: senderPhone,
+        packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
         items: normalizedItems,
         status: 'new',
-        is_dropship: true,
-        dropship_sender_name: senderName,
-        dropship_sender_phone: senderPhone,
-        dropship_recipient_name: cust.name,
-        dropship_recipient_phone: cust.phone,
-        dropship_recipient_address: recipientAddress,
-        dropship_recipient_city: recipientCity,
-        dropship_recipient_state: recipientState,
-        dropship_recipient_pincode: recipientPincode,
-        dropship_packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
+        shipping_notes: shipping_notes || '',
       };
 
       let insertedOrder = null;
       let insertError = null;
 
-      // Try inserting into orders table first
-      const ordersRes = await supabase
-        .from('orders')
-        .insert([orderPayload])
+      const apiRes = await supabase
+        .from('api_orders')
+        .insert([apiOrderPayload])
         .select()
         .single();
 
-      if (!ordersRes.error && ordersRes.data) {
-        insertedOrder = ordersRes.data;
+      if (!apiRes.error && apiRes.data) {
+        insertedOrder = apiRes.data;
       } else {
-        // Fallback to inquiries table
-        const fallbackPayload = {
-          ...orderPayload,
-          inquiry_type: 'reseller_api_order',
+        // 2. Fallback: orders table
+        const orderPayload = {
+          user_id: auth.keyRecord.user_id,
+          buyer_name: cust.name,
+          business_name: senderName,
+          phone: cust.phone,
+          email: cust.email || '',
+          pincode: recipientPincode,
+          message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. Notes: ${shipping_notes || 'Blind packaging'}`,
+          items: normalizedItems,
+          status: 'new',
+          is_dropship: true,
+          dropship_sender_name: senderName,
+          dropship_sender_phone: senderPhone,
+          dropship_recipient_name: cust.name,
+          dropship_recipient_phone: cust.phone,
+          dropship_recipient_address: recipientAddress,
+          dropship_recipient_city: recipientCity,
+          dropship_recipient_state: recipientState,
+          dropship_recipient_pincode: recipientPincode,
+          dropship_packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
         };
-        const inqRes = await supabase
-          .from('inquiries')
-          .insert([fallbackPayload])
+
+        const ordersRes = await supabase
+          .from('orders')
+          .insert([orderPayload])
           .select()
           .single();
 
-        insertedOrder = inqRes.data;
-        insertError = inqRes.error;
+        if (!ordersRes.error && ordersRes.data) {
+          insertedOrder = ordersRes.data;
+        } else {
+          // 3. Fallback: inquiries table
+          const fallbackPayload = {
+            ...orderPayload,
+            inquiry_type: 'reseller_api_order',
+          };
+          const inqRes = await supabase
+            .from('inquiries')
+            .insert([fallbackPayload])
+            .select()
+            .single();
+
+          insertedOrder = inqRes.data;
+          insertError = inqRes.error;
+        }
       }
 
       if (insertError) {

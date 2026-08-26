@@ -72,6 +72,7 @@ import {
 const optionalTables = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'orders', label: 'Orders' },
+  { key: 'api_orders', label: 'API Orders' },
   { key: 'download_logs', label: 'Download Logs' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
@@ -428,14 +429,35 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
 
   const enquiryRows = useMemo(() => {
-    return (adminData.optional.inquiries || [])
-      .map(i => ({ ...i, _sourceTable: 'inquiries' }))
-      .concat((adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' })));
-  }, [adminData.optional.inquiries, adminData.optional.orders]);
+    const rawInquiries = (adminData.optional.inquiries || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
+    const rawOrders = (adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' }));
+    const rawApiOrders = (adminData.optional.api_orders || []).map(a => ({
+      ...a,
+      _sourceTable: 'api_orders',
+      is_dropship: true,
+      buyer_name: a.recipient_name || a.buyer_name,
+      phone: a.recipient_phone || a.phone,
+      email: a.recipient_email || a.email,
+      pincode: a.recipient_pincode || a.pincode,
+      dropship_sender_name: a.sender_name || a.dropship_sender_name,
+      dropship_sender_phone: a.sender_phone || a.dropship_sender_phone,
+      dropship_recipient_name: a.recipient_name,
+      dropship_recipient_phone: a.recipient_phone,
+      dropship_recipient_address: a.recipient_address,
+      dropship_recipient_city: a.recipient_city,
+      dropship_recipient_state: a.recipient_state,
+      dropship_recipient_pincode: a.recipient_pincode,
+      dropship_packing_preference: a.packing_preference,
+      message: a.shipping_notes || a.message,
+    }));
+
+    return [...rawInquiries, ...rawOrders, ...rawApiOrders];
+  }, [adminData.optional.inquiries, adminData.optional.orders, adminData.optional.api_orders]);
 
   const newOrdersCount = useMemo(() => {
     return enquiryRows.filter(i => {
       const isOrder = i._sourceTable === 'orders' ||
+        i._sourceTable === 'api_orders' ||
         i.inquiry_type === 'cart_payment' ||
         i.inquiry_type === 'cart_payment_fallback' ||
         i.inquiry_type === 'reseller_api_order';

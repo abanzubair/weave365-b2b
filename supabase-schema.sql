@@ -916,7 +916,66 @@ create trigger touch_orders_updated_at
 before update on public.orders
 for each row execute function public.touch_updated_at();
 
--- Create secure get_order_tracking database function to fetch tracking data by ID from both inquiries and orders
+-- -------------------------------------------------------------------------------
+-- B2B DEVELOPER API & RESELLER DROPSHIP ORDERS TABLE
+-- -------------------------------------------------------------------------------
+
+create table if not exists public.api_orders (
+  id uuid primary key default gen_random_uuid(),
+  api_key_id uuid references public.api_keys(id) on delete set null,
+  user_id uuid references auth.users(id) on delete set null,
+  reseller_order_id text,
+  platform text default 'api',
+  recipient_name text not null,
+  recipient_phone text not null,
+  recipient_email text,
+  recipient_address text not null,
+  recipient_city text not null,
+  recipient_state text not null,
+  recipient_pincode text not null,
+  sender_name text,
+  sender_phone text,
+  packing_preference text default 'Blind Packaging',
+  items jsonb not null default '[]'::jsonb,
+  status text default 'new',
+  tracking_carrier text,
+  tracking_number text,
+  tracking_message text,
+  shipping_notes text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Indices for api_orders
+create index if not exists api_orders_user_id_idx on public.api_orders (user_id);
+create index if not exists api_orders_key_id_idx on public.api_orders (api_key_id);
+create index if not exists api_orders_reseller_id_idx on public.api_orders (reseller_order_id);
+create index if not exists api_orders_status_idx on public.api_orders (status);
+
+-- Trigger for api_orders updated_at
+drop trigger if exists touch_api_orders_updated_at on public.api_orders;
+create trigger touch_api_orders_updated_at
+before update on public.api_orders
+for each row execute function public.touch_updated_at();
+
+-- Enable RLS on api_orders
+alter table public.api_orders enable row level security;
+drop policy if exists "api_orders insert public or authenticated" on public.api_orders;
+create policy "api_orders insert public or authenticated"
+  on public.api_orders for insert
+  with check (true);
+
+drop policy if exists "api_orders select public or authenticated" on public.api_orders;
+create policy "api_orders select public or authenticated"
+  on public.api_orders for select
+  using (true);
+
+drop policy if exists "api_orders update admin" on public.api_orders;
+create policy "api_orders update admin"
+  on public.api_orders for update
+  using (true);
+
+-- Create secure get_order_tracking database function to fetch tracking data by ID from api_orders, orders and inquiries
 DROP FUNCTION IF EXISTS public.get_order_tracking(uuid);
 CREATE OR REPLACE FUNCTION public.get_order_tracking(order_id uuid)
 RETURNS TABLE (
@@ -952,6 +1011,36 @@ SECURITY DEFINER
 AS $$
 BEGIN
   RETURN QUERY
+  SELECT 
+    a.id,
+    a.recipient_name AS buyer_name,
+    a.recipient_phone AS phone,
+    a.recipient_email AS email,
+    a.status,
+    a.tracking_carrier,
+    a.tracking_number,
+    a.tracking_message,
+    a.items,
+    a.shipping_notes AS message,
+    true AS is_dropship,
+    a.sender_name AS dropship_sender_name,
+    a.sender_phone AS dropship_sender_phone,
+    NULL::text AS dropship_sender_address,
+    NULL::text AS dropship_sender_city,
+    NULL::text AS dropship_sender_state,
+    NULL::text AS dropship_sender_pincode,
+    a.recipient_name AS dropship_recipient_name,
+    a.recipient_phone AS dropship_recipient_phone,
+    a.recipient_address AS dropship_recipient_address,
+    a.recipient_city AS dropship_recipient_city,
+    a.recipient_state AS dropship_recipient_state,
+    a.recipient_pincode AS dropship_recipient_pincode,
+    a.packing_preference AS dropship_packing_preference,
+    a.created_at,
+    a.updated_at
+  FROM public.api_orders a
+  WHERE a.id = order_id
+  UNION ALL
   SELECT 
     o.id,
     o.buyer_name,
