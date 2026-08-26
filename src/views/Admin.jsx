@@ -54,6 +54,7 @@ import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
 import AdminStockManager from './admin/AdminStockManager.jsx';
 
 import { storeConfig } from '../config.js';
+import { isVendorProfile } from '../utils/buyerAccess.js';
 
 // Import shared helpers and overlays
 import {
@@ -106,11 +107,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [reviewsFilter, setReviewsFilter] = useState('pending');
   const [reviewActionLoading, setReviewActionLoading] = useState(null);
 
-  // Vendor Onboarding sheets data
-  const [partnerApps, setPartnerApps] = useState({ reviews: [], onboardings: [], loading: false, error: null });
-  const [activeAgreement, setActiveAgreement] = useState(null);
-  const [updatingWhatsapp, setUpdatingWhatsapp] = useState(null);
-  const [localStatuses, setLocalStatuses] = useState({});
   const [lightboxImage, setLightboxImage] = useState(null);
   const [selectedUserList, setSelectedUserList] = useState(null);
 
@@ -277,120 +273,37 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }));
   }
 
-  // API Call: Fetch vendor registration sheets records
-  async function loadPartnerApplications() {
-    setPartnerApps(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const [revRes, onbRes] = await Promise.all([
-        fetch(`/api/vendor-registration?type=reviews&_t=${Date.now()}`),
-        fetch(`/api/vendor-registration?type=onboardings&_t=${Date.now()}`)
-      ]);
+  // API Call: Direct update for vendor profile attributes (vendor_code, approval_status, partner_name, price_group, etc.)
+  async function updateVendorProfile(profileId, updateData) {
+    if (!isSupabaseConfigured || !allowed || !profileId) return false;
 
-      if (!revRes.ok) throw new Error(`Product reviews load failed (Status: ${revRes.status})`);
-      if (!onbRes.ok) throw new Error(`Onboarding profiles load failed (Status: ${onbRes.status})`);
+    const update = {
+      ...updateData,
+      updated_at: new Date().toISOString(),
+    };
 
-      const [revData, onbData] = await Promise.all([
-        revRes.json(),
-        onbRes.json()
-      ]);
+    const { error } = await supabase
+      .from('profiles')
+      .update(update)
+      .eq('id', profileId);
 
-      if (revData.status !== 'success') throw new Error(revData.error || 'Reviews load failed');
-      if (onbData.status !== 'success') throw new Error(onbData.error || 'Onboardings load failed');
-
-      setPartnerApps({
-        reviews: revData.data || [],
-        onboardings: onbData.data || [],
-        loading: false,
-        error: null
-      });
-    } catch (err) {
-      console.error('[loadPartnerApplications] Error:', err);
-      setPartnerApps(prev => ({ ...prev, loading: false, error: err.message || 'Unknown network error.' }));
-    }
-  }
-
-  // API Call: Save spreadsheet partner application statuses
-  async function updateDatabaseApplicationStatus(action, whatsapp, statusVal) {
-    const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(-10);
-    setUpdatingWhatsapp(cleanWhatsapp);
-    try {
-      const response = await fetch('/api/vendor-registration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action,
-          whatsapp: cleanWhatsapp,
-          status: statusVal
-        })
-      });
-
-      const resData = await response.json();
-      if (response.ok && resData.status === 'success') {
-        setLocalStatuses(prev => ({
-          ...prev,
-          [cleanWhatsapp]: statusVal
-        }));
-        void loadPartnerApplications();
-        return true;
-      } else {
-        console.warn('Database update warning:', resData.error);
-        setLocalStatuses(prev => ({
-          ...prev,
-          [cleanWhatsapp]: statusVal
-        }));
-        return false;
-      }
-    } catch (err) {
-      console.error('[updateDatabaseApplicationStatus] Error:', err);
-      setLocalStatuses(prev => ({
-        ...prev,
-        [cleanWhatsapp]: statusVal
-      }));
+    if (error) {
+      alert(`Failed to update vendor profile: ${error.message}`);
       return false;
-    } finally {
-      setUpdatingWhatsapp(null);
     }
-  }
 
-  // API Call: Submit vendor Drive catalog URL
-  async function updateDatabaseDriveFolderUrl(whatsapp, driveUrl) {
-    const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(-10);
-    setUpdatingWhatsapp(cleanWhatsapp);
-    try {
-      const response = await fetch('/api/vendor-registration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'update_drive_url',
-          whatsapp: cleanWhatsapp,
-          drive_folder_url: driveUrl
-        })
-      });
+    setAdminData((current) => ({
+      ...current,
+      profiles: current.profiles.map((row) => (
+        row.id === profileId ? { ...row, ...update } : row
+      )),
+    }));
 
-      const resData = await response.json();
-      if (response.ok && resData.status === 'success') {
-        setPartnerApps(prev => ({
-          ...prev,
-          onboardings: prev.onboardings.map(o => {
-            const ws = String(o.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-            return ws === cleanWhatsapp ? { ...o, drive_folder_url: driveUrl } : o;
-          })
-        }));
-        return true;
-      } else {
-        console.warn('Database drive url update warning:', resData.error);
-        return false;
-      }
-    } catch (err) {
-      console.error('[updateDatabaseDriveFolderUrl] Error:', err);
-      return false;
-    } finally {
-      setUpdatingWhatsapp(null);
+    if (profileId === user?.id && onProfileChange) {
+      onProfileChange({ ...(buyerProfile || {}), ...update });
     }
+
+    return true;
   }
 
   // API Call: Fetch all service reviews for moderation
@@ -452,14 +365,11 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   }, [allowed, user?.id]);
 
   useEffect(() => {
-    if (activeTab === 'partners' && allowed) {
-      void loadPartnerApplications();
+    if ((activeTab === 'partners' || activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
+      void loadAdminData();
     }
     if (activeTab === 'reviews' && allowed) {
       void loadSiteReviews();
-    }
-    if ((activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
-      void loadAdminData();
     }
   }, [activeTab, allowed]);
 
@@ -675,19 +585,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           {activeTab === 'partners' && (
             <VendorApplications
               adminData={adminData}
-              partnerApps={partnerApps}
-              setPartnerApps={setPartnerApps}
-              loadPartnerApplications={loadPartnerApplications}
-              localStatuses={localStatuses}
-              setLocalStatuses={setLocalStatuses}
-              updatingWhatsapp={updatingWhatsapp}
-              setUpdatingWhatsapp={setUpdatingWhatsapp}
-              updateDatabaseApplicationStatus={updateDatabaseApplicationStatus}
-              updateDatabaseDriveFolderUrl={updateDatabaseDriveFolderUrl}
+              loadAdminData={loadAdminData}
               updateBuyerPriceAccess={updateBuyerPriceAccess}
-              setLightboxImage={setLightboxImage}
-              activeAgreement={activeAgreement}
-              setActiveAgreement={setActiveAgreement}
+              updateVendorProfile={updateVendorProfile}
+              products={products}
+              user={user}
+              buyerProfile={buyerProfile}
+              navigate={navigate}
+              setActiveTab={setActiveTab}
             />
           )}
 

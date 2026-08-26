@@ -9,22 +9,25 @@
  */
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
-import { applyAutoApprovalToBuyerProfile } from './buyerAccess.js';
+import { applyAutoApprovalToBuyerProfile, isVendorProfile } from './buyerAccess.js';
 
 export function profileRowFromUser(user) {
   const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile;
   if (!user?.id || !buyerProfile) return null;
 
+  const isVendor = isVendorProfile(buyerProfile) || user?.user_metadata?.role === 'vendor';
+
   return applyAutoApprovalToBuyerProfile({
     id: user.id,
     email: user.email || '',
-    full_name: buyerProfile.full_name || '',
+    full_name: buyerProfile.full_name || user.user_metadata?.full_name || '',
     whatsapp: buyerProfile.whatsapp || '',
     whatsapp_country_code: buyerProfile.whatsapp_country_code || '',
     whatsapp_number: buyerProfile.whatsapp_number || '',
     business_name: buyerProfile.business_name || '',
-    buyer_type: buyerProfile.buyer_type === 'vendor' ? 'vendor' : 'customer',
-    buyer_subtype: buyerProfile.buyer_subtype || '',
+    buyer_type: isVendor ? 'vendor' : 'customer',
+    buyer_subtype: buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : 'Customer'),
+    role: isVendor ? 'vendor' : (buyerProfile.role || 'customer'),
     vendor_code: buyerProfile.vendor_code || '',
     partner_name: buyerProfile.partner_name || '',
     buying_behavior: buyerProfile.buying_behavior || 'instant',

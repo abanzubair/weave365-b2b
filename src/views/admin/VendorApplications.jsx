@@ -1,1067 +1,1438 @@
-import { useState, useMemo, useEffect } from 'react';
+/**
+ * @file VendorApplications.jsx
+ * @description Modern Vendor Onboarding & Loom Management Portal for Weave365 Admin.
+ * Displays all registered artisan weavers & vendor partners, assigns unique Loom Codes (V01, V02...),
+ * inspects contact & location data, coordinates inventory catalog sync, and allows bulk toggling
+ * (enable / disable) of all products belonging to a vendor.
+ *
+ * @module views/admin/VendorApplications
+ */
+
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
+  Store,
   Users,
-  Award,
-  Check,
-  ClipboardList,
-  RefreshCw,
-  Eye,
-  Phone,
+  Boxes,
   Copy,
-  FileText,
+  Check,
+  Search,
+  RefreshCw,
+  Phone,
+  MapPin,
+  Tag,
+  ExternalLink,
+  Plus,
+  Edit3,
+  FileSpreadsheet,
+  PackageCheck,
+  Layers,
+  Eye,
+  EyeOff,
+  Power,
 } from 'lucide-react';
-import { PRICE_GROUPS } from '../../utils/buyerAccess.js';
+import { PRICE_GROUPS, isVendorProfile } from '../../utils/buyerAccess.js';
 import {
-  handleViewAgreement,
-} from './AdminShared.jsx';
+  getVendorStockLocal,
+  batchSaveVendorStock,
+  VENDOR_STOCK_UPDATED_EVENT,
+} from '../../utils/vendorStockService.js';
+import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
+
+function toTitleCase(str) {
+  if (!str) return '';
+  return String(str)
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function formatDate(dateInput) {
+  if (!dateInput) return 'N/A';
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return 'N/A';
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return 'N/A';
+  }
+}
+
+function getRelativeTime(dateInput) {
+  if (!dateInput) return '';
+  try {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    const diffMs = Date.now() - d.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 24) {
+      if (diffHours <= 0) return 'Just now';
+      return `${diffHours}h ago`;
+    }
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return '';
+  } catch {
+    return '';
+  }
+}
+
+function cleanPhoneDigits(phone) {
+  return String(phone || '').replace(/\D/g, '').slice(-10);
+}
+
+function normalizeVendorCode(vid) {
+  if (!vid || vid === 'all' || vid === 'N/A') return '';
+  const clean = String(vid).trim();
+  const digits = clean.replace(/\D/g, '');
+  if (!digits) return clean.toUpperCase();
+  return `V${digits.padStart(2, '0')}`;
+}
 
 export default function VendorApplications({
   adminData,
-  partnerApps,
-  setPartnerApps,
-  loadPartnerApplications,
-  localStatuses,
-  setLocalStatuses,
-  updatingWhatsapp,
-  setUpdatingWhatsapp,
-  updateDatabaseApplicationStatus,
-  updateDatabaseDriveFolderUrl,
-  updateBuyerPriceAccess,
-  setLightboxImage,
-  activeAgreement,
-  setActiveAgreement,
+  loadAdminData,
+  updateVendorProfile,
+  products = [],
+  user,
+  setActiveTab,
 }) {
-  const [partnerSubTab, setPartnerSubTab] = useState('reviews');
-  const [partnerSearchQuery, setPartnerSearchQuery] = useState('');
-  const [partnerSortField, setPartnerSortField] = useState('date');
-  const [partnerSortOrder, setPartnerSortOrder] = useState('desc');
-  const [selectedReview, setSelectedReview] = useState(null);
-  const [selectedOnboarding, setSelectedOnboarding] = useState(null);
+  // Local state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [codeFilter, setCodeFilter] = useState('all'); // 'all' | 'assigned' | 'unassigned'
+  const [sortField, setSortField] = useState('date'); // 'date' | 'name' | 'business' | 'city' | 'code'
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' | 'asc'
+
+  // Live stock overrides map
+  const [stockOverrides, setStockOverrides] = useState(() => getVendorStockLocal());
+  const [togglingVendorId, setTogglingVendorId] = useState(null);
+
+  // Selected vendor for full inspector modal
+  const [inspectVendor, setInspectVendor] = useState(null);
+
+  // Quick Code Assign Popover / Modal state
+  const [quickCodeVendor, setQuickCodeVendor] = useState(null);
+  const [quickCodeInput, setQuickCodeInput] = useState('');
+
+  // Editing state inside inspector
+  const [editingCode, setEditingCode] = useState('');
+  const [editingPartnerName, setEditingPartnerName] = useState('');
+  const [savingAction, setSavingAction] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Reset sort key when switching sub-tabs to prevent invalid fields
+  // Sync live stock updates
   useEffect(() => {
-    if (partnerSubTab === 'reviews' && partnerSortField === 'business') {
-      setPartnerSortField('date');
-    }
-  }, [partnerSubTab, partnerSortField]);
+    const handleStockUpdate = (e) => {
+      if (e.detail) setStockOverrides(e.detail);
+      else setStockOverrides(getVendorStockLocal());
+    };
+    window.addEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+    return () => window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+  }, []);
 
-  // Load active candidate's signed agreement on demand (Step 1 Review or Step 3 Onboarding)
-  useEffect(() => {
-    const candidate = selectedOnboarding || selectedReview;
-    if (candidate) {
-      const cleanWhatsapp = String(candidate.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-      void fetch(`/api/vendor-registration?whatsapp=${cleanWhatsapp}`)
-        .then(res => res.json())
-        .then(resData => {
-          if (resData.status === 'success' && resData.agreement) {
-            setActiveAgreement(resData.agreement);
-          } else {
-            setActiveAgreement(null);
-          }
-        })
-        .catch(() => setActiveAgreement(null));
-    } else {
-      setActiveAgreement(null);
-    }
-  }, [selectedOnboarding, selectedReview, setActiveAgreement]);
+  // Extract all vendor profiles
+  const allVendors = useMemo(() => {
+    const profiles = adminData?.profiles || [];
+    return profiles.filter(isVendorProfile);
+  }, [adminData?.profiles]);
 
-  const handleCopy = (text, fieldName) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopyFeedback(prev => ({ ...prev, [fieldName]: true }));
-    setTimeout(() => {
-      setCopyFeedback(prev => ({ ...prev, [fieldName]: false }));
-    }, 2000);
-  };
+  // Helper to compute vendor product status & counts
+  const getVendorProductsInfo = useCallback(
+    (vendorCode) => {
+      if (!vendorCode) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
+      const code = normalizeVendorCode(vendorCode);
+      if (!code) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
 
-  const filteredReviews = useMemo(() => {
-    const filtered = partnerApps.reviews.filter(rev => {
-      if (!rev) return false;
-      const query = partnerSearchQuery.toLowerCase().trim();
-      if (!query) return true;
-      return (
-        String(rev.created_at || '').toLowerCase().includes(query) ||
-        String(rev.full_name || '').toLowerCase().includes(query) ||
-        String(rev.whatsapp_number || '').toLowerCase().includes(query) ||
-        String(rev.city || '').toLowerCase().includes(query) ||
-        String(rev.pincode || '').toLowerCase().includes(query) ||
-        String(rev.categories || '').toLowerCase().includes(query) ||
-        String(rev.price_range || '').toLowerCase().includes(query) ||
-        String(rev.status || '').toLowerCase().includes(query)
-      );
-    });
+      const vendorProds = (products || []).filter((p) => {
+        const pVid = normalizeVendorCode(p.vendorCode || p.raw?.VID || p.raw?.vid || p.vendor || '');
+        return pVid === code;
+      });
 
-    return [...filtered].sort((a, b) => {
-      let valA, valB;
-      if (partnerSortField === 'name') {
-        valA = String(a.full_name || '').toLowerCase();
-        valB = String(b.full_name || '').toLowerCase();
-      } else if (partnerSortField === 'city') {
-        valA = String(a.city || '').toLowerCase();
-        valB = String(b.city || '').toLowerCase();
-      } else if (partnerSortField === 'status') {
-        const wsA = String(a.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        const wsB = String(b.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        valA = String(localStatuses[wsA] || a.status || 'pending').toLowerCase();
-        valB = String(localStatuses[wsB] || b.status || 'pending').toLowerCase();
-      } else {
-        valA = new Date(a.created_at || 0).getTime();
-        valB = new Date(b.created_at || 0).getTime();
-      }
+      let disabledCount = 0;
+      vendorProds.forEach((p) => {
+        const key = p.id || p.groupKey;
+        const ov = stockOverrides[key];
+        const status = ov ? ov.stockStatus : (p.stockStatus || (p.isOutOfStock ? 'out-of-stock' : 'ready-stock'));
+        if (status === 'out-of-stock') disabledCount += 1;
+      });
 
-      if (valA < valB) return partnerSortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return partnerSortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [partnerApps.reviews, partnerSearchQuery, partnerSortField, partnerSortOrder, localStatuses]);
+      const total = vendorProds.length;
+      const activeCount = total - disabledCount;
+      const allDisabled = total > 0 && disabledCount === total;
 
-  const filteredOnboardings = useMemo(() => {
-    const filtered = partnerApps.onboardings.filter(onb => {
-      if (!onb) return false;
-      const query = partnerSearchQuery.toLowerCase().trim();
-      if (!query) return true;
-      return (
-        String(onb.created_at || '').toLowerCase().includes(query) ||
-        String(onb.full_name || '').toLowerCase().includes(query) ||
-        String(onb.whatsapp_number || '').toLowerCase().includes(query) ||
-        String(onb.email || '').toLowerCase().includes(query) ||
-        String(onb.business_name || '').toLowerCase().includes(query) ||
-        String(onb.business_type || '').toLowerCase().includes(query) ||
-        String(onb.city || '').toLowerCase().includes(query) ||
-        String(onb.gst_number || '').toLowerCase().includes(query) ||
-        String(onb.pan_number || '').toLowerCase().includes(query) ||
-        String(onb.fabric_specialisation || '').toLowerCase().includes(query) ||
-        String(onb.bank_name || '').toLowerCase().includes(query)
-      );
-    });
+      return {
+        products: vendorProds,
+        total,
+        disabledCount,
+        activeCount,
+        allDisabled,
+      };
+    },
+    [products, stockOverrides]
+  );
 
-    return [...filtered].sort((a, b) => {
-      let valA, valB;
-      if (partnerSortField === 'name') {
-        valA = String(a.full_name || '').toLowerCase();
-        valB = String(b.full_name || '').toLowerCase();
-      } else if (partnerSortField === 'business') {
-        valA = String(a.business_name || '').toLowerCase();
-        valB = String(b.business_name || '').toLowerCase();
-      } else if (partnerSortField === 'city') {
-        valA = String(a.city || '').toLowerCase();
-        valB = String(b.city || '').toLowerCase();
-      } else if (partnerSortField === 'status') {
-        const wsA = String(a.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        const wsB = String(b.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        valA = String(localStatuses[wsA] || a.status || 'submitted').toLowerCase();
-        valB = String(localStatuses[wsB] || b.status || 'submitted').toLowerCase();
-      } else {
-        valA = new Date(a.created_at || 0).getTime();
-        valB = new Date(b.created_at || 0).getTime();
-      }
-
-      if (valA < valB) return partnerSortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return partnerSortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [partnerApps.onboardings, partnerSearchQuery, partnerSortField, partnerSortOrder, localStatuses]);
-
-  const handleExportCSV = () => {
-    const isReviews = partnerSubTab === 'reviews';
-    const data = isReviews ? filteredReviews : filteredOnboardings;
-    if (!data || data.length === 0) {
-      alert('No records available to export.');
+  // Toggle all products for a vendor between Active (ready-stock) and Disabled (out-of-stock)
+  const handleToggleAllVendorProducts = async (vendor) => {
+    if (!vendor?.vendor_code || togglingVendorId) return;
+    const info = getVendorProductsInfo(vendor.vendor_code);
+    if (info.total === 0) {
+      alert(`No catalog products currently found with Loom Code ${vendor.vendor_code}.`);
       return;
     }
 
-    let headers = [];
-    let rows = [];
+    const shouldDisable = !info.allDisabled;
+    const newStatus = shouldDisable ? 'out-of-stock' : 'ready-stock';
+    const vendorName = vendor.business_name || vendor.full_name || 'Vendor';
 
-    if (isReviews) {
-      headers = [
-        'Date Submitted',
-        'Applicant Name',
-        'WhatsApp Number',
-        'City',
-        'Pincode',
-        'Categories',
-        'Price Range',
-        'Status',
-        'Sample Image 1',
-        'Sample Image 2',
-        'Sample Image 3',
-        'Sample Image 4'
-      ];
-      rows = data.map(rev => {
-        const ws = String(rev.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        const st = localStatuses[ws] || rev.status || 'pending';
-        return [
-          rev.created_at || '',
-          rev.full_name || '',
-          rev.whatsapp_number || '',
-          rev.city || '',
-          rev.pincode || '',
-          rev.categories || '',
-          rev.price_range || '',
-          st,
-          rev.image1 || '',
-          rev.image2 || '',
-          rev.image3 || '',
-          rev.image4 || ''
-        ];
-      });
-    } else {
-      headers = [
-        'Date Submitted',
-        'Proprietor Name',
-        'Business Legal Name',
-        'Business Role',
-        'WhatsApp Number',
-        'Alternate Contact',
-        'Email Address',
-        'GST Number',
-        'PAN Number',
-        'Business Address',
-        'City',
-        'Pincode',
-        'Years in Business',
-        'Fabric Specialisations',
-        'Monthly Capacity',
-        'Dispatch Timeline',
-        'Preferred Courier',
-        'Dispatch Address Same',
-        'Dispatch Address Different',
-        'Bank Account Holder',
-        'Bank Name',
-        'Bank Account Number',
-        'Bank IFSC',
-        'UPI ID',
-        'ID Proof URL',
-        'Cancelled Cheque URL',
-        'Status'
-      ];
-      rows = data.map(onb => {
-        const ws = String(onb.whatsapp_number || '').replace(/\D/g, '').slice(-10);
-        const st = localStatuses[ws] || onb.status || 'submitted';
-        return [
-          onb.created_at || '',
-          onb.full_name || '',
-          onb.business_name || '',
-          onb.business_type || '',
-          onb.whatsapp_number || '',
-          onb.alternate_contact || '',
-          onb.email || '',
-          onb.gst_number || '',
-          onb.pan_number || '',
-          onb.business_address || '',
-          onb.city || '',
-          onb.pincode || '',
-          onb.years_in_business || '',
-          onb.fabric_specialisation || '',
-          onb.monthly_capacity || '',
-          onb.dispatch_timeline || '',
-          onb.preferred_courier || '',
-          onb.dispatch_address_same || '',
-          onb.dispatch_address_different || '',
-          onb.bank_account_holder || '',
-          onb.bank_name || '',
-          onb.bank_account_number || '',
-          onb.bank_ifsc || '',
-          onb.upi_id || '',
-          onb.id_proof_url || '',
-          onb.cancelled_cheque_url || '',
-          st
-        ];
-      });
-    }
+    const confirmMsg = shouldDisable
+      ? `Are you sure you want to DISABLE all ${info.total} products for "${vendorName}"?\n\nThey will be marked Out of Stock across the wholesale catalog immediately.`
+      : `Are you sure you want to ENABLE all ${info.total} products for "${vendorName}"?\n\nThey will be marked Ready Stock and available across the storefront immediately.`;
 
-    const escapeCSV = (val) => {
-      const str = String(val === null || val === undefined ? '' : val);
-      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
+    if (!window.confirm(confirmMsg)) return;
 
-    const csvContent = [
-      headers.map(escapeCSV).join(','),
-      ...rows.map(row => row.map(escapeCSV).join(','))
-    ].join('\r\n');
-
+    setTogglingVendorId(vendor.id);
     try {
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const filename = `Weave365_Vendor_${isReviews ? 'Reviews' : 'Onboardings'}_${new Date().toISOString().split('T')[0]}.csv`;
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const items = info.products.map((p) => ({
+        productId: p.id || p.groupKey,
+        vendorCode: vendor.vendor_code,
+        vendorName: vendor.business_name || vendor.full_name || '',
+      }));
+
+      const res = await batchSaveVendorStock({
+        items,
+        stockStatus: newStatus,
+        userId: user?.id,
+        userName: user?.email || 'Admin',
+      });
+
+      if (res?.success) {
+        setStockOverrides(getVendorStockLocal());
+        handleCopy(
+          `✓ ${shouldDisable ? 'Disabled' : 'Enabled'} all ${info.total} products!`,
+          `toggle_${vendor.id}`
+        );
+      }
     } catch (err) {
-      console.error('Failed to export CSV file:', err);
-      alert('Failed to generate export file. Check console logs for details.');
+      console.error('Error toggling vendor products:', err);
+      alert('Failed to update product availability.');
+    } finally {
+      setTogglingVendorId(null);
     }
   };
 
+  // Extract distinct category options across all registered vendors
+  const allCategoryOptions = useMemo(() => {
+    const set = new Set();
+    allVendors.forEach((v) => {
+      if (Array.isArray(v.interested_categories)) {
+        v.interested_categories.forEach((cat) => {
+          if (cat && typeof cat === 'string') set.add(cat.trim());
+        });
+      } else if (typeof v.interested_categories === 'string' && v.interested_categories) {
+        v.interested_categories.split(',').forEach((cat) => {
+          if (cat) set.add(cat.trim());
+        });
+      }
+    });
+    return Array.from(set).sort();
+  }, [allVendors]);
+
+  // Metrics KPI calculations
+  const metrics = useMemo(() => {
+    const total = allVendors.length;
+    let withCode = 0;
+    let withoutCode = 0;
+
+    allVendors.forEach((v) => {
+      if (v.vendor_code && v.vendor_code.trim()) {
+        withCode += 1;
+      } else {
+        withoutCode += 1;
+      }
+    });
+
+    return { total, withCode, withoutCode };
+  }, [allVendors]);
+
+  // Filtered and Sorted Vendors
+  const filteredVendors = useMemo(() => {
+    let list = [...allVendors];
+
+    // Category filter
+    if (categoryFilter !== 'all') {
+      list = list.filter((v) => {
+        const cats = Array.isArray(v.interested_categories)
+          ? v.interested_categories
+          : String(v.interested_categories || '').split(',');
+        return cats.some((c) => String(c).trim().toLowerCase() === categoryFilter.toLowerCase());
+      });
+    }
+
+    // Loom Code filter
+    if (codeFilter === 'assigned') {
+      list = list.filter((v) => Boolean(v.vendor_code && v.vendor_code.trim()));
+    } else if (codeFilter === 'unassigned') {
+      list = list.filter((v) => !v.vendor_code || !v.vendor_code.trim());
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((v) => {
+        const name = String(v.full_name || '').toLowerCase();
+        const bName = String(v.business_name || '').toLowerCase();
+        const email = String(v.email || '').toLowerCase();
+        const phone = String(v.whatsapp || v.whatsapp_number || '').toLowerCase();
+        const city = String(v.city || '').toLowerCase();
+        const state = String(v.state || '').toLowerCase();
+        const pin = String(v.pincode || '').toLowerCase();
+        const code = String(v.vendor_code || '').toLowerCase();
+        const partner = String(v.partner_name || '').toLowerCase();
+        const cats = Array.isArray(v.interested_categories)
+          ? v.interested_categories.join(' ').toLowerCase()
+          : String(v.interested_categories || '').toLowerCase();
+
+        return (
+          name.includes(q) ||
+          bName.includes(q) ||
+          email.includes(q) ||
+          phone.includes(q) ||
+          city.includes(q) ||
+          state.includes(q) ||
+          pin.includes(q) ||
+          code.includes(q) ||
+          partner.includes(q) ||
+          cats.includes(q)
+        );
+      });
+    }
+
+    // Sorting
+    return list.sort((a, b) => {
+      let valA, valB;
+      if (sortField === 'name') {
+        valA = String(a.full_name || '').toLowerCase();
+        valB = String(b.full_name || '').toLowerCase();
+      } else if (sortField === 'business') {
+        valA = String(a.business_name || a.full_name || '').toLowerCase();
+        valB = String(b.business_name || b.full_name || '').toLowerCase();
+      } else if (sortField === 'city') {
+        valA = String(a.city || '').toLowerCase();
+        valB = String(b.city || '').toLowerCase();
+      } else if (sortField === 'code') {
+        valA = String(a.vendor_code || '').toLowerCase();
+        valB = String(b.vendor_code || '').toLowerCase();
+      } else {
+        // 'date'
+        valA = new Date(a.created_at || a.updated_at || 0).getTime();
+        valB = new Date(b.created_at || b.updated_at || 0).getTime();
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [allVendors, categoryFilter, codeFilter, searchQuery, sortField, sortOrder]);
+
+  // Handle Refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (loadAdminData) {
+      await loadAdminData();
+    }
+    setRefreshing(false);
+  };
+
+  // Handle copy text with toast feedback
+  const handleCopy = (text, key) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopyFeedback((prev) => ({ ...prev, [key]: true }));
+    setTimeout(() => {
+      setCopyFeedback((prev) => ({ ...prev, [key]: false }));
+    }, 2000);
+  };
+
+  // Handle Copy Vendor Signup Link
+  const handleCopySignupLink = () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+    const link = `${origin}/signup?type=vendor`;
+    handleCopy(link, 'signup_link');
+  };
+
+  // Export Vendors to CSV
+  const handleExportCSV = () => {
+    if (!filteredVendors || filteredVendors.length === 0) {
+      alert('No vendors available to export.');
+      return;
+    }
+
+    const headers = [
+      'Registration Date',
+      'Proprietor Name',
+      'Business / Workshop Name',
+      'Email',
+      'WhatsApp Phone',
+      'City',
+      'State',
+      'Pincode',
+      'Specialties',
+      'Sourcing Model',
+      'Loom / Vendor Code',
+      'Partner Label',
+      'Total Products',
+      'Active Products',
+      'Disabled Products',
+    ];
+
+    const rows = filteredVendors.map((v) => {
+      const cats = Array.isArray(v.interested_categories)
+        ? v.interested_categories.join(', ')
+        : String(v.interested_categories || '');
+      const prodInfo = getVendorProductsInfo(v.vendor_code);
+      return [
+        v.created_at || v.updated_at || '',
+        toTitleCase(v.full_name),
+        v.business_name || '',
+        v.email || '',
+        v.whatsapp || v.whatsapp_number || '',
+        v.city || '',
+        v.state || '',
+        v.pincode || '',
+        `"${cats.replace(/"/g, '""')}"`,
+        v.buying_behavior || '',
+        v.vendor_code || '',
+        v.partner_name || '',
+        prodInfo.total,
+        prodInfo.activeCount,
+        prodInfo.disabledCount,
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Weave365_Vendors_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Open full details modal for a vendor
+  const handleInspectVendor = (vendor) => {
+    setInspectVendor(vendor);
+    setEditingCode(vendor.vendor_code || '');
+    setEditingPartnerName(vendor.partner_name || '');
+  };
+
+  // Save Code & Partner Name inside Inspector
+  const handleSaveInspectorDetails = async () => {
+    if (!inspectVendor || savingAction) return;
+    setSavingAction(true);
+    try {
+      const cleanCode = editingCode.trim().toUpperCase();
+      const cleanPartner = editingPartnerName.trim();
+
+      const success = await updateVendorProfile(inspectVendor.id, {
+        vendor_code: cleanCode,
+        partner_name: cleanPartner,
+      });
+
+      if (success) {
+        setInspectVendor((prev) => ({
+          ...prev,
+          vendor_code: cleanCode,
+          partner_name: cleanPartner,
+        }));
+        handleCopy('Saved successfully!', 'inspector_save');
+      }
+    } catch (err) {
+      console.error('Error saving vendor details:', err);
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+  // Quick Code Assign save
+  const handleSaveQuickCode = async () => {
+    if (!quickCodeVendor || savingAction) return;
+    setSavingAction(true);
+    try {
+      const cleanCode = quickCodeInput.trim().toUpperCase();
+      const success = await updateVendorProfile(quickCodeVendor.id, {
+        vendor_code: cleanCode,
+      });
+      if (success) {
+        setQuickCodeVendor(null);
+        setQuickCodeInput('');
+      }
+    } catch (err) {
+      console.error('Error saving quick code:', err);
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+  // Linked products info for currently inspected vendor
+  const inspectedVendorProductsInfo = useMemo(() => {
+    if (!inspectVendor?.vendor_code) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
+    return getVendorProductsInfo(inspectVendor.vendor_code);
+  }, [inspectVendor?.vendor_code, getVendorProductsInfo]);
+
   return (
     <div className="admin-partners-tab">
-      {/* Spinner Overlay */}
-      {updatingWhatsapp && (
-        <div className="admin-spinner-overlay">
-          <RefreshCw size={42} className="spin" style={{ color: 'var(--primary)' }} />
-          <span className="admin-spinner-text">Updating Database Status...</span>
-        </div>
-      )}
-
-      {/* Header Dashboard Banner */}
+      {/* 1. Header Dashboard Banner */}
       <div className="admin-partners-banner">
         <div className="admin-sync-content">
           <div className="admin-partners-banner-icon-wrap">
-            <ClipboardList size={26} />
+            <Store size={26} />
           </div>
           <div>
-            <h2 className="admin-partners-banner-title">Partner Applications Portal</h2>
+            <h2 className="admin-partners-banner-title">Vendor & Artisan Management</h2>
             <p className="admin-partners-banner-desc">
-              Verify signed merchant agreements and onboarding details for supplier partners.
+              Manage registered artisan suppliers, assign Loom Codes (V01, V02...), and toggle website product availability.
             </p>
           </div>
         </div>
+
         <div className="admin-flex-gap12">
           <button
             type="button"
             className="admin-btn-refresh-partners"
-            onClick={loadPartnerApplications}
-            disabled={partnerApps.loading}
+            onClick={handleCopySignupLink}
+            title="Copy link to vendor registration form"
           >
-            <RefreshCw size={14} className={partnerApps.loading ? 'spin' : ''} />
-            Refresh Applications
+            {copyFeedback.signup_link ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+            <span>{copyFeedback.signup_link ? 'Link Copied!' : 'Copy Signup Link'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="admin-btn-refresh-partners"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
+            <span>{refreshing ? 'Refreshing...' : 'Refresh Vendors'}</span>
           </button>
         </div>
       </div>
 
-      {/* Mini-Metrics Analytics Panel */}
+      {/* 2. Mini-Metrics KPI Grid */}
       <div className="admin-partners-metrics-grid">
         <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-orange">
-            <Users size={20} />
+          <div className="admin-partner-icon-blue">
+            <Users size={22} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Basic Partner Reviews</span>
+            <span className="admin-partner-metric-label">Total Registered Vendors</span>
             <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{partnerApps.reviews.length}</strong>
-              <span className="admin-partner-status-orange">
-                {partnerApps.reviews.filter(r => {
-                  const ws = r.whatsapp_number?.replace(/\D/g, '').slice(-10);
-                  const st = localStatuses[ws] || r.status || 'pending';
-                  return st.toLowerCase().includes('pend');
-                }).length} Pending review
+              <strong className="admin-partner-metric-value">{metrics.total}</strong>
+              <span className="admin-partner-status-blue">Partner Accounts</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-partner-metric-card">
+          <div className="admin-partner-icon-purple" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+            <PackageCheck size={22} />
+          </div>
+          <div className="admin-flex1">
+            <span className="admin-partner-metric-label">Loom Codes Assigned</span>
+            <div className="admin-partner-metric-values">
+              <strong className="admin-partner-metric-value">{metrics.withCode}</strong>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#7c3aed' }}>
+                {metrics.total > 0 ? `${Math.round((metrics.withCode / metrics.total) * 100)}% Linked` : '0%'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="admin-partner-metric-card">
-          <div className="admin-partner-icon-blue">
-            <Award size={20} />
+          <div className="admin-partner-icon-orange" style={{ background: '#fffbeb', color: '#b45309' }}>
+            <Boxes size={22} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Full Partner Onboardings</span>
+            <span className="admin-partner-metric-label">Pending Loom Code</span>
             <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">{partnerApps.onboardings.length}</strong>
-              <span className="admin-partner-status-blue">
-                {partnerApps.onboardings.filter(o => {
-                  const ws = o.whatsapp_number?.replace(/\D/g, '').slice(-10);
-                  const st = localStatuses[ws] || o.status || 'submitted';
-                  return st.toLowerCase().includes('pend') || st.toLowerCase().includes('submit');
-                }).length} Pending approval
-              </span>
+              <strong className="admin-partner-metric-value">{metrics.withoutCode}</strong>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#b45309' }}>Needs V-Code</span>
             </div>
           </div>
         </div>
 
         <div className="admin-partner-metric-card">
           <div className="admin-partner-icon-green">
-            <Check size={20} />
+            <Layers size={22} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Supabase Linked Rate</span>
+            <span className="admin-partner-metric-label">Specialties Covered</span>
             <div className="admin-partner-metric-values">
-              <strong className="admin-partner-metric-value">
-                {Math.round(
-                  (partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length /
-                    Math.max(1, partnerApps.onboardings.length)) * 100
-                )}%
-              </strong>
-              <span className="admin-partner-status-green">
-                {partnerApps.onboardings.filter(o => adminData.profiles.some(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === o.whatsapp_number?.replace(/\D/g, '').slice(-10))).length} profiles synchronized
-              </span>
+              <strong className="admin-partner-metric-value">{allCategoryOptions.length}</strong>
+              <span className="admin-partner-status-green">Handloom Categories</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filtering and Search Strip */}
+      {/* 3. Filtering & Search Toolbar */}
       <div className="admin-partners-filter-strip">
-        <div className="admin-flex-gap8">
-          <button
-            type="button"
-            onClick={() => setPartnerSubTab('reviews')}
-            className={`admin-partner-subtab-btn ${partnerSubTab === 'reviews' ? 'active' : ''}`}
-          >
-            Basic Information ({filteredReviews.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setPartnerSubTab('onboardings')}
-            className={`admin-partner-subtab-btn ${partnerSubTab === 'onboardings' ? 'active' : ''}`}
-          >
-            Full Onboarding Profiles ({filteredOnboardings.length})
-          </button>
-        </div>
-
-        <div className="admin-flex-align-center-gap8">
-          <span className="admin-partner-sort-label">Sort:</span>
-          <select
-            value={partnerSortField}
-            onChange={(e) => setPartnerSortField(e.target.value)}
-            className="admin-select-input"
-          >
-            <option value="date">Date Submitted</option>
-            <option value="name">Proprietor Name</option>
-            {partnerSubTab === 'onboardings' && (
-              <option value="business">Business Name</option>
-            )}
-            <option value="city">City / Pincode</option>
-            <option value="status">Application Status</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => setPartnerSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-            className="admin-btn-toggle"
-          >
-            {partnerSortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
-          </button>
-        </div>
-
-        <div className="admin-flex-align-center-gap12">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="admin-btn-export-excel"
-          >
-            Export Excel 📥
-          </button>
-
-          <div className="admin-search-wrapper">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, flexWrap: 'wrap' }}>
+          {/* Search Box */}
+          <div className="admin-search-wrapper" style={{ flex: '1 1 240px', minWidth: '220px' }}>
+            <Search size={15} className="admin-search-icon" />
             <input
               type="text"
-              placeholder="Search name, phone, city, fabric..."
-              value={partnerSearchQuery}
-              onChange={(e) => setPartnerSearchQuery(e.target.value)}
+              placeholder="Search vendor, phone, loom code, city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="admin-search-input"
             />
-            <span className="admin-search-icon">🔍</span>
-            {partnerSearchQuery && (
+            {searchQuery && (
               <button
                 type="button"
-                onClick={() => setPartnerSearchQuery('')}
-                className="admin-search-clear-btn"
+                className="admin-search-clear"
+                onClick={() => setSearchQuery('')}
               >
                 ×
               </button>
             )}
           </div>
+
+          {/* Category Filter */}
+          {allCategoryOptions.length > 0 && (
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="admin-select-input"
+              aria-label="Filter by specialty"
+            >
+              <option value="all">All Specialties ({allCategoryOptions.length})</option>
+              {allCategoryOptions.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Loom Code Filter */}
+          <select
+            value={codeFilter}
+            onChange={(e) => setCodeFilter(e.target.value)}
+            className="admin-select-input"
+            aria-label="Filter by loom code"
+          >
+            <option value="all">All Loom Codes</option>
+            <option value="assigned">Assigned Code (V01, V02...)</option>
+            <option value="unassigned">Unassigned Code</option>
+          </select>
+
+          {/* Sort Controls */}
+          <div className="admin-flex-align-center-gap8">
+            <span className="admin-partner-sort-label">Sort:</span>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              className="admin-select-input"
+              aria-label="Sort by field"
+            >
+              <option value="date">Date Registered</option>
+              <option value="name">Vendor Name</option>
+              <option value="business">Business Name</option>
+              <option value="city">City / Location</option>
+              <option value="code">Vendor Code</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+              className="admin-btn-toggle"
+              title={`Sort order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+            >
+              {sortOrder === 'asc' ? '▲ Asc' : '▼ Desc'}
+            </button>
+          </div>
         </div>
+
+        {/* Export CSV Button */}
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="admin-btn-doc-badge"
+          style={{ background: '#059669', color: '#ffffff', borderColor: '#047857' }}
+          title="Download complete vendor directory as CSV"
+        >
+          <FileSpreadsheet size={14} />
+          <span>Export CSV</span>
+        </button>
       </div>
 
-      {/* Main Applications Render */}
-      {partnerApps.loading ? (
-        <div className="admin-partners-loading">
-          <RefreshCw size={42} className="spin" style={{ color: 'var(--primary)' }} />
-          <span>Fetching live application records...</span>
-        </div>
-      ) : partnerApps.error ? (
-        <div className="admin-partners-error">
-          <strong>⚠️ Spreadsheet Proxy Connection Error:</strong>
-          <p>{partnerApps.error}</p>
-        </div>
-      ) : partnerSubTab === 'reviews' ? (
-        /* Basic Information Reviews */
-        <article className="admin-panel admin-m0">
-          <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-            <span>Basic Partner Review Submissions</span>
-            <small>{filteredReviews.length} records matching</small>
-          </div>
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
+      {/* 4. Vendors Directory Table */}
+      <div className="pipeline-table-container">
+        <div className="admin-table-wrap">
+          <table className="admin-table pipeline-table">
+            <thead>
+              <tr>
+                <th style={{ width: '110px' }}>Date</th>
+                <th style={{ minWidth: '180px' }}>Vendor / Workshop</th>
+                <th style={{ minWidth: '160px' }}>WhatsApp Contact</th>
+                <th style={{ minWidth: '140px' }}>Location</th>
+                <th style={{ minWidth: '150px' }}>Specialty & Model</th>
+                <th style={{ width: '120px' }}>Loom Code</th>
+                <th style={{ minWidth: '160px', textAlign: 'center' }}>Catalog Products</th>
+                <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVendors.length === 0 ? (
                 <tr>
-                  <th>Date</th>
-                  <th>Applicant Name</th>
-                  <th>WhatsApp Contact</th>
-                  <th>Location</th>
-                  <th>Categories</th>
-                  <th>Price Range</th>
-                  <th>Status</th>
-                  <th>Inspect & Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredReviews.map((rev, idx) => {
-                  const appWhatsapp = rev.whatsapp_number || '';
-                  const cleanWhatsapp = appWhatsapp.replace(/\D/g, '').slice(-10);
-                  const currentStatus = localStatuses[cleanWhatsapp] || rev.status || 'pending';
-
-                  return (
-                    <tr
-                      key={rev.id || idx}
-                      style={{
-                        borderLeft: currentStatus.toLowerCase().includes('approv')
-                          ? '3px solid #16a34a'
-                          : currentStatus.toLowerCase().includes('reject')
-                            ? '3px solid #dc2626'
-                            : '3px solid #ea580c'
-                      }}
-                    >
-                      <td className="admin-fs12">{rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</td>
-                      <td><strong>{rev.full_name}</strong></td>
-                      <td>
-                        <div className="admin-flex-align-center-gap6">
-                          <strong>{appWhatsapp}</strong>
-                          <a
-                            href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="admin-wa-icon-link"
-                          >
-                            <Phone size={11} />
-                          </a>
-                        </div>
-                      </td>
-                      <td>{rev.city}{rev.pincode ? `, PIN ${rev.pincode}` : ''}</td>
-                      <td>
-                        <span className="admin-category-span">{rev.categories}</span>
-                      </td>
-                      <td className="admin-fs12">{rev.price_range}</td>
-                      <td>
-                        <span className={`admin-badge-status status-${currentStatus.toLowerCase().replace(/\s+/g, '')}`}>
-                          {currentStatus}
-                        </span>
-                      </td>
-                      <td>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <Store size={36} style={{ color: '#cbd5e1' }} />
+                      <strong style={{ fontSize: '15px', color: '#334155' }}>No vendor partners found</strong>
+                      <span style={{ fontSize: '13px' }}>
+                        {searchQuery || categoryFilter !== 'all' || codeFilter !== 'all'
+                          ? 'Try adjusting your search criteria or filters.'
+                          : 'Vendors who sign up on the registration page will automatically appear here.'}
+                      </span>
+                      {(searchQuery || categoryFilter !== 'all' || codeFilter !== 'all') && (
                         <button
                           type="button"
                           className="admin-btn-inspect"
-                          onClick={() => setSelectedReview(rev)}
+                          onClick={() => {
+                            setSearchQuery('');
+                            setCategoryFilter('all');
+                            setCodeFilter('all');
+                          }}
+                          style={{ marginTop: '8px' }}
                         >
-                          <Eye size={12} /> Inspect Detail
+                          Reset Filters
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {filteredReviews.length === 0 && (
-                  <tr>
-                    <td colSpan="8" className="admin-table-empty-cell">
-                      No applications found matching your query.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      ) : (
-        /* Full Onboarding Profiles */
-        <article className="admin-panel admin-m0">
-          <div className="admin-panel-head" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-            <span>Step 3 Full Onboarding Profiles</span>
-            <small>{filteredOnboardings.length} records matching</small>
-          </div>
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Business & Proprietor</th>
-                  <th>Contact Details</th>
-                  <th>GST / PAN</th>
-                  <th>Fabric Specialisation</th>
-                  <th>Verification Docs</th>
-                  <th>Database Status</th>
-                  <th>Supabase Match</th>
-                  <th>Actions</th>
+                      )}
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredOnboardings.map((onb, idx) => {
-                  const appWhatsapp = onb.whatsapp_number || '';
-                  const cleanWhatsapp = appWhatsapp.replace(/\D/g, '').slice(-10);
-                  const currentStatus = localStatuses[cleanWhatsapp] || onb.status || 'submitted';
-                  const matchedProfile = adminData.profiles.find(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === cleanWhatsapp);
+              ) : (
+                filteredVendors.map((vendor) => {
+                  const cleanPhone = cleanPhoneDigits(vendor.whatsapp || vendor.whatsapp_number);
+                  const waUrl = cleanPhone
+                    ? `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(
+                        `Namaste ${vendor.full_name || 'Partner'}, greetings from Weave365 Admin team!`
+                      )}`
+                    : null;
+
+                  const relativeTime = getRelativeTime(vendor.created_at || vendor.updated_at);
+                  const cats = Array.isArray(vendor.interested_categories)
+                    ? vendor.interested_categories
+                    : String(vendor.interested_categories || '')
+                        .split(',')
+                        .filter(Boolean);
+
+                  const prodInfo = getVendorProductsInfo(vendor.vendor_code);
 
                   return (
-                    <tr
-                      key={onb.id || idx}
-                      style={{
-                        borderLeft: currentStatus.toLowerCase().includes('approv') || currentStatus.toLowerCase().includes('verify')
-                          ? '3px solid #16a34a'
-                          : currentStatus.toLowerCase().includes('reject') || currentStatus.toLowerCase().includes('flag')
-                            ? '3px solid #dc2626'
-                            : '3px solid #ea580c'
-                      }}
-                    >
-                      <td className="admin-fs12">{onb.created_at ? onb.created_at.split('T')[0] : 'N/A'}</td>
+                    <tr key={vendor.id}>
+                      {/* Date */}
                       <td>
-                        <strong>{onb.business_name || 'Unnamed Business'}</strong>
-                        <span className="admin-proprietor-label">Proprietor: {onb.full_name}</span>
-                      </td>
-                      <td>
-                        <div className="admin-flex-align-center-gap6">
-                          <span>{appWhatsapp}</span>
-                          <a href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="admin-wa-icon-link">
-                            <Phone size={11} />
-                          </a>
-                        </div>
-                        <span className="admin-email-label">{onb.email}</span>
-                      </td>
-                      <td>
-                        <span className="admin-display-block-fs12">GST: {onb.gst_number || 'N/A'}</span>
-                        <span className="admin-pan-label">PAN: {onb.pan_number}</span>
-                      </td>
-                      <td><strong>{onb.fabric_specialisation}</strong></td>
-                      <td>
-                        <div className="admin-flex-wrap-gap8">
-                          {onb.id_proof_url && (
-                            <button type="button" className="admin-btn-doc-badge" onClick={() => setLightboxImage(onb.id_proof_url)}>Aadhaar</button>
-                          )}
-                          {onb.cancelled_cheque_url && (
-                            <button type="button" className="admin-btn-doc-badge" onClick={() => setLightboxImage(onb.cancelled_cheque_url)}>Cheque</button>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`admin-badge-status status-${currentStatus.toLowerCase().replace(/\s+/g, '')}`}>
-                          {currentStatus}
-                        </span>
-                      </td>
-                      <td>
-                        {matchedProfile ? (
-                          <span className="admin-status approved admin-status-linked">
-                            ✓ Linked ({matchedProfile.approval_status})
-                          </span>
-                        ) : (
-                          <span className="admin-status new admin-status-linked">
-                            Unregistered
+                        <strong style={{ fontSize: '12.5px', color: '#0f172a' }}>
+                          {formatDate(vendor.created_at || vendor.updated_at)}
+                        </strong>
+                        {relativeTime && (
+                          <span style={{ display: 'block', fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                            {relativeTime}
                           </span>
                         )}
                       </td>
+
+                      {/* Vendor & Workshop */}
                       <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>
+                            {toTitleCase(vendor.full_name) || 'Unnamed Partner'}
+                          </strong>
+                          {vendor.business_name && (
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#4f46e5' }}>
+                              {vendor.business_name}
+                            </span>
+                          )}
+                          {vendor.email && (
+                            <a
+                              href={`mailto:${vendor.email}`}
+                              style={{ fontSize: '11.5px', color: '#64748b', textDecoration: 'none' }}
+                              title="Send Email"
+                            >
+                              {vendor.email}
+                            </a>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* WhatsApp Contact */}
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {cleanPhone ? (
+                            <>
+                              <a
+                                href={waUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="admin-wa-icon-link"
+                                title="Chat on WhatsApp"
+                              >
+                                <Phone size={13} />
+                              </a>
+                              <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#1e293b' }}>
+                                +91 {cleanPhone}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(cleanPhone, `phone_${vendor.id}`)}
+                                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px' }}
+                                title="Copy Phone Number"
+                              >
+                                {copyFeedback[`phone_${vendor.id}`] ? (
+                                  <Check size={13} style={{ color: '#10b981' }} />
+                                ) : (
+                                  <Copy size={13} />
+                                )}
+                              </button>
+                            </>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>No Phone</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Location */}
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '12.5px', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={12} style={{ color: '#64748b' }} />
+                            {vendor.city || 'N/A'}{vendor.state ? `, ${vendor.state}` : ''}
+                          </span>
+                          {vendor.pincode && (
+                            <span style={{ fontSize: '11px', color: '#94a3b8', paddingLeft: '16px' }}>
+                              PIN: {vendor.pincode}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Specialty & Model */}
+                      <td>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {cats.length > 0 ? (
+                            cats.slice(0, 3).map((cat) => (
+                              <span
+                                key={cat}
+                                style={{
+                                  padding: '2px 6px',
+                                  background: '#f1f5f9',
+                                  color: '#475569',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {cat}
+                              </span>
+                            ))
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>General Handloom</span>
+                          )}
+                          {cats.length > 3 && (
+                            <span style={{ fontSize: '10px', color: '#64748b', alignSelf: 'center' }}>
+                              +{cats.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                        {vendor.buying_behavior && (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              marginTop: '4px',
+                              fontSize: '10.5px',
+                              color: '#6366f1',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Model: {vendor.buying_behavior === 'instant' ? 'Immediate' : toTitleCase(vendor.buying_behavior)}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Loom Code */}
+                      <td>
+                        {vendor.vendor_code ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '4px 8px',
+                                background: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {vendor.vendor_code}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setQuickCodeVendor(vendor);
+                                setQuickCodeInput(vendor.vendor_code || '');
+                              }}
+                              style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '2px' }}
+                              title="Edit Vendor Code"
+                            >
+                              <Edit3 size={13} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setQuickCodeVendor(vendor);
+                              setQuickCodeInput('');
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '3px 8px',
+                              background: '#fffbeb',
+                              color: '#b45309',
+                              border: '1px dashed #fcd34d',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                            title="Assign Loom Code (e.g. V01)"
+                          >
+                            <Plus size={11} />
+                            <span>Assign Code</span>
+                          </button>
+                        )}
+                      </td>
+
+                      {/* Products Visibility Toggle */}
+                      <td style={{ textAlign: 'center' }}>
+                        {vendor.vendor_code && prodInfo.total > 0 ? (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAllVendorProducts(vendor)}
+                              disabled={togglingVendorId === vendor.id}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '5px 12px',
+                                borderRadius: '20px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                                background: prodInfo.allDisabled ? '#fee2e2' : '#dcfce7',
+                                color: prodInfo.allDisabled ? '#dc2626' : '#15803d',
+                                border: `1px solid ${prodInfo.allDisabled ? '#fca5a5' : '#86efac'}`,
+                              }}
+                              title={
+                                prodInfo.allDisabled
+                                  ? `Click to ENABLE all ${prodInfo.total} products on website`
+                                  : `Click to DISABLE all ${prodInfo.total} products from website`
+                              }
+                            >
+                              {prodInfo.allDisabled ? <EyeOff size={13} /> : <Eye size={13} />}
+                              <span>
+                                {togglingVendorId === vendor.id
+                                  ? 'Updating...'
+                                  : prodInfo.allDisabled
+                                  ? `Disabled (${prodInfo.total})`
+                                  : `Active (${prodInfo.total})`}
+                              </span>
+                            </button>
+                            {copyFeedback[`toggle_${vendor.id}`] && (
+                              <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 600 }}>
+                                {copyFeedback[`toggle_${vendor.id}`]}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '12px' }}>
+                            {vendor.vendor_code ? '0 Items' : 'No Code'}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ textAlign: 'right' }}>
                         <button
                           type="button"
-                          className="admin-btn-inspect-onboarding"
-                          onClick={() => setSelectedOnboarding(onb)}
+                          onClick={() => handleInspectVendor(vendor)}
+                          className="admin-btn-inspect"
                         >
-                          <Eye size={12} /> Inspect Detail
+                          <span>Inspect</span>
                         </button>
                       </td>
                     </tr>
                   );
-                })}
-                {filteredOnboardings.length === 0 && (
-                  <tr>
-                    <td colSpan="9" className="admin-table-empty-cell">
-                      No onboarding applications found matching your query.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 5. Quick Code Assign Dialog */}
+      {quickCodeVendor && (
+        <div className="admin-modal-overlay" onClick={() => setQuickCodeVendor(null)}>
+          <div
+            className="admin-review-modal"
+            style={{ maxWidth: '420px', padding: '24px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '17px', color: '#0f172a', fontWeight: 700 }}>
+                  Assign Loom / Vendor Code
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748b' }}>
+                  Vendor: <strong>{quickCodeVendor.business_name || quickCodeVendor.full_name}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuickCodeVendor(null)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '18px' }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ marginTop: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                Vendor Code Prefix (e.g. V01, V02, V03):
+              </label>
+              <input
+                type="text"
+                placeholder="V01"
+                value={quickCodeInput}
+                onChange={(e) => setQuickCodeInput(e.target.value.toUpperCase())}
+                className="admin-search-input"
+                style={{ width: '100%', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em' }}
+                autoFocus
+              />
+              <span style={{ display: 'block', fontSize: '11.5px', color: '#64748b', marginTop: '6px' }}>
+                This prefix links products in the wholesale inventory catalog directly to this vendor.
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button
+                type="button"
+                onClick={() => setQuickCodeVendor(null)}
+                className="admin-btn-inspect"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveQuickCode}
+                disabled={savingAction}
+                className="admin-btn-save-drive"
+              >
+                {savingAction ? 'Saving...' : 'Save Code'}
+              </button>
+            </div>
           </div>
-        </article>
+        </div>
       )}
 
-      {/* Step 1 Inspect Modal */}
-      {selectedReview && (() => {
-        const rev = selectedReview;
-        const appWhatsapp = rev.whatsapp_number || '';
-        const cleanWhatsapp = appWhatsapp.replace(/\D/g, '').slice(-10);
-        const currentStatus = localStatuses[cleanWhatsapp] || rev.status || 'pending';
-
-        return (
-          <div className="admin-modal-overlay">
-            <div className="admin-review-modal">
-              {/* Modal Header */}
-              <div className="admin-modal-header">
-                <div>
-                  <span className="admin-modal-subtitle">Partner Basic Assessment</span>
-                  <h3 className="admin-modal-title">{rev.full_name}</h3>
+      {/* 6. Full Vendor Details Inspector Modal */}
+      {inspectVendor && (
+        <div className="admin-modal-overlay" onClick={() => setInspectVendor(null)}>
+          <div
+            className="admin-onboarding-modal"
+            style={{ maxWidth: '840px', borderRadius: '16px', overflow: 'hidden' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="admin-modal-header" style={{ padding: '20px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+                    {toTitleCase(inspectVendor.full_name) || 'Vendor Details'}
+                  </h3>
+                  {inspectVendor.business_name && (
+                    <span style={{ padding: '3px 10px', background: '#e0e7ff', color: '#4338ca', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
+                      {inspectVendor.business_name}
+                    </span>
+                  )}
+                  {inspectVendor.vendor_code && (
+                    <span style={{ padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '6px', fontSize: '13px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                      Code: {inspectVendor.vendor_code}
+                    </span>
+                  )}
                 </div>
-                <button type="button" onClick={() => setSelectedReview(null)} className="admin-modal-close-btn">×</button>
+                <span style={{ display: 'block', fontSize: '12.5px', color: '#64748b', marginTop: '4px' }}>
+                  Registered: {formatDate(inspectVendor.created_at || inspectVendor.updated_at)} • Email: {inspectVendor.email || 'N/A'}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="admin-modal-close-btn"
+                onClick={() => setInspectVendor(null)}
+                style={{ fontSize: '24px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="admin-modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Quick Actions Bar */}
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number) && (
+                  <a
+                    href={`https://wa.me/${cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number)}?text=${encodeURIComponent(`Namaste ${inspectVendor.full_name || 'Partner'}, greetings from Weave365!`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-btn-save-drive"
+                    style={{
+                      background: '#25d366',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      fontSize: '13.5px',
+                    }}
+                  >
+                    <Phone size={15} />
+                    <span>WhatsApp Chat (+91 {cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number)})</span>
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const summary = `VENDOR SUMMARY\nName: ${inspectVendor.full_name}\nFirm: ${inspectVendor.business_name || 'N/A'}\nPhone: ${inspectVendor.whatsapp || inspectVendor.whatsapp_number || 'N/A'}\nEmail: ${inspectVendor.email || 'N/A'}\nLocation: ${inspectVendor.city || ''} ${inspectVendor.state || ''} (${inspectVendor.pincode || ''})\nVendor Code: ${inspectVendor.vendor_code || 'Unassigned'}\nCategories: ${Array.isArray(inspectVendor.interested_categories) ? inspectVendor.interested_categories.join(', ') : inspectVendor.interested_categories || 'N/A'}`;
+                    handleCopy(summary, 'vendor_summary');
+                  }}
+                  className="admin-btn-inspect"
+                  style={{ padding: '10px 16px', fontSize: '13px' }}
+                >
+                  {copyFeedback.vendor_summary ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                  <span>{copyFeedback.vendor_summary ? 'Summary Copied!' : 'Copy Summary'}</span>
+                </button>
               </div>
 
-              {/* Modal Body */}
-              <div className="admin-modal-body">
-                <div className="admin-modal-info-grid">
-                  <div><strong>WhatsApp Contact</strong>: {appWhatsapp}</div>
-                  <div><strong>City / Pincode</strong>: {rev.city} / {rev.pincode}</div>
-                  <div><strong>Categories Supplied</strong>: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{rev.categories}</span></div>
-                  <div><strong>Target Price Range</strong>: {rev.price_range}</div>
-                  <div><strong>Submission Date</strong>: {rev.created_at ? rev.created_at.split('T')[0] : 'N/A'}</div>
-                  <div>
-                    <strong>Current Status</strong>:
-                    <span className={`admin-status ${currentStatus.toLowerCase()} admin-ml6`}>
-                      {currentStatus}
+              {/* Main Content: 2 Columns */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                
+                {/* Left Card: Vendor Information */}
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={16} style={{ color: '#4f46e5' }} />
+                    Contact & Workshop Info
+                  </h4>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Proprietor:</span>
+                      <strong style={{ color: '#0f172a' }}>{toTitleCase(inspectVendor.full_name) || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Business / Firm:</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.business_name || 'Individual Weaver'}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Email:</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.email || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>WhatsApp:</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.whatsapp || inspectVendor.whatsapp_number || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Location:</span>
+                      <strong style={{ color: '#0f172a', textAlign: 'right' }}>
+                        {inspectVendor.city || ''}{inspectVendor.state ? `, ${inspectVendor.state}` : ''}
+                        {inspectVendor.pincode ? ` (${inspectVendor.pincode})` : ''}
+                      </strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#64748b' }}>Sourcing Model:</span>
+                      <strong style={{ color: '#4338ca' }}>
+                        {inspectVendor.buying_behavior === 'instant' ? 'Immediate Stock' : 'Order Basis / Custom Woven'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Specialties */}
+                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '6px' }}>
+                      Specialties & Categories:
                     </span>
-                    {activeAgreement && (
-                      <div className="admin-agreement-modal-box">
-                        <div className="admin-flex-align-center-gap12">
-                          <div className="admin-agreement-icon-wrap">
-                            <FileText size={20} />
-                          </div>
-                          <div>
-                            <strong className="admin-agreement-title">Signed Merchant Agreement</strong>
-                            <small className="admin-agreement-desc">Electronic copy generated at signature timestamp</small>
-                          </div>
-                        </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {Array.isArray(inspectVendor.interested_categories) && inspectVendor.interested_categories.length > 0 ? (
+                        inspectVendor.interested_categories.map((c) => (
+                          <span
+                            key={c}
+                            style={{
+                              padding: '3px 8px',
+                              background: '#e0e7ff',
+                              color: '#3730a3',
+                              borderRadius: '4px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {c}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>General Handloom</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Vendor Code & Products Toggle */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* Vendor Code Box */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Tag size={16} style={{ color: '#2563eb' }} />
+                      Loom Code (Catalog Link)
+                    </h4>
+                    <p style={{ margin: '4px 0 12px', fontSize: '12px', color: '#64748b' }}>
+                      Set a short code (e.g. <strong>V01</strong>, <strong>V02</strong>) to link this vendor to their catalog products.
+                    </p>
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="e.g. V01"
+                        value={editingCode}
+                        onChange={(e) => setEditingCode(e.target.value.toUpperCase())}
+                        className="admin-search-input"
+                        style={{ width: '110px', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveInspectorDetails}
+                        disabled={savingAction}
+                        className="admin-btn-save-drive"
+                        style={{ padding: '8px 18px', whiteSpace: 'nowrap' }}
+                      >
+                        {savingAction ? 'Saving...' : 'Save Code'}
+                      </button>
+                    </div>
+
+                    {copyFeedback.inspector_save && (
+                      <span style={{ display: 'block', fontSize: '12px', color: '#10b981', fontWeight: 600, marginTop: '6px' }}>
+                        ✓ Vendor code saved successfully!
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Linked Products & Bulk Toggle Box */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                      <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Boxes size={16} style={{ color: '#7c3aed' }} />
+                        Linked Products ({inspectedVendorProductsInfo.total})
+                      </h4>
+
+                      {/* Bulk Product Toggle Button */}
+                      {inspectedVendorProductsInfo.total > 0 && (
                         <button
                           type="button"
-                          className="admin-btn-view-agreement"
-                          onClick={() => handleViewAgreement(activeAgreement, appWhatsapp)}
+                          onClick={() => handleToggleAllVendorProducts(inspectVendor)}
+                          disabled={togglingVendorId === inspectVendor.id}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            background: inspectedVendorProductsInfo.allDisabled ? '#16a34a' : '#dc2626',
+                            color: '#ffffff',
+                            border: 'none',
+                          }}
+                          title={
+                            inspectedVendorProductsInfo.allDisabled
+                              ? `Click to Enable all ${inspectedVendorProductsInfo.total} products (Mark Ready Stock)`
+                              : `Click to Disable all ${inspectedVendorProductsInfo.total} products (Mark Out of Stock)`
+                          }
                         >
-                          View Signed Copy 📄
+                          {inspectedVendorProductsInfo.allDisabled ? <Eye size={14} /> : <EyeOff size={14} />}
+                          <span>
+                            {togglingVendorId === inspectVendor.id
+                              ? 'Updating...'
+                              : inspectedVendorProductsInfo.allDisabled
+                              ? `Enable All (${inspectedVendorProductsInfo.total})`
+                              : `Disable All (${inspectedVendorProductsInfo.total})`}
+                          </span>
                         </button>
+                      )}
+                    </div>
+
+                    {inspectedVendorProductsInfo.total > 0 && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <span
+                          style={{
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            background: inspectedVendorProductsInfo.allDisabled
+                              ? '#fee2e2'
+                              : inspectedVendorProductsInfo.disabledCount > 0
+                              ? '#fef3c7'
+                              : '#dcfce7',
+                            color: inspectedVendorProductsInfo.allDisabled
+                              ? '#b91c1c'
+                              : inspectedVendorProductsInfo.disabledCount > 0
+                              ? '#b45309'
+                              : '#15803d',
+                          }}
+                        >
+                          Status:{' '}
+                          {inspectedVendorProductsInfo.allDisabled
+                            ? 'All Products Disabled'
+                            : inspectedVendorProductsInfo.disabledCount > 0
+                            ? `${inspectedVendorProductsInfo.activeCount} Active, ${inspectedVendorProductsInfo.disabledCount} Disabled`
+                            : 'All Products Active'}
+                        </span>
                       </div>
+                    )}
+
+                    {inspectedVendorProductsInfo.total > 0 ? (
+                      <div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                            gap: '8px',
+                            maxHeight: '140px',
+                            overflowY: 'auto',
+                            padding: '2px',
+                          }}
+                        >
+                          {inspectedVendorProductsInfo.products.slice(0, 8).map((p, idx) => {
+                            const pKey = p.id || p.groupKey;
+                            const ov = stockOverrides[pKey];
+                            const isOut = ov
+                              ? ov.stockStatus === 'out-of-stock'
+                              : p.stockStatus === 'out-of-stock' || p.isOutOfStock;
+
+                            return (
+                              <div
+                                key={pKey || idx}
+                                style={{
+                                  border: `1px solid ${isOut ? '#fca5a5' : '#e2e8f0'}`,
+                                  borderRadius: '6px',
+                                  padding: '4px',
+                                  background: isOut ? '#fff5f5' : '#ffffff',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '2px',
+                                  opacity: isOut ? 0.75 : 1,
+                                }}
+                              >
+                                <img
+                                  src={p.image || (Array.isArray(p.images) && p.images[0]) || fallbackProductImage}
+                                  alt={p.name || 'Product'}
+                                  style={{ width: '100%', height: '55px', objectFit: 'cover', borderRadius: '4px' }}
+                                />
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    color: '#1e293b',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {p.name || p.title || 'Saree'}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '9.5px',
+                                    fontWeight: 700,
+                                    color: isOut ? '#dc2626' : '#16a34a',
+                                  }}
+                                >
+                                  {isOut ? 'Out of Stock' : 'Ready'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {setActiveTab && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInspectVendor(null);
+                              setActiveTab('stock_availability');
+                            }}
+                            className="admin-btn-inspect"
+                            style={{ width: '100%', justifyContent: 'center', fontSize: '12px', marginTop: '10px' }}
+                          >
+                            <ExternalLink size={13} />
+                            <span>Manage in Stock Portal</span>
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#64748b' }}>
+                        {inspectVendor.vendor_code ? (
+                          <>No catalog products currently tagged with code <strong>{inspectVendor.vendor_code}</strong>.</>
+                        ) : (
+                          <>Assign a Loom Code above (e.g. <strong>V01</strong>) to link products to this vendor.</>
+                        )}
+                      </p>
                     )}
                   </div>
                 </div>
-
-                {/* Administrative Action Control Panel */}
-                <div className="admin-review-control-panel">
-                  <h4 className="admin-review-control-title">Review Status Controls</h4>
-                  <p className="admin-review-control-desc">
-                    Approving the application marks the partner as approved for both basic review and full onboarding profile databases.
-                  </p>
-                  <div className="admin-flex-gap12">
-                    <button
-                      type="button"
-                      className="admin-btn-approve-review"
-                      onClick={async () => {
-                        const success1 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
-                        const success2 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
-                        if (success1 || success2) {
-                          alert('Application approved successfully!');
-                          setSelectedReview(null);
-                        }
-                      }}
-                    >
-                      Approve Application
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-btn-reject-review"
-                      onClick={async () => {
-                        const success1 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'rejected');
-                        const success2 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'rejected');
-                        if (success1 || success2) {
-                          alert('Application marked as rejected.');
-                          setSelectedReview(null);
-                        }
-                      }}
-                    >
-                      Reject Application
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="admin-modal-footer">
-                <button type="button" className="admin-btn-modal-close" onClick={() => setSelectedReview(null)}>Close Inspector</button>
               </div>
             </div>
           </div>
-        );
-      })()}
-
-      {/* Step 3 Onboarding Inspector Modal */}
-      {selectedOnboarding && (() => {
-        const onb = selectedOnboarding;
-        const appWhatsapp = onb.whatsapp_number || '';
-        const cleanWhatsapp = appWhatsapp.replace(/\D/g, '').slice(-10);
-        const currentStatus = localStatuses[cleanWhatsapp] || onb.status || 'submitted';
-        const matchedProfile = adminData.profiles.find(p => p.whatsapp && p.whatsapp.replace(/\D/g, '').slice(-10) === cleanWhatsapp);
-
-        return (
-          <div className="admin-modal-overlay">
-            <div className="admin-onboarding-modal">
-              {/* Modal Header */}
-              <div className="admin-modal-header-bg">
-                <div>
-                  <span className="admin-modal-subtitle">Full Onboarding Application Detail</span>
-                  <h3 className="admin-modal-title-fs24">{onb.business_name || 'Unnamed Vendor'}</h3>
-                  <span className="admin-modal-header-meta">Proprietor: {onb.full_name} | WhatsApp: {onb.whatsapp_number}</span>
-                </div>
-                <button type="button" onClick={() => setSelectedOnboarding(null)} className="admin-modal-close-btn-lg">×</button>
-              </div>
-
-              {/* Modal Body */}
-              <div className="admin-modal-body-split">
-                {/* Left Column: Business & Logistics */}
-                <div className="admin-grid-gap20-align-start">
-                  <div>
-                    <h4 className="admin-modal-section-title">Company Information</h4>
-                    <div className="admin-grid-gap8-fs13">
-                      <div><strong>Business Legal Name</strong>: {onb.business_name}</div>
-                      <div><strong>Business Role</strong>: {onb.business_type}</div>
-                      <div><strong>Years in Business</strong>: {onb.years_in_business}</div>
-                      <div><strong>GST Registration</strong>: {onb.gst_number || 'Not Registered'}</div>
-                      <div><strong>Permanent Account Number (PAN)</strong>: {onb.pan_number}</div>
-                      <div><strong>Business Location</strong>: {onb.business_address}</div>
-                      <div><strong>City / Pincode</strong>: {onb.city} / {onb.pincode}</div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="admin-modal-section-title">Products & Fulfillment</h4>
-                    <div className="admin-grid-gap8-fs13">
-                      <div><strong>Fabric Specialisations</strong>: <span>{onb.fabric_specialisation}</span></div>
-                      <div><strong>Monthly Production Capacity</strong>: {onb.monthly_capacity}</div>
-                      <div><strong>Standard Dispatch Timeline</strong>: {onb.dispatch_timeline}</div>
-                      <div><strong>Preferred Courier Partner</strong>: {onb.preferred_courier}</div>
-                      <div><strong>Dispatch Address</strong>: {onb.dispatch_address_same === 'same' ? 'Same as business address' : `Different: ${onb.dispatch_address_different}`}</div>
-                      <div><strong>Target Price Group Intent</strong>: {onb.price_range}</div>
-                      <div><strong>Agreement Signed On</strong>: {onb.created_at ? onb.created_at.split('T')[0] : 'N/A'}</div>
-                    </div>
-                  </div>
-
-                  {/* Verification Docs */}
-                  <div>
-                    <h4 className="admin-modal-section-title">Uploaded Verification Files</h4>
-                    <div className="admin-flex-gap12">
-                      {onb.id_proof_url ? (
-                        <div onClick={() => setLightboxImage(onb.id_proof_url)} className="admin-doc-card img-hover-trigger">
-                          <Eye size={18} className="admin-doc-card-icon" />
-                          <div className="admin-doc-card-title">Aadhaar Card / ID Proof</div>
-                          <span className="admin-doc-card-muted">Click to zoom file</span>
-                        </div>
-                      ) : (
-                        <div className="admin-doc-card-empty">No Aadhaar uploaded</div>
-                      )}
-
-                      {onb.cancelled_cheque_url ? (
-                        <div onClick={() => setLightboxImage(onb.cancelled_cheque_url)} className="admin-doc-card img-hover-trigger">
-                          <Eye size={18} className="admin-doc-card-icon" />
-                          <div className="admin-doc-card-title">Cancelled Cheque Proof</div>
-                          <span className="admin-doc-card-muted">Click to zoom file</span>
-                        </div>
-                      ) : (
-                        <div className="admin-doc-card-empty">No Cheque uploaded</div>
-                      )}
-
-                      {(activeAgreement || onb) && (
-                        <button
-                          type="button"
-                          onClick={() => handleViewAgreement(activeAgreement || { vendor_signed_name: onb.full_name, signed_date: onb.created_at ? onb.created_at.split('T')[0] : new Date().toLocaleDateString('en-IN') }, appWhatsapp)}
-                          className="admin-doc-card-agreement img-hover-trigger"
-                        >
-                          <FileText size={18} className="admin-doc-card-agreement-icon" />
-                          <div className="admin-doc-card-title">Signed Merchant Agreement</div>
-                          <span className="admin-doc-card-muted">Click to view signed copy 📄</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: Bank Details & Supabase Database Integrations */}
-                <div className="admin-grid-gap20-align-start">
-                  <div>
-                    <h4 className="admin-modal-section-title">Bank Disbursement Details</h4>
-                    <div className="admin-bank-details-card">
-                      <div className="admin-flex-between-align-center">
-                        <div className="admin-bank-card-label">Account Holder Name</div>
-                        <button type="button" onClick={() => handleCopy(onb.bank_account_holder, 'holder')} className="admin-bank-copy-btn">
-                          <Copy size={11} /> {copyFeedback['holder'] ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <strong className="admin-bank-card-val">{onb.bank_account_holder || 'N/A'}</strong>
-
-                      <div className="admin-flex-between-align-center">
-                        <div className="admin-bank-card-label">Bank Name</div>
-                        <button type="button" onClick={() => handleCopy(onb.bank_name, 'bankName')} className="admin-bank-copy-btn">
-                          <Copy size={11} /> {copyFeedback['bankName'] ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <strong className="admin-bank-card-val">{onb.bank_name || 'N/A'}</strong>
-
-                      <div className="admin-flex-between-align-center">
-                        <div className="admin-bank-card-label">Bank Account Number</div>
-                        <button type="button" onClick={() => handleCopy(onb.bank_account_number, 'accNum')} className="admin-bank-copy-btn">
-                          <Copy size={11} /> {copyFeedback['accNum'] ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <strong className="admin-bank-card-val-mono">{onb.bank_account_number || 'N/A'}</strong>
-
-                      <div className="admin-flex-between-align-center">
-                        <div className="admin-bank-card-label">IFSC Code</div>
-                        <button type="button" onClick={() => handleCopy(onb.bank_ifsc, 'ifsc')} className="admin-bank-copy-btn">
-                          <Copy size={11} /> {copyFeedback['ifsc'] ? '✓ Copied' : 'Copy'}
-                        </button>
-                      </div>
-                      <strong className="admin-bank-card-val-mono-fs14">{onb.bank_ifsc || 'N/A'}</strong>
-
-                      <div className="admin-flex-between-align-center">
-                        <div className="admin-bank-card-label">UPI Address</div>
-                        {onb.upi_id && (
-                          <button type="button" onClick={() => handleCopy(onb.upi_id, 'upi')} className="admin-bank-copy-btn">
-                            <Copy size={11} /> {copyFeedback['upi'] ? '✓ Copied' : 'Copy'}
-                          </button>
-                        )}
-                      </div>
-                      <strong className="admin-bank-card-val">{onb.upi_id || 'N/A'}</strong>
-                    </div>
-                  </div>
-
-                  {/* Status update box */}
-                  <div>
-                    <h4 className="admin-modal-section-title">Database Application Status</h4>
-                    <div className="admin-modal-status-box">
-                      <div className="admin-flex-between-align-center" style={{ marginBottom: '8px' }}>
-                        <span className="admin-modal-status-label">Current Status:</span>
-                        <span className={`admin-status ${currentStatus.toLowerCase()}`}>{currentStatus}</span>
-                      </div>
-                      <div className="admin-grid-2col-gap8">
-                        <button
-                          type="button"
-                          className="admin-btn-status-approve"
-                          onClick={async () => {
-                            const success1 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'approved');
-                            const success2 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'approved');
-                            if (success1 || success2) alert('Onboarding profile and basic review marked as Approved in database!');
-                          }}
-                        >
-                          Mark Profile Approved
-                        </button>
-                        <button
-                          type="button"
-                          className="admin-btn-status-flag"
-                          onClick={async () => {
-                            const success1 = await updateDatabaseApplicationStatus('update_onboarding_status', appWhatsapp, 'flagged');
-                            const success2 = await updateDatabaseApplicationStatus('update_review_status', appWhatsapp, 'flagged');
-                            if (success1 || success2) alert('Onboarding profile and basic review flagged in database.');
-                          }}
-                        >
-                          Flag Application
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Google Drive upload link */}
-                  <div>
-                    <h4 className="admin-modal-section-title">Product Listing Drive Link</h4>
-                    <div className="admin-modal-status-box">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <span className="admin-modal-status-label">Google Drive Folder Link:</span>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <input
-                            type="text"
-                            className="admin-field-input"
-                            placeholder="Paste Google Drive folder URL..."
-                            defaultValue={onb.drive_folder_url || ''}
-                            id={`drive-url-${cleanWhatsapp}`}
-                            style={{ flex: 1 }}
-                          />
-                          <button
-                            type="button"
-                            className="admin-btn-save-drive"
-                            onClick={async () => {
-                              const driveUrlVal = document.getElementById(`drive-url-${cleanWhatsapp}`).value;
-                              const success = await updateDatabaseDriveFolderUrl(appWhatsapp, driveUrlVal);
-                              if (success) {
-                                alert('Drive folder URL saved successfully!');
-                              } else {
-                                alert('Failed to save Drive folder URL.');
-                              }
-                            }}
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Supabase Matched Account */}
-                  <div>
-                    <h4 className="admin-modal-section-title">Supabase Database Integration</h4>
-                    <div className="admin-supabase-link-box">
-                      {matchedProfile ? (
-                        <div className="admin-grid-gap12">
-                          <div className="admin-flex-align-center-gap8">
-                            <span className="admin-status approved">✓ Profile Linked</span>
-                            <span className="admin-doc-card-muted">({matchedProfile.email})</span>
-                          </div>
-                          <div className="admin-supabase-matched-info">
-                            <div><strong>Active Pricing Group</strong>: <span className="admin-primary-bold">{PRICE_GROUPS[matchedProfile.price_group] || 'None'}</span></div>
-                            <div><strong>Database Account status</strong>: <span className="admin-ink-bold-capitalize">{matchedProfile.approval_status}</span></div>
-                          </div>
-
-                          <div className="admin-grid-2col-gap8-mt8">
-                            <button
-                              type="button"
-                              className="admin-btn-disburse-wholesale"
-                              onClick={async () => {
-                                await updateBuyerPriceAccess(matchedProfile, 'approved', 'wholesale');
-                                alert('Applicant approved as a WHOLESALE merchant successfully!');
-                                setSelectedOnboarding(null);
-                              }}
-                            >
-                              Unlock Wholesaler Access
-                            </button>
-                            <button
-                              type="button"
-                              className="admin-btn-disburse-reseller"
-                              onClick={async () => {
-                                await updateBuyerPriceAccess(matchedProfile, 'approved', 'reseller');
-                                alert('Applicant approved as a RESELLER merchant successfully!');
-                                setSelectedOnboarding(null);
-                              }}
-                            >
-                              Unlock Reseller Access
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="admin-grid-gap10">
-                          <span className="admin-status new admin-width-fit">No Supabase Profile Found</span>
-                          <p className="admin-inquiry-notes-p">
-                            This vendor has submitted onboarding details, but hasn't created a login account on Weave365.com yet. Send WhatsApp signup reminder:
-                          </p>
-                          <a
-                            href={`https://wa.me/${appWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${onb.full_name}, we have verified your Onboarding application for Weave 365! Please sign up an account at https://www.weave365.com using this WhatsApp number (+91 ${onb.whatsapp_number}) so we can instantly unlock your wholesale pricing tier access dashboard.`)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="admin-btn-wa-signup"
-                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                          >
-                            <Phone size={14} /> Send WhatsApp Signup Link
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="admin-modal-footer-bg">
-                <button type="button" className="admin-btn-modal-close" onClick={() => setSelectedOnboarding(null)}>Close Inspector</button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 }

@@ -13,8 +13,15 @@ export const PRICE_GROUPS = {
 
 const VARANASI_PINCODE_PREFIXES = ['221'];
 
-export function normalizeBuyerType(value) {
-  if (value === 'vendor') return 'vendor';
+export function isVendorProfile(profile) {
+  if (!profile) return false;
+  const type = String(profile.buyer_type || '').toLowerCase().trim();
+  const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
+  return type === 'vendor' || type === 'partner' || subtype.includes('vendor') || subtype.includes('weaver');
+}
+
+export function normalizeBuyerType(value, subtype) {
+  if (isVendorProfile({ buyer_type: value, buyer_subtype: subtype })) return 'vendor';
   return 'customer';
 }
 
@@ -24,13 +31,15 @@ export function isVaranasiPincode(value) {
 }
 
 export function applyAutoApprovalToBuyerProfile(profile) {
-  const isVendor = profile?.buyer_subtype?.toLowerCase().includes('vendor') || profile?.buyer_type === 'vendor';
+  const isVendor = isVendorProfile(profile);
   const buyerType = isVendor ? 'vendor' : 'customer';
+  const role = isVendor ? 'vendor' : (profile?.role || 'customer');
   const blockedByPincode = isVaranasiPincode(profile?.pincode);
 
   return {
     ...profile,
     buyer_type: buyerType,
+    role: role,
     approval_status: blockedByPincode ? 'pending' : 'approved',
     price_group: blockedByPincode ? 'pending' : 'approved',
   };

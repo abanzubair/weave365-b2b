@@ -10,7 +10,7 @@ import {
   Globe,
   ExternalLink,
 } from 'lucide-react';
-import { normalizeBuyerType } from '../../utils/buyerAccess.js';
+import { normalizeBuyerType, isVendorProfile } from '../../utils/buyerAccess.js';
 import {
   joinByUser,
 } from './AdminShared.jsx';
@@ -52,8 +52,10 @@ export default function BuyerPipeline({
 
   const sortedProfiles = useMemo(() => {
     let profiles = adminData.profiles || [];
-    if (userTypeFilter !== 'all') {
-      profiles = profiles.filter((p) => normalizeBuyerType(p.buyer_type) === userTypeFilter);
+    if (userTypeFilter === 'customer') {
+      profiles = profiles.filter((p) => !isVendorProfile(p));
+    } else if (userTypeFilter === 'vendor') {
+      profiles = profiles.filter((p) => isVendorProfile(p));
     }
     // Apply search filter
     if (searchQuery.trim()) {
@@ -109,10 +111,11 @@ export default function BuyerPipeline({
       .join(' ');
   };
 
-  const getBuyerTypeLabel = (type) => {
-    if (!type) return 'Customer';
-    const lower = type.toLowerCase();
-    if (lower === 'vendor') return 'Vendor Partner';
+  const getBuyerTypeLabel = (profile) => {
+    if (!profile) return 'Customer';
+    if (isVendorProfile(profile)) return 'Vendor Partner';
+    const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
+    if (subtype && subtype !== 'customer') return toTitleCase(subtype);
     return 'Customer';
   };
 
@@ -137,7 +140,7 @@ export default function BuyerPipeline({
       profile.email || '',
       profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
       categoriesStr,
-      getBuyerTypeLabel(profile.buyer_type),
+      getBuyerTypeLabel(profile),
       getBuyingBehaviorLabel(profile.buying_behavior)
     ].join('\t');
 
@@ -166,7 +169,7 @@ export default function BuyerPipeline({
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
         categoriesStr,
-        getBuyerTypeLabel(profile.buyer_type),
+        getBuyerTypeLabel(profile),
         getBuyingBehaviorLabel(profile.buying_behavior)
       ].join('\t');
     });
@@ -364,7 +367,7 @@ export default function BuyerPipeline({
                     </td>
                     <td>
                       <span className="pipeline-type-label">
-                        {getBuyerTypeLabel(profile.buyer_type)}
+                        {getBuyerTypeLabel(profile)}
                       </span>
                     </td>
                     <td>

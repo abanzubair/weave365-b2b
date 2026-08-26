@@ -264,7 +264,9 @@ export function SignupPage({
 
   function buildBuyerProfile() {
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-    const isVendor = profile.buyerType === 'vendor' || String(profile.buyerSubtype || '').toLowerCase().includes('vendor');
+    const isVendor = profile.buyerType === 'vendor' || 
+                     String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
+                     String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
     const combinedCity = profile.state?.trim()
       ? `${profile.city?.trim()}, ${profile.state?.trim()}`
       : (profile.city?.trim() || '');
@@ -276,7 +278,8 @@ export function SignupPage({
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
       buyer_type: isVendor ? 'vendor' : 'customer',
-      buyer_subtype: profile.buyerSubtype || 'Customer',
+      buyer_subtype: profile.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
+      role: isVendor ? 'vendor' : 'customer',
       buying_behavior: profile.buyingBehavior,
       city: combinedCity,
       state: profile.state?.trim() || '',
@@ -405,11 +408,13 @@ export function SignupPage({
         }
 
         const newProfile = buildBuyerProfile();
+        const isVendor = newProfile.buyer_type === 'vendor' || newProfile.role === 'vendor';
 
         if (isSupabaseConfigured) {
           const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
             data: {
               buyer_profile: newProfile,
+              role: isVendor ? 'vendor' : 'customer',
               full_name: cleanName,
             },
           });
@@ -465,12 +470,14 @@ export function SignupPage({
         }));
       }
 
+      const registeredProfile = mode === 'register' ? buildBuyerProfile() : {};
+      const isVendorRegister = registeredProfile.buyer_type === 'vendor' || registeredProfile.role === 'vendor';
+
       if (!isSupabaseConfigured) {
-        const demoProfile = mode === 'register' ? buildBuyerProfile() : {};
         const demoUser = {
           id: email || 'demo-user',
           email: email || 'demo@weave365.local',
-          user_metadata: { buyer_profile: demoProfile },
+          user_metadata: { buyer_profile: registeredProfile, role: isVendorRegister ? 'vendor' : 'customer' },
         };
 
         if (mode === 'register') {
@@ -479,7 +486,7 @@ export function SignupPage({
         } else {
           localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
           if (setUser) setUser(demoUser);
-          if (setBuyerProfile) setBuyerProfile(demoProfile);
+          if (setBuyerProfile) setBuyerProfile(registeredProfile);
           navigate('home');
         }
         setLoading(false);
@@ -499,7 +506,9 @@ export function SignupPage({
               options: {
                 emailRedirectTo: redirectUrl,
                 data: {
-                  buyer_profile: buildBuyerProfile(),
+                  buyer_profile: registeredProfile,
+                  role: isVendorRegister ? 'vendor' : 'customer',
+                  full_name: toTitleCaseName(profile.fullName),
                 },
               },
             });

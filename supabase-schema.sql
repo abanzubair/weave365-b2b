@@ -132,20 +132,26 @@ create table if not exists public.page_seo_settings (
 );
 
 update public.profiles
-set buyer_type = 'wholesale'
-where buyer_type is null or buyer_type not in ('wholesale', 'reseller', 'user');
+set buyer_type = case
+  when buyer_subtype ilike '%vendor%' or buyer_subtype ilike '%weaver%' then 'vendor'
+  else 'customer'
+end
+where buyer_type is null or buyer_type not in ('vendor', 'wholesale', 'reseller', 'customer', 'user');
 
 update public.profiles
 set approval_status = 'pending'
-where approval_status is null or approval_status not in ('pending', 'approved', 'rejected', 'suspended');
+where approval_status is null or approval_status not in ('pending', 'approved', 'rejected', 'suspended', 'flagged');
 
 update public.profiles
-set price_group = 'pending'
-where price_group is null or price_group not in ('pending', 'wholesale', 'reseller', 'guest');
+set price_group = 'approved'
+where price_group is null or price_group not in ('vendor', 'approved', 'pending', 'wholesale', 'reseller', 'guest');
 
 update public.profiles
-set role = 'customer'
-where role is null or role not in ('customer', 'admin');
+set role = case
+  when buyer_subtype ilike '%vendor%' or buyer_subtype ilike '%weaver%' or buyer_type = 'vendor' then 'vendor'
+  else 'customer'
+end
+where role is null or role not in ('vendor', 'customer', 'admin');
 
 create or replace function public.is_varanasi_pincode(pin text)
 returns boolean
@@ -178,15 +184,20 @@ as $$
 begin
   new.updated_at = now();
   new.buyer_type = case 
-    when new.buyer_type = 'reseller' then 'reseller' 
-    when new.buyer_type = 'user' then 'user' 
-    else 'wholesale' 
+    when new.buyer_type in ('vendor', 'reseller', 'wholesale', 'customer', 'user') then new.buyer_type
+    when new.buyer_subtype ilike '%vendor%' or new.buyer_subtype ilike '%weaver%' then 'vendor'
+    else 'customer'
   end;
-  new.role = coalesce(new.role, 'customer');
+
+  if new.role = 'admin' then
+    new.role = 'admin';
+  elsif new.buyer_type = 'vendor' or new.buyer_subtype ilike '%vendor%' or new.buyer_subtype ilike '%weaver%' then
+    new.role = 'vendor';
+  else
+    new.role = coalesce(new.role, 'customer');
+  end if;
 
   if tg_op = 'INSERT' and not public.is_admin() then
-    new.role = 'customer';
-
     if public.is_varanasi_pincode(new.pincode) then
       new.approval_status = 'pending';
       new.price_group = 'pending';
@@ -194,12 +205,6 @@ begin
       new.approval_status = 'approved';
       new.price_group = case when new.buyer_type = 'user' then 'guest' else new.buyer_type end;
     end if;
-  end if;
-
-  if tg_op = 'UPDATE' and not public.is_admin() then
-    new.role = old.role;
-    new.approval_status = old.approval_status;
-    new.price_group = old.price_group;
   end if;
 
   return new;
