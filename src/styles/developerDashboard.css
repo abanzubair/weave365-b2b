@@ -17,6 +17,9 @@
   margin: 0 auto;
   font-family: var(--font-inter, var(--font-body)) !important;
   color: var(--ink, #0f172a);
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Enforce existing project Inter/Manrope typography on all headings and text (never Cormorant Garamond) */
@@ -342,18 +345,31 @@
   flex-wrap: wrap;
   gap: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .dev-header-main {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
 }
 
 .dev-header-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dev-header-badges-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -364,6 +380,7 @@
   color: var(--ink, #0f172a);
   letter-spacing: -0.02em;
   line-height: 1.2;
+  word-break: break-word;
 }
 
 .dev-status-tag {
@@ -375,6 +392,8 @@
   padding: 3px 9px;
   border-radius: 20px;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .dev-status-tag.active {
@@ -404,12 +423,16 @@
   border: 1px solid #e2e8f0;
   padding: 3px 9px;
   border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .dev-header-meta-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dev-client-link {
@@ -421,13 +444,15 @@
   text-decoration: none;
   background: #f8fafc;
   border: 1px solid #edf2f7;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   transition: all 0.15s ease;
-  max-width: 320px;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .dev-client-link:hover {
@@ -469,6 +494,16 @@
   white-space: nowrap;
   text-decoration: none;
   transition: all 0.15s ease;
+  text-align: center;
+}
+
+.dev-btn svg {
+  flex-shrink: 0;
+}
+
+.dev-btn span {
+  display: inline-block;
+  text-align: center;
 }
 
 .dev-btn-primary {

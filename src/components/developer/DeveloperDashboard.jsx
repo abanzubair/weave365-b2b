@@ -72,7 +72,7 @@ export function DeveloperDashboard({
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [catalogMode, setCatalogMode] = useState(initialKeyRecord?.catalog_mode || 'all');
   const [selectedSkus, setSelectedSkus] = useState(Array.isArray(initialKeyRecord?.selected_skus) ? initialKeyRecord.selected_skus : []);
-  const [isCuratorGridOpen, setIsCuratorGridOpen] = useState(true);
+  const [isCuratorGridOpen, setIsCuratorGridOpen] = useState(false);
   const [curatorSearch, setCuratorSearch] = useState('');
   const [curatorCategory, setCuratorCategory] = useState('all');
   const [curatorStockOnly, setCuratorStockOnly] = useState(false);
@@ -555,13 +555,15 @@ export function DeveloperDashboard({
         <div className="dev-header-main">
           <div className="dev-header-title-row">
             <h1 className="dev-header-title">{apiKey?.client_name || 'Developer API'}</h1>
-            <span className={`dev-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
-              <span className="dev-status-dot" />
-              {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
-            </span>
-            <span className="dev-tier-tag">
-              {tierInfo.name} • {tierInfo.priceLabel}
-            </span>
+            <div className="dev-header-badges-wrap">
+              <span className={`dev-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
+                <span className="dev-status-dot" />
+                {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
+              </span>
+              <span className="dev-tier-tag">
+                {tierInfo.name} • {tierInfo.priceLabel}
+              </span>
+            </div>
           </div>
           {apiKey?.client_website && (
             <div className="dev-header-meta-row">
