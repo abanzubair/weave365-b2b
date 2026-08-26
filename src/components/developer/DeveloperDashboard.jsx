@@ -1258,26 +1258,28 @@ fetchWeave365Catalog();`}
 
         <div className="dev-test-console">
           <div className="dev-test-bar">
-            <span className="dev-http-badge">GET</span>
-            <select
-              value={testEndpoint}
-              onChange={(e) => setTestEndpoint(e.target.value)}
-              className="dev-endpoint-select"
-            >
-              <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
-              <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
-              <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
-              <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
-              <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
-            </select>
+            <div className="dev-test-input-group">
+              <span className="dev-http-badge">GET</span>
+              <select
+                value={testEndpoint}
+                onChange={(e) => setTestEndpoint(e.target.value)}
+                className="dev-endpoint-select"
+              >
+                <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
+                <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
+                <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
+                <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
+                <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
+              </select>
+            </div>
             <button
               type="button"
               onClick={handleRunApiTest}
               disabled={testLoading}
-              className="primary-button dev-send-btn"
+              className="dev-send-btn"
             >
-              {testLoading ? <RefreshCw size={14} className="spin-icon" /> : <Play size={14} />}
-              Send Request
+              {testLoading ? <RefreshCw size={15} className="spin-icon" /> : <Play size={15} />}
+              <span>{testLoading ? 'SENDING...' : 'SEND REQUEST'}</span>
             </button>
           </div>
 
