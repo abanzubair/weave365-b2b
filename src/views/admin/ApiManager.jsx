@@ -626,6 +626,33 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
           </div>
         </div>
       )}
+
+      {/* 7. Live Reseller Dashboard Inspection Modal */}
+      {inspectedKeyId && inspectedRecord && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1.5rem' }}>
+          <div style={{ background: '#f8fafc', borderRadius: '16px', maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setInspectedKeyId(null)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px 12px', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', zIndex: 10 }}
+            >
+              ✕ Close Live View
+            </button>
+            <DeveloperDashboard
+              apiKeyRecord={inspectedRecord}
+              isAdminMode={true}
+              onAdminUpdate={(updatedKey) => {
+                if (!updatedKey) {
+                  setAllKeys((prev) => prev.filter((k) => k.id !== inspectedKeyId));
+                  setInspectedKeyId(null);
+                } else {
+                  setAllKeys((prev) => prev.map((k) => (k.id === updatedKey.id ? { ...k, ...updatedKey } : k)));
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

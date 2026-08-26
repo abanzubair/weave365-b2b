@@ -31,7 +31,8 @@ import {
   ShoppingBag,
   HelpCircle,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  Trash2
 } from 'lucide-react';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import '../../styles/developerDashboard.css';
@@ -153,6 +154,27 @@ export function DeveloperDashboard({
       alert('New API Key generated successfully! Please copy and store it safely.');
     } catch (err) {
       alert('Failed to regenerate key: ' + err.message);
+    }
+  };
+
+  const handleDeleteApiKey = async () => {
+    if (!apiKey?.id) return;
+    const confirmName = apiKey.client_name || 'your';
+    if (!window.confirm(`Are you sure you want to permanently delete the API key for "${confirmName}"? All active integrations using this key will immediately lose access.`)) {
+      return;
+    }
+    try {
+      const { error } = await developerService.deleteApiKey(apiKey.id);
+      if (error) throw error;
+      setApiKey(null);
+      setRevealedKey(null);
+      setNewGeneratedSecret(null);
+      setNewClientName(buyerProfile?.business_name || '');
+      setNewClientWebsite('');
+      if (onAdminUpdate) onAdminUpdate(null);
+      alert('API Key permanently deleted.');
+    } catch (err) {
+      alert('Failed to delete API Key: ' + err.message);
     }
   };
 
@@ -345,7 +367,15 @@ export function DeveloperDashboard({
             onClick={handleRegenerateKey}
             title="Generate a new API secret"
           >
-            <RefreshCw size={14} /> Regenerate Secret Key
+            <RefreshCw size={14} /> Regenerate Secret
+          </button>
+          <button
+            type="button"
+            className="dev-danger-btn"
+            onClick={handleDeleteApiKey}
+            title="Permanently revoke and delete this API key"
+          >
+            <Trash2 size={14} /> Delete Key
           </button>
         </div>
       </div>

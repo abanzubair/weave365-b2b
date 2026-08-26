@@ -326,6 +326,27 @@
   border-color: #94a3b8;
 }
 
+.dev-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #e11d48;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dev-danger-btn:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+  color: #be123c;
+}
+
 /* Secret Alert Box */
 .dev-new-secret-alert {
   background: #f0fdf4;
