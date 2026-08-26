@@ -38,8 +38,9 @@ export function Newsletter({ navigate }) {
 
           <div className="editorial-hub-actions">
             <a
-              href="/early-access"
-              onClick={(e) => handleNav(e, '/early-access')}
+              href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20get%20wholesale%20updates"
+              target="_blank"
+              rel="noopener noreferrer"
               className="editorial-hub-whatsapp-btn"
             >
               <WhatsappIcon size={19} />

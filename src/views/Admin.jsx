@@ -44,7 +44,6 @@ import BlogManager from './admin/BlogManager.jsx';
 import SeoSettings from './admin/SeoSettings.jsx';
 import PageBuilder from './admin/PageBuilder.jsx';
 import VendorApplications from './admin/VendorApplications.jsx';
-import EarlyAccessManager from './admin/EarlyAccessManager.jsx';
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
 import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
 import DirectoryManager from './admin/DirectoryManager.jsx';
@@ -89,7 +88,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [adminData, setAdminData] = useState(emptyAdminData);
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
-  // Tab control: 'dashboard' | 'pipeline' | 'blogs' | 'seo' | 'reviews' | 'partners' | 'tracking' | 'early-access' | 'stock'
+  // Tab control: 'dashboard' | 'pipeline' | 'blogs' | 'seo' | 'reviews' | 'partners' | 'tracking' | 'stock'
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlTab = new URLSearchParams(window.location.search).get('tab');
@@ -106,12 +105,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [reviewsError, setReviewsError] = useState('');
   const [reviewsFilter, setReviewsFilter] = useState('pending');
   const [reviewActionLoading, setReviewActionLoading] = useState(null);
-
-  // Early Access submissions state
-  const [earlyAccessSubmissions, setEarlyAccessSubmissions] = useState([]);
-  const [earlyAccessLoading, setEarlyAccessLoading] = useState(false);
-  const [earlyAccessError, setEarlyAccessError] = useState('');
-  const [earlyAccessActionLoading, setEarlyAccessActionLoading] = useState(null);
 
   // Vendor Onboarding sheets data
   const [partnerApps, setPartnerApps] = useState({ reviews: [], onboardings: [], loading: false, error: null });
@@ -400,53 +393,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
   }
 
-  // API Call: Fetch Early Access form submissions
-  async function loadEarlyAccessSubmissions() {
-    setEarlyAccessLoading(true);
-    setEarlyAccessError('');
-    try {
-      const res = await fetch('/api/early-access');
-      if (!res.ok) {
-        setEarlyAccessSubmissions([]);
-        return;
-      }
-      const json = await res.json();
-      if (json.status === 'error') {
-        setEarlyAccessError(json.error || 'Failed to load early access submissions.');
-        setEarlyAccessSubmissions([]);
-        return;
-      }
-      setEarlyAccessSubmissions(json.data || []);
-    } catch (err) {
-      console.warn('[Admin] loadEarlyAccessSubmissions handled error:', err);
-      setEarlyAccessSubmissions([]);
-    } finally {
-      setEarlyAccessLoading(false);
-    }
-  }
-
-  // API Call: Patch Early Access approval status
-  async function handleEarlyAccessStatusChange(submissionId, newStatus) {
-    setEarlyAccessActionLoading(submissionId);
-    try {
-      const res = await fetch('/api/early-access', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: submissionId, status: newStatus }),
-      });
-      const json = await res.json();
-      if (json.status === 'error') throw new Error(json.error);
-      setEarlyAccessSubmissions(prev =>
-        prev.map(s => s.id === submissionId ? { ...s, status: newStatus } : s)
-      );
-    } catch (err) {
-      console.error('[Admin] handleEarlyAccessStatusChange error:', err);
-      setEarlyAccessError(err.message || 'Failed to update status.');
-    } finally {
-      setEarlyAccessActionLoading(null);
-    }
-  }
-
   // API Call: Fetch all service reviews for moderation
   async function loadSiteReviews() {
     if (!isSupabaseConfigured) {
@@ -503,7 +449,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   useEffect(() => {
     void loadAdminData();
     void loadSiteReviews();
-    void loadEarlyAccessSubmissions();
   }, [allowed, user?.id]);
 
   useEffect(() => {
@@ -512,9 +457,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
     if (activeTab === 'reviews' && allowed) {
       void loadSiteReviews();
-    }
-    if (activeTab === 'early-access' && allowed) {
-      void loadEarlyAccessSubmissions();
     }
     if ((activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
       void loadAdminData();
@@ -558,7 +500,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'stock', label: 'Stock Availability', icon: Boxes, badge: null },
         { key: 'invoice-slip', label: 'Invoice', icon: Printer, badge: null },
         { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
-        { key: 'early-access', label: 'Early Access', icon: UserPlus, badge: earlyAccessSubmissions.filter(s => s.status === 'pending_review').length > 0 ? earlyAccessSubmissions.filter(s => s.status === 'pending_review').length : null },
       ],
     },
     {
@@ -608,7 +549,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
 
   const userName = user?.email ? user.email.split('@')[0] : 'admin';
-  const notificationCount = pendingReviews.length + earlyAccessSubmissions.filter(s => s.status === 'pending_review').length;
+  const notificationCount = pendingReviews.length;
 
   return (
     <section className="admin-layout-container">
@@ -763,17 +704,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               products={products}
               user={user}
               buyerProfile={buyerProfile}
-            />
-          )}
-
-          {activeTab === 'early-access' && (
-            <EarlyAccessManager
-              earlyAccessSubmissions={earlyAccessSubmissions}
-              earlyAccessLoading={earlyAccessLoading}
-              earlyAccessError={earlyAccessError}
-              loadEarlyAccessSubmissions={loadEarlyAccessSubmissions}
-              handleEarlyAccessStatusChange={handleEarlyAccessStatusChange}
-              earlyAccessActionLoading={earlyAccessActionLoading}
             />
           )}
 

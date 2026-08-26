@@ -207,7 +207,7 @@ export default function EnquiresManager({
   }
 
   return (
-    <div className="admin-early-access-tab">
+    <div className="admin-enquires-tab">
       <div className="admin-ea-header">
         <div className="admin-ea-header-left">
           <Inbox size={22} className="admin-ea-header-icon" />

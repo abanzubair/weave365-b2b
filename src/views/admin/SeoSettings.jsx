@@ -73,12 +73,6 @@ const staticSeoDefaults = [
     metaDescription: 'Understand the handwoven integrity, color calibration, and textile variations of our premium Varanasi silk sarees. Essential reading for wholesale buyers.',
   },
   {
-    path: '/early-access',
-    label: 'Early Access',
-    metaTitle: 'Request Early Access | Weave 365 Wholesale Banarasi Sarees',
-    metaDescription: 'Get early access to our wholesale Banarasi saree new arrivals. Verified boutique owners, retailers, and resellers can join our premium updates.',
-  },
-  {
     path: '/new-arrivals',
     label: 'New Arrivals',
     metaTitle: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',

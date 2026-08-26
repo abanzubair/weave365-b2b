@@ -143,7 +143,6 @@ export const NON_PRODUCT_ROUTES = new Set([
   'contact',
   'about',
   'reviews',
-  'early-access',
   'disclaimer',
   'shipping-delivery',
   'returns-cancellation',

@@ -528,7 +528,6 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
     { id: 'sourcing-partners', label: 'Sourcing & White Label', path: '/sourcing-partners' },
     { id: 'handloom-vs-powerloom-guide', label: 'Weave Comparison Guide', path: '/handloom-vs-powerloom-guide' },
     { id: 'weaver-onboarding', label: 'Weaver Onboarding', path: '/weaver-onboarding' },
-    { id: 'early-access', label: 'Early Access Page', path: '/early-access' },
     { id: 'about', label: 'About Us', path: '/about' },
     { id: 'contact', label: 'Contact Us', path: '/contact' },
     { id: 'disclaimer', label: 'Disclaimer', path: '/disclaimer' },

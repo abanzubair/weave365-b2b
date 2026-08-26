@@ -9,7 +9,6 @@ export const runtime = 'edge';
 // Import handler logic
 import { POST as contactPost } from './contactHandler.js';
 import { POST as analyticsPost } from './analyticsHandler.js';
-import { GET as earlyAccessGet, POST as earlyAccessPost } from './earlyAccessHandler.js';
 import { GET as imageGet } from './imageHandler.js';
 import { POST as inquiryNotificationPost } from './inquiryNotificationHandler.js';
 import { POST as uploadPost } from './uploadHandler.js';
@@ -26,7 +25,6 @@ export async function GET(request, { params }) {
 
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
-  if (routeKey === 'early-access') return earlyAccessGet(request);
   if (routeKey === 'image') return imageGet(request);
   if (routeKey === 'storefront') return storefrontGet(request);
   if (routeKey === 'feed/google-shopping') return googleShoppingGet(request);
@@ -41,7 +39,6 @@ export async function POST(request, { params }) {
 
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);
-  if (routeKey === 'early-access') return earlyAccessPost(request);
   if (routeKey === 'inquiry-notification') return inquiryNotificationPost(request);
   if (routeKey === 'upload') return uploadPost(request);
   if (routeKey === 'storefront') return storefrontPost(request);
@@ -55,7 +52,7 @@ export async function OPTIONS() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
