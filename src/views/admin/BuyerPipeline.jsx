@@ -209,7 +209,7 @@ export default function BuyerPipeline({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers_export.csv';
+    a.download = 'accounts_export.csv';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -219,8 +219,8 @@ export default function BuyerPipeline({
       {/* Clean Header */}
       <div className="pipeline-page-header">
         <div className="pipeline-header-left">
-          <h1 className="pipeline-page-title">Customers</h1>
-          <p className="pipeline-page-subtitle">Manage your customers</p>
+          <h1 className="pipeline-page-title">Accounts</h1>
+          <p className="pipeline-page-subtitle">Manage customer and buyer accounts</p>
         </div>
         <div className="pipeline-header-actions">
           <button
@@ -334,9 +334,14 @@ export default function BuyerPipeline({
                     <td><strong>{sortedProfiles.length - index}</strong></td>
                     <td>
                       {profile.created_at ? (
-                        <span className="pipeline-date-cell">
-                          {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <strong style={{ fontSize: '12.5px', color: '#0f172a' }}>
+                            {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </strong>
+                          <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
+                            {new Date(profile.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                          </span>
+                        </div>
                       ) : 'N/A'}
                     </td>
                     <td>

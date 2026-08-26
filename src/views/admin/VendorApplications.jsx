@@ -63,21 +63,16 @@ function formatDate(dateInput) {
   }
 }
 
-function getRelativeTime(dateInput) {
+function formatTime(dateInput) {
   if (!dateInput) return '';
   try {
     const d = new Date(dateInput);
     if (isNaN(d.getTime())) return '';
-    const diffMs = Date.now() - d.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    if (diffHours < 24) {
-      if (diffHours <= 0) return 'Just now';
-      return `${diffHours}h ago`;
-    }
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 30) return `${diffDays}d ago`;
-    return '';
+    return d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
   } catch {
     return '';
   }
@@ -144,71 +139,105 @@ export default function VendorApplications({
     return profiles.filter(isVendorProfile);
   }, [adminData?.profiles]);
 
-  // Helper to compute vendor product status & counts
+  // Helper to compute vendor product visibility status & counts
   const getVendorProductsInfo = useCallback(
     (vendorCode) => {
-      if (!vendorCode) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
+      if (!vendorCode) return { products: [], total: 0, hiddenCount: 0, visibleCount: 0, allHidden: false, allVisible: false };
       const code = normalizeVendorCode(vendorCode);
-      if (!code) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
+      if (!code) return { products: [], total: 0, hiddenCount: 0, visibleCount: 0, allHidden: false, allVisible: false };
 
       const vendorProds = (products || []).filter((p) => {
         const pVid = normalizeVendorCode(p.vendorCode || p.raw?.VID || p.raw?.vid || p.vendor || '');
         return pVid === code;
       });
 
-      let disabledCount = 0;
+      let hiddenCount = 0;
       vendorProds.forEach((p) => {
         const key = p.id || p.groupKey;
         const ov = stockOverrides[key];
-        const status = ov ? ov.stockStatus : (p.stockStatus || (p.isOutOfStock ? 'out-of-stock' : 'ready-stock'));
-        if (status === 'out-of-stock') disabledCount += 1;
+        const isHidden = ov
+          ? ov.stockStatus === 'archived'
+          : Boolean(p.isArchived);
+        if (isHidden) hiddenCount += 1;
       });
 
       const total = vendorProds.length;
-      const activeCount = total - disabledCount;
-      const allDisabled = total > 0 && disabledCount === total;
+      const visibleCount = total - hiddenCount;
+      const allHidden = total > 0 && hiddenCount === total;
+      const allVisible = total > 0 && hiddenCount === 0;
 
       return {
         products: vendorProds,
         total,
-        disabledCount,
-        activeCount,
-        allDisabled,
+        hiddenCount,
+        visibleCount,
+        allHidden,
+        allVisible,
       };
     },
     [products, stockOverrides]
   );
 
-  // Toggle all products for a vendor between Active (ready-stock) and Disabled (out-of-stock)
+  // Toggle all products for a vendor between Visible and Hidden (preserving individual stock status)
   const handleToggleAllVendorProducts = async (vendor) => {
     if (!vendor?.vendor_code || togglingVendorId) return;
     const info = getVendorProductsInfo(vendor.vendor_code);
     if (info.total === 0) {
-      alert(`No catalog products currently found with Loom Code ${vendor.vendor_code}.`);
+      alert(`No catalog products currently found with Vendor Code ${vendor.vendor_code}.`);
       return;
     }
 
-    const shouldDisable = !info.allDisabled;
-    const newStatus = shouldDisable ? 'out-of-stock' : 'ready-stock';
+    const shouldHide = !info.allHidden;
     const vendorName = vendor.business_name || vendor.full_name || 'Vendor';
 
-    const confirmMsg = shouldDisable
-      ? `Are you sure you want to DISABLE all ${info.total} products for "${vendorName}"?\n\nThey will be marked Out of Stock across the wholesale catalog immediately.`
-      : `Are you sure you want to ENABLE all ${info.total} products for "${vendorName}"?\n\nThey will be marked Ready Stock and available across the storefront immediately.`;
+    const confirmMsg = shouldHide
+      ? `Are you sure you want to HIDE all ${info.total} products for "${vendorName}"?\n\nThey will be archived and completely hidden from the website. Individual Out of Stock and Pre-Order statuses will be preserved.`
+      : `Are you sure you want to PUBLISH all ${info.total} products for "${vendorName}"?\n\nThey will become visible on the website while keeping any Out of Stock or Pre-Order statuses previously set by the vendor.`;
 
     if (!window.confirm(confirmMsg)) return;
 
     setTogglingVendorId(vendor.id);
     try {
-      const items = info.products.map((p) => ({
-        productId: p.id || p.groupKey,
-        vendorCode: vendor.vendor_code,
-        vendorName: vendor.business_name || vendor.full_name || '',
-      }));
+      let items;
+      if (shouldHide) {
+        // Hiding: archive all products, remembering each product's current stock status
+        items = info.products.map((p) => {
+          const key = p.id || p.groupKey;
+          const currentOverride = stockOverrides[key];
+          const currentStatus = currentOverride
+            ? currentOverride.stockStatus
+            : p.stockStatus || (p.isOutOfStock ? 'out-of-stock' : p.isPreOrder ? 'pre-order' : 'ready-stock');
+
+          return {
+            productId: key,
+            vendorCode: vendor.vendor_code,
+            vendorName: vendor.business_name || vendor.full_name || '',
+            stockStatus: 'archived',
+            prevStockStatus: currentStatus !== 'archived' ? currentStatus : 'ready-stock',
+          };
+        });
+      } else {
+        // Publishing: restore each product's individual previous status (out-of-stock, pre-order, ready-stock)
+        items = info.products.map((p) => {
+          const key = p.id || p.groupKey;
+          const currentOverride = stockOverrides[key];
+          let restoredStatus = currentOverride?.prevStockStatus;
+          if (!restoredStatus || restoredStatus === 'archived') {
+            restoredStatus = p.isOutOfStock ? 'out-of-stock' : p.isPreOrder ? 'pre-order' : 'ready-stock';
+          }
+
+          return {
+            productId: key,
+            vendorCode: vendor.vendor_code,
+            vendorName: vendor.business_name || vendor.full_name || '',
+            stockStatus: restoredStatus,
+            prevStockStatus: null,
+          };
+        });
+      }
 
       const res = await batchSaveVendorStock({
         items,
-        stockStatus: newStatus,
         userId: user?.id,
         userName: user?.email || 'Admin',
       });
@@ -216,13 +245,13 @@ export default function VendorApplications({
       if (res?.success) {
         setStockOverrides(getVendorStockLocal());
         handleCopy(
-          `✓ ${shouldDisable ? 'Disabled' : 'Enabled'} all ${info.total} products!`,
+          `✓ ${shouldHide ? 'Hidden' : 'Published'} all ${info.total} products!`,
           `toggle_${vendor.id}`
         );
       }
     } catch (err) {
       console.error('Error toggling vendor products:', err);
-      alert('Failed to update product availability.');
+      alert('Failed to update product visibility.');
     } finally {
       setTogglingVendorId(null);
     }
@@ -276,7 +305,7 @@ export default function VendorApplications({
       });
     }
 
-    // Loom Code filter
+    // Vendor Code filter
     if (codeFilter === 'assigned') {
       list = list.filter((v) => Boolean(v.vendor_code && v.vendor_code.trim()));
     } else if (codeFilter === 'unassigned') {
@@ -386,11 +415,11 @@ export default function VendorApplications({
       'Pincode',
       'Specialties',
       'Sourcing Model',
-      'Loom / Vendor Code',
+      'Vendor Code',
       'Partner Label',
       'Total Products',
-      'Active Products',
-      'Disabled Products',
+      'Visible Products',
+      'Hidden Products',
     ];
 
     const rows = filteredVendors.map((v) => {
@@ -412,8 +441,8 @@ export default function VendorApplications({
         v.vendor_code || '',
         v.partner_name || '',
         prodInfo.total,
-        prodInfo.activeCount,
-        prodInfo.disabledCount,
+        prodInfo.visibleCount,
+        prodInfo.hiddenCount,
       ];
     });
 
@@ -499,7 +528,7 @@ export default function VendorApplications({
           <div>
             <h2 className="admin-partners-banner-title">Vendor & Artisan Management</h2>
             <p className="admin-partners-banner-desc">
-              Manage registered artisan suppliers, assign Loom Codes (V01, V02...), and toggle website product availability.
+              Manage registered artisan suppliers, assign Vendor Codes (V01, V02...), and toggle website product availability.
             </p>
           </div>
         </div>
@@ -547,7 +576,7 @@ export default function VendorApplications({
             <PackageCheck size={22} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Loom Codes Assigned</span>
+            <span className="admin-partner-metric-label">Vendor Codes Assigned</span>
             <div className="admin-partner-metric-values">
               <strong className="admin-partner-metric-value">{metrics.withCode}</strong>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#7c3aed' }}>
@@ -562,7 +591,7 @@ export default function VendorApplications({
             <Boxes size={22} />
           </div>
           <div className="admin-flex1">
-            <span className="admin-partner-metric-label">Pending Loom Code</span>
+            <span className="admin-partner-metric-label">Pending Vendor Code</span>
             <div className="admin-partner-metric-values">
               <strong className="admin-partner-metric-value">{metrics.withoutCode}</strong>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#b45309' }}>Needs V-Code</span>
@@ -592,7 +621,7 @@ export default function VendorApplications({
             <Search size={15} className="admin-search-icon" />
             <input
               type="text"
-              placeholder="Search vendor, phone, loom code, city..."
+              placeholder="Search vendor, phone, vendor code, city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="admin-search-input"
@@ -625,14 +654,14 @@ export default function VendorApplications({
             </select>
           )}
 
-          {/* Loom Code Filter */}
+          {/* Vendor Code Filter */}
           <select
             value={codeFilter}
             onChange={(e) => setCodeFilter(e.target.value)}
             className="admin-select-input"
-            aria-label="Filter by loom code"
+            aria-label="Filter by vendor code"
           >
-            <option value="all">All Loom Codes</option>
+            <option value="all">All Vendor Codes</option>
             <option value="assigned">Assigned Code (V01, V02...)</option>
             <option value="unassigned">Unassigned Code</option>
           </select>
@@ -684,12 +713,12 @@ export default function VendorApplications({
             <thead>
               <tr>
                 <th style={{ width: '110px' }}>Date</th>
-                <th style={{ minWidth: '180px' }}>Vendor / Workshop</th>
-                <th style={{ minWidth: '160px' }}>WhatsApp Contact</th>
+                <th style={{ minWidth: '180px' }}>Vendor</th>
+                <th style={{ minWidth: '160px' }}>Contact</th>
                 <th style={{ minWidth: '140px' }}>Location</th>
                 <th style={{ minWidth: '150px' }}>Specialty & Model</th>
-                <th style={{ width: '120px' }}>Loom Code</th>
-                <th style={{ minWidth: '160px', textAlign: 'center' }}>Catalog Products</th>
+                <th style={{ width: '120px' }}>Vendor Code</th>
+                <th style={{ minWidth: '140px', textAlign: 'center' }}>Products</th>
                 <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -731,7 +760,6 @@ export default function VendorApplications({
                       )}`
                     : null;
 
-                  const relativeTime = getRelativeTime(vendor.created_at || vendor.updated_at);
                   const cats = Array.isArray(vendor.interested_categories)
                     ? vendor.interested_categories
                     : String(vendor.interested_categories || '')
@@ -742,16 +770,14 @@ export default function VendorApplications({
 
                   return (
                     <tr key={vendor.id}>
-                      {/* Date */}
+                      {/* Date & Time */}
                       <td>
-                        <strong style={{ fontSize: '12.5px', color: '#0f172a' }}>
+                        <strong style={{ fontSize: '12.5px', color: '#0f172a', display: 'block' }}>
                           {formatDate(vendor.created_at || vendor.updated_at)}
                         </strong>
-                        {relativeTime && (
-                          <span style={{ display: 'block', fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                            {relativeTime}
-                          </span>
-                        )}
+                        <span style={{ display: 'block', fontSize: '11.5px', color: '#64748b', marginTop: '2px', fontWeight: 500 }}>
+                          {formatTime(vendor.created_at || vendor.updated_at)}
+                        </span>
                       </td>
 
                       {/* Vendor & Workshop */}
@@ -871,7 +897,7 @@ export default function VendorApplications({
                         )}
                       </td>
 
-                      {/* Loom Code */}
+                      {/* Vendor Code */}
                       <td>
                         {vendor.vendor_code ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -922,7 +948,7 @@ export default function VendorApplications({
                               fontWeight: 600,
                               cursor: 'pointer',
                             }}
-                            title="Assign Loom Code (e.g. V01)"
+                            title="Assign Vendor Code (e.g. V01)"
                           >
                             <Plus size={11} />
                             <span>Assign Code</span>
@@ -948,23 +974,25 @@ export default function VendorApplications({
                                 fontWeight: 700,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s ease',
-                                background: prodInfo.allDisabled ? '#fee2e2' : '#dcfce7',
-                                color: prodInfo.allDisabled ? '#dc2626' : '#15803d',
-                                border: `1px solid ${prodInfo.allDisabled ? '#fca5a5' : '#86efac'}`,
+                                background: prodInfo.allHidden ? '#fee2e2' : prodInfo.hiddenCount > 0 ? '#fef3c7' : '#dcfce7',
+                                color: prodInfo.allHidden ? '#dc2626' : prodInfo.hiddenCount > 0 ? '#b45309' : '#15803d',
+                                border: `1px solid ${prodInfo.allHidden ? '#fca5a5' : prodInfo.hiddenCount > 0 ? '#fcd34d' : '#86efac'}`,
                               }}
                               title={
-                                prodInfo.allDisabled
-                                  ? `Click to ENABLE all ${prodInfo.total} products on website`
-                                  : `Click to DISABLE all ${prodInfo.total} products from website`
+                                prodInfo.allHidden
+                                  ? `Click to PUBLISH all ${prodInfo.total} products on website`
+                                  : `Click to HIDE all ${prodInfo.total} products from website`
                               }
                             >
-                              {prodInfo.allDisabled ? <EyeOff size={13} /> : <Eye size={13} />}
+                              {prodInfo.allHidden ? <EyeOff size={13} /> : <Eye size={13} />}
                               <span>
                                 {togglingVendorId === vendor.id
                                   ? 'Updating...'
-                                  : prodInfo.allDisabled
-                                  ? `Disabled (${prodInfo.total})`
-                                  : `Active (${prodInfo.total})`}
+                                  : prodInfo.allHidden
+                                  ? `Hidden (${prodInfo.total})`
+                                  : prodInfo.hiddenCount > 0
+                                  ? `${prodInfo.visibleCount} Vis / ${prodInfo.hiddenCount} Hid`
+                                  : `Visible (${prodInfo.total})`}
                               </span>
                             </button>
                             {copyFeedback[`toggle_${vendor.id}`] && (
@@ -1091,7 +1119,7 @@ export default function VendorApplications({
                   )}
                 </div>
                 <span style={{ display: 'block', fontSize: '12.5px', color: '#64748b', marginTop: '4px' }}>
-                  Registered: {formatDate(inspectVendor.created_at || inspectVendor.updated_at)} • Email: {inspectVendor.email || 'N/A'}
+                  Registered: {formatDate(inspectVendor.created_at || inspectVendor.updated_at)} at {formatTime(inspectVendor.created_at || inspectVendor.updated_at)} • Email: {inspectVendor.email || 'N/A'}
                 </span>
               </div>
               <button
@@ -1153,7 +1181,7 @@ export default function VendorApplications({
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Users size={16} style={{ color: '#4f46e5' }} />
-                    Contact & Workshop Info
+                    Contact & Vendor Info
                   </h4>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
@@ -1229,7 +1257,7 @@ export default function VendorApplications({
                   <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
                     <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Tag size={16} style={{ color: '#2563eb' }} />
-                      Loom Code (Catalog Link)
+                      Vendor Code (Catalog Link)
                     </h4>
                     <p style={{ margin: '4px 0 12px', fontSize: '12px', color: '#64748b' }}>
                       Set a short code (e.g. <strong>V01</strong>, <strong>V02</strong>) to link this vendor to their catalog products.
@@ -1286,23 +1314,23 @@ export default function VendorApplications({
                             fontWeight: 700,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
-                            background: inspectedVendorProductsInfo.allDisabled ? '#16a34a' : '#dc2626',
+                            background: inspectedVendorProductsInfo.allHidden ? '#16a34a' : '#dc2626',
                             color: '#ffffff',
                             border: 'none',
                           }}
                           title={
-                            inspectedVendorProductsInfo.allDisabled
-                              ? `Click to Enable all ${inspectedVendorProductsInfo.total} products (Mark Ready Stock)`
-                              : `Click to Disable all ${inspectedVendorProductsInfo.total} products (Mark Out of Stock)`
+                            inspectedVendorProductsInfo.allHidden
+                              ? `Click to Publish all ${inspectedVendorProductsInfo.total} products on website`
+                              : `Click to Hide all ${inspectedVendorProductsInfo.total} products from website`
                           }
                         >
-                          {inspectedVendorProductsInfo.allDisabled ? <Eye size={14} /> : <EyeOff size={14} />}
+                          {inspectedVendorProductsInfo.allHidden ? <Eye size={14} /> : <EyeOff size={14} />}
                           <span>
                             {togglingVendorId === inspectVendor.id
                               ? 'Updating...'
-                              : inspectedVendorProductsInfo.allDisabled
-                              ? `Enable All (${inspectedVendorProductsInfo.total})`
-                              : `Disable All (${inspectedVendorProductsInfo.total})`}
+                              : inspectedVendorProductsInfo.allHidden
+                              ? `Publish All (${inspectedVendorProductsInfo.total})`
+                              : `Hide All (${inspectedVendorProductsInfo.total})`}
                           </span>
                         </button>
                       )}
@@ -1316,24 +1344,24 @@ export default function VendorApplications({
                             fontWeight: 600,
                             padding: '2px 8px',
                             borderRadius: '4px',
-                            background: inspectedVendorProductsInfo.allDisabled
+                            background: inspectedVendorProductsInfo.allHidden
                               ? '#fee2e2'
-                              : inspectedVendorProductsInfo.disabledCount > 0
+                              : inspectedVendorProductsInfo.hiddenCount > 0
                               ? '#fef3c7'
                               : '#dcfce7',
-                            color: inspectedVendorProductsInfo.allDisabled
+                            color: inspectedVendorProductsInfo.allHidden
                               ? '#b91c1c'
-                              : inspectedVendorProductsInfo.disabledCount > 0
+                              : inspectedVendorProductsInfo.hiddenCount > 0
                               ? '#b45309'
                               : '#15803d',
                           }}
                         >
                           Status:{' '}
-                          {inspectedVendorProductsInfo.allDisabled
-                            ? 'All Products Disabled'
-                            : inspectedVendorProductsInfo.disabledCount > 0
-                            ? `${inspectedVendorProductsInfo.activeCount} Active, ${inspectedVendorProductsInfo.disabledCount} Disabled`
-                            : 'All Products Active'}
+                          {inspectedVendorProductsInfo.allHidden
+                            ? 'All Products Hidden from Website'
+                            : inspectedVendorProductsInfo.hiddenCount > 0
+                            ? `${inspectedVendorProductsInfo.visibleCount} Visible, ${inspectedVendorProductsInfo.hiddenCount} Hidden`
+                            : 'All Products Visible on Website'}
                         </span>
                       </div>
                     )}
@@ -1353,22 +1381,22 @@ export default function VendorApplications({
                           {inspectedVendorProductsInfo.products.slice(0, 8).map((p, idx) => {
                             const pKey = p.id || p.groupKey;
                             const ov = stockOverrides[pKey];
-                            const isOut = ov
-                              ? ov.stockStatus === 'out-of-stock'
-                              : p.stockStatus === 'out-of-stock' || p.isOutOfStock;
+                            const isHidden = ov
+                              ? ov.stockStatus === 'archived'
+                              : Boolean(p.isArchived);
 
                             return (
                               <div
                                 key={pKey || idx}
                                 style={{
-                                  border: `1px solid ${isOut ? '#fca5a5' : '#e2e8f0'}`,
+                                  border: `1px solid ${isHidden ? '#fca5a5' : '#e2e8f0'}`,
                                   borderRadius: '6px',
                                   padding: '4px',
-                                  background: isOut ? '#fff5f5' : '#ffffff',
+                                  background: isHidden ? '#fff5f5' : '#ffffff',
                                   display: 'flex',
                                   flexDirection: 'column',
                                   gap: '2px',
-                                  opacity: isOut ? 0.75 : 1,
+                                  opacity: isHidden ? 0.65 : 1,
                                 }}
                               >
                                 <img
@@ -1392,10 +1420,10 @@ export default function VendorApplications({
                                   style={{
                                     fontSize: '9.5px',
                                     fontWeight: 700,
-                                    color: isOut ? '#dc2626' : '#16a34a',
+                                    color: isHidden ? '#dc2626' : '#16a34a',
                                   }}
                                 >
-                                  {isOut ? 'Out of Stock' : 'Ready'}
+                                  {isHidden ? 'Hidden' : 'Visible'}
                                 </span>
                               </div>
                             );
@@ -1407,7 +1435,7 @@ export default function VendorApplications({
                             type="button"
                             onClick={() => {
                               setInspectVendor(null);
-                              setActiveTab('stock_availability');
+                              setActiveTab('stock');
                             }}
                             className="admin-btn-inspect"
                             style={{ width: '100%', justifyContent: 'center', fontSize: '12px', marginTop: '10px' }}
@@ -1422,7 +1450,7 @@ export default function VendorApplications({
                         {inspectVendor.vendor_code ? (
                           <>No catalog products currently tagged with code <strong>{inspectVendor.vendor_code}</strong>.</>
                         ) : (
-                          <>Assign a Loom Code above (e.g. <strong>V01</strong>) to link products to this vendor.</>
+                          <>Assign a Vendor Code above (e.g. <strong>V01</strong>) to link products to this vendor.</>
                         )}
                       </p>
                     )}

@@ -219,8 +219,9 @@ export const fetchProducts = safeCache(async function fetchProducts() {
               const stockKey = override.stockStatus;
               const stockLabel = override.stockStatusLabel;
               const nonStockTags = (product.statusTags || []).filter(
-                (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(tag.key)
+                (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
               );
+              const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && product.isArchived);
               return {
                 ...product,
                 stockStatusOverride: stockKey,
@@ -232,6 +233,7 @@ export const fetchProducts = safeCache(async function fetchProducts() {
                 isReadyStock: stockKey === 'ready-stock',
                 isPreOrder: stockKey === 'pre-order',
                 isBackSoon: stockKey === 'back-soon',
+                isArchived: isArchived,
               };
             });
           }

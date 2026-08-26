@@ -5,7 +5,7 @@
  * inspired by the Dashtar Admin interface.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Users,
   FileText,
@@ -55,6 +55,8 @@ import AdminStockManager from './admin/AdminStockManager.jsx';
 
 import { storeConfig } from '../config.js';
 import { isVendorProfile } from '../utils/buyerAccess.js';
+import brandLogo from '../../assets/Weave365.svg';
+import { assetSrc } from '../utils/assetSrc.js';
 
 // Import shared helpers and overlays
 import {
@@ -89,15 +91,62 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   const [adminData, setAdminData] = useState(emptyAdminData);
   const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
 
-  // Tab control: 'dashboard' | 'pipeline' | 'blogs' | 'seo' | 'reviews' | 'partners' | 'tracking' | 'stock'
-  const [activeTab, setActiveTab] = useState(() => {
+  // Tab control with automatic URL query persistence & localStorage cache
+  const [activeTab, setActiveTabState] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlTab = new URLSearchParams(window.location.search).get('tab');
       if (urlTab === 'stock' || urlTab === 'vendor-stock' || urlTab === 'inventory') return 'stock';
       if (urlTab) return urlTab;
+
+      try {
+        const savedTab = localStorage.getItem('weave365_admin_active_tab');
+        if (savedTab) return savedTab;
+      } catch {}
     }
     return 'dashboard';
   });
+
+  const setActiveTab = useCallback((tabKey) => {
+    if (!tabKey) return;
+    setActiveTabState(tabKey);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('weave365_admin_active_tab', tabKey);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tabKey);
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) {
+        console.warn('Failed to persist active tab:', e);
+      }
+    }
+  }, []);
+
+  // Synchronize on browser Back / Forward navigation
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePopState = () => {
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      if (urlTab) {
+        setActiveTabState(urlTab);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Ensure current active tab is mirrored to URL & localStorage on mount / change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && activeTab) {
+      try {
+        localStorage.setItem('weave365_admin_active_tab', activeTab);
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('tab') !== activeTab) {
+          url.searchParams.set('tab', activeTab);
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch {}
+    }
+  }, [activeTab]);
 
   // Reviews moderation state
   const [pendingReviews, setPendingReviews] = useState([]);
@@ -397,7 +446,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       title: 'General',
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
-        { key: 'pipeline', label: 'Customer', icon: Users, badge: null },
+        { key: 'pipeline', label: 'Accounts', icon: Users, badge: null },
         { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
         { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
       ],
@@ -466,11 +515,39 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       {/* 1. Sidebar Panel */}
       <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''}`}>
         <div className="admin-sidebar-header">
-          {!isSidebarMinimized && <span className="admin-sidebar-brand-text">Navigation</span>}
+          {!isSidebarMinimized ? (
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-sidebar-brand-link"
+              title="Open Weave365 Homepage in new tab"
+            >
+              <img
+                src={assetSrc(brandLogo)}
+                alt={storeConfig.name}
+                style={{ height: '24px', width: 'auto', objectFit: 'contain' }}
+              />
+            </a>
+          ) : (
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-sidebar-brand-link"
+              title="Open Weave365 Homepage in new tab"
+            >
+              <img
+                src={assetSrc(brandLogo)}
+                alt={storeConfig.name}
+                style={{ height: '20px', width: 'auto', objectFit: 'contain' }}
+              />
+            </a>
+          )}
           <button
             type="button"
             className="sidebar-toggle-btn"
-            onClick={() => setIsSidebarMinimized(prev => !prev)}
+            onClick={() => setIsSidebarMinimized((prev) => !prev)}
             title={isSidebarMinimized ? 'Expand Sidebar' : 'Minimize Sidebar'}
           >
             {isSidebarMinimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

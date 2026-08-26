@@ -14,7 +14,8 @@ export const STOCK_STATUS_OPTIONS = [
   { key: 'ready-stock', label: 'Ready Stock', number: 1, color: '#1b8042', bg: 'rgba(27, 128, 66, 0.1)', border: 'rgba(27, 128, 66, 0.25)' },
   { key: 'pre-order', label: 'Pre-Order', number: 2, color: '#b8860b', bg: 'rgba(184, 134, 11, 0.1)', border: 'rgba(184, 134, 11, 0.25)' },
   { key: 'out-of-stock', label: 'Out of Stock', number: 3, color: '#c93b2b', bg: 'rgba(201, 59, 43, 0.1)', border: 'rgba(201, 59, 43, 0.25)' },
-  { key: 'back-soon', label: 'Back Soon', number: 4, color: '#6a3cbc', bg: 'rgba(106, 60, 188, 0.1)', border: 'rgba(106, 60, 188, 0.25)' }
+  { key: 'back-soon', label: 'Back Soon', number: 4, color: '#6a3cbc', bg: 'rgba(106, 60, 188, 0.1)', border: 'rgba(106, 60, 188, 0.25)' },
+  { key: 'archived', label: 'Archived (Hidden)', number: 5, color: '#64748b', bg: 'rgba(100, 116, 139, 0.1)', border: 'rgba(100, 116, 139, 0.25)' }
 ];
 
 export const VENDOR_STOCK_TABLE_SQL = `CREATE TABLE IF NOT EXISTS public.vendor_product_stock (
@@ -279,11 +280,10 @@ export async function batchSaveVendorStock({
     ? items 
     : productIds.map(pid => ({ productId: pid, vendorCode, vendorName }));
 
-  if (!targetItems.length || !stockStatus) {
-    return { success: false, error: 'Target products and stock status are required' };
+  if (!targetItems.length) {
+    return { success: false, error: 'Target products are required' };
   }
 
-  const opt = STOCK_STATUS_OPTIONS.find((o) => o.key === stockStatus) || STOCK_STATUS_OPTIONS[0];
   const now = new Date();
   const timestampISO = now.toISOString();
   const timestampIST = formatISTDateTime(now);
@@ -296,8 +296,18 @@ export async function batchSaveVendorStock({
     const pid = item.productId || item.id;
     if (!pid) continue;
 
+    const itemStatus = item.stockStatus || stockStatus || 'ready-stock';
+    const opt = STOCK_STATUS_OPTIONS.find((o) => o.key === itemStatus) || STOCK_STATUS_OPTIONS[0];
+
     const vCode = String(item.vendorCode || vendorCode || '').trim();
     const vName = String(item.vendorName || vendorName || '').trim();
+
+    // Preserve previous stock status when hiding/archiving
+    const existingOverride = currentOverrides[pid];
+    let prevStockStatus = item.prevStockStatus || existingOverride?.prevStockStatus || null;
+    if (itemStatus === 'archived' && existingOverride && existingOverride.stockStatus !== 'archived') {
+      prevStockStatus = existingOverride.stockStatus;
+    }
 
     const updateObj = {
       productId: pid,
@@ -305,6 +315,7 @@ export async function batchSaveVendorStock({
       vendorName: vName,
       stockStatus: opt.key,
       stockStatusLabel: opt.label,
+      prevStockStatus,
       updatedAt: timestampISO,
       updatedBy: userId ? String(userId) : null,
       updatedByName: String(userName || '').trim(),

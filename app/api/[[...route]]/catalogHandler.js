@@ -47,12 +47,13 @@ function applyStockOverrides(products, stockRows) {
     const stockKey = override.stock_status;
     const stockLabel = override.stock_status_label;
     const nonStockTags = (product.statusTags || []).filter(
-      (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(tag.key)
+      (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
     );
     const updatedTags = [
       { key: stockKey, label: stockLabel },
       ...nonStockTags,
     ];
+    const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && product.isArchived);
     return {
       ...product,
       stockStatusOverride: stockKey,
@@ -64,6 +65,7 @@ function applyStockOverrides(products, stockRows) {
       isReadyStock: stockKey === 'ready-stock',
       isPreOrder: stockKey === 'pre-order',
       isBackSoon: stockKey === 'back-soon',
+      isArchived: isArchived,
     };
   });
 }
