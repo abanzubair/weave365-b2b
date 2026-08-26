@@ -28,6 +28,33 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [catalogProducts, setCatalogProducts] = useState(products || []);
+
+  // Ensure catalog products are available for image & title lookups
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setCatalogProducts(products);
+      return;
+    }
+
+    let active = true;
+    async function loadCatalog() {
+      try {
+        const { data: sheetRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').maybeSingle();
+        if (active && sheetRow?.csv_data) {
+          const parsed = typeof sheetRow.csv_data === 'string' ? JSON.parse(sheetRow.csv_data) : sheetRow.csv_data;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCatalogProducts(parsed);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load fallback products for tracking view:', err);
+      }
+    }
+
+    void loadCatalog();
+    return () => { active = false; };
+  }, [products]);
 
   // Fetch order tracking data by ID
   useEffect(() => {
@@ -479,30 +506,71 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             {order.items && order.items.length > 0 && (
               <div className="tracking-items-section">
                 <h3 className="tracking-items-title">Ordered Items ({order.items.length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {order.items.map((item, index) => {
-                    // Try to resolve catalog image from products array
-                    const matchedProduct = products.find(p => p.id === item.product_id);
-                    const imageSrc = matchedProduct?.images?.[0] || fallbackProductImage;
+                    const itemCode = String(item.variant_code || item.sku || item.product_id || item.id || '').trim().toLowerCase();
+                    const itemColor = String(item.color || '').trim().toLowerCase();
+
+                    // Find product in catalog
+                    const matchedProduct = (catalogProducts || []).find(p => {
+                      const pId = String(p.id || '').toLowerCase();
+                      const pGroup = String(p.groupKey || '').toLowerCase();
+                      if (pId && pId === itemCode) return true;
+                      if (pGroup && pGroup === itemCode) return true;
+                      if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === itemCode)) return true;
+                      return false;
+                    });
+
+                    let matchedVariant = null;
+                    if (matchedProduct?.variants) {
+                      matchedVariant = matchedProduct.variants.find(v => 
+                        String(v.code || '').toLowerCase() === itemCode || 
+                        (itemColor && String(v.colorName || '').toLowerCase() === itemColor)
+                      );
+                    }
+
+                    // Resolve image
+                    let imageSrc = item.image || item.image_url || '';
+                    if (!imageSrc && matchedProduct) {
+                      if (item.color && matchedProduct.colorImages && matchedProduct.colorImages[item.color]) {
+                        imageSrc = matchedProduct.colorImages[item.color];
+                      } else {
+                        imageSrc = matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
+                      }
+                    }
+                    if (!imageSrc) imageSrc = fallbackProductImage;
+
+                    // Resolve title
+                    const title = item.product_title || item.title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
+
+                    // Resolve price
+                    let unitPrice = Number(item.price);
+                    if (!unitPrice && matchedProduct) {
+                      const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
+                      unitPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
+                    }
+
+                    const qty = Math.max(1, parseInt(item.quantity || 1, 10));
+                    const totalPrice = unitPrice > 0 ? unitPrice * qty : null;
 
                     return (
                       <div key={index} className="tracking-item-row">
                         <img 
                           src={imageSrc} 
-                          alt={item.product_title || 'Product'} 
+                          alt={title} 
                           className="tracking-item-img"
                           onError={(e) => { e.target.src = fallbackProductImage; }}
                         />
                         <div className="tracking-item-info">
-                          <div className="tracking-item-name">{item.product_title || 'Premium Banarasi Saree'}</div>
+                          <div className="tracking-item-name">{title}</div>
                           <div className="tracking-item-meta">
-                            {item.variant_code && <span>Code: <code>{item.variant_code}</code></span>}
+                            {(item.variant_code || item.sku) && <span>Code: <code>{item.variant_code || item.sku}</code></span>}
                             {item.color && <span>Color: <strong>{item.color}</strong></span>}
-                            <span>Quantity: x{item.quantity || 1}</span>
+                            <span>Quantity: x{qty}</span>
                           </div>
                         </div>
                         <div className="tracking-item-price">
-                          {item.price ? formatMoney(item.price * (item.quantity || 1)) : 'TBD'}
+                          {totalPrice ? formatMoney(totalPrice) : (item.price ? formatMoney(item.price * qty) : 'Wholesale Direct')}
                         </div>
                       </div>
                     );

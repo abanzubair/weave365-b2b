@@ -759,15 +759,68 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 400, headers: corsHeaders });
       }
 
-      // Normalize items array so variant_code, sku, color and quantity are always set
+      // Fetch catalog for SKU validation and item metadata enrichment (title, images, price)
+      let catalogList = [];
+      try {
+        const { data: sheetRow } = await supabase.from('sheet_data').select('csv_data').eq('id', 'products_json').single();
+        if (sheetRow?.csv_data) {
+          catalogList = typeof sheetRow.csv_data === 'string' ? JSON.parse(sheetRow.csv_data) : sheetRow.csv_data;
+        }
+      } catch (e) {
+        console.warn('Failed to load products_json for order enrichment:', e);
+      }
+
+      // Normalize items array with full catalog metadata
       const normalizedItems = items.map((item) => {
         const sku = String(item.sku || item.variant_code || item.id || '').trim();
+        const itemColor = String(item.color || item.title || '').trim();
+
+        // Match in catalog
+        const matchedProduct = (catalogList || []).find(p => {
+          const pId = String(p.id || '').toLowerCase();
+          const pGroup = String(p.groupKey || '').toLowerCase();
+          if (pId === sku.toLowerCase()) return true;
+          if (pGroup === sku.toLowerCase()) return true;
+          if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === sku.toLowerCase())) return true;
+          return false;
+        });
+
+        let matchedVariant = null;
+        if (matchedProduct?.variants) {
+          matchedVariant = matchedProduct.variants.find(v => 
+            String(v.code || '').toLowerCase() === sku.toLowerCase() ||
+            (itemColor && String(v.colorName || '').toLowerCase() === itemColor.toLowerCase())
+          );
+        }
+
+        const colorName = itemColor || matchedVariant?.colorName || matchedProduct?.colors?.[0] || 'Standard';
+        
+        let imageSrc = item.image || item.image_url || '';
+        if (!imageSrc && matchedProduct) {
+          if (colorName && matchedProduct.colorImages && matchedProduct.colorImages[colorName]) {
+            imageSrc = matchedProduct.colorImages[colorName];
+          } else {
+            imageSrc = matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
+          }
+        }
+
+        let itemPrice = item.price ? Number(item.price) : undefined;
+        if (!itemPrice && (matchedVariant || matchedProduct)) {
+          const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
+          itemPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
+        }
+
+        const productTitle = item.product_title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
+
         return {
           sku: sku,
           variant_code: sku,
-          color: item.color || item.title || 'Standard',
+          product_id: matchedProduct?.id || sku,
+          product_title: productTitle,
+          color: colorName,
           quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
-          price: item.price ? Number(item.price) : undefined,
+          price: itemPrice > 0 ? itemPrice : undefined,
+          image: imageSrc || undefined,
         };
       });
 
