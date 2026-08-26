@@ -37,7 +37,7 @@
 
 .weave-guide-hero h1 {
   font-family: var(--font-hero-heading, serif);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   font-weight: 700;
   line-height: 1.2;
   color: var(--editorial-gold-dark);
@@ -505,7 +505,7 @@
 @media (max-width: 768px) {
 
   .weave-guide-hero h1 {
-    font-size: 2.2rem;
+    font-size: clamp(22px, 6.5vw, 28px);
   }
   .weave-guide-intro {
     padding: 0;

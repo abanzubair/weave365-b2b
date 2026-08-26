@@ -68,11 +68,11 @@
 
 .reviews-h1 {
   font-family: var(--font-hero-heading);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 0;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.01em;
 }
 
@@ -144,7 +144,7 @@
 
 .reviews-sidebar-large-tag {
   font-family: var(--font-hero-heading);
-  font-size: 2.25rem;
+  font-size: clamp(1.35rem, 4vw, 2.25rem);
   font-weight: 400;
   color: var(--gold-dark);
   letter-spacing: 0.05em;
@@ -1207,4 +1207,71 @@
   color: var(--muted);
   line-height: 1.2;
   opacity: 0.8;
+}
+
+/* Mobile & Tablet Responsive Optimizations for Reviews */
+@media screen and (max-width: 768px) {
+  .reviews-page-container {
+    padding: 0 var(--site-padding) 40px var(--site-padding);
+  }
+
+  .reviews-page-hero {
+    margin-bottom: 2rem;
+  }
+
+  .reviews-hero-header-wrap {
+    margin-bottom: 1.25rem;
+    padding-right: 70px;
+  }
+
+  .reviews-h1 {
+    font-size: clamp(22px, 6.5vw, 28px);
+    line-height: 1.18;
+  }
+
+  .reviews-seal-container {
+    width: 60px;
+    height: 60px;
+    top: 0;
+    right: 0;
+  }
+
+  .reviews-kicker-line {
+    margin-top: 1rem;
+    width: 48px;
+  }
+
+  .reviews-split-intro {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 1.25rem;
+  }
+
+  .reviews-sidebar-large-tag {
+    font-size: clamp(1.35rem, 5vw, 1.85rem);
+  }
+
+  .reviews-split-right-narrative p {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .reviews-header-card {
+    padding: 1.25rem;
+  }
+
+  .reviews-summary-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .reviews-rating-big {
+    font-size: 2.5rem;
+  }
+
+  .reviews-write-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

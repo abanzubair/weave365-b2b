@@ -15,8 +15,8 @@ export const DEFAULT_THEME_SETTINGS = {
   },
   typography: {
     '--body-size': '16px',
-    '--h1-size': '56px',
-    '--h2-size': '36px',
+    '--h1-size': '44px',
+    '--h2-size': '32px',
   },
   elementStyles: {},
   content: {},

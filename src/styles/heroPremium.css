@@ -79,7 +79,7 @@
 
 .premium-hero-title {
   font-family: var(--font-hero-heading);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   line-height: 1.2;
   font-weight: 700;
   color: var(--hero-title-color, #FF7360);

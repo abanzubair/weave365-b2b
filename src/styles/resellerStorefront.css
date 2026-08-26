@@ -93,14 +93,14 @@
 /* Typography */
 .reseller-storefront h1 {
   font-family: var(--font-heading);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   font-weight: 700;
   line-height: 1.2;
 }
 
 .reseller-storefront h2 {
   font-family: var(--font-heading);
-  font-size: var(--h2-size);
+  font-size: clamp(20px, 4vw, var(--h2-size, 32px));
   font-weight: 700;
   line-height: 1.25;
 }

@@ -501,7 +501,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   if (!post) {
     return (
       <div className="blog-list-container text-center" style={{ padding: '12rem 5% 8rem' }}>
-        <h1 style={{ fontFamily: "var(--font-hero-heading)", color: "var(--blog-gold-dark)", fontSize: 'var(--h1-size)', fontWeight: 700, marginBottom: '1.5rem' }}>Article Not Found</h1>
+        <h1 style={{ fontFamily: "var(--font-hero-heading)", color: "var(--blog-gold-dark)", fontWeight: 700, marginBottom: '1.5rem' }}>Article Not Found</h1>
         <p className="blog-list-subtitle" style={{ marginBottom: '3rem' }}>The blog post you are looking for may have been moved or renamed.</p>
         <AppLink to="blog" className="blog-filter-btn active" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
           Return to Blog List
@@ -512,7 +512,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
 
   return (
     <div className="blog-post-page">
-      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
+      <Breadcrumb items={breadcrumbItems} navigate={navigate} contained={true} />
 
 
 

@@ -100,6 +100,44 @@
     --site-padding: clamp(16px, 3.5vw, 28px);
   }
 
+  /* Universal Responsive Headings for Tablets and Mobile Devices */
+  h1, .h1,
+  .reviews-h1,
+  .contact-h1,
+  .hero-headline,
+  .hero-title-luxury,
+  .arrivals-hero-title,
+  .dropshipping-hero-title,
+  .seo-landing-hero h1,
+  .weave-guide-hero h1,
+  .blog-list-header h1,
+  .blog-post-hero h1,
+  .atelier-hero-content h1,
+  .reseller-storefront h1,
+  .premium-hero-title,
+  .order-tracking-title,
+  .nf-heading,
+  .legal-h1,
+  .cw-hero-masthead,
+  .rf-hero-title,
+  .affiliate-hero-title {
+    font-size: clamp(24px, 5.5vw, 34px) !important;
+    line-height: 1.18 !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  h2, .h2,
+  .reviews-sidebar-large-tag,
+  .featured-info-pane h2 {
+    font-size: clamp(20px, 4vw, 26px) !important;
+    line-height: 1.24 !important;
+  }
+
+  h3, .h3 {
+    font-size: clamp(17px, 3vw, 22px) !important;
+    line-height: 1.28 !important;
+  }
+
   /* Top Bar */
   .top-bar {
     padding: 0 var(--site-padding);
@@ -1195,16 +1233,40 @@
     --site-padding: 12px;
   }
 
+  h1, .h1,
+  .reviews-h1,
+  .contact-h1,
+  .hero-headline,
+  .hero-title-luxury,
+  .arrivals-hero-title,
+  .dropshipping-hero-title,
+  .seo-landing-hero h1,
+  .weave-guide-hero h1,
+  .blog-list-header h1,
+  .blog-post-hero h1,
+  .atelier-hero-content h1,
+  .reseller-storefront h1,
+  .premium-hero-title,
+  .order-tracking-title,
+  .nf-heading,
+  .legal-h1,
+  .cw-hero-masthead,
+  .rf-hero-title,
+  .affiliate-hero-title {
+    font-size: clamp(20px, 6.8vw, 25px) !important;
+    line-height: 1.18 !important;
+  }
+
   .section-title h2 {
-    font-size: clamp(22px, 6.5vw, 28px) !important;
+    font-size: clamp(20px, 6vw, 24px) !important;
   }
 
   .deal-copy h2 {
-    font-size: clamp(20px, 6vw, 26px) !important;
+    font-size: clamp(18px, 5.5vw, 22px) !important;
   }
 
   .hero h1 {
-    font-size: clamp(26px, 7.5vw, 32px) !important;
+    font-size: clamp(22px, 7vw, 28px) !important;
   }
 
   .catalog-grid {

@@ -41,7 +41,7 @@
 
 .dropshipping-hero-title {
   font-family: var(--font-heading);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   line-height: 1.12;
   color: var(--heading);
   margin-bottom: 20px;

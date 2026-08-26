@@ -119,7 +119,7 @@
 
 .arrivals-hero-title {
   font-family: var(--font-hero-title, "Marcellus", serif);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   font-weight: 700;
   line-height: 1.1;
   color: #ffffff;

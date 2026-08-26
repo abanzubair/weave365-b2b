@@ -150,7 +150,7 @@
 
 .legal-h1 {
   font-family: var(--font-hero-heading);
-  font-size: var(--h2-size);
+  font-size: clamp(20px, 4vw, var(--h2-size, 32px));
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 1.5rem;

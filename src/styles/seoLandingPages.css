@@ -46,7 +46,7 @@
 
 .seo-landing-hero h1 {
   font-family: var(--font-hero-heading, 'Manrope', serif);
-  font-size: var(--h1-size);
+  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
   font-weight: 700;
   line-height: 1.15;
   color: var(--gold-dark, #805d31);
