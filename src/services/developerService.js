@@ -95,10 +95,10 @@ export const developerService = {
   },
 
   /**
-   * Fetch daily usage stats for a key for the past N days
+   * Fetch daily usage stats for a key (or user) for the past N days
    */
-  async getUsageStats(keyId, days = 30) {
-    if (!isSupabaseConfigured || !keyId) return { usage: [], totalMonth: 0 };
+  async getUsageStats(keyId, days = 30, userId = null) {
+    if (!isSupabaseConfigured || (!keyId && !userId)) return { usage: [], totalMonth: 0 };
     
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -108,12 +108,21 @@ export const developerService = {
     currentMonthStart.setDate(1);
     const monthStartStr = currentMonthStart.toISOString().split('T')[0];
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('api_usage_daily')
       .select('*')
-      .eq('api_key_id', keyId)
       .gte('usage_date', dateStr)
       .order('usage_date', { ascending: true });
+
+    if (userId && keyId) {
+      query = query.or(`api_key_id.eq.${keyId},user_id.eq.${userId}`);
+    } else if (keyId) {
+      query = query.eq('api_key_id', keyId);
+    } else {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.warn('[developerService] getUsageStats error:', error);
@@ -212,10 +221,35 @@ export const developerService = {
   },
 
   /**
-   * Delete / Revoke API key
+   * Delete / Revoke API key (preserves user-level usage history)
    */
   async deleteApiKey(keyId) {
     if (!isSupabaseConfigured || !keyId) return { error: 'Missing keyId' };
+
+    try {
+      // Preserve user_id on all usage rows before removing key record
+      const { data: keyRecord } = await supabase
+        .from('api_keys')
+        .select('user_id')
+        .eq('id', keyId)
+        .maybeSingle();
+
+      if (keyRecord?.user_id) {
+        await supabase
+          .from('api_usage_daily')
+          .update({ user_id: keyRecord.user_id })
+          .eq('api_key_id', keyId);
+      }
+
+      // Detach api_key_id so usage history remains tied to user_id even after key deletion
+      await supabase
+        .from('api_usage_daily')
+        .update({ api_key_id: null })
+        .eq('api_key_id', keyId);
+    } catch (e) {
+      console.warn('[developerService] Decoupling usage before delete:', e);
+    }
+
     const { error } = await supabase
       .from('api_keys')
       .delete()

@@ -48,6 +48,57 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   // Selected user for "Inspect Dashboard" mode
   const [inspectedKeyId, setInspectedKeyId] = useState(null);
 
+  // Edit Client Tier & Quota Overrides Modal (Directly on Admin Table)
+  const [editingKey, setEditingKey] = useState(null);
+  const [editTier, setEditTier] = useState('free');
+  const [editQuota, setEditQuota] = useState(2000);
+  const [editRps, setEditRps] = useState(1);
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editSaving, setEditSaving] = useState(false);
+
+  const handleOpenEditModal = (item) => {
+    setEditingKey(item);
+    setEditTier(item.tier || 'free');
+    setEditQuota(item.monthly_quota || 2000);
+    setEditRps(item.rate_limit_rps || 1);
+    setEditIsActive(item.is_active ?? true);
+  };
+
+  const handleSaveEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingKey) return;
+    setEditSaving(true);
+    try {
+      const quotaNum = parseInt(editQuota, 10) || 2000;
+      const rpsNum = parseInt(editRps, 10) || 1;
+      const { error } = await developerService.updateApiKey(editingKey.id, {
+        tier: editTier,
+        monthly_quota: quotaNum,
+        rate_limit_rps: rpsNum,
+        is_active: editIsActive,
+      });
+      if (error) throw error;
+      setAllKeys((prev) =>
+        prev.map((k) =>
+          k.id === editingKey.id
+            ? {
+                ...k,
+                tier: editTier,
+                monthly_quota: quotaNum,
+                rate_limit_rps: rpsNum,
+                is_active: editIsActive,
+              }
+            : k
+        )
+      );
+      setEditingKey(null);
+    } catch (err) {
+      alert('Failed to save API settings: ' + err.message);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   // New Client Modal
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newUserId, setNewUserId] = useState('');
@@ -155,20 +206,12 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
     <div className="api-manager-container">
       {/* 1. Header & Summary Stats */}
       <div className="api-manager-header">
-        <div>
-          <div className="api-badges-row">
-            <span className="api-architecture-badge">
-              <Zap size={12} /> Cloudflare Edge Architecture
-            </span>
-            <span className="api-safemode-badge">
-              <Shield size={12} /> Supabase 90/10 Safe Mode
-            </span>
-          </div>
+        <div className="api-header-title-block">
           <h1 className="api-manager-title">
-            Developer & B2B API Manager
+            Developer API Manager
           </h1>
           <p className="api-manager-subtitle">
-            Manage external reseller website connections (Shopify, WooCommerce, PrestaShop), monitor quota safety, and assign pricing tiers.
+            Manage connected storefronts, inspect client keys, and configure tier rate limits.
           </p>
         </div>
 
@@ -179,7 +222,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             onClick={fetchOverview}
             disabled={loading}
           >
-            <RefreshCw size={14} className={loading ? 'spin-icon' : ''} /> Refresh Stats
+            <RefreshCw size={13} className={loading ? 'spin-icon' : ''} /> Refresh
           </button>
           <button
             type="button"
@@ -189,76 +232,74 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
               setCreateModalOpen(true);
             }}
           >
-            <Plus size={16} /> Provision New API Client
+            <Plus size={15} /> Provision Client Key
           </button>
         </div>
       </div>
 
       {/* 2. System Quota & Revenue Metric Cards */}
       <div className="admin-stats-grid">
-        <div className="admin-stat-card" style={{ borderLeft: '4px solid #3b82f6' }}>
+        <div className="admin-stat-card">
           <div className="admin-stat-head">
-            <span className="admin-stat-label">Monthly API Load (10% Budget)</span>
-            <div className="admin-stat-icon-wrap" style={{ background: '#eff6ff', color: '#3b82f6' }}>
-              <Code2 size={18} />
+            <span className="admin-stat-label">System Monthly Load</span>
+            <div className="admin-stat-icon-wrap">
+              <Code2 size={16} />
             </div>
           </div>
           <div className="admin-stat-value">
             {systemOverview?.totalRequestsThisMonth.toLocaleString() || 0}{' '}
             <span>/ {systemOverview?.safetyLimit.toLocaleString()} req</span>
           </div>
-          <div style={{ height: '7px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden', margin: '8px 0 6px 0' }}>
+          <div className="admin-stat-progress-wrap">
             <div
+              className="admin-stat-progress-bar"
               style={{
-                height: '100%',
+                transform: `scaleX(${Math.min(1, (systemOverview?.safetyUsagePercent || 0) / 100)})`,
                 background: (systemOverview?.safetyUsagePercent || 0) > 75 ? '#ef4444' : '#10b981',
-                width: `${Math.min(100, systemOverview?.safetyUsagePercent || 0)}%`,
-                borderRadius: '4px',
-                transition: 'width 0.3s ease',
               }}
             />
           </div>
           <div className="admin-stat-subtext">
-            <strong>{systemOverview?.safetyUsagePercent || 0}%</strong> of 10% safety budget used • 90% reserved for main site
+            {systemOverview?.safetyUsagePercent || 0}% of 10% safety budget used • 90% reserved for main site
           </div>
         </div>
 
-        <div className="admin-stat-card" style={{ borderLeft: '4px solid #10b981' }}>
+        <div className="admin-stat-card">
           <div className="admin-stat-head">
-            <span className="admin-stat-label">Active API Partners</span>
-            <div className="admin-stat-icon-wrap" style={{ background: '#ecfdf5', color: '#10b981' }}>
-              <Users size={18} />
+            <span className="admin-stat-label">Connected Storefronts</span>
+            <div className="admin-stat-icon-wrap">
+              <Users size={16} />
             </div>
           </div>
           <div className="admin-stat-value">
             {systemOverview?.activeKeysCount || 0}{' '}
-            <span>/ {systemOverview?.totalKeysCount || 0} total</span>
+            <span>/ {systemOverview?.totalKeysCount || 0} active</span>
           </div>
-          <div className="admin-stat-subtext" style={{ color: '#15803d', fontWeight: 600, marginTop: '12px' }}>
-            🎉 {systemOverview?.paidTiersCount || 0} Paid Clients (Growth / Pro)
+          <div className="admin-stat-subtext">
+            {systemOverview?.paidTiersCount || 0} paid subscription clients (Growth / Pro)
           </div>
         </div>
 
-        <div className="admin-stat-card" style={{ borderLeft: '4px solid #db2777' }}>
+        <div className="admin-stat-card">
           <div className="admin-stat-head">
-            <span className="admin-stat-label">Estimated API SaaS Revenue</span>
-            <div className="admin-stat-icon-wrap" style={{ background: '#fdf2f8', color: '#db2777' }}>
-              <DollarSign size={18} />
+            <span className="admin-stat-label">Estimated Monthly Revenue</span>
+            <div className="admin-stat-icon-wrap">
+              <DollarSign size={16} />
             </div>
           </div>
-          <div className="admin-stat-value" style={{ color: '#db2777' }}>
-            ₹{(systemOverview?.monthlyRevenueEst || 0).toLocaleString()}
-            <span style={{ fontSize: '0.8125rem', color: '#64748b' }}> / mo</span>
+          <div className="admin-stat-value">
+            ₹{(systemOverview?.monthlyRevenueEst || 0).toLocaleString()}{' '}
+            <span>/ mo</span>
           </div>
-          <div className="admin-stat-subtext" style={{ marginTop: '12px' }}>
-            {(systemOverview?.paidTiersCount || 0) >= 3 ? '🎉 100% Covers Supabase Pro plan' : '3 paid clients = ₹2,097 (covers Supabase Pro)'}
+          <div className="admin-stat-subtext">
+            SaaS subscription recurring revenue from API partners
           </div>
         </div>
       </div>
 
       {/* 3. "Inspect User Dashboard" Inspector Mode */}
       {inspectedRecord ? (
-        <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <button
               type="button"
@@ -298,7 +339,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
           <input
             type="text"
             className="api-search-input"
-            placeholder="Search by business name, website, or email..."
+            placeholder="Search by storefront, website, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -333,9 +374,9 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         <table className="api-table">
           <thead>
             <tr>
-              <th>Client / Portal</th>
+              <th>Storefront / Client</th>
               <th>User Account</th>
-              <th>Tier & Pricing</th>
+              <th>Tier</th>
               <th>Monthly Usage</th>
               <th>Rate Limit</th>
               <th>Status</th>
@@ -351,52 +392,53 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
               return (
                 <tr key={item.id}>
                   <td>
-                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '0.9375rem' }}>{item.client_name}</strong>
+                    <strong className="api-client-title">{item.client_name}</strong>
                     {item.client_website ? (
                       <a
                         href={item.client_website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#2563eb', fontSize: '0.75rem', textDecoration: 'none', marginTop: '2px' }}
+                        className="api-client-link"
                       >
                         <Globe size={11} /> {item.client_website} <ExternalLink size={10} />
                       </a>
                     ) : (
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No website specified</span>
+                      <span className="api-no-website">No website specified</span>
                     )}
                   </td>
 
                   <td>
-                    <span style={{ display: 'block', color: '#334155', fontWeight: 500 }}>{item.profiles?.email || 'N/A'}</span>
-                    <small style={{ color: '#64748b', fontSize: '0.75rem' }}>{item.profiles?.full_name || item.profiles?.business_name || ''}</small>
+                    <span className="api-user-email">{item.profiles?.email || 'N/A'}</span>
+                    <small className="api-user-name">{item.profiles?.full_name || item.profiles?.business_name || ''}</small>
                   </td>
 
                   <td>
                     <span className={`api-tier-tag ${item.tier}`}>
                       {tierInfo.name}
                     </span>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '3px' }}>{tierInfo.priceLabel}</div>
+                    <div className="api-tier-price">{tierInfo.priceLabel}</div>
                   </td>
 
-                  <td style={{ minWidth: '150px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px' }}>
-                      <strong>{item.monthTotal.toLocaleString()}</strong>
-                      <span style={{ color: '#64748b' }}>/ {item.monthly_quota.toLocaleString()}</span>
-                    </div>
-                    <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          height: '100%',
-                          background: item.quotaPercent > 85 ? '#ef4444' : item.quotaPercent > 60 ? '#f59e0b' : '#10b981',
-                          width: `${Math.min(100, item.quotaPercent)}%`,
-                          borderRadius: '4px',
-                        }}
-                      />
+                  <td>
+                    <div className="api-usage-cell">
+                      <div className="api-usage-nums">
+                        <span className="api-usage-used">{item.monthTotal.toLocaleString()}</span>
+                        <span className="api-usage-total"> / {item.monthly_quota.toLocaleString()}</span>
+                      </div>
+                      <div className="api-mini-progress-wrap">
+                        <div
+                          className="api-mini-progress-bar"
+                          style={{
+                            transform: `scaleX(${Math.min(1, (item.quotaPercent || 0) / 100)})`,
+                            background: item.quotaPercent > 85 ? '#ef4444' : item.quotaPercent > 60 ? '#f59e0b' : '#0f172a',
+                          }}
+                        />
+                      </div>
                     </div>
                   </td>
 
                   <td>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#334155', background: '#f8fafc', padding: '3px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                    <span className="api-rps-badge">
                       {item.rate_limit_rps || 1} req/s
                     </span>
                   </td>
@@ -405,84 +447,50 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                     <button
                       type="button"
                       onClick={() => handleToggleActive(item.id, item.is_active)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '4px 10px',
-                        borderRadius: '9999px',
-                        border: 'none',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        background: item.is_active ? '#dcfce7' : '#fee2e2',
-                        color: item.is_active ? '#15803d' : '#b91c1c',
-                      }}
+                      className={`api-status-btn ${item.is_active ? 'active' : 'disabled'}`}
+                      title={item.is_active ? 'Click to disable API key' : 'Click to enable API key'}
                     >
-                      <Power size={12} /> {item.is_active ? 'Active' : 'Disabled'}
+                      <span className="api-status-dot" />
+                      {item.is_active ? 'Active' : 'Disabled'}
                     </button>
                   </td>
 
                   <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <div className="api-action-group">
                       {whatsappUrl && (
                         <a
                           href={whatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Contact Reseller on WhatsApp"
-                          style={{
-                            padding: '6px 8px',
-                            borderRadius: '6px',
-                            background: '#dcfce7',
-                            color: '#15803d',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            textDecoration: 'none',
-                          }}
+                          className="api-action-btn api-wa-btn"
                         >
-                          <MessageCircle size={14} />
+                          <MessageCircle size={13} />
                         </a>
                       )}
                       <button
                         type="button"
+                        onClick={() => handleOpenEditModal(item)}
+                        title="Edit Tier & Quota Overrides"
+                        className="api-action-btn api-edit-btn"
+                      >
+                        <Sliders size={12} /> Edit
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setInspectedKeyId(item.id)}
                         title="Inspect Live User Dashboard"
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid #cbd5e1',
-                          background: '#ffffff',
-                          color: '#334155',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          transition: 'all 0.15s ease',
-                        }}
+                        className="api-action-btn api-inspect-btn"
                       >
-                        <Eye size={13} /> Inspect
+                        <Eye size={12} /> Inspect
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteKey(item.id, item.client_name)}
                         title="Revoke API Key"
-                        style={{
-                          padding: '6px 8px',
-                          borderRadius: '6px',
-                          border: '1px solid #fecaca',
-                          background: '#fff1f2',
-                          color: '#e11d48',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
+                        className="api-action-btn api-delete-btn"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   </td>
@@ -493,7 +501,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             {filteredKeys.length === 0 && (
               <tr>
                 <td colSpan="7" style={{ padding: '3.5rem 1rem', textAlign: 'center', color: '#64748b' }}>
-                  <KeyRound size={32} style={{ color: '#cbd5e1', margin: '0 auto 8px auto', display: 'block' }} />
+                  <KeyRound size={28} style={{ color: '#cbd5e1', margin: '0 auto 8px auto', display: 'block' }} />
                   <strong style={{ display: 'block', color: '#334155', marginBottom: '4px' }}>No API Clients Found</strong>
                   <span style={{ fontSize: '0.8125rem' }}>No client matches your current filter criteria or no API keys have been generated yet.</span>
                 </td>
@@ -503,7 +511,101 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         </table>
       </div>
 
-      {/* 6. Provision New API Client Modal */}
+      {/* 6. Admin Controls: Tier & Quota Overrides Modal (Outside Table) */}
+      {editingKey && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+              <Sliders size={20} style={{ color: '#0f172a' }} />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                Admin Controls: Tier & Quota Overrides
+              </h2>
+            </div>
+            <p style={{ color: '#64748b', fontSize: '0.8125rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+              Configure pricing tier, monthly request quota, and rate limits for <strong>{editingKey.client_name}</strong> ({editingKey.profiles?.email || 'No email'}).
+            </p>
+
+            <form onSubmit={handleSaveEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                Plan / Pricing Tier:
+                <select
+                  value={editTier}
+                  onChange={(e) => {
+                    const nextTier = e.target.value;
+                    setEditTier(nextTier);
+                    const cfg = TIER_CONFIGS[nextTier];
+                    if (cfg) {
+                      setEditQuota(cfg.monthlyQuota);
+                      setEditRps(cfg.rateLimitRps);
+                    }
+                  }}
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
+                >
+                  <option value="free">Starter (Free) - 2,000 req/mo</option>
+                  <option value="growth">Growth Partner (₹699/mo) - 20,000 req/mo</option>
+                  <option value="pro">Pro / Scale (₹1,499/mo) - 75,000 req/mo</option>
+                </select>
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                Monthly Request Quota:
+                <input
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  required
+                  value={editQuota}
+                  onChange={(e) => setEditQuota(e.target.value)}
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                />
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                Rate Limit (Req / Sec):
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  required
+                  value={editRps}
+                  onChange={(e) => setEditRps(e.target.value)}
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                />
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '4px' }}>
+                <input
+                  type="checkbox"
+                  checked={editIsActive}
+                  onChange={(e) => setEditIsActive(e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                Key Status: {editIsActive ? <span style={{ color: '#16a34a' }}>Active & Live</span> : <span style={{ color: '#dc2626' }}>Deactivated / Suspended</span>}
+              </label>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
+                <button
+                  type="button"
+                  className="api-btn-secondary"
+                  onClick={() => setEditingKey(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="api-btn-primary"
+                >
+                  {editSaving ? <RefreshCw size={14} className="spin-icon" /> : <Check size={14} />}
+                  Save Client API Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. Provision New API Client Modal */}
       {createModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: '#ffffff', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0' }}>
@@ -627,7 +729,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         </div>
       )}
 
-      {/* 7. Live Reseller Dashboard Inspection Modal */}
+      {/* 8. Live Reseller Dashboard Inspection Modal */}
       {inspectedKeyId && inspectedRecord && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1.5rem' }}>
           <div style={{ background: '#f8fafc', borderRadius: '16px', maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', position: 'relative' }}>

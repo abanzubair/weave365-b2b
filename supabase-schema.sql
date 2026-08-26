@@ -1493,10 +1493,11 @@ create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
 create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
 create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
 
--- Daily Aggregated Usage Tracking Table (1 row per key per day = zero DB bloat)
+-- Daily Aggregated Usage Tracking Table (1 row per key/user per day = zero DB bloat)
 create table if not exists public.api_usage_daily (
   id uuid primary key default gen_random_uuid(),
-  api_key_id uuid not null references public.api_keys(id) on delete cascade,
+  api_key_id uuid references public.api_keys(id) on delete set null,
+  user_id uuid references public.profiles(id) on delete cascade,
   usage_date date not null default current_date,
   total_requests integer not null default 0,
   successful_requests integer not null default 0,
@@ -1507,6 +1508,7 @@ create table if not exists public.api_usage_daily (
 );
 
 create index if not exists api_usage_daily_key_date_idx on public.api_usage_daily (api_key_id, usage_date desc);
+create index if not exists api_usage_daily_user_date_idx on public.api_usage_daily (user_id, usage_date desc);
 
 -- Atomic counter function for instant zero-race updates
 create or replace function public.record_api_request(
@@ -1515,10 +1517,15 @@ create or replace function public.record_api_request(
   p_is_rate_limited boolean default false
 )
 returns void language plpgsql security definer as $$
+declare
+  v_user_id uuid;
 begin
-  insert into public.api_usage_daily (api_key_id, usage_date, total_requests, successful_requests, rate_limited_requests, updated_at)
+  select user_id into v_user_id from public.api_keys where id = p_key_id;
+
+  insert into public.api_usage_daily (api_key_id, user_id, usage_date, total_requests, successful_requests, rate_limited_requests, updated_at)
   values (
     p_key_id,
+    v_user_id,
     current_date,
     1,
     case when p_is_success then 1 else 0 end,
@@ -1527,6 +1534,7 @@ begin
   )
   on conflict (api_key_id, usage_date)
   do update set
+    user_id = coalesce(public.api_usage_daily.user_id, v_user_id),
     total_requests = public.api_usage_daily.total_requests + 1,
     successful_requests = public.api_usage_daily.successful_requests + (case when p_is_success then 1 else 0 end),
     rate_limited_requests = public.api_usage_daily.rate_limited_requests + (case when p_is_rate_limited then 1 else 0 end),

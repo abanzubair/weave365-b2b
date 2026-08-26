@@ -88,7 +88,7 @@ export function DeveloperDashboard({
         setAdminRps(record.rate_limit_rps || 1);
         setAdminIsActive(record.is_active ?? true);
 
-        const stats = await developerService.getUsageStats(record.id, 14);
+        const stats = await developerService.getUsageStats(record.id, 14, user?.id);
         setUsageStats(stats);
       }
     } catch (err) {
@@ -105,7 +105,7 @@ export function DeveloperDashboard({
       setAdminQuota(initialKeyRecord.monthly_quota || 2000);
       setAdminRps(initialKeyRecord.rate_limit_rps || 1);
       setAdminIsActive(initialKeyRecord.is_active ?? true);
-      void developerService.getUsageStats(initialKeyRecord.id, 14).then(setUsageStats);
+      void developerService.getUsageStats(initialKeyRecord.id, 14, user?.id).then(setUsageStats);
     } else {
       void loadData();
     }
@@ -205,14 +205,40 @@ export function DeveloperDashboard({
     setTestStatus(null);
     try {
       const activeKeyToUse = revealedKey || apiKey?.key_prefix || 'w365_demo_test';
-      const res = await fetch(testEndpoint, {
-        headers: {
-          'X-API-Key': activeKeyToUse,
-        },
-      });
-      const data = await res.json();
+      const headers = {
+        'X-API-Key': activeKeyToUse,
+      };
+      if (apiKey?.id) {
+        headers['X-API-Key-Id'] = apiKey.id;
+      }
+      const res = await fetch(testEndpoint, { headers });
       setTestStatus(res.status);
+
+      const contentType = res.headers.get('content-type') || '';
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { response: text };
+        }
+      }
       setTestResponse(data);
+
+      if (apiKey?.id) {
+        // Refresh usage metrics after request
+        setTimeout(async () => {
+          try {
+            const updatedStats = await developerService.getUsageStats(apiKey.id, 14, user?.id);
+            setUsageStats(updatedStats);
+          } catch (e) {
+            console.warn('[DeveloperDashboard] Error refreshing usage stats:', e);
+          }
+        }, 300);
+      }
     } catch (err) {
       setTestStatus(500);
       setTestResponse({ error: err.message });
@@ -252,63 +278,57 @@ export function DeveloperDashboard({
     return (
       <div className="dev-dashboard-empty">
         <div className="dev-empty-icon-wrap">
-          <KeyRound size={42} />
+          <KeyRound size={26} />
         </div>
-        <h2>Connect Your Website via Weave365 API</h2>
-        <p>
-          Automate product sync, real-time handloom silk saree stock availability, wholesale pricing, and automated order dropshipping directly to your <strong>WooCommerce</strong>, <strong>Shopify</strong>, or <strong>PrestaShop</strong> portal.
+        <h2>Connect Your Storefront via Weave 365 API</h2>
+        <p className="dev-empty-desc">
+          Automate live catalog sync, real-time handloom silk saree stock availability, and dropship order management directly with your store.
         </p>
 
-        <div className="dev-tier-features-preview">
-          <div className="tier-preview-card active">
-            <span className="tier-badge">Starter (Free)</span>
-            <h3>₹0 <span>/ month</span></h3>
-            <ul>
-              <li><Check size={14} /> 2,000 monthly requests included</li>
-              <li><Check size={14} /> Full Catalog JSON Export</li>
-              <li><Check size={14} /> Real-time Stock Status Sync</li>
-              <li><Check size={14} /> Ready-made Shopify & WooCommerce Scripts</li>
-            </ul>
-          </div>
-          <div className="tier-preview-card highlighted">
-            <span className="tier-badge popular">Growth Partner</span>
-            <h3>₹699 <span>/ month</span></h3>
-            <ul>
-              <li><Check size={14} /> 20,000 monthly requests</li>
-              <li><Check size={14} /> Automated Order Placement API</li>
-              <li><Check size={14} /> Instant Stock Alert Webhooks</li>
-              <li><Check size={14} /> Priority 5 req/sec Rate Limit</li>
-            </ul>
-          </div>
+        <div className="dev-empty-perks">
+          <span className="dev-perk-item">
+            <Check size={14} className="dev-perk-icon" /> 2,000 monthly requests included
+          </span>
+          <span className="dev-perk-item">
+            <Check size={14} className="dev-perk-icon" /> Real-time stock status sync
+          </span>
+          <span className="dev-perk-item">
+            <Check size={14} className="dev-perk-icon" /> Ready-made WooCommerce & Shopify scripts
+          </span>
         </div>
 
         <form onSubmit={handleCreateApiKey} className="dev-new-key-form">
           <div className="dev-form-row">
-            <label>
-              Business / Storefront Name:
+            <label className="dev-form-label">
+              <span>Business / Storefront Name</span>
               <input
                 type="text"
                 required
                 value={newClientName}
                 onChange={(e) => setNewClientName(e.target.value)}
                 placeholder="e.g. My Boutique Store"
+                className="dev-form-input"
               />
             </label>
-            <label>
-              Website URL *:
+            <label className="dev-form-label">
+              <span>Storefront Website URL <span className="dev-required">*</span></span>
               <input
                 type="url"
                 required
                 value={newClientWebsite}
                 onChange={(e) => setNewClientWebsite(e.target.value)}
                 placeholder="https://www.example.com"
+                className="dev-form-input"
               />
             </label>
           </div>
           <button type="submit" disabled={creatingKey} className="primary-button dev-activate-btn">
             {creatingKey ? <RefreshCw size={16} className="spin-icon" /> : <Zap size={16} />}
-            Generate Free Starter API Key
+            {creatingKey ? 'Generating Key...' : 'Generate API Key'}
           </button>
+          <p className="dev-form-footnote">
+            Free Starter tier • Instant activation • No credit card required
+          </p>
         </form>
       </div>
     );
@@ -343,16 +363,17 @@ export function DeveloperDashboard({
 
       {/* 2. Top Header & Tier Bar */}
       <div className="dev-dashboard-header">
-        <div className="dev-header-title">
-          <div className="dev-header-badge-row">
-            <span className={`dev-status-pill ${apiKey?.is_active ? 'active' : 'inactive'}`}>
-              {apiKey?.is_active ? '🟢 API Live & Active' : '🔴 API Suspended'}
+        <div className="dev-header-main">
+          <div className="dev-header-title-row">
+            <h1>{apiKey?.client_name || 'Developer API'}</h1>
+            <span className={`dev-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
+              <span className="dev-status-dot" />
+              {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
             </span>
-            <span className={`dev-tier-pill tier-${apiKey?.tier || 'free'}`}>
-              {tierInfo.name} ({tierInfo.priceLabel})
+            <span className="dev-tier-tag">
+              {tierInfo.name} • {tierInfo.priceLabel}
             </span>
           </div>
-          <h1>{apiKey?.client_name || 'Developer API Center'}</h1>
           {apiKey?.client_website && (
             <a href={apiKey.client_website} target="_blank" rel="noopener noreferrer" className="dev-client-link">
               <Globe size={13} /> {apiKey.client_website} <ExternalLink size={11} />
@@ -367,7 +388,7 @@ export function DeveloperDashboard({
             onClick={handleRegenerateKey}
             title="Generate a new API secret"
           >
-            <RefreshCw size={14} /> Regenerate Secret
+            <RefreshCw size={13} /> Regenerate Secret
           </button>
           <button
             type="button"
@@ -375,7 +396,7 @@ export function DeveloperDashboard({
             onClick={handleDeleteApiKey}
             title="Permanently revoke and delete this API key"
           >
-            <Trash2 size={14} /> Delete Key
+            <Trash2 size={13} /> Delete Key
           </button>
         </div>
       </div>
@@ -383,71 +404,60 @@ export function DeveloperDashboard({
       {/* Secret Key Notification Modal / Banner (When Key is newly generated) */}
       {newGeneratedSecret && (
         <div className="dev-new-secret-alert">
-          <div className="dev-alert-icon"><CheckCircle2 size={22} /></div>
-          <div className="dev-alert-content">
-            <strong>Here is your new API Secret Key:</strong>
-            <p>Make sure to copy it right now. For security purposes, you will not be able to see the full secret again.</p>
-            <div className="dev-secret-copy-box">
-              <code>{newGeneratedSecret}</code>
-              <button
-                type="button"
-                onClick={() => copyToClipboard(newGeneratedSecret, 'new-secret')}
-                className="dev-copy-btn"
-              >
-                {copiedField === 'new-secret' ? <Check size={14} /> : <Copy size={14} />}
-                {copiedField === 'new-secret' ? 'Copied!' : 'Copy Key'}
-              </button>
+          <div className="dev-alert-left">
+            <CheckCircle2 size={18} className="dev-alert-icon" />
+            <div className="dev-alert-content">
+              <strong>Your New API Secret Key:</strong>
+              <p>Copy it right now. For security purposes, this secret cannot be displayed again.</p>
             </div>
           </div>
-          <button type="button" className="dev-close-secret" onClick={() => setNewGeneratedSecret(null)}>✕</button>
+          <div className="dev-secret-copy-box">
+            <code>{newGeneratedSecret}</code>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(newGeneratedSecret, 'new-secret')}
+              className="dev-copy-btn"
+            >
+              {copiedField === 'new-secret' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedField === 'new-secret' ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          <button type="button" className="dev-close-secret" onClick={() => setNewGeneratedSecret(null)} aria-label="Dismiss">✕</button>
         </div>
       )}
 
-      {/* 3. Metric Gauges (Quota, RPS, Remaining) */}
+      {/* 3. Metric Gauges (Quota & Rate Limit) */}
       <div className="dev-metrics-grid">
         <div className="dev-metric-card">
           <div className="dev-metric-head">
-            <span className="dev-metric-label">Monthly Usage</span>
-            <Activity size={16} className="dev-metric-icon" />
+            <span className="dev-metric-label">Monthly Request Quota</span>
+            <Activity size={15} className="dev-metric-icon" />
           </div>
           <div className="dev-metric-value">
-            {currentMonthUsed.toLocaleString()} <span>/ {monthlyQuota.toLocaleString()} req</span>
+            {currentMonthUsed.toLocaleString()} <span className="dev-metric-total">/ {monthlyQuota.toLocaleString()} req</span>
           </div>
           <div className="dev-progress-bar-wrap">
             <div
               className={`dev-progress-bar ${usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
-              style={{ width: `${usagePercent}%` }}
+              style={{ transform: `scaleX(${usagePercent / 100})` }}
             />
           </div>
           <div className="dev-metric-footer">
-            <span>{usagePercent}% utilized</span>
+            <span>{remainingQuota.toLocaleString()} requests remaining ({usagePercent}% used)</span>
             <span>Resets in {daysInMonthLeft} days</span>
           </div>
         </div>
 
         <div className="dev-metric-card">
           <div className="dev-metric-head">
-            <span className="dev-metric-label">Remaining Requests</span>
-            <Server size={16} className="dev-metric-icon" />
-          </div>
-          <div className="dev-metric-value text-blue">
-            {remainingQuota.toLocaleString()}
-          </div>
-          <p className="dev-metric-subtext">
-            {remainingQuota === 0 ? '⚠️ Quota exhausted. Requests will return HTTP 429.' : 'Available for catalog & stock sync'}
-          </p>
-        </div>
-
-        <div className="dev-metric-card">
-          <div className="dev-metric-head">
-            <span className="dev-metric-label">Rate Limit</span>
-            <Zap size={16} className="dev-metric-icon" />
+            <span className="dev-metric-label">Rate Limit & Throughput</span>
+            <Zap size={15} className="dev-metric-icon" />
           </div>
           <div className="dev-metric-value">
-            {apiKey?.rate_limit_rps || 1} <span>req / sec</span>
+            {apiKey?.rate_limit_rps || 1} <span className="dev-metric-unit">req / sec</span>
           </div>
           <p className="dev-metric-subtext">
-            Burst buffer: {Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} requests
+            Standard burst allowance: {Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent requests
           </p>
         </div>
       </div>
@@ -456,7 +466,7 @@ export function DeveloperDashboard({
       <div className="dev-card">
         <div className="dev-card-head">
           <div className="dev-card-title">
-            <KeyRound size={18} />
+            <KeyRound size={16} />
             <h3>API Credentials & Endpoint Access</h3>
           </div>
         </div>
@@ -480,14 +490,14 @@ export function DeveloperDashboard({
                 onClick={() => setShowKeySecret(!showKeySecret)}
                 title={showKeySecret ? 'Hide Key' : 'Reveal Key'}
               >
-                {showKeySecret ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showKeySecret ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
               <button
                 type="button"
                 className="dev-copy-btn"
                 onClick={() => copyToClipboard(revealedKey || apiKey?.key_prefix, 'api-key')}
               >
-                {copiedField === 'api-key' ? <Check size={14} /> : <Copy size={14} />}
+                {copiedField === 'api-key' ? <Check size={13} /> : <Copy size={13} />}
                 {copiedField === 'api-key' ? 'Copied' : 'Copy'}
               </button>
             </div>
@@ -510,7 +520,7 @@ export function DeveloperDashboard({
                 className="dev-copy-btn"
                 onClick={() => copyToClipboard('https://www.weave365.com/api/v1', 'base-url')}
               >
-                {copiedField === 'base-url' ? <Check size={14} /> : <Copy size={14} />}
+                {copiedField === 'base-url' ? <Check size={13} /> : <Copy size={13} />}
                 {copiedField === 'base-url' ? 'Copied' : 'Copy'}
               </button>
             </div>
@@ -809,66 +819,6 @@ fetchWeave365Catalog();`}
           )}
         </div>
       </div>
-
-      {/* 7. Admin Settings Modifier (Admin Mode Only) */}
-      {isAdminMode && (
-        <div className="dev-card dev-admin-config-card">
-          <div className="dev-card-head">
-            <div className="dev-card-title">
-              <Sliders size={18} />
-              <h3>Admin Controls: Tier & Quota Overrides</h3>
-            </div>
-          </div>
-
-          <div className="dev-admin-form-grid">
-            <label>
-              Plan / Pricing Tier:
-              <select value={adminTier} onChange={(e) => {
-                setAdminTier(e.target.value);
-                const cfg = TIER_CONFIGS[e.target.value];
-                if (cfg) {
-                  setAdminQuota(cfg.monthlyQuota);
-                  setAdminRps(cfg.rateLimitRps);
-                }
-              }}>
-                <option value="free">Starter (Free) - 2,000 req/mo</option>
-                <option value="growth">Growth Partner (₹699/mo) - 20,000 req/mo</option>
-                <option value="pro">Pro / Scale (₹1,499/mo) - 75,000 req/mo</option>
-              </select>
-            </label>
-
-            <label>
-              Monthly Request Quota:
-              <input
-                type="number"
-                value={adminQuota}
-                onChange={(e) => setAdminQuota(e.target.value)}
-              />
-            </label>
-
-            <label>
-              Rate Limit (Req / Sec):
-              <input
-                type="number"
-                value={adminRps}
-                onChange={(e) => setAdminRps(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="dev-admin-action-row">
-            <button
-              type="button"
-              onClick={handleSaveAdminSettings}
-              disabled={adminSaving}
-              className="primary-button"
-            >
-              {adminSaving ? <RefreshCw size={14} className="spin-icon" /> : <Check size={14} />}
-              Save Client API Settings
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
