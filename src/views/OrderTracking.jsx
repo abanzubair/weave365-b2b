@@ -98,31 +98,76 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     }
   };
 
-  // Helper to parse delivery address from message block
+  // Helper to parse delivery address from message block or dropship fields
   const parsedAddress = useMemo(() => {
-    if (!order?.message) return null;
-    const msg = order.message;
-    const addressBlockMatch = msg.split('Delivery Address:');
-    if (addressBlockMatch.length < 2) return null;
-    
-    const lines = addressBlockMatch[1].trim().split('\n');
-    const addressObj = {};
-    lines.forEach(line => {
-      const index = line.indexOf(':');
-      if (index !== -1) {
-        const key = line.substring(0, index).trim().toLowerCase();
-        const val = line.substring(index + 1).trim();
-        if (key.includes('name')) addressObj.name = val;
-        else if (key.includes('phone')) addressObj.phone = val;
-        else if (key.includes('address')) addressObj.address = val;
-        else if (key.includes('city')) addressObj.city = val;
-        else if (key.includes('country')) addressObj.country = val;
-      }
-    });
+    if (!order) return null;
 
-    if (!addressObj.name || !addressObj.address) return null;
-    return addressObj;
-  }, [order?.message]);
+    // If dedicated dropship columns are populated
+    if (order.dropship_recipient_address) {
+      const cityStatePin = [
+        order.dropship_recipient_city,
+        order.dropship_recipient_state,
+        order.dropship_recipient_pincode ? `PIN: ${order.dropship_recipient_pincode}` : ''
+      ].filter(Boolean).join(', ');
+
+      return {
+        name: order.dropship_recipient_name || order.buyer_name,
+        phone: order.dropship_recipient_phone || order.phone,
+        address: order.dropship_recipient_address,
+        city: cityStatePin,
+      };
+    }
+
+    const msg = order.message || '';
+
+    // Case 1: Structured "Delivery Address:" block
+    if (msg.includes('Delivery Address:')) {
+      const parts = msg.split('Delivery Address:');
+      const addressContent = parts[1].split('\n\n')[0].split('. Notes:')[0].trim();
+      const lines = addressContent.split('\n');
+      const addressObj = {};
+      lines.forEach(line => {
+        const index = line.indexOf(':');
+        if (index !== -1) {
+          const key = line.substring(0, index).trim().toLowerCase();
+          const val = line.substring(index + 1).trim();
+          if (key.includes('name')) addressObj.name = val;
+          else if (key.includes('phone')) addressObj.phone = val;
+          else if (key.includes('address')) addressObj.address = val;
+          else if (key.includes('city')) addressObj.city = val;
+          else if (key.includes('country')) addressObj.country = val;
+        }
+      });
+      if (addressObj.address) {
+        return {
+          name: addressObj.name || order.buyer_name,
+          phone: addressObj.phone || order.phone,
+          address: addressObj.address,
+          city: addressObj.city || '',
+        };
+      }
+      return {
+        name: order.buyer_name,
+        phone: order.phone,
+        address: addressContent,
+        city: '',
+      };
+    }
+
+    // Case 2: "Shipping to:" format (used in dropship orders)
+    if (msg.includes('Shipping to:')) {
+      const parts = msg.split('Shipping to:');
+      const addressContent = parts[1].split('. Notes:')[0].trim();
+      return {
+        name: order.buyer_name,
+        phone: order.phone,
+        address: addressContent,
+        city: '',
+      };
+    }
+
+    return null;
+  }, [order]);
 
   // Status mapping and step calculation
   const steps = [
@@ -376,17 +421,19 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   </div>
                 ) : parsedAddress ? (
                   <div>
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{parsedAddress.name}</p>
+                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{parsedAddress.name || order.buyer_name}</p>
                     {parsedAddress.phone && <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {parsedAddress.phone}</p>}
                     <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>{parsedAddress.address}</p>
                     {parsedAddress.city && <p style={{ fontSize: 'var(--small-size)', fontWeight: 500 }}>{parsedAddress.city}</p>}
                   </div>
                 ) : (
-                  <p style={{ whiteSpace: 'pre-line', fontSize: 'var(--small-size)', lineHeight: 1.4, opacity: 0.85 }}>
-                    {order.message && order.message.includes('Delivery Address:') 
-                      ? order.message.split('Delivery Address:')[1].trim()
-                      : order.pincode ? `Shipping to pincode: ${order.pincode}` : 'Address details listed in order logs.'}
-                  </p>
+                  <div>
+                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{order.buyer_name || 'Customer'}</p>
+                    {order.phone && <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {order.phone}</p>}
+                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>
+                      {order.pincode ? `Delivery PIN: ${order.pincode}` : (order.message || 'Delivery address registered with order.')}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
