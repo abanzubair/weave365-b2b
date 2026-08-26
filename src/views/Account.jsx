@@ -18,11 +18,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle, Boxes, Store } from 'lucide-react';
+import { Bookmark, ClipboardList, Heart, History, LockKeyhole, ShoppingBag, UserRound, MapPin, Plus, Edit, Trash2, RefreshCw, AlertTriangle, Boxes, Store, Code2 } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
+import { DeveloperDashboard } from '../components/developer/DeveloperDashboard.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
 import { isProfileComplete } from '../utils/profileHelpers.js';
@@ -546,6 +547,13 @@ export function Account({
         >
           <UserRound size={16} />
           <span>Affiliates</span>
+        </button>
+        <button type="button" 
+          className={`account-tab-btn ${activeTab === 'developer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('developer')}
+        >
+          <Code2 size={16} />
+          <span>Developer API</span>
         </button>
       </div>
 
@@ -1331,6 +1339,12 @@ export function Account({
               buyerProfile={buyerProfile}
               products={products}
             />
+          </article>
+        )}
+
+        {activeTab === 'developer' && (
+          <article className="account-panel panel-developer" style={{ gridColumn: '1 / -1', width: '100%', background: 'transparent', padding: 0, border: 'none', boxShadow: 'none' }}>
+            <DeveloperDashboard user={user} buyerProfile={buyerProfile} />
           </article>
         )}
       </div>

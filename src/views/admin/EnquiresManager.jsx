@@ -135,9 +135,14 @@ export default function EnquiresManager({
     setSelectedEnquiryForItems(item);
   };
 
-  // Retrieve the inquiries data from adminData.optional
+  // Retrieve the inquiries data from adminData.optional (excluding orders)
   const inquiresData = useMemo(() => {
-    return adminData.optional?.inquiries || [];
+    return (adminData.optional?.inquiries || []).filter(
+      (r) =>
+        r.inquiry_type !== 'reseller_api_order' &&
+        r.inquiry_type !== 'cart_payment' &&
+        r.inquiry_type !== 'cart_payment_fallback'
+    );
   }, [adminData]);
 
   // Clean / search matching logic

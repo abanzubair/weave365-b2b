@@ -18,10 +18,16 @@ import { GET as vendorRegistrationGet, POST as vendorRegistrationPost } from './
 import { POST as adminSyncPost } from './adminSyncHandler.js';
 import { generateSitemapXml } from './sitemapHandler.js';
 import { GET as catalogGet } from './catalogHandler.js';
+import { handleDeveloperApiGet, handleDeveloperApiPost } from './developerApiHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
-  const routeKey = (resolvedParams?.route || []).join('/');
+  const routeArray = resolvedParams?.route || [];
+  const routeKey = routeArray.join('/');
+
+  if (routeArray[0] === 'v1' || routeArray[0] === 'developer') {
+    return handleDeveloperApiGet(request, routeArray);
+  }
 
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
@@ -35,7 +41,12 @@ export async function GET(request, { params }) {
 
 export async function POST(request, { params }) {
   const resolvedParams = await params;
-  const routeKey = (resolvedParams?.route || []).join('/');
+  const routeArray = resolvedParams?.route || [];
+  const routeKey = routeArray.join('/');
+
+  if (routeArray[0] === 'v1' || routeArray[0] === 'developer') {
+    return handleDeveloperApiPost(request, routeArray);
+  }
 
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);

@@ -1228,6 +1228,201 @@ create index if not exists site_analytics_source_name_idx on public.site_analyti
 
 alter table public.site_analytics enable row level security;
 
+  buyer_guide_sections jsonb DEFAULT '[]'::jsonb, -- Array of { title, content }
+  faqs jsonb DEFAULT '[]'::jsonb,                 -- Array of { q, a }
+  filter jsonb DEFAULT '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
+  catalog_title text,
+  catalog_subtitle text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_title text;
+ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_subtitle text;
+
+ALTER TABLE public.landing_pages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "landing pages public read" ON public.landing_pages;
+CREATE POLICY "landing pages public read" ON public.landing_pages 
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "landing pages admin all" ON public.landing_pages;
+CREATE POLICY "landing pages admin all" ON public.landing_pages 
+  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-------------------------------------------------------------------------------
+-- PRODUCT REVIEWS
+-------------------------------------------------------------------------------
+
+create table if not exists public.product_reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id text not null,
+  reviewer_name text not null,
+  business_name text default 'B2B Client',
+  rating integer not null check (rating >= 1 and rating <= 5),
+  title text default 'Product Review',
+  comment text not null,
+  status text not null default 'pending',
+  user_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.product_reviews enable row level security;
+
+-- Read policy (Approved reviews are visible to all)
+drop policy if exists "product reviews public read" on public.product_reviews;
+create policy "product reviews public read"
+  on public.product_reviews for select
+  to anon, authenticated
+  using (status = 'approved');
+
+-- Insert policy (Guests and authenticated users can insert reviews)
+drop policy if exists "product reviews insert access" on public.product_reviews;
+create policy "product reviews insert access"
+  on public.product_reviews for insert
+  to anon, authenticated
+  with check (true);
+
+-- Admin policy (Full CRUD access for administrators)
+drop policy if exists "product reviews admin all" on public.product_reviews;
+create policy "product reviews admin all"
+  on public.product_reviews for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-------------------------------------------------------------------------------
+-- B2B INFLUENCER & AFFILIATE PROGRAM TABLES
+-------------------------------------------------------------------------------
+
+-- 1. Influencer Profiles
+create table if not exists public.influencer_profiles (
+  id uuid primary key references public.profiles(id) on delete cascade,
+  referral_code text unique not null,
+  commission_percentage numeric not null default 10.0 check (commission_percentage >= 0 and commission_percentage <= 100),
+  payment_details jsonb default '{}'::jsonb,
+  is_approved boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 2. Influencer Landing Click Logs
+create table if not exists public.influencer_clicks (
+  id uuid primary key default gen_random_uuid(),
+  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
+  user_agent text,
+  referrer text,
+  created_at timestamptz default now()
+);
+
+-- 3. Influencer Sales Referrals
+create table if not exists public.influencer_referrals (
+  id uuid primary key default gen_random_uuid(),
+  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
+  order_id uuid references public.orders(id) on delete set null,
+  inquiry_id uuid references public.inquiries(id) on delete set null,
+  buyer_id uuid references public.profiles(id) on delete set null,
+  buyer_name text,
+  items jsonb default '[]'::jsonb,
+  sale_amount numeric not null default 0,
+  commission_amount numeric not null default 0,
+  status text default 'pending' check (status in ('pending', 'paid', 'cancelled')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Indices
+create index if not exists influencer_profiles_code_idx on public.influencer_profiles (lower(referral_code));
+create index if not exists influencer_clicks_influencer_id_idx on public.influencer_clicks (influencer_id);
+create index if not exists influencer_referrals_influencer_id_idx on public.influencer_referrals (influencer_id);
+
+-- Enable RLS
+alter table public.influencer_profiles enable row level security;
+alter table public.influencer_clicks enable row level security;
+alter table public.influencer_referrals enable row level security;
+
+-- Policies: Influencer Profiles
+drop policy if exists "Anyone can select influencer profiles" on public.influencer_profiles;
+create policy "Anyone can select influencer profiles"
+  on public.influencer_profiles for select
+  using (true);
+
+drop policy if exists "Users can insert own influencer profile" on public.influencer_profiles;
+create policy "Users can insert own influencer profile"
+  on public.influencer_profiles for insert
+  to authenticated
+  with check ((select auth.uid()) = id);
+
+drop policy if exists "Users can update own influencer profile" on public.influencer_profiles;
+create policy "Users can update own influencer profile"
+  on public.influencer_profiles for update
+  to authenticated
+  using ((select auth.uid()) = id)
+  with check ((select auth.uid()) = id);
+
+drop policy if exists "Admin manage all influencer profiles" on public.influencer_profiles;
+create policy "Admin manage all influencer profiles"
+  on public.influencer_profiles for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Policies: Influencer Clicks
+drop policy if exists "Anyone can insert clicks" on public.influencer_clicks;
+create policy "Anyone can insert clicks"
+  on public.influencer_clicks for insert
+  with check (true);
+
+drop policy if exists "Influencers can select own clicks" on public.influencer_clicks;
+create policy "Influencers can select own clicks"
+  on public.influencer_clicks for select
+  to authenticated
+  using ((select auth.uid()) = influencer_id or public.is_admin());
+
+-- Policies: Influencer Referrals
+drop policy if exists "Anyone can insert referrals" on public.influencer_referrals;
+create policy "Anyone can insert referrals"
+  on public.influencer_referrals for insert
+  with check (true);
+
+drop policy if exists "Influencers can select own referrals" on public.influencer_referrals;
+create policy "Influencers can select own referrals"
+  on public.influencer_referrals for select
+  to authenticated
+  using ((select auth.uid()) = influencer_id or public.is_admin());
+
+drop policy if exists "Admin manage all referrals" on public.influencer_referrals;
+create policy "Admin manage all referrals"
+  on public.influencer_referrals for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- ========================================================
+-- Website Traffic & AI Referral Analytics Table
+-- ========================================================
+create table if not exists public.site_analytics (
+  id uuid primary key default gen_random_uuid(),
+  session_id text,
+  path text not null default '/',
+  referrer text,
+  source_category text default 'Direct / App',
+  source_name text default 'Direct Visit',
+  device_type text default 'Desktop',
+  device_os text default 'Unknown',
+  browser text default 'Unknown',
+  country text default 'IN',
+  city text default 'Unknown',
+  created_at timestamptz default now()
+);
+
+create index if not exists site_analytics_created_at_idx on public.site_analytics (created_at desc);
+create index if not exists site_analytics_source_category_idx on public.site_analytics (source_category);
+create index if not exists site_analytics_source_name_idx on public.site_analytics (source_name);
+
+alter table public.site_analytics enable row level security;
+
 drop policy if exists "Anyone can insert site analytics" on public.site_analytics;
 create policy "Anyone can insert site analytics"
   on public.site_analytics for insert
@@ -1273,4 +1468,101 @@ create policy "Public modify vendor product stock"
   using (true)
   with check (true);
 
+-- ========================================================
+-- B2B Developer API Keys & Reseller Integrations
+-- ========================================================
+create table if not exists public.api_keys (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  key_prefix text not null,               -- e.g. "w365_live_9a7f"
+  key_hash text not null unique,          -- SHA-256 hash of secret key
+  client_name text not null,              -- e.g. "My Reseller Store"
+  client_website text,                    -- e.g. "https://www.example.com"
+  tier text not null default 'free',      -- 'free', 'growth', 'pro'
+  monthly_quota integer not null default 2000,
+  rate_limit_rps integer not null default 1,
+  is_active boolean not null default true,
+  allowed_endpoints jsonb default '["catalog", "stock", "product", "orders"]'::jsonb,
+  webhook_url text,
+  last_used_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 
+create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
+create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
+create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
+
+-- Daily Aggregated Usage Tracking Table (1 row per key per day = zero DB bloat)
+create table if not exists public.api_usage_daily (
+  id uuid primary key default gen_random_uuid(),
+  api_key_id uuid not null references public.api_keys(id) on delete cascade,
+  usage_date date not null default current_date,
+  total_requests integer not null default 0,
+  successful_requests integer not null default 0,
+  rate_limited_requests integer not null default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (api_key_id, usage_date)
+);
+
+create index if not exists api_usage_daily_key_date_idx on public.api_usage_daily (api_key_id, usage_date desc);
+
+-- Atomic counter function for instant zero-race updates
+create or replace function public.record_api_request(
+  p_key_id uuid,
+  p_is_success boolean default true,
+  p_is_rate_limited boolean default false
+)
+returns void language plpgsql security definer as $$
+begin
+  insert into public.api_usage_daily (api_key_id, usage_date, total_requests, successful_requests, rate_limited_requests, updated_at)
+  values (
+    p_key_id,
+    current_date,
+    1,
+    case when p_is_success then 1 else 0 end,
+    case when p_is_rate_limited then 1 else 0 end,
+    now()
+  )
+  on conflict (api_key_id, usage_date)
+  do update set
+    total_requests = public.api_usage_daily.total_requests + 1,
+    successful_requests = public.api_usage_daily.successful_requests + (case when p_is_success then 1 else 0 end),
+    rate_limited_requests = public.api_usage_daily.rate_limited_requests + (case when p_is_rate_limited then 1 else 0 end),
+    updated_at = now();
+
+  update public.api_keys
+  set last_used_at = now()
+  where id = p_key_id;
+end;
+$$;
+
+alter table public.api_keys enable row level security;
+alter table public.api_usage_daily enable row level security;
+
+drop policy if exists "Admin manage all api_keys" on public.api_keys;
+create policy "Admin manage all api_keys"
+  on public.api_keys for all
+  to authenticated
+  using (true)
+  with check (true);
+
+drop policy if exists "Public read api_keys" on public.api_keys;
+create policy "Public read api_keys"
+  on public.api_keys for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Admin manage all api_usage_daily" on public.api_usage_daily;
+create policy "Admin manage all api_usage_daily"
+  on public.api_usage_daily for all
+  to authenticated
+  using (true)
+  with check (true);
+
+drop policy if exists "Public read api_usage_daily" on public.api_usage_daily;
+create policy "Public read api_usage_daily"
+  on public.api_usage_daily for select
+  to anon, authenticated
+  using (true);

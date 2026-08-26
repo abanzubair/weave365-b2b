@@ -76,6 +76,7 @@ export function Footer({ navigate, scrollToSection }) {
       </div>
       <div>
         <h3>Information</h3>
+        <a href="/developer-api" onClick={(e) => handleLinkClick(e, 'developer-api')}>Developer API & Docs</a>
         <a href="/disclaimer" onClick={(e) => handleLinkClick(e, 'disclaimer')}>Disclaimer</a>
         <a href="/shipping-delivery" onClick={(e) => handleLinkClick(e, 'shipping-delivery')}>Shipping & Delivery</a>
         <a href="/returns-cancellation" onClick={(e) => handleLinkClick(e, 'returns-cancellation')}>Returns & Cancellation</a>

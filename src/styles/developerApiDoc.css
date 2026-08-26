@@ -1,0 +1,513 @@
+/* ==========================================================================
+   Weave365 Developer API Documentation Stylesheet
+   Theme: Minimalist Developer Docs (Stripe / Cloudflare Inspired)
+   ========================================================================== */
+
+.api-docs-page {
+  background: #ffffff;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Enforce modern crisp developer typography on all sub-elements (never Cormorant Garamond) */
+.api-docs-page h1,
+.api-docs-page h2,
+.api-docs-page h3,
+.api-docs-page h4,
+.api-docs-page h5,
+.api-docs-page h6,
+.api-docs-page p,
+.api-docs-page span,
+.api-docs-page a,
+.api-docs-page button,
+.api-docs-page input,
+.api-docs-page select,
+.api-docs-page table,
+.api-docs-page th,
+.api-docs-page td,
+.api-docs-page li,
+.api-docs-page label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.api-docs-page code,
+.api-docs-page pre,
+.api-docs-page kbd,
+.api-docs-page .api-code-pre,
+.api-docs-page .api-endpoint-route,
+.api-docs-page .api-param-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+}
+
+/* Main Layout (Sidebar + Content) */
+.api-docs-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem 2rem;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 4rem;
+  box-sizing: border-box;
+}
+
+/* Sidebar Navigation */
+.api-docs-sidebar {
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.api-docs-nav-group {
+  margin-bottom: 1.75rem;
+}
+
+.api-docs-nav-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 0.625rem;
+}
+
+.api-docs-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.api-docs-nav-link {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+  border-left: 2px solid transparent;
+}
+
+.api-docs-nav-link:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.api-docs-nav-link.active {
+  background: #f1f5f9;
+  color: #0f172a !important;
+  font-weight: 600;
+  border-left: 2.5px solid #0f172a;
+}
+
+/* 3. Main Content Sections */
+.api-docs-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3.25rem;
+}
+
+.api-docs-section {
+  scroll-margin-top: 100px;
+}
+
+.api-docs-section h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 0.875rem 0;
+  letter-spacing: -0.015em;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.625rem;
+}
+
+.api-docs-section h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 1.5rem 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.api-docs-section p {
+  color: #475569;
+  font-size: 0.9375rem;
+  margin: 0 0 1rem 0;
+}
+
+.api-docs-callout {
+  background: #f8fafc;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.api-docs-callout.warning {
+  background: #fffbeb;
+  border-left-color: #f59e0b;
+  color: #92400e;
+}
+
+.api-docs-callout.success {
+  background: #f0fdf4;
+  border-left-color: #10b981;
+  color: #166534;
+}
+
+/* 4. Endpoint Reference Card */
+.api-endpoint-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 1.75rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.api-endpoint-header {
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.api-endpoint-route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.api-method-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.api-method-badge.get {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.api-method-badge.post {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.api-endpoint-body {
+  padding: 1.5rem;
+}
+
+/* Parameters Table */
+.api-params-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.api-params-table th {
+  background: #f8fafc;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.api-params-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.api-param-name {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.api-param-type {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+  display: block;
+}
+
+/* Code Snippets & Syntax Boxes */
+.api-code-wrapper {
+  background: #0f172a;
+  border-radius: 10px;
+  position: relative;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.api-code-header {
+  background: #1e293b;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  border-bottom: 1px solid #334155;
+}
+
+.api-code-copy-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.api-code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.api-code-pre {
+  margin: 0;
+  padding: 1.25rem;
+  color: #f8fafc;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+/* 5. Platform Tabs */
+.api-platform-tabs-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+}
+
+.api-platform-tab-btn {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-platform-tab-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.api-platform-tab-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* 6. Pricing & Tiers Table */
+.api-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+  align-items: stretch;
+}
+
+.api-pricing-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.api-pricing-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.api-pricing-card.featured {
+  border: 2px solid #0f172a;
+  box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+}
+
+.api-pricing-card-badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.api-pricing-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+}
+
+.api-pricing-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  letter-spacing: -0.02em;
+}
+
+.api-pricing-price span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.api-pricing-desc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+  min-height: 2.5rem;
+}
+
+.api-pricing-features {
+  list-style: none;
+  padding: 1.25rem 0 0 0;
+  margin: 0 0 2rem 0;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: #334155;
+  flex: 1;
+}
+
+.api-pricing-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.45;
+}
+
+.api-pricing-features li svg {
+  color: #10b981;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Pricing Action Buttons */
+.api-pricing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 20px;
+  border-radius: 9px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.api-pricing-btn-primary {
+  background: #0f172a;
+  color: #ffffff !important;
+  border: 1px solid #0f172a;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
+}
+
+.api-pricing-btn-primary:hover {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.api-pricing-btn-outline {
+  background: #ffffff;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1;
+}
+
+.api-pricing-btn-outline:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a !important;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .api-docs-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .api-docs-sidebar {
+    position: static;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1.5rem;
+  }
+
+  .api-docs-nav-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}

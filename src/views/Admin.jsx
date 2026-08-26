@@ -31,6 +31,7 @@ import {
   Printer,
   Palette,
   Boxes,
+  Code2,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -52,6 +53,7 @@ import InfluencerManager from './admin/InfluencerManager.jsx';
 import BuyerActivity from './admin/BuyerActivity.jsx';
 import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
 import AdminStockManager from './admin/AdminStockManager.jsx';
+import ApiManager from './admin/ApiManager.jsx';
 
 import { storeConfig } from '../config.js';
 import { isVendorProfile } from '../utils/buyerAccess.js';
@@ -435,11 +437,22 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     return enquiryRows.filter(i => {
       const isOrder = i._sourceTable === 'orders' ||
         i.inquiry_type === 'cart_payment' ||
-        i.inquiry_type === 'cart_payment_fallback';
+        i.inquiry_type === 'cart_payment_fallback' ||
+        i.inquiry_type === 'reseller_api_order';
       const isNew = (i.status || 'new').toLowerCase() === 'new';
       return isOrder && isNew;
     }).length;
   }, [enquiryRows]);
+
+  const newEnquiriesCount = useMemo(() => {
+    return (adminData.optional.inquiries || []).filter(r => {
+      const isNew = (r.status || 'new').toLowerCase() === 'new';
+      const isOrderType = r.inquiry_type === 'reseller_api_order' ||
+        r.inquiry_type === 'cart_payment' ||
+        r.inquiry_type === 'cart_payment_fallback';
+      return isNew && !isOrderType;
+    }).length;
+  }, [adminData.optional.inquiries]);
 
   const sidebarSections = [
     {
@@ -447,7 +460,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
         { key: 'pipeline', label: 'Accounts', icon: Users, badge: null },
-        { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: (adminData.optional.inquiries || []).filter(r => r.status === 'new').length > 0 ? (adminData.optional.inquiries || []).filter(r => r.status === 'new').length : null },
+        { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null },
         { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
       ],
     },
@@ -465,6 +478,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       title: 'Settings',
       items: [
         { key: 'customizer', label: 'Appearance', icon: Palette, badge: null },
+        { key: 'api-manager', label: 'Developer API', icon: Code2, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
@@ -715,6 +729,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               loadAdminData={loadAdminData}
               products={products}
               loading={status === 'loading'}
+            />
+          )}
+
+          {activeTab === 'api-manager' && (
+            <ApiManager
+              adminData={adminData}
+              loadAdminData={loadAdminData}
+              user={user}
             />
           )}
         </div>
