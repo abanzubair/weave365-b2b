@@ -2250,4 +2250,357 @@
   border-radius: 8px;
 }
 
+/* ==========================================================================
+   Mobile Ergonomics & Responsive Layout Adaptations (<= 768px & <= 480px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Container spacing inside Account tab */
+  .dev-dashboard-container,
+  .panel-developer {
+    gap: 1rem;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  /* Header card */
+  .dev-dashboard-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .dev-header-main {
+    gap: 8px;
+  }
+
+  .dev-header-title-row {
+    gap: 8px;
+  }
+
+  .dev-header-title {
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+
+  .dev-header-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .dev-client-link {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dev-header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .dev-header-actions .dev-btn {
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    justify-content: center;
+  }
+
+  /* Metrics grid */
+  .dev-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .dev-metric-card {
+    padding: 1rem;
+  }
+
+  .dev-metric-value {
+    font-size: 1.375rem;
+  }
+
+  /* Credentials List */
+  .dev-card-head {
+    padding: 0.875rem 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dev-card-title h3 {
+    font-size: 0.9375rem;
+  }
+
+  .dev-credentials-list {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .dev-cred-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .dev-cred-info {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .dev-cred-name {
+    font-size: 0.875rem;
+  }
+
+  .dev-cred-input-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: flex;
+    gap: 6px;
+  }
+
+  .dev-cred-input {
+    height: 42px;
+    font-size: 0.8125rem;
+    padding: 0 10px;
+  }
+
+  .dev-icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .dev-copy-btn {
+    height: 42px;
+    padding: 0 12px;
+    font-size: 0.8125rem;
+  }
+
+  /* Curated Catalog Selection */
+  .dev-curator-compact-all {
+    padding: 0.875rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .dev-curator-all-status {
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+
+  .dev-curate-btn {
+    width: 100%;
+    height: 40px;
+    justify-content: center;
+  }
+
+  .dev-curator-mode-selector {
+    width: 100%;
+    display: flex;
+  }
+
+  .dev-mode-pill {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .dev-curator-body {
+    padding: 1rem 1rem 4.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .dev-curator-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .dev-curator-search-box {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dev-curator-search-input {
+    height: 42px;
+  }
+
+  .dev-curator-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .dev-stock-filter-toggle {
+    grid-column: 1 / -1;
+    padding: 4px 0;
+  }
+
+  .dev-action-chip {
+    height: 38px;
+    padding: 0 8px;
+    font-size: 0.75rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .dev-curator-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .dev-curator-card-item {
+    padding: 8px;
+    border-radius: 10px;
+    gap: 6px;
+  }
+
+  .dev-item-checkbox-wrap {
+    top: 14px;
+    left: 14px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .dev-item-title {
+    font-size: 0.8125rem;
+    min-height: 2.4em;
+    -webkit-line-clamp: 2;
+  }
+
+  .dev-item-price {
+    font-size: 0.875rem;
+  }
+
+  .dev-curator-save-bar {
+    padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom)) 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.625rem;
+    position: sticky;
+  }
+
+  .dev-save-bar-info {
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.8125rem;
+  }
+
+  .dev-save-selection-btn {
+    width: 100%;
+    height: 42px;
+    font-size: 0.875rem;
+    justify-content: center;
+  }
+
+  /* Platform Guides */
+  .dev-platform-tabs {
+    padding: 0 0.5rem;
+  }
+
+  .dev-plat-tab {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .dev-platform-content {
+    padding: 1rem;
+  }
+
+  .dev-code-block-wrap pre {
+    padding: 0.875rem 1rem;
+    font-size: 0.75rem;
+    max-height: 300px;
+  }
+
+  .dev-feed-input-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .dev-feed-input {
+    height: 42px;
+    font-size: 0.8125rem;
+  }
+
+  .dev-feed-copy-btn {
+    width: 100%;
+    height: 42px;
+    justify-content: center;
+  }
+
+  /* Live Test Console */
+  .dev-test-console {
+    padding: 1rem;
+  }
+
+  .dev-test-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .dev-http-badge {
+    align-self: flex-start;
+    height: 30px;
+    font-size: 0.6875rem;
+  }
+
+  .dev-endpoint-select {
+    min-width: 0;
+    width: 100%;
+    height: 42px;
+    font-size: 0.8125rem;
+  }
+
+  .dev-send-btn {
+    width: 100%;
+    height: 42px;
+    font-size: 0.875rem;
+    justify-content: center;
+  }
+
+  .dev-test-output {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .dev-test-output pre {
+    font-size: 0.75rem;
+    max-height: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dev-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dev-curator-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .dev-item-title {
+    font-size: 0.75rem;
+  }
+
+  .dev-item-sku {
+    font-size: 0.6875rem;
+  }
+
+  .dev-item-price {
+    font-size: 0.8125rem;
+  }
+}
+
 
