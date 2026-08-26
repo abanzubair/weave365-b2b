@@ -580,9 +580,10 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                 </label>
 
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
-                  Client Website URL:
+                  Client Website URL *:
                   <input
                     type="url"
+                    required
                     placeholder="https://www.example.com"
                     value={newClientWebsite}
                     onChange={(e) => setNewClientWebsite(e.target.value)}

@@ -120,11 +120,15 @@ export function DeveloperDashboard({
   const handleCreateApiKey = async (e) => {
     e.preventDefault();
     if (!user?.id) return;
+    if (!newClientWebsite || !newClientWebsite.trim()) {
+      alert('Please provide your storefront / website URL.');
+      return;
+    }
     setCreatingKey(true);
     try {
       const { keyRecord, rawSecretKey } = await developerService.createApiKey(user.id, {
         clientName: newClientName,
-        clientWebsite: newClientWebsite,
+        clientWebsite: newClientWebsite.trim(),
         tier: 'free',
       });
       setApiKey(keyRecord);
@@ -269,9 +273,10 @@ export function DeveloperDashboard({
               />
             </label>
             <label>
-              Website URL (Optional):
+              Website URL *:
               <input
                 type="url"
+                required
                 value={newClientWebsite}
                 onChange={(e) => setNewClientWebsite(e.target.value)}
                 placeholder="https://www.example.com"
