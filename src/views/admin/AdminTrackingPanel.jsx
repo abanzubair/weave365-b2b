@@ -211,9 +211,15 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
   // Parse delivery address from messages for summary display
   const getParsedAddress = (msg) => {
     if (!msg) return '';
-    const addressBlockMatch = msg.split('Delivery Address:');
-    if (addressBlockMatch.length < 2) return '';
-    return addressBlockMatch[1].trim();
+    if (msg.includes('Delivery Address:')) {
+      const parts = msg.split('Delivery Address:');
+      if (parts.length >= 2) return parts[1].split('. Notes:')[0].trim();
+    }
+    if (msg.includes('Shipping to:')) {
+      const parts = msg.split('Shipping to:');
+      if (parts.length >= 2) return parts[1].split('. Notes:')[0].trim();
+    }
+    return '';
   };
 
   // Filter and search inquiries list
@@ -431,9 +437,12 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
             </thead>
             <tbody>
               {filteredInquiries.map((inquiry) => {
-                const addressText = getParsedAddress(inquiry.message);
+                const parsedAddr = getParsedAddress(inquiry.message);
+                const addressText = inquiry.dropship_recipient_address 
+                  ? `${inquiry.dropship_recipient_address}${inquiry.dropship_recipient_city ? `, ${inquiry.dropship_recipient_city}` : ''}${inquiry.dropship_recipient_state ? `, ${inquiry.dropship_recipient_state}` : ''}${inquiry.dropship_recipient_pincode ? ` - PIN: ${inquiry.dropship_recipient_pincode}` : ''}`
+                  : parsedAddr;
                 const currentStatus = inquiry.status || 'new';
-                const isDropship = Boolean(inquiry.is_dropship);
+                const isDropship = Boolean(inquiry.is_dropship || inquiry.inquiry_type === 'reseller_api_order');
 
                 return (
                   <tr key={inquiry.id} style={isDropship ? { background: '#fffdf5' } : {}}>
@@ -482,13 +491,13 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                       {isDropship ? (
                         <div>
                           <span style={{ fontSize: '11px', color: '#b45309', fontWeight: 700, display: 'block' }}>
-                            Sender Label: {inquiry.dropship_sender_name || 'Reseller'} ({inquiry.dropship_sender_phone || 'N/A'})
+                            Sender Label: {inquiry.dropship_sender_name || inquiry.business_name || 'Reseller Store'} ({inquiry.dropship_sender_phone || 'N/A'})
                           </span>
                           <strong style={{ fontSize: '13px', display: 'block', marginTop: '2px' }}>
                             Recipient: {inquiry.dropship_recipient_name || inquiry.buyer_name} ({inquiry.dropship_recipient_phone || inquiry.phone || 'N/A'})
                           </strong>
-                          <span className="admin-address-trunc" title={inquiry.dropship_recipient_address || addressText}>
-                            Address: {inquiry.dropship_recipient_address || addressText}
+                          <span className="admin-address-trunc" title={addressText}>
+                            Address: {addressText || 'Address in Order Notes'}
                           </span>
                         </div>
                       ) : (
@@ -516,7 +525,7 @@ export function AdminTrackingPanel({ inquiries = [], loadAdminData }) {
                       <div className="admin-items-list">
                         {(inquiry.items || []).map((item, idx) => (
                           <div key={idx} className="admin-item-pill">
-                            <code className="admin-item-code">{item.variant_code}</code>
+                            <code className="admin-item-code">{item.variant_code || item.sku || 'SKU'}</code>
                             {item.color && <span className="admin-item-color">{item.color}</span>}
                             <span className="admin-item-qty">x{item.quantity || 1}</span>
                           </div>

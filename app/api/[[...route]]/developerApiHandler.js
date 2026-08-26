@@ -549,6 +549,132 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     });
   }
 
+  // 6. Route: /api/v1/orders (Fetch Reseller Orders & Live Fulfillment/Tracking Status)
+  if (endpoint === 'orders' || endpoint === 'order') {
+    const singleOrderId = searchParams.get('id') || searchParams.get('order_id') || pathSegments[2];
+    const resellerOrderId = searchParams.get('reseller_order_id');
+    const statusFilter = searchParams.get('status');
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+    const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
+
+    // Query both orders table and legacy inquiries table
+    let ordersQuery = supabase
+      .from('orders')
+      .select('*');
+
+    let inquiriesQuery = supabase
+      .from('inquiries')
+      .select('*')
+      .eq('inquiry_type', 'reseller_api_order');
+
+    if (auth.keyRecord.user_id) {
+      ordersQuery = ordersQuery.eq('user_id', auth.keyRecord.user_id);
+      inquiriesQuery = inquiriesQuery.eq('user_id', auth.keyRecord.user_id);
+    } else if (auth.keyRecord.client_name) {
+      ordersQuery = ordersQuery.eq('business_name', auth.keyRecord.client_name);
+      inquiriesQuery = inquiriesQuery.eq('business_name', auth.keyRecord.client_name);
+    }
+
+    if (singleOrderId) {
+      ordersQuery = ordersQuery.eq('id', singleOrderId);
+      inquiriesQuery = inquiriesQuery.eq('id', singleOrderId);
+    }
+
+    if (statusFilter && statusFilter !== 'all') {
+      ordersQuery = ordersQuery.eq('status', statusFilter.toLowerCase());
+      inquiriesQuery = inquiriesQuery.eq('status', statusFilter.toLowerCase());
+    }
+
+    const [{ data: ordersData }, { data: inqData }] = await Promise.all([
+      ordersQuery.order('created_at', { ascending: false }).limit(limit),
+      inquiriesQuery.order('created_at', { ascending: false }).limit(limit),
+    ]);
+
+    const combinedRaw = [...(ordersData || []), ...(inqData || [])];
+    // Deduplicate by ID
+    const seen = new Set();
+    const rawOrders = [];
+    for (const item of combinedRaw) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        rawOrders.push(item);
+      }
+    }
+    rawOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    const formatStatusLabel = (status) => {
+      switch ((status || '').toLowerCase()) {
+        case 'new': return 'New / Under Review';
+        case 'verified': return 'Payment & Stock Verified';
+        case 'processing': return 'Packaging & Quality Check';
+        case 'dispatched': return 'Dispatched / In Transit';
+        case 'delivered': return 'Delivered';
+        case 'cancelled': return 'Cancelled';
+        default: return status || 'New';
+      }
+    };
+
+    let list = rawOrders.slice(offset, offset + limit).map((o) => {
+      let extractedResellerOrderId = null;
+      if (o.message) {
+        const match = o.message.match(/\[API Dropship Order #([^\]]+)\]/);
+        if (match && match[1] !== 'N/A') extractedResellerOrderId = match[1];
+      }
+
+      return {
+        id: o.id,
+        reseller_order_id: extractedResellerOrderId,
+        created_at: o.created_at,
+        updated_at: o.updated_at,
+        status: o.status || 'new',
+        status_label: formatStatusLabel(o.status),
+        is_dropship: Boolean(o.is_dropship),
+        tracking: {
+          carrier: o.tracking_carrier || null,
+          tracking_number: o.tracking_number || null,
+          tracking_message: o.tracking_message || null,
+          tracking_url: `https://www.weave365.com/order-tracking/${o.id}`,
+          is_dispatched: ['dispatched', 'delivered'].includes((o.status || '').toLowerCase()),
+        },
+        customer: {
+          name: o.dropship_recipient_name || o.buyer_name,
+          phone: o.dropship_recipient_phone || o.phone,
+          email: o.email || null,
+          address: o.dropship_recipient_address || null,
+          city: o.dropship_recipient_city || null,
+          state: o.dropship_recipient_state || null,
+          pincode: o.dropship_recipient_pincode || o.pincode,
+        },
+        sender: {
+          name: o.dropship_sender_name || o.business_name || 'B2B Partner Store',
+          phone: o.dropship_sender_phone || null,
+        },
+        items: o.items || [],
+        notes: o.message || '',
+      };
+    });
+
+    if (resellerOrderId) {
+      list = list.filter(o => o.reseller_order_id === resellerOrderId);
+    }
+
+    if (singleOrderId) {
+      if (list.length === 0) {
+        return Response.json({ status: 'error', error: `Order with ID '${singleOrderId}' not found.` }, { status: 404, headers: corsHeaders });
+      }
+      return Response.json({
+        status: 'success',
+        order: list[0],
+      }, { status: 200, headers: corsHeaders });
+    }
+
+    return Response.json({
+      status: 'success',
+      total_orders: list.length,
+      orders: list,
+    }, { status: 200, headers: corsHeaders });
+  }
+
   return Response.json({
     status: 'error',
     message: `Endpoint /api/v1/${endpoint} not found. Available endpoints: /api/v1/catalog, /api/v1/stock-status, /api/v1/products, /api/v1/orders, /api/v1/me`,
@@ -579,11 +705,17 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const {
         reseller_order_id,
         customer,
+        shipping_address,
+        sender,
         items,
         shipping_notes,
+        packing_preference,
       } = body || {};
 
-      if (!customer?.name || !customer?.phone || !customer?.pincode) {
+      // Support either 'customer' or 'shipping_address' key
+      const cust = customer || shipping_address || {};
+
+      if (!cust?.name || !cust?.phone || !cust?.pincode) {
         return Response.json({
           status: 'error',
           error: 'Missing customer details. Name, phone number, and pincode are required for delivery.',
@@ -597,12 +729,24 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 400, headers: corsHeaders });
       }
 
+      // Normalize items array so variant_code, sku, color and quantity are always set
+      const normalizedItems = items.map((item) => {
+        const sku = String(item.sku || item.variant_code || item.id || '').trim();
+        return {
+          sku: sku,
+          variant_code: sku,
+          color: item.color || item.title || 'Standard',
+          quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
+          price: item.price ? Number(item.price) : undefined,
+        };
+      });
+
       // Check Real-Time Stock Availability for all items before placing
       const { data: stockData } = await supabase.from('vendor_product_stock').select('*');
       const outOfStockItems = [];
 
-      for (const item of items) {
-        const override = (stockData || []).find(s => s.product_id === item.sku);
+      for (const item of normalizedItems) {
+        const override = (stockData || []).find(s => (s.product_id || '').toLowerCase() === item.sku.toLowerCase());
         if (override && override.stock_status === 'out-of-stock') {
           outOfStockItems.push({ sku: item.sku, reason: 'Out of stock in warehouse' });
         }
@@ -617,25 +761,65 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }, { status: 409, headers: corsHeaders });
       }
 
-      // Create Order Entry in Supabase Inquiries / Orders
+      const recipientAddress = cust.address_line1 || cust.address || '';
+      const recipientCity = cust.city || '';
+      const recipientState = cust.state || '';
+      const recipientPincode = cust.pincode || '';
+      const fullAddressStr = `${recipientAddress}${recipientCity ? `, ${recipientCity}` : ''}${recipientState ? `, ${recipientState}` : ''} - PIN: ${recipientPincode}`;
+
+      const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
+      const senderPhone = sender?.phone || '';
+
+      // Create Order Entry in Supabase Orders Table (with fallback to Inquiries)
       const orderPayload = {
         user_id: auth.keyRecord.user_id,
-        inquiry_type: 'reseller_api_order',
-        buyer_name: customer.name,
-        business_name: auth.keyRecord.client_name || 'B2B API Client',
-        phone: customer.phone,
-        email: customer.email || '',
-        pincode: customer.pincode,
-        message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Shipping to: ${customer.address_line1 || ''}, ${customer.city || ''}, ${customer.state || ''} - PIN: ${customer.pincode}. Notes: ${shipping_notes || 'Blind packaging'}`,
-        items: items,
+        buyer_name: cust.name,
+        business_name: senderName,
+        phone: cust.phone,
+        email: cust.email || '',
+        pincode: recipientPincode,
+        message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. Notes: ${shipping_notes || 'Blind packaging'}`,
+        items: normalizedItems,
         status: 'new',
+        is_dropship: true,
+        dropship_sender_name: senderName,
+        dropship_sender_phone: senderPhone,
+        dropship_recipient_name: cust.name,
+        dropship_recipient_phone: cust.phone,
+        dropship_recipient_address: recipientAddress,
+        dropship_recipient_city: recipientCity,
+        dropship_recipient_state: recipientState,
+        dropship_recipient_pincode: recipientPincode,
+        dropship_packing_preference: packing_preference || 'Blind Packaging (Zero Supplier Branding / No Prices)',
       };
 
-      const { data: insertedOrder, error: insertError } = await supabase
-        .from('inquiries')
+      let insertedOrder = null;
+      let insertError = null;
+
+      // Try inserting into orders table first
+      const ordersRes = await supabase
+        .from('orders')
         .insert([orderPayload])
         .select()
         .single();
+
+      if (!ordersRes.error && ordersRes.data) {
+        insertedOrder = ordersRes.data;
+      } else {
+        // Fallback to inquiries table
+        const fallbackPayload = {
+          ...orderPayload,
+          inquiry_type: 'reseller_api_order',
+        };
+        const inqRes = await supabase
+          .from('inquiries')
+          .insert([fallbackPayload])
+          .select()
+          .single();
+
+        insertedOrder = inqRes.data;
+        insertError = inqRes.error;
+      }
 
       if (insertError) {
         throw new Error(insertError.message);
@@ -646,8 +830,20 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         order_id: insertedOrder.id,
         reseller_order_id: reseller_order_id || null,
         message: 'Order received successfully and queued for wholesale fulfillment.',
-        tracking_url: `https://www.weave365.com/order-tracking?id=${insertedOrder.id}`,
+        tracking_url: `https://www.weave365.com/order-tracking/${insertedOrder.id}`,
         estimated_dispatch: '24-48 Business Hours',
+        order: {
+          id: insertedOrder.id,
+          status: 'new',
+          status_label: 'New / Under Review',
+          is_dropship: true,
+          items: normalizedItems,
+          customer: {
+            name: cust.name,
+            phone: cust.phone,
+            address: fullAddressStr,
+          },
+        },
       }, { status: 201, headers: corsHeaders });
 
     } catch (err) {

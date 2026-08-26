@@ -50,6 +50,7 @@ export default function DeveloperApiDocPage() {
       'endpoint-stock',
       'endpoint-product',
       'endpoint-order',
+      'endpoint-get-orders',
       'endpoint-me',
       'rate-limits',
       'pricing',
@@ -197,7 +198,7 @@ class Weave365Connector {
     }
 }`,
 
-    nodejs: `// Node.js (ES Modules) - Fetch Catalog & Forward Dropship Order
+    nodejs: `// Node.js (ES Modules) - Fetch Catalog, Place Order & Track Fulfillment
 const WEAVE365_API_KEY = 'w365_live_YOUR_API_KEY';
 const BASE_URL = 'https://www.weave365.com/api/v1';
 
@@ -237,6 +238,17 @@ async function placeDropshipOrder(orderData) {
   
   const result = await res.json();
   console.log('Order queued for weaver dispatch! Tracking URL:', result.tracking_url);
+  return result;
+}
+
+// 3. Fetch Placed Orders & Live Courier Tracking
+async function getOrders() {
+  const res = await fetch(\`\${BASE_URL}/orders\`, {
+    headers: { 'x-api-key': WEAVE365_API_KEY }
+  });
+  const data = await res.json();
+  console.log('My Orders:', data.orders);
+  return data.orders;
 }`,
 
     curl: `# 1. Fetch Reseller Catalog (JSON)
@@ -266,7 +278,11 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
       "state": "Maharashtra",
       "pincode": "400050"
     }
-  }'`
+  }'
+
+# 5. Fetch Placed Orders & Live Courier Tracking
+curl -X GET "https://www.weave365.com/api/v1/orders" \\
+  -H "x-api-key: w365_live_YOUR_API_KEY"`
   };
 
   return (
@@ -354,6 +370,15 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
                   onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-order'); }}
                 >
                   POST /orders
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#endpoint-get-orders"
+                  className={`api-docs-nav-link ${activeSection === 'endpoint-get-orders' ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-get-orders'); }}
+                >
+                  GET /orders
                 </a>
               </li>
               <li>
@@ -721,14 +746,104 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   "order_id": "ord_8f7b2a19-3c94",
   "reseller_order_id": "RESELLER-ORD-1092",
   "message": "Order received successfully and queued for wholesale fulfillment.",
-  "tracking_url": "https://www.weave365.com/order-tracking?id=ord_8f7b2a19-3c94",
+  "tracking_url": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94",
   "estimated_dispatch": "24-48 Business Hours"
 }`}</pre>
                 </div>
               </div>
             </div>
 
-            {/* 5. GET /api/v1/me */}
+            {/* 5. GET /api/v1/orders */}
+            <div id="endpoint-get-orders" className="api-endpoint-card">
+              <div className="api-endpoint-header">
+                <div className="api-endpoint-route">
+                  <span className="api-method-badge get">GET</span>
+                  <span>/api/v1/orders</span>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Fetch Orders & Live Tracking</span>
+              </div>
+              <div className="api-endpoint-body">
+                <p>
+                  Retrieve orders placed by your account along with live fulfillment stages, courier carrier, and tracking details.
+                </p>
+
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Query Parameters</h4>
+                <table className="api-params-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span className="api-param-name">id</span> or <span className="api-param-name">order_id</span></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>Filter by specific Weave365 Order ID (or pass as path: <code>/api/v1/orders/:order_id</code>).</td>
+                    </tr>
+                    <tr>
+                      <td><span className="api-param-name">reseller_order_id</span></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>Filter by your storefront&apos;s custom order number (e.g. <code>RESELLER-ORD-1092</code>).</td>
+                    </tr>
+                    <tr>
+                      <td><span className="api-param-name">status</span></td>
+                      <td><span className="api-param-type">string (optional)</span></td>
+                      <td>Filter by order status (<code>new</code>, <code>verified</code>, <code>processing</code>, <code>dispatched</code>, <code>delivered</code>, <code>cancelled</code>).</td>
+                    </tr>
+                    <tr>
+                      <td><span className="api-param-name">limit</span></td>
+                      <td><span className="api-param-type">number (optional)</span></td>
+                      <td>Number of orders to retrieve (default: <code>50</code>, max: <code>100</code>).</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Response (HTTP 200 OK)</h4>
+                <div className="api-code-wrapper">
+                  <pre className="api-code-pre">{`{
+  "status": "success",
+  "total_orders": 1,
+  "orders": [
+    {
+      "id": "ord_8f7b2a19-3c94",
+      "reseller_order_id": "RESELLER-ORD-1092",
+      "created_at": "2026-08-27T01:15:00Z",
+      "status": "dispatched",
+      "status_label": "Dispatched / In Transit",
+      "is_dropship": true,
+      "tracking": {
+        "carrier": "Delhivery Express",
+        "tracking_number": "DEL198273645",
+        "tracking_message": "Dispatched via Delhivery Surface. Expected delivery in 3 days.",
+        "tracking_url": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94",
+        "is_dispatched": true
+      },
+      "customer": {
+        "name": "Priya Sharma",
+        "phone": "9876543210",
+        "address": "Flat 402, Lotus Residency",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "pincode": "560001"
+      },
+      "items": [
+        {
+          "sku": "100001",
+          "variant_code": "100001",
+          "color": "Royal Blue",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}`}</pre>
+                </div>
+              </div>
+            </div>
+
+            {/* 6. GET /api/v1/me */}
             <div id="endpoint-me" className="api-endpoint-card">
               <div className="api-endpoint-header">
                 <div className="api-endpoint-route">

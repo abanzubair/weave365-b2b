@@ -1265,6 +1265,7 @@ fetchWeave365Catalog();`}
               <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
               <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
               <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
+              <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
               <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
             </select>
             <button
