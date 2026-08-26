@@ -5120,6 +5120,10 @@ button {
   display: block !important;
 }
 
+.account-dashboard-grid.tab-active-developer .panel-developer {
+  display: block !important;
+}
+
 .influencer-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

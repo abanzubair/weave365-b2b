@@ -28,6 +28,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
 import { isProfileComplete } from '../utils/profileHelpers.js';
 import { adminEmails } from '../config.js';
+import '../styles/developerDashboard.css';
 
 function titleCase(value) {
   return String(value || 'pending')

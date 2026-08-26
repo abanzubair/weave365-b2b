@@ -2,6 +2,10 @@
    Weave365 B2B Developer Dashboard & API Manager Styling
    ========================================================================== */
 
+.account-dashboard-grid.tab-active-developer .panel-developer {
+  display: block !important;
+}
+
 .dev-dashboard-container {
   display: flex;
   flex-direction: column;
