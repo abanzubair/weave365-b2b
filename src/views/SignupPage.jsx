@@ -372,12 +372,18 @@ export function SignupPage({
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage('Password updated successfully! Redirecting to login...');
+      await supabase.auth.signOut().catch(() => {});
+      if (setUser) setUser(null);
+      if (setBuyerProfile) setBuyerProfile(null);
+      setMessage('Password updated successfully! Please sign in with your new password.');
       setTimeout(() => {
         setMode('login');
         setNewPassword('');
         setMessage('');
-      }, 1800);
+        if (typeof window !== 'undefined') {
+          window.history.replaceState({}, '', '/signup?mode=login');
+        }
+      }, 1500);
     }
   }
 
@@ -418,7 +424,7 @@ export function SignupPage({
       }
 
       // Handle Post-Google Onboarding / Complete Profile
-      if (mode === 'complete-profile' || (user && !profileComplete)) {
+      if (mode === 'complete-profile') {
         const cleanName = toTitleCaseName(profile.fullName);
         const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
 
