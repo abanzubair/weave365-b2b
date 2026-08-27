@@ -834,6 +834,73 @@
   text-align: left;
 }
 
+.signup-alert-not-found {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.alert-not-found-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-not-found-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-not-found-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.alert-not-found-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #7f1d1d;
+}
+
+.alert-not-found-desc strong {
+  word-break: break-all;
+  color: #991b1b;
+}
+
+.signup-not-found-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #dc2626;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.signup-not-found-btn:hover {
+  background: #b91c1c;
+  transform: translateX(1px);
+}
+
 .signup-alert-success {
   margin-top: 16px;
   color: #16a34a;

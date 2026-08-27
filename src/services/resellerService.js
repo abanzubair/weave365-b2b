@@ -197,13 +197,67 @@ export const resellerService = {
       .from('reseller_shares')
       .select(`
         *,
-        reseller_share_items (count)
+        reseller_share_items (*)
       `)
       .eq('reseller_id', resellerId)
       .order('created_at', { ascending: false });
     
     if (error) console.error('Error fetching reseller shares:', error);
     return { data, error };
+  },
+
+  /**
+   * Update markup price for a share and its share items
+   */
+  async updateShareMarkup(shareId, { markupType, markupValue, customerPrice }) {
+    // 1. Update reseller_shares record
+    const { data: share, error: shareError } = await supabase
+      .from('reseller_shares')
+      .update({
+        default_markup_type: markupType,
+        default_markup_value: markupValue,
+      })
+      .eq('id', shareId)
+      .select()
+      .single();
+
+    if (shareError) {
+      console.error('Error updating share markup:', shareError);
+      return { error: shareError };
+    }
+
+    // 2. Fetch existing share items to update customer_price
+    const { data: items, error: fetchItemsError } = await supabase
+      .from('reseller_share_items')
+      .select('*')
+      .eq('share_id', shareId);
+
+    if (!fetchItemsError && items && items.length > 0) {
+      for (const item of items) {
+        let newCustomerPrice = customerPrice;
+        if (!newCustomerPrice && item.base_price_snapshot) {
+          const base = Number(item.base_price_snapshot) || 0;
+          if (markupType === 'percentage') {
+            newCustomerPrice = Math.round(base * (1 + Number(markupValue) / 100));
+          } else if (markupType === 'fixed_amount') {
+            newCustomerPrice = Math.round(base + Number(markupValue));
+          } else {
+            newCustomerPrice = base;
+          }
+        }
+
+        await supabase
+          .from('reseller_share_items')
+          .update({
+            markup_type: markupType,
+            markup_value: markupValue,
+            customer_price: newCustomerPrice || item.customer_price,
+          })
+          .eq('id', item.id);
+      }
+    }
+
+    return { data: share, error: null };
   },
 
   /**

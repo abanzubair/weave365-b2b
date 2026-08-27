@@ -16,6 +16,7 @@ import { GET as storefrontGet, POST as storefrontPost } from './storefrontHandle
 import { GET as googleShoppingGet } from './googleShoppingHandler.js';
 import { GET as vendorRegistrationGet, POST as vendorRegistrationPost } from './vendorRegistrationHandler.js';
 import { POST as adminSyncPost } from './adminSyncHandler.js';
+import { POST as checkEmailPost } from './checkEmailHandler.js';
 import { generateSitemapXml } from './sitemapHandler.js';
 import { GET as catalogGet } from './catalogHandler.js';
 import { handleDeveloperApiGet, handleDeveloperApiPost } from './developerApiHandler.js';
@@ -55,6 +56,7 @@ export async function POST(request, { params }) {
   if (routeKey === 'storefront') return storefrontPost(request);
   if (routeKey === 'vendor-registration') return vendorRegistrationPost(request);
   if (routeKey === 'admin/sync') return adminSyncPost(request);
+  if (routeKey === 'check-email' || routeKey === 'auth/check-email') return checkEmailPost(request);
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
 }
 

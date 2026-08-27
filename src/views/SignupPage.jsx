@@ -319,11 +319,48 @@ export function SignupPage({
     });
   }
 
+  async function checkEmailExists(inputEmail) {
+    const clean = String(inputEmail || '').trim().toLowerCase();
+    if (!clean) return false;
+
+    // 1. Try server-side check-email endpoint (bypasses RLS)
+    try {
+      const res = await fetch('/api/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: clean }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Boolean(data?.exists);
+      }
+    } catch (e) {
+      console.warn('API check-email error:', e);
+    }
+
+    // 2. Client-side Supabase query fallback
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .ilike('email', clean)
+          .maybeSingle();
+        if (!error && data) return true;
+      } catch (e) {
+        console.warn('Client supabase email check error:', e);
+      }
+    }
+
+    return false;
+  }
+
   async function handleForgotPassword(event) {
     event.preventDefault();
     setMessage('');
 
-    if (!email.trim()) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    if (!cleanEmail) {
       setMessage('Please enter your email address.');
       return;
     }
@@ -333,11 +370,18 @@ export function SignupPage({
       return;
     }
 
+    // Verify if email exists in database before sending password reset link
+    const exists = await checkEmailExists(cleanEmail);
+    if (!exists) {
+      setMessage('account-not-found');
+      return;
+    }
+
     const redirectUrl = typeof window !== 'undefined'
       ? `${window.location.origin}/signup?mode=reset-password`
       : 'https://www.weave365.com/signup?mode=reset-password';
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: redirectUrl,
     });
 
@@ -717,6 +761,30 @@ export function SignupPage({
                 </button>
               </form>
 
+              {message === 'account-not-found' && (
+                <div className="signup-alert-not-found">
+                  <div className="alert-not-found-icon">
+                    <AlertCircle size={18} />
+                  </div>
+                  <div className="alert-not-found-body">
+                    <div className="alert-not-found-title">Account Not Found</div>
+                    <p className="alert-not-found-desc">
+                      No registered wholesale account exists for <strong>{email}</strong>. Please check for typos or create a new account.
+                    </p>
+                    <button
+                      type="button"
+                      className="signup-not-found-btn"
+                      onClick={() => {
+                        setMode('register');
+                        setMessage('');
+                      }}
+                    >
+                      <span>Sign Up for an Account</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
               {message === 'reset-link-sent' && (
                 <p className="signup-alert-success">
                   ✓ Reset link sent! Please check your email inbox and spam folder.
@@ -730,7 +798,7 @@ export function SignupPage({
                   </button>
                 </div>
               )}
-              {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && (
+              {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
                 <div className="signup-alert-error">
                   <AlertCircle size={16} style={{ flexShrink: 0 }} />
                   <span>{message}</span>
