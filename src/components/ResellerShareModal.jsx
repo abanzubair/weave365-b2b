@@ -35,8 +35,9 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
 
   const basePrice = useMemo(() => {
     const prices = variant?.prices || product?.variants?.[0]?.prices || {};
-    return customerPrice(prices, priceAccess) || prices.reseller || prices.wholesale || 0;
-  }, [product, variant, priceAccess]);
+    const wholesalePrice = Number(prices.mrp || prices.offer || 0);
+    return Number(prices.b2r || prices.single || prices.reseller || wholesalePrice || product?.resellerPrice || product?.mrp || product?.price || 0);
+  }, [product, variant]);
 
   const calculatedCustomerPrice = useMemo(() => {
     if (markupType === 'percentage') return Math.round(basePrice * (1 + markupValue / 100));

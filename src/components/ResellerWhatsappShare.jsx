@@ -60,8 +60,10 @@ export function ResellerWhatsappShare({
 
   const isApprovedReseller = Boolean(priceAccess?.canViewPrices);
   const activeVariant = variant || product?.variants?.[0] || {};
-  const basePrice = customerPrice(activeVariant?.prices, priceAccess)
-    || Number(activeVariant?.prices?.mrp || activeVariant?.prices?.b2r || activeVariant?.prices?.single || activeVariant?.prices?.offer || product?.mrp || product?.price || product?.variants?.[0]?.prices?.mrp || product?.variants?.[0]?.prices?.b2r || 0);
+  const prices = activeVariant?.prices || product?.variants?.[0]?.prices || {};
+  const wholesalePrice = Number(prices.mrp || prices.offer || 0);
+  const resellerPrice = Number(prices.b2r || prices.single || prices.reseller || wholesalePrice || product?.resellerPrice || product?.mrp || product?.price || 0);
+  const basePrice = resellerPrice;
   const safeQuantity = Math.max(1, Number(quantity) || 1);
   const shareImages = useMemo(
     () => uniqueProductShareImages(product, activeVariant, imageUrl),
