@@ -37,6 +37,7 @@ import {
   Code2, 
   ArrowUpRight, 
   LogOut, 
+  Check, 
   Copy,
   ExternalLink
 } from 'lucide-react';
