@@ -45,13 +45,20 @@ export const resellerService = {
    * Update reseller storefront settings (upsert)
    */
   async updateStorefront(resellerId, updates) {
+    const sanitizedUpdates = { ...updates };
+    if ('custom_domain' in sanitizedUpdates) {
+      const cd = typeof sanitizedUpdates.custom_domain === 'string'
+        ? sanitizedUpdates.custom_domain.trim()
+        : sanitizedUpdates.custom_domain;
+      sanitizedUpdates.custom_domain = cd ? cd : null;
+    }
+
     const { data, error } = await supabase
       .from('reseller_storefronts')
-      .upsert({ reseller_id: resellerId, ...updates }, { onConflict: 'reseller_id' })
+      .upsert({ reseller_id: resellerId, ...sanitizedUpdates }, { onConflict: 'reseller_id' })
       .select()
       .single();
 
-    
     return { data, error };
   },
 

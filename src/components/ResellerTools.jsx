@@ -688,7 +688,9 @@ function StorefrontSetupPanel({
     setSaved(false);
     try {
       const cleanSlug = (formData.slug || 'my-store').toLowerCase().trim().replace(/[^a-z0-9-]/g, '');
-      const cleanDomain = formData.custom_domain ? formData.custom_domain.trim() : '';
+      const cleanDomain = formData.custom_domain && formData.custom_domain.trim()
+        ? formData.custom_domain.trim()
+        : null;
 
       const updates = {
         store_name: formData.store_name.trim() || 'My Reseller Boutique',
@@ -699,7 +701,17 @@ function StorefrontSetupPanel({
       };
 
       const { data, error } = await resellerService.updateStorefront(user.id, updates);
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505' || error.message?.includes('unique constraint') || error.message?.includes('duplicate key')) {
+          if (error.message?.includes('custom_domain') || error.details?.includes('custom_domain')) {
+            throw new Error('This custom domain is already registered by another boutique.');
+          }
+          if (error.message?.includes('slug') || error.details?.includes('slug')) {
+            throw new Error(`The store handle "${cleanSlug}" is already taken. Please choose a different handle.`);
+          }
+        }
+        throw error;
+      }
       onUpdate(data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
