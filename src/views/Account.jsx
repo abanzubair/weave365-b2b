@@ -42,12 +42,14 @@ import {
   Copy,
   ExternalLink,
   Phone,
-  Check
+  Check,
+  User
 } from 'lucide-react';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
+import { UserProfileTab } from '../components/UserProfileTab.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
 import { DeveloperDashboard } from '../components/developer/DeveloperDashboard.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -85,7 +87,9 @@ function getStatusBadgeStyle(status) {
 
 export function Account({
   user,
+  setUser,
   buyerProfile,
+  setBuyerProfile,
   priceAccess,
   cartItems,
   favoriteProducts,
@@ -565,7 +569,7 @@ export function Account({
           <button
             type="button"
             className="account-strip-btn"
-            onClick={() => navigate ? navigate('signup?mode=complete-profile') : (window.location.href = '/signup?mode=complete-profile')}
+            onClick={() => setActiveTab('profile')}
           >
             Complete Profile →
           </button>
@@ -584,6 +588,14 @@ export function Account({
             <span>Stock Inventory</span>
           </button>
         )}
+        <button 
+          type="button" 
+          className={`account-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          <User size={16} />
+          <span>Profile</span>
+        </button>
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'orders' ? 'active' : ''}`}
@@ -630,6 +642,18 @@ export function Account({
 
       {/* 4. ACTIVE TAB CONTENT */}
       <div className="account-tab-content-area">
+        {/* PROFILE TAB */}
+        {activeTab === 'profile' && (
+          <div className="account-panel-minimal">
+            <UserProfileTab 
+              user={user} 
+              buyerProfile={buyerProfile} 
+              setBuyerProfile={setBuyerProfile} 
+              setUser={setUser} 
+            />
+          </div>
+        )}
+
         {/* ORDERS TAB */}
         {activeTab === 'orders' && (
           <div className="account-panel-minimal">

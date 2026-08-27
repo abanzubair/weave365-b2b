@@ -17,6 +17,7 @@ export default function AccountClient() {
     user,
     setUser,
     buyerProfile,
+    setBuyerProfile,
     products,
     cart,
     setCart,
@@ -130,7 +131,9 @@ export default function AccountClient() {
   return (
     <Account
       user={user}
+      setUser={setUser}
       buyerProfile={buyerProfile}
+      setBuyerProfile={setBuyerProfile}
       priceAccess={priceAccess}
       cartItems={cartProducts}
       favoriteProducts={favoriteProducts}
