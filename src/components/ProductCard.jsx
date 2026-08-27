@@ -17,6 +17,7 @@ import {
   Palette,
   Share2,
   ShoppingBag,
+  Store,
   X,
 } from 'lucide-react';
 import { AppLink } from './AppLink.jsx';
@@ -25,8 +26,7 @@ import {
   fallbackProductImage,
   buildSingleProductWhatsappUrl,
   customerPrice,
-  formatMoney,
-  useCurrency
+  formatMoney
 } from '../storefrontShared.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { ResellerShareModal } from './ResellerShareModal.jsx';
@@ -43,7 +43,6 @@ export const ProductCard = memo(function ProductCard({
   priceAccess,
   openAuth,
 }) {
-  useCurrency();
   const selectedVariant = variant || product.variants[0];
   const image = product.images[0] || fallbackProductImage;
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
@@ -455,8 +454,7 @@ export const ProductCard = memo(function ProductCard({
                 >
                   <div className="item-icon share"><Share2 size={20} /></div>
                   <div className="item-copy">
-                    <strong>Share</strong>
-                    <span>Share catalog on WhatsApp</span>
+                    <strong>Share on WhatsApp</strong>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -472,11 +470,27 @@ export const ProductCard = memo(function ProductCard({
                 >
                   <div className="item-icon download"><Download size={20} /></div>
                   <div className="item-copy">
-                    <strong>{isDownloading ? 'Downloading...' : 'Download'}</strong>
-                    <span>Download photos & specs</span>
+                    <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
+
+                {priceAccess?.resellerDashboardEnabled && (
+                  <button
+                    type="button"
+                    className="sheet-item"
+                    onClick={() => {
+                      handleClose();
+                      setShowShareModal(true);
+                    }}
+                  >
+                    <div className="item-icon link"><Store size={20} /></div>
+                    <div className="item-copy">
+                      <strong>Add to My Website</strong>
+                    </div>
+                    <ChevronRight size={18} className="item-chevron" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -507,7 +521,6 @@ export const ProductCard = memo(function ProductCard({
                   <div className="item-icon package"><PackageCheck size={20} /></div>
                   <div className="item-copy">
                     <strong>Buy Now</strong>
-                    <span>{isOutOfStock ? 'Currently out of stock' : 'Add to bag & checkout'}</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -521,7 +534,6 @@ export const ProductCard = memo(function ProductCard({
                   <div className="item-icon bag"><ShoppingBag size={20} /></div>
                   <div className="item-copy">
                     <strong>Add to Cart</strong>
-                    <span>{isOutOfStock ? 'Currently out of stock' : 'Add item to your cart'}</span>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -536,8 +548,7 @@ export const ProductCard = memo(function ProductCard({
                 >
                   <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
                   <div className="item-copy">
-                    <strong>Enquiry</strong>
-                    <span>Chat with us on WhatsApp</span>
+                    <strong>WhatsApp Enquiry</strong>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>

@@ -285,6 +285,7 @@
   }
 
   .header-actions-premium .premium-search-trigger,
+  .header-actions-premium .mobile-user-trigger,
   .header-actions-premium .profile-trigger,
   .header-actions-premium .hamburger-btn,
   .hamburger-btn {
@@ -305,40 +306,12 @@
     box-sizing: border-box !important;
   }
 
-  .header-actions-premium .favorite-btn,
-  .header-actions-premium .navbar-logout-btn {
+  .desktop-only-action {
     display: none !important;
   }
 
-  .header-actions-premium .cart-btn {
-    display: none !important;
-  }
-
-  .header-actions-premium .currency-dropdown-container,
-  .header-actions-premium .premium-auth-group,
-  .header-actions-premium .premium-auth-link,
-  .header-actions-premium .premium-auth-slash,
-  .header-actions-premium .premium-divider {
-    display: none !important;
-  }
-
-  .header-actions-premium .profile-dropdown-container {
+  .mobile-only-action {
     display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .mobile-only-badge {
-    display: grid !important;
-  }
-
-  .profile-dropdown-cart-btn {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
   }
 
   .hamburger-btn .hamburger-svg {

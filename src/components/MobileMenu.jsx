@@ -19,7 +19,6 @@ import {
   ChevronDown,
   LogOut,
   Briefcase,
-  Globe,
   Info,
   Shield,
 } from 'lucide-react';
@@ -27,7 +26,6 @@ import {
 import { storeConfig, getCategorySlug } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
-import { CURRENCIES, CurrencyManager, useCurrency } from '../storefrontShared.jsx';
 import { DemoToggle } from '../utils/demoHelper.js';
 import { AppLink } from './AppLink.jsx';
 
@@ -70,9 +68,7 @@ export function MobileMenu(props) {
   const onSignOut = props.onSignOut;
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const isAdmin = props.isAdmin;
-  const currentCurrency = useCurrency();
   const [accountOpen, setAccountOpen] = useState(false);
-  const [currencyOpen, setCurrencyOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [partnerOpen, setPartnerOpen] = useState(false);
 
@@ -330,37 +326,6 @@ export function MobileMenu(props) {
                     </span>
                   </button>
                 ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Select Currency Dropdown */}
-          <div className={`mobile-currency-dropdown ${currencyOpen ? 'is-open' : ''}`}>
-            <button type="button" 
-              className="mobile-menu-item mobile-currency-trigger" 
-              onClick={() => setCurrencyOpen(!currencyOpen)}
-            >
-              <span className="mobile-menu-icon"><Globe size={20} /></span>
-              <span className="mobile-menu-label">Select Currency</span>
-              <ChevronDown size={18} className={`mobile-menu-chevron ${currencyOpen ? 'rotated' : ''}`} />
-            </button>
-
-            <div className="mobile-currency-expandable">
-              <div className="mobile-currency-expandable-inner">
-                <div className="mobile-currency-grid">
-                  {CURRENCIES.map(c => (
-                    <button type="button" 
-                      key={c.code}
-                      className={`mobile-currency-btn ${c.code === currentCurrency ? 'active' : ''}`}
-                      onClick={() => {
-                        CurrencyManager.setCurrency(c.code);
-                      }}
-                    >
-                      <img src={`https://flagcdn.com/w20/${c.flag}.png`} alt="" className="flag-img" />
-                      <span>{c.code}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

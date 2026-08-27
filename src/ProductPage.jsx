@@ -1473,8 +1473,7 @@ export function ProductDetail({
                           >
                             <div className="item-icon share"><Share2 size={20} /></div>
                             <div className="item-copy">
-                              <strong>Share</strong>
-                              <span>Share catalog on WhatsApp</span>
+                              <strong>Share on WhatsApp</strong>
                             </div>
                             <ChevronRight size={18} className="item-chevron" />
                           </button>
@@ -1491,13 +1490,12 @@ export function ProductDetail({
                           >
                             <div className="item-icon download"><Download size={20} /></div>
                             <div className="item-copy">
-                              <strong>{isDownloading ? 'Downloading...' : 'Download'}</strong>
-                              <span>Download photos & specs (ZIP)</span>
+                              <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                             </div>
                             <ChevronRight size={18} className="item-chevron" />
                           </button>
 
-                          {priceAccess?.canViewPrices && (
+                          {priceAccess?.resellerDashboardEnabled && (
                             <button
                               type="button"
                               className="sheet-item"
@@ -1508,8 +1506,7 @@ export function ProductDetail({
                             >
                               <div className="item-icon link"><Store size={20} /></div>
                               <div className="item-copy">
-                                <strong>White-Label</strong>
-                                <span>Get white-label store link</span>
+                                <strong>Add to My Website</strong>
                               </div>
                               <ChevronRight size={18} className="item-chevron" />
                             </button>

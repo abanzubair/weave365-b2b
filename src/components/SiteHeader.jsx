@@ -1,10 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronDown, Search, ShoppingBag, User, LogOut } from 'lucide-react';
+import { ChevronDown, Search, User } from 'lucide-react';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
 import { storeConfig, getCategorySlug } from '../config.js';
-import { CURRENCIES, CurrencyManager } from '../storefrontShared.jsx';
-import { DemoToggle } from '../utils/demoHelper.js';
 import { useStorefront } from '../store/useStorefront.js';
 
 import brandLogo from '../../assets/Weave365.svg';
@@ -32,7 +30,7 @@ export function SiteHeader(props) {
   const internalCategoriesRef = useRef(null);
   const internalPartnerNavRef = useRef(null);
   const internalProfileRef = useRef(null);
-  const internalCurrencyRef = useRef(null);
+  const internalGetStartedRef = useRef(null);
 
   const [internalScrolled, setInternalScrolled] = useState(false);
   const [internalPastHero, setInternalPastHero] = useState(false);
@@ -98,17 +96,21 @@ export function SiteHeader(props) {
   const searchActive = props.searchActive ?? store.searchActive;
   const setSearchActive = props.setSearchActive ?? store.setSearchActive;
   const profileRef = props.profileRef || internalProfileRef;
+  const getStartedRef = props.getStartedRef || internalGetStartedRef;
   const user = props.user ?? store.user;
   const buyerProfile = props.buyerProfile ?? store.buyerProfile;
+  const userDisplayName = user
+    ? (() => {
+        const rawName = buyerProfile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || buyerProfile?.business_name || user.email?.split('@')[0] || 'Account';
+        return rawName.trim().split(/\s+/)[0] || 'Account';
+      })()
+    : 'Log In';
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const isAdmin = props.isAdmin;
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
   const cartProducts = props.cartProducts || [];
-  const currencyRef = props.currencyRef || internalCurrencyRef;
-  const activeCurrency = props.activeCurrency || CURRENCIES[0];
-  const currentCurrency = props.currentCurrency || CURRENCIES[0].code;
   return (
     <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
       <a
@@ -244,173 +246,145 @@ export function SiteHeader(props) {
       </button>
 
       <div className="header-actions-premium">
-        <DemoToggle user={user} />
         <button 
           className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
           type="button" 
           onClick={() => setSearchActive(!searchActive)}
           aria-label="Search"
         >
-          <Search size={18} strokeWidth={1.5} />
+          <Search size={19} strokeWidth={1.75} />
         </button>
-        
-        <div className="nav-item-dropdown profile-dropdown-container" ref={profileRef}>
-          <button 
-            className={`premium-icon-btn profile-trigger ${dropdownOpen === 'profile' ? 'active' : ''}`}
-            type="button" 
+
+        {/* 1. Log In / User Name Dropdown Button */}
+        <div className="nav-item-dropdown account-dropdown-container" ref={profileRef}>
+          {/* Desktop Auth / User Button */}
+          <button
+            type="button"
+            className="nav-auth-pill-btn desktop-only-action"
             onClick={(e) => {
               e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'profile' ? null : 'profile');
+              setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
             }}
-            aria-label="Profile"
           >
-            <User size={18} strokeWidth={1.5} />
+            <span>{userDisplayName}</span>
+          </button>
+
+          {/* Mobile User Icon */}
+          <button
+            type="button"
+            className={`premium-icon-btn mobile-user-trigger mobile-only-action ${dropdownOpen === 'account' ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+            }}
+            aria-label="Account Menu"
+          >
+            <User size={20} strokeWidth={1.5} />
             {cartProducts.length > 0 && (
               <span className="premium-badge mobile-only-badge">{cartProducts.length}</span>
             )}
           </button>
-          <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'profile'}>
-            {user ? (
-              <>
-                {buyerProfile?.full_name && (
-                  <div className="profile-dropdown-greeting">
-                    Hello, {buyerProfile.full_name.split(' ')[0]}
-                  </div>
-                )}
-                {isAdmin && (
-                  <button type="button"
-                    onClick={() => {
-                      window.open('/admin', '_blank');
-                      setDropdownOpen(null);
-                    }}
-                  >
-                    Admin Panel
-                  </button>
-                )}
-                <button type="button"
-                  onClick={() => {
-                    navigate('account');
-                    setDropdownOpen(null);
-                  }}
-                >
-                  My Account
-                </button>
-                {vendorOnboarding?.status === 'approved' && vendorOnboarding?.drive_folder_url && (
-                  <button type="button"
-                    onClick={() => {
-                      window.open(vendorOnboarding.drive_folder_url, '_blank');
-                      setDropdownOpen(null);
-                    }}
-                    className="premium-product-listing-btn"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      fontWeight: '600',
-                      color: '#b78646',
-                      transition: 'color 0.2s ease',
-                    }}
-                  >
-                    Product Listing
-                  </button>
-                )}
-                {!isAdmin && (
-                  <button type="button"
-                    onClick={() => {
-                      navigate('favorites');
-                      setDropdownOpen(null);
-                    }}
-                  >
-                    Saved Items {favoritesCount > 0 && `(${favoritesCount})`}
-                  </button>
-                )}
-                <button type="button"
-                  className="profile-dropdown-cart-btn"
-                  onClick={() => {
-                    setCartOpen(true);
-                    setDropdownOpen(null);
-                  }}
-                >
-                  <span>Cart</span>
-                  {cartProducts.length > 0 && (
-                    <span className="premium-badge" style={{ position: 'static', transform: 'none' }}>
-                      {cartProducts.length}
-                    </span>
-                  )}
-                </button>
-                <button type="button"
-                  onClick={() => {
-                    handleSignOut();
-                    setDropdownOpen(null);
-                  }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <button type="button"
-                  onClick={() => {
-                    navigate('signup');
-                    setDropdownOpen(null);
-                  }}
-                >
-                  Sign In / Register
-                </button>
-              </>
-            )}
-          </DropdownPortal>
-        </div>
-        
-        {user && (
-          <button 
-            className="premium-icon-btn navbar-logout-btn" 
-            type="button" 
-            onClick={handleSignOut}
-            aria-label="Logout"
-            title="Logout"
-          >
-            <LogOut size={18} strokeWidth={1.5} />
-          </button>
-        )}
-        
-        <button 
-          className="premium-icon-btn cart-btn" 
-          type="button" 
-          onClick={() => setCartOpen(true)}
-          aria-label="Cart"
-        >
-          <ShoppingBag size={18} strokeWidth={1.5} />
-          {cartProducts.length > 0 && <span className="premium-badge">{cartProducts.length}</span>}
-        </button>
 
-        <div className="nav-item-dropdown currency-dropdown-container" ref={currencyRef}>
-          <button 
-            className={`premium-icon-btn navbar-currency-trigger ${dropdownOpen === 'currency' ? 'active' : ''}`}
-            type="button" 
-            onClick={(e) => {
-              e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'currency' ? null : 'currency');
-            }}
-            aria-label="Change Currency"
-          >
-            <span className="navbar-currency-code">{activeCurrency.code}</span>
-            <ChevronDown size={11} className={dropdownOpen === 'currency' ? 'rotate' : ''} />
-          </button>
-          <DropdownPortal anchorRef={currencyRef} isOpen={dropdownOpen === 'currency'} className="dropdown-menu currency-dropdown-menu">
-            {CURRENCIES.map((c) => (
-              <button type="button"
-                key={c.code}
-                className={c.code === currentCurrency ? 'active' : ''}
+          <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('account');
+                else window.location.href = '/account';
+                setDropdownOpen(null);
+              }}
+            >
+              My Account
+            </button>
+            <button
+              type="button"
+              className="profile-dropdown-cart-btn"
+              onClick={() => {
+                setCartOpen(true);
+                setDropdownOpen(null);
+              }}
+            >
+              <span>Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('favorites');
+                else window.location.href = '/favorites';
+                setDropdownOpen(null);
+              }}
+            >
+              Saved Items {favoritesCount > 0 ? `(${favoritesCount})` : ''}
+            </button>
+            {user ? (
+              <button
+                type="button"
                 onClick={() => {
-                  CurrencyManager.setCurrency(c.code);
+                  handleSignOut();
                   setDropdownOpen(null);
                 }}
               >
-                <span>{c.code}</span>
-                {c.code === currentCurrency && <div className="active-dot" />}
+                Log Out
               </button>
-            ))}
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigate) navigate('login');
+                  else window.location.href = '/login';
+                  setDropdownOpen(null);
+                }}
+              >
+                Log In
+              </button>
+            )}
+          </DropdownPortal>
+        </div>
+
+        {/* 2. Get Started Dropdown Button */}
+        <div className="nav-item-dropdown get-started-dropdown-container" ref={getStartedRef}>
+          <button
+            type="button"
+            className="nav-account-pill-btn desktop-only-action"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(dropdownOpen === 'get-started' ? null : 'get-started');
+            }}
+          >
+            <span>Get Started</span>
+          </button>
+
+          <DropdownPortal anchorRef={getStartedRef} isOpen={dropdownOpen === 'get-started'}>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('resell-sarees-online');
+                else window.location.href = '/resell-sarees-online';
+                setDropdownOpen(null);
+              }}
+            >
+              Start Reselling
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('catalogue');
+                else window.location.href = '/catalogue';
+                setDropdownOpen(null);
+              }}
+            >
+              Shop Products
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('bulk-inquiry');
+                else window.location.href = '/bulk-inquiry';
+                setDropdownOpen(null);
+              }}
+            >
+              Wholesale Buying
+            </button>
           </DropdownPortal>
         </div>
 

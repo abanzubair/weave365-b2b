@@ -17,7 +17,7 @@
  * @param {Function} props.onSignOut - Callback to end the user session
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   Bookmark, 
   ClipboardList, 
@@ -29,21 +29,25 @@ import {
   MapPin, 
   Plus, 
   Edit, 
+  Edit3,
   Trash2, 
   RefreshCw, 
   AlertTriangle, 
   Boxes, 
   Store, 
+  Globe,
   Code2, 
   ArrowUpRight, 
   LogOut, 
-  Check, 
   Copy,
-  ExternalLink
+  ExternalLink,
+  Phone,
+  Check
 } from 'lucide-react';
-import { customerPrice, fallbackProductImage, formatMoney, calculateComboDiscount } from '../storefrontShared.jsx';
+import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
+import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
 import { DeveloperDashboard } from '../components/developer/DeveloperDashboard.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -115,7 +119,7 @@ export function Account({
     return 'orders';
   });
 
-  const [orderSubTab, setOrderSubTab] = useState('placed');
+  const [orderSubTab, setOrderSubTab] = useState('enquiry');
 
   useEffect(() => {
     if (initialTab) {
@@ -135,7 +139,6 @@ export function Account({
   // Placed orders state
   const [placedOrders, setPlacedOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const [orderFilterTab, setOrderFilterTab] = useState('all');
   const [copiedTrackingId, setCopiedTrackingId] = useState(null);
 
   const copyCustomerTrackingLink = (orderId) => {
@@ -409,6 +412,71 @@ export function Account({
     }
   };
 
+  const hybridTotals = useMemo(() => {
+    return calculateHybridCartTotals(cartItems || [], priceAccess);
+  }, [cartItems, priceAccess]);
+
+  const subtotal = hybridTotals.subtotal;
+  const discount = hybridTotals.discount;
+  const total = hybridTotals.total;
+
+  const groupedCartItems = useMemo(() => {
+    const groups = new Map();
+
+    (cartItems || []).forEach((item) => {
+      const key = item.productGroupKey || item.product?.id || item.productId || item.product?.title || 'unknown';
+      const group = groups.get(key) || {
+        key,
+        product: item.product,
+        variant: item.variant,
+        colorOptions: item.colorOptions || item.product?.colorOptions || [],
+        items: [],
+      };
+
+      group.items.push(item);
+      groups.set(key, group);
+    });
+
+    return Array.from(groups.values()).map((group) => {
+      const activeItems = group.items.filter(
+        (item) => item.selectedColorName && item.selectedColorName !== 'Select Color'
+      );
+      return {
+        ...group,
+        totalQuantity: group.items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0),
+        selectedColorsCount: activeItems.length,
+      };
+    });
+  }, [cartItems]);
+
+  const userInitials = (buyerProfile?.full_name || buyerProfile?.business_name || user?.email || 'U')
+    .trim()
+    .split(' ')
+    .slice(0, 2)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase();
+
+  const enquiriesList = useMemo(() => {
+    return (placedOrders || []).filter(o => o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry');
+  }, [placedOrders]);
+
+  const pendingOrdersList = useMemo(() => {
+    return (placedOrders || []).filter(o => {
+      if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
+      const s = String(o.status || '').toLowerCase();
+      return s !== 'delivered' && s !== 'completed' && s !== 'cancelled' && s !== 'done' && s !== 'rejected';
+    });
+  }, [placedOrders]);
+
+  const orderHistoryList = useMemo(() => {
+    return (placedOrders || []).filter(o => {
+      if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
+      const s = String(o.status || '').toLowerCase();
+      return s === 'delivered' || s === 'completed' || s === 'cancelled' || s === 'done' || s === 'rejected';
+    });
+  }, [placedOrders]);
+
   if (!user) {
     return (
       <section className="section empty-page">
@@ -422,25 +490,9 @@ export function Account({
     );
   }
 
-  const subtotal = priceAccess.canViewPrices
-    ? cartItems.reduce((sum, item) => sum + (customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity, 0)
-    : 0;
-  const discount = priceAccess.canViewPrices
-    ? calculateComboDiscount(cartItems, priceAccess)
-    : 0;
-  const total = priceAccess.canViewPrices ? Math.max(0, subtotal - discount) : null;
-
-  const userInitials = (buyerProfile?.full_name || buyerProfile?.business_name || user.email || 'U')
-    .trim()
-    .split(' ')
-    .slice(0, 2)
-    .map(w => w[0])
-    .join('')
-    .toUpperCase();
-
   return (
     <section className="account-page-minimal">
-      {/* 1. MINIMAL HERO HEADER */}
+      {/* 1. MINIMAL HERO HEADER (COMMENTED OUT)
       <div className="account-hero-minimal">
         <div className="account-hero-left">
           <div className="account-avatar-minimal">
@@ -498,6 +550,7 @@ export function Account({
           </button>
         </div>
       </div>
+      */}
 
       {/* 2. INCOMPLETE PROFILE NOTICE */}
       {!isProfileComplete(user, buyerProfile) && (
@@ -537,17 +590,8 @@ export function Account({
           onClick={() => setActiveTab('orders')}
         >
           <ClipboardList size={16} />
-          <span>Orders & Cart</span>
+          <span>Orders</span>
           {placedOrders.length > 0 && <span className="nav-count">{placedOrders.length}</span>}
-        </button>
-        <button 
-          type="button" 
-          className={`account-nav-item ${activeTab === 'favorites' ? 'active' : ''}`}
-          onClick={() => setActiveTab('favorites')}
-        >
-          <Heart size={16} />
-          <span>Saved Items</span>
-          {favoriteProducts.length > 0 && <span className="nav-count">{favoriteProducts.length}</span>}
         </button>
         <button 
           type="button" 
@@ -558,16 +602,14 @@ export function Account({
           <span>Addresses</span>
           {addresses.length > 0 && <span className="nav-count">{addresses.length}</span>}
         </button>
-        {priceAccess.resellerDashboardEnabled && (
-          <button 
-            type="button" 
-            className={`account-nav-item ${activeTab === 'reseller' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reseller')}
-          >
-            <Store size={16} />
-            <span>Business Center</span>
-          </button>
-        )}
+        <button 
+          type="button" 
+          className={`account-nav-item ${activeTab === 'reseller' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reseller')}
+        >
+          <Globe size={16} />
+          <span>Build Your Own Website</span>
+        </button>
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''}`}
@@ -588,277 +630,412 @@ export function Account({
 
       {/* 4. ACTIVE TAB CONTENT */}
       <div className="account-tab-content-area">
-        {/* ORDERS & CART TAB */}
+        {/* ORDERS TAB */}
         {activeTab === 'orders' && (
           <div className="account-panel-minimal">
             <div className="account-section-header">
-              <div className="account-segmented-pills">
+              <div className="account-order-subtabs">
                 <button
                   type="button"
-                  className={`segmented-pill ${orderSubTab === 'placed' ? 'active' : ''}`}
-                  onClick={() => setOrderSubTab('placed')}
+                  className={`account-order-subtab-btn ${orderSubTab === 'enquiry' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('enquiry')}
                 >
-                  Placed Orders ({placedOrders.length})
+                  Enquiry {enquiriesList.length > 0 && <span className="subtab-badge">({enquiriesList.length})</span>}
                 </button>
                 <button
                   type="button"
-                  className={`segmented-pill ${orderSubTab === 'draft' ? 'active' : ''}`}
-                  onClick={() => setOrderSubTab('draft')}
+                  className={`account-order-subtab-btn ${orderSubTab === 'pending' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('pending')}
                 >
-                  Draft Sourcing Cart ({cartItems.length})
+                  Pending Order {((cartItems?.length || 0) + (pendingOrdersList?.length || 0)) > 0 && (
+                    <span className="subtab-badge">({(cartItems?.length || 0) + (pendingOrdersList?.length || 0)})</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`account-order-subtab-btn ${orderSubTab === 'history' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('history')}
+                >
+                  Order History {orderHistoryList.length > 0 && <span className="subtab-badge">({orderHistoryList.length})</span>}
                 </button>
               </div>
-
-              {orderSubTab === 'placed' && placedOrders.length > 0 && (
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    type="button"
-                    className={`segmented-pill ${orderFilterTab === 'all' ? 'active' : ''}`}
-                    onClick={() => setOrderFilterTab('all')}
-                  >
-                    All ({placedOrders.length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`segmented-pill ${orderFilterTab === 'dropship' ? 'active' : ''}`}
-                    onClick={() => setOrderFilterTab('dropship')}
-                  >
-                    Dropship ({placedOrders.filter(o => o.is_dropship).length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`segmented-pill ${orderFilterTab === 'regular' ? 'active' : ''}`}
-                    onClick={() => setOrderFilterTab('regular')}
-                  >
-                    Standard ({placedOrders.filter(o => !o.is_dropship).length})
-                  </button>
-                </div>
-              )}
             </div>
 
-            {orderSubTab === 'placed' ? (
-              <div className="placed-orders-container">
-                {ordersLoading ? (
-                  <p style={{ textAlign: 'center', padding: '36px', color: '#6b7280' }}>Loading order history...</p>
-                ) : placedOrders.length === 0 ? (
-                  <div className="account-empty-state">
-                    <ClipboardList size={36} strokeWidth={1.5} />
-                    <h3 className="account-empty-title">No orders placed yet</h3>
-                    <p className="account-empty-desc">Once you confirm an inquiry or checkout wholesale sarees, your live dispatch updates will appear here.</p>
-                    <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
-                      Browse Wholesale Catalogue
-                    </button>
-                  </div>
-                ) : (
-                  <div className="account-orders-stack">
-                    {placedOrders
-                      .filter(o => {
-                        if (orderFilterTab === 'dropship') return o.is_dropship;
-                        if (orderFilterTab === 'regular') return !o.is_dropship;
-                        return true;
-                      })
-                      .map((order) => {
-                        const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        });
-                        const statusStyle = getStatusBadgeStyle(order.status);
-                        const orderTotal = order.items && Array.isArray(order.items)
-                          ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
-                          : 0;
-                        const isDropshipOrder = Boolean(order.is_dropship);
+            {orderSubTab === 'pending' ? (
+              <div className="pending-orders-section">
+                {/* 1. DRAFT SOURCING CART ITEMS */}
+                {cartItems && cartItems.length > 0 && (
+                  <div className="draft-cart-container" style={{ marginBottom: pendingOrdersList.length > 0 ? '36px' : '0' }}>
+                    <div className="draft-cart-groups-stack">
+                      {groupedCartItems.map((group) => {
+                        const hybridInfo = hybridTotals.productPricing?.[group.product?.id];
+                        const isUnder999 = String(group.product?.category || '').toLowerCase() === 'under 999';
 
                         return (
-                          <div 
-                            key={order.id} 
-                            className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
-                          >
-                            <div className="order-card-top-bar">
-                              <div className="order-ref-group">
-                                <span className="order-ref-code">#{order.id}</span>
-                                {isDropshipOrder && (
-                                  <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
-                                    Dropship
-                                  </span>
-                                )}
-                                <span className="order-date-text">{orderDate}</span>
-                              </div>
-                              <span 
-                                className="order-status-pill"
-                                style={statusStyle}
-                              >
-                                {order.status || 'Received'}
-                              </span>
-                            </div>
-
-                            {isDropshipOrder && (
-                              <div className="order-dropship-info-box">
-                                <div><strong>Sender Label:</strong> {order.dropship_sender_name || order.business_name || 'Reseller'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
-                                <div><strong>Deliver To:</strong> {order.dropship_recipient_name || order.buyer_name} ({order.dropship_recipient_phone || 'N/A'}) — {order.dropship_recipient_city} {order.dropship_recipient_pincode ? `(${order.dropship_recipient_pincode})` : ''}</div>
-                              </div>
-                            )}
-
-                            <div className="order-items-list">
-                              {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
-                                <div key={idx} className="order-item-row">
-                                  <div className="order-item-left">
-                                    <span className="order-item-bullet" />
-                                    <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
-                                    {item.color && <span className="order-item-variant">· {item.color}</span>}
+                          <div className="draft-cart-group-card" key={group.key}>
+                            {/* Product Header */}
+                            <div className="draft-cart-group-header">
+                              <div className="draft-cart-group-main">
+                                <img 
+                                  src={group.items[0]?.selectedColorImage || group.product?.images?.[0] || fallbackProductImage} 
+                                  alt={group.product?.title} 
+                                  className="draft-cart-group-thumb"
+                                  loading="lazy" 
+                                  onError={(e) => { e.target.src = fallbackProductImage; }}
+                                />
+                                <div className="draft-cart-group-meta">
+                                  <h4 className="draft-cart-group-title">{group.product?.title || 'Product'}</h4>
+                                  <div className="draft-cart-group-sub">
+                                    <span className="draft-cart-code">Code: {group.variant?.code || group.product?.code || '—'}</span>
+                                    <span className="account-meta-dot">•</span>
+                                    <span>{group.items.length} {group.items.length === 1 ? 'Color' : 'Colors'} ({group.totalQuantity} pcs)</span>
                                   </div>
-                                  <span className="order-item-qty">Qty {item.quantity || 1}</span>
                                 </div>
-                              ))}
+                              </div>
+
+                              {!isUnder999 && hybridInfo && hybridInfo.setSize > 1 && (
+                                <div className="draft-cart-tier-badge">
+                                  {hybridInfo.completeSets > 0 && hybridInfo.extraPieces === 0 ? (
+                                    <span className="tier-pill tier-pill-wholesale">
+                                      {hybridInfo.completeSets} Full Set{hybridInfo.completeSets > 1 ? 's' : ''} ({group.totalQuantity} pcs) · Wholesale Rate
+                                    </span>
+                                  ) : (
+                                    <span className="tier-pill tier-pill-reseller">
+                                      {group.totalQuantity} pcs · Single Piece Rate
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
 
-                            <div className="order-card-bottom-bar">
-                              <div className="order-total-block">
-                                <span className="order-total-label">Total:</span>
-                                <span className="order-total-value">
-                                  {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
-                                </span>
-                              </div>
+                            {/* Color Variants Rows */}
+                            <div className="draft-cart-variants-list">
+                              {group.items.map((item) => {
+                                const unitPrice =
+                                  hybridInfo && group.totalQuantity >= hybridInfo.setSize
+                                    ? hybridInfo.wholesalePrice
+                                    : hybridInfo?.resellerPrice || customerPrice(item.variant?.prices, priceAccess) || 0;
 
-                              <div className="order-card-actions">
-                                <button 
-                                  type="button" 
-                                  className="order-track-btn"
-                                  onClick={() => navigate('order-tracking', order.id)}
-                                >
-                                  <span>Track Order</span>
-                                  <ArrowUpRight size={13} />
-                                </button>
-                                {isDropshipOrder && (
-                                  <button
-                                    type="button"
-                                    className="order-copy-link-btn"
-                                    onClick={() => copyCustomerTrackingLink(order.id)}
-                                  >
-                                    <Copy size={13} />
-                                    <span>{copiedTrackingId === order.id ? 'Copied!' : 'Copy Tracking Link'}</span>
-                                  </button>
-                                )}
-                              </div>
+                                return (
+                                  <div className="draft-cart-variant-row" key={item.variantCode || `${item.productId}-${item.selectedColorName}`}>
+                                    <div className="draft-cart-variant-left">
+                                      {item.selectedColorImage && (
+                                        <img 
+                                          src={item.selectedColorImage} 
+                                          alt={item.selectedColorName || 'Color'}
+                                          className="draft-cart-variant-swatch"
+                                          onError={(e) => { e.target.style.display = 'none'; }}
+                                        />
+                                      )}
+                                      <div className="draft-cart-variant-label-group">
+                                        <span className="draft-cart-variant-name">
+                                          {item.selectedColorName || item.variant?.code || 'Selected Color'}
+                                        </span>
+                                        {priceAccess.canViewPrices && (
+                                          <span className="draft-cart-unit-rate">
+                                            {formatMoney(unitPrice)} / pc
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="draft-cart-variant-right">
+                                      <div className="draft-qty-picker">
+                                        <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)} aria-label="Decrease">−</button>
+                                        <output>{item.quantity}</output>
+                                        <button type="button" onClick={() => updateQuantity(item, item.quantity + 1)} aria-label="Increase">+</button>
+                                      </div>
+
+                                      <div className="draft-cart-variant-price">
+                                        {priceAccess.canViewPrices ? (
+                                          formatMoney(unitPrice * item.quantity)
+                                        ) : (
+                                          <span style={{ fontSize: '12px', color: '#6b7280' }}>Verified Only</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
                       })}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="draft-cart-container">
-                {cartItems.length === 0 ? (
-                  <div className="account-empty-state">
-                    <ShoppingBag size={36} strokeWidth={1.5} />
-                    <h3 className="account-empty-title">Draft cart is empty</h3>
-                    <p className="account-empty-desc">Explore the wholesale catalogue to select sarees and add them to your draft order.</p>
-                    <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
-                      Start Sourcing Sarees
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="draft-cart-table">
-                      {cartItems.map((item) => (
-                        <div className="draft-cart-row" key={item.variantCode}>
-                          <img 
-                            src={item.selectedColorImage || item.product.images[0] || fallbackProductImage} 
-                            alt={`${item.product.title} – ${item.selectedColorName || item.variant.code}`} 
-                            className="draft-cart-img"
-                            loading="lazy" 
-                          />
-                          <div className="draft-cart-details">
-                            <span className="draft-cart-title">{item.product.title}</span>
-                            <span className="draft-cart-code">{item.selectedColorName || item.variant.code}</span>
-                          </div>
-                          <div className="draft-qty-picker">
-                            <button type="button" onClick={() => updateQuantity(item, item.quantity - 1)} aria-label="Decrease">−</button>
-                            <output>{item.quantity}</output>
-                            <button type="button" onClick={() => updateQuantity(item, item.quantity + 1)} aria-label="Increase">+</button>
-                          </div>
-                          <div style={{ textAlign: 'right', minWidth: '80px' }}>
-                            {priceAccess.canViewPrices ? (
-                              <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>
-                                {formatMoney((customerPrice(item.variant.prices, priceAccess) || 0) * item.quantity)}
-                              </strong>
-                            ) : (
-                              <span style={{ fontSize: '12px', color: '#6b7280' }}>Verified Only</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
                     </div>
 
                     <div className="draft-cart-footer">
                       <div className="draft-cart-total-summary">
-                        <span style={{ fontSize: '13px', color: '#6b7280' }}>Draft Subtotal:</span>
-                        <strong style={{ fontSize: '18px', color: 'var(--ink)' }}>
+                        <span style={{ fontSize: '14px', color: '#6b7280' }}>Draft Subtotal:</span>
+                        <strong style={{ fontSize: '20px', color: 'var(--ink)' }}>
                           {total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}
                         </strong>
                       </div>
                       <div className="draft-cart-actions">
                         <button type="button" className="secondary-button" onClick={() => navigate('catalogue')}>
-                          Add More Sarees
+                          Add More Products
                         </button>
                         <button type="button" className="primary-button" onClick={() => navigate('checkout')}>
                           Proceed to Checkout →
                         </button>
                       </div>
                     </div>
-                  </>
+                  </div>
+                )}
+
+                {/* 2. PLACED PENDING ORDERS IF ANY */}
+                {pendingOrdersList && pendingOrdersList.length > 0 && (
+                  <div className="account-orders-stack" style={{ marginTop: cartItems.length > 0 ? '24px' : '0' }}>
+                    {cartItems.length > 0 && (
+                      <h4 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px', color: '#1a1a1a' }}>
+                        Confirmed Pending Orders ({pendingOrdersList.length})
+                      </h4>
+                    )}
+                    {pendingOrdersList.map((order) => {
+                      const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      });
+                      const statusStyle = getStatusBadgeStyle(order.status);
+                      const orderTotal = order.items && Array.isArray(order.items)
+                        ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                        : 0;
+                      const isDropshipOrder = Boolean(order.is_dropship);
+
+                      return (
+                        <div 
+                          key={order.id} 
+                          className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
+                        >
+                          <div className="order-card-top-bar">
+                            <div className="order-ref-group">
+                              <span className="order-ref-code">#{order.id}</span>
+                              {isDropshipOrder && (
+                                <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+                                  Dropship
+                                </span>
+                              )}
+                              <span className="order-date-text">{orderDate}</span>
+                            </div>
+                            <span 
+                              className="order-status-pill"
+                              style={statusStyle}
+                            >
+                              {order.status || 'Processing'}
+                            </span>
+                          </div>
+
+                          {isDropshipOrder && (
+                            <div className="order-dropship-info-box">
+                              <div><strong>Sender Label:</strong> {order.dropship_sender_name || order.business_name || 'Reseller'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
+                              <div><strong>Deliver To:</strong> {order.dropship_recipient_name || order.buyer_name} ({order.dropship_recipient_phone || 'N/A'}) — {order.dropship_recipient_city} {order.dropship_recipient_pincode ? `(${order.dropship_recipient_pincode})` : ''}</div>
+                            </div>
+                          )}
+
+                          <div className="order-items-list">
+                            {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
+                              <div key={idx} className="order-item-row">
+                                <div className="order-item-left">
+                                  <span className="order-item-bullet" />
+                                  <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
+                                  {item.color && <span className="order-item-variant">· {item.color}</span>}
+                                </div>
+                                <span className="order-item-qty">Qty {item.quantity || 1}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="order-card-bottom-bar">
+                            <div className="order-total-block">
+                              <span className="order-total-label">Total:</span>
+                              <span className="order-total-value">
+                                {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                              </span>
+                            </div>
+
+                            <div className="order-card-actions">
+                              <button 
+                                type="button" 
+                                className="order-track-btn"
+                                onClick={() => navigate('order-tracking', order.id)}
+                              >
+                                <span>Track Order</span>
+                                <ArrowUpRight size={13} />
+                              </button>
+                              {isDropshipOrder && (
+                                <button
+                                  type="button"
+                                  className="order-copy-link-btn"
+                                  onClick={() => copyCustomerTrackingLink(order.id)}
+                                  title="Copy tracking link for your customer"
+                                >
+                                  {copiedTrackingId === order.id ? (
+                                    <>
+                                      <Check size={13} style={{ color: '#059669' }} />
+                                      <span style={{ color: '#059669' }}>Copied!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Share2 size={13} />
+                                      <span>Customer Link</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* EMPTY STATE IF BOTH CART AND PENDING ORDERS ARE EMPTY */}
+                {(!cartItems || cartItems.length === 0) && (!pendingOrdersList || pendingOrdersList.length === 0) && (
+                  <div className="account-empty-state">
+                    <ShoppingBag size={36} strokeWidth={1.5} />
+                    <h3 className="account-empty-title">No pending orders or cart items</h3>
+                    <p className="account-empty-desc">Explore the wholesale catalogue to select sarees and add them to your draft order.</p>
+                    <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
+                      Browse Wholesale Catalogue
+                    </button>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* SAVED ITEMS TAB */}
-        {activeTab === 'favorites' && (
-          <div className="account-panel-minimal">
-            <div className="account-section-header">
-              <span className="account-section-title">
-                <Heart size={18} />
-                <span>Saved Designs ({favoriteProducts.length})</span>
-              </span>
-              {favoriteProducts.length > 0 && (
-                <button type="button" className="address-action-link" onClick={() => navigate('favorites')}>
-                  Open Wishlist Page →
-                </button>
-              )}
-            </div>
-
-            {favoriteProducts.length === 0 ? (
-              <div className="account-empty-state">
-                <Heart size={36} strokeWidth={1.5} />
-                <h3 className="account-empty-title">No saved designs yet</h3>
-                <p className="account-empty-desc">Click the heart icon on any saree in the catalogue to save it to your wishlist for fast ordering.</p>
-                <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
-                  Discover Sarees
-                </button>
-              </div>
             ) : (
-              <div className="account-favorites-grid">
-                {favoriteProducts.map((product) => (
-                  <button 
-                    className="account-favorite-card" 
-                    type="button" 
-                    key={product.id} 
-                    onClick={() => navigate('product', product.id)}
-                  >
-                    <img 
-                      src={product.images[0] || fallbackProductImage} 
-                      alt={product.title} 
-                      className="account-favorite-img"
-                      loading="lazy" 
-                    />
-                    <div className="account-favorite-info">
-                      <span className="account-favorite-title">{product.title}</span>
-                      <span className="account-favorite-code">{product.variants[0]?.code}</span>
-                    </div>
-                  </button>
-                ))}
+              <div className="placed-orders-container">
+                {ordersLoading ? (
+                  <p style={{ textAlign: 'center', padding: '36px', color: '#6b7280' }}>Loading orders...</p>
+                ) : (
+                  (() => {
+                    const currentList = orderSubTab === 'enquiry'
+                      ? enquiriesList
+                      : orderHistoryList;
+
+                    if (currentList.length === 0) {
+                      const emptyTitle = orderSubTab === 'enquiry'
+                        ? 'No inquiries yet'
+                        : 'No order history yet';
+
+                      const emptyDesc = orderSubTab === 'enquiry'
+                        ? 'Once you submit a wholesale or custom sourcing inquiry, your live updates will appear here.'
+                        : 'Your completed and delivered wholesale orders will be archived here for easy reference.';
+
+                      return (
+                        <div className="account-empty-state">
+                          <ClipboardList size={36} strokeWidth={1.5} />
+                          <h3 className="account-empty-title">{emptyTitle}</h3>
+                          <p className="account-empty-desc">{emptyDesc}</p>
+                          <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
+                            Browse Wholesale Catalogue
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="account-orders-stack">
+                        {currentList.map((order) => {
+                          const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          });
+                          const statusStyle = getStatusBadgeStyle(order.status);
+                          const orderTotal = order.items && Array.isArray(order.items)
+                            ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                            : 0;
+                          const isDropshipOrder = Boolean(order.is_dropship);
+
+                          return (
+                            <div 
+                              key={order.id} 
+                              className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
+                            >
+                              <div className="order-card-top-bar">
+                                <div className="order-ref-group">
+                                  <span className="order-ref-code">#{order.id}</span>
+                                  {isDropshipOrder && (
+                                    <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+                                      Dropship
+                                    </span>
+                                  )}
+                                  <span className="order-date-text">{orderDate}</span>
+                                </div>
+                                <span 
+                                  className="order-status-pill"
+                                  style={statusStyle}
+                                >
+                                  {order.status || (order._sourceTable === 'inquiries' ? 'Inquiry Submitted' : 'Received')}
+                                </span>
+                              </div>
+
+                              {isDropshipOrder && (
+                                <div className="order-dropship-info-box">
+                                  <div><strong>Sender Label:</strong> {order.dropship_sender_name || order.business_name || 'Reseller'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
+                                  <div><strong>Deliver To:</strong> {order.dropship_recipient_name || order.buyer_name} ({order.dropship_recipient_phone || 'N/A'}) — {order.dropship_recipient_city} {order.dropship_recipient_pincode ? `(${order.dropship_recipient_pincode})` : ''}</div>
+                                </div>
+                              )}
+
+                              <div className="order-items-list">
+                                {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
+                                  <div key={idx} className="order-item-row">
+                                    <div className="order-item-left">
+                                      <span className="order-item-bullet" />
+                                      <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
+                                      {item.color && <span className="order-item-variant">· {item.color}</span>}
+                                    </div>
+                                    <span className="order-item-qty">Qty {item.quantity || 1}</span>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="order-card-bottom-bar">
+                                <div className="order-total-block">
+                                  <span className="order-total-label">Total:</span>
+                                  <span className="order-total-value">
+                                    {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
+                                  </span>
+                                </div>
+
+                                <div className="order-card-actions">
+                                  <button 
+                                    type="button" 
+                                    className="order-track-btn"
+                                    onClick={() => navigate('order-tracking', order.id)}
+                                  >
+                                    <span>Track Order</span>
+                                    <ArrowUpRight size={13} />
+                                  </button>
+                                  {isDropshipOrder && (
+                                    <button
+                                      type="button"
+                                      className="order-copy-link-btn"
+                                      onClick={() => copyCustomerTrackingLink(order.id)}
+                                      title="Copy tracking link for your customer"
+                                    >
+                                      {copiedTrackingId === order.id ? (
+                                        <>
+                                          <Check size={13} style={{ color: '#059669' }} />
+                                          <span style={{ color: '#059669' }}>Copied!</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Share2 size={13} />
+                                          <span>Customer Link</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()
+                )}
               </div>
             )}
           </div>
@@ -1032,34 +1209,48 @@ export function Account({
                         key={addr.id} 
                         className={`account-address-card-minimal ${addr.is_default ? 'is-default' : ''}`}
                       >
-                        <div>
+                        <div className="address-card-content">
                           <div className="address-card-top">
-                            <span className="address-name">{addr.full_name}</span>
-                            {addr.is_default && <span className="address-default-badge">Default</span>}
+                            <h4 className="address-name">{addr.full_name}</h4>
+                            {addr.is_default && (
+                              <span className="address-default-badge">
+                                <Check size={11} strokeWidth={2.5} />
+                                <span>Default</span>
+                              </span>
+                            )}
                           </div>
+                          
+                          <div className="address-phone-pill">
+                            <Phone size={12} strokeWidth={2} />
+                            <span>{addr.phone_number}</span>
+                          </div>
+
                           <div className="address-lines">
-                            <p className="address-phone">{addr.phone_number}</p>
-                            <p>{addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}</p>
-                            <p>{addr.city}, {addr.state} - {addr.pincode}</p>
-                            <p>{addr.country}</p>
+                            <p className="address-street">{addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}</p>
+                            <p className="address-location">{addr.city}, {addr.state} — <strong>{addr.pincode}</strong></p>
+                            <p className="address-country">{addr.country || 'India'}</p>
                           </div>
                         </div>
 
                         <div className="address-card-actions-minimal">
-                          <button 
-                            type="button" 
-                            className="address-action-link"
-                            onClick={() => handleStartEdit(addr)}
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            type="button" 
-                            className="address-action-link danger"
-                            onClick={() => handleDeleteAddress(addr.id)}
-                          >
-                            Delete
-                          </button>
+                          <div className="address-actions-left">
+                            <button 
+                              type="button" 
+                              className="address-action-chip"
+                              onClick={() => handleStartEdit(addr)}
+                            >
+                              <Edit3 size={13} />
+                              <span>Edit</span>
+                            </button>
+                            <button 
+                              type="button" 
+                              className="address-action-chip danger"
+                              onClick={() => handleDeleteAddress(addr.id)}
+                            >
+                              <Trash2 size={13} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
                           {!addr.is_default && (
                             <button 
                               type="button" 
@@ -1079,24 +1270,30 @@ export function Account({
           </div>
         )}
 
-        {/* RESELLER BUSINESS CENTER */}
-        {activeTab === 'reseller' && priceAccess.resellerDashboardEnabled && (
+        {/* BUILD YOUR OWN WEBSITE */}
+        {activeTab === 'reseller' && (
           <div className="account-panel-minimal">
             <div className="account-section-header">
               <span className="account-section-title">
-                <Store size={18} />
-                <span>Reseller Business Center</span>
+                <Globe size={18} />
+                <span>Build Your Own Website</span>
               </span>
-              <button 
-                type="button" 
-                onClick={() => navigate('reseller-dashboard')}
-                className="account-action-outline-btn"
-              >
-                <span>Fullscreen Dashboard</span>
-                <ArrowUpRight size={14} />
-              </button>
+              {priceAccess.resellerDashboardEnabled && (
+                <button 
+                  type="button" 
+                  onClick={() => navigate('reseller-dashboard')}
+                  className="account-action-outline-btn"
+                >
+                  <span>Fullscreen Dashboard</span>
+                  <ArrowUpRight size={14} />
+                </button>
+              )}
             </div>
-            <ResellerTools user={user} buyerProfile={buyerProfile} />
+            {priceAccess.resellerDashboardEnabled ? (
+              <ResellerTools user={user} buyerProfile={buyerProfile} navigate={navigate} />
+            ) : (
+              <ResellerUpgradeCard user={user} buyerProfile={buyerProfile} />
+            )}
           </div>
         )}
 

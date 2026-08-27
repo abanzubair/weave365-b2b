@@ -8,7 +8,6 @@ import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
-import { useCurrency, CurrencyManager, CURRENCIES } from '../storefrontShared.jsx';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import { applyCustomTheme } from '../utils/themeEngine.js';
 import { fetchSiteCustomizer, fetchProducts, fetchConfigOptions } from '../productData.js';
@@ -67,9 +66,6 @@ export function AppShell({ children }) {
     setConfigOptions,
   } = useStorefront();
 
-  const currentCurrency = useCurrency();
-  const activeCurrency = CURRENCIES.find((c) => c.code === currentCurrency) || CURRENCIES[0];
-
   // Expose global navigate for legacy AppLink / window clicks
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -77,10 +73,9 @@ export function AppShell({ children }) {
     }
   }, [navigate]);
 
-  // Traffic tracking & Currency rates
+  // Traffic tracking
   useEffect(() => {
     trackSiteTraffic();
-    void CurrencyManager.fetchRates();
   }, []);
 
   // Customizer theme
@@ -474,8 +469,6 @@ export function AppShell({ children }) {
           handleSignOut={handleSignOut}
           setCartOpen={setCartOpen}
           cartProducts={cartProducts}
-          activeCurrency={activeCurrency}
-          currentCurrency={currentCurrency}
         />
       )}
 

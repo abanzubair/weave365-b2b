@@ -100,7 +100,11 @@ export function getBuyerAccess(user, buyerProfile) {
     buyerName: profile.business_name || profile.full_name || null,
     buyerPhone: profile.whatsapp || profile.whatsapp_number || null,
     buyerPincode: profile.pincode || null,
-    resellerDashboardEnabled: true,
+    resellerDashboardEnabled: Boolean(
+      profile.reseller_dashboard_enabled === true ||
+      user?.user_metadata?.reseller_dashboard_enabled === true ||
+      user?.user_metadata?.buyer_profile?.reseller_dashboard_enabled === true
+    ),
   };
 }
 

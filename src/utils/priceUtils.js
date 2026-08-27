@@ -1,102 +1,19 @@
+
 /**
- * Price & Currency Utilities
- * Purpose: Handles international multi-currency state management (INR, USD, GBP, AED, EUR, etc.),
- * dynamic currency conversion fetching, and premium locale-specific money & weight formatting.
+ * Price Utilities
+ * Purpose: Provides standard Indian Rupee (INR) formatting, weight formatting, and hybrid B2B pricing calculations.
  */
-import { useState, useEffect } from 'react';
 import { priceForBuyer } from './buyerAccess.js';
 
-export const CURRENCIES = [
-  { code: 'INR', label: '🇮🇳 India (IND)', locale: 'en-IN', flag: 'in' },
-  { code: 'USD', label: '🇺🇸 United States (USA)', locale: 'en-US', flag: 'us' },
-  { code: 'GBP', label: '🇬🇧 United Kingdom (UK)', locale: 'en-GB', flag: 'gb' },
-  { code: 'AED', label: '🇦🇪 United Arab Emirates (UAE)', locale: 'ar-AE', flag: 'ae' },
-  { code: 'EUR', label: '🇪🇺 Euro (EUR)', locale: 'de-DE', flag: 'eu' },
-  { code: 'SGD', label: '🇸🇬 Singapore', locale: 'en-SG', flag: 'sg' },
-  { code: 'MYR', label: '🇲🇾 Malaysia', locale: 'ms-MY', flag: 'my' },
-];
-
-let currentCurrency = 'INR';
-let exchangeRates = { INR: 1 };
-
-const currencyListeners = new Set();
-let fetchPromise = null;
-
-export const CurrencyManager = {
-  get currency() { return currentCurrency; },
-  get rates() { return exchangeRates; },
-  setCurrency(c) {
-    currentCurrency = c;
-    currencyListeners.forEach(l => l());
-  },
-  setRates(r) {
-    exchangeRates = { ...r, INR: 1 };
-    currencyListeners.forEach(l => l());
-  },
-  subscribe(l) {
-    currencyListeners.add(l);
-    return () => currencyListeners.delete(l);
-  },
-  fetchRates() {
-    if (typeof window === 'undefined') {
-      return Promise.resolve(exchangeRates);
-    }
-    if (fetchPromise) {
-      return fetchPromise;
-    }
-
-    fetchPromise = fetch('https://api.exchangerate-api.com/v4/latest/INR')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data && data.rates) {
-          CurrencyManager.setRates(data.rates);
-          return exchangeRates;
-        }
-        throw new Error('Invalid exchange rate structure from API');
-      })
-      .catch(err => {
-        console.warn('Failed to fetch live exchange rates. Using robust offline fallbacks instead.', err.message || err);
-        return exchangeRates;
-      });
-
-    return fetchPromise;
-  }
-};
-
-export function useCurrency() {
-  const [currency, setCurrencyState] = useState(CurrencyManager.currency);
-  useEffect(() => {
-    return CurrencyManager.subscribe(() => setCurrencyState(CurrencyManager.currency));
-  }, []);
-  return currency;
-}
+const inrFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 0,
+});
 
 export function formatMoney(value) {
   if (value == null || Number.isNaN(value)) return 'On request';
-
-  const currencyCode = CurrencyManager.currency;
-  const rate = CurrencyManager.rates[currencyCode] || 1;
-  const convertedValue = value * rate;
-
-  const currencyInfo = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-
-  // Reuse cached formatter for the same currency to avoid creating objects on every call
-  const cacheKey = `${currencyCode}_${currencyInfo.locale}`;
-  if (!formatMoney._cache) formatMoney._cache = {};
-  if (!formatMoney._cache[cacheKey]) {
-    formatMoney._cache[cacheKey] = new Intl.NumberFormat(currencyInfo.locale, {
-      style: 'currency',
-      currency: currencyCode,
-      maximumFractionDigits: currencyCode === 'INR' ? 0 : 2,
-    });
-  }
-
-  return formatMoney._cache[cacheKey].format(convertedValue);
+  return inrFormatter.format(Number(value));
 }
 
 export function formatWeight(weightInKg) {

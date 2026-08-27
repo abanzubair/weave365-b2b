@@ -15,6 +15,7 @@ import {
   Store
 } from 'lucide-react';
 import { ResellerTools } from '../components/ResellerTools.jsx';
+import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 
 export function ResellerDashboard({ user, buyerProfile, navigate }) {
@@ -43,11 +44,39 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
         <div style={{ textAlign: 'center', padding: '3rem', maxWidth: '450px', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
           <Store size={40} style={{ color: 'var(--primary-color)', marginBottom: '1rem' }} />
           <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--ink)' }}>Login Required</h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '1.5rem', fontSize: '0.9375rem' }}>Please log in to access your Reseller Business Center.</p>
+          <p style={{ color: 'var(--muted)', marginBottom: '1.5rem', fontSize: '0.9375rem' }}>Please log in to access your website builder.</p>
           <button type="button" className="primary-button" style={{ width: '100%' }} onClick={() => navigate('account')}>
             Go to Account Login
           </button>
         </div>
+      </div>
+    );
+  }
+
+  const isResellerEnabled = Boolean(
+    buyerProfile?.reseller_dashboard_enabled === true ||
+    user?.user_metadata?.reseller_dashboard_enabled === true ||
+    user?.user_metadata?.buyer_profile?.reseller_dashboard_enabled === true
+  );
+
+  if (!isResellerEnabled) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f8fafc', paddingBottom: '4rem' }}>
+        <header style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '1rem 2rem', position: 'sticky', top: 0, zIndex: 50 }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button 
+              type="button" 
+              onClick={() => navigate('account')} 
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 12px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
+            >
+              <ArrowLeft size={15} /> Back to My Account
+            </button>
+          </div>
+        </header>
+
+        <main style={{ maxWidth: '1000px', margin: '2rem auto', padding: '0 1.5rem' }}>
+          <ResellerUpgradeCard user={user} buyerProfile={buyerProfile} />
+        </main>
       </div>
     );
   }
@@ -70,8 +99,8 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
             </button>
             <span style={{ color: '#cbd5e1' }}>|</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Store size={18} style={{ color: 'var(--primary-color)' }} />
-              <strong style={{ color: '#0f172a', fontSize: '0.9375rem' }}>{storefront?.store_name || 'Business Center'}</strong>
+              <Globe size={18} style={{ color: 'var(--primary-color)' }} />
+              <strong style={{ color: '#0f172a', fontSize: '0.9375rem' }}>{storefront?.store_name || 'Build Your Own Website'}</strong>
             </div>
           </div>
 
@@ -94,10 +123,10 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
       <main style={{ maxWidth: '1100px', margin: '2rem auto', padding: '0 1.5rem' }}>
         <div style={{ marginBottom: '2rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', margin: '0 0 0.25rem 0' }}>
-            Reseller Business Center
+            Build Your Own Website
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.9375rem', margin: 0 }}>
-            Manage your external website link, sync catalog products added from Weave365, and customize pricing markups.
+            Manage your boutique website template, sync sarees directly from Weave365, and customize retail profit markups.
           </p>
         </div>
 

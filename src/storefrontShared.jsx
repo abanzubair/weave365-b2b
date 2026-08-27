@@ -7,9 +7,6 @@
 import { storeConfig, getProductCategorySlug, siteUrl } from './config.js';
 import { priceForBuyer, priceNoticeForAccess } from './utils/buyerAccess.js';
 import {
-  CURRENCIES,
-  CurrencyManager,
-  useCurrency,
   formatMoney,
   formatWeight,
   customerPrice,
@@ -20,9 +17,6 @@ import {
 } from './utils/priceUtils.js';
 
 export {
-  CURRENCIES,
-  CurrencyManager,
-  useCurrency,
   formatMoney,
   formatWeight,
   customerPrice,

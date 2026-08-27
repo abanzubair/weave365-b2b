@@ -213,7 +213,11 @@ export async function GET(request) {
 
     return new Response(JSON.stringify({ storefront, products }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        ...corsHeaders 
+      },
     });
   } catch (err) {
     console.error('[storefront API GET] Server crash:', err);

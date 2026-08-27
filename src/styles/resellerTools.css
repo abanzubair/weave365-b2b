@@ -1,7 +1,544 @@
-/* ===================================================
-   Reseller Tools — Quiet Luxury & Restrained Precision
-   Design: Scandinavian Functionalism & Understated Elegance
-   =================================================== */
+/* ---------- Streamlined Reseller Tools Top Bar ---------- */
+.rt-top-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.rt-summary-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.rt-boutique-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rt-store-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.rt-unlinked-pill {
+  font-size: 0.75rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.rt-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.rt-dot-sep {
+  color: #cbd5e1;
+}
+
+.rt-summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rt-open-store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.rt-open-store-btn:hover {
+  background: #1e293b;
+}
+
+.rt-setup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rt-setup-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* ---------- Subtabs ---------- */
+.rt-subtabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.rt-subtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rt-subtab:hover:not(.active) {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.rt-subtab.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* ---------- Empty Catalog ---------- */
+.rt-empty-catalog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: #fafafa;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 12px;
+}
+
+.rt-empty-catalog-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.rt-empty-catalog h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 0.375rem 0;
+}
+
+.rt-empty-catalog p {
+  font-size: 0.875rem;
+  color: #64748b;
+  max-width: 420px;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.5;
+}
+
+.rt-browse-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold, #b78646);
+  color: #ffffff;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.rt-browse-cta-btn:hover {
+  background: #9d7237;
+}
+
+/* ---------- Streamlined Storefront Setup Card ---------- */
+.rt-setup-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.rt-setup-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 1.25rem 0;
+}
+
+.rt-setup-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.125rem;
+}
+
+.rt-setup-row:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .rt-setup-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.rt-setup-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rt-setup-label strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rt-setup-label span {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.rt-setup-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 480px;
+}
+
+.rt-text-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.rt-text-input:focus {
+  border-color: #0f172a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.rt-input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rt-input-prefix-icon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.rt-text-input.rt-input-has-prefix {
+  padding-left: 32px;
+}
+
+.rt-input-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.rt-setup-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  max-width: 480px;
+  margin-left: 240px;
+}
+
+@media (max-width: 768px) {
+  .rt-setup-submit-row {
+    margin-left: 0;
+    max-width: 100%;
+  }
+}
+
+.rt-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rt-submit-btn:hover {
+  background: #1e293b;
+}
+
+.rt-submit-btn.saved {
+  background: #166534;
+  border-color: #166534;
+}
+
+/* Theme List & Tiles */
+.rt-themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.rt-theme-tile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: all 0.15s ease;
+}
+
+.rt-theme-tile:hover {
+  border-color: #cbd5e1;
+}
+
+.rt-theme-tile.is-active-theme {
+  background: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 1px #0f172a;
+}
+
+@media (max-width: 600px) {
+  .rt-theme-tile {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.rt-theme-tile-thumb {
+  width: 76px;
+  height: 52px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+.rt-theme-tile-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rt-theme-tile-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rt-theme-tile-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rt-theme-tile-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.rt-theme-badge-soon {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.rt-theme-tile-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.rt-theme-tile-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rt-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rt-theme-btn.primary {
+  background: #0f172a;
+  color: #ffffff;
+  border: 1px solid #0f172a;
+}
+
+.rt-theme-btn.primary:hover {
+  background: #1e293b;
+}
+
+.rt-theme-btn.active {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  cursor: default;
+}
+
+.rt-theme-btn.subtle {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.rt-theme-btn.subtle:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.rt-theme-btn.disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+  cursor: not-allowed;
+}
+
+/* API Strip (Single-line) */
+.rt-api-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.rt-api-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+}
+
+.rt-api-strip-left strong {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rt-api-strip-left span {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.rt-api-strip-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rt-api-code-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #0369a1;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rt-api-copy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rt-api-copy-pill:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
 
 /* ---------- Root Container ---------- */
 .rt-container {
@@ -16,33 +553,6 @@
   padding: 2.5rem 0;
   font-size: 0.875rem;
   font-weight: 500;
-}
-
-/* ---------- Restrained Brand & Store Identity Card ---------- */
-.rt-header {
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  color: #0f172a;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-}
-
-.rt-header-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.rt-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  min-width: 240px;
 }
 
 .rt-status-row {

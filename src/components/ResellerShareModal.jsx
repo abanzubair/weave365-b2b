@@ -83,7 +83,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
       <div className="reseller-modal" onClick={e => e.stopPropagation()}>
         
         <div className="reseller-modal-header">
-          <h2><Store size={18} /> Add to My Reseller Store</h2>
+          <h2><Store size={18} /> Add to My Website</h2>
           <button type="button" onClick={onClose} className="reseller-modal-close" aria-label="Close modal"><X size={18} /></button>
         </div>
 
@@ -94,13 +94,13 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                 <Store size={22} />
               </div>
               <h3 className="reseller-activation-title">
-                Activate Reseller Business Center
+                Activate Website Builder
               </h3>
               <p className="reseller-activation-desc">
-                Publish curated catalogs to your website with custom profit margins. Connect with our team on WhatsApp to activate your business center.
+                Publish curated catalogs to your website with custom profit margins. Connect with our team on WhatsApp to activate.
               </p>
               <a
-                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi Weave 365, I would like to inquire about activating my reseller business center.')}`}
+                href={`https://wa.me/${storeConfig.whatsapp || ''}?text=${encodeURIComponent('Hi Weave 365, I would like to inquire about activating my website builder.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="reseller-activation-btn"
@@ -192,7 +192,7 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
                     <Globe size={16} /> Set Your Website Link
                   </div>
                   <p style={{ margin: 0, fontSize: '0.8125rem', lineHeight: '1.4' }}>
-                    You can link your external store in <strong>Account → Business Center → Settings</strong> to enable instant website previews and automatic share links.
+                    You can link your external store in <strong>Account → Build Your Own Website</strong> to enable instant website previews and automatic share links.
                   </p>
                 </div>
               )}
