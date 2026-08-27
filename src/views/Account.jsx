@@ -37,7 +37,6 @@ import {
   Code2, 
   ArrowUpRight, 
   LogOut, 
-  Check, 
   Copy,
   ExternalLink
 } from 'lucide-react';
@@ -452,18 +451,13 @@ export function Account({
               <h1 className="account-user-name">
                 {buyerProfile?.business_name || buyerProfile?.full_name || (userEmail ? userEmail.split('@')[0] : 'My Account')}
               </h1>
-              <div className="account-chips-row">
-                <span className="account-chip verified">
-                  <Check size={11} strokeWidth={2.5} />
-                  <span>Verified B2B</span>
-                </span>
-                <span className="account-chip role">
-                  {isAdmin ? 'Administrator' : (isVendor ? 'Vendor Partner' : 'B2B Member')}
-                </span>
-                {priceAccess.canViewPrices && (
-                  <span className="account-chip tier">Hybrid Wholesale</span>
-                )}
-              </div>
+              {(isAdmin || isVendor) && (
+                <div className="account-chips-row">
+                  <span className="account-chip role">
+                    {isAdmin ? 'Administrator' : 'Vendor Partner'}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="account-sub-meta">
               <span className="account-email-text">{user.email}</span>
