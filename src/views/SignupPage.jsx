@@ -125,15 +125,28 @@ export function SignupPage({
   initialType = null,
 }) {
   const profileComplete = isProfileComplete(user, buyerProfile);
-  const isOnboarding = Boolean(user && (!profileComplete || initialMode === 'complete-profile' || initialMode === 'completion-profile'));
+  const isResettingPassword = initialMode === 'reset-password' || 
+    (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'));
 
-  const [mode, setMode] = useState(() =>
-    isOnboarding
-      ? 'complete-profile'
-      : initialMode === 'complete-profile' || initialMode === 'completion-profile'
-      ? 'login'
-      : initialMode
-  ); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
+  const isOnboarding = Boolean(
+    !isResettingPassword &&
+    initialMode !== 'forgot-password' &&
+    user && 
+    (!profileComplete || initialMode === 'complete-profile' || initialMode === 'completion-profile')
+  );
+
+  const [mode, setMode] = useState(() => {
+    if (isResettingPassword) {
+      return 'reset-password';
+    }
+    if (isOnboarding) {
+      return 'complete-profile';
+    }
+    if (initialMode === 'complete-profile' || initialMode === 'completion-profile') {
+      return 'login';
+    }
+    return initialMode || 'login';
+  }); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -223,10 +236,22 @@ export function SignupPage({
         fullName: prev.fullName || toTitleCaseName(googleName),
       }));
     }
+
+    // Do NOT hijack mode to complete-profile if resetting password or viewing forgot password
+    if (
+      mode === 'reset-password' ||
+      initialMode === 'reset-password' ||
+      mode === 'forgot-password' ||
+      initialMode === 'forgot-password' ||
+      (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'))
+    ) {
+      return;
+    }
+
     if (user && !isProfileComplete(user, buyerProfile)) {
       setMode('complete-profile');
     }
-  }, [user, buyerProfile]);
+  }, [user, buyerProfile, initialMode, mode]);
 
   useEffect(() => {
     if (isOnboarding || mode === 'complete-profile') {
@@ -237,12 +262,16 @@ export function SignupPage({
   }, [mode, isOnboarding]);
 
   useEffect(() => {
-    if (initialMode && !user) {
-      setMode(
-        initialMode === 'complete-profile' || initialMode === 'completion-profile'
-          ? 'login'
-          : initialMode
-      );
+    if (initialMode) {
+      if (initialMode === 'reset-password') {
+        setMode('reset-password');
+      } else if (!user) {
+        setMode(
+          initialMode === 'complete-profile' || initialMode === 'completion-profile'
+            ? 'login'
+            : initialMode
+        );
+      }
     }
   }, [initialMode, user]);
 

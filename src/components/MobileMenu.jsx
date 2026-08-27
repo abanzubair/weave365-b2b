@@ -77,6 +77,16 @@ export function MobileMenu(props) {
   const [partnerOpen, setPartnerOpen] = useState(false);
 
   const accountItems = [
+    ...(isAdmin ? [
+      {
+        icon: <Shield size={18} style={{ color: 'var(--gold-mid)' }} />,
+        label: 'Admin Panel',
+        action: () => {
+          window.open('/admin', '_blank');
+          onClose();
+        }
+      }
+    ] : []),
     { 
       icon: <ShoppingBag size={18} />, 
       label: 'My Cart', 

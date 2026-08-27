@@ -277,6 +277,16 @@ export function SiteHeader(props) {
                     Hello, {buyerProfile.full_name.split(' ')[0]}
                   </div>
                 )}
+                {isAdmin && (
+                  <button type="button"
+                    onClick={() => {
+                      window.open('/admin', '_blank');
+                      setDropdownOpen(null);
+                    }}
+                  >
+                    Admin Panel
+                  </button>
+                )}
                 <button type="button"
                   onClick={() => {
                     navigate('account');
@@ -304,16 +314,7 @@ export function SiteHeader(props) {
                     Product Listing
                   </button>
                 )}
-                {isAdmin ? (
-                  <button type="button"
-                    onClick={() => {
-                      window.open('/admin', '_blank');
-                      setDropdownOpen(null);
-                    }}
-                  >
-                    Admin Panel
-                  </button>
-                ) : (
+                {!isAdmin && (
                   <button type="button"
                     onClick={() => {
                       navigate('favorites');
