@@ -6,14 +6,14 @@ export const revalidate = 3600;
 
 export async function generateMetadata() {
   const defaultMeta = {
-    title: 'Product Disclaimer & Heritage Weave Variations | Weave 365',
+    title: 'Product Disclaimer, Care & Usage Guidelines | Weave 365',
     description:
-      'Understand the handwoven integrity, color calibration, and textile variations of our premium Varanasi silk sarees. Essential reading for wholesale buyers.',
+      'Review authentic handloom characteristics, tissue care, washing precautions, storing guidelines, and product specifications for Weave 365 collections.',
     alternates: { canonical: `${siteUrl}/disclaimer` },
     openGraph: {
-      title: 'Product Disclaimer & Heritage Weave Variations | Weave 365',
+      title: 'Product Disclaimer, Care & Usage Guidelines | Weave 365',
       description:
-        'Understand the handwoven integrity, color calibration, and textile variations of our premium Varanasi silk sarees. Essential reading for wholesale buyers.',
+        'Review authentic handloom characteristics, tissue care, washing precautions, storing guidelines, and product specifications for Weave 365 collections.',
       url: `${siteUrl}/disclaimer`,
     },
   };

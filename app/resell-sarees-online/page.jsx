@@ -27,42 +27,90 @@ const resellFaqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'How does the Weave 365 reseller platform differ from standard dropshipping?',
+      name: 'Is registration free?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'While dropshipping refers specifically to the fulfillment method (shipping directly to your customer), our reseller platform provides the complete digital toolkit for social and web commerce. This includes instant WhatsApp sharing cards, bulk imagery downloads for social media posting, custom markup calculators, a built-in customer lead CRM, and the ability to launch a white-label website under your own domain name.',
+        text: 'Yes. Registration is free for the standard reseller and dropshipping programme. There is no registration fee, setup fee or monthly subscription fee.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Do you charge any monthly fees to use the reseller tools?',
+      name: 'Do I need to maintain stock or buy inventory upfront?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Access to our catalogue, core WhatsApp sharing tools, custom pricing markups, bulk downloads, and order tracking is 100% free with no monthly subscription costs. The White-Label Website tool (which allows you to link a custom domain and auto-sync our live catalog) is available as an optional premium add-on.',
+        text: 'No. You do not need to maintain inventory for eligible dropshipping products. You first receive the order from your customer and then place the corresponding order with Weave 365.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Can I resell sarees and suits on platforms like Instagram and Facebook?',
+      name: 'Can I place a single-piece order?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes, absolutely. Most of our successful partners resell sarees online by sharing curated images on Instagram Stories/Reels or running private Facebook Groups. Our Catalog Download feature lets you export high-resolution product photography and complete fabric specifications in one click to populate your social feeds.',
+        text: 'Yes. Eligible reseller and dropshipping orders can be placed for a single piece. Regular wholesale and bulk orders may have separate minimum order quantities or commercial terms.',
       },
     },
     {
       '@type': 'Question',
-      name: 'How is packaging handled? Will my customers know about Weave 365?',
+      name: 'Do I pay Weave 365 before dispatch?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'All orders are shipped under strict blind-fulfillment conditions. The package sent to your customer lists your business name as the sender, and contains no Weave 365 logos, invoices, or retail pricing leaflets. Your customer remains entirely yours.',
+        text: 'Yes. The applicable Weave 365 payment must be received before the reseller or dropshipping order is processed and dispatched, unless different payment terms have been approved in writing.',
       },
     },
     {
       '@type': 'Question',
-      name: 'What is the earnings potential, and how do I receive payments?',
+      name: 'How do I make a profit?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Your earnings are entirely up to your markup rules. We charge you the trade price listed on our portal. When you share a design or host a storefront, you set your own selling price. When your customer pays you, you place the order on our site, pay us the trade price, and keep the difference as instant profit. No payment delays or commission waiting periods.',
+        text: 'You purchase the product from Weave 365 at the applicable reseller price and decide your own customer selling price, subject to applicable law and any specific commercial arrangement. Your gross margin is the difference between the price charged to your customer and the amount payable to Weave 365, before your other business costs.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I sell products under my own brand?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Eligible products can be sold under your own brand name through the white-label reseller programme. Weave 365 may provide approved white-label catalogues, product images and product information for this purpose.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can products be shipped without Weave 365 branding?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes, for eligible white-label dropshipping orders. The external customer-facing shipment may be arranged without Weave 365 branding and may be processed under the reseller’s brand, subject to the applicable fulfilment arrangement.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Where can I sell Weave 365 products?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'You can sell eligible products through channels such as WhatsApp, Instagram, Facebook and your own website or online store using approved product images and catalogues.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What are the shipping charges for India and international orders?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Eligible reseller and dropshipping orders may qualify for free shipping within India, as stated at the time of order. International shipping charges depend on destination, parcel weight, courier rates and customs duties.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is COD available?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No. COD is not available for standard reseller and dropshipping orders unless Weave 365 specifically agrees otherwise.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is the return policy for reseller orders?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'For reseller and dropshipping orders, returns are generally not accepted for change of mind, customer preference, slow-moving stock or normal product variations. A return or remedy may be considered for verified incorrect products or qualifying manufacturing defects.',
       },
     },
   ],

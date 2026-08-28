@@ -140,27 +140,40 @@ export function AboutPage({ navigate }) {
           <div className="story-text-block">
             <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'About Weave 365' }]} navigate={navigate} />
             <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--ink)', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.15 }}>About Weave 365</h1>
-            <p>Weave 365 is a sourcing platform based in Varanasi. It connects wholesalers, retailers, boutiques, resellers, online stores, designers and exporters, in India and abroad, directly to the weaving hubs and manufacturing networks of the city.</p>
-            <p>The idea is simple: Varanasi produces some of the finest Banarasi sarees, suits, dress materials and textiles in the world. Getting access to them, reliably and at fair wholesale prices, has always been the hard part. Weave 365 handles the coordination, across multiple weavers and fabric grades, so making it easier for buyers to source the right products.</p>
-            <p>The platform covers the full sourcing chain. That means quality inspection at the Varanasi hub, logistics packaging, India and international shipping via DTDC, Delhivery, Blue Dart, DHL and FedEx, with full tracking. Orders start at five pieces, mix-and-match allowed, which makes it practical for smaller boutiques and resellers to test new fabric grades before committing to bulk.</p>
-            <p>The catalog runs across handwoven pure silk, semi-silk, organza, georgette, art silk, blended and faux fabrics, each listing with clear details on fabric, zari, and weave type, and whether the piece is handloom or powerloom. No guesswork about what you're actually buying.</p>
-            <p>For online stores, boutique owners and resellers who want to keep their own branding, Weave 365 also runs a white-label program, custom tags, unmarked packaging, no Weave 365 branding on dispatch.</p>
+            <p>Weave 365 is a Banarasi sourcing and commerce platform based in Varanasi. It connects buyers with Banarasi sarees, suits, fabrics and other textile collections from Varanasi’s weaving and manufacturing network.</p>
+            <p>The platform is built mainly for wholesalers, retailers, boutiques, resellers, online sellers, designers and export buyers. It also supports customers looking for Banarasi products.</p>
+            <p>Weave 365 helps buyers source products from Varanasi without managing multiple suppliers themselves. Its services include product sourcing, quality checks, catalog support, packaging, domestic and international shipping, white-label support and custom sourcing.</p>
+            <p>The catalogue covers different fabric and product categories, including Katan silk, semi-silk, organza, georgette, art silk, blended fabrics, Banarasi sarees and suits. Product listings provide information about the fabric, zari and weaving method.</p>
+            <p>For smaller businesses, Weave 365 offers wholesale orders starting from five pieces, with mix-and-match options. Custom designs and volume production have higher minimum quantities.</p>
           </div>
 
           <div className="story-text-block">
             <h2>What Makes Weave 365 Different</h2>
-            <p>Most of the wholesale saree market still runs through multiple middlemen. A buyer or boutique owner in Bengaluru, Mumbai, Kolkata, New York, London or Singapore typically buys from a city trader, who buys from a regional distributor, who bought from someone closer to the weaver. Each hand in the chain adds margin and removes information, you often don't know the actual fabric grade or weave origin until the parcel arrives.</p>
-            <p>Weave 365 pulls sourcing back to Varanasi. The team works directly across 15+ weaving hubs in the city, which means buyers get actual trade prices without paying for layers they don't need. The MOQ of five pieces keeps things accessible, you can sample three fabric grades and two weave styles in a single order, which is genuinely useful when you're building a boutique catalog.</p>
-            <p>There's also the transparency piece. Every listing on the platform specifies material honestly, pure katan silk is listed as that, art silk is listed as that. That distinction matters when your customer is paying for the real thing.</p>
+            <p>Weave 365 focuses on making Banarasi textile sourcing more direct and easier to manage.</p>
+            <p>Its sourcing network is based in Varanasi and works with weavers and manufacturing partners. Buyers can access multiple collections through one platform instead of coordinating separately with different suppliers.</p>
+            <p>The platform also focuses on product information. Fabric type, zari type and weaving method are stated in product listings. This helps buyers understand what they are purchasing and position products correctly in their own market.</p>
+            <p>Weave 365 also supports white-label selling. Boutiques, resellers and online sellers can use their own brand identity while Weave 365 helps with product sourcing and fulfilment. The platform also supports customer sharing through ready-to-use catalogues for online and social selling.</p>
+            <p>The focus is not only on selling sarees. Weave 365 is built around the complete sourcing process, from finding suitable products in Varanasi to inspection, packaging, shipping and resale support.</p>
           </div>
 
           <div className="story-text-block">
             <h2>About the Founder</h2>
-            <p>Zubair Ahmad is the founder of Weave 365, built on a background in Banarasi saree and textile development and a close understanding of how Varanasi's weaving economy actually works.</p>
-            <p>He started Weave 365 to solve a sourcing problem he saw directly: Varanasi's weavers produce extraordinary cloth, but buyers, especially those outside Varanasi, have had no clean, reliable way to reach them. The supply chain between loom and retailer has historically been long, opaque, and expensive for everyone except the people in the middle.</p>
-            <p>His work sits at an intersection that doesn't have many players: translating Banarasi textile, a craft tradition with serious technical depth, from katan silk to meenakari brocades, into the language of modern wholesale. That means catalog infrastructure, logistics, quality checks, and white-label programs, not just beautiful fabric.</p>
-            <p>He's also exploring what Banarasi weaving looks like when it moves into couture, taking the loom's vocabulary of zari, jamdani, and kimkhwab into fashion contexts beyond the traditional saree format. That part of the work is about building a couture house grounded in Banaras, not borrowing its aesthetic but actually building from inside its making tradition.</p>
-            <p style={{ marginTop: '1.5rem' }}><a href="https://www.linkedin.com/in/hellozubair/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold-dark)', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><Linkedin size={16} /> Connect with Zubair on LinkedIn</a></p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--ink)', marginBottom: '0.75rem' }}>Zubair Ahmad</h3>
+            <p>Zubair Ahmad is the founder of Weave 365.</p>
+            <p>His work is focused on Banarasi textiles, sourcing and the business side of the Varanasi weaving market. According to Weave 365, he started the platform after seeing a practical gap between Varanasi’s weaving network and buyers outside the city.</p>
+            <p>His approach is to make traditional Banarasi textiles easier to source, understand and sell through a modern business model. This includes structured product catalogues, sourcing coordination, quality checks, logistics and white-label programmes.</p>
+            <p>His LinkedIn profile also shows a continued focus on Banarasi textiles, including posts on fabric quality, weaving, construction and the technical characteristics of Banarasi fabrics.</p>
+            <p>At Weave 365, his role is centred on connecting the traditional textile ecosystem of Varanasi with the needs of modern retailers, resellers, boutiques and export buyers.</p>
+            <p style={{ marginTop: '1.5rem' }}>
+              <a 
+                href="https://www.linkedin.com/in/hellozubair/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ color: 'var(--gold-dark)', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Linkedin size={16} /> Zubair Ahmad on LinkedIn
+              </a>
+            </p>
           </div>
 
         </div>

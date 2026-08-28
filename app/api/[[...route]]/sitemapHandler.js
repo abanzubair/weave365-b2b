@@ -36,6 +36,8 @@ export async function generateSitemapXml(request) {
     { url: `${siteUrl}/returns-cancellation`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/privacy-security`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/terms-conditions`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${siteUrl}/payment-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${siteUrl}/reseller-faqs`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${siteUrl}/disclaimer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/blog/category/wholesale-guides`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.75 },

@@ -148,6 +148,8 @@ export const NON_PRODUCT_ROUTES = new Set([
   'returns-cancellation',
   'privacy-security',
   'terms-conditions',
+  'payment-policy',
+  'reseller-faqs',
   'bulk-inquiry',
   'new-arrivals',
   'sourcing-partners',

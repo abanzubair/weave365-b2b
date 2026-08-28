@@ -1313,7 +1313,7 @@ export function ProductDetail({
 
                         <div className="b2b-price-card wholesale-highlight">
                           <div className="price-card-header">
-                            <span className="price-card-tag">Wholesale Set</span>
+                            <span className="price-card-tag">Complete Set</span>
                             {setSavingsPercent > 0 && (
                               <span className="savings-badge-pill">{setSavingsPercent}% OFF</span>
                             )}
@@ -1329,7 +1329,7 @@ export function ProductDetail({
                     ) : (
                       <div className="b2b-price-card single-piece full-width">
                         <div className="price-card-header">
-                          <span className="price-card-tag">B2B Wholesale Price</span>
+                          <span className="price-card-tag">Wholesale Price</span>
                           <span className="moq-badge-pill">MOQ: 1 {moqUnit}</span>
                         </div>
                         <div className="price-card-main">
@@ -1633,59 +1633,7 @@ export function ProductDetail({
               </div>
             )}
 
-            {/* Suggested Selling & Your Gross Profit Card */}
-            {(() => {
-              const retailMin = Math.round((displayPrice * 1.45) / 50) * 50 - 1;
-              const retailMax = Math.round((displayPrice * 1.65) / 50) * 50 - 1;
-              const profitMin = retailMin - displayPrice;
-              const profitMax = retailMax - displayPrice;
-              const marginMin = retailMin > 0 ? Math.round((profitMin / retailMin) * 100) : 30;
-              const marginMax = retailMax > 0 ? Math.round((profitMax / retailMax) * 100) : 40;
 
-              return (
-                <div className="reseller-profit-card">
-                  <div className="reseller-profit-header">
-                    <h3 className="reseller-profit-card-title">Suggested Selling &amp; Your Gross Profit</h3>
-                    {canViewPrice && (
-                      <span className="reseller-margin-tag">{marginMin}% – {marginMax}% Margin</span>
-                    )}
-                  </div>
-
-                  {canViewPrice ? (
-                    <>
-                      <div className="profit-metrics-list">
-                        <div className="profit-metric-row">
-                          <span className="profit-metric-label">Weave 365 Price:</span>
-                          <strong className="profit-metric-value">{formatMoney(displayPrice)}</strong>
-                        </div>
-                        <div className="profit-metric-row">
-                          <span className="profit-metric-label">Suggested Selling:</span>
-                          <strong className="profit-metric-value">{formatMoney(retailMin)} – {formatMoney(retailMax)}</strong>
-                        </div>
-                        <div className="profit-metric-row row-profit">
-                          <span className="profit-metric-label">Your Gross Profit:</span>
-                          <strong className="profit-metric-value profit-highlight">{formatMoney(profitMin)} – {formatMoney(profitMax)}</strong>
-                        </div>
-                      </div>
-
-                      {totalColors > 1 && (
-                        <div className="profit-fullset-row">
-                          <span className="fullset-label">Full Set ({totalColors} PCs)</span>
-                          <strong className="fullset-value">
-                            {formatMoney(setPrice)}{' '}
-                            <span className="fullset-unit-rate">({formatMoney(wholesalePrice)} /pc)</span>
-                          </strong>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <p className="reseller-profit-locked-note">
-                      Login to view wholesale buying prices and gross profit margins.
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
 
 
           </aside>

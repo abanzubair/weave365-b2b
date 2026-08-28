@@ -16,6 +16,7 @@
 @import './styles/wholesalePartnership.css';
 @import './styles/occasionShowcase.css';
 @import './styles/privateLabelSection.css';
+@import './styles/legal.css';
 
 .search-lock {
   overflow: hidden !important;

@@ -1,37 +1,41 @@
 import React from 'react';
-import { ChevronRight, ShieldAlert, Truck, RotateCcw, ShieldCheck, FileText } from 'lucide-react';
+import { FileText, Truck, RotateCcw, ShieldCheck, CreditCard, ShieldAlert, HelpCircle } from 'lucide-react';
 import '../styles/legal.css';
 
 export function LegalSidebar({ activeTab, navigate }) {
   const menuItems = [
-    { id: 'disclaimer', label: 'Disclaimer', path: 'disclaimer', icon: ShieldAlert },
+    { id: 'terms-conditions', label: 'Terms & Conditions', path: 'terms-conditions', icon: FileText },
     { id: 'shipping-delivery', label: 'Shipping & Delivery', path: 'shipping-delivery', icon: Truck },
     { id: 'returns-cancellation', label: 'Returns & Cancellation', path: 'returns-cancellation', icon: RotateCcw },
     { id: 'privacy-security', label: 'Privacy & Security', path: 'privacy-security', icon: ShieldCheck },
-    { id: 'terms-conditions', label: 'Terms & Conditions', path: 'terms-conditions', icon: FileText },
+    { id: 'payment-policy', label: 'Payment Policies', path: 'payment-policy', icon: CreditCard },
+    { id: 'disclaimer', label: 'Disclaimer', path: 'disclaimer', icon: ShieldAlert },
+    { id: 'reseller-faqs', label: 'Reseller FAQs', path: 'reseller-faqs', icon: HelpCircle },
   ];
 
   return (
-    <aside className="legal-sidebar">
-      <h3>Information Desk</h3>
+    <nav className="legal-sidebar" aria-label="Legal documents index">
+      <div className="legal-sidebar-header">
+        <span className="legal-sidebar-kicker">Information Desk</span>
+      </div>
       <div className="legal-sidebar-menu">
         {menuItems.map((item) => {
           const Icon = item.icon;
+          const isActive = activeTab === item.id;
           return (
-            <button type="button"
+            <button
+              type="button"
               key={item.id}
-              className={`legal-menu-btn ${activeTab === item.id ? 'active' : ''}`}
+              className={`legal-menu-btn ${isActive ? 'active' : ''}`}
               onClick={() => navigate(item.path)}
+              aria-current={isActive ? 'page' : undefined}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Icon size={16} />
-                {item.label}
-              </span>
-              <ChevronRight size={14} />
+              <Icon size={15} className="legal-menu-icon" />
+              <span className="legal-menu-label">{item.label}</span>
             </button>
           );
         })}
       </div>
-    </aside>
+    </nav>
   );
 }

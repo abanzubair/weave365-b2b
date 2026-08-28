@@ -100,7 +100,7 @@ export function Footer({ navigate }) {
               <li><AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate}>Partners</AppLink></li>
               <li><AppLink to="affiliate-program" href="/affiliate-program" navigate={navigate}>Affiliates</AppLink></li>
               <li><AppLink to="developer-api" href="/developer-api" navigate={navigate}>Developer API</AppLink></li>
-              <li><AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate}>Reseller FAQs</AppLink></li>
+              <li><AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate}>Reseller FAQs</AppLink></li>
             </ul>
           </div>
 
@@ -112,7 +112,7 @@ export function Footer({ navigate }) {
               <li><AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate}>Shipping &amp; Delivery</AppLink></li>
               <li><AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate}>Returns &amp; Cancellation</AppLink></li>
               <li><AppLink to="privacy-security" href="/privacy-security" navigate={navigate}>Privacy &amp; Security</AppLink></li>
-              <li><AppLink to="terms-conditions" href="/terms-conditions" navigate={navigate}>Payment Policies</AppLink></li>
+              <li><AppLink to="payment-policy" href="/payment-policy" navigate={navigate}>Payment Policy</AppLink></li>
               <li><AppLink to="disclaimer" href="/disclaimer" navigate={navigate}>Disclaimer</AppLink></li>
             </ul>
           </div>
