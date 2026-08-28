@@ -1,14 +1,15 @@
 /**
  * Footer Component
- * Purpose: Renders standard B2B navigation links, corporate social anchors,
- * primary support details (phone, email, hours), and direct SEO landing page index maps.
+ * Purpose: Renders standard B2B navigation links, corporate social anchors with icons,
+ * primary support details with icons, policies, and developer credits with GitHub/LinkedIn.
  */
 import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
-import { Github, Instagram, Youtube, Facebook, Phone, Mail, UserPlus, Handshake, Coins } from 'lucide-react';
 import { assetSrc } from '../utils/assetSrc.js';
+import { AppLink } from './AppLink.jsx';
+import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Github } from 'lucide-react';
 
-function LinkedInIcon({ size = 16, className = "" }) {
+function LinkedInIcon({ size = 15, className = "" }) {
   return (
     <svg 
       viewBox="0 0 24 24" 
@@ -29,7 +30,7 @@ function LinkedInIcon({ size = 16, className = "" }) {
   );
 }
 
-function PinterestIcon({ size = 16, className = "" }) {
+function PinterestIcon({ size = 15, className = "" }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -44,101 +45,184 @@ function PinterestIcon({ size = 16, className = "" }) {
   );
 }
 
-export function Footer({ navigate, scrollToSection }) {
-  const handleLinkClick = (e, to, productId = null, shopName = null) => {
-    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
-      return;
+export function Footer({ navigate }) {
+  const scrollToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    e.preventDefault();
-    navigate(to, productId, shopName);
   };
 
   return (
-    <footer id="contact" className="footer">
-      <div>
-        <a
-          href="/"
-          className="brand footer-brand"
-          onClick={(e) => handleLinkClick(e, 'home')}
-        >
-          <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" />
-        </a>
-        <p>Your trusted wholesale partner for premium quality sarees at unbeatable wholesale prices.</p>
+    <footer id="contact" className="footer" aria-label="Site Footer">
+      <div className="footer-inner-container">
+        <div className="footer-main-layout">
+        
+        {/* Left Column: Brand & Contact Info */}
+        <div className="footer-brand-section">
+          <AppLink to="home" href="/" navigate={navigate} className="footer-brand" aria-label="Weave 365 Home">
+            <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" />
+          </AppLink>
+
+          <h3 className="footer-tagline">Banarasi Sourcing &amp; Commerce Platform</h3>
+
+          <p className="footer-desc">
+            Weave 365 connects businesses and customers with Banarasi sarees and suits from Varanasi. We support wholesale and bulk buyers, importers and exporters, resellers and social sellers, boutiques, private labels, and retail customers with sourcing, custom collections, branded resale and fulfilment solutions.
+          </p>
+
+          <div className="footer-contact-details">
+            <div className="footer-contact-line">
+              <MapPin size={14} className="contact-icon" />
+              <strong className="contact-label">Registered Office:</strong>
+              <span className="contact-value">Varanasi, Uttar Pradesh, India</span>
+            </div>
+            <div className="footer-contact-line">
+              <Phone size={14} className="contact-icon" />
+              <strong className="contact-label">Support:</strong>
+              <a href="tel:+919919101369" className="contact-value contact-link">+91 9919101369</a>
+            </div>
+            <div className="footer-contact-line">
+              <Mail size={14} className="contact-icon" />
+              <strong className="contact-label">Email:</strong>
+              <a href="mailto:weave365@gmail.com" className="contact-value contact-link">weave365@gmail.com</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Navigation Columns Grid */}
+        <div className="footer-nav-grid">
+          
+          {/* Column 1: Company */}
+          <div className="footer-nav-col">
+            <h4 className="footer-col-heading">Company</h4>
+            <ul className="footer-link-list">
+              <li><AppLink to="about" href="/about" navigate={navigate}>About</AppLink></li>
+              <li><AppLink to="contact" href="/contact" navigate={navigate}>Contact</AppLink></li>
+              <li><AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate}>Partners</AppLink></li>
+              <li><AppLink to="affiliate-program" href="/affiliate-program" navigate={navigate}>Affiliates</AppLink></li>
+              <li><AppLink to="developer-api" href="/developer-api" navigate={navigate}>Developer API</AppLink></li>
+              <li><AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate}>Reseller FAQs</AppLink></li>
+            </ul>
+          </div>
+
+          {/* Column 2: Policies */}
+          <div className="footer-nav-col">
+            <h4 className="footer-col-heading">Policies</h4>
+            <ul className="footer-link-list">
+              <li><AppLink to="terms-conditions" href="/terms-conditions" navigate={navigate}>Terms &amp; Conditions</AppLink></li>
+              <li><AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate}>Shipping &amp; Delivery</AppLink></li>
+              <li><AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate}>Returns &amp; Cancellation</AppLink></li>
+              <li><AppLink to="privacy-security" href="/privacy-security" navigate={navigate}>Privacy &amp; Security</AppLink></li>
+              <li><AppLink to="terms-conditions" href="/terms-conditions" navigate={navigate}>Payment Policies</AppLink></li>
+              <li><AppLink to="disclaimer" href="/disclaimer" navigate={navigate}>Disclaimer</AppLink></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Resources */}
+          <div className="footer-nav-col">
+            <h4 className="footer-col-heading">Resources</h4>
+            <ul className="footer-link-list">
+              <li><AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate}>Reseller Guides</AppLink></li>
+              <li><AppLink to="wholesale-catalogue" href="/wholesale-catalogue" navigate={navigate}>Wholesale Guides</AppLink></li>
+              <li><AppLink to="custom-woven" href="/custom-woven" navigate={navigate}>Fabric &amp; Weave</AppLink></li>
+              <li><AppLink to="collaboration" href="/collaboration" navigate={navigate}>Business Growth</AppLink></li>
+              <li><AppLink to="blog" href="/blog" navigate={navigate}>Banarasi Insights</AppLink></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Social */}
+          <div className="footer-nav-col">
+            <h4 className="footer-col-heading">Social</h4>
+            <ul className="footer-link-list footer-social-list">
+              <li>
+                <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link">
+                  <Instagram size={15} className="social-icon" />
+                  <span>Instagram</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
+                  <Facebook size={15} className="social-icon" />
+                  <span>Facebook</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
+                  <Youtube size={15} className="social-icon" />
+                  <span>YouTube</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://in.pinterest.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link">
+                  <PinterestIcon size={15} className="social-icon" />
+                  <span>Pinterest</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
+                  <LinkedInIcon size={15} className="social-icon" />
+                  <span>LinkedIn</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 5: My Account */}
+          <div className="footer-nav-col">
+            <h4 className="footer-col-heading">My Account</h4>
+            <ul className="footer-link-list">
+              <li><AppLink to="account" href="/account" navigate={navigate}>Dashboard</AppLink></li>
+              <li><AppLink to="catalogue" href="/catalogue" navigate={navigate}>Sell Catalogue</AppLink></li>
+              <li><AppLink to="white-label" href="/white-label" navigate={navigate}>Brand Building</AppLink></li>
+              <li><AppLink to="developer-api" href="/developer-api" navigate={navigate}>Agentic Commerce</AppLink></li>
+              <li><a href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20join%20the%20community" target="_blank" rel="noreferrer">Community</a></li>
+            </ul>
+          </div>
+
+        </div>
+
       </div>
-      <div>
-        <h3>Company</h3>
-        <a href="/about" onClick={(e) => handleLinkClick(e, 'about')}>About Us</a>
-        <a href="/contact" onClick={(e) => handleLinkClick(e, 'contact')}>Contact Us</a>
-        <a href="/catalogue" onClick={(e) => handleLinkClick(e, 'catalogue')}>Catalogue</a>
-        <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')}>Bulk Order</a>
-        <a href="/dropshipping" onClick={(e) => handleLinkClick(e, 'dropshipping')}>Dropshipping</a>
-        <a href="/favorites" onClick={(e) => handleLinkClick(e, 'favorites')}>My Favorites</a>
-      </div>
-      <div>
-        <h3>Information</h3>
-        <a href="/developer-api" onClick={(e) => handleLinkClick(e, 'developer-api')}>Developer API & Docs</a>
-        <a href="/disclaimer" onClick={(e) => handleLinkClick(e, 'disclaimer')}>Disclaimer</a>
-        <a href="/shipping-delivery" onClick={(e) => handleLinkClick(e, 'shipping-delivery')}>Shipping & Delivery</a>
-        <a href="/returns-cancellation" onClick={(e) => handleLinkClick(e, 'returns-cancellation')}>Returns & Cancellation</a>
-        <a href="/privacy-security" onClick={(e) => handleLinkClick(e, 'privacy-security')}>Privacy & Security</a>
-        <a href="/terms-conditions" onClick={(e) => handleLinkClick(e, 'terms-conditions')}>Terms & Conditions</a>
-      </div>
-      <div>
-        <h3>Blog</h3>
-        <a href="/blog" onClick={(e) => handleLinkClick(e, 'blog')}>All Blog Articles</a>
-        <a href="/blog?category=Wholesale Guides" onClick={(e) => handleLinkClick(e, 'blog', '?category=Wholesale Guides')}>Wholesale Guides</a>
-        <a href="/blog?category=Reseller Business" onClick={(e) => handleLinkClick(e, 'blog', '?category=Reseller Business')}>Reseller Business</a>
-        <a href="/blog?category=Banarasi Insights" onClick={(e) => handleLinkClick(e, 'blog', '?category=Banarasi Insights')}>Banarasi Insights</a>
-        <a href="/blog?category=Business Growth" onClick={(e) => handleLinkClick(e, 'blog', '?category=Business Growth')}>Business Growth</a>
-      </div>
-      <div>
-        <h3>Social Profiles</h3>
-        <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer"><LinkedInIcon size={16} /> LinkedIn</a>
-        <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a>
-        <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer"><Facebook size={16} /> Facebook</a>
-        <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer"><Youtube size={16} /> YouTube</a>
-        <a href="https://in.pinterest.com/weaves365/" target="_blank" rel="noreferrer"><PinterestIcon size={16} /> Pinterest</a>
-      </div>
-      <div>
-        <h3>Get In Touch</h3>
-        <a href={`tel:${storeConfig.phone}`}><Phone size={16} /> {storeConfig.phone}</a>
-        <a href={`mailto:${storeConfig.email}`}><Mail size={16} /> {storeConfig.email}</a>
-        <a
-          href="/affiliate-program"
-          className="footer-link"
-          onClick={(e) => handleLinkClick(e, 'affiliate-program')}
-        >
-          <Coins size={16} /> Affiliate Program
-        </a>
-        <a
-          href="/collaboration"
-          className="footer-link"
-          onClick={(e) => handleLinkClick(e, 'collaboration')}
-        >
-          <Handshake size={16} /> Collaboration
-        </a>
-        <a
-          href="/weaver-onboarding"
-          className="footer-link"
-          onClick={(e) => handleLinkClick(e, 'weaver-onboarding')}
-        >
-          <UserPlus size={16} /> Weaver Onboarding
-        </a>
-      </div>
-      <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
-        <p className="developer-credit">
-          <span className="developer-label">Designed and Developed by</span>
-          <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer" className="developer-name">Aban Zubair</a>
-          <span className="developer-socials">
-            <a href="https://linkedin.com/in/abanzubair" target="_blank" rel="noreferrer" title="LinkedIn">
-              <LinkedInIcon size={14} />
+
+        {/* Bottom Bar */}
+        <div className="footer-bottom">
+          <p className="footer-copyright">&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
+          <div className="footer-bottom-right">
+            <span className="developer-credit-text">Designed &amp; Developed by</span>
+            <a 
+              href="https://github.com/abanzubair" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="developer-name-link"
+            >
+              Aban Zubair
             </a>
-            <a href="https://github.com/abanzubair" target="_blank" rel="noreferrer" title="GitHub">
-              <Github size={14} />
-            </a>
-          </span>
-        </p>
+            <div className="developer-social-icons">
+              <a 
+                href="https://github.com/abanzubair" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="developer-icon-btn" 
+                aria-label="Aban Zubair GitHub Profile"
+                title="GitHub"
+              >
+                <Github size={13} />
+              </a>
+              <a 
+                href="https://linkedin.com/in/abanzubair" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="developer-icon-btn" 
+                aria-label="Aban Zubair LinkedIn Profile"
+                title="LinkedIn"
+              >
+                <LinkedInIcon size={13} />
+              </a>
+            </div>
+            <span className="footer-divider" aria-hidden="true">•</span>
+            <button type="button" onClick={scrollToTop} className="footer-back-to-top">
+              Back to Top &uarr;
+            </button>
+          </div>
+        </div>
       </div>
     </footer>
   );

@@ -263,7 +263,12 @@ export function SiteHeader(props) {
             className="nav-auth-pill-btn desktop-only-action"
             onClick={(e) => {
               e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              if (user) {
+                setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              } else {
+                if (navigate) navigate('signup');
+                else window.location.href = '/signup';
+              }
             }}
           >
             <span>{userDisplayName}</span>
@@ -275,7 +280,12 @@ export function SiteHeader(props) {
             className={`premium-icon-btn mobile-user-trigger mobile-only-action ${dropdownOpen === 'account' ? 'active' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              if (user) {
+                setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              } else {
+                if (navigate) navigate('signup');
+                else window.location.href = '/signup';
+              }
             }}
             aria-label="Account Menu"
           >
@@ -285,38 +295,38 @@ export function SiteHeader(props) {
             )}
           </button>
 
-          <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('account');
-                else window.location.href = '/account';
-                setDropdownOpen(null);
-              }}
-            >
-              My Account
-            </button>
-            <button
-              type="button"
-              className="profile-dropdown-cart-btn"
-              onClick={() => {
-                setCartOpen(true);
-                setDropdownOpen(null);
-              }}
-            >
-              <span>Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('favorites');
-                else window.location.href = '/favorites';
-                setDropdownOpen(null);
-              }}
-            >
-              Saved Items {favoritesCount > 0 ? `(${favoritesCount})` : ''}
-            </button>
-            {user ? (
+          {user && (
+            <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigate) navigate('account');
+                  else window.location.href = '/account';
+                  setDropdownOpen(null);
+                }}
+              >
+                My Account
+              </button>
+              <button
+                type="button"
+                className="profile-dropdown-cart-btn"
+                onClick={() => {
+                  setCartOpen(true);
+                  setDropdownOpen(null);
+                }}
+              >
+                <span>Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigate) navigate('favorites');
+                  else window.location.href = '/favorites';
+                  setDropdownOpen(null);
+                }}
+              >
+                Saved Items {favoritesCount > 0 ? `(${favoritesCount})` : ''}
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -326,19 +336,8 @@ export function SiteHeader(props) {
               >
                 Log Out
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigate) navigate('login');
-                  else window.location.href = '/login';
-                  setDropdownOpen(null);
-                }}
-              >
-                Log In
-              </button>
-            )}
-          </DropdownPortal>
+            </DropdownPortal>
+          )}
         </div>
 
         {/* 2. Get Started Dropdown Button */}

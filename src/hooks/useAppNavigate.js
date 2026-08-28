@@ -45,7 +45,9 @@ export function useAppNavigate() {
         const q = params.toString();
         href = `/signup${q ? `?${q}` : ''}`;
       }
-    } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue') {
+    } else if (nextRoute === 'reseller-banarasi-sarees' || nextRoute === 'resell-sarees-online') {
+      href = '/resell-sarees-online';
+    } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue' || nextRoute === 'wholesale-banarasi-sarees') {
       const currentSearchParams =
         typeof window !== 'undefined'
           ? new URLSearchParams(window.location.search)

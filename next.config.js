@@ -41,6 +41,26 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: '/wholesale-banarasi-sarees',
+        destination: '/wholesale-catalogue',
+        permanent: true,
+      },
+      {
+        source: '/reseller-banarasi-sarees',
+        destination: '/resell-sarees-online',
+        permanent: true,
+      },
+      {
+        source: '/private-label',
+        destination: '/white-label',
+        permanent: true,
+      },
+      {
+        source: '/banarasi-sarees/occasion',
+        destination: '/sarees',
+        permanent: true,
+      },
+      {
         source: '/banarasi-sarees',
         destination: '/sarees',
         permanent: true,

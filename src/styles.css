@@ -12,8 +12,10 @@
 @import './styles/signupPage.css';
 @import './styles/resellerTools.css';
 @import './styles/resellerWhatsappShare.css';
-@import './styles/brandCollaboration.css';
-@import './styles/resellerGrowth.css';
+@import './styles/resellerProgram.css';
+@import './styles/wholesalePartnership.css';
+@import './styles/occasionShowcase.css';
+@import './styles/privateLabelSection.css';
 
 .search-lock {
   overflow: hidden !important;

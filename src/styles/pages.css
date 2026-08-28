@@ -33,11 +33,11 @@ button {
     0 24px 50px rgba(31, 20, 13, 0.15),
     0 8px 16px rgba(31, 20, 13, 0.08),
     inset 0 0 0 1.5px rgba(255, 255, 255, 0.8);
-  padding: 10px;
+  padding: 8px 6px;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   animation: liquidGlassFade 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   transform-origin: top center;
   will-change: backdrop-filter, transform, opacity;
@@ -85,18 +85,19 @@ button {
 .dropdown-menu a {
   display: block;
   text-decoration: none;
-  padding: 10px 14px !important;
+  padding: 8px 12px !important;
   width: 100%;
   text-align: left !important;
   background: transparent;
   border: 0 !important;
-  font-size: 14.5px !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em;
   text-transform: capitalize !important;
   color: var(--ink) !important;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-radius: 10px !important;
+  border-radius: 8px !important;
 }
 
 .dropdown-menu button:hover,

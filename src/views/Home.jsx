@@ -14,9 +14,10 @@ import { ProductCard } from '../components/ProductCard.jsx';
 import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { Stat } from '../components/Strips.jsx';
-import { ResellerGrowth } from '../components/ResellerGrowth.jsx';
-import { BrandCollaboration } from '../components/BrandCollaboration.jsx';
-import weaverImage from '../../assets/artisan_at_loom_premium.webp';
+import { WholesalePartnership } from '../components/WholesalePartnership.jsx';
+import { ResellerProgram } from '../components/ResellerProgram.jsx';
+import { OccasionShowcase } from '../components/OccasionShowcase.jsx';
+import { PrivateLabelSection } from '../components/PrivateLabelSection.jsx';
 import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
@@ -441,7 +442,8 @@ export function Home({
 
   const resellerSectionImage = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
   const brandCollabSectionImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
-  const weaverSectionImage = assetSrc(weaverImage);
+  const occasionSectionImage = "https://assets.weave365.com/assets/banner/endUserHome.webp";
+  const privateLabelSectionImage = "https://assets.weave365.com/assets/banner/privateLabelCustomWeave.webp";
 
   const openHeroLink = (link, fallbackRoute) => {
     const target = String(link || fallbackRoute || '').trim();
@@ -457,7 +459,9 @@ export function Home({
 
   return (
     <>
-      <h1 className="sr-only">Wholesale Banarasi Sarees for Retailers & Resellers</h1>
+      {!SHOW_OVERLAP_HERO && (
+        <h1 className="sr-only">Banarasi Sarees and Suits for Wholesale, Resellers, Private Labels and Retail</h1>
+      )}
       {SHOW_OVERLAP_HERO ? (
         <OverlapHero navigate={navigate} />
       ) : (
@@ -802,9 +806,13 @@ export function Home({
         </div>
       </section>
 
-      <ResellerGrowth imageUrl={resellerSectionImage} navigate={navigate} />
+      <WholesalePartnership imageUrl={resellerSectionImage} navigate={navigate} />
 
-      <BrandCollaboration imageUrl={brandCollabSectionImage} weaverImageUrl={weaverSectionImage} navigate={navigate} />
+      <ResellerProgram imageUrl={brandCollabSectionImage} navigate={navigate} />
+
+      <OccasionShowcase imageUrl={occasionSectionImage} navigate={navigate} />
+
+      <PrivateLabelSection imageUrl={privateLabelSectionImage} navigate={navigate} />
 
       {/* Weave 365 Insights Section */}
       <section className="home-blog-section">

@@ -3,10 +3,6 @@
   display: none !important;
 }
 
-.profile-dropdown-cart-btn {
-  display: none !important;
-}
-
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE PRODUCT RAILS & CATALOG GRIDS (320px to 2560px+)
    ═══════════════════════════════════════════════════════════════ */
@@ -653,160 +649,48 @@
     gap: 12px;
   }
 
-  /* Footer */
+  /* Footer Responsive */
   .footer {
+    padding: 48px var(--site-padding) 24px !important;
+  }
+
+  .footer-main-layout {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  .footer-nav-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    padding: 36px var(--site-padding) 30px !important;
-    gap: 28px 20px !important;
-    text-align: left;
-    align-items: start;
+    gap: 32px 20px !important;
   }
 
   @media screen and (max-width: 640px) {
     .footer {
-      grid-template-columns: 1fr !important;
-      gap: 28px !important;
+      padding: 40px 16px 20px !important;
     }
-  }
 
-  .footer>div {
-    min-width: 0;
-  }
+    .footer-nav-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 28px 16px !important;
+    }
 
-  .footer>div:first-child,
-  .footer-bottom {
-    grid-column: 1 / -1 !important;
-  }
+    .footer-desc {
+      max-width: 100% !important;
+    }
 
-  .footer-brand {
-    justify-content: flex-start;
-  }
+    .footer-bottom {
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      gap: 10px !important;
+      margin-top: 36px !important;
+      padding-top: 18px !important;
+    }
 
-  .footer-logo {
-    height: 20px;
-  }
-
-  .footer h3 {
-    margin-bottom: 10px;
-    font-size: 15px;
-  }
-
-  .footer p,
-  .footer a {
-    justify-content: flex-start;
-    padding-right: 0;
-    text-align: left;
-  }
-
-  .footer p {
-    max-width: 330px;
-    margin: 14px 0 0;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .footer a {
-    width: fit-content;
-    max-width: 100%;
-    font-size: 14px;
-    line-height: 1.55;
-    overflow-wrap: anywhere;
-  }
-
-  .footer svg {
-    flex: 0 0 auto;
-  }
-
-  .footer-bottom {
-    margin-top: 0;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 6px;
-    width: 100%;
-  }
-
-  .footer-bottom p {
-    width: 100%;
-    display: block !important;
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.4;
-    margin: 0;
-  }
-
-  .developer-credit {
-    display: flex !important;
-    flex-direction: row !important; /* Keep it as an elegant single horizontal line */
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 4px !important;
-    padding-right: 0 !important;
-    margin-top: 2px !important;
-    width: auto !important;
-  }
-
-  .developer-label {
-    display: inline !important;
-    font-size: 11px !important;
-    font-family: var(--font-body) !important;
-    color: var(--muted) !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-  }
-
-  .developer-name {
-    display: inline !important;
-    font-family: var(--font-body) !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    color: var(--gold-dark) !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-    margin: 0 2px !important;
-    border-bottom: 1px solid rgba(183, 134, 70, 0.3) !important;
-    text-decoration: none !important;
-  }
-
-  .developer-socials {
-    display: inline-flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-left: 6px !important;
-    transform: none !important;
-    width: auto !important;
-  }
-
-  .developer-socials a {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    color: var(--muted) !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-    transition: all 0.2s ease !important;
-  }
-
-  .developer-socials a svg {
-    width: 13px !important;
-    height: 13px !important;
-  }
-
-  .developer-socials a:hover {
-    color: var(--gold-dark) !important;
-    background: transparent !important;
-    opacity: 1 !important;
+    .footer-bottom-right {
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+    }
   }
 
 

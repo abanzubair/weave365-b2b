@@ -1,0 +1,333 @@
+/* ==================================================
+   RESELLER PROGRAM — Zero-Inventory Selling Section
+   Luxury Editorial Design System
+   ================================================== */
+
+.reseller-program-section {
+  background-color: var(--cream, #f9f7f2);
+  width: 100%;
+  padding: 88px 0;
+  border-top: 1px solid rgba(183, 134, 70, 0.1);
+  border-bottom: 1px solid rgba(183, 134, 70, 0.1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.reseller-program-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(1600px, calc(100% - var(--site-padding, 48px) * 2));
+  margin: 0 auto;
+  gap: clamp(48px, 5.5vw, 96px);
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Left Column: Editorial Content */
+.reseller-program-content-side {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.reseller-content-wrapper {
+  max-width: 680px;
+  width: 100%;
+}
+
+.reseller-program-title {
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 3.6vw, 48px);
+  line-height: 1.16;
+  color: var(--ink, #1f140d);
+  margin: 0 0 18px 0;
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.reseller-program-lead {
+  font-family: var(--font-body);
+  font-size: clamp(14.5px, 1.05vw, 16.5px);
+  line-height: 1.65;
+  color: #4a433d;
+  margin: 0 0 24px 0;
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+
+/* Benefits Checklist Grid */
+.reseller-benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 28px;
+  margin-bottom: 30px;
+  border-top: 1px solid rgba(183, 134, 70, 0.14);
+  padding-top: 24px;
+  width: 100%;
+}
+
+.reseller-benefits-grid .benefit-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reseller-benefits-grid .benefit-check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(183, 134, 70, 0.12);
+  color: var(--gold-dark, #805d31);
+  flex-shrink: 0;
+}
+
+.reseller-benefits-grid .benefit-text {
+  font-family: var(--font-body);
+  font-size: clamp(13.5px, 0.95vw, 14.5px);
+  font-weight: 500;
+  color: var(--ink, #1f140d);
+  line-height: 1.35;
+}
+
+/* Action Links */
+.reseller-program-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 32px);
+  margin-top: 6px;
+}
+
+.reseller-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gold-dark, #805d31);
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 4px;
+  width: fit-content;
+  transition: color 0.3s ease;
+}
+
+.reseller-cta-link.secondary-cta {
+  color: var(--ink, #1a1a1a);
+}
+
+.reseller-cta-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: var(--gold-dark, #805d31);
+  transform: scaleX(0.8);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.reseller-cta-link.secondary-cta::after {
+  background: var(--ink, #1a1a1a);
+}
+
+.reseller-cta-link:hover::after {
+  transform: scaleX(1);
+}
+
+.reseller-cta-link .link-arrow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--gold-dark, #805d31);
+}
+
+.reseller-cta-link.secondary-cta .link-arrow {
+  color: var(--ink, #1a1a1a);
+}
+
+.reseller-cta-link:hover .link-arrow {
+  transform: translateX(4px);
+}
+
+/* Right Column: Visual Showcase Frame */
+.reseller-program-visual-side {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reseller-gallery-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.reseller-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07);
+  background-color: #f3efe9;
+}
+
+.reseller-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reseller-caption {
+  margin-top: 14px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted, #786a60);
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT (Mobile & Tablet)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .reseller-program-section {
+    padding: 56px 0;
+  }
+
+  .reseller-program-layout {
+    display: flex;
+    flex-direction: column-reverse; /* Put image on top of content on mobile for consistent flow */
+    gap: 36px;
+  }
+
+  .reseller-program-visual-side {
+    justify-content: center;
+  }
+
+  .reseller-gallery-container {
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  .reseller-caption {
+    text-align: center;
+  }
+
+  .reseller-program-content-side {
+    align-items: flex-start;
+  }
+
+  .reseller-content-wrapper {
+    max-width: 100%;
+  }
+
+  .reseller-benefits-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reseller-program-section {
+    padding: 44px 0;
+    border-top: none;
+    border-bottom: none;
+  }
+
+  .reseller-program-layout {
+    gap: 28px;
+  }
+
+  .reseller-program-title {
+    font-size: clamp(26px, 6.5vw, 32px);
+    margin-bottom: 14px;
+  }
+
+  .reseller-program-lead {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .reseller-benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 26px;
+    padding-top: 16px;
+  }
+
+  .benefit-item {
+    font-size: 13.5px;
+  }
+
+  .reseller-program-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .reseller-cta-link {
+    font-size: 19px;
+  }
+}
+
+/* Dark Mode Support */
+.dark-mode .reseller-program-section {
+  background-color: #171615;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark-mode .reseller-program-title {
+  color: #ffffff;
+}
+.dark-mode .reseller-program-lead {
+  color: rgba(255, 255, 255, 0.75);
+}
+.dark-mode .reseller-benefits-grid .benefit-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+.dark-mode .reseller-benefits-grid .benefit-check-badge {
+  background: rgba(183, 134, 70, 0.2);
+  color: var(--gold, #b78646);
+}
+.dark-mode .reseller-caption {
+  color: rgba(255, 255, 255, 0.45);
+}
+.dark-mode .reseller-benefits-grid {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+.dark-mode .reseller-cta-link.primary-cta {
+  color: var(--gold, #b78646);
+}
+.dark-mode .reseller-cta-link.primary-cta::after {
+  background: var(--gold, #b78646);
+}
+.dark-mode .reseller-cta-link.primary-cta .link-arrow {
+  color: var(--gold, #b78646);
+}
+.dark-mode .reseller-cta-link.secondary-cta {
+  color: #ffffff;
+}
+.dark-mode .reseller-cta-link.secondary-cta::after {
+  background: #ffffff;
+}
+.dark-mode .reseller-cta-link.secondary-cta .link-arrow {
+  color: #ffffff;
+}
