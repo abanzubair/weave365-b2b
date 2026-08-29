@@ -1992,8 +1992,7 @@ button {
 
 .b2b-price-card.wholesale-highlight {
   border: 1.5px solid rgba(183, 134, 70, 0.55);
-  background: #fdfbf7;
-  box-shadow: 0 2px 10px rgba(183, 134, 70, 0.05);
+  background: #ffffff;
 }
 
 .b2b-price-card.single-piece.full-width {
@@ -2770,7 +2769,7 @@ button {
 .product-actions-popover-wrapper {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 330px;
 }
 
 .product-actions-popover-wrapper.has-active-panel {
@@ -2784,6 +2783,7 @@ button {
   gap: 10px;
   position: relative;
   width: 100%;
+  max-width: 330px;
 }
 
 .product-action-col {
@@ -2798,8 +2798,8 @@ button {
 .product-page-popover {
   position: absolute;
   bottom: calc(100% + 10px);
-  width: 100%;
-  min-width: 220px;
+  width: 240px;
+  max-width: calc(100vw - 32px);
   z-index: 1002;
   background: #ffffff;
   border-radius: 14px;

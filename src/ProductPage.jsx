@@ -1527,7 +1527,6 @@ export function ProductDetail({
                       }}
                       className={`buy-card-btn sell-card-btn page-action-sell-btn ${showSellPanel ? 'is-open' : ''}`}
                     >
-                      <Store size={18} />
                       <span>SELL THIS</span>
                       <ChevronUp size={15} className={`btn-dropdown-chevron ${showSellPanel ? 'rotated' : ''}`} />
                     </button>
@@ -1610,7 +1609,6 @@ export function ProductDetail({
                         }
                       }}
                     >
-                      <ShoppingBag size={18} />
                       <span>BUY NOW</span>
                       <ChevronUp size={15} className={`btn-dropdown-chevron ${showBuyPanel ? 'rotated' : ''}`} />
                     </button>
