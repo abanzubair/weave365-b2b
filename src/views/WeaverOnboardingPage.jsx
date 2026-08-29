@@ -22,6 +22,7 @@ import {
   ShoppingBag,
   Coins
 } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb.jsx';
 import { assetSrc } from '../utils/assetSrc.js';
 const artisanImage = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
 import warehouseImage from '../../assets/banarasi_loom_detail.webp';
@@ -40,58 +41,57 @@ export function WeaverOnboardingPage({ openAuth, navigate }) {
     <div className="weaver-page-container">
       {/* A. Hero Section */}
       <section className="weaver-hero-section">
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Weaver Onboarding' }]} navigate={navigate} />
         <div className="weaver-hero-split">
           <div className="hero-left">
-            <span className="hero-category-label">Wholesale &amp; Weaver Onboarding</span>
-            <h1 className="hero-title">
-              Empower Your Craft: Onboard as a Certified Weaver Partner
+            <h1 className="weaver-hero-title">
+              Empower Your Craft:
+              <span className="weaver-title-accent">Certified Weaver Partner.</span>
             </h1>
-            <p className="hero-description">
-              Showcase your Banarasi sarees, suits, and fabrics directly to global boutiques and retail networks. Partner with Weave 365 to expand your reach with zero listing risk.
+            <p className="weaver-hero-description">
+              Showcase your authentic Banarasi sarees, suits, and fabrics directly to global boutiques and retail networks. Partner with Weave 365 to expand your loom's reach with zero listing risk and 100% direct payouts.
             </p>
-            <div className="hero-actions">
+            <div className="weaver-hero-actions">
               <button 
                 type="button" 
-                className="gold-button large"
+                className="weaver-btn-primary"
                 onClick={handlePartnerSignup}
               >
-                Register as Weaver <ArrowRight size={18} />
+                <span>Register as Weaver</span>
+                <ArrowRight size={15} className="weaver-btn-arrow" />
               </button>
-              <a href="#how-it-works" className="hero-secondary-btn">
+              <a href="#how-it-works" className="weaver-btn-secondary">
                 Explore Process
               </a>
             </div>
-            <div className="hero-trust-indicators">
-              <div className="indicator-item">
-                <Globe size={18} className="indicator-icon" />
-                <span>Boutique Reach: <strong>500+ Buyers</strong></span>
+
+            {/* Unboxed 3-Metric Weaver Stat Ledger */}
+            <div className="weaver-stat-ledger">
+              <div className="weaver-ledger-item">
+                <span className="weaver-ledger-stat">500+</span>
+                <span className="weaver-ledger-label">Boutique Buyers</span>
               </div>
-              <div className="indicator-item">
-                <Shield size={18} className="indicator-icon" />
-                <span>Listing Fee: <strong>₹0 (Free)</strong></span>
+              <div className="weaver-ledger-divider" />
+              <div className="weaver-ledger-item">
+                <span className="weaver-ledger-stat">₹0</span>
+                <span className="weaver-ledger-label">Listing &amp; Setup Fee</span>
               </div>
-              <div className="indicator-item">
-                <Handshake size={18} className="indicator-icon" />
-                <span>Payouts: <strong>100% Direct</strong></span>
+              <div className="weaver-ledger-divider" />
+              <div className="weaver-ledger-item">
+                <span className="weaver-ledger-stat">100%</span>
+                <span className="weaver-ledger-label">Direct Bank Payouts</span>
               </div>
             </div>
           </div>
           
           <div className="hero-right">
-            <div className="hero-image-single">
-              <div className="hero-editorial-frame">
-                <img 
-                  src={assetSrc(artisanImage)}
-                  alt="Artisan weaving Varanasi silk" 
-                  className="hero-main-image"
-                  width={600}
-                  height={600}
-                />
-              </div>
-              <div className="hero-image-caption">
-                <span className="caption-dot" />
-                <span>Varanasi Loom Network &bull; Master Silk &amp; Brocade Weavers</span>
-              </div>
+            <div className="weaver-photo-frame">
+              <img 
+                src={assetSrc(artisanImage)}
+                alt="Artisan weaving Varanasi silk" 
+                className="weaver-hero-photo"
+                loading="eager"
+              />
             </div>
           </div>
         </div>

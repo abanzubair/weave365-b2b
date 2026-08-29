@@ -3,16 +3,15 @@ import {
   ArrowRight, 
   ChevronDown, 
   CheckCircle, 
-  Sparkles,
-  ShieldCheck,
-  Globe,
-  Award
+  ShieldCheck, 
+  Globe, 
+  Award 
 } from 'lucide-react';
 import { ContactSection } from './ContactPage.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
-import '../styles/ourOfferings.css';
+import '../styles/collaboration.css';
 
-export function OurOfferings({ navigate, openAuth }) {
+export function CollaborationPage({ navigate, openAuth }) {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);
   const contactRef = useRef(null);
 
@@ -75,13 +74,10 @@ export function OurOfferings({ navigate, openAuth }) {
       />
 
       <section className="offerings-hero-section">
-        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Brand Partnership' }]} navigate={navigate} contained={true} />
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Brand Partnership' }]} navigate={navigate} />
 
         <div className="offerings-hero-content">
           <div className="editorial-hero-text">
-            <span className="hero-kicker-luxury">
-              <Sparkles size={12} /> Sell on Weave365
-            </span>
             <h1 className="hero-title-luxury">
               Showcase Your Boutique to <br />
               <span className="gold-serif-text">A Global Audience</span>
@@ -282,3 +278,4 @@ export function OurOfferings({ navigate, openAuth }) {
   );
 }
 
+export { CollaborationPage as OurOfferings };

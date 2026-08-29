@@ -79,6 +79,18 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
     const rawWhatsapp = p.whatsapp_number || p.whatsapp || '';
     const cleanWhatsapp = String(rawWhatsapp).replace(/\D/g, '').slice(-10);
 
+    let cleanCity = String(p.city || '').trim();
+    let cleanState = String(p.state || '').trim();
+
+    // Auto-decompose legacy "City, State" composite data
+    if (cleanCity.includes(',')) {
+      const parts = cleanCity.split(',');
+      cleanCity = parts[0]?.trim() || '';
+      if (!cleanState && parts[1]) {
+        cleanState = parts.slice(1).join(',').trim();
+      }
+    }
+
     setFormData({
       fullName: p.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || '',
       countryCode: p.whatsapp_country_code || '+91',
@@ -86,8 +98,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       businessName: p.business_name || '',
       buyerSubtype: p.buyer_subtype || (p.buyer_type === 'vendor' ? 'Vendor' : 'Customer'),
       buyingBehavior: p.buying_behavior || 'instant',
-      city: p.city || '',
-      state: p.state || '',
+      city: cleanCity,
+      state: cleanState,
       pincode: p.pincode || '',
       interestedCategories: Array.isArray(p.interested_categories) && p.interested_categories.length > 0 
         ? p.interested_categories 

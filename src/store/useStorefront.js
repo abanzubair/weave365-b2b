@@ -50,7 +50,7 @@ export const useStorefront = create((set) => ({
   error: '',
   heroSlides: [],
   blogs: [],
-  configOptions: { priceRanges: [], categories: [], fabrics: [], weaves: [] },
+  configOptions: { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] },
   pageSeoSettings: [],
   landingPages: [],
   setProducts: (products) => {

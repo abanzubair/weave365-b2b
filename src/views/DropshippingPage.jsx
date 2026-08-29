@@ -138,48 +138,71 @@ export function DropshippingPage({ navigate, openAuth }) {
     <div className="dropshipping-page-container">
       {/* Hero Section */}
       <section className="dropshipping-hero">
-        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Dropshipping Program' }]} navigate={navigate} contained={true} />
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Dropshipping Program' }]} navigate={navigate} />
         <div className="dropshipping-hero-inner">
           <div className="dropshipping-hero-content">
-            <span className="dropshipping-kicker">Free to Start · No Inventory Required</span>
             <h1 className="dropshipping-hero-title">
-              Start Your Saree & Suit <span>Dropshipping Business</span>
+              Direct Loom Sourcing &amp;
+              <span className="dropshipping-title-accent">Blind Dropshipping Engine.</span>
             </h1>
             <p className="dropshipping-hero-description">
-              Sell authentic Banarasi handlooms with zero inventory risk. Get wholesale access, white-label catalogs, and direct sourcing from Varanasi's weaving ecosystem.
+              Launch an ethnic fashion storefront with zero inventory risk. We handle master artisan sourcing, rigorous fabric inspection, and 100% blind doorstep delivery directly to your clients.
             </p>
-            <div className="dropshipping-hero-actions">
-              <button 
-                type="button" 
-                className="dropshipping-primary-btn" 
-                onClick={handleStartCatalog}
-              >
-                Browse Catalogue <ArrowRight size={16} />
-              </button>
+            
+            {/* Action Suite */}
+            <div className="dropshipping-action-suite">
+              <div className="dropshipping-buttons-row">
+                <button 
+                  type="button" 
+                  className="dropshipping-btn-primary" 
+                  onClick={handleStartCatalog}
+                >
+                  <span>Browse Wholesale Catalogue</span>
+                  <ArrowRight size={15} className="ds-btn-arrow" />
+                </button>
+                <button 
+                  type="button" 
+                  className="dropshipping-btn-secondary" 
+                  onClick={openAuth}
+                >
+                  Start Dropshipping Free
+                </button>
+              </div>
             </div>
-            <div className="dropshipping-hero-stats">
-              <div className="hero-stat">
-                <span className="hero-stat-value">₹0</span>
-                <span className="hero-stat-label">Investment</span>
+            
+            {/* Distinct Dropshipping Metrics & Trust Bar */}
+            <div className="ds-metrics-strip">
+              <div className="ds-metric-item">
+                <span className="ds-metric-stat">₹0</span>
+                <span className="ds-metric-label">Upfront Inventory</span>
               </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <span className="hero-stat-value">150+</span>
-                <span className="hero-stat-label">Live Products</span>
+              <div className="ds-metric-divider" />
+              <div className="ds-metric-item">
+                <span className="ds-metric-stat">1-Piece</span>
+                <span className="ds-metric-label">No Minimum Order</span>
               </div>
-              <div className="hero-stat-divider" />
-              <div className="hero-stat">
-                <span className="hero-stat-value">Global</span>
-                <span className="hero-stat-label">Shipping</span>
+              <div className="ds-metric-divider" />
+              <div className="ds-metric-item">
+                <span className="ds-metric-stat">100%</span>
+                <span className="ds-metric-label">Blind Packaging</span>
+              </div>
+              <div className="ds-metric-divider" />
+              <div className="ds-metric-item">
+                <span className="ds-metric-stat">40+</span>
+                <span className="ds-metric-label">Countries Shipped</span>
               </div>
             </div>
           </div>
+
           <div className="dropshipping-hero-visual">
-            <img 
-              src="https://assets.weave365.com/assets/banner/dropshipping-hero.jpg"
-              alt="Premium Banarasi saree catalog display for resellers" 
-              className="dropshipping-hero-img"
-            />
+            <div className="dropshipping-photo-frame">
+              <img 
+                src="https://assets.weave365.com/assets/banner/dropshipping-hero.jpg"
+                alt="Premium Banarasi saree catalog display for dropshippers" 
+                className="dropshipping-hero-photo"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </section>

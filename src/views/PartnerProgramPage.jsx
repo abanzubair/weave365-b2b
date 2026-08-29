@@ -45,7 +45,7 @@ const partnerPages = {
     badge: 'Private Label Program',
     h1: 'Sell Authentic Banarasi Weaves Under Your Own Brand',
     intro:
-      'Build a high-margin ethnic wear business with authentic Banarasi sarees and suits from Varanasi. Weave 365 provides direct loom sourcing, unbranded HD catalogues, white label support, and blind dropshipping to your customers.',
+      'Launch or scale your ethnic boutique with direct Varanasi loom sourcing, unbranded HD digital catalogues, branded packaging support, and 100% blind dropshipping to your clients.',
     role:
       'A White Label Brand owns customer trust, brand identity, product curation, and retail growth, while Weave 365 acts as your silent, direct-from-loom manufacturing and white-label fulfillment backbone.',
     ctaText: 'Start White Label Inquiry',
@@ -53,9 +53,9 @@ const partnerPages = {
     heroImage: 'https://assets.weave365.com/assets/banner/collab-brand-hero2.jpg',
     stats: [
       ['Margin', '40% – 70% Net'],
-      ['Branding', 'Your Own Brand & Packaging'],
-      ['Catalogs', 'Unbranded Images'],
-      ['Shipping', 'Worldwide'],
+      ['Branding', 'Private Label Packaging'],
+      ['Media', 'Unbranded HD Catalogs'],
+      ['Fulfillment', 'Blind Worldwide Dropship'],
     ],
     responsibilities: [
       'Build your brand positioning and customer pricing strategy.',
@@ -134,17 +134,17 @@ const partnerPages = {
     badge: 'Backend Supply Chain Network',
     h1: 'Direct Loom Sourcing for Wholesale & Export Buyers',
     intro:
-      'Act as the backend sourcing bridge for authentic Banarasi sarees, suits, fabrics, and bulk requirements. Coordinate loom production, quality inspection, pricing, and dispatch discipline across Varanasi weaving hubs.',
+      'Bridge global boutique demand with Varanasi master weaving looms. Coordinate custom production, 5-point quality inspection, tiered MOQ pricing slabs, and on-time dispatch.',
     role:
       'A Sourcing Partner coordinates, inspects, and manages the supply chain between artisan looms, master weavers, wholesalers, boutiques, and export networks.',
     ctaText: 'Start Sourcing Inquiry',
     ctaRoute: 'bulk-inquiry',
     heroImage: 'https://assets.weave365.com/assets/banner/weaver-partner.jpg',
     stats: [
-      ['MOQ', 'Flexible Slabs'],
-      ['QC', 'Pre-Dispatch Check'],
-      ['Stock', 'Live Loom Sync'],
-      ['Sourcing', 'Direct Varanasi'],
+      ['MOQ', 'Flexible Tiered Slabs'],
+      ['QC', '5-Point Loom Inspection'],
+      ['Stock', 'Real-Time Loom Sync'],
+      ['Sourcing', 'Direct Artisan Weavers'],
     ],
     responsibilities: [
       'Coordinate directly with weavers and master artisans',
@@ -212,12 +212,12 @@ const partnerPages = {
 // Packaging options dataset for White Label Brands
 const packagingOptions = [
   {
-    id: 'neck-tags',
-    title: 'Custom Woven Satin Neck-Tags',
-    desc: 'Custom woven satin & damask labels stitched onto saree pallus, suit necklines, or dupatta edges with your brand name, logo, and wash care instructions.',
+    id: 'brand-tags',
+    title: 'Custom Brand Tags & Cards',
+    desc: 'Custom brand tags and insert cards packed with your orders displaying your boutique name, logo, and care instructions.',
     icon: Tags,
-    badge: 'Branding Core',
-    previewText: 'YOUR BRAND NAME • HANDMADE BANARASI SILK',
+    badge: 'Brand Identity',
+    previewText: 'YOUR BRAND NAME • BANARASI SILK',
   },
   {
     id: 'gift-boxes',
@@ -229,11 +229,11 @@ const packagingOptions = [
   },
   {
     id: 'hd-catalogs',
-    title: 'Unbranded 4K Digital Catalogs',
-    desc: 'Access thousands of watermark-free, unbranded model photos and video reels ready to post directly to your website, Instagram feed, or WhatsApp catalogs.',
+    title: 'Unbranded HD Digital Catalogs',
+    desc: 'Access watermark-free, unbranded model photos and video reels ready to post directly to your website, Instagram feed, or WhatsApp catalogs.',
     icon: Sparkles,
     badge: 'Marketing Ready',
-    previewText: 'WATERMARK-FREE 4K IMAGES & VIDEO REELS',
+    previewText: 'WATERMARK-FREE HD IMAGES & VIDEO REELS',
   },
   {
     id: 'blind-shipping',
@@ -255,13 +255,13 @@ const comparisonData = [
   },
   {
     feature: 'Product Branding',
-    whiteLabel: '100% Your Brand (Custom Tags, Boxes & Invoices)',
+    whiteLabel: '100% Your Brand (Custom Packaging, Invoices & Cards)',
     sourcingPartner: 'Unbranded / Mill Tags for Bulk Trade',
     traditionalRetail: 'Third-party Mill / Supplier Branding',
   },
   {
     feature: 'Marketing Assets',
-    whiteLabel: 'Unbranded HD Photos, 4K Reels & Digital Catalogs',
+    whiteLabel: 'Unbranded HD Photos, Video Clips & Digital Catalogs',
     sourcingPartner: 'Technical Spec Sheets & Live Inventory Lists',
     traditionalRetail: 'Low-res Supplier Photos with Watermarks',
   },
@@ -284,7 +284,7 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
   const page = partnerPages[activeType];
 
   const [expandedFaq, setExpandedFaq] = useState(0);
-  const [selectedPkg, setSelectedPkg] = useState('neck-tags');
+  const [selectedPkg, setSelectedPkg] = useState('brand-tags');
 
   // Profit Calculator State
   const [calcPriceRange, setCalcPriceRange] = useState('3000-4999');
@@ -330,57 +330,88 @@ export function PartnerProgramPage({ type = 'white-label', navigate }) {
     <div className="partner-atelier-view">
       {/* Hero Master Section */}
       <section className="atelier-hero-section">
-        <Breadcrumb 
+        <Breadcrumb
           items={[
-            { name: 'Home', url: '/', route: 'home' }, 
+            { name: 'Home', url: '/', route: 'home' },
             { name: activeType === 'white-label' ? 'White Label Brands' : 'Sourcing Partners' }
-          ]} 
-          navigate={navigate} 
+          ]}
+          navigate={navigate}
         />
-        <div className="atelier-hero-grid">
-          <div className="atelier-hero-content">
-            <span className="atelier-badge">{page.badge}</span>
-            <h1>{page.h1}</h1>
-            <p className="atelier-hero-lead">{page.intro}</p>
+        <div className="maison-hero-stage">
+          <div className="maison-hero-main-grid">
+            {/* Left Editorial Narrative Column */}
+            <div className="maison-content-col">
+              <h1 className="maison-title">
+                {activeType === 'white-label' ? (
+                  <>
+                    Sell Authentic Banarasi Weaves
+                    <span className="maison-title-accent">Under Your Own Brand.</span>
+                  </>
+                ) : (
+                  <>
+                    Direct Loom Sourcing for
+                    <span className="maison-title-accent">Wholesale & Export Buyers.</span>
+                  </>
+                )}
+              </h1>
 
-            <div className="atelier-metrics-row">
-              {page.stats.map(([lbl, val]) => (
-                <div key={lbl} className="atelier-metric-item">
-                  <span className="metric-lbl">{lbl}:</span>
-                  <span className="metric-val">{val}</span>
+              <p className="maison-lead-text">{page.intro}</p>
+
+              {/* Atelier Specification Ledger */}
+              <div className="maison-spec-ledger">
+                {page.stats.map(([lbl, val], idx) => (
+                  <div key={lbl} className="ledger-entry">
+                    <div className="ledger-index">0{idx + 1}</div>
+                    <div className="ledger-body">
+                      <span className="ledger-label">{lbl}</span>
+                      <span className="ledger-value">{val}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Suite & Operational Commitment */}
+              <div className="maison-action-suite">
+                <div className="maison-buttons-row">
+                  <button
+                    type="button"
+                    className="maison-btn-primary"
+                    onClick={handleInquiry}
+                  >
+                    <span>{page.ctaText}</span>
+                    <ArrowRight size={16} className="btn-arrow-motion" />
+                  </button>
+                  <button
+                    type="button"
+                    className="maison-btn-secondary"
+                    onClick={() => navigate('catalogue')}
+                  >
+                    <span>Explore Ready Stock</span>
+                  </button>
                 </div>
-              ))}
+
+                <div className="maison-assurance-note">
+                  <BadgeCheck size={16} className="assurance-icon" />
+                  <span>
+                    {activeType === 'white-label'
+                      ? 'Flexible MOQ • Zero Stock Risk • Strict Zero-Poaching Guarantee'
+                      : 'Tiered Bulk MOQ Slabs • Pre-Dispatch 5-Point Quality Inspection'}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="atelier-hero-actions">
-              <button
-                type="button"
-                className="atelier-btn-primary"
-                onClick={handleInquiry}
-              >
-                <span>{page.ctaText}</span>
-                <ArrowRight size={16} />
-              </button>
-              <button
-                type="button"
-                className="atelier-btn-secondary"
-                onClick={() => navigate('catalogue')}
-              >
-                <span>Explore Catalog</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="atelier-hero-visual">
-            <div className="visual-card-wrap">
-              <img
-                src={page.heroImage}
-                alt={page.h1}
-                className="visual-img"
-              />
-              <div className="visual-trust-badge">
-                <ShieldCheck size={18} />
-                <span>100% Genuine Varanasi Loom Certification</span>
+            {/* Right Visual Stage */}
+            <div className="maison-visual-stage">
+              <div className="atelier-composition-frame">
+                <div className="atelier-hero-photo-wrap">
+                  <img
+                    src={page.heroImage}
+                    alt={page.h1}
+                    className="atelier-hero-photo"
+                    loading="eager"
+                  />
+                </div>
               </div>
             </div>
           </div>

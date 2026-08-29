@@ -23,6 +23,13 @@ export function useAppNavigate() {
       href = productId ? `/order-tracking/${encodeURIComponent(productId)}` : '/order-tracking';
     } else if (nextRoute === 'partner') {
       href = `/partner/${encodeURIComponent(slugifyPartner(productId))}`;
+    } else if (nextRoute === 'account' || nextRoute.startsWith('account?')) {
+      if (nextRoute.startsWith('account?')) {
+        href = `/${nextRoute}`;
+      } else {
+        const tab = productId || navOptions.tab;
+        href = tab ? `/account?tab=${encodeURIComponent(tab)}` : '/account';
+      }
     } else if (nextRoute === 'blog' && productId) {
       href = `/blog/${encodeURIComponent(productId)}`;
     } else if (nextRoute === 'signup' || nextRoute.startsWith('signup?') || nextRoute === 'register' || nextRoute === 'login') {
@@ -60,6 +67,8 @@ export function useAppNavigate() {
       if (fab && fab !== 'All' && fab !== 'all') params.set('fabric', fab.toLowerCase());
       const wve = navOptions.weave !== undefined ? navOptions.weave : currentSearchParams.get('weave');
       if (wve && wve !== 'All' && wve !== 'all') params.set('weave', wve.toLowerCase());
+      const occ = navOptions.occasion !== undefined ? navOptions.occasion : currentSearchParams.get('occasion');
+      if (occ && occ !== 'All' && occ !== 'all') params.set('occasion', occ.toLowerCase());
       const prc = navOptions.priceRange !== undefined ? navOptions.priceRange : currentSearchParams.get('priceRange');
       if (prc && prc !== 'All' && prc !== 'all') params.set('priceRange', prc);
 
@@ -84,6 +93,8 @@ export function useAppNavigate() {
       if (fab && fab !== 'All' && fab !== 'all') params.set('fabric', fab.toLowerCase());
       const wve = navOptions.weave !== undefined ? navOptions.weave : currentSearchParams.get('weave');
       if (wve && wve !== 'All' && wve !== 'all') params.set('weave', wve.toLowerCase());
+      const occ = navOptions.occasion !== undefined ? navOptions.occasion : currentSearchParams.get('occasion');
+      if (occ && occ !== 'All' && occ !== 'all') params.set('occasion', occ.toLowerCase());
       const prc = navOptions.priceRange !== undefined ? navOptions.priceRange : currentSearchParams.get('priceRange');
       if (prc && prc !== 'All' && prc !== 'all') params.set('priceRange', prc);
       const q = params.toString();

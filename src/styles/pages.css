@@ -1360,7 +1360,9 @@ button {
   padding: 8px;
 }
 
-.fabric-filter .filter-dropdown-menu {
+.fabric-filter .filter-dropdown-menu,
+.weave-filter .filter-dropdown-menu,
+.occasion-filter .filter-dropdown-menu {
   width: 220px;
 }
 

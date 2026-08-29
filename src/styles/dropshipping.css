@@ -5,150 +5,212 @@
   overflow-x: hidden;
 }
 
-/* Hero Section — split layout with product imagery */
+/* Hero Section — Maison Atelier Haute Handloom Aesthetic */
 .dropshipping-hero {
-  padding: 0 var(--site-padding) clamp(60px, 8vw, 100px);
-  background: var(--paper);
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.15rem 2rem clamp(3rem, 5vw, 5rem) 2rem;
   position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
+}
+
+.dropshipping-hero .premium-breadcrumb {
+  padding: 0.5rem 0 0 0;
+  margin: 0 0 1.25rem 0;
 }
 
 .dropshipping-hero-inner {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  width: 100%;
+  margin-top: 0;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 60px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 4.5vw, 5rem);
   align-items: center;
 }
 
 .dropshipping-hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.dropshipping-kicker {
-  display: inline-block;
-  font-size: var(--small-size);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--gold-dark);
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
 }
 
 .dropshipping-hero-title {
-  font-family: var(--font-heading);
-  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
-  line-height: 1.12;
-  color: var(--heading);
-  margin-bottom: 20px;
-  font-weight: 700;
-  text-wrap: balance;
-  letter-spacing: -0.02em;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(32px, 3.8vw, 52px);
+  line-height: 1.14;
+  color: #1a1613;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.2rem;
+  font-weight: 500;
 }
 
-.dropshipping-hero-title span {
-  color: var(--gold-dark);
-  display: inline;
+.dropshipping-title-accent {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: #855b29;
+  margin-top: 4px;
 }
 
 .dropshipping-hero-description {
-  font-size: var(--body-large-size);
-  line-height: 1.7;
-  color: var(--muted);
-  margin-bottom: 32px;
-  max-width: 680px;
+  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
+  line-height: 1.76;
+  color: #55483b;
+  margin: 0 0 2rem;
+  max-width: 640px;
   font-weight: 400;
 }
 
-/* Inline stat indicators */
-.dropshipping-hero-stats {
+/* Distinct Dropshipping Metrics & Trust Bar (Unboxed Distilled Ledger) */
+.ds-metrics-strip {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-top: 36px;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.25rem 0 0 0;
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 2rem;
 }
 
-.hero-stat {
+.ds-metric-item {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.hero-stat-value {
-  font-family: var(--font-modern-heading);
-  font-size: var(--h5-size);
-  font-weight: 700;
-  color: var(--gold-dark);
-  line-height: 1.2;
+.ds-metric-stat {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #855b29;
+  line-height: 1.15;
 }
 
-.hero-stat-label {
-  font-size: var(--small-size);
-  color: var(--muted);
-  letter-spacing: 0.02em;
-  font-weight: 400;
+.ds-metric-label {
+  font-size: 0.76rem;
+  color: #635546;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-.hero-stat-divider {
+.ds-metric-divider {
   width: 1px;
-  height: 32px;
-  background: var(--line);
+  height: 28px;
+  background: rgba(198, 158, 106, 0.35);
+  flex-shrink: 0;
 }
 
-/* Product image column */
-.dropshipping-hero-visual {
-  position: relative;
+/* Action Suite */
+.dropshipping-action-suite {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.dropshipping-buttons-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1rem;
 }
 
-.dropshipping-hero-img {
-  width: 100%;
-  max-width: 520px;
-  height: auto;
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.dropshipping-primary-btn {
+.dropshipping-btn-primary,
+.dropshipping-btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: var(--ink);
-  color: var(--paper);
-  padding: 14px 32px;
-  border-radius: 6px;
-  font-family: var(--font-modern-heading);
-  font-weight: var(--button-weight);
-  font-size: var(--button-size);
-  border: none;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 4px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
   cursor: pointer;
-  transition: background 0.2s ease-out, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: all 0.2s ease;
 }
 
-.dropshipping-primary-btn:hover {
-  background: var(--gold-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.25);
+.dropshipping-btn-primary {
+  border: 1.5px solid #805d31;
+  background: #805d31;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.15);
 }
 
-.dropshipping-primary-btn.inverse {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--ink);
+.dropshipping-btn-primary .ds-btn-arrow {
+  transition: transform 0.2s ease;
 }
 
-.dropshipping-primary-btn.inverse:hover {
-  background: var(--ink);
-  color: var(--paper);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+.dropshipping-btn-primary:hover {
+  background: #6b4d27;
+  border-color: #6b4d27;
+  box-shadow: 0 6px 18px rgba(128, 93, 49, 0.22);
+}
+
+.dropshipping-btn-primary:hover .ds-btn-arrow {
+  transform: translateX(3px);
+}
+
+.dropshipping-btn-secondary {
+  border: 1.5px solid rgba(198, 158, 106, 0.5);
+  background: #ffffff;
+  color: #3b3025;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.dropshipping-btn-secondary:hover {
+  border-color: #805d31;
+  color: #805d31;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.08);
+}
+
+.dropshipping-assurance-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: #6d5f50;
+  font-weight: 600;
+}
+
+.ds-assurance-icon {
+  color: #805d31;
+  flex-shrink: 0;
+}
+
+/* Visual Stage — Clean Editorial Showcase */
+.dropshipping-hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.dropshipping-photo-frame {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(54, 37, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  aspect-ratio: 16/11;
+  min-height: 360px;
+  background: #faf7f2;
+}
+
+.dropshipping-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Profit Alert Banner */
@@ -1406,7 +1468,7 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .dropshipping-hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 36px;
   }
   .features-showcase-grid {
@@ -1425,58 +1487,63 @@
 
 @media (max-width: 768px) {
   .dropshipping-hero {
-    padding: 30px 16px 40px;
-  }
-
-  .dropshipping-hero-inner {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    text-align: center;
-  }
-
-  .dropshipping-hero-content {
-    order: 1;
+    padding: 1rem 1rem 3rem;
   }
 
   .dropshipping-hero-title {
-    font-size: 32px;
-    line-height: 1.25;
-    margin-bottom: 16px;
+    font-size: clamp(24px, 7vw, 34px);
+    text-wrap: balance;
   }
 
   .dropshipping-hero-description {
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
     max-width: 100%;
-    margin-bottom: 24px;
   }
 
-  .dropshipping-hero-visual {
-    order: 2;
+  .ds-metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 0.75rem;
+    padding: 1rem 0 0 0;
+    margin-top: 1.5rem;
   }
 
-  .dropshipping-hero-img {
-    max-width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+  .ds-metric-item {
+    min-width: 0;
   }
 
-  .dropshipping-hero-stats {
-    justify-content: space-around;
-    max-width: 480px;
-    margin: 32px auto 0;
-    gap: 16px;
+  .ds-metric-label {
+    white-space: normal;
+    text-wrap: pretty;
+    font-size: 13px;
+    line-height: 1.35;
   }
 
-  .hero-stat {
-    align-items: center;
-    text-align: center;
-  }
-
-  .hero-stat-value {
-    font-size: 18px;
-  }
-
-  .hero-stat-divider {
+  .ds-metric-divider {
     display: none;
+  }
+
+  .dropshipping-buttons-row {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .dropshipping-btn-primary,
+  .dropshipping-btn-secondary {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: clamp(11px, 2.8vw, 12.5px);
+    justify-content: center;
+  }
+
+  .dropshipping-photo-frame {
+    min-height: auto;
+    aspect-ratio: 16/11;
   }
 
   .dropshipping-profit-alert {

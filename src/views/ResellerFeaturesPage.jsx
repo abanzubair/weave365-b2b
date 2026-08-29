@@ -169,123 +169,73 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
     <div className="reseller-features-container">
       {/* 1. Hero Section */}
       <section className="rf-hero">
-        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Reseller Features' }]} navigate={navigate} contained={true} />
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Reseller Features' }]} navigate={navigate} />
         <div className="rf-hero-inner">
           <div className="rf-hero-content">
-            <span className="rf-hero-kicker">Multi-Tier B2B Reseller Platform</span>
             <h1 className="rf-hero-title">
-              The Professional Toolkit to <span>Resell Sarees Online</span>
+              The Modern Toolkit to
+              <span className="rf-title-accent">Resell Banarasi Sarees Online.</span>
             </h1>
+            
             <p className="rf-hero-desc">
-              Power your social commerce boutique. Weave 365 provides Varanasi direct factory sourcing, instant social cataloging, custom pricing rules, and blind shipping &mdash; all from a single reseller ecosystem.
+              Source authentic Varanasi weaves at direct artisan wholesale rates. Share unbranded HD catalogs across WhatsApp & Instagram, set your own profit margins, and deliver orders blindly to your clients.
             </p>
-            <div className="rf-hero-actions">
-              <button 
-                type="button" 
-                className="rf-btn-primary" 
-                onClick={handleStartSharing}
-              >
-                <span>Start Reselling Now</span>
-                <ArrowRight size={16} />
-              </button>
-              <button 
-                type="button" 
-                className="rf-btn-secondary" 
-                onClick={() => navigate('about')}
-              >
-                Learn About Our Quality
-              </button>
+            
+            {/* Distilled 3-Pillar Reseller Workflow */}
+            <div className="rf-distilled-strip">
+              <div className="rf-distilled-col">
+                <span className="rf-distilled-num">01</span>
+                <h3 className="rf-distilled-title">Share Catalogs</h3>
+                <p className="rf-distilled-text">Watermark-free HD media for social&nbsp;channels.</p>
+              </div>
+
+              <div className="rf-distilled-col">
+                <span className="rf-distilled-num">02</span>
+                <h3 className="rf-distilled-title">Add Your Margin</h3>
+                <p className="rf-distilled-text">Set your own retail price & keep 100% of&nbsp;profit.</p>
+              </div>
+
+              <div className="rf-distilled-col">
+                <span className="rf-distilled-num">03</span>
+                <h3 className="rf-distilled-title">Blind Dispatch</h3>
+                <p className="rf-distilled-text">Packed & shipped under your boutique&nbsp;name.</p>
+              </div>
             </div>
-            <div className="rf-hero-trust-row">
-              <div className="rf-trust-item">
-                <ShieldCheck size={18} className="rf-trust-icon" />
-                <span>Risk: <strong>Zero Inventory</strong></span>
+
+            {/* Action Suite */}
+            <div className="rf-action-suite">
+              <div className="rf-buttons-row">
+                <button 
+                  type="button" 
+                  className="rf-btn-primary" 
+                  onClick={handleStartSharing}
+                >
+                  <span>Start Reselling Now</span>
+                  <ArrowRight size={15} className="rf-btn-arrow" />
+                </button>
+                <button 
+                  type="button" 
+                  className="rf-btn-secondary" 
+                  onClick={() => navigate('catalogue')}
+                >
+                  Explore Ready Stock
+                </button>
               </div>
-              <div className="rf-trust-item">
-                <Globe size={18} className="rf-trust-icon" />
-                <span>Pricing: <strong>Varanasi Factory Rates</strong></span>
-              </div>
-              <div className="rf-trust-item">
-                <Truck size={18} className="rf-trust-icon" />
-                <span>Fulfillment: <strong>Global Express</strong></span>
+              <div className="rf-assurance-note">
+                <ShieldCheck size={16} className="rf-assurance-icon" />
+                <span>Single-Piece Orders Supported • Zero Inventory Required • Pan-India Free Delivery</span>
               </div>
             </div>
           </div>
 
           <div className="rf-hero-visual">
-            <div className="rf-visual-workspace">
-              {/* Instagram Post Mockup */}
-              <div className="mock-ig-post">
-                <div className="mock-ig-header">
-                  <div className="mock-ig-avatar" />
-                  <span className="mock-ig-username">your.boutique</span>
-                </div>
-                <div className="mock-ig-image" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/affiliate-hero.jpg)' }} />
-                <div className="mock-ig-info">
-                  <div className="mock-ig-actions">
-                    <span className="mock-ig-action">♥</span>
-                    <span className="mock-ig-action">💬</span>
-                    <span className="mock-ig-action">✈</span>
-                  </div>
-                  <div className="mock-ig-caption">
-                    <strong>your.boutique</strong> Organza Banarasi Saree, direct from the Varanasi looms. 🌸 Retail Price: ₹2,800 (+40% Markup).
-                  </div>
-                </div>
-              </div>
-
-              {/* WhatsApp Chat Bubble Mockup */}
-              <div className="mock-wa-bubble">
-                <div className="mock-wa-chat-header">
-                  <div className="mock-wa-avatar" />
-                  <span className="mock-wa-chat-name">Customer Group</span>
-                </div>
-                <div className="mock-wa-chat-body">
-                  <div className="mock-wa-balloon">
-                    <div className="mock-wa-media" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/dropshipping-hero.jpg)' }} />
-                    <div className="mock-wa-caption">
-                      <strong>Handwoven Katan Silk</strong>
-                      <p>Pure mulberry silk weave with gold zari work.</p>
-                      <div className="mock-wa-price">₹2,500 (+25% Markup)</div>
-                    </div>
-                    <div className="mock-wa-meta">10:45 AM ✓✓</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* White Label Web storefront viewport */}
-              <div className="mock-wl-browser">
-                <div className="mock-wl-browser-header">
-                  <div className="mock-wl-browser-dots">
-                    <span className="mock-wl-dot" />
-                    <span className="mock-wl-dot" />
-                    <span className="mock-wl-dot" />
-                  </div>
-                  <div className="mock-wl-browser-address">https://www.yourbrand.com</div>
-                </div>
-                <div className="mock-wl-browser-body">
-                  <div className="mock-wl-store-hero" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg)' }}>
-                    <div className="mock-wl-store-hero-overlay">
-                      <span>EXCLUSIVE SILK CATALOGUE</span>
-                    </div>
-                  </div>
-                  <div className="mock-wl-store-grid">
-                    <div className="mock-wl-store-item">
-                      <div className="mock-wl-store-img" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/dropshipping-hero.jpg)' }} />
-                      <div className="mock-wl-store-details">
-                        <span className="mock-wl-store-title">Katan Silk Saree</span>
-                        <span className="mock-wl-store-price">₹3,000</span>
-                      </div>
-                    </div>
-                    <div className="mock-wl-store-item">
-                      <div className="mock-wl-store-img" style={{ backgroundImage: 'url(https://assets.weave365.com/assets/banner/affiliate-hero.jpg)' }} />
-                      <div className="mock-wl-store-details">
-                        <span className="mock-wl-store-title">Organza Saree</span>
-                        <span className="mock-wl-store-price">₹3,200</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="rf-photo-frame">
+              <img
+                src="https://assets.weave365.com/assets/banner/affiliate-hero.jpg"
+                alt="Resell Banarasi Sarees Online"
+                className="rf-hero-photo"
+                loading="eager"
+              />
             </div>
           </div>
         </div>
@@ -779,7 +729,7 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
         </div>
       </section>
 
-      {/* 7. Getting Started Pathway */}
+      {/* 7. Getting Started Pathway (Distilled Architecture) */}
       <section className="rf-pathway">
         <div className="rf-pathway-inner">
           <div className="rf-section-header">
@@ -787,22 +737,36 @@ export function ResellerFeaturesPage({ user, navigate, openAuth }) {
             <p>Ready to build your ethnic wear business? Choose the path that matches your current sales format.</p>
           </div>
 
-          <div className="rf-path-selector">
-            <div className="rf-path-card">
-              <Share2 className="rf-path-icon" size={32} />
-              <h3>WhatsApp & Social Sharing</h3>
-              <p>Start immediately without a website. Browse our Varanasi direct catalog, configure your profit markup, and generate sharing cards to send to WhatsApp, Facebook, or Instagram.</p>
+          <div className="rf-distilled-pathway">
+            <div className="rf-path-option">
+              <div className="rf-path-meta">
+                <span className="rf-path-index">01</span>
+                <span className="rf-path-pill">INSTANT START</span>
+              </div>
+              <h3 className="rf-path-title">WhatsApp &amp; Social&nbsp;Sharing</h3>
+              <p className="rf-path-desc">
+                Start immediately without a website. Browse our Varanasi direct catalog, configure your profit markup, and generate sharing cards to send to WhatsApp, Facebook, or&nbsp;Instagram.
+              </p>
               <button type="button" className="rf-btn-primary" onClick={handleStartSharing}>
-                Start Sharing Catalogs
+                <span>Start Sharing Catalogs</span>
+                <ArrowRight size={15} className="rf-btn-arrow" />
               </button>
             </div>
 
-            <div className="rf-path-card">
-              <Globe className="rf-path-icon" size={32} />
-              <h3>White-Label Storefront</h3>
-              <p>Establish a premium digital brand. Connect your custom domain, upload your logo, set your pricing rules, and launch a fully syncable online catalog powered by Weave 365.</p>
-              <button type="button" className="rf-btn-secondary" onClick={() => navigate('white-label')}>
-                Setup Custom Website
+            <div className="rf-path-divider" />
+
+            <div className="rf-path-option">
+              <div className="rf-path-meta">
+                <span className="rf-path-index">02</span>
+                <span className="rf-path-pill">BRAND BUILDER</span>
+              </div>
+              <h3 className="rf-path-title">White-Label Storefront</h3>
+              <p className="rf-path-desc">
+                Establish a premium digital brand. Connect your custom domain, upload your logo, set your pricing rules, and launch a fully syncable online catalog powered by&nbsp;Weave&nbsp;365.
+              </p>
+              <button type="button" className="rf-btn-secondary" onClick={() => navigate('account?tab=reseller')}>
+                <span>Setup Custom Website</span>
+                <ArrowRight size={15} className="rf-btn-arrow" />
               </button>
             </div>
           </div>

@@ -296,9 +296,6 @@ export function SignupPage({
     const isVendor = profile.buyerType === 'vendor' || 
                      String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
                      String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
-    const combinedCity = profile.state?.trim()
-      ? `${profile.city?.trim()}, ${profile.state?.trim()}`
-      : (profile.city?.trim() || '');
 
     return applyAutoApprovalToBuyerProfile({
       full_name: toTitleCaseName(profile.fullName),
@@ -310,7 +307,7 @@ export function SignupPage({
       buyer_subtype: profile.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
       role: isVendor ? 'vendor' : 'customer',
       buying_behavior: profile.buyingBehavior,
-      city: combinedCity,
+      city: profile.city?.trim() || '',
       state: profile.state?.trim() || '',
       pincode: normalizePincodeInput(profile.pincode),
       interested_categories: profile.interestedCategories,

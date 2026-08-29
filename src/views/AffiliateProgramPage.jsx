@@ -110,24 +110,50 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
     <div className="affiliate-page-container">
       {/* 1. Hero Section */}
       <section className="affiliate-hero">
-        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Affiliate Program' }]} navigate={navigate} contained={true} />
+        <Breadcrumb items={[{ name: 'Home', url: '/', route: 'home' }, { name: 'Affiliate Program' }]} navigate={navigate} />
         <div className="affiliate-hero-inner">
           <div className="affiliate-hero-content">
-            <span className="affiliate-hero-kicker">Free to Join &bull; Zero Investment</span>
             <h1 className="affiliate-hero-title">
-              Turn Your Network <br />
-              into an <span className="affiliate-highlight">Earning Channel</span>
+              Turn Your Network into a
+              <span className="affiliate-title-accent">High-Earning Channel.</span>
             </h1>
-            <p className="affiliate-hero-subtitle">
-              Earn up to 15% commission on every single referred order.
-            </p>
             <p className="affiliate-hero-description">
-              Partner with Weave 365 to promote authentic Banarasi sarees, suits, and fabrics directly sourced from Varanasi. Share custom referral links and track premium payouts in real-time.
+              Partner with Weave 365 to promote authentic Banarasi handlooms directly sourced from Varanasi artisans. Share custom referral links, earn up to 15% commission on every order, and track payouts in real-time.
             </p>
+            {/* Connected 3-Step Referral Flow Sequence */}
+            <div className="affiliate-flow-strip">
+              <div className="aff-flow-step">
+                <div className="aff-flow-step-header">
+                  <span className="aff-flow-step-num">01</span>
+                  <span className="aff-flow-step-tag">LINK</span>
+                </div>
+                <h3 className="aff-flow-step-title">Get Referral Link</h3>
+                <p className="aff-flow-step-text">Instant custom link &amp; coupon code&nbsp;generation.</p>
+              </div>
+
+              <div className="aff-flow-step">
+                <div className="aff-flow-step-header">
+                  <span className="aff-flow-step-num">02</span>
+                  <span className="aff-flow-step-tag">SHARE</span>
+                </div>
+                <h3 className="aff-flow-step-title">Share Everywhere</h3>
+                <p className="aff-flow-step-text">Broadcast to WhatsApp, Instagram &amp; social&nbsp;feeds.</p>
+              </div>
+
+              <div className="aff-flow-step">
+                <div className="aff-flow-step-header">
+                  <span className="aff-flow-step-num">03</span>
+                  <span className="aff-flow-step-tag">EARN</span>
+                </div>
+                <h3 className="aff-flow-step-title">Earn 15% Payout</h3>
+                <p className="aff-flow-step-text">Monthly direct payouts to your bank or UPI&nbsp;wallet.</p>
+              </div>
+            </div>
+
             <div className="affiliate-hero-actions">
               <button 
                 type="button" 
-                className="affiliate-hero-action-btn" 
+                className="affiliate-btn-primary" 
                 onClick={() => {
                   if (user) {
                     navigate('account?tab=influencer');
@@ -139,40 +165,22 @@ export function AffiliateProgramPage({ user, navigate, openAuth }) {
                 }}
               >
                 <span>Register as Partner</span>
-                <ArrowRight size={18} />
+                <ArrowRight size={15} className="affiliate-btn-arrow" />
               </button>
-              <a href="#how-it-works" className="affiliate-hero-secondary-btn">
+              <a href="#how-it-works" className="affiliate-btn-secondary">
                 How It Works
               </a>
             </div>
-            <div className="affiliate-hero-stats">
-              <div className="hero-stat">
-                <span className="hero-stat-value">15%</span>
-                <span className="hero-stat-label">Commission Rate</span>
-              </div>
-              <div className="hero-stat-divider"></div>
-              <div className="hero-stat">
-                <span className="hero-stat-value">30-Day</span>
-                <span className="hero-stat-label">Cookie Window</span>
-              </div>
-              <div className="hero-stat-divider"></div>
-              <div className="hero-stat">
-                <span className="hero-stat-value">₹0</span>
-                <span className="hero-stat-label">Setup Fee</span>
-              </div>
-            </div>
           </div>
+
           <div className="affiliate-hero-visual">
-            <div className="affiliate-hero-editorial-frame">
+            <div className="affiliate-photo-frame">
               <img 
                 src="https://assets.weave365.com/assets/banner/affiliate-hero.jpg" 
                 alt="Luxury Banarasi fabrics and digital partner catalog display" 
-                className="affiliate-hero-img" 
+                className="affiliate-hero-photo" 
+                loading="eager"
               />
-            </div>
-            <div className="affiliate-hero-caption">
-              <span className="caption-dot" />
-              <span>Weave 365 Affiliate Portal &bull; Live Analytics &amp; Direct Payouts</span>
             </div>
           </div>
         </div>

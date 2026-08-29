@@ -5,81 +5,60 @@
   overflow-x: hidden;
 }
 
-/* Hero Section */
+/* Hero Section — Maison Atelier Haute Handloom Aesthetic */
 .affiliate-hero {
-  padding: 0 0 4.5rem 0;
-  background: linear-gradient(180deg, #fcfaf6 0%, #faf7f2 100%);
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.15rem 2rem clamp(3rem, 5vw, 5rem) 2rem;
   position: relative;
-  border-bottom: 1px solid #e8ded0;
   box-sizing: border-box;
 }
 
+.affiliate-hero .premium-breadcrumb {
+  padding: 0.5rem 0 0 0;
+  margin: 0 0 1.25rem 0;
+}
+
 .affiliate-hero-inner {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  width: 100%;
+  margin-top: 0;
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 3.5rem;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 4.5vw, 5rem);
   align-items: center;
 }
 
 .affiliate-hero-content {
-  text-align: left;
-  max-width: 840px;
-}
-
-.affiliate-hero-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #805d31;
-  background: #f2e6d6;
-  padding: 0.4rem 0.9rem;
-  border-radius: 4px;
-  border: 1px solid #e4d3bd;
-  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
 }
 
 .affiliate-hero-title {
-  font-family: var(--font-hero-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(2.4rem, 3.8vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: #1c1917;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.15rem;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(32px, 3.8vw, 52px);
+  line-height: 1.14;
+  color: #1a1613;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.2rem;
+  font-weight: 500;
 }
 
-.affiliate-hero-title .affiliate-highlight {
-  font-family: inherit;
-  font-style: normal;
-  font-weight: 700;
-  color: #805d31;
-}
-
-.affiliate-hero-subtitle {
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-size: clamp(1.1rem, 1.4vw, 1.25rem);
-  font-weight: 700;
-  line-height: 1.4;
-  color: #805d31;
-  margin-bottom: 0.75rem;
-  max-width: 720px;
+.affiliate-title-accent {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: #855b29;
+  margin-top: 4px;
 }
 
 .affiliate-hero-description {
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-size: clamp(1rem, 1.2vw, 1.12rem);
-  line-height: 1.7;
-  color: #52473c;
-  margin-bottom: 2rem;
-  max-width: 760px;
+  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
+  line-height: 1.76;
+  color: #55483b;
+  margin: 0 0 2rem;
+  max-width: 640px;
   font-weight: 400;
 }
 
@@ -87,133 +66,153 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+}
+
+.affiliate-btn-primary,
+.affiliate-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 4px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.affiliate-btn-primary {
+  border: 1.5px solid #805d31;
+  background: #805d31;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.15);
+}
+
+.affiliate-btn-primary .affiliate-btn-arrow {
+  transition: transform 0.2s ease;
+}
+
+.affiliate-btn-primary:hover {
+  background: #6b4d27;
+  border-color: #6b4d27;
+  box-shadow: 0 6px 18px rgba(128, 93, 49, 0.22);
+}
+
+.affiliate-btn-primary:hover .affiliate-btn-arrow {
+  transform: translateX(3px);
+}
+
+.affiliate-btn-secondary {
+  border: 1.5px solid rgba(198, 158, 106, 0.5);
+  background: #ffffff;
+  color: #3b3025;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.affiliate-btn-secondary:hover {
+  border-color: #805d31;
+  color: #805d31;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.08);
+}
+
+/* Connected 3-Step Referral Flow Sequence (Quieter & Refined) */
+.affiliate-flow-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.15rem;
   margin-bottom: 2.25rem;
 }
 
-.affiliate-hero-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  background: linear-gradient(135deg, #805d31 0%, #9e733e 100%);
-  color: #ffffff;
-  padding: 0.9rem 2.2rem;
-  border: none;
-  border-radius: 6px;
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-weight: 700;
-  font-size: 0.95rem;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.2);
-}
-
-.affiliate-hero-action-btn:hover {
-  background: #6a4c26;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(128, 93, 49, 0.3);
-}
-
-.affiliate-hero-secondary-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  color: #1c1917;
-  padding: 0.85rem 1.8rem;
-  border-radius: 6px;
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  border: 1px solid #d8cbba;
-  transition: all 0.2s ease;
-}
-
-.affiliate-hero-secondary-btn:hover {
-  background: #f2e8da;
-  border-color: #805d31;
-  color: #805d31;
-}
-
-.affiliate-hero-stats {
-  display: flex;
-  align-items: center;
-  gap: 2.25rem;
-  border-top: 1px solid #e8ded0;
-  padding-top: 1.5rem;
-}
-
-.affiliate-hero-stats .hero-stat {
+.aff-flow-step {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  padding: 1.1rem 1.15rem;
+  background: #faf7f2;
+  border: 1px solid rgba(198, 158, 106, 0.28);
+  border-radius: 6px;
+  transition: border-color 0.2s ease;
 }
 
-.affiliate-hero-stats .hero-stat-value {
-  font-family: var(--font-hero-body, 'Manrope', sans-serif);
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #805d31;
+.aff-flow-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.aff-flow-step-num {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: #855b29;
+  line-height: 1;
+}
+
+.aff-flow-step-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8c7355;
+  background: rgba(198, 158, 106, 0.14);
+  padding: 2px 6px;
+  border-radius: 3px;
   line-height: 1.2;
 }
 
-.affiliate-hero-stats .hero-stat-label {
-  font-size: 0.84rem;
-  color: #64748b;
-  letter-spacing: 0.02em;
-  font-weight: 500;
+.aff-flow-step-title {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 15px;
+  font-weight: 650;
+  color: #211c18;
+  margin: 0 0 0.3rem 0;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
-.affiliate-hero-stats .hero-stat-divider {
-  width: 1px;
-  height: 32px;
-  background: #e8ded0;
+.aff-flow-step-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #665849;
+  margin: 0;
+  text-wrap: pretty;
 }
 
-/* Editorial Visual Frame (Right Side) */
+/* Visual Stage — Clean Editorial Showcase */
 .affiliate-hero-visual {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.affiliate-hero-editorial-frame {
+  justify-content: center;
+  align-items: center;
   position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(198, 158, 106, 0.35);
-  box-shadow: 0 16px 40px rgba(128, 93, 49, 0.12);
-  background: #faf5ed;
-  aspect-ratio: 4 / 3;
   width: 100%;
 }
 
-.affiliate-hero-img {
+.affiliate-photo-frame {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(54, 37, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  aspect-ratio: 16/11;
+  min-height: 360px;
+  background: #faf7f2;
+}
+
+.affiliate-hero-photo {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-}
-
-.affiliate-hero-caption {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #716a61;
-  padding-left: 0.25rem;
-}
-
-.caption-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #b78646;
-  flex-shrink: 0;
+  display: block;
 }
 
 /* Steps Section */
@@ -484,7 +483,7 @@
 
 @media (max-width: 1024px) {
   .affiliate-hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 40px;
   }
   .affiliate-steps-grid {
@@ -499,47 +498,53 @@
 
 @media (max-width: 768px) {
   .affiliate-hero {
-    padding: 30px 16px 40px;
+    padding: 1rem 1rem 3rem;
   }
-  .affiliate-hero-inner {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    text-align: center;
-  }
-  .affiliate-hero-content {
-    text-align: center;
-  }
+
   .affiliate-hero-title {
-    font-size: 32px;
-    line-height: 1.25;
-    margin-bottom: 16px;
+    font-size: clamp(24px, 7vw, 34px);
+    text-wrap: balance;
   }
+
   .affiliate-hero-description {
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
     max-width: 100%;
-    margin-bottom: 24px;
   }
+
   .affiliate-hero-actions {
-    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .affiliate-btn-primary,
+  .affiliate-btn-secondary {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: clamp(11px, 2.8vw, 12.5px);
     justify-content: center;
-    margin-bottom: 32px;
   }
-  .affiliate-hero-img-wrapper {
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+
+  .affiliate-flow-strip {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    margin-bottom: 1.75rem;
   }
-  .affiliate-hero-stats {
-    justify-content: space-around;
-    max-width: 480px;
-    margin: 32px auto 0;
-    gap: 16px;
+
+  .aff-flow-step {
+    padding: 0.9rem 1rem;
+    min-width: 0;
   }
-  .affiliate-hero-stats .hero-stat {
-    align-items: center;
-    text-align: center;
+
+  .affiliate-photo-frame {
+    min-height: auto;
+    aspect-ratio: 16/11;
   }
-  .affiliate-hero-stats .hero-stat-divider {
-    display: none;
-  }
+
   .affiliate-steps-section {
     padding: 50px 20px;
   }

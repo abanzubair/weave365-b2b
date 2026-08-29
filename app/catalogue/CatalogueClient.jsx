@@ -48,6 +48,7 @@ export default function CatalogueClient({
     categories: [],
     fabrics: [],
     weaves: [],
+    occasions: [],
     priceRanges: [],
   };
 
@@ -84,6 +85,17 @@ export default function CatalogueClient({
     return ['All', ...Array.from(set).sort()];
   }, [rawProducts, config.weaves]);
 
+  const occasions = useMemo(() => {
+    if (config.occasions?.length > 0) {
+      return ['All', ...config.occasions];
+    }
+    const set = new Set();
+    rawProducts.forEach((p) => {
+      if (p.occasion) set.add(p.occasion.trim());
+    });
+    return ['All', ...Array.from(set).sort()];
+  }, [rawProducts, config.occasions]);
+
   const priceRanges = useMemo(() => {
     if (config.priceRanges?.length > 0) {
       return ['All', ...config.priceRanges];
@@ -98,6 +110,7 @@ export default function CatalogueClient({
   const urlCategory = searchParams?.get('category') || initialCategory || 'all';
   const urlFabric = searchParams?.get('fabric') || 'all';
   const urlWeave = searchParams?.get('weave') || 'all';
+  const urlOccasion = searchParams?.get('occasion') || 'all';
   const urlPriceRange = searchParams?.get('priceRange') || 'all';
   const urlSearch = searchParams?.get('search') || '';
 
@@ -124,6 +137,11 @@ export default function CatalogueClient({
     const matched = weaves.find((w) => w.toLowerCase() === urlWeave.toLowerCase());
     return matched || 'All';
   }, [weaves, urlWeave]);
+
+  const activeOccasion = useMemo(() => {
+    const matched = occasions.find((o) => o.toLowerCase() === urlOccasion.toLowerCase());
+    return matched || 'All';
+  }, [occasions, urlOccasion]);
 
   const activePriceRange = useMemo(() => {
     const matched = priceRanges.find((p) => p.toLowerCase() === urlPriceRange.toLowerCase());
@@ -223,12 +241,15 @@ export default function CatalogueClient({
       const matchesWeave =
         activeWeave === 'All' ||
         (product.weave && product.weave.trim().toLowerCase() === activeWeave.trim().toLowerCase());
+      const matchesOccasion =
+        activeOccasion === 'All' ||
+        (product.occasion && product.occasion.trim().toLowerCase() === activeOccasion.trim().toLowerCase());
 
-      return matchesSearch && matchesCategory && matchesPrice && matchesFabric && matchesWeave;
+      return matchesSearch && matchesCategory && matchesPrice && matchesFabric && matchesWeave && matchesOccasion;
     });
 
     return sortByStockDateDesc(filtered);
-  }, [rawProducts, searchTerm, activeCategory, activePriceRange, activeFabric, activeWeave, priceAccess]);
+  }, [rawProducts, searchTerm, activeCategory, activePriceRange, activeFabric, activeWeave, activeOccasion, priceAccess]);
 
   const favoriteKeySet = useMemo(
     () => new Set(favorites.map((item) => item.productGroupKey)),
@@ -288,6 +309,9 @@ export default function CatalogueClient({
       weaves={weaves}
       weave={activeWeave}
       setWeave={(wve) => setFilterParam('weave', wve)}
+      occasions={occasions}
+      occasion={activeOccasion}
+      setOccasion={(occ) => setFilterParam('occasion', occ)}
       priceRanges={priceRanges}
       priceRange={activePriceRange}
       setPriceRange={(prc) => setFilterParam('priceRange', prc)}

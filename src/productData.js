@@ -149,7 +149,7 @@ async function fetchSyncedJson(id) {
 export const fetchConfigOptions = safeCache(async function fetchConfigOptions() {
   const cachedJson = await fetchSyncedJsonCached('config_json');
   if (cachedJson) return cachedJson;
-  return { priceRanges: [], categories: [], fabrics: [], weaves: [] };
+  return { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] };
 });
 
 export const fetchSiteCustomizer = safeCache(async function fetchSiteCustomizer() {
@@ -976,6 +976,7 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
       const categories = [];
       const fabrics = [];
       const weaves = [];
+      const occasions = [];
       for (const row of parsedConfig.data) {
         const pr = row['Price Range'] || row['PriceRange'];
         if (pr) {
@@ -997,8 +998,13 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
           const trimmed = wv.trim();
           if (trimmed && weaves.length < 50) weaves.push(trimmed);
         }
+        const occ = row['Occasion'] || row['occasion'];
+        if (occ) {
+          const trimmed = occ.trim();
+          if (trimmed && occasions.length < 50) occasions.push(trimmed);
+        }
       }
-      parsedConfigJson = JSON.stringify({ priceRanges, categories, fabrics, weaves });
+      parsedConfigJson = JSON.stringify({ priceRanges, categories, fabrics, weaves, occasions });
     } catch (err) {
       console.error('[Sync] Error parsing config CSV during sync:', err);
     }

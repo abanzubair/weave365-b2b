@@ -58,6 +58,8 @@ export function NewArrivalsPage({
   // Filter States
   const [category, setCategory] = useState('All');
   const [fabric, setFabric] = useState('All');
+  const [weave, setWeave] = useState('All');
+  const [occasion, setOccasion] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [search, setSearch] = useState('');
 
@@ -152,10 +154,32 @@ export function NewArrivalsPage({
     const fabricsSet = new Set();
     baseNewArrivals.forEach(p => {
       if (p.fabric) {
-        fabricsSet.add(p.fabric);
+        fabricsSet.add(p.fabric.trim());
       }
     });
-    return ['All', ...Array.from(fabricsSet)];
+    return ['All', ...Array.from(fabricsSet).sort()];
+  }, [baseNewArrivals]);
+
+  // 4. Identify available weaves within the new arrivals list
+  const weavesList = useMemo(() => {
+    const weavesSet = new Set();
+    baseNewArrivals.forEach(p => {
+      if (p.weave) {
+        weavesSet.add(p.weave.trim());
+      }
+    });
+    return ['All', ...Array.from(weavesSet).sort()];
+  }, [baseNewArrivals]);
+
+  // 5. Identify available occasions within the new arrivals list
+  const occasionsList = useMemo(() => {
+    const occasionsSet = new Set();
+    baseNewArrivals.forEach(p => {
+      if (p.occasion) {
+        occasionsSet.add(p.occasion.trim());
+      }
+    });
+    return ['All', ...Array.from(occasionsSet).sort()];
   }, [baseNewArrivals]);
 
   // Standard Price Ranges list
@@ -170,14 +194,20 @@ export function NewArrivalsPage({
     '₹10,000+',
   ];
 
-  // 4. Filter new arrivals by active values
+  // 6. Filter new arrivals by active values
   const filteredProducts = useMemo(() => {
     return baseNewArrivals.filter(product => {
       // Category Filter
       if (category !== 'All' && product.category !== category) return false;
 
       // Fabric Filter
-      if (fabric !== 'All' && product.fabric !== fabric) return false;
+      if (fabric !== 'All' && (!product.fabric || product.fabric.trim().toLowerCase() !== fabric.trim().toLowerCase())) return false;
+
+      // Weave Filter
+      if (weave !== 'All' && (!product.weave || product.weave.trim().toLowerCase() !== weave.trim().toLowerCase())) return false;
+
+      // Occasion Filter
+      if (occasion !== 'All' && (!product.occasion || product.occasion.trim().toLowerCase() !== occasion.trim().toLowerCase())) return false;
 
       // Price Filter (only if buyer is logged in / has price access)
       if (priceAccess?.canViewPrices && priceRange !== 'All') {
@@ -224,17 +254,21 @@ export function NewArrivalsPage({
 
       return true;
     });
-  }, [baseNewArrivals, category, fabric, priceRange, search, priceAccess]);
+  }, [baseNewArrivals, category, fabric, weave, occasion, priceRange, search, priceAccess]);
 
   const hasActiveFilters =
     category !== 'All' ||
     fabric !== 'All' ||
+    weave !== 'All' ||
+    occasion !== 'All' ||
     (priceAccess?.canViewPrices && priceRange !== 'All') ||
     (search && search.trim() !== '');
 
   const resetFilters = () => {
     setCategory('All');
     setFabric('All');
+    setWeave('All');
+    setOccasion('All');
     setPriceRange('All');
     setSearch('');
     setVisibleCount(getPageSize());
@@ -360,6 +394,58 @@ export function NewArrivalsPage({
                   className={fabric === name ? 'active' : ''}
                   onClick={() => {
                     setFabric(name);
+                    setVisibleCount(getPageSize());
+                    closeWithAnimation();
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Weave Dropdown */}
+          <div className={`filter-dropdown weave-filter ${openDropdown === 'weave' ? 'open' : ''} ${isClosing && openDropdown === 'weave' ? 'closing' : ''}`}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('weave'); }}>
+              <div className="filter-label-wrap">
+                <label>Weave</label>
+                <span>{weave}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {weavesList.map((name) => (
+                <button type="button"
+                  key={name}
+                  className={weave === name ? 'active' : ''}
+                  onClick={() => {
+                    setWeave(name);
+                    setVisibleCount(getPageSize());
+                    closeWithAnimation();
+                  }}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Occasion Dropdown */}
+          <div className={`filter-dropdown occasion-filter ${openDropdown === 'occasion' ? 'open' : ''} ${isClosing && openDropdown === 'occasion' ? 'closing' : ''}`}>
+            <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('occasion'); }}>
+              <div className="filter-label-wrap">
+                <label>Occasion</label>
+                <span>{occasion}</span>
+              </div>
+              <ChevronDown size={18} />
+            </button>
+            <div className="filter-dropdown-menu">
+              {occasionsList.map((name) => (
+                <button type="button"
+                  key={name}
+                  className={occasion === name ? 'active' : ''}
+                  onClick={() => {
+                    setOccasion(name);
                     setVisibleCount(getPageSize());
                     closeWithAnimation();
                   }}

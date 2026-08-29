@@ -19,17 +19,20 @@ export function Catalog({
   products,
   status,
   error,
-  categories,
-  category,
+  categories = [],
+  category = 'All',
   setCategory,
-  fabrics,
-  fabric,
+  fabrics = [],
+  fabric = 'All',
   setFabric,
-  weaves,
-  weave,
+  weaves = [],
+  weave = 'All',
   setWeave,
-  priceRanges,
-  priceRange,
+  occasions = [],
+  occasion = 'All',
+  setOccasion,
+  priceRanges = [],
+  priceRange = 'All',
   setPriceRange,
   search,
   setSearch,
@@ -162,6 +165,7 @@ export function Catalog({
     category !== 'All' ||
     fabric !== 'All' ||
     weave !== 'All' ||
+    (occasion && occasion !== 'All') ||
     (priceAccess?.canViewPrices && priceRange !== 'All') ||
     (search && search.trim() !== '');
  
@@ -169,10 +173,11 @@ export function Catalog({
     setCategory('All');
     setFabric('All');
     setWeave('All');
+    if (setOccasion) setOccasion('All');
     setPriceRange('All');
     if (setSearch) setSearch('');
     setVisibleCount(getPageSize());
-    navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', price: 'All', search: '' });
+    navigate('catalogue', null, null, { category: 'All', fabric: 'All', weave: 'All', occasion: 'All', price: 'All', search: '' });
   };
 
   const breadcrumbItems = useMemo(() => {
@@ -181,24 +186,27 @@ export function Catalog({
     ];
 
     if (title && title !== 'Catalogue') {
-      items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', price: 'All', search: '' } });
+      items.push({ name: title, url: '/catalogue', route: 'catalogue', routeOptions: { category: category || 'All', fabric: 'All', weave: 'All', occasion: 'All', price: 'All', search: '' } });
     } else {
-      items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', price: 'All', search: '' } });
+      items.push({ name: 'Catalogue', url: '/catalogue', route: 'catalogue', routeOptions: { category: 'All', fabric: 'All', weave: 'All', occasion: 'All', price: 'All', search: '' } });
       if (category && category !== 'All') {
         const catSlug = getCategorySlug(category);
-        items.push({ name: category, url: `/${catSlug}`, route: catSlug, routeOptions: { category, fabric: 'All', weave: 'All', price: 'All', search: '' } });
+        items.push({ name: category, url: `/${catSlug}`, route: catSlug, routeOptions: { category, fabric: 'All', weave: 'All', occasion: 'All', price: 'All', search: '' } });
       }
     }
 
     if (fabric && fabric !== 'All') {
-      items.push({ name: fabric, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave: 'All', price: 'All', search: '' } });
+      items.push({ name: fabric, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave: 'All', occasion: 'All', price: 'All', search: '' } });
     }
     if (weave && weave !== 'All') {
-      items.push({ name: weave, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, price: 'All', search: '' } });
+      items.push({ name: weave, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, occasion: 'All', price: 'All', search: '' } });
+    }
+    if (occasion && occasion !== 'All') {
+      items.push({ name: occasion, url: '/catalogue', route: 'catalogue', routeOptions: { category, fabric, weave, occasion, price: 'All', search: '' } });
     }
 
     return items;
-  }, [title, category, fabric, weave]);
+  }, [title, category, fabric, weave, occasion]);
 
   return (
     <section className="section catalog-page">
@@ -366,6 +374,34 @@ export function Catalog({
               ))}
             </div>
           </div>
+
+          {/* Occasion Dropdown */}
+          {occasions && occasions.length > 0 && (
+            <div className={`filter-dropdown occasion-filter ${openDropdown === 'occasion' ? 'open' : ''} ${isClosing && openDropdown === 'occasion' ? 'closing' : ''}`}>
+              <button type="button" className="filter-dropdown-trigger" onClick={(e) => { e.stopPropagation(); toggleDropdown('occasion'); }}>
+                <div className="filter-label-wrap">
+                  <label>Occasion</label>
+                  <span>{occasion || 'All'}</span>
+                </div>
+                <ChevronDown size={18} />
+              </button>
+              <div className="filter-dropdown-menu">
+                {occasions.map((name) => (
+                  <button type="button"
+                    key={name}
+                    className={(occasion || 'All') === name ? 'active' : ''}
+                    onClick={() => {
+                      if (setOccasion) setOccasion(name);
+                      setVisibleCount(getPageSize());
+                      closeWithAnimation();
+                    }}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {hasActiveFilters && (
             <button type="button" className="filter-dropdown-trigger reset-filters-trigger desktop-only-reset" onClick={resetFilters}>

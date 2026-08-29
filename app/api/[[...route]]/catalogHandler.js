@@ -110,7 +110,7 @@ export async function GET(request) {
 
       const result = {
         products: [],
-        config: { priceRanges: [], categories: [], fabrics: [], weaves: [] },
+        config: { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] },
         hero: [],
         customizer: null,
       };

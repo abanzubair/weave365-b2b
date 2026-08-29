@@ -125,13 +125,13 @@
   h2, .h2,
   .reviews-sidebar-large-tag,
   .featured-info-pane h2 {
-    font-size: clamp(20px, 4vw, 26px) !important;
-    line-height: 1.24 !important;
+    font-size: clamp(20px, 4vw, 26px);
+    line-height: 1.24;
   }
 
   h3, .h3 {
-    font-size: clamp(17px, 3vw, 22px) !important;
-    line-height: 1.28 !important;
+    font-size: clamp(17px, 3vw, 22px);
+    line-height: 1.28;
   }
 
   /* Top Bar */

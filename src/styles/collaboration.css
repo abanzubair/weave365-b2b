@@ -17,46 +17,22 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px 100px;
-  background: linear-gradient(180deg, var(--surface-soft, #faf6f0) 0%, var(--paper, #ffffff) 100%);
-  overflow: hidden;
-  border-bottom: 1px solid var(--line, #eadbc8);
+  padding: 1.15rem 2rem clamp(4rem, 6vw, 6rem);
+  max-width: 1600px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.offerings-hero-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(183, 134, 70, 0.05) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.offerings-hero-section .breadcrumb-link {
-  color: var(--muted, #6d5946);
-  opacity: 0.6;
-}
-
-.offerings-hero-section .breadcrumb-link:hover {
-  color: var(--muted, #6d5946);
-  opacity: 0.6;
-  transition: none;
-}
-
-.offerings-hero-section .breadcrumb-separator {
-  color: var(--line, #eadbc8);
-}
-
-.offerings-hero-section .breadcrumb-current {
-  color: var(--gold-dark, #805d31);
+.offerings-hero-section .premium-breadcrumb {
+  padding: 0.5rem 0 0 0;
+  margin: 0 0 2.5rem 0;
+  align-self: flex-start;
 }
 
 .offerings-hero-content {
-  max-width: 1600px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0;
 }
 
 .editorial-hero-text {

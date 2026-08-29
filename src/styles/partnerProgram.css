@@ -64,172 +64,240 @@
 }
 
 /* --------------------------------------------------------------------------
-   Hero Master Section
+   Maison Atelier Master Hero Stage — Bespoke Haute Handloom Aesthetic
    -------------------------------------------------------------------------- */
 .atelier-hero-section {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 2rem clamp(2.5rem, 5vw, 4rem) 2rem;
+  padding: 1.15rem 2rem clamp(3rem, 5vw, 5rem) 2rem;
+  position: relative;
 }
 
-.atelier-hero-grid {
+.atelier-hero-section .premium-breadcrumb {
+  padding: 0.5rem 0 0 0;
+  margin: 0 0 1.25rem 0;
+}
+
+.maison-hero-stage {
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+}
+
+/* Main Split Grid */
+.maison-hero-main-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr);
-  gap: 3.5rem;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 4.5vw, 5rem);
   align-items: center;
 }
 
-.atelier-badge {
-  display: inline-block;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #805d31;
-  background: #f2e6d6;
-  padding: 0.35rem 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1.25rem;
-  border: 1px solid #e4d3bd;
+.maison-content-col {
+  display: flex;
+  flex-direction: column;
 }
 
-.atelier-hero-content h1 {
+.maison-title {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(24px, 5.5vw, var(--h1-size, 44px));
-  font-weight: 700;
-  line-height: 1.2;
-  color: #1c1917;
-  margin: 0 0 1.15rem;
+  font-size: clamp(30px, 4.2vw, 50px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: #1a1613;
+  margin: 0 0 1.35rem;
 }
 
-.atelier-hero-lead {
-  font-size: 1.05rem;
-  line-height: 1.68;
-  color: #574c40;
-  margin: 0 0 1.75rem;
-  max-width: 760px;
+.maison-title-accent {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: #855b29;
+  margin-top: 4px;
 }
 
-.atelier-metrics-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.85rem 1.75rem;
+.maison-lead-text {
+  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
+  line-height: 1.76;
+  color: #55483b;
+  margin: 0 0 2rem;
+  max-width: 640px;
+  font-weight: 400;
+}
+
+/* Atelier Specification Ledger (No generic SaaS cards!) */
+.maison-spec-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid rgba(198, 158, 106, 0.32);
+  background: #fdfaf6;
+  border-radius: 8px;
+  overflow: hidden;
   margin-bottom: 2.25rem;
-  padding: 0.85rem 0;
-  border-top: 1px solid rgba(198, 158, 106, 0.35);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
+  box-shadow: 0 4px 16px rgba(125, 87, 39, 0.04);
 }
 
-.atelier-metric-item {
+.ledger-entry {
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 1rem;
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  border: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.2);
+  border-right: 1px solid rgba(198, 158, 106, 0.2);
 }
 
-.metric-lbl {
-  color: #805d31;
+.ledger-entry:nth-child(2n) {
+  border-right: none;
+}
+
+.ledger-entry:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.ledger-index {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: 0.88rem;
   font-weight: 600;
+  color: #c69e6a;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.ledger-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ledger-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
+  color: #855b29;
 }
 
-.metric-val {
-  color: #1c1917;
-  font-weight: 750;
+.ledger-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1613;
+  line-height: 1.35;
 }
 
-.atelier-hero-actions {
+/* Action Suite */
+.maison-action-suite {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.maison-buttons-row {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.atelier-btn-primary {
+.maison-btn-primary,
+.maison-btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.9rem 1.75rem;
-  border-radius: 8px;
-  border: 1px solid #805d31;
-  background: #805d31;
-  color: #ffffff;
-  font-family: var(--font-hero-body);
-  font-size: 1rem;
-  font-weight: 700;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 4px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.maison-btn-primary {
+  border: 1.5px solid #805d31;
+  background: #805d31;
+  color: #ffffff;
   box-shadow: 0 4px 14px rgba(128, 93, 49, 0.15);
 }
 
-.atelier-btn-primary:hover {
-  background: #684a25;
-  transform: translateY(-2px);
+.maison-btn-primary .btn-arrow-motion {
+  transition: transform 0.2s ease;
+}
+
+.maison-btn-primary:hover {
+  background: #6b4d27;
+  border-color: #6b4d27;
   box-shadow: 0 6px 18px rgba(128, 93, 49, 0.22);
 }
 
-.atelier-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.9rem 1.75rem;
-  border-radius: 8px;
-  border: 1px solid #d8c7b3;
-  background: #ffffff;
-  color: #44372c;
-  font-family: var(--font-hero-body);
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.maison-btn-primary:hover .btn-arrow-motion {
+  transform: translateX(3px);
 }
 
-.atelier-btn-secondary:hover {
+.maison-btn-secondary {
+  border: 1.5px solid rgba(198, 158, 106, 0.5);
+  background: #ffffff;
+  color: #3b3025;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.maison-btn-secondary:hover {
   border-color: #805d31;
   color: #805d31;
+  box-shadow: 0 4px 12px rgba(128, 93, 49, 0.08);
 }
 
-.visual-card-wrap {
+.maison-assurance-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: #6d5f50;
+  font-weight: 600;
+}
+
+.assurance-icon {
+  color: #805d31;
+  flex-shrink: 0;
+}
+
+/* Visual Stage — Clean Editorial Showcase */
+.maison-visual-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
+}
+
+.atelier-composition-frame {
+  position: relative;
+  width: 100%;
+}
+
+.atelier-hero-photo-wrap {
+  position: relative;
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(128, 93, 49, 0.08);
-  border: 1px solid #e8dbca;
+  box-shadow: 0 16px 40px rgba(54, 37, 18, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(198, 158, 106, 0.35);
+  aspect-ratio: 16/11;
+  min-height: 380px;
+  background: #faf7f2;
 }
 
-.visual-img {
+.atelier-hero-photo {
   width: 100%;
-  height: 380px;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.visual-trust-badge {
-  position: absolute;
-  bottom: 1.25rem;
-  left: 1.25rem;
-  right: 1.25rem;
-  background: rgba(253, 251, 247, 0.94);
-  backdrop-filter: blur(8px);
-  color: #1c1917;
-  padding: 0.85rem 1.2rem;
-  border-radius: 8px;
-  border: 1px solid #e0d2bf;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.visual-trust-badge svg {
-  color: #805d31;
-}
 
 /* --------------------------------------------------------------------------
    Section Headers
@@ -962,7 +1030,7 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #f5ece0, #efe3d0);
+  background: #f5ece0;
   color: #805d31;
   display: inline-grid;
   place-items: center;
@@ -1016,9 +1084,20 @@
    Responsive Breakpoints
    -------------------------------------------------------------------------- */
 @media (max-width: 960px) {
-  .atelier-hero-grid {
+  .maison-hero-main-grid {
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: 3rem;
+  }
+
+  .atelier-composition-frame {
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .physical-label-mockup {
+    left: 10px;
+    top: 16px;
+    transform: rotate(-1deg);
   }
 
   .capabilities-grid {
@@ -1055,22 +1134,59 @@
   }
 
   .atelier-hero-section {
-    padding: 1.75rem 1rem 3rem;
+    padding: 1rem 1rem 3rem;
   }
 
-  .atelier-hero-content h1 {
-    font-size: clamp(22px, 6.5vw, 28px);
+  .maison-title {
+    font-size: clamp(24px, 7vw, 34px);
   }
 
-  .atelier-hero-actions {
+  .maison-lead-text {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .maison-spec-ledger {
+    grid-template-columns: 1fr;
+    margin-bottom: 1.75rem;
+  }
+
+  .ledger-entry {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(198, 158, 106, 0.2);
+    padding: 12px 14px;
+  }
+
+  .ledger-entry:last-child {
+    border-bottom: none;
+  }
+
+  .maison-buttons-row {
     flex-direction: column;
     width: 100%;
   }
 
-  .atelier-btn-primary,
-  .atelier-btn-secondary {
+  .maison-btn-primary,
+  .maison-btn-secondary {
     width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: clamp(11px, 2.8vw, 12.5px);
     justify-content: center;
+  }
+
+  .maison-assurance-note {
+    font-size: 0.78rem;
+  }
+
+  .atelier-composition-frame {
+    padding-bottom: 0;
+  }
+
+  .atelier-hero-photo-wrap {
+    min-height: 260px;
+    aspect-ratio: 4/3;
   }
 
   .light-workflow-stepper {
@@ -1102,10 +1218,10 @@
 }
 
 @media (max-width: 400px) {
+
   .packaging-tab-buttons,
   .markup-pill-grid {
     grid-template-columns: 1fr;
     gap: 8px;
   }
 }
-

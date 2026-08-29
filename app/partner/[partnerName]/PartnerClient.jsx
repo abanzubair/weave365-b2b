@@ -108,6 +108,9 @@ export default function PartnerClient({ partnerSlug, initialProducts = [] }) {
       weaves={configOptions?.weaves || []}
       weave="All"
       setWeave={() => {}}
+      occasions={configOptions?.occasions || []}
+      occasion="All"
+      setOccasion={() => {}}
       priceRanges={configOptions?.priceRanges || []}
       priceRange="All"
       setPriceRange={() => {}}
