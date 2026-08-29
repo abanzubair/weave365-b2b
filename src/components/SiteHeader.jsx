@@ -341,10 +341,10 @@ export function SiteHeader(props) {
         </div>
 
         {/* 2. Get Started Dropdown Button */}
-        <div className="nav-item-dropdown get-started-dropdown-container" ref={getStartedRef}>
+        <div className="nav-item-dropdown get-started-dropdown-container desktop-only-action" ref={getStartedRef}>
           <button
             type="button"
-            className="nav-account-pill-btn desktop-only-action"
+            className="nav-account-pill-btn"
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'get-started' ? null : 'get-started');

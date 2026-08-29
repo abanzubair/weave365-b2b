@@ -1091,7 +1091,7 @@ button {
 
 @media screen and (min-width: 1900px) {
   .scrollable-row>* {
-    flex-basis: calc((100% - (var(--rail-gap) * 5)) / 6);
+    flex-basis: calc((100% - (var(--rail-gap) * 4)) / 5);
   }
 }
 
