@@ -565,8 +565,15 @@ function isCoverVariantCode(code = '') {
 }
 
 function parseRowMediaAndVariants(row) {
-  const imagesRawStr = String(row['Product Images'] || row['Product Link'] || row.Color || '').trim();
-  const imageUrls = imagesRawStr.split('|').map(s => s.trim()).filter(Boolean);
+  const imagesRawStr = String(row['Product Images'] || row['Product Link'] || '').trim();
+  const rawImageUrls = imagesRawStr ? imagesRawStr.split('|').map(s => s.trim()).filter(Boolean) : [];
+  
+  // If row.Color actually has URL strings in legacy sheets, only use if it has http/drive
+  if (rawImageUrls.length === 0 && row.Color && (row.Color.includes('http') || row.Color.includes('drive.google.com'))) {
+    rawImageUrls.push(...String(row.Color).split('|').map(s => s.trim()).filter(Boolean));
+  }
+
+  const imageUrls = rawImageUrls.map(url => driveImageUrl(url)).filter(Boolean);
   
   // 0th index of the URL list is treated as the cover image only
   const coverImage = driveImageUrl(row['Cover Image'] || row.Cover || imageUrls[0] || '');
@@ -637,7 +644,7 @@ function parseRowMediaAndVariants(row) {
     const primaryImage = coverImage;
     
     const colorName = String(row.Color || row.Col || '').trim();
-    const primaryColorName = (colorName && !colorName.includes('/') && !colorName.includes('http') && !colorName.includes(':')) ? colorName : '';
+    const primaryColorName = (colorName && !colorName.includes('/') && !colorName.includes('http') && !colorName.includes(':') && !/^\d+$/.test(colorName)) ? colorName : '';
     
     const codeInfo = parseCode(row.Code, row['Pre Code'], primaryColorName);
     
@@ -778,6 +785,9 @@ function driveImageUrl(link) {
   const value = String(link || '').trim();
   if (!value) return '';
 
+  // If it's just a number (e.g. '11', '5') or doesn't look like a URL / path, return empty
+  if (/^\d+$/.test(value)) return '';
+
   // Cloudflare R2 URLs — pass through directly
   if (value.includes('weave365.in') || value.includes('weave365.com') || value.includes('r2.cloudflarestorage.com')) {
     return value;
@@ -794,7 +804,12 @@ function driveImageUrl(link) {
   if (value.includes('supabase.co/storage')) return value;
 
   const idMatch = value.match(/\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
-  if (!idMatch) return value;
+  if (!idMatch) {
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) {
+      return value;
+    }
+    return '';
+  }
   return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
 }
 
