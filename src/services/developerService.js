@@ -70,12 +70,37 @@ export const developerService = {
    */
   async getApiKeyForUser(userId) {
     if (!isSupabaseConfigured || !userId) return { data: null, error: null };
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('api_keys')
-      .select('*')
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .maybeSingle();
+
+    if (error) {
+      console.warn('[developerService] getApiKeyForUser join error, fallback to select(*):', error);
+      const fallback = await supabase
+        .from('api_keys')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .maybeSingle();
+      data = fallback.data;
+      error = fallback.error;
+    }
+
+    if (data && !data.profiles && data.user_id) {
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+          .eq('id', data.user_id)
+          .maybeSingle();
+        if (prof) data.profiles = prof;
+      } catch (e) {
+        console.warn('[developerService] profile fetch error:', e);
+      }
+    }
 
     return { data, error };
   },
@@ -85,11 +110,35 @@ export const developerService = {
    */
   async getApiKeyById(keyId) {
     if (!isSupabaseConfigured || !keyId) return { data: null, error: null };
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('api_keys')
-      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp)')
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
       .eq('id', keyId)
       .single();
+
+    if (error) {
+      console.warn('[developerService] getApiKeyById join error, fallback to select(*):', error);
+      const fallback = await supabase
+        .from('api_keys')
+        .select('*')
+        .eq('id', keyId)
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
+
+    if (data && !data.profiles && data.user_id) {
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+          .eq('id', data.user_id)
+          .maybeSingle();
+        if (prof) data.profiles = prof;
+      } catch (e) {
+        console.warn('[developerService] profile fetch error:', e);
+      }
+    }
 
     return { data, error };
   },
@@ -306,22 +355,65 @@ export const developerService = {
     currentMonthStart.setDate(1);
     const monthStartStr = currentMonthStart.toISOString().split('T')[0];
 
-    const [{ data: keys, error: keysError }, { data: usageData }] = await Promise.all([
-      supabase
+    let keys = null;
+    let keysError = null;
+
+    try {
+      const res = await supabase
         .from('api_keys')
-        .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city)')
-        .order('created_at', { ascending: false }),
-      supabase
+        .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
+        .order('created_at', { ascending: false });
+      keys = res.data;
+      keysError = res.error;
+    } catch (e) {
+      keysError = e;
+    }
+
+    if (keysError || !keys) {
+      console.warn('[developerService] getAllApiKeys join error, fallback to raw api_keys:', keysError);
+      const fallbackRes = await supabase
+        .from('api_keys')
+        .select('*')
+        .order('created_at', { ascending: false });
+      keys = fallbackRes.data || [];
+    }
+
+    if (keys && keys.length > 0 && !keys[0].profiles) {
+      try {
+        const userIds = [...new Set(keys.map(k => k.user_id).filter(Boolean))];
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+            .in('id', userIds);
+          
+          if (profs && profs.length > 0) {
+            const pMap = {};
+            profs.forEach(p => { pMap[p.id] = p; });
+            keys = keys.map(k => ({ ...k, profiles: pMap[k.user_id] || null }));
+          }
+        }
+      } catch (pe) {
+        console.warn('[developerService] profile fallback lookup error:', pe);
+      }
+    }
+
+    let usageData = [];
+    try {
+      const uRes = await supabase
         .from('api_usage_daily')
         .select('api_key_id, total_requests')
-        .gte('usage_date', monthStartStr),
-    ]);
-
-    if (keysError) return { data: [], error: keysError };
+        .gte('usage_date', monthStartStr);
+      usageData = uRes.data || [];
+    } catch (e) {
+      console.warn('[developerService] usage data error:', e);
+    }
 
     const usageMap = {};
-    (usageData || []).forEach(row => {
-      usageMap[row.api_key_id] = (usageMap[row.api_key_id] || 0) + (row.total_requests || 0);
+    usageData.forEach(row => {
+      if (row.api_key_id) {
+        usageMap[row.api_key_id] = (usageMap[row.api_key_id] || 0) + (row.total_requests || 0);
+      }
     });
 
     const enriched = (keys || []).map(k => ({

@@ -180,7 +180,7 @@ export function ProductDetail({
   const [dbReviews, setDbReviews] = useState([]);
   const [reviewsStatus, setReviewsStatus] = useState('loading');
   const [reviewsError, setReviewsError] = useState('');
-  
+
   // Submit Form states
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({
@@ -285,7 +285,7 @@ export function ProductDetail({
     const total = activeReviews.reduce((acc, r) => acc + r.rating, 0);
     const count = activeReviews.length;
     const avg = (total / count).toFixed(1);
-    
+
     const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     activeReviews.forEach(r => {
       const ratingVal = Math.max(1, Math.min(5, Number(r.rating || 5)));
@@ -357,7 +357,7 @@ export function ProductDetail({
 
     const userObj = user || null;
     const isGuest = !userObj;
-    
+
     const newReview = {
       product_id: product.id,
       reviewer_name: trimmedName,
@@ -639,7 +639,7 @@ export function ProductDetail({
   }, [product.statusTags, product.isNew, canViewPrice, priceAccess, product.category]);
   const related = useMemo(() => {
     let others = products.filter((item) => item.id !== product.id && item.category === product.category);
-    
+
     // Fall back to all products if the same-category list is too small (e.g. less than 5)
     if (others.length < 5) {
       others = products.filter((item) => item.id !== product.id);
@@ -1264,7 +1264,7 @@ export function ProductDetail({
               <Bookmark size={24} fill={isFavorite ? 'currentColor' : 'none'} />
             </button>
             <h1 className="product-title-serif">{product.title}</h1>
-{/* 
+            {/* 
             {product.partner && (
               <div
                 className="trusted-partner-card-v2"
@@ -1313,7 +1313,7 @@ export function ProductDetail({
 
                         <div className="b2b-price-card wholesale-highlight">
                           <div className="price-card-header">
-                            <span className="price-card-tag">Complete Set</span>
+                            <span className="price-card-tag">Full Set</span>
                             {setSavingsPercent > 0 && (
                               <span className="savings-badge-pill">{setSavingsPercent}% OFF</span>
                             )}
@@ -1770,7 +1770,7 @@ export function ProductDetail({
               <div className="highlight-card">
                 <span className="card-icon"><Gift size={18} /></span>
                 <div className="card-body">
-                  <h3>Complete Set</h3>
+                  <h3>Full Set</h3>
                   <p>Comes with matching unstitched designer blouse piece</p>
                 </div>
               </div>
@@ -1894,8 +1894,8 @@ export function ProductDetail({
               <span className="reviews-average-score">{stats.avg} ★</span>
               <span className="reviews-count-label">Based on {stats.count} verified B2B reviews</span>
             </div>
-            
-            <button 
+
+            <button
               type="button"
               className={`reviews-write-btn-minimal ${showReviewForm ? 'active' : ''}`}
               onClick={() => {
@@ -2001,10 +2001,10 @@ export function ProductDetail({
                     </div>
 
                     {reviewSubmitError && <p className="review-submit-error-minimal">{reviewSubmitError}</p>}
-                    
-                    <button 
-                      type="submit" 
-                      disabled={reviewSubmitting || !isCaptchaVerified} 
+
+                    <button
+                      type="submit"
+                      disabled={reviewSubmitting || !isCaptchaVerified}
                       className="review-submit-btn-minimal"
                     >
                       {reviewSubmitting ? 'Submitting...' : 'Submit Product Review'}

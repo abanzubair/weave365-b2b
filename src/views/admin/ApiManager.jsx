@@ -31,10 +31,11 @@ import {
   Copy,
   Check,
   Zap,
-  ArrowLeft
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
-import { DeveloperDashboard } from '../../components/developer/DeveloperDashboard.jsx';
+import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
 import '../../styles/developerDashboard.css';
 
 export default function ApiManager({ adminData, loadAdminData, user }) {
@@ -47,6 +48,36 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   
   // Selected user for "Inspect Dashboard" mode
   const [inspectedKeyId, setInspectedKeyId] = useState(null);
+
+  // Confirmation Dialog State
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmLabel: 'Confirm',
+    cancelLabel: 'Cancel',
+    isDanger: false,
+    requiredInputText: null,
+    clientName: '',
+    onConfirm: null,
+  });
+
+  const triggerConfirm = ({ title, message, confirmLabel, isDanger = false, requiredInputText = null, clientName, onConfirm }) => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel: confirmLabel || (isDanger ? 'Yes, Proceed' : 'Confirm'),
+      cancelLabel: 'Cancel',
+      isDanger,
+      requiredInputText,
+      clientName: clientName || 'Client',
+      onConfirm: () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        if (onConfirm) onConfirm();
+      }
+    });
+  };
 
   // Edit Client Tier & Quota Overrides Modal (Directly on Admin Table)
   const [editingKey, setEditingKey] = useState(null);
@@ -145,30 +176,75 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   }, [allKeys, tierFilter, statusFilter, searchQuery]);
 
   // Toggle active status
-  const handleToggleActive = async (keyId, currentStatus) => {
-    try {
-      const { data, error } = await developerService.updateApiKey(keyId, {
-        is_active: !currentStatus,
+  const handleToggleActive = (item) => {
+    const keyId = item.id;
+    const currentStatus = item.is_active;
+    const clientName = item.client_name || 'Client';
+
+    if (currentStatus) {
+      // Disabling
+      triggerConfirm({
+        title: 'Disable API Access',
+        message: 'Live storefront requests from this client will immediately receive 403 Forbidden errors and stop syncing products or orders.',
+        confirmLabel: 'Disable Access',
+        isDanger: true,
+        clientName,
+        onConfirm: async () => {
+          try {
+            const { error } = await developerService.updateApiKey(keyId, {
+              is_active: false,
+            });
+            if (error) throw error;
+            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: false } : k)));
+          } catch (err) {
+            alert('Failed to update status: ' + err.message);
+          }
+        }
       });
-      if (error) throw error;
-      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: !currentStatus } : k)));
-    } catch (err) {
-      alert('Failed to update status: ' + err.message);
+    } else {
+      // Enabling
+      triggerConfirm({
+        title: 'Enable API Access',
+        message: 'Restore API access for this client? Incoming requests from their storefront will resume immediately.',
+        confirmLabel: 'Enable Access',
+        isDanger: false,
+        clientName,
+        onConfirm: async () => {
+          try {
+            const { error } = await developerService.updateApiKey(keyId, {
+              is_active: true,
+            });
+            if (error) throw error;
+            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true } : k)));
+          } catch (err) {
+            alert('Failed to update status: ' + err.message);
+          }
+        }
+      });
     }
   };
 
   // Delete key
-  const handleDeleteKey = async (keyId, clientName) => {
-    if (!window.confirm(`Are you sure you want to permanently revoke the API key for "${clientName}"?`)) return;
-    try {
-      const { error } = await developerService.deleteApiKey(keyId);
-      if (error) throw error;
-      setAllKeys((prev) => prev.filter((k) => k.id !== keyId));
-      if (inspectedKeyId === keyId) setInspectedKeyId(null);
-      alert('API Key revoked successfully.');
-    } catch (err) {
-      alert('Failed to delete key: ' + err.message);
-    }
+  const handleDeleteKey = (keyId, clientName) => {
+    triggerConfirm({
+      title: 'Delete API Key',
+      message: 'This action cannot be undone. All connected storefront plugins and feeds using this key will immediately lose access.',
+      confirmLabel: 'Delete Key',
+      isDanger: true,
+      requiredInputText: 'DELETE',
+      clientName,
+      onConfirm: async () => {
+        try {
+          const { error } = await developerService.deleteApiKey(keyId);
+          if (error) throw error;
+          setAllKeys((prev) => prev.filter((k) => k.id !== keyId));
+          if (inspectedKeyId === keyId) setInspectedKeyId(null);
+          alert('API Key revoked successfully.');
+        } catch (err) {
+          alert('Failed to delete key: ' + err.message);
+        }
+      }
+    });
   };
 
   // Create Key Submit
@@ -297,40 +373,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         </div>
       </div>
 
-      {/* 3. "Inspect User Dashboard" Inspector Mode */}
-      {inspectedRecord ? (
-        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <button
-              type="button"
-              className="api-btn-secondary"
-              onClick={() => setInspectedKeyId(null)}
-            >
-              <ArrowLeft size={14} /> Back to All Clients Table
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Switch Client:</span>
-              <select
-                value={inspectedKeyId}
-                onChange={(e) => setInspectedKeyId(e.target.value)}
-                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.8125rem', background: 'white' }}
-              >
-                {allKeys.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {k.client_name} ({k.profiles?.email || 'No email'}) - {k.tier.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
 
-          <DeveloperDashboard
-            apiKeyRecord={inspectedRecord}
-            isAdminMode={true}
-            onAdminUpdate={() => void fetchOverview()}
-          />
-        </div>
-      ) : null}
 
       {/* 4. Filter & Search Bar */}
       <div className="api-filter-bar">
@@ -446,7 +489,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                   <td>
                     <button
                       type="button"
-                      onClick={() => handleToggleActive(item.id, item.is_active)}
+                      onClick={() => handleToggleActive(item)}
                       className={`api-status-btn ${item.is_active ? 'active' : 'disabled'}`}
                       title={item.is_active ? 'Click to disable API key' : 'Click to enable API key'}
                     >
@@ -465,7 +508,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                           title="Contact Reseller on WhatsApp"
                           className="api-action-btn api-wa-btn"
                         >
-                          <MessageCircle size={13} />
+                          <MessageCircle size={15} style={{ flexShrink: 0 }} />
                         </a>
                       )}
                       <button
@@ -474,7 +517,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                         title="Edit Tier & Quota Overrides"
                         className="api-action-btn api-edit-btn"
                       >
-                        <Sliders size={12} /> Edit
+                        <Sliders size={14} style={{ flexShrink: 0 }} /> <span>Edit</span>
                       </button>
                       <button
                         type="button"
@@ -482,7 +525,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                         title="Inspect Live User Dashboard"
                         className="api-action-btn api-inspect-btn"
                       >
-                        <Eye size={12} /> Inspect
+                        <Eye size={14} style={{ flexShrink: 0 }} /> <span>Inspect</span>
                       </button>
                       <button
                         type="button"
@@ -490,7 +533,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                         title="Revoke API Key"
                         className="api-action-btn api-delete-btn"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={14} style={{ flexShrink: 0 }} />
                       </button>
                     </div>
                   </td>
@@ -731,15 +774,57 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
 
       {/* 8. Live Reseller Dashboard Inspection Modal */}
       {inspectedKeyId && inspectedRecord && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1.5rem' }}>
-          <div style={{ background: '#f8fafc', borderRadius: '16px', maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #e2e8f0', position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setInspectedKeyId(null)}
-              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px 12px', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', zIndex: 10 }}
-            >
-              ✕ Close Live View
-            </button>
+        <div className="api-inspect-modal-overlay">
+          <div className="api-inspect-modal-content">
+            
+            {/* Modal Top Control Bar */}
+            <div className="api-inspect-top-bar">
+              <div className="api-inspect-top-left">
+                <div className="api-inspect-nav-row">
+                  <button
+                    type="button"
+                    className="api-inspect-back-btn"
+                    onClick={() => setInspectedKeyId(null)}
+                  >
+                    <ArrowLeft size={15} /> <span>Back to Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="api-inspect-close-btn mobile-only-inspect-close"
+                    onClick={() => setInspectedKeyId(null)}
+                    title="Close Inspector"
+                    aria-label="Close Inspector"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="api-inspect-select-wrap">
+                  <span className="api-inspect-select-label">Inspect Client:</span>
+                  <select
+                    className="api-inspect-select"
+                    value={inspectedKeyId}
+                    onChange={(e) => setInspectedKeyId(e.target.value)}
+                  >
+                    {allKeys.map((k) => (
+                      <option key={k.id} value={k.id}>
+                        {k.client_name} ({k.profiles?.email || 'No email'}) - {k.tier.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="api-inspect-close-btn desktop-only-inspect-close"
+                onClick={() => setInspectedKeyId(null)}
+                title="Close Inspector"
+                aria-label="Close Inspector"
+              >
+                <X size={16} /> <span>Close</span>
+              </button>
+            </div>
+
             <DeveloperDashboard
               apiKeyRecord={inspectedRecord}
               isAdminMode={true}
@@ -755,6 +840,20 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog for Sensitive Actions */}
+      <ConfirmActionModal
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmLabel={confirmDialog.confirmLabel}
+        cancelLabel={confirmDialog.cancelLabel}
+        isDanger={confirmDialog.isDanger}
+        requiredInputText={confirmDialog.requiredInputText}
+        clientName={confirmDialog.clientName}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

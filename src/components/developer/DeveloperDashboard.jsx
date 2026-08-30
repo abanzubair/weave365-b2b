@@ -40,11 +40,424 @@ import {
   Square,
   PackageCheck,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Building2,
+  UserCheck,
+  FileText,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  ShieldCheck,
+  MessageCircle
 } from 'lucide-react';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { fetchProducts } from '../../productData.js';
 import '../../styles/developerDashboard.css';
+
+/**
+ * Modern confirmation modal for sensitive and dangerous admin actions.
+ */
+export function ConfirmActionModal({
+  isOpen,
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  isDanger = false,
+  requiredInputText = null, // e.g. "DELETE"
+  onConfirm,
+  onCancel,
+  clientName,
+}) {
+  const [typedInput, setTypedInput] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setTypedInput('');
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const isMatched = requiredInputText ? typedInput.trim() === requiredInputText : true;
+  const isConfirmedDisabled = !isMatched;
+
+  return (
+    <div className="dev-confirm-overlay" onClick={onCancel}>
+      <div className="dev-confirm-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header with integrated icon and title */}
+        <div className="dev-confirm-header">
+          <div className={`dev-confirm-icon-badge ${isDanger ? 'danger' : 'warning'}`}>
+            <AlertTriangle size={18} />
+          </div>
+          <div className="dev-confirm-header-text">
+            <h3 className="dev-confirm-title">{title}</h3>
+            {clientName && (
+              <div className="dev-confirm-target-row">
+                <span className="dev-confirm-target-label">Target Client:</span>
+                <strong className="dev-confirm-target-name">{clientName}</strong>
+              </div>
+            )}
+          </div>
+          <button type="button" className="dev-confirm-close-btn" onClick={onCancel} aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        {/* Body content */}
+        <div className="dev-confirm-body">
+          <p className="dev-confirm-message">{message}</p>
+
+          {requiredInputText && (
+            <div className="dev-confirm-verify-panel">
+              <label className="dev-confirm-verify-label" htmlFor="dev-confirm-verify-input">
+                <span>Type </span>
+                <code className="dev-confirm-keyword">{requiredInputText}</code>
+                <span> to confirm:</span>
+              </label>
+              <div className="dev-confirm-input-wrapper">
+                <input
+                  id="dev-confirm-verify-input"
+                  type="text"
+                  value={typedInput}
+                  onChange={(e) => setTypedInput(e.target.value)}
+                  placeholder={`Type ${requiredInputText}`}
+                  className={`dev-confirm-text-input ${isMatched && typedInput ? 'matched' : ''}`}
+                  autoFocus
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+                {isMatched && typedInput && (
+                  <span className="dev-confirm-match-badge">
+                    <Check size={12} /> Ready
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="dev-confirm-footer">
+          <button
+            type="button"
+            className="dev-confirm-btn-cancel"
+            onClick={onCancel}
+          >
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            disabled={isConfirmedDisabled}
+            className={`dev-confirm-btn-action ${isDanger ? 'danger' : 'warning'} ${isConfirmedDisabled ? 'disabled' : ''}`}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Quiet, elegant card displaying storefront registration and developer activation details.
+ */
+function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copiedField, copyToClipboard, tierInfo }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Extract all data fields with intelligent fallbacks
+  const clientName = apiKey?.client_name || apiKey?.profiles?.business_name || buyerProfile?.business_name || 'N/A';
+  const clientWebsite = apiKey?.client_website || '';
+  const domainOwnerName = apiKey?.domain_owner_name || apiKey?.profiles?.full_name || buyerProfile?.full_name || user?.user_metadata?.full_name || 'N/A';
+  const gstNumber = apiKey?.gst_number || apiKey?.profiles?.gstin || apiKey?.profiles?.gst_number || buyerProfile?.gstin || buyerProfile?.gst_number || '';
+  const email = apiKey?.profiles?.email || user?.email || 'N/A';
+  const phone = apiKey?.profiles?.whatsapp || apiKey?.profiles?.whatsapp_number || apiKey?.profiles?.phone || buyerProfile?.whatsapp || '';
+  
+  const city = apiKey?.profiles?.city || buyerProfile?.city || '';
+  const state = apiKey?.profiles?.state || buyerProfile?.state || '';
+  const pincode = apiKey?.profiles?.pincode || buyerProfile?.pincode || '';
+  const locationParts = [city, state, pincode].filter(Boolean);
+  const locationStr = locationParts.length > 0 ? locationParts.join(', ') : 'Not specified';
+
+  const buyerType = apiKey?.profiles?.buyer_subtype || apiKey?.profiles?.role || buyerProfile?.buyer_subtype || buyerProfile?.buyer_type || 'Reseller / Developer';
+  
+  const createdAtFormatted = apiKey?.created_at
+    ? new Date(apiKey.created_at).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'N/A';
+
+  const lastUsedFormatted = apiKey?.last_used_at
+    ? new Date(apiKey.last_used_at).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'No requests recorded';
+
+  const catalogModeLabel = apiKey?.catalog_mode === 'curated'
+    ? `Curated Feed (${(apiKey?.selected_skus || []).length} items)`
+    : 'Master Catalog (All SKUs)';
+
+  // Build WhatsApp URL
+  const waCleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
+  const waUrl = waCleanPhone
+    ? `https://wa.me/${waCleanPhone}?text=${encodeURIComponent(
+        `Hi ${domainOwnerName !== 'N/A' ? domainOwnerName : clientName}, regarding your Weave365 Developer API connection for ${clientName}...`
+      )}`
+    : null;
+
+  return (
+    <div className="dev-activation-card">
+      <div className="dev-activation-card-head">
+        <div className="dev-activation-head-left">
+          <div className="dev-activation-icon-wrap">
+            <Building2 size={15} />
+          </div>
+          <div className="dev-activation-title-group">
+            <h3>
+              <span>{isAdminMode ? 'Activation Details' : 'Storefront Profile'}</span>
+              <span className={`dev-quiet-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
+                <span className="dev-quiet-dot" />
+                {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
+              </span>
+            </h3>
+            <p>
+              {isAdminMode
+                ? 'Parameters submitted during API activation and linked buyer account details'
+                : 'Your registered storefront parameters and API credentials'}
+            </p>
+          </div>
+        </div>
+
+        <div className="dev-activation-head-right">
+          {waUrl && (
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-quiet-wa-btn"
+              title="Message reseller on WhatsApp"
+            >
+              <MessageCircle size={13} />
+              <span>Chat on WhatsApp</span>
+            </a>
+          )}
+          {!isAdminMode && (
+            <button
+              type="button"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="dev-action-chip"
+              style={{ height: '30px', fontSize: '0.75rem' }}
+            >
+              {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+              <span>{isCollapsed ? 'View Details' : 'Collapse'}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!isCollapsed && (
+        <>
+          <div className="dev-activation-grid">
+            {/* 1. Storefront / Business Name */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Business / Storefront</span>
+              <div className="dev-activation-value-row">
+                <span className="dev-activation-value primary" title={clientName}>
+                  {clientName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(clientName, 'act-client-name')}
+                  className="dev-quiet-copy-icon"
+                  title="Copy Name"
+                  aria-label="Copy Business Name"
+                >
+                  {copiedField === 'act-client-name' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Storefront Website URL */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Storefront Website</span>
+              <div className="dev-activation-value-row">
+                {clientWebsite ? (
+                  <>
+                    <a
+                      href={clientWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="dev-quiet-link"
+                      title={clientWebsite}
+                    >
+                      <span>{clientWebsite.replace(/^https?:\/\//, '')}</span>
+                      <ExternalLink size={11} className="dev-quiet-ext-icon" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(clientWebsite, 'act-website')}
+                      className="dev-quiet-copy-icon"
+                      title="Copy URL"
+                      aria-label="Copy Website URL"
+                    >
+                      {copiedField === 'act-website' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                    </button>
+                  </>
+                ) : (
+                  <span className="dev-activation-value empty">Not provided</span>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Domain Owner / Developer Name */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Domain Owner / Developer</span>
+              <div className="dev-activation-value-row">
+                <span className="dev-activation-value" title={domainOwnerName}>
+                  {domainOwnerName}
+                </span>
+                {domainOwnerName !== 'N/A' && (
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(domainOwnerName, 'act-domain-owner')}
+                    className="dev-quiet-copy-icon"
+                    title="Copy Domain Owner"
+                    aria-label="Copy Domain Owner Name"
+                  >
+                    {copiedField === 'act-domain-owner' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 4. GST Number / GSTIN */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">GST Number / GSTIN</span>
+              <div className="dev-activation-value-row">
+                {gstNumber ? (
+                  <>
+                    <code className="dev-quiet-gstin-code" title="Business GSTIN">
+                      {gstNumber}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(gstNumber, 'act-gstin')}
+                      className="dev-quiet-copy-icon"
+                      title="Copy GSTIN"
+                      aria-label="Copy GSTIN"
+                    >
+                      {copiedField === 'act-gstin' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                    </button>
+                  </>
+                ) : (
+                  <span className="dev-activation-value empty">Not provided</span>
+                )}
+              </div>
+            </div>
+
+            {/* 5. User Account Email */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Account Email</span>
+              <div className="dev-activation-value-row">
+                {email && email !== 'N/A' ? (
+                  <>
+                    <a href={`mailto:${email}`} className="dev-quiet-link" title={email}>
+                      <Mail size={11} className="dev-quiet-inline-icon" />
+                      <span>{email}</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(email, 'act-email')}
+                      className="dev-quiet-copy-icon"
+                      title="Copy Email"
+                      aria-label="Copy Email"
+                    >
+                      {copiedField === 'act-email' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                    </button>
+                  </>
+                ) : (
+                  <span className="dev-activation-value empty">N/A</span>
+                )}
+              </div>
+            </div>
+
+            {/* 6. Phone / WhatsApp Contact */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Phone / WhatsApp</span>
+              <div className="dev-activation-value-row">
+                {phone ? (
+                  <>
+                    <span className="dev-activation-value">{phone}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(phone, 'act-phone')}
+                      className="dev-quiet-copy-icon"
+                      title="Copy Phone"
+                      aria-label="Copy Phone Number"
+                    >
+                      {copiedField === 'act-phone' ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+                    </button>
+                  </>
+                ) : (
+                  <span className="dev-activation-value empty">Not on profile</span>
+                )}
+              </div>
+            </div>
+
+            {/* 7. Registered Location */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Location / City</span>
+              <div className="dev-activation-value-row">
+                <span className="dev-activation-value" title={locationStr}>
+                  {locationStr}
+                </span>
+              </div>
+            </div>
+
+            {/* 8. Buyer Role & Classification */}
+            <div className="dev-activation-item">
+              <span className="dev-activation-label">Classification</span>
+              <div className="dev-activation-value-row">
+                <span className="dev-quiet-type-pill">
+                  {buyerType}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="dev-activation-footer">
+            <div className="dev-activation-footer-left">
+              <span className="dev-activation-footer-item">
+                <Calendar size={12} />
+                <span>Activated: <strong>{createdAtFormatted}</strong></span>
+              </span>
+              <span className="dev-activation-footer-dot">•</span>
+              <span className="dev-activation-footer-item">
+                <Clock size={12} />
+                <span>Last Request: <strong>{lastUsedFormatted}</strong></span>
+              </span>
+            </div>
+
+            <div className="dev-activation-footer-item">
+              <Layers size={12} />
+              <span>Feed: <strong>{catalogModeLabel}</strong></span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function DeveloperDashboard({
   user,
@@ -94,6 +507,36 @@ export function DeveloperDashboard({
   const [creatingKey, setCreatingKey] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newGeneratedSecret, setNewGeneratedSecret] = useState(null);
+
+  // Confirmation Modal State for dangerous / impactful admin actions
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmLabel: 'Confirm',
+    cancelLabel: 'Cancel',
+    isDanger: false,
+    requiredInputText: null,
+    clientName: '',
+    onConfirm: null,
+  });
+
+  const triggerConfirm = ({ title, message, confirmLabel, isDanger = false, requiredInputText = null, onConfirm }) => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel: confirmLabel || (isDanger ? 'Yes, Proceed' : 'Confirm'),
+      cancelLabel: 'Cancel',
+      isDanger,
+      requiredInputText,
+      clientName: apiKey?.client_name || 'Client',
+      onConfirm: () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        if (onConfirm) onConfirm();
+      }
+    });
+  };
 
   // Load API Key and Usage
   const loadData = async () => {
@@ -218,31 +661,110 @@ export function DeveloperDashboard({
     setSelectedSkus(prev => prev.filter(s => !filteredSkuSet.has(s)));
   };
 
+  const handleOpenCuratorGrid = () => {
+    if (isAdminMode) {
+      triggerConfirm({
+        title: 'Edit Curated Catalog',
+        message: 'Product changes directly modify what is synced to the client\'s live storefront.',
+        confirmLabel: 'Edit Catalog',
+        isDanger: false,
+        onConfirm: () => setIsCuratorGridOpen(true),
+      });
+    } else {
+      setIsCuratorGridOpen(true);
+    }
+  };
+
   const handleClearAllSelections = () => {
-    setSelectedSkus([]);
+    if (isAdminMode) {
+      triggerConfirm({
+        title: 'Clear Product Selection',
+        message: 'This will remove all products from the feed. The storefront sync will be empty until new products are selected.',
+        confirmLabel: 'Clear Products',
+        isDanger: true,
+        onConfirm: () => setSelectedSkus([]),
+      });
+    } else {
+      setSelectedSkus([]);
+    }
   };
 
   const handleSaveCatalogSelection = async () => {
     if (!apiKey?.id) return;
-    setSavingSelection(true);
-    setSelectionSuccessMsg(null);
-    try {
-      const { data, error } = await developerService.updateApiKey(apiKey.id, {
-        catalog_mode: 'curated',
-        selected_skus: selectedSkus,
+    
+    const executeSave = async () => {
+      setSavingSelection(true);
+      setSelectionSuccessMsg(null);
+      try {
+        const { data, error } = await developerService.updateApiKey(apiKey.id, {
+          catalog_mode: 'curated',
+          selected_skus: selectedSkus,
+        });
+        if (error) throw error;
+        setApiKey(prev => ({
+          ...prev,
+          catalog_mode: 'curated',
+          selected_skus: selectedSkus,
+        }));
+        setSelectionSuccessMsg(`Saved! API & Feed will now sync your ${selectedSkus.length} selected ${selectedSkus.length === 1 ? 'product' : 'products'}.`);
+        setTimeout(() => setSelectionSuccessMsg(null), 4000);
+      } catch (err) {
+        alert('Failed to save catalog selection: ' + err.message);
+      } finally {
+        setSavingSelection(false);
+      }
+    };
+
+    if (isAdminMode) {
+      triggerConfirm({
+        title: 'Save Curated Feed',
+        message: `Update live storefront sync feed to ${selectedSkus.length} selected ${selectedSkus.length === 1 ? 'product' : 'products'}?`,
+        confirmLabel: 'Save Feed',
+        isDanger: false,
+        onConfirm: executeSave,
       });
-      if (error) throw error;
-      setApiKey(prev => ({
-        ...prev,
-        catalog_mode: 'curated',
-        selected_skus: selectedSkus,
-      }));
-      setSelectionSuccessMsg(`Saved! API & Feed will now sync your ${selectedSkus.length} selected ${selectedSkus.length === 1 ? 'product' : 'products'}.`);
-      setTimeout(() => setSelectionSuccessMsg(null), 4000);
-    } catch (err) {
-      alert('Failed to save catalog selection: ' + err.message);
-    } finally {
-      setSavingSelection(false);
+    } else {
+      await executeSave();
+    }
+  };
+
+  const handleAdminToggleActiveChange = (newChecked) => {
+    if (!newChecked) {
+      triggerConfirm({
+        title: 'Disable API Access',
+        message: 'Live storefront requests from this client will immediately receive 403 Forbidden errors and stop syncing products or orders.',
+        confirmLabel: 'Disable Access',
+        isDanger: true,
+        onConfirm: async () => {
+          setAdminIsActive(false);
+          try {
+            const { data, error } = await developerService.updateApiKey(apiKey.id, { is_active: false });
+            if (error) throw error;
+            setApiKey(prev => ({ ...prev, is_active: false }));
+            if (onAdminUpdate) onAdminUpdate({ ...apiKey, is_active: false });
+          } catch (e) {
+            alert('Failed to update status: ' + e.message);
+          }
+        }
+      });
+    } else {
+      triggerConfirm({
+        title: 'Enable API Access',
+        message: 'Restore API access for this client? Incoming requests from their storefront will resume immediately.',
+        confirmLabel: 'Enable Access',
+        isDanger: false,
+        onConfirm: async () => {
+          setAdminIsActive(true);
+          try {
+            const { data, error } = await developerService.updateApiKey(apiKey.id, { is_active: true });
+            if (error) throw error;
+            setApiKey(prev => ({ ...prev, is_active: true }));
+            if (onAdminUpdate) onAdminUpdate({ ...apiKey, is_active: true });
+          } catch (e) {
+            alert('Failed to update status: ' + e.message);
+          }
+        }
+      });
     }
   };
 
@@ -294,37 +816,50 @@ export function DeveloperDashboard({
 
   const handleRegenerateKey = async () => {
     if (!apiKey?.id) return;
-    if (!window.confirm('Are you sure you want to regenerate your API Key? Your existing key will stop working immediately.')) return;
-    try {
-      const { keyRecord, rawSecretKey } = await developerService.regenerateApiKey(apiKey.id);
-      setApiKey(keyRecord);
-      setNewGeneratedSecret(rawSecretKey);
-      setRevealedKey(rawSecretKey);
-      alert('New API Key generated successfully! Please copy and store it safely.');
-    } catch (err) {
-      alert('Failed to regenerate key: ' + err.message);
-    }
+    triggerConfirm({
+      title: 'Regenerate Secret Key',
+      message: 'The current production key will stop working immediately. Connected plugins must be updated with the new key.',
+      confirmLabel: 'Regenerate Key',
+      isDanger: true,
+      requiredInputText: 'REGENERATE',
+      onConfirm: async () => {
+        try {
+          const { keyRecord, rawSecretKey } = await developerService.regenerateApiKey(apiKey.id);
+          setApiKey(keyRecord);
+          setNewGeneratedSecret(rawSecretKey);
+          setRevealedKey(rawSecretKey);
+          alert('New API Key generated successfully! Please copy and store it safely.');
+        } catch (err) {
+          alert('Failed to regenerate key: ' + err.message);
+        }
+      }
+    });
   };
 
   const handleDeleteApiKey = async () => {
     if (!apiKey?.id) return;
-    const confirmName = apiKey.client_name || 'your';
-    if (!window.confirm(`Are you sure you want to permanently delete the API key for "${confirmName}"? All active integrations using this key will immediately lose access.`)) {
-      return;
-    }
-    try {
-      const { error } = await developerService.deleteApiKey(apiKey.id);
-      if (error) throw error;
-      setApiKey(null);
-      setRevealedKey(null);
-      setNewGeneratedSecret(null);
-      setNewClientName(buyerProfile?.business_name || '');
-      setNewClientWebsite('');
-      if (onAdminUpdate) onAdminUpdate(null);
-      alert('API Key permanently deleted.');
-    } catch (err) {
-      alert('Failed to delete API Key: ' + err.message);
-    }
+    triggerConfirm({
+      title: 'Delete API Key',
+      message: 'This action cannot be undone. All connected storefront plugins and feeds using this key will immediately lose access.',
+      confirmLabel: 'Delete Key',
+      isDanger: true,
+      requiredInputText: 'DELETE',
+      onConfirm: async () => {
+        try {
+          const { error } = await developerService.deleteApiKey(apiKey.id);
+          if (error) throw error;
+          setApiKey(null);
+          setRevealedKey(null);
+          setNewGeneratedSecret(null);
+          setNewClientName(buyerProfile?.business_name || '');
+          setNewClientWebsite('');
+          if (onAdminUpdate) onAdminUpdate(null);
+          alert('API Key permanently deleted.');
+        } catch (err) {
+          alert('Failed to delete API Key: ' + err.message);
+        }
+      }
+    });
   };
 
   const handleSaveAdminSettings = async () => {
@@ -529,9 +1064,9 @@ export function DeveloperDashboard({
       {isAdminMode && (
         <div className="dev-admin-banner">
           <div className="dev-admin-banner-info">
-            <Sliders size={18} />
+            <Sliders size={14} className="dev-admin-sliders-icon" />
             <div>
-              <strong>Admin Inspection Mode:</strong> Live view for <u>{apiKey?.client_name || 'Client'}</u> ({apiKey?.profiles?.email || 'No email'})
+              <span>Admin Inspection:</span> <strong>{apiKey?.client_name || 'Client'}</strong> <span className="dev-admin-email">({apiKey?.profiles?.email || 'No email'})</span>
             </div>
           </div>
           <div className="dev-admin-quick-toggles">
@@ -540,17 +1075,28 @@ export function DeveloperDashboard({
               <input
                 type="checkbox"
                 checked={adminIsActive}
-                onChange={(e) => setAdminIsActive(e.target.checked)}
+                onChange={(e) => handleAdminToggleActiveChange(e.target.checked)}
               />
-              <strong className={adminIsActive ? 'text-green' : 'text-red'}>
+              <span className={adminIsActive ? 'dev-status-pill active' : 'dev-status-pill disabled'}>
                 {adminIsActive ? 'Active' : 'Disabled'}
-              </strong>
+              </span>
             </label>
           </div>
         </div>
       )}
 
-      {/* 2. Top Header & Tier Bar */}
+      {/* 2. User & Storefront Activation Profile Card */}
+      <UserActivationInfoCard
+        apiKey={apiKey}
+        user={user}
+        buyerProfile={buyerProfile}
+        isAdminMode={isAdminMode}
+        copiedField={copiedField}
+        copyToClipboard={copyToClipboard}
+        tierInfo={tierInfo}
+      />
+
+      {/* 3. Top Header & Tier Bar */}
       <div className="dev-dashboard-header">
         <div className="dev-header-main">
           <div className="dev-header-title-row">
@@ -782,7 +1328,7 @@ export function DeveloperDashboard({
             <button
               type="button"
               className="dev-curate-btn"
-              onClick={() => setIsCuratorGridOpen(true)}
+              onClick={handleOpenCuratorGrid}
             >
               <ChevronDown size={14} />
               <span>{selectedSkus.length > 0 ? 'Edit Product Selection' : 'Pick Products to Sync'}</span>
@@ -973,73 +1519,74 @@ export function DeveloperDashboard({
         )}
       </div>
 
-      {/* 6. Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) */}
-      <div className="dev-card">
-        <div className="dev-card-head">
-          <div className="dev-card-title">
-            <Code2 size={18} />
-            <h3>Platform Integration Guides & Ready-Made Scripts</h3>
+      {/* 6. Platform Integration Guides (Shopify, WooCommerce, PrestaShop, cURL) - Reseller User Mode Only */}
+      {!isAdminMode && (
+        <div className="dev-card">
+          <div className="dev-card-head">
+            <div className="dev-card-title">
+              <Code2 size={18} />
+              <h3>Platform Integration Guides & Ready-Made Scripts</h3>
+            </div>
+            <a
+              href="/developer-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-card-docs-link"
+              title="Read complete REST API documentation and payload schemas"
+            >
+              <ExternalLink size={13} /> Full API Reference
+            </a>
           </div>
-          <a
-            href="/developer-api"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dev-card-docs-link"
-            title="Read complete REST API documentation and payload schemas"
-          >
-            <ExternalLink size={13} /> Full API Reference
-          </a>
-        </div>
 
-        <div className="dev-platform-tabs">
-          <button
-            type="button"
-            className={`dev-plat-tab ${activePlatformTab === 'woocommerce' ? 'active' : ''}`}
-            onClick={() => setActivePlatformTab('woocommerce')}
-          >
-            WooCommerce (WordPress)
-          </button>
-          <button
-            type="button"
-            className={`dev-plat-tab ${activePlatformTab === 'shopify' ? 'active' : ''}`}
-            onClick={() => setActivePlatformTab('shopify')}
-          >
-            Shopify
-          </button>
-          <button
-            type="button"
-            className={`dev-plat-tab ${activePlatformTab === 'prestashop' ? 'active' : ''}`}
-            onClick={() => setActivePlatformTab('prestashop')}
-          >
-            PrestaShop
-          </button>
-          <button
-            type="button"
-            className={`dev-plat-tab ${activePlatformTab === 'curl' ? 'active' : ''}`}
-            onClick={() => setActivePlatformTab('curl')}
-          >
-            cURL / Terminal
-          </button>
-          <button
-            type="button"
-            className={`dev-plat-tab ${activePlatformTab === 'javascript' ? 'active' : ''}`}
-            onClick={() => setActivePlatformTab('javascript')}
-          >
-            JavaScript / Node.js
-          </button>
-        </div>
+          <div className="dev-platform-tabs">
+            <button
+              type="button"
+              className={`dev-plat-tab ${activePlatformTab === 'woocommerce' ? 'active' : ''}`}
+              onClick={() => setActivePlatformTab('woocommerce')}
+            >
+              WooCommerce (WordPress)
+            </button>
+            <button
+              type="button"
+              className={`dev-plat-tab ${activePlatformTab === 'shopify' ? 'active' : ''}`}
+              onClick={() => setActivePlatformTab('shopify')}
+            >
+              Shopify
+            </button>
+            <button
+              type="button"
+              className={`dev-plat-tab ${activePlatformTab === 'prestashop' ? 'active' : ''}`}
+              onClick={() => setActivePlatformTab('prestashop')}
+            >
+              PrestaShop
+            </button>
+            <button
+              type="button"
+              className={`dev-plat-tab ${activePlatformTab === 'curl' ? 'active' : ''}`}
+              onClick={() => setActivePlatformTab('curl')}
+            >
+              cURL / Terminal
+            </button>
+            <button
+              type="button"
+              className={`dev-plat-tab ${activePlatformTab === 'javascript' ? 'active' : ''}`}
+              onClick={() => setActivePlatformTab('javascript')}
+            >
+              JavaScript / Node.js
+            </button>
+          </div>
 
-        <div className="dev-platform-content">
-          {activePlatformTab === 'woocommerce' && (
-            <div>
-              <div className="dev-plat-intro">
-                <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet:</h4>
-                <p>
-                  Paste this snippet into your theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It will automatically query Weave365 every 2 hours and sync stock status for all products matching your SKU numbers.
-                </p>
-              </div>
-              <div className="dev-code-block-wrap">
-                <pre>
+          <div className="dev-platform-content">
+            {activePlatformTab === 'woocommerce' && (
+              <div>
+                <div className="dev-plat-intro">
+                  <h4 className="dev-plat-title">WooCommerce Auto-Sync Snippet:</h4>
+                  <p>
+                    Paste this snippet into your theme's <code>functions.php</code> or the free <em>Code Snippets</em> plugin. It will automatically query Weave365 every 2 hours and sync stock status for all products matching your SKU numbers.
+                  </p>
+                </div>
+                <div className="dev-code-block-wrap">
+                  <pre>
 {`// === Weave365 WooCommerce Live Stock & Catalog Sync ===
 add_action('weave365_cron_stock_sync', 'sync_weave365_inventory');
 
@@ -1071,70 +1618,70 @@ function sync_weave365_inventory() {
 if (!wp_next_scheduled('weave365_cron_stock_sync')) {
     wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync');
 }`}
-                </pre>
-                <button
-                  type="button"
-                  className="dev-code-copy-btn"
-                  onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===\nadd_action('weave365_cron_stock_sync', 'sync_weave365_inventory');\nfunction sync_weave365_inventory() {\n    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n    $response = wp_remote_get('https://www.weave365.com/api/v1/stock-status', ['headers' => ['X-API-Key' => $api_key], 'timeout' => 20]);\n    if (is_wp_error($response)) return;\n    $body = json_decode(wp_remote_retrieve_body($response), true);\n    if (!empty($body['stock_map'])) {\n        foreach ($body['stock_map'] as $sku => $data) {\n            $id = wc_get_product_id_by_sku($sku);\n            if ($id) {\n                $p = wc_get_product($id);\n                $p->set_stock_status(!empty($data['is_available']) ? 'instock' : 'outofstock');\n                $p->save();\n            }\n        }\n    }\n}\nif (!wp_next_scheduled('weave365_cron_stock_sync')) { wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync'); }`, 'woo-code')}
-                >
-                  {copiedField === 'woo-code' ? <Check size={14} /> : <Copy size={14} />} Copy PHP Snippet
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activePlatformTab === 'shopify' && (
-            <div>
-              <div className="dev-plat-intro">
-                <h4 className="dev-plat-title">Shopify Automated Integration:</h4>
-                <p>
-                  Use any Shopify data-sync app (e.g. <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted feed URL below:
-                </p>
-              </div>
-              <div className="dev-shopify-box">
-                <label className="dev-shopify-label">Your Automated Shopify JSON Feed URL:</label>
-                <div className="dev-feed-input-group">
-                  <input
-                    type="text"
-                    readOnly
-                    value={`https://www.weave365.com/api/v1/catalog?format=shopify`}
-                    className="dev-feed-input"
-                  />
+                  </pre>
                   <button
                     type="button"
-                    className="dev-feed-copy-btn"
-                    onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog?format=shopify`, 'shopify-url')}
+                    className="dev-code-copy-btn"
+                    onClick={() => copyToClipboard(`// === Weave365 WooCommerce Live Stock & Catalog Sync ===\nadd_action('weave365_cron_stock_sync', 'sync_weave365_inventory');\nfunction sync_weave365_inventory() {\n    $api_key = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n    $response = wp_remote_get('https://www.weave365.com/api/v1/stock-status', ['headers' => ['X-API-Key' => $api_key], 'timeout' => 20]);\n    if (is_wp_error($response)) return;\n    $body = json_decode(wp_remote_retrieve_body($response), true);\n    if (!empty($body['stock_map'])) {\n        foreach ($body['stock_map'] as $sku => $data) {\n            $id = wc_get_product_id_by_sku($sku);\n            if ($id) {\n                $p = wc_get_product($id);\n                $p->set_stock_status(!empty($data['is_available']) ? 'instock' : 'outofstock');\n                $p->save();\n            }\n        }\n    }\n}\nif (!wp_next_scheduled('weave365_cron_stock_sync')) { wp_schedule_event(time(), 'hourly', 'weave365_cron_stock_sync'); }`, 'woo-code')}
                   >
-                    {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
-                    <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
+                    {copiedField === 'woo-code' ? <Check size={14} /> : <Copy size={14} />} Copy PHP Snippet
                   </button>
                 </div>
-                <div className="dev-shopify-steps">
-                  <div className="dev-step-item">
-                    <span className="dev-step-num">1</span>
-                    <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, choose <em>New Scheduled Feed</em>.</div>
+              </div>
+            )}
+
+            {activePlatformTab === 'shopify' && (
+              <div>
+                <div className="dev-plat-intro">
+                  <h4 className="dev-plat-title">Shopify Automated Integration:</h4>
+                  <p>
+                    Use any Shopify data-sync app (e.g. <strong>Matrixify</strong> or <strong>Stock Sync</strong>). Provide your dedicated Shopify-formatted feed URL below:
+                  </p>
+                </div>
+                <div className="dev-shopify-box">
+                  <label className="dev-shopify-label">Your Automated Shopify JSON Feed URL:</label>
+                  <div className="dev-feed-input-group">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`https://www.weave365.com/api/v1/catalog?format=shopify`}
+                      className="dev-feed-input"
+                    />
+                    <button
+                      type="button"
+                      className="dev-feed-copy-btn"
+                      onClick={() => copyToClipboard(`https://www.weave365.com/api/v1/catalog?format=shopify`, 'shopify-url')}
+                    >
+                      {copiedField === 'shopify-url' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedField === 'shopify-url' ? 'Copied' : 'Copy Feed URL'}</span>
+                    </button>
                   </div>
-                  <div className="dev-step-item">
-                    <span className="dev-step-num">2</span>
-                    <div className="dev-step-text">Set Source URL to the URL above and add Header <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
-                  </div>
-                  <div className="dev-step-item">
-                    <span className="dev-step-num">3</span>
-                    <div className="dev-step-text">Set schedule to <em>Every 2 hours</em> for automated inventory sync.</div>
+                  <div className="dev-shopify-steps">
+                    <div className="dev-step-item">
+                      <span className="dev-step-num">1</span>
+                      <div className="dev-step-text">In Shopify App <strong>Stock Sync</strong> or <strong>Matrixify</strong>, choose <em>New Scheduled Feed</em>.</div>
+                    </div>
+                    <div className="dev-step-item">
+                      <span className="dev-step-num">2</span>
+                      <div className="dev-step-text">Set Source URL to the URL above and add Header <code>X-API-Key: {revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}</code>.</div>
+                    </div>
+                    <div className="dev-step-item">
+                      <span className="dev-step-num">3</span>
+                      <div className="dev-step-text">Set schedule to <em>Every 2 hours</em> for automated inventory sync.</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activePlatformTab === 'prestashop' && (
-            <div>
-              <div className="dev-plat-intro">
-                <h4 className="dev-plat-title">PrestaShop Sync Script:</h4>
-                <p>Run via PrestaShop Cron or custom module connector to synchronize warehouse quantities:</p>
-              </div>
-              <div className="dev-code-block-wrap">
-                <pre>
+            {activePlatformTab === 'prestashop' && (
+              <div>
+                <div className="dev-plat-intro">
+                  <h4 className="dev-plat-title">PrestaShop Sync Script:</h4>
+                  <p>Run via PrestaShop Cron or custom module connector to synchronize warehouse quantities:</p>
+                </div>
+                <div className="dev-code-block-wrap">
+                  <pre>
 {`<?php
 // PrestaShop 1.7 / 8.x Stock Synchronizer
 require_once dirname(__FILE__) . '/config/config.inc.php';
@@ -1157,25 +1704,25 @@ if (!empty($data['stock_map'])) {
     }
     echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";
 }`}
-                </pre>
-                <button
-                  type="button"
-                  className="dev-code-copy-btn"
-                  onClick={() => copyToClipboard(`<?php\n// PrestaShop 1.7 / 8.x Stock Synchronizer\nrequire_once dirname(__FILE__) . '/config/config.inc.php';\n\n$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n$ch = curl_init('https://www.weave365.com/api/v1/stock-status');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: $apiKey"]);\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n$res = curl_exec($ch);\ncurl_close($ch);\n\n$data = json_decode($res, true);\nif (!empty($data['stock_map'])) {\n    foreach ($data['stock_map'] as $sku => $item) {\n        $id_product = (int)Db::getInstance()->getValue('SELECT id_product FROM '._DB_PREFIX_.'product WHERE reference = "'.pSQL($sku).'"');\n        if ($id_product) {\n            $qty = !empty($item['is_available']) ? 5 : 0;\n            StockAvailable::setQuantity($id_product, 0, $qty);\n        }\n    }\n    echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";\n}`, 'prestashop-code')}
-                >
-                  {copiedField === 'prestashop-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}
-                </button>
+                  </pre>
+                  <button
+                    type="button"
+                    className="dev-code-copy-btn"
+                    onClick={() => copyToClipboard(`<?php\n// PrestaShop 1.7 / 8.x Stock Synchronizer\nrequire_once dirname(__FILE__) . '/config/config.inc.php';\n\n$apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_WEAVE365_API_KEY'}';\n$ch = curl_init('https://www.weave365.com/api/v1/stock-status');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-Key: $apiKey"]);\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n$res = curl_exec($ch);\ncurl_close($ch);\n\n$data = json_decode($res, true);\nif (!empty($data['stock_map'])) {\n    foreach ($data['stock_map'] as $sku => $item) {\n        $id_product = (int)Db::getInstance()->getValue('SELECT id_product FROM '._DB_PREFIX_.'product WHERE reference = "'.pSQL($sku).'"');\n        if ($id_product) {\n            $qty = !empty($item['is_available']) ? 5 : 0;\n            StockAvailable::setQuantity($id_product, 0, $qty);\n        }\n    }\n    echo "Successfully synced ".count($data['stock_map'])." products from Weave365.";\n}`, 'prestashop-code')}
+                  >
+                    {copiedField === 'prestashop-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'prestashop-code' ? 'Copied' : 'Copy PHP Snippet'}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activePlatformTab === 'curl' && (
-            <div>
-              <div className="dev-plat-intro">
-                <h4 className="dev-plat-title">cURL Command Examples:</h4>
-              </div>
-              <div className="dev-code-block-wrap">
-                <pre>
+            {activePlatformTab === 'curl' && (
+              <div>
+                <div className="dev-plat-intro">
+                  <h4 className="dev-plat-title">cURL Command Examples:</h4>
+                </div>
+                <div className="dev-code-block-wrap">
+                  <pre>
 {`# 1. Fetch Complete Wholesale Catalog
 curl -X GET "https://www.weave365.com/api/v1/catalog" \\
   -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"
@@ -1200,25 +1747,25 @@ curl -X POST "https://www.weave365.com/api/v1/orders" \\
     },
     "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]
   }'`}
-                </pre>
-                <button
-                  type="button"
-                  className="dev-code-copy-btn"
-                  onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Dropship Order via API (Growth Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560034",\n      "address_line1": "Flat 402, Green Valley",\n      "city": "Bangalore",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]\n  }'`, 'curl-code')}
-                >
-                  {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
-                </button>
+                  </pre>
+                  <button
+                    type="button"
+                    className="dev-code-copy-btn"
+                    onClick={() => copyToClipboard(`# 1. Fetch Complete Wholesale Catalog\ncurl -X GET "https://www.weave365.com/api/v1/catalog" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 2. Fetch Lightweight Stock Availability Map\ncurl -X GET "https://www.weave365.com/api/v1/stock-status" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}"\n\n# 3. Place Dropship Order via API (Growth Tier)\ncurl -X POST "https://www.weave365.com/api/v1/orders" \\\n  -H "X-API-Key: ${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "reseller_order_id": "ORD-101",\n    "customer": {\n      "name": "Priya Sharma",\n      "phone": "+919876543210",\n      "pincode": "560034",\n      "address_line1": "Flat 402, Green Valley",\n      "city": "Bangalore",\n      "state": "Karnataka"\n    },\n    "items": [{ "sku": "W365-KAN-001", "quantity": 1 }]\n  }'`, 'curl-code')}
+                  >
+                    {copiedField === 'curl-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'curl-code' ? 'Copied' : 'Copy cURL'}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activePlatformTab === 'javascript' && (
-            <div>
-              <div className="dev-plat-intro">
-                <h4 className="dev-plat-title">Node.js / Fetch Example:</h4>
-              </div>
-              <div className="dev-code-block-wrap">
-                <pre>
+            {activePlatformTab === 'javascript' && (
+              <div>
+                <div className="dev-plat-intro">
+                  <h4 className="dev-plat-title">Node.js / Fetch Example:</h4>
+                </div>
+                <div className="dev-code-block-wrap">
+                  <pre>
 {`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';
 
 async function fetchWeave365Catalog() {
@@ -1233,73 +1780,90 @@ async function fetchWeave365Catalog() {
 }
 
 fetchWeave365Catalog();`}
-                </pre>
-                <button
-                  type="button"
-                  className="dev-code-copy-btn"
-                  onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';\n\nasync function fetchWeave365Catalog() {\n  const response = await fetch('https://www.weave365.com/api/v1/catalog', {\n    headers: {\n      'X-API-Key': apiKey,\n    },\n  });\n  const data = await response.json();\n  console.log('Total Products Synced:', data.total_products);\n  return data.products;\n}\n\nfetchWeave365Catalog();`, 'js-code')}
-                >
-                  {copiedField === 'js-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}
-                </button>
+                  </pre>
+                  <button
+                    type="button"
+                    className="dev-code-copy-btn"
+                    onClick={() => copyToClipboard(`const apiKey = '${revealedKey || apiKey?.key_prefix || 'YOUR_KEY'}';\n\nasync function fetchWeave365Catalog() {\n  const response = await fetch('https://www.weave365.com/api/v1/catalog', {\n    headers: {\n      'X-API-Key': apiKey,\n    },\n  });\n  const data = await response.json();\n  console.log('Total Products Synced:', data.total_products);\n  return data.products;\n}\n\nfetchWeave365Catalog();`, 'js-code')}
+                  >
+                    {copiedField === 'js-code' ? <Check size={14} /> : <Copy size={14} />} {copiedField === 'js-code' ? 'Copied' : 'Copy JavaScript'}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 6. Interactive Live API Test Console */}
-      <div className="dev-card">
-        <div className="dev-card-head">
-          <div className="dev-card-title">
-            <Play size={18} />
-            <h3>Live API Test Console</h3>
+            )}
           </div>
         </div>
+      )}
 
-        <div className="dev-test-console">
-          <div className="dev-test-bar">
-            <div className="dev-test-input-group">
-              <span className="dev-http-badge">GET</span>
-              <select
-                value={testEndpoint}
-                onChange={(e) => setTestEndpoint(e.target.value)}
-                className="dev-endpoint-select"
+      {/* 7. Interactive Live API Test Console - Reseller User Mode Only */}
+      {!isAdminMode && (
+        <div className="dev-card">
+          <div className="dev-card-head">
+            <div className="dev-card-title">
+              <Play size={18} />
+              <h3>Live API Test Console</h3>
+            </div>
+          </div>
+
+          <div className="dev-test-console">
+            <div className="dev-test-bar">
+              <div className="dev-test-input-group">
+                <span className="dev-http-badge">GET</span>
+                <select
+                  value={testEndpoint}
+                  onChange={(e) => setTestEndpoint(e.target.value)}
+                  className="dev-endpoint-select"
+                >
+                  <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
+                  <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
+                  <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
+                  <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
+                  <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleRunApiTest}
+                disabled={testLoading}
+                className="dev-send-btn"
               >
-                <option value="/api/v1/stock-status">/api/v1/stock-status (Real-Time Stock Map)</option>
-                <option value="/api/v1/catalog">/api/v1/catalog (Full B2B Product Feed)</option>
-                <option value="/api/v1/catalog?format=shopify">/api/v1/catalog?format=shopify (Shopify Feed)</option>
-                <option value="/api/v1/orders">/api/v1/orders (My API Orders & Live Tracking)</option>
-                <option value="/api/v1/me">/api/v1/me (Account & Usage Stats)</option>
-              </select>
+                {testLoading ? <RefreshCw size={15} className="spin-icon" /> : <Play size={15} />}
+                <span>{testLoading ? 'SENDING...' : 'SEND REQUEST'}</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleRunApiTest}
-              disabled={testLoading}
-              className="dev-send-btn"
-            >
-              {testLoading ? <RefreshCw size={15} className="spin-icon" /> : <Play size={15} />}
-              <span>{testLoading ? 'SENDING...' : 'SEND REQUEST'}</span>
-            </button>
-          </div>
 
-          {testResponse && (
-            <div className="dev-test-output">
-              <div className="dev-test-output-head">
-                <span>Response Status: <strong className={testStatus === 200 ? 'text-green' : 'text-red'}>HTTP {testStatus}</strong></span>
-                <button
-                  type="button"
-                  className="dev-copy-btn"
-                  onClick={() => copyToClipboard(JSON.stringify(testResponse, null, 2), 'test-json')}
-                >
-                  {copiedField === 'test-json' ? <Check size={12} /> : <Copy size={12} />} Copy JSON
-                </button>
+            {testResponse && (
+              <div className="dev-test-output">
+                <div className="dev-test-output-head">
+                  <span>Response Status: <strong className={testStatus === 200 ? 'text-green' : 'text-red'}>HTTP {testStatus}</strong></span>
+                  <button
+                    type="button"
+                    className="dev-copy-btn"
+                    onClick={() => copyToClipboard(JSON.stringify(testResponse, null, 2), 'test-json')}
+                  >
+                    {copiedField === 'test-json' ? <Check size={12} /> : <Copy size={12} />} Copy JSON
+                  </button>
+                </div>
+                <pre>{JSON.stringify(testResponse, null, 2)}</pre>
               </div>
-              <pre>{JSON.stringify(testResponse, null, 2)}</pre>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Confirmation Modal for Admin Actions */}
+      <ConfirmActionModal
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmLabel={confirmDialog.confirmLabel}
+        cancelLabel={confirmDialog.cancelLabel}
+        isDanger={confirmDialog.isDanger}
+        requiredInputText={confirmDialog.requiredInputText}
+        clientName={confirmDialog.clientName}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

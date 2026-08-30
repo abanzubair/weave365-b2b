@@ -46,7 +46,6 @@
 
 .top-bar svg,
 .benefit-strip svg,
-.stats-panel svg,
 .reseller-band svg {
   color: var(--gold);
   flex: 0 0 auto;
@@ -1513,7 +1512,6 @@
     width: min(1600px, calc(100% - var(--site-padding) * 2.5)) !important;
   }
 
-  .why-band,
   .benefit-strip,
   .reseller-band,
   .newsletter,

@@ -32,6 +32,8 @@ import {
   Palette,
   Boxes,
   Code2,
+  X,
+  ShieldCheck,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
@@ -39,6 +41,7 @@ import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
 // Import split sub-components
 import DashboardOverview from './admin/DashboardOverview.jsx';
+import AdminsManager from './admin/AdminsManager.jsx';
 import '../styles/admin.css';
 import BuyerPipeline from './admin/BuyerPipeline.jsx';
 import BlogManager from './admin/BlogManager.jsx';
@@ -109,9 +112,12 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     return 'dashboard';
   });
 
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   const setActiveTab = useCallback((tabKey) => {
     if (!tabKey) return;
     setActiveTabState(tabKey);
+    setIsMobileSidebarOpen(false);
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('weave365_admin_active_tab', tabKey);
@@ -481,34 +487,43 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       title: 'General',
       items: [
         { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
+        { key: 'admins', label: 'Admins', icon: ShieldCheck, badge: null },
         { key: 'pipeline', label: 'Accounts', icon: Users, badge: null },
-        { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null },
-        { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
+        { key: 'partners', label: 'Vendors', icon: Award, badge: null },
+        { key: 'stock', label: 'Products', icon: Boxes, badge: null },
       ],
     },
     {
       title: 'Sales',
       items: [
-        { key: 'buyer-activity', label: 'Buyer Activity', icon: Activity, badge: null },
+        { key: 'buyer-activity', label: 'Activity', icon: Activity, badge: null },
+        { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null },
         { key: 'tracking', label: 'Order', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
-        { key: 'stock', label: 'Stock Availability', icon: Boxes, badge: null },
         { key: 'invoice-slip', label: 'Invoice', icon: Printer, badge: null },
         { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
+        { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
       ],
     },
     {
       title: 'Settings',
       items: [
-        { key: 'customizer', label: 'Appearance', icon: Palette, badge: null },
-        { key: 'api-manager', label: 'Developer API', icon: Code2, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
-        { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
-        { key: 'partners', label: 'Vendor', icon: Award, badge: null },
+        { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
+        { key: 'customizer', label: 'Appearance', icon: Palette, badge: null },
+        { key: 'api-manager', label: 'Developer API', icon: Code2, badge: null },
       ],
     },
   ];
+
+  const activeTabItem = useMemo(() => {
+    for (const section of sidebarSections) {
+      const item = section.items.find((it) => it.key === activeTab);
+      if (item) return item;
+    }
+    return { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard };
+  }, [activeTab, sidebarSections]);
 
   if (!user) {
     return (
@@ -541,15 +556,22 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     );
   }
 
-
-
   const userName = user?.email ? user.email.split('@')[0] : 'admin';
   const notificationCount = pendingReviews.length;
 
   return (
     <section className="admin-layout-container">
-      {/* 1. Sidebar Panel */}
-      <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''}`}>
+      {/* Mobile Drawer Backdrop Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="admin-mobile-backdrop"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* 1. Sidebar Panel (Desktop & Mobile Drawer) */}
+      <aside className={`admin-sidebar-nav ${isSidebarOpen ? 'open' : 'closed'} ${isSidebarMinimized ? 'minimized' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
           {!isSidebarMinimized ? (
             <a
@@ -580,13 +602,24 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               />
             </a>
           )}
+          {/* Desktop minimize button */}
           <button
             type="button"
-            className="sidebar-toggle-btn"
+            className="sidebar-toggle-btn admin-desktop-toggle-btn"
             onClick={() => setIsSidebarMinimized((prev) => !prev)}
             title={isSidebarMinimized ? 'Expand Sidebar' : 'Minimize Sidebar'}
           >
             {isSidebarMinimized ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+          {/* Mobile drawer close button */}
+          <button
+            type="button"
+            className="sidebar-toggle-btn admin-mobile-close-btn"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            title="Close Menu"
+            aria-label="Close Menu"
+          >
+            <X size={18} />
           </button>
         </div>
 
@@ -623,6 +656,29 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
 
       {/* 2. Main content area */}
       <main className="admin-main-viewport">
+        {/* Mobile Top Sticky Navigation Bar */}
+        <header className="admin-mobile-top-bar">
+          <button
+            type="button"
+            className="admin-mobile-menu-btn"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            aria-label="Open Admin Navigation Menu"
+          >
+            <Menu size={20} />
+          </button>
+
+          <div className="admin-mobile-brand">
+            <img
+              src={assetSrc(brandLogo)}
+              alt={storeConfig.name}
+              style={{ height: '18px', width: 'auto', objectFit: 'contain' }}
+            />
+            <span className="admin-mobile-tab-badge">
+              {activeTabItem?.label || 'Admin'}
+            </span>
+          </div>
+        </header>
+
         <div className="admin-page-scrollable-content">
           {activeTab === 'dashboard' && (
             <DashboardOverview
@@ -632,6 +688,14 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               setSelectedUserList={setSelectedUserList}
               handleManualSync={handleManualSync}
               syncStatus={syncStatus}
+            />
+          )}
+
+          {activeTab === 'admins' && (
+            <AdminsManager
+              adminData={adminData}
+              user={user}
+              toggleResellerDashboard={toggleResellerDashboard}
             />
           )}
 

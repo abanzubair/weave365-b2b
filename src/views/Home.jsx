@@ -6,14 +6,13 @@
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Users, Award, ChevronLeft, ChevronRight, ShieldCheck, PackageCheck, Clock3, BadgePercent, LayoutGrid, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from 'lucide-react';
+import { ArrowRight, Award, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from 'lucide-react';
 import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { Stat } from '../components/Strips.jsx';
 import { WholesalePartnership } from '../components/WholesalePartnership.jsx';
 import { ResellerProgram } from '../components/ResellerProgram.jsx';
 import { OccasionShowcase } from '../components/OccasionShowcase.jsx';
@@ -787,22 +786,6 @@ export function Home({
           >
             <ChevronRight size={24} />
           </button>
-        </div>
-      </section>
-
-      <section id="why" className="why-band">
-        <div>
-          <SectionTitle title="Why Choose Us?" align="left" elementKey="why_choose_us_title" />
-          <p data-editable-key="why_choose_us_subtitle">We provide premium quality banarasi sarees at unbeatable wholesale prices to empower your journey, elevate your brand, and help your business grow more.</p>
-          <AppLink to="about" className="primary-button" data-editable-key="why_choose_us_cta" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-            Know More
-          </AppLink>
-        </div>
-        <div className="stats-panel">
-          <Stat icon={<LayoutGrid />} value="1000+" label="Unique Designs" />
-          <Stat icon={<Users />} value="500+" label="Active Buyers" />
-          <Stat icon={<Award />} value="10+" label="Years of Trust" />
-          <Stat icon={<ShieldCheck />} value="95%" label="Repeat Buyers" />
         </div>
       </section>
 

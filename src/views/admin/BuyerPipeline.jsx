@@ -11,8 +11,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { normalizeBuyerType, isVendorProfile } from '../../utils/buyerAccess.js';
+import { adminEmails } from '../../config.js';
 import {
   joinByUser,
+  isAdminUser,
 } from './AdminShared.jsx';
 
 export default function BuyerPipeline({
@@ -51,7 +53,11 @@ export default function BuyerPipeline({
   }, [adminData?.optional?.reseller_storefronts]);
 
   const sortedProfiles = useMemo(() => {
-    let profiles = adminData.profiles || [];
+    let profiles = (adminData.profiles || []).filter((p) => {
+      const email = String(p.email || '').toLowerCase().trim();
+      const isConfiguredAdmin = (adminEmails || []).some((adm) => String(adm).toLowerCase().trim() === email);
+      return !isAdminUser(p) && !isConfiguredAdmin && p.role !== 'admin';
+    });
     if (userTypeFilter === 'customer') {
       profiles = profiles.filter((p) => !isVendorProfile(p));
     } else if (userTypeFilter === 'vendor') {
