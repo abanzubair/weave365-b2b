@@ -82,7 +82,17 @@ const nextConfig = {
       },
       {
         source: '/banarasi-fabrics',
-        destination: '/fabrics',
+        destination: '/catalogue',
+        permanent: true,
+      },
+      {
+        source: '/fabrics',
+        destination: '/catalogue',
+        permanent: true,
+      },
+      {
+        source: '/fabric',
+        destination: '/catalogue',
         permanent: true,
       },
       {
@@ -103,11 +113,6 @@ const nextConfig = {
       {
         source: '/dupatta',
         destination: '/dupattas',
-        permanent: true,
-      },
-      {
-        source: '/fabric',
-        destination: '/fabrics',
         permanent: true,
       },
     ];

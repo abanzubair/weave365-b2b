@@ -38,12 +38,11 @@ const pluralizeCategory = (cat) => {
   if (lower === 'suit') return 'Suits';
   if (lower === 'lehenga') return 'Lehengas';
   if (lower === 'dupatta') return 'Dupattas';
-  if (lower === 'fabric') return 'Fabrics';
   if (lower.endsWith('s')) return cat;
   return cat + 's';
 };
 
-const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
+const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
 
 import { useStorefront } from '../store/useStorefront.js';
 
@@ -54,11 +53,14 @@ export function MobileMenu(props) {
   const navigate = props.navigate;
   const setCategory = props.setCategory;
   const user = props.user ?? store.user;
-  const categories = (props.categories && props.categories.length > 0)
+  const rawCategories = (props.categories && props.categories.length > 0)
     ? props.categories
     : (store.configOptions?.categories?.length > 0
       ? ['All', ...store.configOptions.categories]
       : defaultCategoryNames);
+  const categories = rawCategories.filter(
+    (cat) => cat && cat.toLowerCase().trim() !== 'fabric' && cat.toLowerCase().trim() !== 'fabrics'
+  );
   const openAuth = props.openAuth || (() => {
     if (navigate) navigate('signup');
   });

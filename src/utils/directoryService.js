@@ -37,7 +37,6 @@ export const DEFAULT_DIRECTORY_CONFIG = {
         { label: 'Wholesale Suit Catalog', type: 'category', target: 'Suit', path: '/suits' },
         { label: 'Wholesale Silk Dupattas', type: 'category', target: 'Dupatta', path: '/dupattas' },
         { label: 'Designer Banarasi Lehengas', type: 'category', target: 'Lehenga', path: '/lehengas' },
-        { label: 'Handloom Unstitched Fabrics', type: 'category', target: 'Fabric', path: '/fabrics' },
         { label: 'Under 999', type: 'category', target: 'Under 999', path: '/under-999' }
       ]
     },

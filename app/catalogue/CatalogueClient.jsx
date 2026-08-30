@@ -57,10 +57,12 @@ export default function CatalogueClient({
   }, [user, buyerProfile]);
 
   const categories = useMemo(() => {
-    if (config.categories?.length > 0) {
-      return ['All', ...config.categories];
-    }
-    return ['All', ...homeCategoryNames];
+    const list = config.categories?.length > 0
+      ? ['All', ...config.categories]
+      : ['All', ...homeCategoryNames];
+    return list.filter(
+      (c) => c && c.toLowerCase().trim() !== 'fabric' && c.toLowerCase().trim() !== 'fabrics'
+    );
   }, [config.categories]);
 
   const fabrics = useMemo(() => {

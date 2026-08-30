@@ -32,7 +32,6 @@ export const categoryCodes = {
   2: 'Suit',
   3: 'Dupatta',
   4: 'Lehenga',
-  5: 'Fabric',
   6: 'Under 999',
 };
 
@@ -69,19 +68,16 @@ export const seoCategoryRoutes = {
   'suits': 'Suit',
   'dupattas': 'Dupatta',
   'lehengas': 'Lehenga',
-  'fabrics': 'Fabric',
   'under-999': 'Under 999',
   // Backward compatibility / legacy aliases:
   'saree': 'Saree',
   'suit': 'Suit',
   'dupatta': 'Dupatta',
   'lehenga': 'Lehenga',
-  'fabric': 'Fabric',
   'banarasi-sarees': 'Saree',
   'banarasi-suits': 'Suit',
   'banarasi-lehengas': 'Lehenga',
   'banarasi-dupattas': 'Dupatta',
-  'banarasi-fabrics': 'Fabric',
 };
 
 /**
@@ -97,8 +93,6 @@ export const seoCategoryMap = {
   'lehengas': 'lehengas',
   'dupatta': 'dupattas',
   'dupattas': 'dupattas',
-  'fabric': 'fabrics',
-  'fabrics': 'fabrics',
   'under 999': 'under-999',
   'under-999': 'under-999',
 };
@@ -168,13 +162,11 @@ export const NON_PRODUCT_ROUTES = new Set([
   'suits',
   'dupattas',
   'lehengas',
-  'fabrics',
   'under-999',
   'banarasi-sarees',
   'banarasi-suits',
   'banarasi-dupattas',
   'banarasi-lehengas',
-  'banarasi-fabrics',
 ]);
 
 export function getProductCategorySlug(productId, productCategory = null) {

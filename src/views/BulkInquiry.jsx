@@ -39,7 +39,7 @@ const initialInquiry = {
   message: '',
 };
 
-const categories = ['Sarees', 'Suits', 'Dupattas', 'Lehengas', 'Fabric', 'Mixed order'];
+const categories = ['Sarees', 'Suits', 'Dupattas', 'Lehengas', 'Mixed order'];
 const timelines = ['Urgent', 'Within 7 days', 'Within 15 days', 'Flexible'];
 
 export function BulkInquiry({ navigate }) {

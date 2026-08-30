@@ -178,13 +178,43 @@ function normalizeLoadedProduct(product) {
     if (tag && tag.key === 'new-arrivals') {
       return { key: 'new-arrival', label: 'New Arrival' };
     }
+    if (tag && (tag.key === 'archive' || tag.key === 'archived' || tag.key === 'archieved')) {
+      return { key: 'archived', label: 'Archived' };
+    }
     return tag;
   });
 
-  const hasNewArrivalTag = statusTags.some((t) => t.key === 'new-arrival');
-  let isNew = Boolean(product.isNew || hasNewArrivalTag);
+  const hasArchivedTag = statusTags.some((t) => t.key === 'archived' || t.key === 'archive' || t.key === 'archieved');
 
-  if (!isNew && product.stockInDate) {
+  const hasRawArchive = (function() {
+    if (!product.raw) return false;
+    for (const [key, val] of Object.entries(product.raw)) {
+      const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
+      const normVal = String(val || '').toLowerCase().trim();
+      if (normKey === 'archive' || normKey === 'archived' || normKey === 'isarchived' || normKey === 'archivestatus') {
+        if (['true', 'yes', 'y', '1', 'archive', 'archived', 'archieved', 'hidden', 'inactive'].includes(normVal)) {
+          return true;
+        }
+      }
+      if (normKey === 'status' || normKey === 'tag' || normKey === 'stockstatus' || normKey === 'visibility' || normKey === 'stock') {
+        if (['archive', 'archived', 'archieved', 'hidden', 'inactive', 'disabled', 'draft', 'delisted', 'deactivated'].includes(normVal)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  })();
+
+  const isArchived = Boolean(product.isArchived || hasArchivedTag || hasRawArchive);
+
+  if (isArchived && !hasArchivedTag) {
+    statusTags = [{ key: 'archived', label: 'Archived' }, ...statusTags];
+  }
+
+  const hasNewArrivalTag = statusTags.some((t) => t.key === 'new-arrival');
+  let isNew = !isArchived && Boolean(product.isNew || hasNewArrivalTag);
+
+  if (!isNew && !isArchived && product.stockInDate) {
     const stockTime = new Date(product.stockInDate).getTime();
     if (!isNaN(stockTime) && (Date.now() - stockTime) <= 30 * 24 * 60 * 60 * 1000) {
       isNew = true;
@@ -198,6 +228,7 @@ function normalizeLoadedProduct(product) {
   return {
     ...product,
     isNew,
+    isArchived,
     statusTags: dedupeStatusTags(statusTags),
   };
 }
@@ -312,7 +343,34 @@ export async function parseProductCsv(text) {
     }
 
     const category = row.Category || categoryCodes[codeInfo.category] || 'Saree';
-    const rawStatus = row.Tag || row.Status;
+
+    // Check if the row has any explicit archive column or tag
+    const isExplicitlyArchived = (function() {
+      for (const [key, val] of Object.entries(row)) {
+        const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
+        const normVal = String(val || '').toLowerCase().trim();
+        if (normKey === 'archive' || normKey === 'archived' || normKey === 'isarchived' || normKey === 'archivestatus') {
+          if (['true', 'yes', 'y', '1', 'archive', 'archived', 'archieved', 'hidden', 'inactive'].includes(normVal)) {
+            return true;
+          }
+        }
+        if (normKey === 'status' || normKey === 'tag' || normKey === 'stockstatus' || normKey === 'visibility' || normKey === 'stock') {
+          if (['archive', 'archived', 'archieved', 'hidden', 'inactive', 'disabled', 'draft', 'delisted', 'deactivated', 'closed'].includes(normVal)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    })();
+
+    const rawStatus = [row.Tag, row.Status, row['Stock Status'], row.StockStatus, row.Archive, row.Archived]
+      .filter(Boolean)
+      .join(',');
+    let initialStatusTags = parseStatusTags(rawStatus);
+    if (isExplicitlyArchived && !initialStatusTags.some(t => t.key === 'archived')) {
+      initialStatusTags.push({ key: 'archived', label: 'Archived' });
+    }
+
     const video = (function() {
       const key = Object.keys(row).find(k => {
         const norm = k.trim().toLowerCase().replace(/\s+/g, '');
@@ -342,7 +400,8 @@ export async function parseProductCsv(text) {
       purity: row.Purity,
       type: row.Type,
       status: rawStatus,
-      statusTags: parseStatusTags(rawStatus),
+      statusTags: initialStatusTags,
+      isArchived: isExplicitlyArchived,
       stockInDate: parseStockInDate(row),
       title: productTitle(row, category),
       metaTitle: row['Meta Title'] || '',
@@ -420,14 +479,14 @@ export async function parseProductCsv(text) {
     const isDealOfDay = statusKeys.has('todays-deal');
     const isTopSeller = statusKeys.has('bestseller');
     const isManualNew = statusKeys.has('new-arrival') || statusKeys.has('new-arrivals');
-    const isArchived = statusKeys.has('archived');
+    const isArchived = Boolean(product.isArchived) || statusKeys.has('archived') || statusKeys.has('archive');
 
     const stockTime = product.stockInDate ? new Date(product.stockInDate).getTime() : NaN;
-    const isDateNew = !isNaN(stockTime)
+    const isDateNew = !isArchived && !isNaN(stockTime)
       ? (now.getTime() - stockTime) <= 30 * 24 * 60 * 60 * 1000
       : false;
 
-    const isNew = isManualNew || isDateNew;
+    const isNew = !isArchived && (isManualNew || isDateNew);
     const statusTags = isNew && !isManualNew
       ? dedupeStatusTags([{ key: 'new-arrival', label: 'New Arrival' }, ...baseStatusTags])
       : baseStatusTags;
@@ -763,6 +822,17 @@ function normalizeStatusTag(value) {
     'out of stock': { key: 'out-of-stock', label: 'Out of Stock' },
     'out-of-stock': { key: 'out-of-stock', label: 'Out of Stock' },
     'archived': { key: 'archived', label: 'Archived' },
+    'archive': { key: 'archived', label: 'Archived' },
+    'archieved': { key: 'archived', label: 'Archived' },
+    'is-archived': { key: 'archived', label: 'Archived' },
+    'is archived': { key: 'archived', label: 'Archived' },
+    'inactive': { key: 'archived', label: 'Archived' },
+    'hidden': { key: 'archived', label: 'Archived' },
+    'draft': { key: 'archived', label: 'Archived' },
+    'disabled': { key: 'archived', label: 'Archived' },
+    'delisted': { key: 'archived', label: 'Archived' },
+    'closed': { key: 'archived', label: 'Archived' },
+    'deactivated': { key: 'archived', label: 'Archived' },
   };
 
   return tagMap[normalized] || {

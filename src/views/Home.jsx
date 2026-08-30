@@ -28,7 +28,7 @@ import '../styles/heroPremium.css';
 
 export const SHOW_OVERLAP_HERO = true;
 
-export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
+export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
 
 const defaultHero = {
   image: 'https://assets.weave365.com/assets/banner/hero1.webp',
@@ -159,10 +159,10 @@ const scrollProductRail = (rowId, direction) => {
   const rail = document.getElementById(rowId);
   if (!rail) return;
 
-  const card = rail.querySelector('.product-card, .blog-card');
+  const card = rail.querySelector('.product-card, .blog-card, .category-card');
   const styles = window.getComputedStyle(rail);
   const gap = parseFloat(styles.columnGap || styles.gap) || 0;
-  const distance = card ? card.getBoundingClientRect().width + gap : rail.clientWidth;
+  const distance = card ? (card.getBoundingClientRect().width + gap) * (rail.classList.contains('category-grid') ? 2 : 1) : rail.clientWidth;
 
   rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
 };
@@ -193,9 +193,31 @@ export function Home({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
+  const [activeCategoryPage, setActiveCategoryPage] = useState(0);
+  const categoryRailRef = useRef(null);
   const [showNewHero, setShowNewHero] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [seoExpanded, setSeoExpanded] = useState(false);
+
+  const handleCategoryScroll = () => {
+    const el = categoryRailRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) return;
+    const progress = el.scrollLeft / maxScroll;
+    const page = Math.round(progress * 2);
+    setActiveCategoryPage(Math.min(Math.max(page, 0), 2));
+  };
+
+  const scrollToCategoryPage = (pageIndex) => {
+    const el = categoryRailRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    el.scrollTo({
+      left: (pageIndex / 2) * maxScroll,
+      behavior: 'smooth',
+    });
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -435,7 +457,8 @@ export function Home({
   }, [heroSlides]);
 
   const categoryPreviewImages = useMemo(() => {
-    const productImages = expandedProductCards(products).map((item) => item.image).filter(Boolean);
+    const unarchived = products.filter(p => !p.isArchived);
+    const productImages = expandedProductCards(unarchived).map((item) => item.image).filter(Boolean);
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
@@ -664,7 +687,13 @@ export function Home({
 
       <section className="section category-section">
         <SectionTitle title="Shop By Category" align="left" />
-        <div className="category-grid">
+
+        <div
+          className="category-grid"
+          id="category-grid-rail"
+          ref={categoryRailRef}
+          onScroll={handleCategoryScroll}
+        >
           {homeCategoryNames.map((name, index) => {
             const slug = getCategorySlug(name);
             const targetHref = `/${slug}`;
@@ -696,6 +725,20 @@ export function Home({
             );
           })}
         </div>
+
+        {/* Mobile Pagination Dots */}
+        <div className="category-dots-indicator" aria-label="Category pages">
+          {[0, 1, 2].map((idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`category-dot ${activeCategoryPage === idx ? 'active' : ''}`}
+              onClick={() => scrollToCategoryPage(idx)}
+              aria-label={`Go to category slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+
         <AppLink to="catalogue" className="center-button" navigate={navigate} style={{ textDecoration: 'none' }}>
           View All Categories
         </AppLink>

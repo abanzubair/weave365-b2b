@@ -469,22 +469,84 @@
     font-size: 22px;
   }
 
-  /* Category Grid */
+  /* Category Grid: Exactly 2 Full Cards with Indicator */
   .category-grid {
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
     gap: 12px;
+    margin-top: 10px;
+    padding: 2px 0 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .category-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-card {
+    flex: 0 0 calc((100% - 12px) / 2);
+    width: calc((100% - 12px) / 2);
+    min-width: calc((100% - 12px) / 2);
+    max-width: calc((100% - 12px) / 2);
+    aspect-ratio: 1 / 1;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    box-sizing: border-box;
+  }
+
+  .category-dots-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+
+  .category-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .category-dot.active {
+    width: 18px;
+    background: var(--primary, #9a6435);
+    border-radius: 4px;
   }
 
   @media screen and (max-width: 480px) {
     .category-grid {
-      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
+    }
+
+    .category-card {
+      flex: 0 0 calc((100% - 10px) / 2);
+      width: calc((100% - 10px) / 2);
+      min-width: calc((100% - 10px) / 2);
+      max-width: calc((100% - 10px) / 2);
     }
   }
 
   @media screen and (max-width: 360px) {
     .category-grid {
-      gap: 6px;
+      gap: 8px;
+    }
+
+    .category-card {
+      flex: 0 0 calc((100% - 8px) / 2);
+      width: calc((100% - 8px) / 2);
+      min-width: calc((100% - 8px) / 2);
+      max-width: calc((100% - 8px) / 2);
     }
   }
 

@@ -8,7 +8,7 @@ import { useStorefront } from '../store/useStorefront.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 
-const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Fabric', 'Under 999'];
+const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
 
 export const pluralizeCategory = (cat) => {
   if (!cat) return '';
@@ -19,7 +19,6 @@ export const pluralizeCategory = (cat) => {
   if (lower === 'suit') return 'Suits';
   if (lower === 'lehenga') return 'Lehengas';
   if (lower === 'dupatta') return 'Dupattas';
-  if (lower === 'fabric') return 'Fabrics';
   if (lower.endsWith('s')) return cat;
   return cat + 's';
 };
@@ -86,11 +85,14 @@ export function SiteHeader(props) {
   const brandLogoSrc = props.brandLogoSrc || assetSrc(brandLogo);
   const navigate = props.navigate;
   const categoriesRef = props.categoriesRef || internalCategoriesRef;
-  const categories = (props.categories && props.categories.length > 0)
+  const rawCategories = (props.categories && props.categories.length > 0)
     ? props.categories
     : (store.configOptions?.categories?.length > 0
       ? ['All', ...store.configOptions.categories]
       : defaultCategoryNames);
+  const categories = rawCategories.filter(
+    (cat) => cat && cat.toLowerCase().trim() !== 'fabric' && cat.toLowerCase().trim() !== 'fabrics'
+  );
   const setCategory = props.setCategory;
   const partnerNavRef = props.partnerNavRef || internalPartnerNavRef;
   const searchActive = props.searchActive ?? store.searchActive;
@@ -315,7 +317,7 @@ export function SiteHeader(props) {
                   setDropdownOpen(null);
                 }}
               >
-                <span>Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
+                <span>My Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
               </button>
               <button
                 type="button"

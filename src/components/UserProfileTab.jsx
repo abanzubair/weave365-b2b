@@ -36,7 +36,7 @@ const countryCodes = [
   { value: '+965', label: 'Kuwait (+965)' },
 ];
 
-const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Fabric', 'Under 999'];
+const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Under 999'];
 
 const ACCOUNT_ROLE_OPTIONS = [
   { id: 'customer', label: 'Customer', buyerType: 'customer', buyerSubtype: 'Customer' },

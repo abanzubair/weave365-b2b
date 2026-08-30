@@ -199,6 +199,16 @@
   color: var(--gold) !important;
 }
 
+.main-nav .dropdown-menu button,
+.main-nav .dropdown-menu a {
+  font-family: var(--font-body) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: capitalize !important;
+  border-bottom: 0 !important;
+}
+
 .nav-item-dropdown {
   position: relative;
   display: flex;

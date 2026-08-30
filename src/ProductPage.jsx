@@ -638,11 +638,11 @@ export function ProductDetail({
     });
   }, [product.statusTags, product.isNew, canViewPrice, priceAccess, product.category]);
   const related = useMemo(() => {
-    let others = products.filter((item) => item.id !== product.id && item.category === product.category);
+    let others = products.filter((item) => item.id !== product.id && item.category === product.category && !item.isArchived);
 
     // Fall back to all products if the same-category list is too small (e.g. less than 5)
     if (others.length < 5) {
-      others = products.filter((item) => item.id !== product.id);
+      others = products.filter((item) => item.id !== product.id && !item.isArchived);
     }
 
     const productPattern = product.pattern?.trim().toLowerCase();

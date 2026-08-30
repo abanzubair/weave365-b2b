@@ -111,7 +111,7 @@
   font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 600;
-  color: var(--gold-dark, #805d31);
+  color: var(--ink, #1a1a1a);
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
@@ -130,7 +130,7 @@
   left: 0;
   width: 100%;
   height: 1.5px;
-  background: var(--gold-dark, #805d31);
+  background: var(--ink, #1a1a1a);
   transform: scaleX(0.8);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -146,7 +146,7 @@
 
 .reseller-cta-link .link-arrow {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  color: var(--gold-dark, #805d31);
+  color: var(--ink, #1a1a1a);
 }
 
 .reseller-cta-link.secondary-cta .link-arrow {
