@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { ChevronDown, Search, User } from 'lucide-react';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
-import { storeConfig, getCategorySlug } from '../config.js';
+import { storeConfig, getCategorySlug, adminEmails } from '../config.js';
 import { useStorefront } from '../store/useStorefront.js';
 
 import brandLogo from '../../assets/Weave365.svg';
@@ -108,7 +108,8 @@ export function SiteHeader(props) {
       })()
     : 'Log In';
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
-  const isAdmin = props.isAdmin;
+  const userEmail = (user?.email || '').toLowerCase().trim();
+  const isAdmin = props.isAdmin ?? Boolean(userEmail && adminEmails.includes(userEmail));
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
@@ -299,6 +300,18 @@ export function SiteHeader(props) {
 
           {user && (
             <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigate) navigate('admin');
+                    else window.location.href = '/admin';
+                    setDropdownOpen(null);
+                  }}
+                >
+                  Admin Panel
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

@@ -235,6 +235,36 @@ function formatForShopify(products) {
     const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
     const suggestedMrp = Number(firstPrices.single || p.mrp || p.suggestedMrp || Math.round(resellerPrice * 1.5));
 
+    const hasExplicitVariants = Array.isArray(p.variants) && p.variants.length > 0;
+    const shopifyVariants = hasExplicitVariants
+      ? p.variants.map((v, idx) => {
+          const vPrices = v.prices || {};
+          const vPrice = Number(vPrices.b2r || vPrices.single || resellerPrice);
+          return {
+            id: `${p.id || p.groupKey}-${idx}`,
+            title: v.color || `Option ${idx + 1}`,
+            sku: v.code || `${p.id || p.groupKey}-${(v.color || 'VAR').toUpperCase().slice(0, 3)}`,
+            price: vPrice,
+            compare_at_price: suggestedMrp,
+            inventory_management: 'shopify',
+            inventory_policy: 'deny',
+            inventory_quantity: p.isOutOfStock ? 0 : 5,
+            option1: v.color || 'Default',
+            image: v.image || p.images?.[0] || '',
+          };
+        })
+      : (p.colors || ['Default']).map((color, idx) => ({
+          id: `${p.id || p.groupKey}-${idx}`,
+          title: color,
+          sku: `${p.id || p.groupKey}-${color.toUpperCase().slice(0, 3)}`,
+          price: resellerPrice,
+          compare_at_price: suggestedMrp,
+          inventory_management: 'shopify',
+          inventory_policy: 'deny',
+          inventory_quantity: p.isOutOfStock ? 0 : 5,
+          option1: color,
+        }));
+
     return {
       id: p.id || p.groupKey,
       title: p.title || p.name,
@@ -244,17 +274,7 @@ function formatForShopify(products) {
       product_type: p.category || 'Sarees',
       tags: [p.fabric, p.weave, p.category, p.stockStatusLabel || 'Ready Stock'].filter(Boolean).join(', '),
       published: !p.isOutOfStock && !p.isArchived,
-      variants: (p.colors || ['Default']).map((color, idx) => ({
-        id: `${p.id || p.groupKey}-${idx}`,
-        title: color,
-        sku: `${p.id || p.groupKey}-${color.toUpperCase().slice(0, 3)}`,
-        price: resellerPrice,
-        compare_at_price: suggestedMrp,
-        inventory_management: 'shopify',
-        inventory_policy: 'deny',
-        inventory_quantity: p.isOutOfStock ? 0 : 5,
-        option1: color,
-      })),
+      variants: shopifyVariants,
       images: (p.images || []).map((src, pos) => ({
         src,
         position: pos + 1,
@@ -351,6 +371,26 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         const firstPrices = p.variants?.[0]?.prices || {};
         const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
 
+        const extractedColors = Array.isArray(p.colorOptions) && p.colorOptions.length > 0
+          ? p.colorOptions.map(c => c.name).filter(Boolean)
+          : (Array.isArray(p.colors) && p.colors.length > 0
+            ? p.colors
+            : (Array.isArray(p.variants)
+              ? Array.from(new Set(p.variants.map(v => v.color).filter(Boolean)))
+              : []));
+
+        const structuredVariants = (p.variants || []).map(v => {
+          const vPrices = v.prices || {};
+          const vPrice = Number(vPrices.b2r || vPrices.single || resellerPrice);
+          return {
+            code: v.code,
+            sku: v.code,
+            color: v.color || '',
+            image: v.image || '',
+            price: vPrice,
+          };
+        });
+
         return {
           id: p.id || p.groupKey,
           sku: p.id || p.groupKey,
@@ -363,7 +403,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
           stock_status: p.stockStatusOverride || (p.isOutOfStock ? 'out-of-stock' : 'ready-stock'),
           stock_status_label: p.stockStatusLabel || (p.isOutOfStock ? 'Out of Stock' : 'Ready Stock'),
           is_available: !p.isOutOfStock && !p.isArchived,
-          colors: p.colors || [],
+          colors: extractedColors,
+          color_options: p.colorOptions || [],
+          variants: structuredVariants,
           images: p.images || [],
           description: p.description || '',
         };
@@ -773,34 +815,73 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       // Normalize items array with full catalog metadata
       const normalizedItems = items.map((item) => {
         const sku = String(item.sku || item.variant_code || item.id || '').trim();
+        const skuLower = sku.toLowerCase();
+        const baseSku = skuLower.includes('-') ? skuLower.split('-')[0].trim() : skuLower;
         const itemColor = String(item.color || item.title || '').trim();
+        const itemColorLower = itemColor.toLowerCase();
 
-        // Match in catalog
-        const matchedProduct = (catalogList || []).find(p => {
+        // 1. Match in catalog (exact match first, then base SKU fallback)
+        let matchedProduct = (catalogList || []).find(p => {
           const pId = String(p.id || '').toLowerCase();
           const pGroup = String(p.groupKey || '').toLowerCase();
-          if (pId === sku.toLowerCase()) return true;
-          if (pGroup === sku.toLowerCase()) return true;
-          if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === sku.toLowerCase())) return true;
+          if (pId === skuLower || pGroup === skuLower) return true;
+          if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === skuLower)) return true;
           return false;
         });
 
-        let matchedVariant = null;
-        if (matchedProduct?.variants) {
-          matchedVariant = matchedProduct.variants.find(v => 
-            String(v.code || '').toLowerCase() === sku.toLowerCase() ||
-            (itemColor && String(v.colorName || '').toLowerCase() === itemColor.toLowerCase())
-          );
+        if (!matchedProduct && baseSku) {
+          matchedProduct = (catalogList || []).find(p => {
+            const pId = String(p.id || '').toLowerCase();
+            const pGroup = String(p.groupKey || '').toLowerCase();
+            return pId === baseSku || pGroup === baseSku;
+          });
         }
 
-        const colorName = itemColor || matchedVariant?.colorName || matchedProduct?.colors?.[0] || 'Standard';
+        // 2. Resolve matched variant / color
+        let matchedVariant = null;
+        if (matchedProduct?.variants && matchedProduct.variants.length > 0) {
+          // Try exact variant code match
+          matchedVariant = matchedProduct.variants.find(v => String(v.code || '').toLowerCase() === skuLower);
+          
+          // Try color name match if not matched
+          if (!matchedVariant && itemColorLower) {
+            matchedVariant = matchedProduct.variants.find(v => 
+              String(v.color || v.colorName || '').toLowerCase() === itemColorLower
+            );
+          }
+
+          // Try matching color from colorOptions if still not matched
+          if (!matchedVariant && itemColorLower && Array.isArray(matchedProduct.colorOptions)) {
+            const colorOption = matchedProduct.colorOptions.find(c => 
+              String(c.name || '').toLowerCase() === itemColorLower
+            );
+            if (colorOption) {
+              matchedVariant = {
+                color: colorOption.name,
+                image: colorOption.image,
+              };
+            }
+          }
+
+          // Fallback to the first variant or cover variant
+          if (!matchedVariant) {
+            matchedVariant = matchedProduct.variants[0];
+          }
+        }
+
+        const colorName = itemColor || matchedVariant?.color || matchedVariant?.colorName || matchedProduct?.colorOptions?.[0]?.name || 'Standard';
         
         let imageSrc = item.image || item.image_url || '';
         if (!imageSrc && matchedProduct) {
-          if (colorName && matchedProduct.colorImages && matchedProduct.colorImages[colorName]) {
+          if (colorName && matchedProduct.colorOptions) {
+            const matchedColorOpt = matchedProduct.colorOptions.find(c => String(c.name || '').toLowerCase() === colorName.toLowerCase());
+            if (matchedColorOpt?.image) imageSrc = matchedColorOpt.image;
+          }
+          if (!imageSrc && matchedProduct.colorImages && matchedProduct.colorImages[colorName]) {
             imageSrc = matchedProduct.colorImages[colorName];
-          } else {
-            imageSrc = matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
+          }
+          if (!imageSrc) {
+            imageSrc = matchedVariant?.image || matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
           }
         }
 
@@ -814,8 +895,8 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
         return {
           sku: sku,
-          variant_code: sku,
-          product_id: matchedProduct?.id || sku,
+          variant_code: matchedVariant?.code || sku,
+          product_id: matchedProduct?.id || baseSku || sku,
           product_title: productTitle,
           color: colorName,
           quantity: Math.max(1, parseInt(item.quantity || 1, 10)),

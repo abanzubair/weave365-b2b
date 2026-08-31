@@ -15,7 +15,12 @@ import {
   CheckCircle2, 
   MessageSquareText,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Copy,
+  Check,
+  PackageCheck,
+  MapPin,
+  Clock
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
@@ -29,6 +34,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [catalogProducts, setCatalogProducts] = useState(products || []);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyId = () => {
+    if (!order?.id) return;
+    navigator.clipboard.writeText(order.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Ensure catalog products are available for image & title lookups
   useEffect(() => {
@@ -235,8 +248,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
   // Status mapping and step calculation
   const steps = [
-    { label: 'Payment Sent', icon: CreditCard, key: 'payment_sent' },
-    { label: 'Payment Received', icon: ShieldCheck, key: 'verified' },
+    { label: 'Processing Payment', icon: CreditCard, key: 'payment_sent' },
+    { label: 'Quality Check & Packing', icon: PackageCheck, key: 'verified' },
     { label: 'Dispatched', icon: Truck, key: 'dispatched' },
     { label: 'Delivered', icon: Gift, key: 'delivered' }
   ];
@@ -267,9 +280,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       case 'verified':
       case 'processing':
       case 'active':
-        return 'Payment verified. Your order is currently being prepared and undergoes our 5-step quality verification before dispatch.';
+        return 'Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.';
       default:
-        return 'We have received your payment screenshot. Our finance team is verifying the transaction, and we will update your tracking status shortly.';
+        return 'We have received your payment screenshot. Our finance team is verifying the transaction (this verification could take up to 2–4 hours). We will update your tracking status shortly.';
     }
   };
 
@@ -363,14 +376,25 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       {order && (
         <>
           <div className="order-tracking-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-              <div>
-                <span className="lookup-label" style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem' }}>Order Tracking ID</span>
-                <code style={{ fontSize: 'var(--body-size)', color: 'var(--muted)', fontWeight: 600 }}>{order.id}</code>
+            {/* Header Meta Strip */}
+            <div className="tracking-meta-header">
+              <div className="tracking-meta-left">
+                <div className="tracking-id-display-row">
+                  <strong className="tracking-short-id">#{String(order.id).substring(0, 8)}</strong>
+                  <code className="tracking-full-id">{order.id}</code>
+                  <button 
+                    type="button"
+                    onClick={handleCopyId}
+                    className={`tracking-copy-btn ${copied ? 'copied' : ''}`}
+                    title="Copy Order ID"
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span className="lookup-label" style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem' }}>Order Date</span>
-                <span style={{ fontSize: 'var(--body-size)', fontWeight: 600, color: 'var(--ink)' }}>
+              <div className="tracking-meta-right">
+                <span className="tracking-date-val">
                   {new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',
@@ -397,10 +421,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 return (
                   <div 
                     key={idx} 
-                    className={`tracking-step-node ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}
+                    className={`tracking-step-node ${isCompleted && !isActive ? 'completed' : ''} ${isActive ? 'active' : ''}`}
                   >
                     <div className="tracking-step-icon-wrap">
-                      {isCompleted && !isActive ? <CheckCircle2 size={18} /> : <StepIcon size={18} />}
+                      {isCompleted && !isActive ? <Check size={16} strokeWidth={2.5} /> : <StepIcon size={16} />}
                     </div>
                     <span className="tracking-step-label">{step.label}</span>
                   </div>
@@ -411,7 +435,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             {/* Status Update Alert Box */}
             <div className="status-update-panel">
               <div className="status-header-row">
-                <span className="status-title">Latest Status Update</span>
+                <div className="status-title-group">
+                  <span className="status-pulse-dot" />
+                  <span className="status-title">Latest Status Update</span>
+                </div>
                 <span className="status-date">
                   Updated: {new Date(order.updated_at || order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric',
@@ -428,91 +455,97 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             <div className="tracking-details-grid">
               {/* Shipping Method / Carrier */}
               <div className="details-card">
-                <h4><Truck size={14} /> Shipping details</h4>
+                <div className="details-card-header">
+                  <span className="details-card-title">
+                    <Truck size={14} /> SHIPPING & FULFILLMENT
+                  </span>
+                </div>
                 {order.tracking_carrier ? (
-                  <div>
-                    <p style={{ marginBottom: '0.5rem' }}>
-                      Carrier: <strong>{order.tracking_carrier}</strong>
-                    </p>
-                    {order.tracking_number ? (
-                      <p>
-                        Tracking ID:{' '}
+                  <div className="carrier-assigned-box">
+                    <div className="carrier-badge-row">
+                      <span className="carrier-name-tag">{order.tracking_carrier}</span>
+                      {order.tracking_number && (
                         <a 
                           href={getCarrierUrl(order.tracking_carrier, order.tracking_number)} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="tracking-id-link"
+                          className="carrier-live-track-btn"
                         >
-                          {order.tracking_number} <ExternalLink size={12} />
+                          Track on {order.tracking_carrier} <ExternalLink size={12} />
                         </a>
+                      )}
+                    </div>
+                    {order.tracking_number ? (
+                      <p className="carrier-awb-line">
+                        AWB / Tracking ID: <strong>{order.tracking_number}</strong>
                       </p>
                     ) : (
-                      <p style={{ color: 'var(--muted)', fontSize: 'var(--small-size)' }}>Tracking number will update shortly.</p>
+                      <p className="carrier-sub-hint">Tracking AWB is being synchronized.</p>
                     )}
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--muted)', fontSize: 'var(--small-size)' }}>
-                    Shipping carrier and tracking ID will be listed here as soon as the order is handed over to our shipping partner.
-                  </p>
+                  <div className="carrier-pending-box">
+                    <p className="carrier-status-note">
+                      Order is undergoing 5-point quality inspection at our Varanasi fulfillment center.
+                    </p>
+                    <span className="carrier-pending-pill">
+                      Carrier AWB will be updated upon dispatch
+                    </span>
+                  </div>
                 )}
               </div>
 
               {/* Delivery Address / Dropship Info */}
               <div className="details-card">
-                <h4><Compass size={14} /> Delivery Address</h4>
-                {order.is_dropship ? (
-                  <div>
-                    <span className="dropship-badge" style={{ marginBottom: '8px', display: 'inline-block' }}>
-                      Direct Dropship Package
-                    </span>
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{order.dropship_recipient_name || parsedAddress?.name || order.buyer_name}</p>
-                    {(order.dropship_recipient_phone || parsedAddress?.phone) && (
-                      <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>
-                        Phone: {order.dropship_recipient_phone || parsedAddress?.phone}
-                      </p>
-                    )}
-                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>
-                      {order.dropship_recipient_address || parsedAddress?.address || (order.message && order.message.includes('Delivery Address:') ? order.message.split('Delivery Address:')[1].trim() : '')}
+                <div className="details-card-header">
+                  <span className="details-card-title">
+                    <MapPin size={14} /> DELIVERY DESTINATION
+                  </span>
+                </div>
+                <div className="recipient-info-box">
+                  <strong className="recipient-name">
+                    {order.dropship_recipient_name || parsedAddress?.name || order.buyer_name || 'Customer'}
+                  </strong>
+                  {(order.dropship_recipient_phone || parsedAddress?.phone || order.phone) && (
+                    <p className="recipient-phone">
+                      Phone: {order.dropship_recipient_phone || parsedAddress?.phone || order.phone}
                     </p>
-                    {(order.dropship_recipient_city || parsedAddress?.city) && (
-                      <p style={{ fontSize: 'var(--small-size)', fontWeight: 500 }}>
-                        {order.dropship_recipient_city || parsedAddress?.city} - {order.dropship_recipient_pincode || order.pincode}
-                      </p>
-                    )}
-                    <p style={{ fontSize: 'var(--small-size)', color: '#b45309', marginTop: '6px', fontWeight: 600 }}>
-                      Parcel Sender: {order.dropship_sender_name || 'Partner Store'}
+                  )}
+                  <p className="recipient-address">
+                    {order.dropship_recipient_address || parsedAddress?.address || (order.message && order.message.includes('Delivery Address:') ? order.message.split('Delivery Address:')[1].trim() : (order.message || 'Standard Address'))}
+                  </p>
+                  {(order.dropship_recipient_city || parsedAddress?.city || order.dropship_recipient_pincode || order.pincode) && (
+                    <p className="recipient-pin-row">
+                      {[order.dropship_recipient_city || parsedAddress?.city, order.dropship_recipient_state].filter(Boolean).join(', ')}
+                      {(order.dropship_recipient_pincode || order.pincode) ? ` • PIN: ${order.dropship_recipient_pincode || order.pincode}` : ''}
                     </p>
-                  </div>
-                ) : parsedAddress ? (
-                  <div>
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{parsedAddress.name || order.buyer_name}</p>
-                    {parsedAddress.phone && <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {parsedAddress.phone}</p>}
-                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>{parsedAddress.address}</p>
-                    {parsedAddress.city && <p style={{ fontSize: 'var(--small-size)', fontWeight: 500 }}>{parsedAddress.city}</p>}
-                  </div>
-                ) : (
-                  <div>
-                    <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{order.buyer_name || 'Customer'}</p>
-                    {order.phone && <p style={{ fontSize: 'var(--small-size)', marginBottom: '0.25rem', color: 'var(--muted)' }}>Phone: {order.phone}</p>}
-                    <p style={{ fontSize: 'var(--small-size)', lineHeight: 1.4 }}>
-                      {order.pincode ? `Delivery PIN: ${order.pincode}` : (order.message || 'Delivery address registered with order.')}
-                    </p>
-                  </div>
-                )}
+                  )}
+                  {order.is_dropship && (
+                    <div className="dropship-parcel-sender">
+                      Parcel Sender: <strong>{order.dropship_sender_name || 'Partner Store'}</strong>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Items Summary Section */}
+            {/* Items Summary Section (Distilled) */}
             {order.items && order.items.length > 0 && (
               <div className="tracking-items-section">
-                <h3 className="tracking-items-title">Ordered Items ({order.items.length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className="tracking-items-header">
+                  <h3 className="tracking-items-title">
+                    Ordered Items ({(order.items || []).length})
+                  </h3>
+                </div>
+
+                <div className="tracking-items-list">
                   {order.items.map((item, index) => {
                     const itemCode = String(item.variant_code || item.sku || item.product_id || item.id || '').trim().toLowerCase();
+                    const baseCode = itemCode.includes('-') ? itemCode.split('-')[0].trim() : itemCode;
                     const itemColor = String(item.color || '').trim().toLowerCase();
 
-                    // Find product in catalog
-                    const matchedProduct = (catalogProducts || []).find(p => {
+                    // Find product in catalog (exact match first, then baseCode fallback)
+                    let matchedProduct = (catalogProducts || []).find(p => {
                       const pId = String(p.id || '').toLowerCase();
                       const pGroup = String(p.groupKey || '').toLowerCase();
                       if (pId && pId === itemCode) return true;
@@ -521,21 +554,34 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                       return false;
                     });
 
+                    if (!matchedProduct && baseCode) {
+                      matchedProduct = (catalogProducts || []).find(p => {
+                        const pId = String(p.id || '').toLowerCase();
+                        const pGroup = String(p.groupKey || '').toLowerCase();
+                        return (pId && pId === baseCode) || (pGroup && pGroup === baseCode);
+                      });
+                    }
+
                     let matchedVariant = null;
                     if (matchedProduct?.variants) {
                       matchedVariant = matchedProduct.variants.find(v => 
                         String(v.code || '').toLowerCase() === itemCode || 
-                        (itemColor && String(v.colorName || '').toLowerCase() === itemColor)
+                        (itemColor && String(v.color || v.colorName || '').toLowerCase() === itemColor)
                       );
                     }
 
                     // Resolve image
                     let imageSrc = item.image || item.image_url || '';
                     if (!imageSrc && matchedProduct) {
-                      if (item.color && matchedProduct.colorImages && matchedProduct.colorImages[item.color]) {
+                      if (item.color && matchedProduct.colorOptions) {
+                        const matchedColorOpt = matchedProduct.colorOptions.find(c => String(c.name || '').toLowerCase() === itemColor);
+                        if (matchedColorOpt?.image) imageSrc = matchedColorOpt.image;
+                      }
+                      if (!imageSrc && item.color && matchedProduct.colorImages && matchedProduct.colorImages[item.color]) {
                         imageSrc = matchedProduct.colorImages[item.color];
-                      } else {
-                        imageSrc = matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
+                      }
+                      if (!imageSrc) {
+                        imageSrc = matchedVariant?.image || matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
                       }
                     }
                     if (!imageSrc) imageSrc = fallbackProductImage;
@@ -564,9 +610,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                         <div className="tracking-item-info">
                           <div className="tracking-item-name">{title}</div>
                           <div className="tracking-item-meta">
-                            {(item.variant_code || item.sku) && <span>Code: <code>{item.variant_code || item.sku}</code></span>}
-                            {item.color && <span>Color: <strong>{item.color}</strong></span>}
-                            <span>Quantity: x{qty}</span>
+                            {(item.variant_code || item.sku) && (
+                              <span className="item-meta-item">Code: <code>{item.variant_code || item.sku}</code></span>
+                            )}
+                            {item.color && (
+                              <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
+                            )}
+                            <span className="item-meta-item">Qty: {qty}</span>
                           </div>
                         </div>
                         <div className="tracking-item-price">
@@ -575,6 +625,20 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Items Total Summary (Distilled) */}
+                <div className="tracking-total-summary-card">
+                  <span>Total Order Value</span>
+                  <strong>
+                    {formatMoney(
+                      (order.items || []).reduce((acc, it) => {
+                        const unitPrice = Number(it.price) || 0;
+                        const qty = Number(it.quantity) || 1;
+                        return acc + (unitPrice * qty);
+                      }, 0) || order.total_amount || 0
+                    )}
+                  </strong>
                 </div>
               </div>
             )}
@@ -590,14 +654,14 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               rel="noopener noreferrer"
               className="btn-whatsapp-support"
             >
-              <MessageSquareText size={18} /> Chat with Varanasi Support
+              <MessageSquareText size={16} /> <span>Chat with Support</span>
             </a>
             <button 
               type="button" 
               onClick={() => navigate('home')}
               className="btn-back-catalog"
             >
-              Continue Sourcing
+              <span>Continue Sourcing</span>
             </button>
           </div>
         </>

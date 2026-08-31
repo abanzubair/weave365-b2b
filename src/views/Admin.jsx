@@ -30,7 +30,7 @@ import {
   Activity,
   Printer,
   Palette,
-  Boxes,
+  Box,
   Code2,
   X,
   ShieldCheck,
@@ -490,7 +490,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
         { key: 'admins', label: 'Admins', icon: ShieldCheck, badge: null },
         { key: 'pipeline', label: 'Accounts', icon: Users, badge: null },
         { key: 'partners', label: 'Vendors', icon: Award, badge: null },
-        { key: 'stock', label: 'Products', icon: Boxes, badge: null },
+        { key: 'stock', label: 'Products', icon: Box, badge: null },
       ],
     },
     {
