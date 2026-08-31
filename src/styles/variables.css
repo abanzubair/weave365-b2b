@@ -38,7 +38,7 @@
   --premium-glass: rgba(255, 255, 255, 0.7);
   --premium-glass-border: rgba(255, 255, 255, 0.2);
   --premium-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-  --hero-blush: #fbf4eb;
+  --hero-blush: #faf7f2;
   --hero-mist: #ead8bf;
   --white: #ffffff;
   --shadow: 0 18px 45px rgba(128, 93, 49, 0.12);
@@ -220,6 +220,45 @@ h6, .h6 {
   color: var(--heading);
   line-height: 1.4;
   overflow-wrap: break-word;
+}
+
+/* Global Thin Flat Scrollbar (Site-wide, no shadows/grooves) */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #d8c7b3 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border: none !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d8c7b3;
+  border-radius: 9999px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold, #b78646);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 body {

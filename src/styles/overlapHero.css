@@ -9,10 +9,10 @@
   min-height: 80dvh;
   display: flex;
   align-items: center;
-  background: var(--hero-blush, #fbf4eb);
+  background: var(--hero-blush, #faf7f2);
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: calc(72px + 1.5rem) 2rem 2.5rem 2rem;
+  padding: clamp(2rem, 3.5vw, 3.25rem) 2rem 3rem 2rem;
 }
 
 .overlap-hero-container {
@@ -71,10 +71,10 @@
   font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
   font-variant-numeric: lining-nums proportional-nums;
   font-size: clamp(20px, 2.3vw, 30px);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: var(--heading, #000000);
+  color: #855b29;
   display: block;
   text-wrap: balance;
 }
@@ -273,7 +273,7 @@
 
   .overlap-hero {
     min-height: auto;
-    padding: calc(56px + 1rem) 1.25rem 2.25rem 1.25rem;
+    padding: 1.75rem 1.25rem 2.25rem 1.25rem;
   }
 
   .overlap-hero-container {
@@ -386,7 +386,7 @@
 
 @media (max-width: 380px) {
   .overlap-hero {
-    padding: calc(56px + 0.75rem) 1rem 1.75rem 1rem;
+    padding: 1.5rem 1rem 1.75rem 1rem;
   }
 
   .hero-title-main {
