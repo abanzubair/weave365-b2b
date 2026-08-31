@@ -41,50 +41,49 @@ export async function POST(request) {
     }
 
     const authHeader = request.headers.get('Authorization') || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
 
-    const clientOptions = {};
-    if (token && supabaseKey === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      clientOptions.global = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Missing authentication token.' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(supabaseUrl, supabaseKey, clientOptions);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 2. Verify administrator email credentials (env list or Supabase profiles table)
+    // Verify token with Supabase Auth
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !authUser?.email) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired session token.' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
     const adminEmailsList = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
       .split(',')
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
 
-    const cleanEmail = String(email).trim().toLowerCase();
-    let isAuthorized = adminEmailsList.includes(cleanEmail);
+    const userEmail = authUser.email.trim().toLowerCase();
+    let isAuthorized = adminEmailsList.includes(userEmail);
 
-    if (!isAuthorized && token) {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser(token);
-        if (authUser?.email && authUser.email.trim().toLowerCase() === cleanEmail) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', authUser.id)
-            .maybeSingle();
+    if (!isAuthorized) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authUser.id)
+        .maybeSingle();
 
-          if (profile?.role === 'admin') {
-            isAuthorized = true;
-          }
-        }
-      } catch (err) {
-        console.warn('Unexpected token verification error in sync API:', err.message);
+      if (profile?.role === 'admin') {
+        isAuthorized = true;
       }
     }
 
     if (!isAuthorized) {
-      return new Response(JSON.stringify({ error: 'Unauthorized administrative access.' }), {
+      return new Response(JSON.stringify({ error: 'Forbidden: Admin privileges required.' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });

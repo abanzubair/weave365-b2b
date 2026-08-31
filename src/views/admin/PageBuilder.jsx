@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Upload,
   RefreshCw,
@@ -12,6 +12,25 @@ export default function PageBuilder({
   setLandingPages,
   adminData,
 }) {
+  const [isLoadingPages, setIsLoadingPages] = useState(false);
+
+  useEffect(() => {
+    async function loadPages() {
+      try {
+        setIsLoadingPages(true);
+        const pages = await fetchSupabaseLandingPages();
+        if (setLandingPages && Array.isArray(pages) && pages.length > 0) {
+          setLandingPages(pages);
+        }
+      } catch (err) {
+        console.error('Error loading landing pages in PageBuilder:', err);
+      } finally {
+        setIsLoadingPages(false);
+      }
+    }
+    void loadPages();
+  }, [setLandingPages]);
+
   const [selectedBuilderSlug, setSelectedBuilderSlug] = useState('new');
   const [builderPageId, setBuilderPageId] = useState(null);
   const [builderSlug, setBuilderSlug] = useState('');
@@ -190,7 +209,23 @@ export default function PageBuilder({
           <span className="admin-editor-title">
             Custom Page Configuration
           </span>
-          <small>{landingPages.length} active collection pages</small>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={async () => {
+                setIsLoadingPages(true);
+                const pages = await fetchSupabaseLandingPages();
+                if (setLandingPages && Array.isArray(pages)) setLandingPages(pages);
+                setIsLoadingPages(false);
+              }}
+              className="admin-btn-icon-subtle"
+              style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+              title="Refresh custom pages"
+            >
+              <RefreshCw size={13} style={{ animation: isLoadingPages ? 'spin 1s linear infinite' : 'none' }} /> Refresh
+            </button>
+            <small>{landingPages.length} active collection pages</small>
+          </div>
         </div>
 
         <form onSubmit={handleSaveBuilder} className="admin-editor-form">

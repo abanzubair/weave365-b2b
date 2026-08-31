@@ -167,11 +167,18 @@ language sql
 security definer
 set search_path = public
 as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = auth.uid()
-      and role = 'admin'
+  select (
+    coalesce(auth.jwt()->>'email', '') in (
+      'abanzubair@gmail.com',
+      'weave365@gmail.com'
+    )
+    or
+    exists (
+      select 1
+      from public.profiles
+      where id = auth.uid()
+        and role = 'admin'
+    )
   );
 $$;
 
@@ -216,6 +223,81 @@ create trigger apply_profile_defaults_trigger
 before insert or update on public.profiles
 for each row
 execute function public.apply_profile_defaults();
+
+-- Automatically create or sync a profile row when a new user signs up or logs into Supabase Auth
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  bp jsonb;
+begin
+  bp := coalesce(new.raw_user_meta_data->'buyer_profile', '{}'::jsonb);
+
+  insert into public.profiles (
+    id,
+    email,
+    full_name,
+    whatsapp,
+    whatsapp_number,
+    whatsapp_country_code,
+    business_name,
+    buyer_type,
+    buyer_subtype,
+    city,
+    state,
+    pincode,
+    interested_categories,
+    buying_behavior,
+    role,
+    approval_status,
+    price_group,
+    created_at,
+    updated_at
+  )
+  values (
+    new.id,
+    new.email,
+    coalesce(bp->>'full_name', new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
+    coalesce(bp->>'whatsapp', new.raw_user_meta_data->>'whatsapp', ''),
+    coalesce(bp->>'whatsapp_number', bp->>'whatsapp', new.raw_user_meta_data->>'whatsapp_number', ''),
+    coalesce(bp->>'whatsapp_country_code', '+91'),
+    coalesce(bp->>'business_name', new.raw_user_meta_data->>'business_name', ''),
+    coalesce(bp->>'buyer_type', new.raw_user_meta_data->>'buyer_type', 'customer'),
+    coalesce(bp->>'buyer_subtype', new.raw_user_meta_data->>'buyer_subtype', 'Customer'),
+    coalesce(bp->>'city', ''),
+    coalesce(bp->>'state', ''),
+    coalesce(bp->>'pincode', ''),
+    coalesce(bp->'interested_categories', '[]'::jsonb),
+    coalesce(bp->>'buying_behavior', 'instant'),
+    coalesce(new.raw_user_meta_data->>'role', bp->>'role', 'customer'),
+    'approved',
+    'approved',
+    coalesce(new.created_at, now()),
+    now()
+  )
+  on conflict (id) do update set
+    email = coalesce(excluded.email, public.profiles.email),
+    full_name = case when public.profiles.full_name is null or public.profiles.full_name = '' then excluded.full_name else public.profiles.full_name end,
+    whatsapp = case when public.profiles.whatsapp is null or public.profiles.whatsapp = '' then excluded.whatsapp else public.profiles.whatsapp end,
+    whatsapp_number = case when public.profiles.whatsapp_number is null or public.profiles.whatsapp_number = '' then excluded.whatsapp_number else public.profiles.whatsapp_number end,
+    business_name = case when public.profiles.business_name is null or public.profiles.business_name = '' then excluded.business_name else public.profiles.business_name end,
+    city = case when public.profiles.city is null or public.profiles.city = '' then excluded.city else public.profiles.city end,
+    state = case when public.profiles.state is null or public.profiles.state = '' then excluded.state else public.profiles.state end,
+    pincode = case when public.profiles.pincode is null or public.profiles.pincode = '' then excluded.pincode else public.profiles.pincode end,
+    interested_categories = case when public.profiles.interested_categories is null or public.profiles.interested_categories = '[]'::jsonb then excluded.interested_categories else public.profiles.interested_categories end,
+    updated_at = now();
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
 
 create or replace function public.touch_updated_at()
 returns trigger

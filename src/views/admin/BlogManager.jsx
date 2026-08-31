@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FileText,
   Edit,
@@ -16,12 +16,30 @@ import { blogPosts } from '../../data/blogPosts.js';
 import { supabase } from '../../supabaseClient.js';
 
 export default function BlogManager({
-  blogs,
+  blogs = [],
   setBlogs,
   adminData,
   loadAdminData,
 }) {
   // Blog editor form states
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+
+  useEffect(() => {
+    async function loadInitialBlogs() {
+      try {
+        setIsLoadingPosts(true);
+        const posts = await fetchSupabaseBlogPosts();
+        if (setBlogs && Array.isArray(posts) && posts.length > 0) {
+          setBlogs(posts);
+        }
+      } catch (err) {
+        console.error('Error loading initial blogs in BlogManager:', err);
+      } finally {
+        setIsLoadingPosts(false);
+      }
+    }
+    void loadInitialBlogs();
+  }, [setBlogs]);
   const [editingPost, setEditingPost] = useState(null);
   const [formTitle, setFormTitle] = useState('');
   const [formSlug, setFormSlug] = useState('');
@@ -354,7 +372,23 @@ CREATE POLICY "Allow admin all access" ON public.blog_posts FOR ALL USING (true)
       <article className="admin-panel admin-panel-margin-bottom">
         <div className="admin-panel-head">
           <span><FileText size={18} /> Current Compiled Articles</span>
-          <small>{blogs.length} articles total</small>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={async () => {
+                setIsLoadingPosts(true);
+                const posts = await fetchSupabaseBlogPosts();
+                if (setBlogs && Array.isArray(posts)) setBlogs(posts);
+                setIsLoadingPosts(false);
+              }}
+              className="admin-btn-icon-subtle"
+              style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+              title="Refresh blog articles"
+            >
+              <RefreshCw size={13} style={{ animation: isLoadingPosts ? 'spin 1s linear infinite' : 'none' }} /> Refresh
+            </button>
+            <small>{blogs.length} articles total</small>
+          </div>
         </div>
 
         <div className="admin-table-wrap">

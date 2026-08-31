@@ -512,7 +512,12 @@
 }
 @media (max-width: 768px) {
   .dashtar-gradient-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .dashtar-gradient-card:last-child:nth-child(odd) {
+    grid-column: span 2;
   }
 }
 
@@ -1078,6 +1083,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.15s ease;
 }
 .pipeline-header-btn:hover {
@@ -1354,6 +1360,13 @@
   border: 1px solid transparent;
   white-space: nowrap;
   font-family: inherit;
+}
+
+.admin-list-link-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .admin-list-link-btn.has-items {
@@ -8174,22 +8187,102 @@
     padding: 12px 10px 48px 10px;
   }
 
+  .dashboard-overview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 2px;
+  }
+
+  .dashtar-title {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .pipeline-header-btn {
+    padding: 7px 11px;
+    font-size: 12.5px;
+    font-weight: 500;
+    gap: 5px;
+    border-radius: 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .dashtar-gradient-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
+  .dashtar-gradient-card:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
   .dashtar-outline-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
   .dashtar-gradient-card {
-    padding: 12px 14px;
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .gradient-icon-wrap {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 2px;
+  }
+
+  .gradient-icon-wrap svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .gradient-card-large-val {
+    font-size: 18px;
+  }
+
+  .gradient-card-label-span {
+    font-size: 11.5px;
   }
 
   .dashtar-outline-card {
-    padding: 12px 14px;
+    padding: 10px 10px;
+    gap: 8px;
+  }
+
+  .outline-icon-container {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+  }
+
+  .outline-icon-container svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .outline-card-info span {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .outline-card-info strong {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .outline-label-row {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .outline-highlight-badge {
+    font-size: 9.5px;
+    padding: 1px 4px;
   }
 
   .pipeline-table-container,

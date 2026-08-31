@@ -33,7 +33,8 @@ import {
   RotateCcw,
   Sparkles,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  ArrowUpRight
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';

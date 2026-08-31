@@ -12,6 +12,7 @@ import { cache } from 'react';
 import { categoryCodes, csvUrl, heroCsvUrl, configCsvUrl, categoryCsvUrls } from './config.js';
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import { seoLandingPages } from './data/seoLandingPages.js';
+import { blogPosts as defaultBlogPosts } from './data/blogPosts.js';
 
 const safeCache = typeof cache === 'function' ? cache : (fn) => fn;
 
@@ -1215,33 +1216,43 @@ export const fetchSupabaseBlogPosts = safeCache(async function fetchSupabaseBlog
       .from('blog_posts')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) {
-      console.warn('Unable to select from blog_posts:', error.message);
-      return cached ? cached.data : [];
+    let dbResults = [];
+    if (!error && Array.isArray(data)) {
+      dbResults = data.map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        title: row.title,
+        metaTitle: row.meta_title,
+        metaDescription: row.meta_description,
+        category: row.category,
+        tag: row.tag,
+        date: row.date,
+        readTime: row.read_time,
+        author: row.author,
+        image: row.image,
+        intro: row.intro,
+        content: row.content,
+        faqs: row.faqs || [],
+        createdAt: row.created_at,
+      }));
     }
-    const result = (data || []).map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      title: row.title,
-      metaTitle: row.meta_title,
-      metaDescription: row.meta_description,
-      category: row.category,
-      tag: row.tag,
-      date: row.date,
-      readTime: row.read_time,
-      author: row.author,
-      image: row.image,
-      intro: row.intro,
-      content: row.content,
-      faqs: row.faqs || [],
-      createdAt: row.created_at,
-    }));
+
+    // Merge default static blogs with Supabase blogs (DB entries take precedence by slug)
+    const mergedMap = new Map();
+    (defaultBlogPosts || []).forEach((p) => {
+      if (p?.slug) mergedMap.set(p.slug, p);
+    });
+    dbResults.forEach((p) => {
+      if (p?.slug) mergedMap.set(p.slug, p);
+    });
+
+    const result = Array.from(mergedMap.values());
     memoryCache.set(cacheKey, { data: result, timestamp: Date.now() });
     setBrowserStorageCache(cacheKey, result);
     return result;
   } catch (err) {
     console.error('Error fetching Supabase blog posts:', err);
-    return cached ? cached.data : [];
+    return defaultBlogPosts || [];
   }
 });
 

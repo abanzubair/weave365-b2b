@@ -12,22 +12,22 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAutoApprovalToBuyerProfile, isVendorProfile } from './buyerAccess.js';
 
 export function profileRowFromUser(user) {
-  const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile;
-  if (!user?.id || !buyerProfile) return null;
+  if (!user?.id) return null;
+  const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
 
   const isVendor = isVendorProfile(buyerProfile) || user?.user_metadata?.role === 'vendor';
 
   return applyAutoApprovalToBuyerProfile({
     id: user.id,
-    email: user.email || '',
-    full_name: buyerProfile.full_name || user.user_metadata?.full_name || '',
+    email: user.email || user.user_metadata?.email || '',
+    full_name: buyerProfile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '',
     whatsapp: buyerProfile.whatsapp || '',
     whatsapp_country_code: buyerProfile.whatsapp_country_code || '',
     whatsapp_number: buyerProfile.whatsapp_number || '',
     business_name: buyerProfile.business_name || '',
-    buyer_type: isVendor ? 'vendor' : 'customer',
+    buyer_type: isVendor ? 'vendor' : (buyerProfile.buyer_type || 'customer'),
     buyer_subtype: buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : 'Customer'),
-    role: isVendor ? 'vendor' : (buyerProfile.role || 'customer'),
+    role: isVendor ? 'vendor' : (buyerProfile.role || user.user_metadata?.role || 'customer'),
     vendor_code: buyerProfile.vendor_code || '',
     partner_name: buyerProfile.partner_name || '',
     buying_behavior: buyerProfile.buying_behavior || 'instant',
@@ -47,11 +47,9 @@ export async function syncProfileFromUser(user) {
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
 
-  // Use atomic upsert with ignoreDuplicates: true so concurrent sign-in / registration
-  // events do not trigger unique constraint race conditions (SQL state 23505).
   const { error } = await supabase
     .from('profiles')
-    .upsert(profileRow, { onConflict: 'id', ignoreDuplicates: true });
+    .upsert(profileRow, { onConflict: 'id' });
 
   return { error: error || null };
 }

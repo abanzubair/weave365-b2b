@@ -17,6 +17,31 @@ export async function POST(request) {
       );
     }
 
+    // Security: Validate file size (max 10MB)
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+      return Response.json(
+        { status: 'error', error: 'File size exceeds the 10MB limit.' },
+        { status: 400 }
+      );
+    }
+
+    // Security: Validate MIME type
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/avif',
+      'application/pdf',
+    ];
+    if (file.type && !ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+      return Response.json(
+        { status: 'error', error: 'Invalid file type. Only JPEG, PNG, WEBP, AVIF, and PDF files are allowed.' },
+        { status: 400 }
+      );
+    }
+
     const buffer = await file.arrayBuffer();
 
     // Sanitize and create an SEO-friendly, clean filename

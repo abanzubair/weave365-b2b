@@ -397,7 +397,7 @@ export default function BuyerPipeline({
                         className={`admin-list-link-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
                         disabled={cartRows.length === 0}
                       >
-                        <ShoppingBag size={15} />
+                        <ShoppingBag size={16} strokeWidth={2.2} />
                         <span>{cartRows.length} {cartRows.length === 1 ? 'row' : 'rows'}</span>
                       </button>
                     </td>
@@ -408,7 +408,7 @@ export default function BuyerPipeline({
                         className={`admin-list-link-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
                         disabled={favoriteRows.length === 0}
                       >
-                        <Heart size={15} />
+                        <Heart size={16} strokeWidth={2.2} />
                         <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'item' : 'items'}</span>
                       </button>
                     </td>

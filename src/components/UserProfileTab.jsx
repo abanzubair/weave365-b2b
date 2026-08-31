@@ -233,7 +233,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           .upsert(profileRow, { onConflict: 'id' });
 
         if (dbError) {
-          console.warn('Profiles table sync warning:', dbError);
+          console.error('Profiles table sync error:', dbError);
+          throw dbError;
         }
 
         if (setUser && updatedAuth?.user) {
