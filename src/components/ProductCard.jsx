@@ -329,9 +329,9 @@ export const ProductCard = memo(function ProductCard({
     <article className="product-card" ref={cardRef}>
       <div className="card-media">
 
-        <AppLink 
-          to="product" 
-          productId={product.id} 
+        <AppLink
+          to="product"
+          productId={product.id}
           navigate={navigate}
           className="image-button"
           aria-label={`View details for ${product.title}`}
@@ -369,9 +369,9 @@ export const ProductCard = memo(function ProductCard({
 
       <div className="product-card-copy">
         <h3 className="card-title" style={{ cursor: 'pointer' }}>
-          <AppLink 
-            to="product" 
-            productId={product.id} 
+          <AppLink
+            to="product"
+            productId={product.id}
             navigate={navigate}
             style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
           >
@@ -454,7 +454,7 @@ export const ProductCard = memo(function ProductCard({
                 >
                   <div className="item-icon share"><Share2 size={20} /></div>
                   <div className="item-copy">
-                    <strong>Share on WhatsApp</strong>
+                    <strong>Share on Social Media</strong>
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>

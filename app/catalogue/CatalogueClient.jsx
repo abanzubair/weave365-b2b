@@ -296,11 +296,14 @@ export default function CatalogueClient({
     [user, setFavorites, navigate]
   );
 
+  const isLoading = rawProducts.length === 0;
+  const status = isLoading ? 'loading' : 'ready';
+
   return (
     <Catalog
       title="Catalogue"
       products={filteredProducts}
-      status="ready"
+      status={status}
       error=""
       categories={categories}
       category={activeCategory}
@@ -325,7 +328,7 @@ export default function CatalogueClient({
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
       openAuth={() => navigate('signup')}
-      isTransitioning={false}
+      isTransitioning={isLoading}
     />
   );
 }

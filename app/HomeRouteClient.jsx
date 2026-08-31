@@ -100,10 +100,12 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
     });
   }, [user, setFavorites, navigate]);
 
+  const isLoading = activeProducts.length === 0;
+
   return (
     <Home
       products={activeProducts}
-      status="ready"
+      status={isLoading ? 'loading' : 'ready'}
       error=""
       heroSlides={activeHeroSlides}
       fallbackHeroImage={fallbackProductImage}

@@ -11,6 +11,7 @@ import { expandedProductCards, formatMoney, customerPrice } from '../storefrontS
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
+import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { WholesalePartnership } from '../components/WholesalePartnership.jsx';
@@ -744,7 +745,7 @@ export function Home({
         </AppLink>
       </section>
 
-      {bestsellers.length > 0 && (
+      {(status === 'loading' || bestsellers.length > 0) && (
         <section className="section home-product-section bestsellers-section">
           <div className="section-heading-row">
             <SectionTitle title="Best Sellers" align="left" />
@@ -752,7 +753,7 @@ export function Home({
               View All <ArrowRight size={17} />
             </AppLink>
           </div>
-          <StateMessage status={status} error={error} />
+          {status === 'error' && <StateMessage status={status} error={error} />}
           <div className="scroll-wrapper">
             <button type="button"
               className="scroll-arrow left"
@@ -763,19 +764,23 @@ export function Home({
             </button>
 
             <div className="product-row scrollable-row" id="bestsellers-row">
-              {bestsellers.map(({ product, image, variant }, index) => (
-                <ProductCard
-                  key={`${product.id}-${index}`}
-                  product={{ ...product, images: [image, ...product.images] }}
-                  variant={variant}
-                  navigate={navigate}
-                  addToCart={addToCart}
-                  toggleFavorite={toggleFavorite}
-                  isFavorite={favoriteKeys.has(product.id)}
-                  priceAccess={priceAccess}
-                  openAuth={openAuth}
-                />
-              ))}
+              {status === 'loading' ? (
+                <CatalogPageSkeleton count={5} wrap={false} />
+              ) : (
+                bestsellers.map(({ product, image, variant }, index) => (
+                  <ProductCard
+                    key={`${product.id}-${index}`}
+                    product={{ ...product, images: [image, ...product.images] }}
+                    variant={variant}
+                    navigate={navigate}
+                    addToCart={addToCart}
+                    toggleFavorite={toggleFavorite}
+                    isFavorite={favoriteKeys.has(product.id)}
+                    priceAccess={priceAccess}
+                    openAuth={openAuth}
+                  />
+                ))
+              )}
             </div>
 
             <button type="button"
@@ -796,7 +801,7 @@ export function Home({
             View All <ArrowRight size={17} />
           </AppLink>
         </div>
-        <StateMessage status={status} error={error} />
+        {status === 'error' && <StateMessage status={status} error={error} />}
         <div className="scroll-wrapper">
           <button type="button"
             className="scroll-arrow left"
@@ -807,19 +812,23 @@ export function Home({
           </button>
 
           <div className="product-row scrollable-row" id="new-arrivals-row">
-            {arrivals.map(({ product, image, variant }, index) => (
-              <ProductCard
-                key={`${product.id}-${index}`}
-                product={{ ...product, images: [image, ...product.images] }}
-                variant={variant}
-                navigate={navigate}
-                addToCart={addToCart}
-                toggleFavorite={toggleFavorite}
-                isFavorite={favoriteKeys.has(product.id)}
-                priceAccess={priceAccess}
-                openAuth={openAuth}
-              />
-            ))}
+            {status === 'loading' ? (
+              <CatalogPageSkeleton count={5} wrap={false} />
+            ) : (
+              arrivals.map(({ product, image, variant }, index) => (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  product={{ ...product, images: [image, ...product.images] }}
+                  variant={variant}
+                  navigate={navigate}
+                  addToCart={addToCart}
+                  toggleFavorite={toggleFavorite}
+                  isFavorite={favoriteKeys.has(product.id)}
+                  priceAccess={priceAccess}
+                  openAuth={openAuth}
+                />
+              ))
+            )}
           </div>
 
           <button type="button"

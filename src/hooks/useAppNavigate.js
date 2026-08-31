@@ -101,20 +101,16 @@ export function useAppNavigate() {
       href = `/${catSlug}${q ? `?${q}` : ''}`;
     }
 
-    router.push(href, { scroll: false });
+    router.push(href, { scroll: true });
 
-    if (typeof window !== 'undefined') {
-      if (href.includes('#')) {
-        const hashAnchor = href.split('#')[1];
-        setTimeout(() => {
-          const el = document.getElementById(hashAnchor);
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 150);
-      } else {
-        window.scrollTo(0, 0);
-      }
+    if (typeof window !== 'undefined' && href.includes('#')) {
+      const hashAnchor = href.split('#')[1];
+      setTimeout(() => {
+        const el = document.getElementById(hashAnchor);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
     }
   }, [router]);
 

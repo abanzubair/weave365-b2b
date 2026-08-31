@@ -78,6 +78,13 @@ export function AppShell({ children }) {
     trackSiteTraffic();
   }, []);
 
+  // Ensure every route transition cleanly starts at the top of the new page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [pathname]);
+
   // Customizer theme
   useEffect(() => {
     fetchSiteCustomizer()

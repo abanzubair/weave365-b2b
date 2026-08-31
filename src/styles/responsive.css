@@ -275,7 +275,7 @@
     order: 2 !important;
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 2px !important;
     margin-left: auto !important;
     margin-right: 0 !important;
   }

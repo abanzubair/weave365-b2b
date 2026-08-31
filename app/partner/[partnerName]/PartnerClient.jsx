@@ -93,11 +93,14 @@ export default function PartnerClient({ partnerSlug, initialProducts = [] }) {
     [user, setFavorites, navigate]
   );
 
+  const isLoading = rawProducts.length === 0;
+  const status = isLoading ? 'loading' : 'ready';
+
   return (
     <Catalog
       title={`${partnerRealName}'s Collection`}
       products={partnerFilteredProducts}
-      status="ready"
+      status={status}
       error=""
       categories={configOptions?.categories || []}
       category="All"
@@ -122,7 +125,7 @@ export default function PartnerClient({ partnerSlug, initialProducts = [] }) {
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
       openAuth={() => navigate('signup')}
-      isTransitioning={false}
+      isTransitioning={isLoading}
     />
   );
 }

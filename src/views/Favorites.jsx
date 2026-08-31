@@ -5,9 +5,10 @@
  */
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
+import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 
-export function Favorites({ products, user, navigate, openAuth, toggleFavorite, addToCart, priceAccess }) {
+export function Favorites({ products, user, status = 'ready', navigate, openAuth, toggleFavorite, addToCart, priceAccess }) {
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
     { name: 'Favourites' }
@@ -48,21 +49,25 @@ export function Favorites({ products, user, navigate, openAuth, toggleFavorite, 
         )}
       </div>
       <div className="catalog-grid">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            variant={product.variants[0]}
-            navigate={navigate}
-            addToCart={addToCart}
-            toggleFavorite={toggleFavorite}
-            isFavorite
-            priceAccess={priceAccess}
-            openAuth={openAuth}
-          />
-        ))}
+        {status === 'loading' ? (
+          <CatalogPageSkeleton count={4} wrap={false} />
+        ) : (
+          products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant={product.variants[0]}
+              navigate={navigate}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              isFavorite
+              priceAccess={priceAccess}
+              openAuth={openAuth}
+            />
+          ))
+        )}
       </div>
-      {products.length === 0 && <p className="empty-state">No favourites saved yet.</p>}
+      {status === 'ready' && products.length === 0 && <p className="empty-state">No favourites saved yet.</p>}
     </section>
   );
 }

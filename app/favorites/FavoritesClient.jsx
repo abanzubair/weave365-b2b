@@ -70,10 +70,13 @@ export default function FavoritesClient() {
     [user, setFavorites, navigate]
   );
 
+  const isLoading = products.length === 0;
+
   return (
     <Favorites
       products={favoriteProducts}
       user={user}
+      status={isLoading ? 'loading' : 'ready'}
       navigate={navigate}
       openAuth={() => navigate('signup')}
       toggleFavorite={toggleFavorite}

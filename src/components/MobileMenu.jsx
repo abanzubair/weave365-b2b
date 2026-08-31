@@ -70,9 +70,15 @@ export function MobileMenu(props) {
   const onSignOut = props.onSignOut;
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const isAdmin = props.isAdmin;
-  const [accountOpen, setAccountOpen] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [partnerOpen, setPartnerOpen] = useState(false);
+  const [openSection, setOpenSection] = useState(null);
+
+  const toggleSection = (section) => {
+    setOpenSection((prev) => (prev === section ? null : section));
+  };
+
+  const categoriesOpen = openSection === 'categories';
+  const partnerOpen = openSection === 'business';
+  const accountOpen = openSection === 'account';
 
   const accountItems = [
     ...(isAdmin ? [
@@ -150,7 +156,7 @@ export function MobileMenu(props) {
           <div className={`mobile-account-dropdown ${categoriesOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
-              onClick={() => setCategoriesOpen(!categoriesOpen)}
+              onClick={() => toggleSection('categories')}
             >
               <span className="mobile-menu-icon"><Layers size={20} /></span>
               <span className="mobile-menu-label">CATEGORIES</span>
@@ -189,7 +195,7 @@ export function MobileMenu(props) {
           <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
-              onClick={() => setPartnerOpen(!partnerOpen)}
+              onClick={() => toggleSection('business')}
             >
               <span className="mobile-menu-icon"><Briefcase size={20} /></span>
               <span className="mobile-menu-label">BUSINESS</span>
@@ -310,7 +316,7 @@ export function MobileMenu(props) {
           <div className={`mobile-account-dropdown ${accountOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
-              onClick={() => setAccountOpen(!accountOpen)}
+              onClick={() => toggleSection('account')}
             >
               <span className="mobile-menu-icon"><User size={20} /></span>
               <span className="mobile-menu-label">My Account</span>

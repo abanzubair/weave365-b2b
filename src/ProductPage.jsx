@@ -58,11 +58,12 @@ import { getStoredReferralCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import SliderCaptcha from './components/SliderCaptcha.jsx';
 import { SharpStar } from './views/ReviewsPage.jsx';
+import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import './styles/resellerTools.css';
 
 export function ProductDetailWrapper(props) {
-  const product = props.productsById?.get(props.productId) || props.products[0] || null;
-  const isFavorite = product ? props.favoriteKeys.has(product.id) : false;
+  const product = props.productsById?.get(props.productId) || (props.products && props.products.length > 0 ? props.products.find((p) => p.id === props.productId) || (!props.productId ? props.products[0] : null) : null);
+  const isFavorite = product ? props.favoriteKeys?.has(product.id) : false;
 
   useEffect(() => {
     if (!product && props.onReady) {
@@ -70,7 +71,7 @@ export function ProductDetailWrapper(props) {
     }
   }, [product, props.onReady]);
 
-  if (!product) return null;
+  if (!product) return <ProductPageSkeleton />;
 
   return <ProductDetail {...props} product={product} isFavorite={isFavorite} />;
 }
@@ -120,6 +121,12 @@ export function ProductDetail({
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [whatsappShareOpen, setWhatsappShareOpen] = useState(false);
   const shareMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [product?.id]);
 
   useEffect(() => {
     if (product && onReady) {
@@ -1473,7 +1480,7 @@ export function ProductDetail({
                           >
                             <div className="item-icon share"><Share2 size={20} /></div>
                             <div className="item-copy">
-                              <strong>Share on WhatsApp</strong>
+                              <strong>Share on Social Media</strong>
                             </div>
                             <ChevronRight size={18} className="item-chevron" />
                           </button>

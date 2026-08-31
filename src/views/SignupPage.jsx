@@ -431,6 +431,7 @@ export function SignupPage({
   async function handleSocialLogin(provider) {
     if (isSupabaseConfigured) {
       try {
+        setLoading(true);
         await supabase.auth.signInWithOAuth({
           provider,
           options: {
@@ -439,6 +440,7 @@ export function SignupPage({
         });
       } catch (err) {
         setMessage(err.message || 'Social login failed.');
+        setLoading(false);
       }
     } else {
       setMessage(`Demo mode: ${provider} OAuth simulated. Log in via email for full mock user.`);
@@ -609,10 +611,7 @@ export function SignupPage({
               setLoading(false);
               return;
             }
-            setMessage('Registered successfully! Redirecting...');
-            setTimeout(() => {
-              navigate('home');
-            }, 800);
+            navigate('home');
           }
         } else {
           const loggedUser = result.data.user;
@@ -845,7 +844,7 @@ export function SignupPage({
                 </div>
               )}
             </div>
-          ) : user && profileComplete && mode !== 'register' ? (
+          ) : user && profileComplete && mode !== 'register' && !loading ? (
             /* =================================================================
                Already Logged In (Profile Complete) View
                ================================================================= */

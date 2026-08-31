@@ -85,10 +85,7 @@ export function AppLink({
     if (navFn) {
       navFn(to, productId, shopName, navOptions);
     } else {
-      router.push(resolvedHref, { scroll: false });
-      if (typeof window !== 'undefined') {
-        window.scrollTo(0, 0);
-      }
+      router.push(resolvedHref, { scroll: true });
     }
   };
 

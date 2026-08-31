@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { fetchProducts, fetchConfigOptions } from '../../src/productData.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
 import { siteUrl, getCategorySlug } from '../../src/config.js';
+import CatalogPageSkeleton from '../../src/components/CatalogPageSkeleton.jsx';
 import CatalogueClient from './CatalogueClient.jsx';
 
 export const revalidate = 3600;
@@ -73,7 +74,7 @@ export default async function CataloguePage({ searchParams }) {
   ]);
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<CatalogPageSkeleton count={12} wrap={true} />}>
       <CatalogueClient
         initialProducts={products}
         initialConfigOptions={configOptions}

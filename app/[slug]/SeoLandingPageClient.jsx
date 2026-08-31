@@ -80,12 +80,15 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
     [user, setFavorites, navigate]
   );
 
+  const isLoading = allProducts.length === 0;
+  const status = isLoading ? 'loading' : 'ready';
+
   return (
     <SeoLandingPage
       slug={slug}
       pageData={pageData}
       products={allProducts}
-      status="ready"
+      status={status}
       error=""
       navigate={navigate}
       addToCart={addToCart}

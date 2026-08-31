@@ -9,7 +9,7 @@
   min-height: 80dvh;
   display: flex;
   align-items: center;
-  background: var(--paper, #ffffff);
+  background: var(--hero-blush, #fbf4eb);
   overflow-x: hidden;
   box-sizing: border-box;
   padding: calc(72px + 1.5rem) 2rem 2.5rem 2rem;
@@ -55,7 +55,7 @@
   font-weight: 500;
   line-height: 1.18;
   letter-spacing: -0.025em;
-  color: #16120e;
+  color: var(--heading, #000000);
   display: block;
   text-wrap: balance;
 }
@@ -74,7 +74,7 @@
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: #16120e;
+  color: var(--heading, #000000);
   display: block;
   text-wrap: balance;
 }
@@ -92,23 +92,23 @@
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.5;
-  color: #16120e;
+  color: var(--ink, #1a1a1a);
   margin: 0;
   font-weight: 500;
 }
 
 .hero-desc-channels strong {
   font-weight: 700;
-  color: #16120e;
+  color: var(--heading, #000000);
 }
 
 .hero-desc-tagline {
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: clamp(14px, 1.05vw, 15.5px);
   line-height: 1.55;
-  color: #16120e;
+  color: var(--muted, #282828);
   margin: 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -133,20 +133,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 3.5px;
-  background: #fdf3ea;
-  color: #b45309;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(183, 134, 70, 0.18);
+  color: var(--gold-dark, #805d31);
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.08);
+  box-shadow: 0 1px 2px rgba(128, 93, 49, 0.08);
 }
 
 .hero-feature-text {
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: clamp(14.5px, 1.05vw, 15.5px);
   font-weight: 600;
-  color: #16120e;
+  color: var(--ink, #1a1a1a);
   line-height: 1.35;
 }
 
@@ -170,7 +170,7 @@
   font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
   font-size: clamp(21px, 1.45vw, 25px);
   font-weight: 600;
-  color: #16120e;
+  color: var(--heading, #000000);
   text-decoration: none;
   position: relative;
   padding-bottom: 3px;
@@ -186,24 +186,30 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 1.5px;
-  background: #16120e;
+  height: 2px;
+  background: var(--gold, #b78646);
   transform: scaleX(0.85);
   transform-origin: left;
-  transition: transform 0.25s ease;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.overlap-hero-cta-link:hover {
+  color: var(--gold-dark, #805d31);
 }
 
 .overlap-hero-cta-link:hover::after {
   transform: scaleX(1);
+  background: var(--gold-dark, #805d31);
 }
 
 .overlap-hero-cta-link .link-arrow {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-  color: #16120e;
+  color: var(--gold, #b78646);
 }
 
 .overlap-hero-cta-link:hover .link-arrow {
   transform: translateX(4px);
+  color: var(--gold-dark, #805d31);
 }
 
 /* ─────────────────────────────────────────────────────────────

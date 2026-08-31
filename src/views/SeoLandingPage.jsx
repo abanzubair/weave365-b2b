@@ -8,6 +8,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
+import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { siteUrl } from '../config.js';
 import EmptyCategorySourcing from '../components/EmptyCategorySourcing.jsx';
@@ -268,7 +269,13 @@ export function SeoLandingPage({
           </span>
         </div>
 
-        <StateMessage status={status} error={error} />
+        {status === 'error' && <StateMessage status={status} error={error} />}
+
+        {status === 'loading' && (
+          <div className="catalog-grid" style={{ maxWidth: '100%', margin: '0 auto' }}>
+            <CatalogPageSkeleton count={8} wrap={false} />
+          </div>
+        )}
 
         {status === 'ready' && filteredProducts.length > 0 && (
           <>

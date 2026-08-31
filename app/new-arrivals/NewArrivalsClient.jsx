@@ -75,10 +75,13 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
     [user, setFavorites, navigate]
   );
 
+  const isLoading = allProducts.length === 0;
+  const status = isLoading ? 'loading' : 'ready';
+
   return (
     <NewArrivalsPage
       products={allProducts}
-      status="ready"
+      status={status}
       error=""
       navigate={navigate}
       addToCart={addToCart}
@@ -86,7 +89,7 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
       openAuth={() => navigate('signup')}
-      isTransitioning={false}
+      isTransitioning={isLoading}
     />
   );
 }
