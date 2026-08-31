@@ -43,48 +43,45 @@
 
 /* Main Heading */
 .overlap-hero-title {
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1.45rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  text-wrap: balance;
 }
 
 .hero-title-main {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(34px, 4.4vw, 52px);
+  font-size: clamp(28px, 3.4vw, 44px);
   font-weight: 500;
-  line-height: 1.12;
+  line-height: 1.18;
   letter-spacing: -0.025em;
   color: #16120e;
   display: block;
+  text-wrap: balance;
+}
+
+.hero-title-sub-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: clamp(1rem, 1.8vw, 1.4rem);
 }
 
 .hero-title-sub {
   font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
   font-variant-numeric: lining-nums proportional-nums;
-  font-size: clamp(23px, 2.7vw, 34px);
+  font-size: clamp(20px, 2.3vw, 30px);
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: #382c21;
+  color: #16120e;
   display: block;
-}
-
-.hero-title-accent {
-  display: block;
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(24px, 2.8vw, 36px);
-  font-style: normal;
-  font-weight: 700;
-  color: #8c5d28;
-  letter-spacing: 0.01em;
-  line-height: 1.22;
-  margin-top: 2px;
+  text-wrap: balance;
 }
 
 /* Narrative Body */
 .overlap-hero-desc {
-  margin: 0 0 2.25rem 0;
+  margin: 0 0 1.25rem 0;
   max-width: 580px;
   display: flex;
   flex-direction: column;
@@ -93,9 +90,9 @@
 
 .hero-desc-channels {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(15.5px, 1.2vw, 17.5px);
+  font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.5;
-  color: #2b221a;
+  color: #16120e;
   margin: 0;
   font-weight: 500;
 }
@@ -109,20 +106,59 @@
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: clamp(14px, 1.05vw, 15.5px);
   line-height: 1.55;
-  color: #6b5c4e;
+  color: #16120e;
   margin: 0;
   font-weight: 400;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   EDITORIAL LINK CTAS (MATCHING WHOLESALE PARTNERSHIP STYLE)
+   KEY FEATURES / VALUE CHECKLIST
+   ───────────────────────────────────────────────────────────── */
+
+.overlap-hero-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 1.85rem 0;
+  width: 100%;
+}
+
+.hero-feature-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hero-feature-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 3.5px;
+  background: #fdf3ea;
+  color: #b45309;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.08);
+}
+
+.hero-feature-text {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(14.5px, 1.05vw, 15.5px);
+  font-weight: 600;
+  color: #16120e;
+  line-height: 1.35;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EDITORIAL LINK CTAS (SIDE BY SIDE)
    ───────────────────────────────────────────────────────────── */
 
 .overlap-hero-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: clamp(2rem, 3.5vw, 3.5rem);
   width: 100%;
   margin-bottom: 0;
 }
@@ -132,16 +168,16 @@
   align-items: center;
   gap: 10px;
   font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(22px, 1.5vw, 26px);
+  font-size: clamp(21px, 1.45vw, 25px);
   font-weight: 600;
-  color: var(--ink, #1a1a1a);
+  color: #16120e;
   text-decoration: none;
   position: relative;
-  padding-bottom: 4px;
+  padding-bottom: 3px;
   width: fit-content;
   cursor: pointer;
   touch-action: manipulation;
-  transition: color 0.3s ease;
+  transition: color 0.25s ease;
 }
 
 .overlap-hero-cta-link::after {
@@ -151,10 +187,10 @@
   left: 0;
   width: 100%;
   height: 1.5px;
-  background: var(--ink, #1a1a1a);
+  background: #16120e;
   transform: scaleX(0.85);
   transform-origin: left;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
 .overlap-hero-cta-link:hover::after {
@@ -162,67 +198,12 @@
 }
 
 .overlap-hero-cta-link .link-arrow {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
-  color: var(--ink, #1a1a1a);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+  color: #16120e;
 }
 
 .overlap-hero-cta-link:hover .link-arrow {
   transform: translateX(4px);
-}
-
-/* Secondary Link Variation */
-.overlap-hero-cta-link.secondary-link {
-  color: #5a4f47;
-}
-
-.overlap-hero-cta-link.secondary-link::after {
-  background: #805d31;
-  transform: scaleX(0.7);
-}
-
-.overlap-hero-cta-link.secondary-link .link-arrow {
-  color: #805d31;
-}
-
-.overlap-hero-cta-link.secondary-link:hover {
-  color: #1a1a1a;
-}
-
-.overlap-hero-cta-link.secondary-link:hover::after {
-  transform: scaleX(1);
-  background: #1a1a1a;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   TRUST / ASSURANCE STRIP
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-trust-bar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #6d5f50;
-}
-
-.trust-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.trust-icon {
-  color: #805d31;
-  flex-shrink: 0;
-}
-
-.trust-dot {
-  color: #805d31;
-  opacity: 0.45;
-  font-size: 13px;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -259,6 +240,10 @@
   -webkit-user-drag: none;
 }
 
+.hero-mobile-br {
+  display: none;
+}
+
 /* ─────────────────────────────────────────────────────────────
    RESPONSIVE BREAKPOINTS (OPTIMIZED FOR MOBILE)
    ───────────────────────────────────────────────────────────── */
@@ -276,6 +261,10 @@
 }
 
 @media (max-width: 768px) {
+  .hero-mobile-br {
+    display: inline;
+  }
+
   .overlap-hero {
     min-height: auto;
     padding: calc(56px + 1rem) 1.25rem 2.25rem 1.25rem;
@@ -288,64 +277,91 @@
   }
 
   .overlap-hero-content-col {
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     width: 100%;
   }
 
   .overlap-hero-title {
-    font-size: clamp(23px, 6.2vw, 29px);
+    font-size: clamp(24px, 6.4vw, 30px);
     line-height: 1.16;
-    margin-bottom: 1rem;
+    margin-bottom: 1.15rem;
     letter-spacing: -0.02em;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 0.35rem;
+    width: 100%;
   }
 
   .hero-title-main {
-    text-align: center;
+    text-align: left;
+    font-size: clamp(26px, 7vw, 33px);
+    line-height: 1.18;
+  }
+
+  .hero-title-sub-group {
+    margin-top: 0.85rem;
+    gap: 0.3rem;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
   }
 
   .hero-title-sub {
-    font-size: clamp(17px, 4.6vw, 21px);
+    font-size: clamp(19px, 5vw, 23px);
     line-height: 1.25;
-    text-align: center;
-  }
-
-  .hero-title-accent {
-    display: block;
-    margin-top: 2px;
+    text-align: left;
   }
 
   .overlap-hero-desc {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.15rem;
     max-width: 100%;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 0.3rem;
   }
 
   .hero-desc-channels {
-    font-size: 14.5px;
-    text-align: center;
+    font-size: 15.5px;
+    text-align: left;
+    line-height: 1.45;
   }
 
   .hero-desc-tagline {
-    font-size: 13.5px;
-    text-align: center;
+    font-size: 14.5px;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  .overlap-hero-features {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .hero-feature-item {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .hero-feature-text {
+    font-size: 14.5px;
   }
 
   .overlap-hero-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: clamp(1.5rem, 5vw, 2.25rem);
     width: 100%;
     margin-bottom: 0;
-    align-items: center;
-    justify-content: center;
   }
 
   .overlap-hero-cta-link {
-    font-size: 21px;
+    font-size: 20px;
     padding-bottom: 3px;
   }
 
@@ -360,30 +376,6 @@
     max-height: 300px;
     border-radius: 10px;
   }
-
-  .overlap-hero-trust-bar {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 4px 8px;
-    font-size: 11.5px;
-    line-height: 1.4;
-  }
-
-  .trust-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .trust-dot {
-    display: inline;
-    opacity: 0.4;
-    font-size: 11px;
-  }
 }
 
 @media (max-width: 380px) {
@@ -391,19 +383,28 @@
     padding: calc(56px + 0.75rem) 1rem 1.75rem 1rem;
   }
 
-  .overlap-hero-title {
-    font-size: 21px;
+  .hero-title-main {
+    font-size: 24px;
   }
 
-  .hero-title-accent {
-    font-size: 18px;
+  .hero-title-sub {
+    font-size: 17.5px;
   }
 
   .overlap-hero-desc {
-    font-size: 13px;
+    font-size: 14px;
   }
 
-  .overlap-hero-trust-bar {
-    font-size: 10.5px;
+  .hero-feature-text {
+    font-size: 14px;
+  }
+
+  .overlap-hero-actions {
+    gap: 1.15rem;
+  }
+
+  .overlap-hero-cta-link {
+    font-size: 18px;
   }
 }
+
