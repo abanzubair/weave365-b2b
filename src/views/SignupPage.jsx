@@ -841,125 +841,136 @@ export function SignupPage({
             </div>
           ) : mode === 'forgot-password' ? (
             /* Forgot Password Mode */
-            <div>
-              <div className="signup-form-header">
-                <button
-                  type="button"
-                  onClick={() => { setMode('login'); setMessage(''); }}
-                  className="signup-back-btn"
-                >
-                  <ArrowLeft size={16} /> Back to Login
-                </button>
-                <h2 className="signup-form-title">Reset your password</h2>
-                <p className="signup-form-subtitle">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-              </div>
-
-              <form onSubmit={submit} className="signup-form">
-                <div className="signup-field">
-                  <label className="signup-label">Your email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    required
-                    className="signup-input"
-                  />
+            <div className="signup-form-view-wrapper">
+              <div className="signup-form-centered-body">
+                <div className="signup-form-header">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('login'); setMessage(''); }}
+                    className="signup-back-btn"
+                  >
+                    <ArrowLeft size={16} /> Back to Login
+                  </button>
+                  <h2 className="signup-form-title">Reset your password</h2>
+                  <p className="signup-form-subtitle">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
                 </div>
 
-                <button type="submit" className="signup-submit-btn" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="auth-spinner" /> Sending Link...</> : 'Send Reset Link'}
-                </button>
-              </form>
-
-              {message === 'account-not-found' && (
-                <div className="signup-alert-not-found">
-                  <div className="alert-not-found-icon">
-                    <AlertCircle size={18} />
+                <form onSubmit={submit} className="signup-form">
+                  <div className="signup-field">
+                    <label className="signup-label">Your email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                      required
+                      className="signup-input"
+                    />
                   </div>
-                  <div className="alert-not-found-body">
-                    <div className="alert-not-found-title">Account Not Found</div>
-                    <p className="alert-not-found-desc">
-                      No registered wholesale account exists for <strong>{email}</strong>. Please check for typos or create a new account.
+
+                  <button type="submit" className="signup-submit-btn" disabled={loading}>
+                    {loading ? <><Loader2 size={16} className="auth-spinner" /> Sending link...</> : 'Send Reset Link'}
+                  </button>
+                </form>
+
+                {message === 'account-not-found' && (
+                  <div className="signup-account-not-found-card">
+                    <p className="signup-account-not-found-title">
+                      No account found with this email
                     </p>
-                    <button
-                      type="button"
-                      className="signup-not-found-btn"
-                      onClick={() => {
-                        setMode('register');
-                        setMessage('');
-                      }}
-                    >
-                      <span>Sign Up for an Account</span>
-                      <ArrowRight size={14} />
+                    <p className="signup-account-not-found-desc">
+                      It looks like you haven't registered with this email yet. Would you like to create an account?
+                    </p>
+                    <div className="signup-account-not-found-actions">
+                      <button
+                        type="button"
+                        className="signup-not-found-register-btn"
+                        onClick={() => {
+                          setMode('register');
+                          setMessage('');
+                        }}
+                      >
+                        <span>Sign Up for an Account</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {message === 'reset-link-sent' && (
+                  <p className="signup-alert-success">
+                    ✓ Reset link sent! Please check your email inbox and spam folder.
+                  </p>
+                )}
+                {message === 'demo-reset-sent' && (
+                  <div style={{ marginTop: '16px' }}>
+                    <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
+                    <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
+                      Simulate Reset Link →
                     </button>
                   </div>
-                </div>
-              )}
-              {message === 'reset-link-sent' && (
-                <p className="signup-alert-success">
-                  ✓ Reset link sent! Please check your email inbox and spam folder.
-                </p>
-              )}
-              {message === 'demo-reset-sent' && (
-                <div style={{ marginTop: '16px' }}>
-                  <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
-                  <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
-                    Simulate Reset Link →
-                  </button>
-                </div>
-              )}
-              {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
-                <div className="signup-alert-error">
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>{message}</span>
-                </div>
-              )}
+                )}
+                {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
+                  <div className="signup-alert-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{message}</span>
+                  </div>
+                )}
+              </div>
 
+              <div className="signup-form-bottom-footer">
+                <LegalDisclaimer />
+              </div>
             </div>
           ) : mode === 'reset-password' ? (
             /* Reset Password Mode */
-            <div>
-              <div className="signup-form-header">
-                <h2 className="signup-form-title">Set new password</h2>
-                <p className="signup-form-subtitle">Choose a strong new password with at least 6 characters.</p>
+            <div className="signup-form-view-wrapper">
+              <div className="signup-form-centered-body">
+                <div className="signup-form-header">
+                  <h2 className="signup-form-title">Set new password</h2>
+                  <p className="signup-form-subtitle">Choose a strong new password with at least 6 characters.</p>
+                </div>
+
+                <form onSubmit={submit} className="signup-form">
+                  <div className="signup-field">
+                    <label className="signup-label">New Password</label>
+                    <div className="signup-input-wrapper">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        required
+                        minLength={6}
+                        className="signup-input"
+                      />
+                      <button
+                        type="button"
+                        className="signup-password-toggle"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="signup-submit-btn" disabled={loading}>
+                    {loading ? <><Loader2 size={16} className="auth-spinner" /> Updating...</> : 'Update Password'}
+                  </button>
+                </form>
+                {message && (
+                  <div className="signup-alert-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{message}</span>
+                  </div>
+                )}
               </div>
 
-              <form onSubmit={submit} className="signup-form">
-                <div className="signup-field">
-                  <label className="signup-label">New Password</label>
-                  <div className="signup-input-wrapper">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      required
-                      minLength={6}
-                      className="signup-input"
-                    />
-                    <button
-                      type="button"
-                      className="signup-password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button type="submit" className="signup-submit-btn" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="auth-spinner" /> Updating...</> : 'Update Password'}
-                </button>
-              </form>
-              {message && (
-                <div className="signup-alert-error">
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>{message}</span>
-                </div>
-              )}
+              <div className="signup-form-bottom-footer">
+                <LegalDisclaimer />
+              </div>
             </div>
           ) : user && profileComplete && mode !== 'register' && !loading ? (
             /* =================================================================
