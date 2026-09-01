@@ -155,6 +155,13 @@ export function SignupPage({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [tempDemoUser, setTempDemoUser] = useState(null);
+  const formPanelRef = useRef(null);
+
+  useEffect(() => {
+    if (formPanelRef.current) {
+      formPanelRef.current.scrollTop = 0;
+    }
+  }, [mode]);
 
   const [profile, setProfile] = useState({
     fullName: '',
@@ -790,7 +797,7 @@ export function SignupPage({
         </div>
 
         {/* Right Side: Form Panel */}
-        <div className="signup-form-panel">
+        <div className="signup-form-panel" ref={formPanelRef}>
           <div className="signup-form-inner">
             {/* Verification Email Sent State */}
           {message === 'verification-email-sent' ? (
