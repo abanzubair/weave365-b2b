@@ -9,9 +9,7 @@
  */
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
-import { applyAutoApprovalToBuyerProfile, isVendorProfile, isProfileComplete } from './buyerAccess.js';
-
-export { isProfileComplete };
+import { applyAutoApprovalToBuyerProfile, isVendorProfile } from './buyerAccess.js';
 
 export function profileRowFromUser(user) {
   if (!user?.id) return null;
@@ -37,8 +35,8 @@ export function profileRowFromUser(user) {
     state: buyerProfile.state || (buyerProfile.city && buyerProfile.city.includes(',') ? buyerProfile.city.split(',').slice(1).join(',').trim() : ''),
     pincode: buyerProfile.pincode || '',
     interested_categories: buyerProfile.interested_categories || [],
-    price_group: buyerProfile.price_group || 'pending',
-    approval_status: buyerProfile.approval_status || 'incomplete',
+    price_group: buyerProfile.price_group || 'approved',
+    approval_status: buyerProfile.approval_status || 'approved',
     updated_at: new Date().toISOString(),
   });
 }
@@ -48,29 +46,6 @@ export async function syncProfileFromUser(user) {
 
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
-
-  // If the profile is incomplete, check if a complete profile is already saved in Supabase
-  if (profileRow.approval_status === 'incomplete') {
-    try {
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id, whatsapp_number, pincode, approval_status')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      // If an existing profile is already complete or approved in DB, do not overwrite it with incomplete Google metadata
-      if (
-        existing &&
-        existing.whatsapp_number &&
-        existing.pincode &&
-        existing.approval_status !== 'incomplete'
-      ) {
-        return { error: null };
-      }
-    } catch (e) {
-      console.warn('[profileHelpers] Error checking existing profile:', e);
-    }
-  }
 
   const { error } = await supabase
     .from('profiles')
@@ -94,4 +69,21 @@ export async function loadProfileForUser(user) {
     .maybeSingle();
 
   return { profile: data || fallbackProfile, error };
+}
+
+export function isProfileComplete(user, buyerProfile) {
+  if (!user) return false;
+  const profile = buyerProfile || user.user_metadata?.buyer_profile || user.buyer_profile;
+  if (!profile) return false;
+
+  const fullName = String(profile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
+  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(-10);
+  const city = String(profile.city || '').trim();
+  const pincode = String(profile.pincode || '').replace(/\D/g, '').slice(0, 6);
+
+  if (!fullName || whatsapp.length !== 10 || !city || pincode.length !== 6) {
+    return false;
+  }
+
+  return true;
 }

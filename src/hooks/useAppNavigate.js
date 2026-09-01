@@ -39,8 +39,8 @@ export function useAppNavigate() {
         const params = new URLSearchParams();
         if (nextRoute === 'login' || navOptions.mode === 'login') {
           params.set('mode', 'login');
-        } else if (nextRoute === 'register' || nextRoute === 'signup' || navOptions.mode === 'register') {
-          params.set('mode', navOptions.mode || 'register');
+        } else if (nextRoute === 'register' || navOptions.mode === 'register') {
+          params.set('mode', 'register');
         } else if (navOptions.mode) {
           params.set('mode', navOptions.mode);
         }
