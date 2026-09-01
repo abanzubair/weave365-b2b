@@ -765,75 +765,62 @@
 }
 
 /* ==========================================================================
-   6th Slot: Sell on Weave 365 Action Card (Varanasi Artisan Style)
+   6th Slot: Sell on Weave 365 Radio Card (Varanasi Artisan Style)
    ========================================================================== */
 
-.signup-role-seller-card {
-  position: relative;
-  display: flex;
-  align-items: center;
+.signup-role-radio-card.signup-role-radio-card-seller {
+  background: linear-gradient(135deg, #fefdfa 0%, #fbf7ee 100%);
+  border: 1.5px solid rgba(183, 134, 70, 0.4);
   gap: 7px;
   padding: 9px 11px;
-  background: linear-gradient(135deg, #fefcf9 0%, #fbf7ef 100%);
-  border: 1.5px solid rgba(183, 134, 70, 0.38);
-  border-radius: 10px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-sizing: border-box;
-  min-height: 42px;
 }
 
-.signup-role-seller-card:hover {
-  background: #8f5b1d;
-  border-color: #8f5b1d;
-  box-shadow: 0 3px 12px rgba(143, 91, 29, 0.2);
-  transform: translateY(-1px);
+.signup-role-radio-card.signup-role-radio-card-seller:hover {
+  background: #fdf5e7;
+  border-color: rgba(183, 134, 70, 0.65);
+}
+
+.signup-role-radio-card.signup-role-radio-card-seller.selected {
+  background: #fdf4e2;
+  border-color: #b47a2a;
+  box-shadow: 0 0 0 1px #b47a2a;
+}
+
+.signup-role-custom-radio-seller {
+  border-color: rgba(183, 134, 70, 0.55);
+}
+
+.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-custom-radio-seller {
+  border-color: #b47a2a;
+  background: #b47a2a;
 }
 
 .signup-role-seller-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: rgba(183, 134, 70, 0.15);
   color: #8f5b1d;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
-.signup-role-seller-card:hover .signup-role-seller-icon {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+.signup-role-radio-card.signup-role-radio-card-seller:hover .signup-role-seller-icon {
+  transform: scale(1.1);
 }
 
-.signup-role-seller-label {
-  font-family: var(--font-body, system-ui, sans-serif);
+.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-seller-icon {
+  color: #794a12;
+}
+
+.signup-role-radio-label-seller {
+  color: #8f5b1d;
+  font-weight: 600;
   font-size: 12.5px;
+}
+
+.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-radio-label-seller {
+  color: #5d3709;
   font-weight: 650;
-  color: #8f5b1d;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  transition: color 0.2s ease;
-}
-
-.signup-role-seller-card:hover .signup-role-seller-label {
-  color: #ffffff;
-}
-
-.signup-role-seller-arrow {
-  color: #8f5b1d;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.signup-role-seller-card:hover .signup-role-seller-arrow {
-  color: #ffffff;
-  transform: translateX(2px);
 }
 
 @media (max-width: 540px) {
@@ -842,14 +829,12 @@
     gap: 8px;
   }
 
-  .signup-role-radio-card,
-  .signup-role-seller-card {
+  .signup-role-radio-card {
     padding: 9px 10px;
     gap: 6px;
   }
 
-  .signup-role-radio-label,
-  .signup-role-seller-label {
+  .signup-role-radio-label {
     font-size: 12.5px;
   }
 }

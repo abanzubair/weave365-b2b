@@ -72,6 +72,7 @@ const ACCOUNT_ROLE_OPTIONS = [
   { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
   { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
   { id: 'online_store', label: 'Online Store', buyerType: 'customer', buyerSubtype: 'Online Store' },
+  { id: 'vendor', label: 'Sell on Weave 365', buyerType: 'vendor', buyerSubtype: 'Vendor', isSeller: true },
 ];
 
 function toTitleCaseName(value) {
@@ -1028,7 +1029,41 @@ export function SignupPage({
                     <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
                       {ACCOUNT_ROLE_OPTIONS.map((option) => {
                         const isSelected =
-                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase();
+                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
+                          (option.id === 'vendor' && profile.buyerType === 'vendor');
+
+                        if (option.isSeller) {
+                          return (
+                            <label
+                              key={option.id}
+                              className={`signup-role-radio-card signup-role-radio-card-seller ${isSelected ? 'selected' : ''}`}
+                              title="Register as a Seller / Weaver to list and sell products on Weave 365"
+                            >
+                              <input
+                                type="radio"
+                                name="accountRole"
+                                value={option.id}
+                                checked={isSelected}
+                                onChange={() => {
+                                  setProfile((prev) => ({
+                                    ...prev,
+                                    buyerType: option.buyerType,
+                                    buyerSubtype: option.buyerSubtype,
+                                  }));
+                                }}
+                                className="signup-role-radio-input"
+                              />
+                              <span className="signup-role-custom-radio signup-role-custom-radio-seller" aria-hidden="true">
+                                <span className="signup-role-radio-inner" />
+                              </span>
+                              <span className="signup-role-seller-icon" aria-hidden="true">
+                                <Store size={13} />
+                              </span>
+                              <span className="signup-role-radio-label signup-role-radio-label-seller">{option.label}</span>
+                            </label>
+                          );
+                        }
+
                         return (
                           <label
                             key={option.id}
@@ -1055,24 +1090,6 @@ export function SignupPage({
                           </label>
                         );
                       })}
-
-                      {/* 6th Slot: Sell / List on Weave 365 Action Card */}
-                      <a
-                        href="/weaver-onboarding"
-                        className="signup-role-seller-card"
-                        title="Weavers & Manufacturers: Sell and list your products on Weave 365"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (navigate) navigate('weaver-onboarding');
-                          else window.location.href = '/weaver-onboarding';
-                        }}
-                      >
-                        <span className="signup-role-seller-icon" aria-hidden="true">
-                          <Store size={14} />
-                        </span>
-                        <span className="signup-role-seller-label">Sell on Weave 365</span>
-                        <ArrowRight size={13} className="signup-role-seller-arrow" />
-                      </a>
                     </div>
                   </div>
 
