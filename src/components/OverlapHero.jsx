@@ -23,27 +23,11 @@ export function OverlapHero({ navigate }) {
             <p className="hero-desc-tagline">Build your own brand, grow your customers, and start selling online.</p>
           </div>
 
-          {/* Key Value Checklist */}
-          <div className="overlap-hero-features" role="list">
-            <div className="hero-feature-item" role="listitem">
-              <span className="hero-feature-badge" aria-hidden="true">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              <span className="hero-feature-text">White Label Dropshipping Available</span>
-            </div>
-            <div className="hero-feature-item" role="listitem">
-              <span className="hero-feature-badge" aria-hidden="true">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              <span className="hero-feature-text">Free Shipping Across India</span>
-            </div>
-          </div>
-
           {/* Action CTAs */}
           <div className="overlap-hero-actions">
             <AppLink
-              to="catalogue"
-              href="/catalogue"
+              to="resell-sarees-online"
+              href="/resell-sarees-online"
               className="overlap-hero-cta-link primary-link"
               navigate={navigate}
               aria-label="Start Reselling"
@@ -62,6 +46,23 @@ export function OverlapHero({ navigate }) {
               <span className="link-label">Dropshipping</span>
               <ArrowRight size={18} className="link-arrow" />
             </AppLink>
+          </div>
+
+          {/* Key Value Checklist / Trust Strip */}
+          <div className="overlap-hero-features-strip" role="list">
+            <div className="overlap-feature-item" role="listitem">
+              <span className="overlap-feature-badge" aria-hidden="true">
+                <Check size={12} strokeWidth={3} />
+              </span>
+              <span className="overlap-feature-text">White Label Dropshipping Available</span>
+            </div>
+            <div className="overlap-feature-divider" />
+            <div className="overlap-feature-item" role="listitem">
+              <span className="overlap-feature-badge" aria-hidden="true">
+                <Check size={12} strokeWidth={3} />
+              </span>
+              <span className="overlap-feature-text">Free Shipping Across India</span>
+            </div>
           </div>
 
         </div>

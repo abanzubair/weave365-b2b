@@ -1,28 +1,26 @@
 /* ═══════════════════════════════════════════════════════════════
-   WEAVE365 LUXURY HERO BANNER — STYLED AS RF-HERO-INNER
+   WEAVE365 HOME HERO — EDITORIAL ATELIER AESTHETIC
+   Designed to match the refined Dropshipping Hero layout & typography,
+   preserving exact text copy and original button style.
    ═══════════════════════════════════════════════════════════════ */
 
 .overlap-hero {
   position: relative;
   width: 100%;
-  min-height: 80vh;
-  min-height: 80dvh;
-  display: flex;
-  align-items: center;
-  background: var(--hero-blush, #faf7f2);
+  background: var(--paper, #ffffff);
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: clamp(2rem, 3.5vw, 3.25rem) 2rem 3rem 2rem;
+  padding: clamp(1.75rem, 3vw, 3rem) var(--site-padding, 2rem) clamp(2.25rem, 3.5vw, 3.5rem) var(--site-padding, 2rem);
+  border-bottom: 1px solid var(--line, #e5e5e5);
 }
 
 .overlap-hero-container {
   width: 100%;
-  max-width: 1600px;
+  max-width: 1440px;
   margin: 0 auto;
-  margin-top: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 4.5vw, 5rem);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(2rem, 3.5vw, 3.75rem);
   align-items: center;
   box-sizing: border-box;
 }
@@ -41,9 +39,9 @@
   box-sizing: border-box;
 }
 
-/* Main Heading */
+/* Main Heading — Marcellus Editorial Style */
 .overlap-hero-title {
-  margin: 0 0 1.45rem 0;
+  margin: 0 0 1.2rem 0;
   display: flex;
   flex-direction: column;
   text-wrap: balance;
@@ -51,38 +49,35 @@
 
 .hero-title-main {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: clamp(32px, 3.8vw, 52px);
   font-weight: 500;
-  line-height: 1.18;
-  letter-spacing: -0.025em;
-  color: var(--heading, #000000);
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  color: #1a1613;
   display: block;
-  text-wrap: balance;
 }
 
 .hero-title-sub-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-top: clamp(1rem, 1.8vw, 1.4rem);
+  gap: 0.25rem;
+  margin-top: 0.65rem;
 }
 
 .hero-title-sub {
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
-  font-variant-numeric: lining-nums proportional-nums;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
   font-size: clamp(20px, 2.3vw, 30px);
-  font-weight: 700;
-  line-height: 1.25;
+  font-weight: 500;
+  line-height: 1.22;
   letter-spacing: -0.01em;
   color: #855b29;
   display: block;
-  text-wrap: balance;
 }
 
 /* Narrative Body */
 .overlap-hero-desc {
-  margin: 0 0 1.25rem 0;
-  max-width: 580px;
+  margin: 0 0 2rem 0;
+  max-width: 640px;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -90,68 +85,29 @@
 
 .hero-desc-channels {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(15px, 1.15vw, 17px);
-  line-height: 1.5;
-  color: var(--ink, #1a1a1a);
+  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
+  line-height: 1.6;
+  color: #55483b;
   margin: 0;
   font-weight: 500;
 }
 
 .hero-desc-channels strong {
   font-weight: 700;
-  color: var(--heading, #000000);
+  color: #1a1613;
 }
 
 .hero-desc-tagline {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(14px, 1.05vw, 15.5px);
-  line-height: 1.55;
-  color: var(--muted, #282828);
+  font-size: clamp(0.95rem, 1.05vw, 1.05rem);
+  line-height: 1.68;
+  color: #6e5e4f;
   margin: 0;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   KEY FEATURES / VALUE CHECKLIST
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-features {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 0 0 1.85rem 0;
-  width: 100%;
-}
-
-.hero-feature-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.hero-feature-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  background: rgba(183, 134, 70, 0.18);
-  color: var(--gold-dark, #805d31);
-  flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(128, 93, 49, 0.08);
-}
-
-.hero-feature-text {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(14.5px, 1.05vw, 15.5px);
-  font-weight: 600;
-  color: var(--ink, #1a1a1a);
-  line-height: 1.35;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   EDITORIAL LINK CTAS (SIDE BY SIDE)
+   ACTION CTAs — PRESERVED BUTTON STYLE
    ───────────────────────────────────────────────────────────── */
 
 .overlap-hero-actions {
@@ -213,7 +169,56 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   RIGHT COLUMN: VISUAL PHOTO FRAME
+   KEY VALUES / TRUST STRIP (STYLED AS DROPSHIPPING METRICS BAR)
+   ───────────────────────────────────────────────────────────── */
+
+.overlap-hero-features-strip {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.15rem 0 0 0;
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 1.75rem;
+  width: 100%;
+}
+
+.overlap-feature-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.overlap-feature-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(183, 134, 70, 0.16);
+  color: #805d31;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(128, 93, 49, 0.06);
+}
+
+.overlap-feature-text {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(13px, 0.95vw, 14.5px);
+  font-weight: 600;
+  color: #55483b;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.overlap-feature-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(198, 158, 106, 0.35);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RIGHT COLUMN: VISUAL PHOTO FRAME (EDITORIAL SHOWCASE)
    ───────────────────────────────────────────────────────────── */
 
 .overlap-hero-visual-col {
@@ -232,7 +237,6 @@
   box-shadow: 0 18px 48px rgba(54, 37, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(198, 158, 106, 0.35);
   aspect-ratio: 16 / 11;
-  min-height: 360px;
   background: #faf7f2;
 }
 
@@ -240,7 +244,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 25%;
+  object-position: center;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
@@ -251,17 +255,17 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   RESPONSIVE BREAKPOINTS (OPTIMIZED FOR MOBILE)
+   RESPONSIVE BREAKPOINTS
    ───────────────────────────────────────────────────────────── */
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .overlap-hero-container {
     grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
   }
 
   .overlap-hero-visual-col {
-    max-width: 580px;
+    max-width: 640px;
     margin: 0 auto;
   }
 }
@@ -273,13 +277,13 @@
 
   .overlap-hero {
     min-height: auto;
-    padding: 1.75rem 1.25rem 2.25rem 1.25rem;
+    padding: 1rem 1rem 2.5rem 1rem;
   }
 
   .overlap-hero-container {
     display: flex;
-    flex-direction: column-reverse; /* Image at top, text below */
-    gap: 1.35rem;
+    flex-direction: column;
+    gap: 1.75rem;
   }
 
   .overlap-hero-content-col {
@@ -289,71 +293,39 @@
   }
 
   .overlap-hero-title {
-    font-size: clamp(24px, 6.4vw, 30px);
-    line-height: 1.16;
-    margin-bottom: 1.15rem;
-    letter-spacing: -0.02em;
-    align-items: flex-start;
-    text-align: left;
-    gap: 0.35rem;
-    width: 100%;
+    font-size: clamp(24px, 7vw, 34px);
+    margin-bottom: 1rem;
   }
 
   .hero-title-main {
-    text-align: left;
-    font-size: clamp(26px, 7vw, 33px);
-    line-height: 1.18;
+    font-size: clamp(26px, 6.8vw, 33px);
+    line-height: 1.15;
   }
 
   .hero-title-sub-group {
-    margin-top: 0.85rem;
-    gap: 0.3rem;
-    align-items: flex-start;
-    text-align: left;
-    width: 100%;
+    margin-top: 0.5rem;
+    gap: 0.25rem;
   }
 
   .hero-title-sub {
-    font-size: clamp(19px, 5vw, 23px);
+    font-size: clamp(17px, 4.5vw, 22px);
     line-height: 1.25;
-    text-align: left;
   }
 
   .overlap-hero-desc {
-    margin-bottom: 1.15rem;
+    margin-bottom: 1.5rem;
     max-width: 100%;
-    align-items: flex-start;
-    text-align: left;
-    gap: 0.3rem;
+    gap: 0.35rem;
   }
 
   .hero-desc-channels {
-    font-size: 15.5px;
-    text-align: left;
-    line-height: 1.45;
-  }
-
-  .hero-desc-tagline {
-    font-size: 14.5px;
-    text-align: left;
+    font-size: 15px;
     line-height: 1.5;
   }
 
-  .overlap-hero-features {
-    align-items: flex-start;
-    text-align: left;
-    margin-bottom: 1.5rem;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .hero-feature-item {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .hero-feature-text {
-    font-size: 14.5px;
+  .hero-desc-tagline {
+    font-size: 14px;
+    line-height: 1.55;
   }
 
   .overlap-hero-actions {
@@ -361,32 +333,44 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: clamp(1.5rem, 5vw, 2.25rem);
+    gap: 1.75rem;
     width: 100%;
     margin-bottom: 0;
   }
 
   .overlap-hero-cta-link {
-    font-size: 20px;
-    padding-bottom: 3px;
+    font-size: 19px;
   }
 
-  .overlap-hero-visual-col {
-    width: 100%;
-    max-width: 100%;
+  .overlap-hero-features-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .overlap-feature-divider {
+    display: none;
+  }
+
+  .overlap-feature-text {
+    white-space: normal;
+    font-size: 13.5px;
   }
 
   .overlap-hero-visual-frame {
     aspect-ratio: 16 / 10;
     min-height: 0;
-    max-height: 300px;
-    border-radius: 10px;
+    max-height: 320px;
+    border-radius: 12px;
   }
 }
 
 @media (max-width: 380px) {
   .overlap-hero {
-    padding: 1.5rem 1rem 1.75rem 1rem;
+    padding: 0.85rem 0.85rem 2rem 0.85rem;
   }
 
   .hero-title-main {
@@ -394,23 +378,14 @@
   }
 
   .hero-title-sub {
-    font-size: 17.5px;
-  }
-
-  .overlap-hero-desc {
-    font-size: 14px;
-  }
-
-  .hero-feature-text {
-    font-size: 14px;
+    font-size: 16.5px;
   }
 
   .overlap-hero-actions {
-    gap: 1.15rem;
+    gap: 1.25rem;
   }
 
   .overlap-hero-cta-link {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
-

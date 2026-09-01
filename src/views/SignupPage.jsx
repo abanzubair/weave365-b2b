@@ -143,9 +143,9 @@ export function SignupPage({
       return 'complete-profile';
     }
     if (initialMode === 'complete-profile' || initialMode === 'completion-profile') {
-      return 'login';
+      return 'register';
     }
-    return initialMode || 'login';
+    return initialMode || 'register';
   }); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
   
   const [email, setEmail] = useState('');
@@ -224,7 +224,7 @@ export function SignupPage({
     }
   }, [initialType]);
 
-  // Pre-fill authenticated Google/User info
+  // Pre-fill authenticated Google/User info & handle pending registration data
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
@@ -250,12 +250,55 @@ export function SignupPage({
 
     if (user && !isProfileComplete(user, buyerProfile)) {
       setMode('complete-profile');
+
+      // Check if user just returned from Google OAuth with pending signup form data
+      try {
+        const saved = sessionStorage.getItem('pending_signup_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          sessionStorage.removeItem('pending_signup_profile');
+          if (parsed) {
+            setProfile((prev) => ({
+              ...prev,
+              ...parsed,
+              fullName: parsed.fullName || prev.fullName || toTitleCaseName(googleName),
+            }));
+
+            // If user filled all required fields before clicking Google, auto-complete registration immediately
+            if (
+              (parsed.fullName || googleName) &&
+              parsed.whatsapp &&
+              String(parsed.whatsapp).replace(/\D/g, '').length === 10 &&
+              parsed.city?.trim() &&
+              parsed.state?.trim() &&
+              normalizePincodeInput(parsed.pincode).length === 6
+            ) {
+              void completeRegistrationWithProfile(parsed, user);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[SignupPage] Error reading pending signup profile:', e);
+      }
+
+      // If user came from Google login without filling signup form first
+      if (initialMode === 'login') {
+        setMessage('Account registration required: Please fill out the registration form below before you can log in.');
+      }
     }
   }, [user, buyerProfile, initialMode, mode]);
 
+  // If user is already registered and complete, automatically redirect to home
+  useEffect(() => {
+    if (user && isProfileComplete(user, buyerProfile) && (mode === 'login' || initialMode === 'login')) {
+      navigate('home');
+    }
+  }, [user, buyerProfile, mode, initialMode, navigate]);
+
   useEffect(() => {
     if (isOnboarding || mode === 'complete-profile') {
-      document.title = 'Complete Your Profile - Weave 365';
+      document.title = 'Complete Your Registration - Weave 365';
     } else {
       document.title = mode === 'register' ? 'Weave 365 Sign-up' : 'Weave 365 Sign-in';
     }
@@ -268,7 +311,7 @@ export function SignupPage({
       } else if (!user) {
         setMode(
           initialMode === 'complete-profile' || initialMode === 'completion-profile'
-            ? 'login'
+            ? 'register'
             : initialMode
         );
       }
@@ -291,29 +334,135 @@ export function SignupPage({
     });
   }
 
-  function buildBuyerProfile() {
-    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-    const isVendor = profile.buyerType === 'vendor' || 
-                     String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
-                     String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
+  function buildBuyerProfile(prof = profile) {
+    const cleanWhatsapp = String(prof.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const isVendor = prof.buyerType === 'vendor' || 
+                     String(prof.buyerSubtype || '').toLowerCase().includes('vendor') ||
+                     String(prof.buyerSubtype || '').toLowerCase().includes('weaver');
 
     return applyAutoApprovalToBuyerProfile({
-      full_name: toTitleCaseName(profile.fullName),
-      whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
-      whatsapp_country_code: profile.countryCode,
+      full_name: toTitleCaseName(prof.fullName),
+      whatsapp: `${prof.countryCode || '+91'} ${cleanWhatsapp}`,
+      whatsapp_country_code: prof.countryCode || '+91',
       whatsapp_number: cleanWhatsapp,
-      business_name: profile.businessName.trim(),
+      business_name: (prof.businessName || '').trim(),
       buyer_type: isVendor ? 'vendor' : 'customer',
-      buyer_subtype: profile.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
+      buyer_subtype: prof.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
       role: isVendor ? 'vendor' : 'customer',
-      buying_behavior: profile.buyingBehavior,
-      city: profile.city?.trim() || '',
-      state: profile.state?.trim() || '',
-      pincode: normalizePincodeInput(profile.pincode),
-      interested_categories: profile.interestedCategories,
+      buying_behavior: prof.buyingBehavior || 'instant',
+      city: prof.city?.trim() || '',
+      state: prof.state?.trim() || '',
+      pincode: normalizePincodeInput(prof.pincode),
+      interested_categories: prof.interestedCategories || ['Saree'],
       price_group: 'approved',
       approval_status: 'approved',
     });
+  }
+
+  function handleGoogleRegister() {
+    setMessage('');
+    const cleanName = toTitleCaseName(profile.fullName);
+    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const cleanPincode = normalizePincodeInput(profile.pincode);
+
+    if (!profile.buyerType) {
+      setMessage('Please select a Business Type first.');
+      return;
+    }
+    if (!cleanName) {
+      setMessage('Please enter your Full Name first before continuing with Google.');
+      return;
+    }
+    if (cleanWhatsapp.length !== 10) {
+      setMessage('Please enter a valid 10-digit WhatsApp number first before continuing with Google.');
+      return;
+    }
+    if (!profile.city.trim()) {
+      setMessage('Please enter your City first before continuing with Google.');
+      return;
+    }
+    if (!profile.state.trim()) {
+      setMessage('Please enter your State first before continuing with Google.');
+      return;
+    }
+    if (cleanPincode.length !== 6) {
+      setMessage('Please enter a valid 6-digit Pincode first before continuing with Google.');
+      return;
+    }
+
+    const pendingProfile = {
+      ...profile,
+      fullName: cleanName,
+      whatsapp: cleanWhatsapp,
+      pincode: cleanPincode,
+    };
+
+    try {
+      sessionStorage.setItem('pending_signup_profile', JSON.stringify(pendingProfile));
+    } catch (e) {
+      console.warn('Could not save pending profile:', e);
+    }
+
+    handleSocialLogin('google');
+  }
+
+  async function completeRegistrationWithProfile(profOverride, targetUserOverride) {
+    const prof = profOverride || profile;
+    const currUser = targetUserOverride || user;
+    const cleanName = toTitleCaseName(prof.fullName || currUser?.user_metadata?.full_name || currUser?.user_metadata?.name);
+    const cleanWhatsapp = String(prof.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const cleanPincode = normalizePincodeInput(prof.pincode);
+
+    if (
+      !cleanName ||
+      !prof.city?.trim() ||
+      !prof.state?.trim() ||
+      cleanWhatsapp.length !== 10 ||
+      cleanPincode.length !== 6
+    ) {
+      setMessage('Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const newProfile = buildBuyerProfile({ ...prof, fullName: cleanName, whatsapp: cleanWhatsapp, pincode: cleanPincode });
+    const isVendor = newProfile.buyer_type === 'vendor' || newProfile.role === 'vendor';
+
+    if (isSupabaseConfigured) {
+      const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
+        data: {
+          buyer_profile: newProfile,
+          role: isVendor ? 'vendor' : 'customer',
+          full_name: cleanName,
+        },
+      });
+
+      if (authErr) {
+        setMessage(authErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const activeUser = updatedAuth?.user || currUser;
+      if (setUser) setUser(activeUser);
+
+      const profileResult = await syncProfileFromUser(activeUser);
+      if (profileResult.error) {
+        console.error('Profile sync error:', profileResult.error);
+      }
+    }
+
+    if (setBuyerProfile) {
+      setBuyerProfile(newProfile);
+    }
+
+    try { sessionStorage.removeItem('pending_signup_profile'); } catch (e) {}
+
+    setMessage('Registration completed successfully! Redirecting...');
+    setTimeout(() => {
+      navigate(prof.buyerType === 'vendor' ? 'account' : 'home');
+    }, 700);
   }
 
   async function checkEmailExists(inputEmail) {
@@ -468,58 +617,7 @@ export function SignupPage({
 
       // Handle Post-Google Onboarding / Complete Profile
       if (mode === 'complete-profile') {
-        const cleanName = toTitleCaseName(profile.fullName);
-        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-
-        if (
-          !cleanName ||
-          !profile.city.trim() ||
-          !profile.state.trim() ||
-          cleanWhatsapp.length !== 10 ||
-          normalizePincodeInput(profile.pincode).length !== 6
-        ) {
-          setMessage(
-            'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
-          );
-          setLoading(false);
-          return;
-        }
-
-        const newProfile = buildBuyerProfile();
-        const isVendor = newProfile.buyer_type === 'vendor' || newProfile.role === 'vendor';
-
-        if (isSupabaseConfigured) {
-          const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
-            data: {
-              buyer_profile: newProfile,
-              role: isVendor ? 'vendor' : 'customer',
-              full_name: cleanName,
-            },
-          });
-
-          if (authErr) {
-            setMessage(authErr.message);
-            setLoading(false);
-            return;
-          }
-
-          const targetUser = updatedAuth?.user || user;
-          if (setUser) setUser(targetUser);
-
-          const profileResult = await syncProfileFromUser(targetUser);
-          if (profileResult.error) {
-            console.error('Profile sync error:', profileResult.error);
-          }
-        }
-
-        if (setBuyerProfile) {
-          setBuyerProfile(newProfile);
-        }
-
-        setMessage('Profile completed successfully! Redirecting...');
-        setTimeout(() => {
-          navigate(profile.buyerType === 'vendor' ? 'account' : 'home');
-        }, 700);
+        await completeRegistrationWithProfile(profile);
         return;
       }
 
@@ -1009,12 +1107,16 @@ export function SignupPage({
                 <div className="signup-form-header">
                   <div className="signup-form-title-row">
                     <h2 className="signup-form-title">
-                      {isOnboarding ? 'Complete Your Profile' : 'Create an account'}
+                      {isOnboarding ? 'Complete Your Registration' : 'Create an account'}
                     </h2>
                   </div>
-                  {isOnboarding && (
+                  {isOnboarding ? (
                     <p className="signup-form-subtitle">
-                      Provide your business details to unlock wholesale catalog access.
+                      Please provide your mandatory business details below to complete your registration before logging in.
+                    </p>
+                  ) : (
+                    <p className="signup-form-subtitle">
+                      Join Weave 365 to unlock factory wholesale pricing and direct Varanasi inventory.
                     </p>
                   )}
                 </div>
@@ -1224,11 +1326,25 @@ export function SignupPage({
                   {loading ? (
                     <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
                   ) : isOnboarding ? (
-                    'Complete Registration & Continue'
+                    'Complete Registration & Sign In'
                   ) : (
                     'Get Started'
                   )}
                 </button>
+
+                {!isOnboarding && (
+                  <>
+                    <div className="signup-divider">
+                      <span>or sign up with</span>
+                    </div>
+
+                    <GoogleButton
+                      onClick={handleGoogleRegister}
+                      text="Sign up with Google"
+                    />
+                  </>
+                )}
+
                   {message && (
                     <div className="signup-alert-error">
                       <AlertCircle size={18} style={{ flexShrink: 0 }} />
@@ -1248,7 +1364,7 @@ export function SignupPage({
                       type="button"
                       onClick={handleSignOut}
                     >
-                      Sign out
+                      Cancel & Sign out
                     </button>
                   </div>
                 ) : (

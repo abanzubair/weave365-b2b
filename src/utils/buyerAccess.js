@@ -30,18 +30,45 @@ export function isVaranasiPincode(value) {
   return VARANASI_PINCODE_PREFIXES.some((prefix) => digits.startsWith(prefix));
 }
 
+export function isProfileComplete(user, buyerProfile) {
+  if (!user) return false;
+  const profile = buyerProfile || user.user_metadata?.buyer_profile || user.buyer_profile;
+  if (!profile) return false;
+
+  const fullName = String(
+    profile.full_name ||
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    ''
+  ).trim();
+  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(-10);
+  const city = String(profile.city || '').trim();
+  const pincode = String(profile.pincode || '').replace(/\D/g, '').slice(0, 6);
+
+  if (!fullName || whatsapp.length !== 10 || !city || pincode.length !== 6) {
+    return false;
+  }
+
+  return true;
+}
+
 export function applyAutoApprovalToBuyerProfile(profile) {
   const isVendor = isVendorProfile(profile);
   const buyerType = isVendor ? 'vendor' : 'customer';
   const role = isVendor ? 'vendor' : (profile?.role || 'customer');
   const blockedByPincode = isVaranasiPincode(profile?.pincode);
+  const cleanPhone = String(profile?.whatsapp_number || profile?.whatsapp || '').replace(/\D/g, '').slice(-10);
+  const cleanPincode = String(profile?.pincode || '').replace(/\D/g, '').slice(0, 6);
+  const isComplete = Boolean(cleanPhone.length === 10 && cleanPincode.length === 6 && (profile?.city || '').trim());
+
+  const status = !isComplete ? 'incomplete' : (blockedByPincode ? 'pending' : 'approved');
 
   return {
     ...profile,
     buyer_type: buyerType,
     role: role,
-    approval_status: blockedByPincode ? 'pending' : 'approved',
-    price_group: blockedByPincode ? 'pending' : 'approved',
+    approval_status: status,
+    price_group: status === 'approved' ? 'approved' : 'pending',
   };
 }
 
@@ -53,6 +80,7 @@ export function getBuyerAccess(user, buyerProfile) {
   if (!user) {
     return {
       isLoggedIn: false,
+      isProfileComplete: false,
       canViewPrices: true,
       reason: 'logged_out',
       message: '',
@@ -70,6 +98,29 @@ export function getBuyerAccess(user, buyerProfile) {
   }
 
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
+  const isComplete = isProfileComplete(user, profile);
+
+  if (!isComplete) {
+    return {
+      isLoggedIn: false,
+      isProfileComplete: false,
+      canViewPrices: false,
+      reason: 'incomplete_profile',
+      message: 'Please complete your registration form to activate wholesale pricing.',
+      buyerType: 'guest',
+      priceGroup: 'guest',
+      priceLabel: 'Price',
+      approvalStatus: 'incomplete',
+      userId: user.id || null,
+      userEmail: user.email || null,
+      buyerName: null,
+      buyerPhone: null,
+      buyerPincode: null,
+      isVendor: false,
+      resellerDashboardEnabled: false,
+    };
+  }
+
   const isVendor = profile.buyer_subtype?.toLowerCase().includes('vendor') || profile.buyer_type === 'vendor';
   const buyerType = isVendor ? 'vendor' : 'customer';
   const approvalStatus = profile.approval_status || 'approved';
@@ -86,6 +137,7 @@ export function getBuyerAccess(user, buyerProfile) {
 
   return {
     isLoggedIn: true,
+    isProfileComplete: true,
     canViewPrices: true,
     reason: isRestricted ? approvalStatus : (isApproved ? 'approved' : approvalStatus),
     message,

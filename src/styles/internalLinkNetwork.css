@@ -5,7 +5,7 @@
  */
 
 .internal-link-network {
-  padding: 4.5rem max(var(--site-padding), calc((100vw - 1600px) / 2)) 4rem;
+  padding: 4.5rem 0 4rem;
   background: var(--paper);
   min-height: 380px;
   content-visibility: auto;
@@ -13,10 +13,11 @@
 }
 
 .directory-container {
+  width: min(1600px, calc(100% - var(--site-padding, 48px) * 2));
   max-width: 1600px;
-  width: 100%;
   margin: 0 auto;
   min-height: 320px;
+  box-sizing: border-box;
 }
 
 .directory-header {
@@ -144,15 +145,5 @@
   }
   .internal-link-network {
     padding: 3.5rem var(--site-padding) 2rem;
-  }
-}
-
-@media (min-width: 1920px) {
-  .directory-container {
-    max-width: 1800px;
-  }
-  .internal-link-network {
-    padding-left: 10%;
-    padding-right: 10%;
   }
 }

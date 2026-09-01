@@ -22,6 +22,7 @@ import {
   Info,
   Shield,
 } from 'lucide-react';
+import { isProfileComplete } from '../utils/profileHelpers.js';
 
 import { storeConfig, getCategorySlug } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
@@ -119,12 +120,19 @@ export function MobileMenu(props) {
         }
       }
     ] : []),
-    ...(user ? [
-      { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
-      { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
-    ] : [
-      { icon: <User size={18} />, label: 'Login / Register', action: () => { navigate('signup'); onClose(); } },
-    ]),
+    ...(user
+      ? isProfileComplete(user, props.buyerProfile ?? store.buyerProfile)
+        ? [
+            { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
+            { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
+          ]
+        : [
+            { icon: <User size={18} />, label: 'Complete Signup', action: () => { navigate('signup', null, null, { mode: 'complete-profile' }); onClose(); } },
+            { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
+          ]
+      : [
+          { icon: <User size={18} />, label: 'Login / Register', action: () => { navigate('signup'); onClose(); } },
+        ]),
   ];
 
   return (

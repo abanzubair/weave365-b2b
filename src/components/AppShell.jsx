@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useStorefront } from '../store/useStorefront.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections } from '../utils/cartHelpers.js';
-import { loadProfileForUser, syncProfileFromUser } from '../utils/profileHelpers.js';
+import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import { applyCustomTheme } from '../utils/themeEngine.js';
@@ -34,6 +34,7 @@ export function AppShell({ children }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const navigate = useAppNavigate();
+  const [profileHydrated, setProfileHydrated] = useState(false);
 
   const {
     user,
@@ -196,6 +197,7 @@ export function AppShell({ children }) {
       if (!user) {
         setBuyerProfile(null);
         setVendorOnboarding(null);
+        setProfileHydrated(true);
         return;
       }
 
@@ -206,6 +208,7 @@ export function AppShell({ children }) {
       const { profile } = await loadProfileForUser(user);
       if (isActive) {
         setBuyerProfile(profile);
+        setProfileHydrated(true);
 
         if (isSupabaseConfigured) {
           supabase
@@ -245,6 +248,24 @@ export function AppShell({ children }) {
       isActive = false;
     };
   }, [user, setBuyerProfile, setVendorOnboarding]);
+
+  // Route Guard: Mandatory signup form completion before browsing or logging in
+  useEffect(() => {
+    if (!profileHydrated || !user) return;
+
+    const isComplete = isProfileComplete(user, buyerProfile);
+    if (!isComplete) {
+      const isAllowedPath =
+        pathname.startsWith('/signup') ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/terms-conditions') ||
+        pathname.startsWith('/privacy-security');
+
+      if (!isAllowedPath) {
+        navigate('signup', null, null, { mode: 'complete-profile' });
+      }
+    }
+  }, [profileHydrated, user, buyerProfile, pathname, navigate]);
 
   // Load Saved Cart & Favorites on User Change
   useEffect(() => {

@@ -687,7 +687,7 @@ export function Home({
       )}
 
       <section className="section category-section">
-        <SectionTitle title="Shop By Category" align="left" />
+        <SectionTitle title="Explore Category" align="left" />
 
         <div
           className="category-grid"

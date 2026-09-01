@@ -7,6 +7,7 @@ import { useStorefront } from '../store/useStorefront.js';
 
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
+import { isProfileComplete } from '../utils/profileHelpers.js';
 
 const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
 
@@ -101,8 +102,10 @@ export function SiteHeader(props) {
   const getStartedRef = props.getStartedRef || internalGetStartedRef;
   const user = props.user ?? store.user;
   const buyerProfile = props.buyerProfile ?? store.buyerProfile;
+  const isComplete = isProfileComplete(user, buyerProfile);
   const userDisplayName = user
     ? (() => {
+        if (!isComplete) return 'Complete Signup';
         const rawName = buyerProfile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || buyerProfile?.business_name || user.email?.split('@')[0] || 'Account';
         return rawName.trim().split(/\s+/)[0] || 'Account';
       })()
@@ -266,8 +269,11 @@ export function SiteHeader(props) {
             className="nav-auth-pill-btn desktop-only-action"
             onClick={(e) => {
               e.stopPropagation();
-              if (user) {
+              if (user && isComplete) {
                 setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              } else if (user && !isComplete) {
+                if (navigate) navigate('signup', null, null, { mode: 'complete-profile' });
+                else window.location.href = '/signup?mode=complete-profile';
               } else {
                 if (navigate) navigate('signup');
                 else window.location.href = '/signup';
@@ -283,8 +289,11 @@ export function SiteHeader(props) {
             className={`premium-icon-btn mobile-user-trigger mobile-only-action ${dropdownOpen === 'account' ? 'active' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              if (user) {
+              if (user && isComplete) {
                 setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
+              } else if (user && !isComplete) {
+                if (navigate) navigate('signup', null, null, { mode: 'complete-profile' });
+                else window.location.href = '/signup?mode=complete-profile';
               } else {
                 if (navigate) navigate('signup');
                 else window.location.href = '/signup';
@@ -298,7 +307,7 @@ export function SiteHeader(props) {
             )}
           </button>
 
-          {user && (
+          {user && isComplete && (
             <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
               {isAdmin && (
                 <button
