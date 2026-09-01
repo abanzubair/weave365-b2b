@@ -13,6 +13,14 @@
   margin: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.signup-page-wrapper::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .signup-container {
@@ -32,6 +40,14 @@
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.signup-container::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* ==========================================================================
@@ -134,7 +150,14 @@
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.signup-form-panel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .signup-form-inner {
@@ -1267,3 +1290,24 @@
     gap: 8px;
   }
 }
+
+/* ==========================================================================
+   Complete Scrollbar Removal (Chrome, Safari, Firefox, Edge, Touch)
+   ========================================================================== */
+html:has(.signup-page-wrapper),
+body:has(.signup-page-wrapper),
+.signup-page-wrapper,
+.signup-page-wrapper * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html:has(.signup-page-wrapper)::-webkit-scrollbar,
+body:has(.signup-page-wrapper)::-webkit-scrollbar,
+.signup-page-wrapper::-webkit-scrollbar,
+.signup-page-wrapper *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+

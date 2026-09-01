@@ -304,6 +304,18 @@ export function SignupPage({
     }
   }, [mode, isOnboarding]);
 
+  // Remove scrollbars while on signup/login page
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    root.style.scrollbarWidth = 'none';
+    body.style.scrollbarWidth = 'none';
+    return () => {
+      root.style.scrollbarWidth = '';
+      body.style.scrollbarWidth = '';
+    };
+  }, []);
+
   useEffect(() => {
     if (initialMode) {
       if (initialMode === 'reset-password') {
