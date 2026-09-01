@@ -32,6 +32,7 @@ import {
 import { fetchProducts } from '../productData.js';
 import { fallbackProductImage } from '../storefrontShared.jsx';
 import { AppLink } from './AppLink.jsx';
+import { WhatsappIcon } from './WhatsappIcon.jsx';
 
 import { adminEmails } from '../config.js';
 
@@ -401,7 +402,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
   if (!isAssigned) {
     const businessOrName = buyerProfile?.business_name || buyerProfile?.full_name || user?.email || 'Partner';
-    const sellerWaMsg = `Namaste Weave 365 Team,\n\nI have registered as a seller on Weave 365 (${businessOrName}, Email: ${user?.email || ''}). Could you please help activate my vendor portal?`;
+    const sellerWaMsg = `Hello Weave 365 Team,\n\nI have registered as a seller on Weave 365 (${businessOrName}, Email: ${user?.email || ''}). Could you please help activate my vendor portal?`;
     const waUrl = `https://wa.me/919919101369?text=${encodeURIComponent(sellerWaMsg)}`;
 
     return (
@@ -413,7 +414,7 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
         </h2>
 
         <p className="vendor-stock-pending-desc">
-          Your seller account for <strong>{businessOrName}</strong> is registered. Our team is linking your loom collection, and products will appear here once activated.
+          Your seller account for <strong>{businessOrName}</strong> is ready. To speed up catalog linking, send our onboarding team your collection details on WhatsApp.
         </p>
 
         <a
@@ -422,8 +423,8 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
           rel="noopener noreferrer"
           className="vendor-stock-pending-wa-btn"
         >
-          <MessageCircle size={16} />
-          <span>Fast-track setup on WhatsApp</span>
+          <WhatsappIcon size={17} />
+          <span>Chat on WhatsApp</span>
         </a>
       </div>
     );

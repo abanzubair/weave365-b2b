@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
+import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { syncProfileFromUser, loadProfileForUser, isProfileComplete } from '../utils/profileHelpers.js';
 
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
@@ -456,7 +457,7 @@ export function SignupPage({
   const cleanSellerCity = profile.city || '';
 
   const sellerWaMessage = [
-    'Namaste Weave 365 Onboarding Team,',
+    'Hello Weave 365 Onboarding Team,',
     '',
     'I have just registered as a Seller on Weave 365:',
     cleanSellerName ? `• Name: ${cleanSellerName}` : null,
@@ -731,7 +732,7 @@ export function SignupPage({
                   rel="noopener noreferrer"
                   className="signup-seller-whatsapp-btn"
                 >
-                  <MessageCircle size={18} />
+                  <WhatsappIcon size={17} />
                   <span>Chat on WhatsApp</span>
                 </a>
               </div>
