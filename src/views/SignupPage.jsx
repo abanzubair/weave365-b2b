@@ -72,7 +72,6 @@ const ACCOUNT_ROLE_OPTIONS = [
   { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
   { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
   { id: 'online_store', label: 'Online Store', buyerType: 'customer', buyerSubtype: 'Online Store' },
-  { id: 'vendor', label: 'Vendor', buyerType: 'vendor', buyerSubtype: 'Vendor' },
 ];
 
 function toTitleCaseName(value) {
@@ -1029,8 +1028,7 @@ export function SignupPage({
                     <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
                       {ACCOUNT_ROLE_OPTIONS.map((option) => {
                         const isSelected =
-                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
-                          (option.id === 'vendor' && profile.buyerType === 'vendor');
+                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase();
                         return (
                           <label
                             key={option.id}
@@ -1057,6 +1055,33 @@ export function SignupPage({
                           </label>
                         );
                       })}
+                    </div>
+
+                    {/* Dedicated Seller & Weaver Partnership Callout */}
+                    <div className="signup-seller-callout">
+                      <div className="signup-seller-callout-icon-box" aria-hidden="true">
+                        <Store size={17} />
+                      </div>
+                      <div className="signup-seller-callout-text">
+                        <span className="signup-seller-callout-title">
+                          Want to sell or list products on Weave 365?
+                        </span>
+                        <span className="signup-seller-callout-desc">
+                          Weavers, loom artisans & manufacturers can apply for certified partner onboarding.
+                        </span>
+                      </div>
+                      <a
+                        href="/weaver-onboarding"
+                        className="signup-seller-callout-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (navigate) navigate('weaver-onboarding');
+                          else window.location.href = '/weaver-onboarding';
+                        }}
+                      >
+                        <span>Apply as Seller</span>
+                        <ArrowRight size={14} />
+                      </a>
                     </div>
                   </div>
 
