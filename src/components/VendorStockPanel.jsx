@@ -17,7 +17,8 @@ import {
   Filter, 
   AlertCircle,
   TrendingUp,
-  Tag
+  Tag,
+  MessageCircle
 } from 'lucide-react';
 import '../styles/vendorStock.css';
 import { 
@@ -399,26 +400,31 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
 
 
   if (!isAssigned) {
+    const businessOrName = buyerProfile?.business_name || buyerProfile?.full_name || user?.email || 'Partner';
+    const sellerWaMsg = `Namaste Weave 365 Team,\n\nI have registered as a seller on Weave 365 (${businessOrName}, Email: ${user?.email || ''}). Could you please help activate my vendor portal?`;
+    const waUrl = `https://wa.me/919919101369?text=${encodeURIComponent(sellerWaMsg)}`;
+
     return (
-      <div className="vendor-stock-dashboard">
-        <div className="vendor-stock-header-card">
-          <div className="vendor-stock-kicker">
-            <Boxes size={14} /> Stock & Availability
-          </div>
-          <h2 className="vendor-stock-heading">Vendor Stock & Availability Portal</h2>
-          <div style={{ background: '#faf8f5', borderRadius: '10px', padding: '32px 24px', textAlign: 'center', marginTop: '12px', border: '1px dashed #dcd5c9' }}>
-            <AlertCircle size={40} color="#b8860b" style={{ margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1a1612', marginBottom: '8px' }}>
-              Vendor Account Pending VID Linkage
-            </h3>
-            <p style={{ fontSize: '14px', color: '#57534e', maxWidth: '560px', margin: '0 auto 16px', lineHeight: '1.6' }}>
-              Your account (<strong>{buyerProfile?.business_name || buyerProfile?.full_name || user?.email}</strong>) has been registered as a Loom / Vendor Partner. Once the Weave365 admin assigns your specific <strong>Vendor Code (VID)</strong> in the system, your loom products will automatically appear here for stock and price updates.
-            </p>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fdf8ee', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', color: '#996515', border: '1px solid rgba(184, 134, 11, 0.25)' }}>
-              Registered Email: <strong style={{ color: '#1a1612' }}>{user?.email}</strong>
-            </div>
-          </div>
-        </div>
+      <div className="vendor-stock-pending-view">
+        <Clock size={32} className="vendor-stock-pending-icon" aria-hidden="true" />
+
+        <h2 className="vendor-stock-pending-title">
+          Catalog Setup in Progress
+        </h2>
+
+        <p className="vendor-stock-pending-desc">
+          Your seller account for <strong>{businessOrName}</strong> is registered. Our team is linking your loom collection, and products will appear here once activated.
+        </p>
+
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="vendor-stock-pending-wa-btn"
+        >
+          <MessageCircle size={16} />
+          <span>Fast-track setup on WhatsApp</span>
+        </a>
       </div>
     );
   }
