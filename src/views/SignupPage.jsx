@@ -1055,32 +1055,23 @@ export function SignupPage({
                           </label>
                         );
                       })}
-                    </div>
 
-                    {/* Dedicated Seller & Weaver Partnership Callout */}
-                    <div className="signup-seller-callout">
-                      <div className="signup-seller-callout-icon-box" aria-hidden="true">
-                        <Store size={17} />
-                      </div>
-                      <div className="signup-seller-callout-text">
-                        <span className="signup-seller-callout-title">
-                          Want to sell or list products on Weave 365?
-                        </span>
-                        <span className="signup-seller-callout-desc">
-                          Weavers, loom artisans & manufacturers can apply for certified partner onboarding.
-                        </span>
-                      </div>
+                      {/* 6th Slot: Sell / List on Weave 365 Action Card */}
                       <a
                         href="/weaver-onboarding"
-                        className="signup-seller-callout-btn"
+                        className="signup-role-seller-card"
+                        title="Weavers & Manufacturers: Sell and list your products on Weave 365"
                         onClick={(e) => {
                           e.preventDefault();
                           if (navigate) navigate('weaver-onboarding');
                           else window.location.href = '/weaver-onboarding';
                         }}
                       >
-                        <span>Apply as Seller</span>
-                        <ArrowRight size={14} />
+                        <span className="signup-role-seller-icon" aria-hidden="true">
+                          <Store size={14} />
+                        </span>
+                        <span className="signup-role-seller-label">Sell on Weave 365</span>
+                        <ArrowRight size={13} className="signup-role-seller-arrow" />
                       </a>
                     </div>
                   </div>
