@@ -765,62 +765,24 @@
 }
 
 /* ==========================================================================
-   6th Slot: Sell on Weave 365 Radio Card (Varanasi Artisan Style)
+   Seller Option Subtle Icon (Quieter & Cohesive)
    ========================================================================== */
 
-.signup-role-radio-card.signup-role-radio-card-seller {
-  background: linear-gradient(135deg, #fefdfa 0%, #fbf7ee 100%);
-  border: 1.5px solid rgba(183, 134, 70, 0.4);
-  gap: 7px;
-  padding: 9px 11px;
-}
-
-.signup-role-radio-card.signup-role-radio-card-seller:hover {
-  background: #fdf5e7;
-  border-color: rgba(183, 134, 70, 0.65);
-}
-
-.signup-role-radio-card.signup-role-radio-card-seller.selected {
-  background: #fdf4e2;
-  border-color: #b47a2a;
-  box-shadow: 0 0 0 1px #b47a2a;
-}
-
-.signup-role-custom-radio-seller {
-  border-color: rgba(183, 134, 70, 0.55);
-}
-
-.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-custom-radio-seller {
-  border-color: #b47a2a;
-  background: #b47a2a;
-}
-
 .signup-role-seller-icon {
-  color: #8f5b1d;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.signup-role-radio-card.signup-role-radio-card-seller:hover .signup-role-seller-icon {
-  transform: scale(1.1);
+.signup-role-radio-card:hover .signup-role-seller-icon {
+  color: #475569;
 }
 
-.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-seller-icon {
-  color: #794a12;
-}
-
-.signup-role-radio-label-seller {
-  color: #8f5b1d;
-  font-weight: 600;
-  font-size: 12.5px;
-}
-
-.signup-role-radio-card.signup-role-radio-card-seller.selected .signup-role-radio-label-seller {
-  color: #5d3709;
-  font-weight: 650;
+.signup-role-radio-card.selected .signup-role-seller-icon {
+  color: #4f46e5;
 }
 
 @media (max-width: 540px) {
@@ -913,6 +875,97 @@
   color: #64748b;
   line-height: 1.55;
   margin: 0;
+}
+
+/* Seller Application Confirmation (Distilled & Clarified) */
+.signup-seller-status-card {
+  padding: 36px 28px 30px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.05);
+  gap: 14px;
+}
+
+.signup-seller-status-icon {
+  width: 52px;
+  height: 52px;
+  background: #f8fafc;
+  color: #1e293b;
+  border: 1.5px solid #e2e8f0;
+}
+
+.signup-seller-status-card .signup-status-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.signup-seller-status-card .signup-status-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  max-width: 380px;
+}
+
+.signup-seller-status-card .signup-status-desc strong {
+  color: #0f172a;
+}
+
+.signup-seller-fasttrack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.signup-seller-fasttrack-hint {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.signup-seller-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0 20px;
+  background: #25d366;
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.signup-seller-whatsapp-btn:hover {
+  background: #20ba5a;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  transform: translateY(-1px);
+}
+
+.signup-seller-secondary-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.18s ease;
+  margin-top: 4px;
+}
+
+.signup-seller-secondary-btn:hover {
+  color: #0f172a;
 }
 
 .signup-back-btn {

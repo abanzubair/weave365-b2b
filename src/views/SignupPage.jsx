@@ -23,6 +23,8 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  Clock,
+  MessageCircle,
 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
@@ -67,7 +69,7 @@ const countryCodes = [
 const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Under 999'];
 
 const ACCOUNT_ROLE_OPTIONS = [
-  { id: 'customer', label: 'Customer', buyerType: 'customer', buyerSubtype: 'Customer' },
+  { id: 'customer', label: 'Buyer', buyerType: 'customer', buyerSubtype: 'Customer' },
   { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
   { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
   { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
@@ -212,6 +214,7 @@ export function SignupPage({
           opt.id === lower ||
           opt.buyerType === lower ||
           opt.buyerSubtype.toLowerCase() === lower ||
+          (lower === 'buyer' && opt.id === 'customer') ||
           (lower === 'partner' && opt.id === 'vendor')
       );
       if (matched) {
@@ -447,6 +450,25 @@ export function SignupPage({
     }
   }
 
+  const cleanSellerName = profile.fullName || '';
+  const cleanSellerBusiness = profile.businessName || '';
+  const cleanSellerPhone = profile.whatsapp || '';
+  const cleanSellerCity = profile.city || '';
+
+  const sellerWaMessage = [
+    'Namaste Weave 365 Onboarding Team,',
+    '',
+    'I have just registered as a Seller on Weave 365:',
+    cleanSellerName ? `• Name: ${cleanSellerName}` : null,
+    cleanSellerBusiness ? `• Business / Loom: ${cleanSellerBusiness}` : null,
+    cleanSellerPhone ? `• Phone: ${cleanSellerPhone}` : null,
+    cleanSellerCity ? `• Location: ${cleanSellerCity}` : null,
+    '',
+    'I would like to fast-track my verification and discuss listing my product collection.'
+  ].filter(Boolean).join('\n');
+
+  const sellerWaUrl = `https://wa.me/919919101369?text=${encodeURIComponent(sellerWaMessage)}`;
+
   async function submit(event) {
     event.preventDefault();
     if (loading) return;
@@ -560,7 +582,11 @@ export function SignupPage({
 
         if (mode === 'register') {
           setTempDemoUser(demoUser);
-          setMessage('demo-verification-sent');
+          if (isVendorRegister) {
+            setMessage('seller-registered');
+          } else {
+            setMessage('demo-verification-sent');
+          }
         } else {
           localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
           if (setUser) setUser(demoUser);
@@ -598,19 +624,21 @@ export function SignupPage({
         if (mode === 'register') {
           localStorage.setItem('just_registered_b2b', 'true');
 
+          if (result.data.user && setUser) {
+            setUser(result.data.user);
+          }
+          await syncProfileFromUser(result.data.user);
+
+          if (isVendorRegister) {
+            setMessage('seller-registered');
+            setLoading(false);
+            return;
+          }
+
           if (!result.data.session) {
             setMessage('verification-email-sent');
             setLoading(false);
           } else {
-            if (result.data.user && setUser) {
-              setUser(result.data.user);
-            }
-            const profileResult = await syncProfileFromUser(result.data.user);
-            if (profileResult.error) {
-              setMessage(`Account created, but profile could not be saved: ${profileResult.error.message}`);
-              setLoading(false);
-              return;
-            }
             navigate('home');
           }
         } else {
@@ -682,8 +710,41 @@ export function SignupPage({
         {/* Right Side: Form Panel */}
         <div className="signup-form-panel">
           <div className="signup-form-inner">
-            {/* Verification Email Sent State */}
-          {message === 'verification-email-sent' ? (
+            {/* Seller Registration Application Received State */}
+          {message === 'seller-registered' ? (
+            <div className="signup-status-card signup-seller-status-card">
+              <div className="signup-status-icon signup-seller-status-icon">
+                <Store size={26} />
+              </div>
+              <h2 className="signup-status-title">Application Received</h2>
+              <p className="signup-status-desc">
+                We'll review your loom and business details and reach out within <strong>2 business days</strong>.
+              </p>
+
+              <div className="signup-seller-fasttrack">
+                <span className="signup-seller-fasttrack-hint">
+                  Need faster activation?
+                </span>
+                <a
+                  href={sellerWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="signup-seller-whatsapp-btn"
+                >
+                  <MessageCircle size={18} />
+                  <span>Chat on WhatsApp</span>
+                </a>
+              </div>
+
+              <button
+                type="button"
+                className="signup-seller-secondary-btn"
+                onClick={() => navigate('home')}
+              >
+                Explore wholesale catalog →
+              </button>
+            </div>
+          ) : message === 'verification-email-sent' ? (
             <div className="signup-status-card">
               <div className="signup-status-icon">
                 <Mail size={24} />
@@ -1030,44 +1091,14 @@ export function SignupPage({
                       {ACCOUNT_ROLE_OPTIONS.map((option) => {
                         const isSelected =
                           (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
-                          (option.id === 'vendor' && profile.buyerType === 'vendor');
-
-                        if (option.isSeller) {
-                          return (
-                            <label
-                              key={option.id}
-                              className={`signup-role-radio-card signup-role-radio-card-seller ${isSelected ? 'selected' : ''}`}
-                              title="Register as a Seller / Weaver to list and sell products on Weave 365"
-                            >
-                              <input
-                                type="radio"
-                                name="accountRole"
-                                value={option.id}
-                                checked={isSelected}
-                                onChange={() => {
-                                  setProfile((prev) => ({
-                                    ...prev,
-                                    buyerType: option.buyerType,
-                                    buyerSubtype: option.buyerSubtype,
-                                  }));
-                                }}
-                                className="signup-role-radio-input"
-                              />
-                              <span className="signup-role-custom-radio signup-role-custom-radio-seller" aria-hidden="true">
-                                <span className="signup-role-radio-inner" />
-                              </span>
-                              <span className="signup-role-seller-icon" aria-hidden="true">
-                                <Store size={13} />
-                              </span>
-                              <span className="signup-role-radio-label signup-role-radio-label-seller">{option.label}</span>
-                            </label>
-                          );
-                        }
+                          (option.id === 'vendor' && profile.buyerType === 'vendor') ||
+                          (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer');
 
                         return (
                           <label
                             key={option.id}
                             className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
+                            title={option.isSeller ? "Register as a Seller / Weaver to list and sell products on Weave 365" : undefined}
                           >
                             <input
                               type="radio"
@@ -1086,6 +1117,9 @@ export function SignupPage({
                             <span className="signup-role-custom-radio" aria-hidden="true">
                               <span className="signup-role-radio-inner" />
                             </span>
+                            {option.isSeller && (
+                              <Store size={13} className="signup-role-seller-icon" aria-hidden="true" />
+                            )}
                             <span className="signup-role-radio-label">{option.label}</span>
                           </label>
                         );
