@@ -7,20 +7,34 @@
 
 export const runtime = 'edge';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const ALLOWED_ORIGINS = [
+  'https://www.weave365.com',
+  'https://weave365.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
 
-export async function OPTIONS() {
+function getCorsHeaders(request) {
+  const origin = request?.headers?.get('origin');
+  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.weave365.com'));
+
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : 'https://www.weave365.com',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  };
+}
+
+export async function OPTIONS(request) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: getCorsHeaders(request),
   });
 }
 
 export async function POST(request) {
+  const corsHeaders = getCorsHeaders(request);
   try {
     const payload = await request.json();
     const { email } = payload;

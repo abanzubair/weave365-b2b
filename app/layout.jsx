@@ -110,7 +110,6 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/x-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
         <link rel="shortcut icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
         <link rel="apple-touch-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
-        <link rel="preconnect" href="https://res.cloudinary.com" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
         )}

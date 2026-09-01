@@ -60,13 +60,39 @@ export async function POST(request, { params }) {
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
 }
 
-export async function OPTIONS() {
+const ALLOWED_ADMIN_ORIGINS = [
+  'https://www.weave365.com',
+  'https://weave365.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+
+export async function OPTIONS(request, { params }) {
+  const resolvedParams = await params;
+  const routeArray = resolvedParams?.route || [];
+  const routeKey = routeArray.join('/');
+
+  // If route is under admin, restrict CORS to allowed origins
+  if (routeArray[0] === 'admin' || routeKey.startsWith('admin/')) {
+    const origin = request?.headers?.get('origin');
+    const isAllowed = origin && (ALLOWED_ADMIN_ORIGINS.includes(origin) || origin.endsWith('.weave365.com'));
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': isAllowed ? origin : 'https://www.weave365.com',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Vary': 'Origin',
+      },
+    });
+  }
+
   return new Response(null, {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
     },
   });
 }

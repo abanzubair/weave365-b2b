@@ -1,5 +1,30 @@
 import { NextResponse } from 'next/server';
 
+const CSP_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' data: blob: https://assets.weave365.com https://drive.google.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://assets.weave365.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://api.resend.com",
+  "frame-ancestors 'self' https://ecom-template-1-tau.vercel.app",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
+function applySecurityHeaders(res) {
+  res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  res.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), browsing-topics=()');
+  res.headers.set('Content-Security-Policy', CSP_DIRECTIVES);
+  // Ensure webpage HTML responses never carry wildcard CORS
+  res.headers.delete('Access-Control-Allow-Origin');
+  return res;
+}
+
 export function middleware(request) {
   const url = request.nextUrl.clone();
   const host = request.headers.get('host');
@@ -16,17 +41,20 @@ export function middleware(request) {
     path === '/robots.txt' || 
     (path.startsWith('/google') && path.endsWith('.html'))
   ) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    return applySecurityHeaders(res);
   }
 
   if (host === 'weave365.com') {
     url.hostname = 'www.weave365.com';
     url.port = ''; // Remove port for canonical production redirects
     url.protocol = 'https:';
-    return NextResponse.redirect(url, 301);
+    const redirectRes = NextResponse.redirect(url, 301);
+    return applySecurityHeaders(redirectRes);
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  return applySecurityHeaders(response);
 }
 
 export const config = {

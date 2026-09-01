@@ -98,7 +98,7 @@ export async function GET(request) {
       }
     }
 
-    // 3. Proxy remote HTTP/HTTPS images (Google Drive thumbnails, Cloudinary, Supabase, R2 CDN, etc.)
+    // 3. Proxy remote HTTP/HTTPS images (Google Drive thumbnails, Supabase, R2 CDN, etc.)
     if (decodedImageUrl && /^https?:\/\//i.test(decodedImageUrl)) {
       try {
         const fetchResponse = await fetch(decodedImageUrl, {

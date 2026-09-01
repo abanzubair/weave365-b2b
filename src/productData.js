@@ -864,13 +864,6 @@ function driveImageUrl(link) {
     return value;
   }
 
-  // Cloudinary URLs — auto-inject f_auto,q_auto optimization if missing
-  if (value.includes('res.cloudinary.com')) {
-    if (value.includes('f_auto') || value.includes('q_auto')) return value;
-    // Insert transformations after /upload/ (e.g. .../upload/f_auto,q_auto/folder/image.jpg)
-    return value.replace('/upload/', '/upload/f_auto,q_auto/');
-  }
-
   // Supabase Storage URLs — pass through directly
   if (value.includes('supabase.co/storage')) return value;
 

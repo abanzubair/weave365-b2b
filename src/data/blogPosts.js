@@ -17,7 +17,7 @@ export const blogPosts = [
     date: "May 18, 2026",
     readTime: "7 Min Read",
     author: "Weave 365 Editorial Team",
-    image: "https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png",
+    image: "https://assets.weave365.com/assets/banner/Weave365.svg",
     intro: "Starting an ethnic wear venture from home is one of the most accessible and high-margin retail pathways today. Discover our comprehensive roadmap to launching, branding, and scaling your own premium saree reselling business with low capital risk.",
     content: `
 ## Introduction: The Rising Demand for Premium Indian Ethnic Wear
@@ -163,7 +163,7 @@ By maintaining consistency, focusing on genuine fabric quality, and providing ex
     date: "May 15, 2026",
     readTime: "8 Min Read",
     author: "Varanasi Master Weaver Panel",
-    image: "https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png",
+    image: "https://assets.weave365.com/assets/banner/Weave365.svg",
     intro: "Choosing between heavy Katan Silk brocades and ethereal Kora Organza can be challenging for curators and shoppers alike. Let our master weavers explain the distinct yarn details, weight parameters, and draping features of these iconic fabrics.",
     content: `
 ## Introduction: The Rich Fabric Tapestry of Varanasi
@@ -296,7 +296,7 @@ Whether your boutique clients prefer the regal weight of twisted Katan silk or t
     date: "May 12, 2026",
     readTime: "9 Min Read",
     author: "Weave 365 Sourcing Team",
-    image: "https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png",
+    image: "https://assets.weave365.com/assets/banner/Weave365.svg",
     intro: "Navigating the complex landscape of B2B saree sourcing can be a daunting challenge for boutique owners. Discover our definitive guide to assessing quality grades, managing inventory turn, and building a profitable wholesale supplier relationship.",
     content: `
 ## Introduction: Sourcing as a Competitive Advantage in Saree Retail
@@ -424,7 +424,7 @@ Invest in your sourcing strategy today. By offering authentic Varanasi craftsman
     date: "May 10, 2026",
     readTime: "8 Min Read",
     author: "Varanasi Quality Control Board",
-    image: "https://res.cloudinary.com/weave365/image/upload/f_auto,q_auto/v1779137653/Weave_365_iemq2t.png",
+    image: "https://assets.weave365.com/assets/banner/Weave365.svg",
     intro: "With the rise of powerloom duplicates and synthetic polyester blends, verifying the authenticity of pure silk Banarasi sarees has never been more vital. Discover the key tests and visual markers to distinguish genuine heritage weaves from counterfeit replicas.",
     content: `
 ## Introduction: The Sourcing Challenge in Modern Ethnic Wear Retail
