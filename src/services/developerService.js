@@ -7,7 +7,7 @@
  * @module services/developerService
  */
 
-import { supabase, isSupabaseConfigured } from '../supabaseClient';
+import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
 
 /**
  * Generates a cryptographically random secure API key with prefix `w365_live_...`
@@ -64,6 +64,18 @@ export const TIER_CONFIGS = {
   },
 };
 
+/**
+ * Sanitize key record to ensure key_hash is stripped and key_prefix is always masked
+ */
+export function sanitizeKeyRecord(record) {
+  if (!record) return record;
+  const { key_hash, ...safe } = record;
+  if (safe.key_prefix && safe.key_prefix.length > 20) {
+    safe.key_prefix = `${safe.key_prefix.slice(0, 14)}...${safe.key_prefix.slice(-4)}`;
+  }
+  return safe;
+}
+
 export const developerService = {
   /**
    * Fetch API key for a specific user ID
@@ -102,7 +114,7 @@ export const developerService = {
       }
     }
 
-    return { data, error };
+    return { data: sanitizeKeyRecord(data), error };
   },
 
   /**
@@ -140,35 +152,33 @@ export const developerService = {
       }
     }
 
-    return { data, error };
+    return { data: sanitizeKeyRecord(data), error };
   },
 
   /**
-   * Fetch daily usage stats for a key (or user) for the past N days
+   * Get Daily API usage records for a specific key
    */
-  async getUsageStats(keyId, days = 30, userId = null) {
-    if (!isSupabaseConfigured || (!keyId && !userId)) return { usage: [], totalMonth: 0 };
-    
+  async getUsageStats(keyId, days = 14, userId = null) {
+    if (!isSupabaseConfigured || !keyId) return { usage: [], totalMonth: 0 };
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    const dateStr = startDate.toISOString().split('T')[0];
+    const startDateStr = startDate.toISOString().split('T')[0];
 
-    const currentMonthStart = new Date();
-    currentMonthStart.setDate(1);
-    const monthStartStr = currentMonthStart.toISOString().split('T')[0];
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    const monthStartStr = monthStart.toISOString().split('T')[0];
 
     let query = supabase
       .from('api_usage_daily')
       .select('*')
-      .gte('usage_date', dateStr)
+      .gte('usage_date', startDateStr)
       .order('usage_date', { ascending: true });
 
-    if (userId && keyId) {
+    if (userId) {
       query = query.or(`api_key_id.eq.${keyId},user_id.eq.${userId}`);
-    } else if (keyId) {
-      query = query.eq('api_key_id', keyId);
     } else {
-      query = query.eq('user_id', userId);
+      query = query.eq('api_key_id', keyId);
     }
 
     const { data, error } = await query;
@@ -189,16 +199,18 @@ export const developerService = {
   /**
    * Create a new API Key for a user
    */
-  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps }) {
+  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps, ordersEnabled = false }) {
     if (!isSupabaseConfigured || !userId) throw new Error('Supabase not configured or missing userId');
 
     const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.free;
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
+    // Non-secret masked prefix for dashboard reference and logging (e.g. w365_live_9a7f...d82e)
+    const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
 
     const insertPayload = {
       user_id: userId,
-      key_prefix: rawKey,
+      key_prefix: maskedPrefix,
       key_hash: keyHash,
       client_name: clientName || 'B2B Client Portal',
       client_website: clientWebsite || '',
@@ -208,7 +220,8 @@ export const developerService = {
       monthly_quota: customQuota || tierConfig.monthlyQuota,
       rate_limit_rps: customRps || tierConfig.rateLimitRps,
       is_active: true,
-      allowed_endpoints: ['catalog', 'stock', 'product', 'orders'],
+      orders_enabled: Boolean(ordersEnabled), // Disabled by default for security
+      allowed_endpoints: ordersEnabled ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
     };
 
     let data, error;
@@ -222,6 +235,18 @@ export const developerService = {
       error = res.error;
     } catch (e) {
       error = e;
+    }
+
+    if (error && (error.message?.includes('orders_enabled') || error.code === '42703')) {
+      // Graceful fallback if database migration column is still pending
+      delete insertPayload.orders_enabled;
+      const retryRes = await supabase
+        .from('api_keys')
+        .insert([insertPayload])
+        .select()
+        .single();
+      data = retryRes.data;
+      error = retryRes.error;
     }
 
     if (error && (error.message?.includes('domain_owner_name') || error.message?.includes('gst_number') || error.code === 'PGRST204')) {
@@ -258,8 +283,8 @@ export const developerService = {
     }
 
     return {
-      keyRecord: data,
-      rawSecretKey: rawKey, // Shown to user/admin
+      keyRecord: sanitizeKeyRecord(data),
+      rawSecretKey: rawKey, // Shown ONLY once to user/admin on creation
     };
   },
 
@@ -271,12 +296,13 @@ export const developerService = {
 
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
+    const maskedPrefix = `${rawKey.slice(0, 14)}...${rawKey.slice(-4)}`;
 
     const { data, error } = await supabase
       .from('api_keys')
       .update({
         key_hash: keyHash,
-        key_prefix: rawKey,
+        key_prefix: maskedPrefix,
         updated_at: new Date().toISOString(),
       })
       .eq('id', keyId)
@@ -286,25 +312,43 @@ export const developerService = {
     if (error) throw error;
 
     return {
-      keyRecord: data,
-      rawSecretKey: rawKey,
+      keyRecord: sanitizeKeyRecord(data),
+      rawSecretKey: rawKey, // Shown ONLY once to user/admin on regeneration
     };
   },
 
   /**
-   * Update API key settings (tier, quota, active status)
+   * Update API key settings (tier, quota, active status, order API access, website)
    */
   async updateApiKey(keyId, updates) {
     if (!isSupabaseConfigured || !keyId) return { data: null, error: 'Missing keyId' };
 
+    // When Product API / API Key is disabled (is_active: false), Order API cannot be enabled
+    if (updates.is_active === false) {
+      updates.orders_enabled = false;
+    }
+
+    if (updates.orders_enabled === true && updates.is_active === false) {
+      return { data: null, error: new Error('Cannot enable Order API while Product API is disabled.') };
+    }
+
+    const payload = { ...updates, updated_at: new Date().toISOString() };
+
+    // Synchronize allowed_endpoints if orders_enabled is toggled
+    if (typeof payload.orders_enabled === 'boolean') {
+      const baseEndpoints = ['catalog', 'stock', 'product'];
+      if (payload.orders_enabled) baseEndpoints.push('orders');
+      payload.allowed_endpoints = baseEndpoints;
+    }
+
     const { data, error } = await supabase
       .from('api_keys')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(payload)
       .eq('id', keyId)
       .select()
       .single();
 
-    return { data, error };
+    return { data: sanitizeKeyRecord(data), error };
   },
 
   /**
@@ -416,7 +460,7 @@ export const developerService = {
       }
     });
 
-    const enriched = (keys || []).map(k => ({
+    const enriched = (keys || []).map(k => sanitizeKeyRecord({
       ...k,
       monthTotal: usageMap[k.id] || 0,
       quotaPercent: Math.min(100, Math.round(((usageMap[k.id] || 0) / (k.monthly_quota || 1)) * 100)),

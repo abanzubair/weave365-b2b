@@ -7,8 +7,7 @@
 }
 
 .dev-dashboard-container,
-.panel-developer,
-.api-manager-container {
+.panel-developer {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -20,6 +19,19 @@
   min-width: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+.api-manager-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  font-family: var(--font-inter, var(--font-body)) !important;
+  color: var(--ink, #0f172a);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Enforce existing project Inter/Manrope typography on all headings and text (never Cormorant Garamond) */
@@ -1343,6 +1355,8 @@
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .api-manager-header {
@@ -1573,8 +1587,10 @@
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  max-width: 1600px;
 }
 
 .api-table {
@@ -1655,6 +1671,7 @@
   padding: 2px 7px;
   border-radius: 4px;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .api-tier-tag.free {
@@ -1784,35 +1801,56 @@
   background: #fee2e2;
 }
 
+.api-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(70px, auto));
+  gap: 5px;
+  justify-content: flex-end;
+  width: fit-content;
+  margin-left: auto;
+}
+
 .api-action-group {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .api-action-btn {
-  height: 30px;
+  height: 28px;
+  padding: 0 8px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
-  font-size: 0.78125rem;
-  font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-decoration: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .api-action-btn svg {
   flex-shrink: 0;
 }
 
+.api-action-btn span {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.api-action-btn-placeholder {
+  height: 28px;
+  display: inline-block;
+}
+
 .api-wa-btn {
-  width: 30px;
-  padding: 0;
   color: #166534;
 }
 
@@ -1822,32 +1860,26 @@
 }
 
 .api-edit-btn {
-  padding: 0 10px;
-  gap: 6px;
   color: #334155;
 }
 
 .api-edit-btn:hover {
   background: #f8fafc;
-  border-color: #cbd5e1;
+  border-color: #94a3b8;
   color: #0f172a;
 }
 
 .api-inspect-btn {
-  padding: 0 10px;
-  gap: 6px;
   color: #334155;
 }
 
 .api-inspect-btn:hover {
   background: #f8fafc;
-  border-color: #cbd5e1;
+  border-color: #94a3b8;
   color: #0f172a;
 }
 
 .api-delete-btn {
-  width: 30px;
-  padding: 0;
   color: #64748b;
 }
 
@@ -3659,6 +3691,151 @@
   cursor: not-allowed;
   opacity: 1;
   pointer-events: none;
+}
+
+/* ==========================================================================
+   Refined & Distilled Permissions Section (Impeccable Quieter / Distill)
+   ========================================================================== */
+.dev-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.dev-permission-item {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dev-permission-item:hover {
+  border-color: #e2e8f0;
+  background: #ffffff;
+}
+
+.dev-permission-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dev-permission-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.dev-permission-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.dev-permission-status.active {
+  color: #059669;
+}
+
+.dev-permission-status.disabled {
+  color: #64748b;
+}
+
+.dev-permission-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.dev-permission-status.active .dev-permission-dot {
+  background: #10b981;
+}
+
+.dev-permission-status.disabled .dev-permission-dot {
+  background: #cbd5e1;
+}
+
+.dev-permission-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dev-permission-endpoint {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.dev-permission-note {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.dev-permission-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+
+.dev-permission-toggle-btn .dev-permission-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.dev-permission-toggle-btn.active {
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.dev-permission-toggle-btn.active .dev-permission-dot {
+  background: #10b981;
+}
+
+.dev-permission-toggle-btn.active:hover {
+  background: #d1fae5;
+}
+
+.dev-permission-toggle-btn.disabled {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.dev-permission-toggle-btn.disabled .dev-permission-dot {
+  background: #94a3b8;
+}
+
+.dev-permission-toggle-btn.disabled:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.dev-permission-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 

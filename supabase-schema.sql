@@ -1657,7 +1657,8 @@ create table if not exists public.api_keys (
   monthly_quota integer not null default 2000,
   rate_limit_rps integer not null default 1,
   is_active boolean not null default true,
-  allowed_endpoints jsonb default '["catalog", "stock", "product", "orders"]'::jsonb,
+  orders_enabled boolean not null default false, -- Explicit admin-controlled toggle for /api/v1/orders
+  allowed_endpoints jsonb default '["catalog", "stock", "product"]'::jsonb,
   webhook_url text,
   last_used_at timestamptz,
   created_at timestamptz default now(),
@@ -1668,10 +1669,22 @@ alter table public.api_keys add column if not exists domain_owner_name text;
 alter table public.api_keys add column if not exists gst_number text;
 alter table public.api_keys add column if not exists catalog_mode text not null default 'all';
 alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
+alter table public.api_keys add column if not exists orders_enabled boolean not null default false;
+
+-- Data migration: Safely mask any legacy plaintext API keys stored in key_prefix so secrets cannot be retrieved
+update public.api_keys
+set key_prefix = substring(key_prefix from 1 for 14) || '...' || substring(key_prefix from length(key_prefix) - 3 for 4)
+where length(key_prefix) > 20;
+
+-- Data migration: Sanitize any legacy development localhost client_website values
+update public.api_keys
+set client_website = 'https://www.weave365.com/account'
+where client_website like '%localhost%';
 
 create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
 create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
 create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
+create index if not exists api_keys_orders_enabled_idx on public.api_keys (orders_enabled);
 
 -- Daily Aggregated Usage Tracking Table (1 row per key/user per day = zero DB bloat)
 create table if not exists public.api_usage_daily (

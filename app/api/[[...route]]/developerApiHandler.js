@@ -8,6 +8,10 @@
 export const runtime = 'edge';
 
 let supabaseInstance = null;
+export function _setSupabaseClientForTesting(client) {
+  supabaseInstance = client;
+}
+
 async function getSupabase() {
   if (!supabaseInstance) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,36 +23,59 @@ async function getSupabase() {
   return supabaseInstance;
 }
 
-const corsHeaders = {
+const defaultCorsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
+  'Vary': 'Origin, X-API-Key, Authorization',
 };
 
-const edgeCacheHeaders = {
-  'Content-Type': 'application/json',
-  'Cache-Control': 'public, max-age=180, s-maxage=600, stale-while-revalidate=86400',
-  'CDN-Cache-Control': 'max-age=600',
-  'Cloudflare-CDN-Cache-Control': 'max-age=600',
-  ...corsHeaders,
-};
+function getCorsHeaders(request, clientWebsite = null) {
+  const origin = request?.headers?.get('origin');
+  if (!origin) return defaultCorsHeaders;
 
-const stockCacheHeaders = {
+  const allowedOrigins = [
+    'https://www.weave365.com',
+    'https://weave365.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+  ];
+  if (clientWebsite) {
+    try {
+      allowedOrigins.push(new URL(clientWebsite).origin);
+    } catch {}
+  }
+
+  const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.weave365.com');
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
+    'Vary': 'Origin, X-API-Key, Authorization',
+  };
+}
+
+// Authenticated responses are account-specific and MUST NOT be cached by public/shared CDN caches
+const securePrivateHeaders = {
   'Content-Type': 'application/json',
-  'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=300',
-  'CDN-Cache-Control': 'max-age=60',
-  'Cloudflare-CDN-Cache-Control': 'max-age=60',
-  ...corsHeaders,
+  'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Vary': 'X-API-Key, Authorization, Origin',
+  ...defaultCorsHeaders,
 };
 
 // Edge In-Memory Cache for API Keys (TTL: 60 seconds) to prevent repeated DB hits
 const keyMemoryCache = new Map();
 const KEY_CACHE_TTL_MS = 60 * 1000;
 
+export function _clearKeyMemoryCacheForTesting() {
+  keyMemoryCache.clear();
+}
+
 /**
  * Compute SHA-256 hash using native Web Crypto API (Edge-safe)
  */
-async function hashApiKey(rawKey) {
+export async function hashApiKey(rawKey) {
   const encoder = new TextEncoder();
   const data = encoder.encode(rawKey.trim());
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -57,14 +84,16 @@ async function hashApiKey(rawKey) {
 }
 
 /**
- * Authenticate API Key and check monthly quota
+ * Authenticate API Key and check monthly quota.
+ * Strictly requires full unmasked API secret via X-API-Key or Authorization: Bearer header.
  */
 async function authenticateApiKey(request, supabase) {
-  const rawKey = request.headers.get('x-api-key') || 
-    (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
-  const apiKeyIdHeader = request.headers.get('x-api-key-id');
+  const rawKey = (
+    request.headers.get('x-api-key') ||
+    (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+  ).trim();
 
-  if (!rawKey && !apiKeyIdHeader) {
+  if (!rawKey) {
     return {
       authenticated: false,
       status: 401,
@@ -72,39 +101,32 @@ async function authenticateApiKey(request, supabase) {
     };
   }
 
+  // Reject masked placeholder strings (e.g. w365_live_... or bullet points)
+  if (rawKey.includes('...') || rawKey.includes('••••')) {
+    return {
+      authenticated: false,
+      status: 401,
+      error: 'Invalid API Key. Masked key prefixes cannot be used for authentication. Pass the full unmasked secret.',
+    };
+  }
+
   const now = Date.now();
   let keyRecord = null;
 
-  // Try authenticating with full raw secret key first
-  if (rawKey && !rawKey.includes('...') && rawKey !== 'w365_demo_test') {
-    const keyHash = await hashApiKey(rawKey);
-    const cached = keyMemoryCache.get(keyHash);
-    if (cached && (now - cached.timestamp < KEY_CACHE_TTL_MS)) {
-      keyRecord = cached.data;
-    } else {
-      const { data, error } = await supabase
-        .from('api_keys')
-        .select('*')
-        .eq('key_hash', keyHash)
-        .single();
-
-      if (!error && data) {
-        keyRecord = data;
-        keyMemoryCache.set(keyHash, { data: keyRecord, timestamp: now });
-      }
-    }
-  }
-
-  // Fallback to dashboard test console header (allows testing directly from user's authenticated portal)
-  if (!keyRecord && apiKeyIdHeader) {
+  const keyHash = await hashApiKey(rawKey);
+  const cached = keyMemoryCache.get(keyHash);
+  if (cached && (now - cached.timestamp < KEY_CACHE_TTL_MS)) {
+    keyRecord = cached.data;
+  } else {
     const { data, error } = await supabase
       .from('api_keys')
       .select('*')
-      .eq('id', apiKeyIdHeader)
-      .single();
+      .eq('key_hash', keyHash)
+      .maybeSingle();
 
     if (!error && data) {
       keyRecord = data;
+      keyMemoryCache.set(keyHash, { data: keyRecord, timestamp: now });
     }
   }
 
@@ -185,6 +207,29 @@ async function authenticateApiKey(request, supabase) {
     keyRecord,
     monthTotal,
   };
+}
+
+/**
+ * Establish authorization boundary for products.
+ * The client can NEVER access products outside its authorized catalog.
+ */
+export function getAuthorizedProducts(products, keyRecord) {
+  if (!Array.isArray(products)) return [];
+  const isCurated = keyRecord?.catalog_mode === 'curated' || (Array.isArray(keyRecord?.selected_skus) && keyRecord.selected_skus.length > 0);
+  if (!isCurated) {
+    return products;
+  }
+
+  const authorizedSet = new Set((keyRecord?.selected_skus || []).map(s => String(s).trim().toLowerCase()).filter(Boolean));
+  return products.filter((p) => {
+    const pId = String(p.id || '').trim().toLowerCase();
+    const pGroup = String(p.groupKey || '').trim().toLowerCase();
+    if (authorizedSet.has(pId) || authorizedSet.has(pGroup)) return true;
+    if (Array.isArray(p.variants) && p.variants.some(v => authorizedSet.has(String(v.code || '').trim().toLowerCase()))) {
+      return true;
+    }
+    return false;
+  });
 }
 
 /**
@@ -290,7 +335,7 @@ function formatForShopify(products) {
 export async function handleDeveloperApiGet(request, pathSegments) {
   const supabase = await getSupabase();
   if (!supabase) {
-    return Response.json({ error: 'Database unconfigured' }, { status: 500, headers: corsHeaders });
+    return Response.json({ status: 'error', code: 'DATABASE_ERROR', message: 'Database unconfigured' }, { status: 500, headers: defaultCorsHeaders });
   }
 
   const endpoint = pathSegments[1] || ''; // e.g. 'catalog', 'stock-status', 'products', 'me'
@@ -310,7 +355,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         whatsapp_support: '+91 9919101369',
       } : undefined,
     };
-    return Response.json(errorBody, { status: auth.status, headers: corsHeaders });
+    return Response.json(errorBody, { status: auth.status, headers: defaultCorsHeaders });
   }
 
   // 2. Route: /api/v1/catalog
@@ -331,32 +376,40 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = applyStockOverrides(products, stockData);
     }
 
-    // Optional Category Filtering
-    const category = searchParams.get('category');
-    if (category) {
-      products = products.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
-    }
+    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
 
     // Mandatory Curated Product Selection Filter:
-    // API users only receive the products they have selected in their dashboard (or passed via ?skus=)
+    // Restrict products to the authenticated account's authorized catalog first
+    const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);
+
+    let resultProducts = authorizedProducts;
+
+    // Optional Category Filtering (within authorized catalog)
+    const category = searchParams.get('category');
+    if (category) {
+      resultProducts = resultProducts.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
+    }
+
+    // Optional SKU filtering: ?skus= can only narrow authorized products, never expand access
     const skusParam = searchParams.get('skus') || searchParams.get('ids');
     if (skusParam) {
-      const selectedSkus = new Set(skusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
-      products = products.filter(p => selectedSkus.has((p.id || p.groupKey || '').toLowerCase()));
-    } else {
-      // Strictly filter to the merchant's dashboard-selected SKUs
-      const curatedSkus = Array.isArray(auth.keyRecord?.selected_skus) ? auth.keyRecord.selected_skus : [];
-      const curatedSet = new Set(curatedSkus.map(s => String(s).trim().toLowerCase()).filter(Boolean));
-      products = products.filter(p => curatedSet.has((p.id || p.groupKey || '').toLowerCase()));
+      const requestedSkus = new Set(skusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+      resultProducts = resultProducts.filter((p) => {
+        const pId = String(p.id || '').trim().toLowerCase();
+        const pGroup = String(p.groupKey || '').trim().toLowerCase();
+        if (requestedSkus.has(pId) || requestedSkus.has(pGroup)) return true;
+        if (Array.isArray(p.variants) && p.variants.some(v => requestedSkus.has(String(v.code || '').trim().toLowerCase()))) return true;
+        return false;
+      });
     }
 
     // Format for Shopify if requested
     const format = searchParams.get('format');
     if (format === 'shopify' || format === 'matrixify') {
-      const shopifyFeed = formatForShopify(products);
+      const shopifyFeed = formatForShopify(resultProducts);
       return Response.json({ status: 'success', total_products: shopifyFeed.length, products: shopifyFeed }, {
         status: 200,
-        headers: edgeCacheHeaders,
+        headers: { ...securePrivateHeaders, ...cors },
       });
     }
 
@@ -365,9 +418,9 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       status: 'success',
       tier: auth.keyRecord.tier,
       client_name: auth.keyRecord.client_name,
-      total_products: products.length,
+      total_products: resultProducts.length,
       last_synced_at: new Date().toISOString(),
-      products: products.map((p) => {
+      products: resultProducts.map((p) => {
         const firstPrices = p.variants?.[0]?.prices || {};
         const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
 
@@ -412,7 +465,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       }),
     }, {
       status: 200,
-      headers: edgeCacheHeaders,
+      headers: { ...securePrivateHeaders, ...cors },
     });
   }
 
@@ -434,19 +487,26 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = applyStockOverrides(products, stockData);
     }
 
-    // Mandatory Curated Stock Filter: Only return stock for selected products (or ?skus=)
+    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
+
+    // Mandatory Curated Stock Filter: Restrict to authorized catalog FIRST
+    const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);
+    let resultProducts = authorizedProducts;
+
     const stockSkusParam = searchParams.get('skus') || searchParams.get('ids') || searchParams.get('sku');
     if (stockSkusParam) {
-      const selectedSkus = new Set(stockSkusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
-      products = products.filter(p => selectedSkus.has((p.id || p.groupKey || '').toLowerCase()));
-    } else {
-      const curatedSkus = Array.isArray(auth.keyRecord?.selected_skus) ? auth.keyRecord.selected_skus : [];
-      const curatedSet = new Set(curatedSkus.map(s => String(s).trim().toLowerCase()).filter(Boolean));
-      products = products.filter(p => curatedSet.has((p.id || p.groupKey || '').toLowerCase()));
+      const requestedSkus = new Set(stockSkusParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+      resultProducts = resultProducts.filter((p) => {
+        const pId = String(p.id || '').trim().toLowerCase();
+        const pGroup = String(p.groupKey || '').trim().toLowerCase();
+        if (requestedSkus.has(pId) || requestedSkus.has(pGroup)) return true;
+        if (Array.isArray(p.variants) && p.variants.some(v => requestedSkus.has(String(v.code || '').trim().toLowerCase()))) return true;
+        return false;
+      });
     }
 
     const stockMap = {};
-    products.forEach((p) => {
+    resultProducts.forEach((p) => {
       const key = p.id || p.groupKey;
       stockMap[key] = {
         title: p.title || p.name,
@@ -464,15 +524,20 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       stock_map: stockMap,
     }, {
       status: 200,
-      headers: stockCacheHeaders,
+      headers: { ...securePrivateHeaders, ...cors },
     });
   }
 
   // 4. Route: /api/v1/products (Single or Batch product query - Reseller Price Only)
   if (endpoint === 'products' || endpoint === 'product') {
+    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
     const skuParam = searchParams.get('sku') || searchParams.get('id') || searchParams.get('skus') || searchParams.get('ids') || pathSegments[2];
     if (!skuParam) {
-      return Response.json({ error: 'Please provide product SKU(s) via ?sku=..., ?skus=SKU1,SKU2 or path /api/v1/products/:sku' }, { status: 400, headers: corsHeaders });
+      return Response.json({
+        status: 'error',
+        code: 'MISSING_SKU',
+        message: 'Please provide product SKU(s) via /api/v1/products/:sku or ?sku=..., ?skus=SKU1,SKU2',
+      }, { status: 400, headers: cors });
     }
 
     const [{ data: sheetRow }, { data: stockData }] = await Promise.all([
@@ -491,12 +556,21 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       products = applyStockOverrides(products, stockData);
     }
 
+    // Restrict product search to authorized catalog FIRST
+    const authorizedProducts = getAuthorizedProducts(products, auth.keyRecord);
     const skuList = skuParam.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 
     // If multiple SKUs requested (Batch Mode)
     if (skuList.length > 1) {
       const skuSet = new Set(skuList);
-      const matchedList = products.filter(p => skuSet.has((p.id || p.groupKey || '').toLowerCase()));
+      const matchedList = authorizedProducts.filter((p) => {
+        const pId = String(p.id || '').trim().toLowerCase();
+        const pGroup = String(p.groupKey || '').trim().toLowerCase();
+        if (skuSet.has(pId) || skuSet.has(pGroup)) return true;
+        if (Array.isArray(p.variants) && p.variants.some(v => skuSet.has(String(v.code || '').trim().toLowerCase()))) return true;
+        return false;
+      });
+
       return Response.json({
         status: 'success',
         total_products: matchedList.length,
@@ -522,15 +596,26 @@ export async function handleDeveloperApiGet(request, pathSegments) {
         }),
       }, {
         status: 200,
-        headers: edgeCacheHeaders,
+        headers: { ...securePrivateHeaders, ...cors },
       });
     }
 
-    // Single SKU Mode
+    // Single SKU Mode: strictly check inside authorizedProducts
     const singleSku = skuList[0];
-    const matched = products.find(p => (p.id || p.groupKey || '').toLowerCase() === singleSku);
+    const matched = authorizedProducts.find((p) => {
+      const pId = String(p.id || '').trim().toLowerCase();
+      const pGroup = String(p.groupKey || '').trim().toLowerCase();
+      if (pId === singleSku || pGroup === singleSku) return true;
+      if (Array.isArray(p.variants) && p.variants.some(v => String(v.code || '').trim().toLowerCase() === singleSku)) return true;
+      return false;
+    });
+
     if (!matched) {
-      return Response.json({ error: `Product with SKU '${singleSku}' not found.` }, { status: 404, headers: corsHeaders });
+      return Response.json({
+        status: 'error',
+        code: 'PRODUCT_NOT_FOUND',
+        message: 'Product not found.',
+      }, { status: 404, headers: cors });
     }
 
     const firstPrices = matched.variants?.[0]?.prices || {};
@@ -556,19 +641,35 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       },
     }, {
       status: 200,
-      headers: edgeCacheHeaders,
+      headers: { ...securePrivateHeaders, ...cors },
     });
   }
 
-  // 5. Route: /api/v1/me (Developer metrics & credentials)
+  // 5. Route: /api/v1/me (Developer metrics & credentials - strictly sanitized, no secrets/internal IDs)
   if (endpoint === 'me') {
+    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
+
+    // Sanitize client_website: if it contains localhost, resolve base via configured siteUrl
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
+    let clientWebsite = auth.keyRecord.client_website || '';
+    if (clientWebsite.includes('localhost') || clientWebsite.includes('127.0.0.1')) {
+      try {
+        const parsed = new URL(clientWebsite);
+        const baseParsed = new URL(configuredSiteUrl);
+        clientWebsite = `${baseParsed.origin}${parsed.pathname}${parsed.search}`;
+      } catch {
+        clientWebsite = configuredSiteUrl;
+      }
+    }
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
 
+    // Expose only non-sensitive aggregation fields (no internal api_key_id or user_id)
     const { data: usageHistory } = await supabase
       .from('api_usage_daily')
-      .select('*')
+      .select('usage_date, total_requests, successful_requests, rate_limited_requests')
       .eq('api_key_id', auth.keyRecord.id)
       .gte('usage_date', dateStr)
       .order('usage_date', { ascending: true });
@@ -576,30 +677,41 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     return Response.json({
       status: 'success',
       client_name: auth.keyRecord.client_name,
-      client_website: auth.keyRecord.client_website,
+      client_website: clientWebsite,
       tier: auth.keyRecord.tier,
       monthly_quota: auth.keyRecord.monthly_quota,
       month_total_used: auth.monthTotal,
       remaining_quota: Math.max(0, auth.keyRecord.monthly_quota - auth.monthTotal),
       rate_limit_rps: auth.keyRecord.rate_limit_rps,
       is_active: auth.keyRecord.is_active,
-      key_prefix: auth.keyRecord.key_prefix,
+      orders_enabled: Boolean(auth.keyRecord.orders_enabled),
       usage_history: usageHistory || [],
     }, {
       status: 200,
-      headers: corsHeaders,
+      headers: { ...securePrivateHeaders, ...cors },
     });
   }
 
   // 6. Route: /api/v1/orders (Fetch Reseller Orders & Live Fulfillment/Tracking Status)
   if (endpoint === 'orders' || endpoint === 'order') {
+    const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
+
+    // Backend enforcement of Admin-Controlled Order API Access Toggle
+    if (!auth.keyRecord.orders_enabled) {
+      return Response.json({
+        status: 'error',
+        code: 'FORBIDDEN',
+        message: 'Order API access is not enabled for this API key.',
+      }, { status: 403, headers: cors });
+    }
+
     const singleOrderId = searchParams.get('id') || searchParams.get('order_id') || pathSegments[2];
     const resellerOrderId = searchParams.get('reseller_order_id');
     const statusFilter = searchParams.get('status');
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
-    // Query api_orders, orders, and legacy inquiries tables in parallel
+    // STRICT ACCOUNT ISOLATION: Scoped strictly to authenticated api_key_id or user_id
     let apiOrdersQuery = supabase
       .from('api_orders')
       .select('*');
@@ -614,12 +726,13 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       .eq('inquiry_type', 'reseller_api_order');
 
     if (auth.keyRecord.user_id) {
-      apiOrdersQuery = apiOrdersQuery.eq('user_id', auth.keyRecord.user_id);
+      apiOrdersQuery = apiOrdersQuery.or(`api_key_id.eq.${auth.keyRecord.id},user_id.eq.${auth.keyRecord.user_id}`);
       ordersQuery = ordersQuery.eq('user_id', auth.keyRecord.user_id);
       inquiriesQuery = inquiriesQuery.eq('user_id', auth.keyRecord.user_id);
-    } else if (auth.keyRecord.client_name) {
-      ordersQuery = ordersQuery.eq('business_name', auth.keyRecord.client_name);
-      inquiriesQuery = inquiriesQuery.eq('business_name', auth.keyRecord.client_name);
+    } else {
+      apiOrdersQuery = apiOrdersQuery.eq('api_key_id', auth.keyRecord.id);
+      ordersQuery = ordersQuery.eq('business_name', auth.keyRecord.client_name || '__unmatched__');
+      inquiriesQuery = inquiriesQuery.eq('business_name', auth.keyRecord.client_name || '__unmatched__');
     }
 
     if (singleOrderId) {
@@ -731,25 +844,26 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     if (singleOrderId) {
       if (list.length === 0) {
-        return Response.json({ status: 'error', error: `Order with ID '${singleOrderId}' not found.` }, { status: 404, headers: corsHeaders });
+        return Response.json({ status: 'error', error: `Order with ID '${singleOrderId}' not found.` }, { status: 404, headers: cors });
       }
       return Response.json({
         status: 'success',
         order: list[0],
-      }, { status: 200, headers: corsHeaders });
+      }, { status: 200, headers: { ...securePrivateHeaders, ...cors } });
     }
 
     return Response.json({
       status: 'success',
       total_orders: list.length,
       orders: list,
-    }, { status: 200, headers: corsHeaders });
+    }, { status: 200, headers: { ...securePrivateHeaders, ...cors } });
   }
 
   return Response.json({
     status: 'error',
+    code: 'NOT_FOUND',
     message: `Endpoint /api/v1/${endpoint} not found. Available endpoints: /api/v1/catalog, /api/v1/stock-status, /api/v1/products, /api/v1/orders, /api/v1/me`,
-  }, { status: 404, headers: corsHeaders });
+  }, { status: 404, headers: defaultCorsHeaders });
 }
 
 /**
@@ -758,7 +872,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 export async function handleDeveloperApiPost(request, pathSegments) {
   const supabase = await getSupabase();
   if (!supabase) {
-    return Response.json({ error: 'Database unconfigured' }, { status: 500, headers: corsHeaders });
+    return Response.json({ status: 'error', code: 'DATABASE_ERROR', message: 'Database unconfigured' }, { status: 500, headers: defaultCorsHeaders });
   }
 
   const endpoint = pathSegments[1] || '';
@@ -766,11 +880,22 @@ export async function handleDeveloperApiPost(request, pathSegments) {
   // 1. Authenticate Request
   const auth = await authenticateApiKey(request, supabase);
   if (!auth.authenticated) {
-    return Response.json({ status: 'error', code: auth.code || 'UNAUTHORIZED', message: auth.error }, { status: auth.status, headers: corsHeaders });
+    return Response.json({ status: 'error', code: auth.code || 'UNAUTHORIZED', message: auth.error }, { status: auth.status, headers: defaultCorsHeaders });
   }
 
+  const cors = getCorsHeaders(request, auth.keyRecord?.client_website);
+
   // 2. Route: POST /api/v1/orders (Automated Reseller Order Placement)
-  if (endpoint === 'orders') {
+  if (endpoint === 'orders' || endpoint === 'order') {
+    // Backend enforcement of Admin-Controlled Order API Access Toggle
+    if (!auth.keyRecord.orders_enabled) {
+      return Response.json({
+        status: 'error',
+        code: 'FORBIDDEN',
+        message: 'Order API access is not enabled for this API key.',
+      }, { status: 403, headers: cors });
+    }
+
     try {
       const body = await request.json();
       const {
@@ -790,15 +915,17 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       if (!cust?.name || !cust?.phone || !cust?.pincode) {
         return Response.json({
           status: 'error',
-          error: 'Missing customer details. Name, phone number, and pincode are required for delivery.',
-        }, { status: 400, headers: corsHeaders });
+          code: 'INVALID_CUSTOMER_DETAILS',
+          message: 'Missing customer details. Name, phone number, and pincode are required for delivery.',
+        }, { status: 400, headers: cors });
       }
 
       if (!Array.isArray(items) || items.length === 0) {
         return Response.json({
           status: 'error',
-          error: 'Items array cannot be empty. Please specify at least one product SKU and quantity.',
-        }, { status: 400, headers: corsHeaders });
+          code: 'EMPTY_ITEMS',
+          message: 'Items array cannot be empty. Please specify at least one product SKU and quantity.',
+        }, { status: 400, headers: cors });
       }
 
       // Fetch catalog for SKU validation and item metadata enrichment (title, images, price)
@@ -810,6 +937,32 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         }
       } catch (e) {
         console.warn('Failed to load products_json for order enrichment:', e);
+      }
+
+      // Enforce product authorization boundary: ensure all requested SKUs are authorized for this API key
+      const isCurated = auth.keyRecord?.catalog_mode === 'curated' || (Array.isArray(auth.keyRecord?.selected_skus) && auth.keyRecord.selected_skus.length > 0);
+      if (isCurated) {
+        const authorizedProducts = getAuthorizedProducts(catalogList, auth.keyRecord);
+        const authorizedSkuSet = new Set(authorizedProducts.map(p => String(p.id || p.groupKey || '').trim().toLowerCase()));
+        authorizedProducts.forEach((p) => {
+          if (Array.isArray(p.variants)) {
+            p.variants.forEach((v) => {
+              if (v.code) authorizedSkuSet.add(String(v.code).trim().toLowerCase());
+            });
+          }
+        });
+
+        for (const item of items) {
+          const itemSku = String(item.sku || item.variant_code || item.id || '').trim().toLowerCase();
+          const baseSku = itemSku.includes('-') ? itemSku.split('-')[0].trim() : itemSku;
+          if (!authorizedSkuSet.has(itemSku) && !authorizedSkuSet.has(baseSku)) {
+            return Response.json({
+              status: 'error',
+              code: 'UNAUTHORIZED_PRODUCT',
+              message: `Product SKU '${item.sku || item.id}' is not authorized for this account.`,
+            }, { status: 403, headers: cors });
+          }
+        }
       }
 
       // Normalize items array with full catalog metadata
@@ -840,17 +993,14 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         // 2. Resolve matched variant / color
         let matchedVariant = null;
         if (matchedProduct?.variants && matchedProduct.variants.length > 0) {
-          // Try exact variant code match
           matchedVariant = matchedProduct.variants.find(v => String(v.code || '').toLowerCase() === skuLower);
           
-          // Try color name match if not matched
           if (!matchedVariant && itemColorLower) {
             matchedVariant = matchedProduct.variants.find(v => 
               String(v.color || v.colorName || '').toLowerCase() === itemColorLower
             );
           }
 
-          // Try matching color from colorOptions if still not matched
           if (!matchedVariant && itemColorLower && Array.isArray(matchedProduct.colorOptions)) {
             const colorOption = matchedProduct.colorOptions.find(c => 
               String(c.name || '').toLowerCase() === itemColorLower
@@ -863,7 +1013,6 @@ export async function handleDeveloperApiPost(request, pathSegments) {
             }
           }
 
-          // Fallback to the first variant or cover variant
           if (!matchedVariant) {
             matchedVariant = matchedProduct.variants[0];
           }
@@ -920,9 +1069,9 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         return Response.json({
           status: 'error',
           code: 'STOCK_UNAVAILABLE',
-          error: 'One or more items in your order are currently out of stock.',
+          message: 'One or more items in your order are currently out of stock.',
           unavailable_items: outOfStockItems,
-        }, { status: 409, headers: corsHeaders });
+        }, { status: 409, headers: cors });
       }
 
       const recipientAddress = cust.address_line1 || cust.address || '';
@@ -934,7 +1083,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       const senderName = sender?.name || auth.keyRecord.client_name || 'B2B Partner Store';
       const senderPhone = sender?.phone || '';
 
-      // 1. Primary: Insert into dedicated api_orders table
+      // 1. Primary: Insert into dedicated api_orders table (strictly bound to authenticated key)
       const apiOrderPayload = {
         api_key_id: auth.keyRecord?.id || null,
         user_id: auth.keyRecord?.user_id || null,
@@ -1016,7 +1165,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       }
 
       if (insertError) {
-        throw new Error(insertError.message);
+        throw new Error('Database insert failed');
       }
 
       return Response.json({
@@ -1038,12 +1187,21 @@ export async function handleDeveloperApiPost(request, pathSegments) {
             address: fullAddressStr,
           },
         },
-      }, { status: 201, headers: corsHeaders });
+      }, { status: 201, headers: cors });
 
     } catch (err) {
-      return Response.json({ status: 'error', error: err.message || 'Failed to process order' }, { status: 500, headers: corsHeaders });
+      console.error('[developerApi POST /orders] Error:', err);
+      return Response.json({
+        status: 'error',
+        code: 'ORDER_PROCESSING_FAILED',
+        message: 'Failed to process order. Please verify your request data format.',
+      }, { status: 500, headers: cors });
     }
   }
 
-  return Response.json({ status: 'error', message: `POST /api/v1/${endpoint} not supported.` }, { status: 404, headers: corsHeaders });
+  return Response.json({
+    status: 'error',
+    code: 'NOT_FOUND',
+    message: `POST /api/v1/${endpoint} not supported.`,
+  }, { status: 404, headers: defaultCorsHeaders });
 }

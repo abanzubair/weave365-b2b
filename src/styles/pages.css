@@ -3753,7 +3753,9 @@ button {
   z-index: 10001;
   background: rgba(18, 14, 11, 0);
   pointer-events: none;
-  transition: background 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden;
+  overflow: hidden;
+  transition: background 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s ease;
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
 }
@@ -3761,6 +3763,7 @@ button {
 .cart-drawer-shell.open {
   background: rgba(18, 14, 11, 0.45);
   pointer-events: auto;
+  visibility: visible;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -3774,15 +3777,16 @@ button {
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s ease;
   background: #ffffff;
-  box-shadow: -10px 0 36px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   pointer-events: auto;
   font-family: var(--font-body, system-ui, sans-serif);
 }
 
 .cart-drawer.open {
   transform: translateX(0);
+  box-shadow: -10px 0 36px rgba(0, 0, 0, 0.12);
 }
 
 /* Drawer Header */

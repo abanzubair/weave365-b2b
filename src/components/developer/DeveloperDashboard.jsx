@@ -220,46 +220,76 @@ function UserActivationInfoCard({ apiKey, user, buyerProfile, isAdminMode, copie
       <div className="dev-activation-card-head">
         <div className="dev-activation-head-left">
           <div className="dev-activation-icon-wrap">
-            <Building2 size={15} />
+            <Building2 size={16} />
           </div>
           <div className="dev-activation-title-group">
-            <h3>
-              <span>{isAdminMode ? 'Activation Details' : 'Storefront Profile'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: '1.0625rem', fontWeight: 700, color: '#0f172a' }}>
+                {clientName !== 'N/A' ? clientName : (isAdminMode ? 'Activation Details' : 'Storefront Profile')}
+              </h3>
               <span className={`dev-quiet-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
                 <span className="dev-quiet-dot" />
                 {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
               </span>
-            </h3>
-            <p>
+              {tierInfo && (
+                <span className="dev-tier-tag" style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '6px', background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#334155', fontWeight: 600 }}>
+                  {tierInfo.name} • {tierInfo.priceLabel}
+                </span>
+              )}
+            </div>
+            <p style={{ margin: '3px 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
               {isAdminMode
-                ? 'Parameters submitted during API activation and linked buyer account details'
+                ? 'Registered storefront parameters, buyer account details, and API credentials'
                 : 'Your registered storefront parameters and API credentials'}
             </p>
           </div>
         </div>
 
-        <div className="dev-activation-head-right">
+        <div className="dev-activation-head-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a
+            href="/developer-api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-action-chip"
+            style={{
+              height: '30px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              textDecoration: 'none',
+            }}
+            title="Open official REST API documentation & endpoint references"
+          >
+            <BookOpen size={13} />
+            <span>API Docs ↗</span>
+          </a>
+
           {waUrl && (
             <a
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="dev-quiet-wa-btn"
+              style={{ height: '30px', fontSize: '0.75rem' }}
               title="Message reseller on WhatsApp"
             >
               <MessageCircle size={13} />
               <span>Chat on WhatsApp</span>
             </a>
           )}
+
           {!isAdminMode && (
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="dev-action-chip"
-              style={{ height: '30px', fontSize: '0.75rem' }}
+              className="dev-icon-btn"
+              style={{ width: '30px', height: '30px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff', cursor: 'pointer' }}
+              title={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
+              aria-label={isCollapsed ? 'Expand Storefront Profile' : 'Collapse Storefront Profile'}
             >
-              {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
-              <span>{isCollapsed ? 'View Details' : 'Collapse'}</span>
+              {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
             </button>
           )}
         </div>
@@ -497,6 +527,7 @@ export function DeveloperDashboard({
   const [adminQuota, setAdminQuota] = useState(initialKeyRecord?.monthly_quota || 2000);
   const [adminRps, setAdminRps] = useState(initialKeyRecord?.rate_limit_rps || 1);
   const [adminIsActive, setAdminIsActive] = useState(initialKeyRecord?.is_active ?? true);
+  const [adminOrdersEnabled, setAdminOrdersEnabled] = useState(initialKeyRecord?.orders_enabled ?? false);
   const [adminSaving, setAdminSaving] = useState(false);
 
   // Key creation state for new users
@@ -553,6 +584,7 @@ export function DeveloperDashboard({
         setAdminQuota(record.monthly_quota || 2000);
         setAdminRps(record.rate_limit_rps || 1);
         setAdminIsActive(record.is_active ?? true);
+        setAdminOrdersEnabled(Boolean(record.orders_enabled));
         setCatalogMode(record.catalog_mode || 'all');
         setSelectedSkus(Array.isArray(record.selected_skus) ? record.selected_skus : []);
 
@@ -573,6 +605,7 @@ export function DeveloperDashboard({
       setAdminQuota(initialKeyRecord.monthly_quota || 2000);
       setAdminRps(initialKeyRecord.rate_limit_rps || 1);
       setAdminIsActive(initialKeyRecord.is_active ?? true);
+      setAdminOrdersEnabled(Boolean(initialKeyRecord.orders_enabled));
       setCatalogMode(initialKeyRecord.catalog_mode || 'all');
       setSelectedSkus(Array.isArray(initialKeyRecord.selected_skus) ? initialKeyRecord.selected_skus : []);
       void developerService.getUsageStats(initialKeyRecord.id, 14, user?.id).then(setUsageStats);
@@ -738,10 +771,14 @@ export function DeveloperDashboard({
         onConfirm: async () => {
           setAdminIsActive(false);
           try {
-            const { data, error } = await developerService.updateApiKey(apiKey.id, { is_active: false });
+            const { data, error } = await developerService.updateApiKey(apiKey.id, {
+              is_active: false,
+              orders_enabled: false,
+            });
             if (error) throw error;
-            setApiKey(prev => ({ ...prev, is_active: false }));
-            if (onAdminUpdate) onAdminUpdate({ ...apiKey, is_active: false });
+            setApiKey(prev => ({ ...prev, is_active: false, orders_enabled: false }));
+            setAdminOrdersEnabled(false);
+            if (onAdminUpdate) onAdminUpdate({ ...apiKey, is_active: false, orders_enabled: false });
           } catch (e) {
             alert('Failed to update status: ' + e.message);
           }
@@ -766,6 +803,40 @@ export function DeveloperDashboard({
         }
       });
     }
+  };
+
+  const handleAdminToggleOrdersChange = (newChecked) => {
+    const keyId = apiKey?.id;
+    if (!keyId) return;
+
+    // Guard: Cannot enable Order API if API key / Product API is disabled
+    if (!apiKey?.is_active && newChecked) {
+      alert('Cannot enable Order API while Product API is disabled. Please activate the API Key first.');
+      return;
+    }
+
+    triggerConfirm({
+      title: newChecked ? 'Enable Order API Access' : 'Disable Order API Access',
+      message: newChecked
+        ? `Grant /api/v1/orders access to ${apiKey?.client_name || 'this client'}? They will be authorized to submit wholesale dropship orders.`
+        : `Revoke /api/v1/orders access for ${apiKey?.client_name || 'this client'}? Any subsequent order requests will receive 403 Forbidden.`,
+      confirmLabel: newChecked ? 'Enable Order API' : 'Disable Order API',
+      isDanger: !newChecked,
+      clientName: apiKey?.client_name,
+      onConfirm: async () => {
+        try {
+          const { data, error } = await developerService.updateApiKey(keyId, {
+            orders_enabled: newChecked,
+          });
+          if (error) throw error;
+          setApiKey(prev => ({ ...prev, orders_enabled: newChecked }));
+          setAdminOrdersEnabled(newChecked);
+          if (onAdminUpdate) onAdminUpdate({ ...apiKey, orders_enabled: newChecked });
+        } catch (e) {
+          alert('Failed to update Order API access: ' + e.message);
+        }
+      },
+    });
   };
 
   const copyToClipboard = (text, fieldId) => {
@@ -802,6 +873,7 @@ export function DeveloperDashboard({
         domainOwnerName: domainOwnerName.trim(),
         gstNumber: gstNumber.trim().toUpperCase(),
         tier: 'free',
+        orders_enabled: false,
       });
       setApiKey(keyRecord);
       setNewGeneratedSecret(rawSecretKey);
@@ -871,6 +943,7 @@ export function DeveloperDashboard({
         monthly_quota: parseInt(adminQuota, 10) || 2000,
         rate_limit_rps: parseInt(adminRps, 10) || 1,
         is_active: adminIsActive,
+        orders_enabled: adminOrdersEnabled,
       });
       if (error) throw error;
       setApiKey(data);
@@ -888,13 +961,20 @@ export function DeveloperDashboard({
     setTestResponse(null);
     setTestStatus(null);
     try {
-      const activeKeyToUse = revealedKey || apiKey?.key_prefix || 'w365_demo_test';
+      const activeKeyToUse = (revealedKey || apiKey?.key_prefix || '').trim();
+      if (!activeKeyToUse || activeKeyToUse.includes('...') || activeKeyToUse.includes('••••')) {
+        setTestStatus(401);
+        setTestResponse({
+          status: 'error',
+          code: 'UNAUTHORIZED',
+          message: 'Full unmasked API secret key required. For security, full keys are shown only once upon generation. Please test using curl or Postman with your saved secret key.',
+        });
+        setTestLoading(false);
+        return;
+      }
       const headers = {
         'X-API-Key': activeKeyToUse,
       };
-      if (apiKey?.id) {
-        headers['X-API-Key-Id'] = apiKey.id;
-      }
       const res = await fetch(testEndpoint, { headers });
       setTestStatus(res.status);
 
@@ -1070,6 +1150,25 @@ export function DeveloperDashboard({
             </div>
           </div>
           <div className="dev-admin-quick-toggles">
+            <label
+              className="dev-toggle-label"
+              style={{
+                opacity: !adminIsActive ? 0.6 : 1,
+                cursor: !adminIsActive ? 'not-allowed' : 'pointer',
+              }}
+              title={!adminIsActive ? 'Cannot enable Order API: API key is disabled' : undefined}
+            >
+              <span>Order API:</span>
+              <input
+                type="checkbox"
+                checked={Boolean(apiKey?.orders_enabled && adminIsActive)}
+                disabled={!adminIsActive}
+                onChange={(e) => handleAdminToggleOrdersChange(e.target.checked)}
+              />
+              <span className={(apiKey?.orders_enabled && adminIsActive) ? 'dev-status-pill active' : 'dev-status-pill disabled'}>
+                {(apiKey?.orders_enabled && adminIsActive) ? 'ON' : 'OFF'}
+              </span>
+            </label>
             <label className="dev-toggle-label">
               <span>Status:</span>
               <input
@@ -1085,7 +1184,7 @@ export function DeveloperDashboard({
         </div>
       )}
 
-      {/* 2. User & Storefront Activation Profile Card */}
+      {/* 2. User & Storefront Activation Profile Card with Integrated Actions */}
       <UserActivationInfoCard
         apiKey={apiKey}
         user={user}
@@ -1094,65 +1193,9 @@ export function DeveloperDashboard({
         copiedField={copiedField}
         copyToClipboard={copyToClipboard}
         tierInfo={tierInfo}
+        onRegenerateKey={handleRegenerateKey}
+        onDeleteApiKey={handleDeleteApiKey}
       />
-
-      {/* 3. Top Header & Tier Bar */}
-      <div className="dev-dashboard-header">
-        <div className="dev-header-main">
-          <div className="dev-header-title-row">
-            <h1 className="dev-header-title">{apiKey?.client_name || 'Developer API'}</h1>
-            <div className="dev-header-badges-wrap">
-              <span className={`dev-status-tag ${apiKey?.is_active ? 'active' : 'inactive'}`}>
-                <span className="dev-status-dot" />
-                {apiKey?.is_active ? 'Live & Active' : 'Suspended'}
-              </span>
-              <span className="dev-tier-tag">
-                {tierInfo.name} • {tierInfo.priceLabel}
-              </span>
-            </div>
-          </div>
-          {apiKey?.client_website && (
-            <div className="dev-header-meta-row">
-              <a href={apiKey.client_website} target="_blank" rel="noopener noreferrer" className="dev-client-link">
-                <Globe size={13} className="dev-meta-icon" />
-                <span>{apiKey.client_website.replace(/^https?:\/\//, '')}</span>
-                <ExternalLink size={11} className="dev-meta-ext" />
-              </a>
-            </div>
-          )}
-        </div>
-
-        <div className="dev-header-actions">
-          <a
-            href="/developer-api"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dev-btn dev-btn-primary"
-            title="Open official REST API documentation & endpoint references"
-          >
-            <BookOpen size={14} />
-            <span>API Docs ↗</span>
-          </a>
-          <button
-            type="button"
-            className="dev-btn dev-btn-secondary"
-            onClick={handleRegenerateKey}
-            title="Generate a new API secret"
-          >
-            <RefreshCw size={13} />
-            <span>Regenerate</span>
-          </button>
-          <button
-            type="button"
-            className="dev-btn dev-btn-danger"
-            onClick={handleDeleteApiKey}
-            title="Permanently revoke and delete this API key"
-          >
-            <Trash2 size={13} />
-            <span>Delete</span>
-          </button>
-        </div>
-      </div>
 
       {/* Secret Key Notification Banner (When Key is newly generated) */}
       {newGeneratedSecret && (
@@ -1231,10 +1274,32 @@ export function DeveloperDashboard({
 
       {/* 4. Credentials & Base URLs Card */}
       <div className="dev-card">
-        <div className="dev-card-head">
+        <div className="dev-card-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div className="dev-card-title">
             <KeyRound size={16} />
-            <h3>API Credentials & Endpoint Access</h3>
+            <h3>API Credentials</h3>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              className="dev-action-chip"
+              style={{ height: '30px', fontSize: '0.75rem', gap: '5px', cursor: 'pointer' }}
+              onClick={handleRegenerateKey}
+              title="Generate a new API secret key"
+            >
+              <RefreshCw size={12} />
+              <span>Regenerate Key</span>
+            </button>
+            <button
+              type="button"
+              className="dev-action-chip"
+              style={{ height: '30px', fontSize: '0.75rem', gap: '5px', color: '#dc2626', borderColor: '#fecaca', background: '#ffffff', cursor: 'pointer' }}
+              onClick={handleDeleteApiKey}
+              title="Permanently revoke and delete this API key"
+            >
+              <Trash2 size={12} />
+              <span>Revoke Key</span>
+            </button>
           </div>
         </div>
 
@@ -1296,45 +1361,132 @@ export function DeveloperDashboard({
         </div>
       </div>
 
-      {/* 5. Curated Catalog Selection & Storefront Sync */}
-      <div className="dev-card dev-curator-card" id="catalog-curator">
+      {/* 5. API Permissions & Integration Status */}
+      <div className="dev-card">
         <div className="dev-card-head">
           <div className="dev-card-title">
-            <ShoppingBag size={18} />
+            <Shield size={16} style={{ color: '#64748b' }} />
+            <h3>API Permissions &amp; Endpoint Access</h3>
+          </div>
+        </div>
+        <div className="dev-permissions-grid">
+          <div className="dev-permission-item">
+            <div className="dev-permission-head">
+              <span className="dev-permission-title">Wholesale Catalog</span>
+              <span className="dev-permission-status active">
+                <span className="dev-permission-dot" />
+                Active
+              </span>
+            </div>
+            <div className="dev-permission-foot">
+              <span className="dev-permission-endpoint">GET /catalog, /products/:sku</span>
+            </div>
+          </div>
+
+          <div className="dev-permission-item">
+            <div className="dev-permission-head">
+              <span className="dev-permission-title">Live Stock Status</span>
+              <span className="dev-permission-status active">
+                <span className="dev-permission-dot" />
+                Active
+              </span>
+            </div>
+            <div className="dev-permission-foot">
+              <span className="dev-permission-endpoint">GET /stock-status</span>
+            </div>
+          </div>
+
+          <div className="dev-permission-item">
+            <div className="dev-permission-head">
+              <span className="dev-permission-title">Order Placement</span>
+              {isAdminMode ? (
+                <button
+                  type="button"
+                  onClick={() => handleAdminToggleOrdersChange(!apiKey?.orders_enabled)}
+                  disabled={!apiKey?.is_active}
+                  className={`dev-permission-toggle-btn ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : 'disabled'}`}
+                  title={!apiKey?.is_active ? 'Cannot enable Order API: API key is disabled' : 'Toggle Order API Access'}
+                >
+                  <span className="dev-permission-dot" />
+                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Enabled' : 'Disabled'}
+                </button>
+              ) : (
+                <span className={`dev-permission-status ${apiKey?.orders_enabled ? 'active' : 'disabled'}`}>
+                  <span className="dev-permission-dot" />
+                  {apiKey?.orders_enabled ? 'Active' : 'Disabled'}
+                </span>
+              )}
+            </div>
+            <div className="dev-permission-foot">
+              <span className="dev-permission-endpoint">POST /orders</span>
+              {!apiKey?.orders_enabled && !isAdminMode && (
+                <span className="dev-permission-note">Growth tier only</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Curated Catalog Selection & Storefront Sync */}
+      <div className={`dev-card dev-curator-card ${isCuratorGridOpen ? 'open' : ''}`} id="catalog-curator">
+        <div
+          className="dev-card-head"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            borderBottom: isCuratorGridOpen ? '1px solid #f1f5f9' : 'none',
+          }}
+        >
+          <div className="dev-card-title">
+            <ShoppingBag size={16} style={{ color: '#64748b' }} />
             <div>
-              <h3>Curated Catalog Sync</h3>
-              <p className="dev-card-subtitle">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600, color: '#0f172a' }}>
+                  Curated Catalog Sync
+                </h3>
+                <span className={`dev-quiet-status-tag ${selectedSkus.length > 0 ? 'active' : 'inactive'}`}>
+                  <span className="dev-quiet-dot" />
+                  {selectedSkus.length > 0
+                    ? `${selectedSkus.length} ${selectedSkus.length === 1 ? 'product' : 'products'} selected`
+                    : 'No products selected'}
+                </span>
+              </div>
+              <p className="dev-card-subtitle" style={{ margin: '2px 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
                 Select the specific products you want to sync with your Shopify or WooCommerce storefront.
               </p>
             </div>
           </div>
-          <div className="dev-curator-selected-badge">
-            <span>{selectedSkus.length} {selectedSkus.length === 1 ? 'Product' : 'Products'} Selected</span>
-          </div>
+
+          <button
+            type="button"
+            className="dev-action-chip"
+            style={{
+              height: '30px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              background: isCuratorGridOpen ? '#f1f5f9' : '#ffffff',
+            }}
+            onClick={() => {
+              if (!isCuratorGridOpen) {
+                handleOpenCuratorGrid();
+              } else {
+                setIsCuratorGridOpen(false);
+              }
+            }}
+          >
+            {isCuratorGridOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            <span>{isCuratorGridOpen ? 'Close Grid' : (selectedSkus.length > 0 ? 'Edit Selection' : 'Pick Products')}</span>
+          </button>
         </div>
 
-        {!isCuratorGridOpen ? (
-          <div className="dev-curator-compact-all dev-curator-collapsed-bar">
-            <div className="dev-curator-all-status">
-              <span className="dev-pulse-dot" />
-              <span>
-                {selectedSkus.length > 0 ? (
-                  <><strong>Curated Feed Active:</strong> Syncing <strong>{selectedSkus.length}</strong> selected {selectedSkus.length === 1 ? 'product' : 'products'}.</>
-                ) : (
-                  <><strong>No Products Selected:</strong> Pick products below to enable your storefront feed.</>
-                )}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="dev-curate-btn"
-              onClick={handleOpenCuratorGrid}
-            >
-              <ChevronDown size={14} />
-              <span>{selectedSkus.length > 0 ? 'Edit Product Selection' : 'Pick Products to Sync'}</span>
-            </button>
-          </div>
-        ) : (
+        {isCuratorGridOpen && (
           <div className="dev-curator-body">
             {/* Filter Bar */}
             <div className="dev-curator-toolbar">

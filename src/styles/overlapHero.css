@@ -10,7 +10,7 @@
   background: var(--paper, #ffffff);
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: clamp(1.95rem, 3.3vw, 3.3rem) var(--site-padding, 2rem) clamp(2.5rem, 3.85vw, 3.85rem) var(--site-padding, 2rem);
+  padding: clamp(2.75rem, 4.2vw, 4.5rem) var(--site-padding, 2rem) clamp(2.5rem, 3.85vw, 3.85rem) var(--site-padding, 2rem);
 }
 
 .overlap-hero-container {
@@ -65,10 +65,10 @@
 
 .hero-title-sub {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(18px, 1.75vw, 24px);
+  font-size: clamp(20px, 1.95vw, 28px);
   font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  line-height: 1.22;
+  letter-spacing: -0.012em;
   color: #855b29;
   display: block;
 }
@@ -270,7 +270,7 @@
 @media (max-width: 768px) {
   .overlap-hero {
     min-height: auto;
-    padding: clamp(1.65rem, 4.4vw, 2.2rem) clamp(1.25rem, 4.5vw, 1.75rem) 2.75rem clamp(1.25rem, 4.5vw, 1.75rem);
+    padding: clamp(2.5rem, 5.5vw, 3.5rem) clamp(1.25rem, 4.5vw, 1.75rem) 2.75rem clamp(1.25rem, 4.5vw, 1.75rem);
   }
 
   .overlap-hero-container {
@@ -303,8 +303,8 @@
   }
 
   .hero-title-sub {
-    font-size: clamp(17px, 4.5vw, 22px);
-    line-height: 1.25;
+    font-size: clamp(19px, 5vw, 25px);
+    line-height: 1.22;
   }
 
   .overlap-hero-desc {
@@ -366,7 +366,7 @@
 
 @media (max-width: 380px) {
   .overlap-hero {
-    padding: 1.5rem 1.15rem 2.2rem 1.15rem;
+    padding: 2.25rem 1.15rem 2.2rem 1.15rem;
   }
 
   .hero-title-main {
@@ -374,7 +374,8 @@
   }
 
   .hero-title-sub {
-    font-size: 16.5px;
+    font-size: 19px;
+    line-height: 1.22;
   }
 
   .overlap-hero-actions {

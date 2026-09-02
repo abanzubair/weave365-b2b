@@ -7,6 +7,7 @@
     "dev": "next dev -H 0.0.0.0 --webpack",
     "build": "next build --webpack",
     "start": "next start -H 0.0.0.0",
+    "test": "node --test tests/**/*.test.js",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
   },

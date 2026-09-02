@@ -461,8 +461,13 @@ x-api-key: w365_live_9a7f8e1b4c3d2e...
 Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             </div>
 
+            <div style={{ margin: '1rem 0', padding: '0.875rem 1rem', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.5 }}>
+              <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Zero Plaintext Secret Storage:</strong>
+              For security, Weave365 stores your API key as a salted SHA-256 cryptographic hash. Your full raw secret key is presented <strong>only once</strong> upon creation or regeneration. Please store it securely in your <code>.env</code> file or server vault. If lost, you can rotate and regenerate a new key anytime from your <a href="/account?tab=developer" style={{ color: '#2563eb', fontWeight: 600 }}>Developer Dashboard</a>.
+            </div>
+
             <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-              You can generate and reveal your API key in your <a href="/account?tab=developer" style={{ color: '#2563eb', fontWeight: 600 }}>Account Developer Dashboard</a>.
+              You can generate and manage your API keys in your <a href="/account?tab=developer" style={{ color: '#2563eb', fontWeight: 600 }}>Account Developer Dashboard</a>.
             </p>
           </section>
 
@@ -698,6 +703,18 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   }
 }`}</pre>
                 </div>
+
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Curated Feed Error Response (HTTP 404)</h4>
+                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                  If your API key is in curated catalog mode and the requested SKU is not in your selected products list:
+                </p>
+                <div className="api-code-wrapper">
+                  <pre className="api-code-pre">{`{
+  "status": "error",
+  "code": "NOT_FOUND",
+  "message": "Product with SKU 100001 is not found or not included in your curated feed."
+}`}</pre>
+                </div>
               </div>
             </div>
 
@@ -748,6 +765,18 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   "message": "Order received successfully and queued for wholesale fulfillment.",
   "tracking_url": "https://www.weave365.com/order-tracking/ord_8f7b2a19-3c94",
   "estimated_dispatch": "24-48 Business Hours"
+}`}</pre>
+                </div>
+
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Order API Permission Requirement (HTTP 403)</h4>
+                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                  Dropship ordering requires active Order API permissions (enabled by default on Growth tier or upon partner onboarding approval):
+                </p>
+                <div className="api-code-wrapper">
+                  <pre className="api-code-pre">{`{
+  "status": "error",
+  "code": "FORBIDDEN",
+  "message": "Order API access is not enabled for this API key."
 }`}</pre>
                 </div>
               </div>
@@ -840,6 +869,18 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   ]
 }`}</pre>
                 </div>
+
+                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Order API Permission Requirement (HTTP 403)</h4>
+                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                  If Order API permissions are disabled for your key, this endpoint responds with:
+                </p>
+                <div className="api-code-wrapper">
+                  <pre className="api-code-pre">{`{
+  "status": "error",
+  "code": "FORBIDDEN",
+  "message": "Order API access is not enabled for this API key."
+}`}</pre>
+                </div>
               </div>
             </div>
 
@@ -853,19 +894,27 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Account & Live Quota Metrics</span>
               </div>
               <div className="api-endpoint-body">
-                <p>Inspect your current API key details, catalog sync mode, remaining monthly quota, rate limits, and live daily usage statistics.</p>
+                <p>Inspect your current API key details, catalog sync mode, remaining monthly quota, rate limits, active permissions, and live usage statistics.</p>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
   "client_name": "My Reseller Store",
+  "client_website": "https://mystore.com",
   "tier": "growth",
-  "catalog_mode": "curated",
-  "selected_skus_count": 24,
   "monthly_quota": 20000,
-  "quota_used_this_month": 1420,
-  "quota_remaining": 18580,
+  "month_total_used": 1420,
+  "remaining_quota": 18580,
   "rate_limit_rps": 3,
-  "allowed_endpoints": ["catalog", "stock", "product", "orders"]
+  "is_active": true,
+  "orders_enabled": true,
+  "usage_history": [
+    {
+      "usage_date": "2026-08-26",
+      "total_requests": 142,
+      "successful_requests": 140,
+      "rate_limited_requests": 2
+    }
+  ]
 }`}</pre>
                 </div>
               </div>
@@ -939,65 +988,140 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             <p>Select a plan matched to your store&apos;s monthly catalog sync volume:</p>
 
             <div className="api-pricing-grid">
-              {/* Tier 1 */}
+              {/* Starter */}
               <div className="api-pricing-card">
-                <div>
-                  <h3 className="api-pricing-name">Starter</h3>
-                  <div className="api-pricing-price">₹0 <span>/ month</span></div>
+                <div className="api-pricing-top">
+                  <div className="api-pricing-header">
+                    <span className="api-pricing-name">Starter</span>
+                    <p className="api-pricing-desc">For testing &amp; initial catalog sync</p>
+                  </div>
+                  <div className="api-pricing-price-wrap">
+                    <span className="api-pricing-amount">₹0</span>
+                    <span className="api-pricing-period">/ month</span>
+                  </div>
+
+                  <div className="api-pricing-divider" />
+
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={15} /> 2,000 requests / month</li>
-                    <li><CheckCircle2 size={15} /> Full API Access (Catalog, Stock & Orders)</li>
-                    <li><CheckCircle2 size={15} /> Standard sync (1–2 hr intervals)</li>
-                    <li><CheckCircle2 size={15} /> Ideal for testing & store setup</li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span><strong>2,000</strong> requests / month</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Wholesale Catalog &amp; Stock API</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Standard 1–2 hr sync intervals</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Standard community docs &amp; guides</span>
+                    </li>
+                    <li className="disabled">
+                      <span className="api-feature-dash">—</span>
+                      <span>Dropship Order API (Growth tier)</span>
+                    </li>
                   </ul>
                 </div>
-                <a href="/account?tab=developer" className="api-pricing-btn api-pricing-btn-outline">
+
+                <a href="/account?tab=developer" className="api-pricing-btn secondary">
                   Get Started Free
                 </a>
               </div>
 
-              {/* Tier 2 */}
+              {/* Growth Partner */}
               <div className="api-pricing-card featured">
-                <span className="api-pricing-card-badge">Most Popular</span>
-                <div>
-                  <h3 className="api-pricing-name">Growth Partner</h3>
-                  <div className="api-pricing-price">₹699 <span>/ month</span></div>
+                <div className="api-pricing-top">
+                  <div className="api-pricing-header">
+                    <span className="api-pricing-name">Growth Partner</span>
+                    <p className="api-pricing-desc">For active stores &amp; automated dropshipping</p>
+                  </div>
+                  <div className="api-pricing-price-wrap">
+                    <span className="api-pricing-amount">₹699</span>
+                    <span className="api-pricing-period">/ month</span>
+                  </div>
+
+                  <div className="api-pricing-divider" />
+
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={15} /> 20,000 requests / month</li>
-                    <li><CheckCircle2 size={15} /> 24/7 High-frequency sync (5–15 min)</li>
-                    <li><CheckCircle2 size={15} /> Production volume for active stores</li>
-                    <li><CheckCircle2 size={15} /> Automated dropship order dispatch</li>
-                    <li><CheckCircle2 size={15} /> Priority WhatsApp developer support</li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span><strong>20,000</strong> requests / month</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>High-frequency 5–15 min live sync</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Automated dropship order dispatch</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Curated feed &amp; multi-sku routing</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Priority WhatsApp developer support</span>
+                    </li>
                   </ul>
                 </div>
+
                 <a
                   href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹699/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="api-pricing-btn api-pricing-btn-primary"
+                  className="api-pricing-btn primary"
                 >
                   Upgrade to Growth
                 </a>
               </div>
 
-              {/* Tier 3 */}
+              {/* Pro Scale */}
               <div className="api-pricing-card">
-                <div>
-                  <h3 className="api-pricing-name">Pro Scale</h3>
-                  <div className="api-pricing-price">₹1,499 <span>/ month</span></div>
+                <div className="api-pricing-top">
+                  <div className="api-pricing-header">
+                    <span className="api-pricing-name">Pro Scale</span>
+                    <p className="api-pricing-desc">For multi-store brands &amp; high volume</p>
+                  </div>
+                  <div className="api-pricing-price-wrap">
+                    <span className="api-pricing-amount">₹1,499</span>
+                    <span className="api-pricing-period">/ month</span>
+                  </div>
+
+                  <div className="api-pricing-divider" />
+
                   <ul className="api-pricing-features">
-                    <li><CheckCircle2 size={15} /> 75,000 requests / month</li>
-                    <li><CheckCircle2 size={15} /> High-frequency multi-store sync</li>
-                    <li><CheckCircle2 size={15} /> Blind white-label custom packing</li>
-                    <li><CheckCircle2 size={15} /> Priority warehouse dispatch queue</li>
-                    <li><CheckCircle2 size={15} /> Dedicated technical account manager</li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span><strong>75,000</strong> requests / month</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Real-time multi-store catalog sync</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Blind white-label custom packaging</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Priority warehouse dispatch queue</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Dedicated technical account manager</span>
+                    </li>
                   </ul>
                 </div>
+
                 <a
                   href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹1499/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="api-pricing-btn api-pricing-btn-outline"
+                  className="api-pricing-btn secondary"
                 >
                   Contact for Pro
                 </a>

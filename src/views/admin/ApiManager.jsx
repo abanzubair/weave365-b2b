@@ -33,6 +33,7 @@ import {
   Zap,
   ArrowLeft,
   X,
+  ShoppingBag,
 } from 'lucide-react';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
@@ -45,6 +46,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [endpointFilter, setEndpointFilter] = useState('all');
   
   // Selected user for "Inspect Dashboard" mode
   const [inspectedKeyId, setInspectedKeyId] = useState(null);
@@ -85,6 +87,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   const [editQuota, setEditQuota] = useState(2000);
   const [editRps, setEditRps] = useState(1);
   const [editIsActive, setEditIsActive] = useState(true);
+  const [editOrdersEnabled, setEditOrdersEnabled] = useState(false);
+  const [editClientWebsite, setEditClientWebsite] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
   const handleOpenEditModal = (item) => {
@@ -93,6 +97,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
     setEditQuota(item.monthly_quota || 2000);
     setEditRps(item.rate_limit_rps || 1);
     setEditIsActive(item.is_active ?? true);
+    setEditOrdersEnabled(Boolean(item.orders_enabled));
+    setEditClientWebsite(item.client_website || '');
   };
 
   const handleSaveEditSubmit = async (e) => {
@@ -102,11 +108,14 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
     try {
       const quotaNum = parseInt(editQuota, 10) || 2000;
       const rpsNum = parseInt(editRps, 10) || 1;
+      const finalOrdersEnabled = editIsActive ? editOrdersEnabled : false;
       const { error } = await developerService.updateApiKey(editingKey.id, {
         tier: editTier,
         monthly_quota: quotaNum,
         rate_limit_rps: rpsNum,
         is_active: editIsActive,
+        orders_enabled: finalOrdersEnabled,
+        client_website: editClientWebsite.trim(),
       });
       if (error) throw error;
       setAllKeys((prev) =>
@@ -118,6 +127,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                 monthly_quota: quotaNum,
                 rate_limit_rps: rpsNum,
                 is_active: editIsActive,
+                orders_enabled: finalOrdersEnabled,
+                client_website: editClientWebsite.trim(),
               }
             : k
         )
@@ -136,6 +147,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   const [newClientName, setNewClientName] = useState('');
   const [newClientWebsite, setNewClientWebsite] = useState('');
   const [newTier, setNewTier] = useState('growth');
+  const [newOrdersEnabled, setNewOrdersEnabled] = useState(false);
   const [creatingKey, setCreatingKey] = useState(false);
   const [newlyCreatedKeySecret, setNewlyCreatedKeySecret] = useState(null);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -164,6 +176,10 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
       if (statusFilter === 'active' && !k.is_active) return false;
       if (statusFilter === 'disabled' && k.is_active) return false;
 
+      if (endpointFilter === 'orders_on' && !k.orders_enabled) return false;
+      if (endpointFilter === 'orders_off' && k.orders_enabled) return false;
+      if (endpointFilter === 'curated' && !(k.catalog_mode === 'curated' && (k.selected_skus || []).length > 0)) return false;
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const client = (k.client_name || '').toLowerCase();
@@ -173,7 +189,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
       }
       return true;
     });
-  }, [allKeys, tierFilter, statusFilter, searchQuery]);
+  }, [allKeys, tierFilter, statusFilter, endpointFilter, searchQuery]);
 
   // Toggle active status
   const handleToggleActive = (item) => {
@@ -182,10 +198,10 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
     const clientName = item.client_name || 'Client';
 
     if (currentStatus) {
-      // Disabling
+      // Disabling Product API / Master Key Access
       triggerConfirm({
         title: 'Disable API Access',
-        message: 'Live storefront requests from this client will immediately receive 403 Forbidden errors and stop syncing products or orders.',
+        message: 'Live storefront requests from this client will immediately receive 403 Forbidden errors and stop syncing products or orders. Order API will also be automatically disabled.',
         confirmLabel: 'Disable Access',
         isDanger: true,
         clientName,
@@ -193,9 +209,10 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
           try {
             const { error } = await developerService.updateApiKey(keyId, {
               is_active: false,
+              orders_enabled: false,
             });
             if (error) throw error;
-            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: false } : k)));
+            setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: false, orders_enabled: false } : k)));
           } catch (err) {
             alert('Failed to update status: ' + err.message);
           }
@@ -222,6 +239,40 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         }
       });
     }
+  };
+
+  // Toggle Order API access directly from table
+  const handleToggleOrders = (item) => {
+    const keyId = item.id;
+    const currentStatus = Boolean(item.orders_enabled);
+    const clientName = item.client_name || 'Client';
+
+    // Guard: Order API CANNOT be enabled if Product API is disabled!
+    if (!item.is_active && !currentStatus) {
+      alert('Cannot enable Order API while Product API is disabled. Please activate the Product API first.');
+      return;
+    }
+
+    triggerConfirm({
+      title: currentStatus ? 'Disable Order API Access' : 'Enable Order API Access',
+      message: currentStatus
+        ? `Revoke Order API (/api/v1/orders) access for ${clientName}? Any automated dropship orders submitted by their storefront will receive 403 Forbidden.`
+        : `Grant Order API (/api/v1/orders) access to ${clientName}? Their external storefront will be authorized to submit wholesale dropship orders.`,
+      confirmLabel: currentStatus ? 'Disable Orders' : 'Enable Orders',
+      isDanger: currentStatus,
+      clientName,
+      onConfirm: async () => {
+        try {
+          const { error } = await developerService.updateApiKey(keyId, {
+            orders_enabled: !currentStatus,
+          });
+          if (error) throw error;
+          setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, orders_enabled: !currentStatus } : k)));
+        } catch (err) {
+          alert('Failed to update Order API access: ' + err.message);
+        }
+      },
+    });
   };
 
   // Delete key
@@ -260,6 +311,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
         clientName: newClientName,
         clientWebsite: newClientWebsite,
         tier: newTier,
+        orders_enabled: newOrdersEnabled,
       });
       setNewlyCreatedKeySecret(rawSecretKey);
       await fetchOverview();
@@ -279,7 +331,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   }, [adminData?.profiles]);
 
   return (
-    <div className="api-manager-container">
+    <div className="api-manager-container" style={{ maxWidth: '1600px', width: '100%', margin: '0 auto' }}>
       {/* 1. Header & Summary Stats */}
       <div className="api-manager-header">
         <div className="api-header-title-block">
@@ -342,17 +394,17 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
 
         <div className="admin-stat-card">
           <div className="admin-stat-head">
-            <span className="admin-stat-label">Connected Storefronts</span>
+            <span className="admin-stat-label">Order API Authorization</span>
             <div className="admin-stat-icon-wrap">
-              <Users size={16} />
+              <ShoppingBag size={16} />
             </div>
           </div>
           <div className="admin-stat-value">
-            {systemOverview?.activeKeysCount || 0}{' '}
-            <span>/ {systemOverview?.totalKeysCount || 0} active</span>
+            {allKeys.filter(k => k.orders_enabled).length}{' '}
+            <span>/ {allKeys.length} enabled</span>
           </div>
           <div className="admin-stat-subtext">
-            {systemOverview?.paidTiersCount || 0} paid subscription clients (Growth / Pro)
+            Product API enabled for all {allKeys.length} keys
           </div>
         </div>
 
@@ -409,11 +461,22 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             <option value="active">Active Only</option>
             <option value="disabled">Disabled Only</option>
           </select>
+
+          <select
+            className="api-select"
+            value={endpointFilter}
+            onChange={(e) => setEndpointFilter(e.target.value)}
+          >
+            <option value="all">All Permissions</option>
+            <option value="orders_on">Order API: Enabled</option>
+            <option value="orders_off">Order API: Disabled</option>
+            <option value="curated">Curated Catalog Only</option>
+          </select>
         </div>
       </div>
 
       {/* 5. Clients Table */}
-      <div className="api-table-wrapper">
+      <div className="api-table-wrapper" style={{ maxWidth: '1600px', width: '100%' }}>
         <table className="api-table">
           <thead>
             <tr>
@@ -487,53 +550,133 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                   </td>
 
                   <td>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleActive(item)}
-                      className={`api-status-btn ${item.is_active ? 'active' : 'disabled'}`}
-                      title={item.is_active ? 'Click to disable API key' : 'Click to enable API key'}
-                    >
-                      <span className="api-status-dot" />
-                      {item.is_active ? 'Active' : 'Disabled'}
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
+                      {/* 1. Order API Tag */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleOrders(item)}
+                        disabled={!item.is_active}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '3px 10px',
+                          borderRadius: '999px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          background: (item.is_active && item.orders_enabled) ? '#ecfdf5' : '#f1f5f9',
+                          border: `1px solid ${(item.is_active && item.orders_enabled) ? '#a7f3d0' : '#e2e8f0'}`,
+                          color: (item.is_active && item.orders_enabled) ? '#065f46' : '#64748b',
+                          cursor: !item.is_active ? 'not-allowed' : 'pointer',
+                          opacity: !item.is_active ? 0.6 : 1,
+                          whiteSpace: 'nowrap',
+                          lineHeight: '1.4',
+                          transition: 'all 0.15s ease',
+                        }}
+                        title={
+                          !item.is_active
+                            ? 'Cannot enable Order API: Product API must be enabled first'
+                            : item.orders_enabled
+                            ? 'Order API is Enabled (Click to Disable)'
+                            : 'Order API is Disabled (Click to Enable)'
+                        }
+                      >
+                        <span
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: (item.is_active && item.orders_enabled) ? '#10b981' : '#94a3b8',
+                            display: 'inline-block',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span>Order: {(item.is_active && item.orders_enabled) ? 'Enabled' : 'Disabled'}</span>
+                      </button>
+
+                      {/* 2. Product API Tag */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleActive(item)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '3px 10px',
+                          borderRadius: '999px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          background: item.is_active ? '#ecfdf5' : '#f1f5f9',
+                          border: `1px solid ${item.is_active ? '#a7f3d0' : '#e2e8f0'}`,
+                          color: item.is_active ? '#065f46' : '#64748b',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          lineHeight: '1.4',
+                          transition: 'all 0.15s ease',
+                        }}
+                        title={item.is_active ? 'Product API is Enabled (Click to Deactivate key)' : 'Product API is Disabled (Click to Activate key)'}
+                      >
+                        <span
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: item.is_active ? '#10b981' : '#94a3b8',
+                            display: 'inline-block',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span>Product: {item.is_active ? 'Enabled' : 'Disabled'}</span>
+                      </button>
+                    </div>
                   </td>
 
-                  <td style={{ textAlign: 'right' }}>
-                    <div className="api-action-group">
-                      {whatsappUrl && (
-                        <a
-                          href={whatsappUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Contact Reseller on WhatsApp"
-                          className="api-action-btn api-wa-btn"
-                        >
-                          <MessageCircle size={15} style={{ flexShrink: 0 }} />
-                        </a>
-                      )}
+                  <td style={{ textAlign: 'right', width: '160px' }}>
+                    <div className="api-action-grid">
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(item)}
                         title="Edit Tier & Quota Overrides"
                         className="api-action-btn api-edit-btn"
+                        aria-label="Edit Key"
                       >
-                        <Sliders size={14} style={{ flexShrink: 0 }} /> <span>Edit</span>
+                        <Sliders size={12} />
+                        <span>Edit</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setInspectedKeyId(item.id)}
                         title="Inspect Live User Dashboard"
                         className="api-action-btn api-inspect-btn"
+                        aria-label="Inspect Dashboard"
                       >
-                        <Eye size={14} style={{ flexShrink: 0 }} /> <span>Inspect</span>
+                        <Eye size={12} />
+                        <span>Inspect</span>
                       </button>
+                      {whatsappUrl ? (
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Contact Reseller on WhatsApp"
+                          className="api-action-btn api-wa-btn"
+                          aria-label="WhatsApp Chat"
+                        >
+                          <MessageCircle size={12} />
+                          <span>Chat</span>
+                        </a>
+                      ) : (
+                        <span className="api-action-btn-placeholder" />
+                      )}
                       <button
                         type="button"
                         onClick={() => handleDeleteKey(item.id, item.client_name)}
                         title="Revoke API Key"
                         className="api-action-btn api-delete-btn"
+                        aria-label="Delete Key"
                       >
-                        <Trash2 size={14} style={{ flexShrink: 0 }} />
+                        <Trash2 size={12} />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </td>
@@ -565,10 +708,21 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
               </h2>
             </div>
             <p style={{ color: '#64748b', fontSize: '0.8125rem', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
-              Configure pricing tier, monthly request quota, and rate limits for <strong>{editingKey.client_name}</strong> ({editingKey.profiles?.email || 'No email'}).
+              Configure pricing tier, monthly request quota, order access, and rate limits for <strong>{editingKey.client_name}</strong> ({editingKey.profiles?.email || 'No email'}).
             </p>
 
             <form onSubmit={handleSaveEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
+                Storefront Website URL:
+                <input
+                  type="url"
+                  placeholder="https://example-reseller.com"
+                  value={editClientWebsite}
+                  onChange={(e) => setEditClientWebsite(e.target.value)}
+                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
+                />
+              </label>
+
               <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155' }}>
                 Plan / Pricing Tier:
                 <select
@@ -616,14 +770,59 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                 />
               </label>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '4px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '2px' }}>
                 <input
                   type="checkbox"
                   checked={editIsActive}
-                  onChange={(e) => setEditIsActive(e.target.checked)}
+                  onChange={(e) => {
+                    const active = e.target.checked;
+                    setEditIsActive(active);
+                    if (!active) setEditOrdersEnabled(false);
+                  }}
                   style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 />
-                Key Status: {editIsActive ? <span style={{ color: '#16a34a' }}>Active & Live</span> : <span style={{ color: '#dc2626' }}>Deactivated / Suspended</span>}
+                <span>
+                  Product API (API Key Status): {editIsActive ? <strong style={{ color: '#16a34a' }}>Active & Live</strong> : <span style={{ color: '#dc2626' }}>Deactivated / Suspended</span>}
+                </span>
+              </label>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: !editIsActive ? '#94a3b8' : '#334155',
+                  cursor: !editIsActive ? 'not-allowed' : 'pointer',
+                  marginTop: '2px',
+                  background: !editIsActive ? '#f1f5f9' : (editOrdersEnabled ? '#f0fdf4' : '#f8fafc'),
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: `1px solid ${!editIsActive ? '#e2e8f0' : (editOrdersEnabled ? '#86efac' : '#e2e8f0')}`,
+                  opacity: !editIsActive ? 0.6 : 1,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={editIsActive && editOrdersEnabled}
+                  disabled={!editIsActive}
+                  onChange={(e) => {
+                    if (!editIsActive) return;
+                    setEditOrdersEnabled(e.target.checked);
+                  }}
+                  style={{ width: '16px', height: '16px', cursor: !editIsActive ? 'not-allowed' : 'pointer' }}
+                />
+                <span>
+                  Order API Access:{' '}
+                  {!editIsActive ? (
+                    <span style={{ color: '#94a3b8' }}>Disabled (Product API must be enabled first)</span>
+                  ) : editOrdersEnabled ? (
+                    <strong style={{ color: '#16a34a' }}>Enabled (Authorized for /api/v1/orders)</strong>
+                  ) : (
+                    <span style={{ color: '#64748b' }}>Disabled (Default 403 Forbidden)</span>
+                  )}
+                </span>
               </label>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
@@ -662,7 +861,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             {newlyCreatedKeySecret ? (
               <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
                 <strong style={{ color: '#15803d', display: 'block', marginBottom: '4px', fontSize: '0.9375rem' }}>
-                  🎉 API Key Created Successfully!
+                  API Key Created Successfully!
                 </strong>
                 <p style={{ fontSize: '0.8125rem', color: '#166534', margin: '0 0 10px 0' }}>
                   Copy this key now to send to the reseller via WhatsApp. It will not be shown in plain text again:
@@ -747,6 +946,18 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                     <option value="growth">Growth Partner (₹699/mo) - 20,000 req/mo + Order API</option>
                     <option value="pro">Pro / Scale (₹1,499/mo) - 75,000 req/mo</option>
                   </select>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', fontWeight: 600, color: '#334155', cursor: 'pointer', marginTop: '2px', background: newOrdersEnabled ? '#f0fdf4' : '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: `1px solid ${newOrdersEnabled ? '#86efac' : '#e2e8f0'}` }}>
+                  <input
+                    type="checkbox"
+                    checked={newOrdersEnabled}
+                    onChange={(e) => setNewOrdersEnabled(e.target.checked)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <span>
+                    Enable Order API Access (Default: OFF)
+                  </span>
                 </label>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
