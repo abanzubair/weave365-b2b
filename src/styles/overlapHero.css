@@ -10,7 +10,7 @@
   background: var(--paper, #ffffff);
   overflow-x: hidden;
   box-sizing: border-box;
-  padding: clamp(1.75rem, 3vw, 3rem) var(--site-padding, 2rem) clamp(2.25rem, 3.5vw, 3.5rem) var(--site-padding, 2rem);
+  padding: clamp(1.95rem, 3.3vw, 3.3rem) var(--site-padding, 2rem) clamp(2.5rem, 3.85vw, 3.85rem) var(--site-padding, 2rem);
 }
 
 .overlap-hero-container {
@@ -75,7 +75,7 @@
 
 /* Narrative Body */
 .overlap-hero-desc {
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.25rem 0;
   max-width: 640px;
   display: flex;
   flex-direction: column;
@@ -98,11 +98,11 @@
 
 .hero-desc-tagline {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(0.95rem, 1.05vw, 1.05rem);
-  line-height: 1.68;
-  color: #6e5e4f;
+  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
+  line-height: 1.6;
+  color: #55483b;
   margin: 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -175,9 +175,8 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 1.15rem 0 0 0;
-  border-top: 1px solid rgba(198, 158, 106, 0.35);
-  margin-top: 1.75rem;
+  padding: 0;
+  margin: 0 0 1.75rem 0;
   width: 100%;
 }
 
@@ -202,10 +201,10 @@
 
 .overlap-feature-text {
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(13px, 0.95vw, 14.5px);
+  font-size: clamp(14.5px, 1.05vw, 16px);
   font-weight: 600;
   color: #55483b;
-  line-height: 1.35;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
@@ -235,7 +234,7 @@
   overflow: hidden;
   box-shadow: 0 18px 48px rgba(54, 37, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(198, 158, 106, 0.35);
-  aspect-ratio: 16 / 11;
+  aspect-ratio: 16 / 12.1;
   background: #faf7f2;
 }
 
@@ -271,7 +270,7 @@
 @media (max-width: 768px) {
   .overlap-hero {
     min-height: auto;
-    padding: clamp(1.5rem, 4vw, 2rem) 1rem 2.5rem 1rem;
+    padding: clamp(1.65rem, 4.4vw, 2.2rem) clamp(1.25rem, 4.5vw, 1.75rem) 2.75rem clamp(1.25rem, 4.5vw, 1.75rem);
   }
 
   .overlap-hero-container {
@@ -281,6 +280,7 @@
   }
 
   .overlap-hero-content-col {
+    padding-left: 10px;
     align-items: flex-start;
     text-align: left;
     width: 100%;
@@ -308,7 +308,7 @@
   }
 
   .overlap-hero-desc {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.15rem;
     max-width: 100%;
     gap: 0.35rem;
   }
@@ -321,6 +321,16 @@
   .hero-desc-tagline {
     font-size: 14px;
     line-height: 1.55;
+  }
+
+  .overlap-hero-features-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
   }
 
   .overlap-hero-actions {
@@ -337,35 +347,26 @@
     font-size: 19px;
   }
 
-  .overlap-hero-features-strip {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.65rem;
-    padding-top: 1rem;
-    margin-top: 1.5rem;
-  }
-
   .overlap-feature-divider {
     display: none;
   }
 
   .overlap-feature-text {
     white-space: normal;
-    font-size: 13.5px;
+    font-size: 14.5px;
   }
 
   .overlap-hero-visual-frame {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 11;
     min-height: 0;
-    max-height: 320px;
+    max-height: 352px;
     border-radius: 12px;
   }
 }
 
 @media (max-width: 380px) {
   .overlap-hero {
-    padding: 1.35rem 0.85rem 2rem 0.85rem;
+    padding: 1.5rem 1.15rem 2.2rem 1.15rem;
   }
 
   .hero-title-main {
