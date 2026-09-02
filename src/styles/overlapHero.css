@@ -11,16 +11,15 @@
   overflow-x: hidden;
   box-sizing: border-box;
   padding: clamp(1.75rem, 3vw, 3rem) var(--site-padding, 2rem) clamp(2.25rem, 3.5vw, 3.5rem) var(--site-padding, 2rem);
-  border-bottom: 1px solid var(--line, #e5e5e5);
 }
 
 .overlap-hero-container {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1600px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: clamp(2rem, 3.5vw, 3.75rem);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 3vw, 3.25rem);
   align-items: center;
   box-sizing: border-box;
 }
@@ -44,17 +43,17 @@
   margin: 0 0 1.2rem 0;
   display: flex;
   flex-direction: column;
-  text-wrap: balance;
 }
 
 .hero-title-main {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(32px, 3.8vw, 52px);
+  font-size: clamp(24px, 2.35vw, 36px);
   font-weight: 500;
-  line-height: 1.14;
+  line-height: 1.18;
   letter-spacing: -0.015em;
   color: #1a1613;
   display: block;
+  white-space: nowrap;
 }
 
 .hero-title-sub-group {
@@ -66,9 +65,9 @@
 
 .hero-title-sub {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(20px, 2.3vw, 30px);
+  font-size: clamp(18px, 1.75vw, 24px);
   font-weight: 500;
-  line-height: 1.22;
+  line-height: 1.25;
   letter-spacing: -0.01em;
   color: #855b29;
   display: block;
@@ -250,9 +249,6 @@
   -webkit-user-drag: none;
 }
 
-.hero-mobile-br {
-  display: none;
-}
 
 /* ─────────────────────────────────────────────────────────────
    RESPONSIVE BREAKPOINTS
@@ -260,30 +256,28 @@
 
 @media (max-width: 1024px) {
   .overlap-hero-container {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2.5rem;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2.25rem;
   }
 
   .overlap-hero-visual-col {
+    width: 100%;
     max-width: 640px;
     margin: 0 auto;
   }
 }
 
 @media (max-width: 768px) {
-  .hero-mobile-br {
-    display: inline;
-  }
-
   .overlap-hero {
     min-height: auto;
-    padding: 1rem 1rem 2.5rem 1rem;
+    padding: clamp(1.5rem, 4vw, 2rem) 1rem 2.5rem 1rem;
   }
 
   .overlap-hero-container {
     display: flex;
-    flex-direction: column;
-    gap: 1.75rem;
+    flex-direction: column-reverse;
+    gap: 1.5rem;
   }
 
   .overlap-hero-content-col {
@@ -298,8 +292,9 @@
   }
 
   .hero-title-main {
-    font-size: clamp(26px, 6.8vw, 33px);
-    line-height: 1.15;
+    font-size: clamp(24px, 6.5vw, 32px);
+    line-height: 1.18;
+    white-space: normal;
   }
 
   .hero-title-sub-group {
@@ -370,7 +365,7 @@
 
 @media (max-width: 380px) {
   .overlap-hero {
-    padding: 0.85rem 0.85rem 2rem 0.85rem;
+    padding: 1.35rem 0.85rem 2rem 0.85rem;
   }
 
   .hero-title-main {

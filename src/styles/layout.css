@@ -148,11 +148,11 @@
   background: transparent;
   text-decoration: none;
   font-family: var(--font-hero-body);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.2;
   box-sizing: border-box;
@@ -1582,7 +1582,7 @@
   .main-nav button,
   .main-nav a,
   .login-link {
-    font-size: 15px !important;
+    font-size: 14px !important;
   }
 
   .deal-copy h2 {

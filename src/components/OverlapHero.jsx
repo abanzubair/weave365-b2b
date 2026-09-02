@@ -11,7 +11,7 @@ export function OverlapHero({ navigate }) {
         <div className="overlap-hero-content-col">
           
           <h1 className="overlap-hero-title">
-            <span className="hero-title-main">Turn Your Reselling <br className="hero-mobile-br" />Business Into a Brand</span>
+            <span className="hero-title-main">Turn Your Reselling Business Into a Brand</span>
             <div className="hero-title-sub-group">
               <span className="hero-title-sub">Sell 50 Sarees or Suits in 30 Days.</span>
               <span className="hero-title-sub">Get Your Own Website — FREE.</span>

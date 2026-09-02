@@ -48,7 +48,7 @@
   .main-nav a {
     font-size: 12.5px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.06em !important;
+    letter-spacing: 0.05em !important;
   }
 }
 
@@ -63,13 +63,13 @@
     max-width: calc((100% - (var(--rail-gap, 12px) * 4)) / 5) !important;
   }
   .main-nav {
-    gap: clamp(18px, 1.8vw, 28px) !important;
+    gap: clamp(16px, 1.6vw, 26px) !important;
   }
   .main-nav button,
   .main-nav a {
-    font-size: 15px !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.07em !important;
+    letter-spacing: 0.06em !important;
   }
 }
 
@@ -84,17 +84,17 @@
     max-width: calc((100% - (var(--rail-gap, 12px) * 4)) / 5) !important;
   }
   .main-nav {
-    gap: clamp(24px, 2vw, 36px) !important;
+    gap: clamp(20px, 1.8vw, 30px) !important;
   }
   .main-nav button,
   .main-nav a {
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.065em !important;
   }
   .main-nav svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
   .nav-auth-pill-btn {
     font-size: 13.5px !important;
@@ -119,17 +119,17 @@
     max-width: calc((100% - (var(--rail-gap, 14px) * 4)) / 5) !important;
   }
   .main-nav {
-    gap: clamp(28px, 2.2vw, 40px) !important;
+    gap: clamp(24px, 2vw, 36px) !important;
   }
   .main-nav button,
   .main-nav a {
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.07em !important;
   }
   .main-nav svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
   .nav-auth-pill-btn {
     font-size: 14px !important;
