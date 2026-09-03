@@ -348,12 +348,16 @@ export const resellerService = {
 
     // 3. Delete tenant and cascade products from secondary DB
     if (existingSf?.slug) {
-      const sb = getStorefrontSupabase();
-      if (sb) {
-        sb.from('boutique_tenants')
-          .delete()
-          .eq('slug', existingSf.slug.toLowerCase().trim())
-          .catch((e) => console.warn('[resellerService] Delete storefront remote error:', e));
+      try {
+        const sb = getStorefrontSupabase();
+        if (sb) {
+          await sb
+            .from('boutique_tenants')
+            .delete()
+            .eq('slug', existingSf.slug.toLowerCase().trim());
+        }
+      } catch (e) {
+        console.warn('[resellerService] Delete storefront remote error:', e);
       }
     }
 
