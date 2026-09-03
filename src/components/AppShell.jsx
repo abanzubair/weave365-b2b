@@ -6,7 +6,7 @@ import { useStorefront } from '../store/useStorefront.js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections } from '../utils/cartHelpers.js';
-import { loadProfileForUser, syncProfileFromUser } from '../utils/profileHelpers.js';
+import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import { applyCustomTheme } from '../utils/themeEngine.js';
@@ -42,6 +42,8 @@ export function AppShell({ children }) {
     setBuyerProfile,
     vendorOnboarding,
     setVendorOnboarding,
+    isProfileHydrated,
+    setIsProfileHydrated,
     cartOpen,
     setCartOpen,
     menuOpen,
@@ -169,24 +171,31 @@ export function AppShell({ children }) {
           console.error(e);
         }
       }
+      setIsProfileHydrated(true);
       return;
     }
 
     supabase.auth.getSession().then(({ data }) => {
       const sessionUser = data.session?.user || null;
       setUser(sessionUser);
+      if (!sessionUser) {
+        setIsProfileHydrated(true);
+      }
     });
 
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       const sessionUser = session?.user || null;
       setUser(sessionUser);
+      if (!sessionUser) {
+        setIsProfileHydrated(true);
+      }
       if (event === 'PASSWORD_RECOVERY') {
         navigate('signup', null, null, { mode: 'reset-password' });
       }
     });
 
     return () => data?.subscription?.unsubscribe();
-  }, [setUser, setBuyerProfile, navigate]);
+  }, [setUser, setBuyerProfile, navigate, setIsProfileHydrated]);
 
   // Hydrate User Profile & Influencer Referral
   useEffect(() => {
@@ -196,46 +205,57 @@ export function AppShell({ children }) {
       if (!user) {
         setBuyerProfile(null);
         setVendorOnboarding(null);
+        setIsProfileHydrated(true);
         return;
       }
 
-      if (isSupabaseConfigured) {
-        await syncProfileFromUser(user);
-      }
+      setIsProfileHydrated(false);
 
-      const { profile } = await loadProfileForUser(user);
-      if (isActive) {
-        setBuyerProfile(profile);
-
+      try {
         if (isSupabaseConfigured) {
-          supabase
-            .from('influencer_profiles')
-            .select('referral_code, is_approved')
-            .eq('id', user.id)
-            .maybeSingle()
-            .then(({ data }) => {
-              if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
-                setStoredReferralCode(data.referral_code.trim().toUpperCase());
-              }
-            })
-            .catch((err) => console.error('[Referral] Error:', err));
+          await syncProfileFromUser(user);
         }
 
-        if (isSupabaseConfigured && profile?.whatsapp_number) {
-          const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
-          try {
-            const { data: vProfile } = await supabase
-              .from('vendor_profiles')
-              .select('status, drive_folder_url')
-              .eq('whatsapp_number', cleanWhatsapp)
-              .maybeSingle();
+        const { profile } = await loadProfileForUser(user);
+        if (isActive) {
+          setBuyerProfile(profile);
 
-            if (vProfile && isActive) {
-              setVendorOnboarding(vProfile);
-            }
-          } catch (e) {
-            console.error('Error hydrating vendor profile:', e);
+          if (isSupabaseConfigured) {
+            supabase
+              .from('influencer_profiles')
+              .select('referral_code, is_approved')
+              .eq('id', user.id)
+              .maybeSingle()
+              .then(({ data }) => {
+                if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
+                  setStoredReferralCode(data.referral_code.trim().toUpperCase());
+                }
+              })
+              .catch((err) => console.error('[Referral] Error:', err));
           }
+
+          if (isSupabaseConfigured && profile?.whatsapp_number) {
+            const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
+            try {
+              const { data: vProfile } = await supabase
+                .from('vendor_profiles')
+                .select('status, drive_folder_url')
+                .eq('whatsapp_number', cleanWhatsapp)
+                .maybeSingle();
+
+              if (vProfile && isActive) {
+                setVendorOnboarding(vProfile);
+              }
+            } catch (e) {
+              console.error('Error hydrating vendor profile:', e);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error hydrating profile:', err);
+      } finally {
+        if (isActive) {
+          setIsProfileHydrated(true);
         }
       }
     }
@@ -244,7 +264,7 @@ export function AppShell({ children }) {
     return () => {
       isActive = false;
     };
-  }, [user, setBuyerProfile, setVendorOnboarding]);
+  }, [user, setBuyerProfile, setVendorOnboarding, setIsProfileHydrated]);
 
   // Load Saved Cart & Favorites on User Change
   useEffect(() => {
@@ -284,8 +304,43 @@ export function AppShell({ children }) {
 
   const isAdmin = useMemo(() => {
     if (!user?.email) return false;
-    return adminEmails.includes(user.email.toLowerCase().trim());
-  }, [user]);
+    const isEmailAdmin = adminEmails.includes(user.email.toLowerCase().trim());
+    const isRoleAdmin = user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
+    return Boolean(isEmailAdmin || isRoleAdmin);
+  }, [user, buyerProfile]);
+
+  // Route Guard: Safely enforce profile completion for authenticated buyers
+  useEffect(() => {
+    // 1. NEVER redirect unauthenticated guests
+    if (!user) return;
+
+    // 2. Wait until profile has completed loading from Supabase
+    if (!isProfileHydrated) return;
+
+    // 3. NEVER redirect admin accounts
+    if (isAdmin) return;
+
+    // 4. Whitelist safe routes (onboarding, login, legal policies, contact, etc.)
+    const safePrefixes = [
+      '/signup',
+      '/login',
+      '/register',
+      '/privacy-security',
+      '/terms-conditions',
+      '/disclaimer',
+      '/shipping-delivery',
+      '/returns-cancellation',
+      '/contact',
+    ];
+    if (safePrefixes.some((prefix) => pathname.startsWith(prefix))) {
+      return;
+    }
+
+    // 5. If logged in and wholesale profile is incomplete, redirect to complete-profile
+    if (!isProfileComplete(user, buyerProfile)) {
+      router.replace('/signup?mode=complete-profile');
+    }
+  }, [user, isProfileHydrated, buyerProfile, isAdmin, pathname, router]);
 
   const productsById = useMemo(() => {
     const map = new Map();
@@ -422,15 +477,22 @@ export function AppShell({ children }) {
   }, [pincode, setCodStatus]);
 
   const handleSignOut = useCallback(async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    } else {
+    try {
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut();
+      }
+    } catch (e) {
+      console.error('Sign out error:', e);
+    } finally {
       localStorage.removeItem('sareeva_user');
+      localStorage.removeItem('just_registered_b2b');
       setUser(null);
+      setBuyerProfile(null);
+      setIsProfileHydrated(true);
+      clearStoredReferralCode();
+      navigate('home');
     }
-    clearStoredReferralCode();
-    navigate('home');
-  }, [navigate, setUser]);
+  }, [navigate, setUser, setBuyerProfile, setIsProfileHydrated]);
 
   const scrollToSection = useCallback(
     (sectionId) => {

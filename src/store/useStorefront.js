@@ -12,9 +12,11 @@ export const useStorefront = create((set) => ({
   user: null,
   buyerProfile: null,
   vendorOnboarding: null,
+  isProfileHydrated: false,
   setUser: (user) => set({ user }),
   setBuyerProfile: (buyerProfile) => set({ buyerProfile }),
   setVendorOnboarding: (vendorOnboarding) => set({ vendorOnboarding }),
+  setIsProfileHydrated: (isProfileHydrated) => set({ isProfileHydrated }),
 
   // UI Shell & Navigation State
   cartOpen: false,
