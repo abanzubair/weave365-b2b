@@ -954,14 +954,47 @@
     line-height: 1.7 !important;
   }
 
+  /* Prevent horizontal overflow on mobile screens */
+  .seller-no-wrap {
+    white-space: normal;
+    display: inline;
+  }
+
+  .seller-editorial-title {
+    overflow-wrap: break-word;
+  }
+
   .seller-hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
   }
   .seller-hook-grid,
   .seller-contrast-grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.25rem;
+  }
+  .seller-hook-grid > div {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .seller-hook-contrast-box {
+    padding-left: 1.15rem;
+    margin-top: 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .seller-pain-tokens {
+    max-width: 100%;
+  }
+  .seller-pain-token {
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+  .seller-hook-badge-banner {
+    padding: 1.5rem 1.25rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .seller-hero-bullets {
     grid-template-columns: 1fr;

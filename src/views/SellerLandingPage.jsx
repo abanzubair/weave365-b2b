@@ -321,7 +321,7 @@ export function SellerLandingPage({ navigate, openAuth }) {
             <div>
               <span className="seller-eyebrow">A Direct-to-Loom Solution</span>
               <h2 className="seller-editorial-title">
-                Apna Banarasi Collection Sell Kijiye Weave 365<span className="seller-no-wrap">Ke Saath Bina Marketplace Seller Bane</span>
+                Apna Banarasi Collection Sell Kijiye Weave 365 <span className="seller-no-wrap">Ke Saath Bina Marketplace Seller Bane</span>
               </h2>
               <p className="seller-lead-paragraph">
                 Varanasi ke Saree &amp; Suit Sellers ke liye ek dedicated B2B &amp; B2C selling option.
