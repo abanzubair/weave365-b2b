@@ -8,7 +8,7 @@
  */
 
 import { supabase } from '../supabaseClient';
-import { syncTenantToStorefrontDb, syncProductToStorefrontDb } from './boutiqueSyncService';
+import { syncTenantToStorefrontDb, syncProductToStorefrontDb, getStorefrontSupabase } from './boutiqueSyncService';
 
 /**
  * Normalizes an external website URL to ensure it has a valid https protocol and no trailing slashes.
@@ -213,7 +213,7 @@ export const resellerService = {
    * Get all shares for a reseller (dashboard)
    */
   async getResellerShares(resellerId) {
-    const { data, error } = await supabase
+    const { data: shares, error } = await supabase
       .from('reseller_shares')
       .select(`
         *,
@@ -222,8 +222,34 @@ export const resellerService = {
       .eq('reseller_id', resellerId)
       .order('created_at', { ascending: false });
     
-    if (error) console.error('Error fetching reseller shares:', error);
-    return { data, error };
+    if (error || !shares) return { data: shares, error };
+
+    // Synchronize with secondary DB boutique_products so items deleted in the template admin panel are pruned here
+    try {
+      const { data: sf } = await this.getStorefront(resellerId);
+      if (sf?.slug) {
+        const sb = getStorefrontSupabase();
+        if (sb) {
+          const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
+          if (tenant?.id) {
+            const { data: secProds } = await sb.from('boutique_products').select('original_product_id, is_published').eq('tenant_id', tenant.id);
+            if (secProds) {
+              const activeIds = new Set(secProds.filter(p => p.is_published).map(p => String(p.original_product_id)));
+              const filteredShares = shares.filter(s => {
+                const item = s.reseller_share_items?.[0];
+                if (!item?.product_group_key) return true;
+                return activeIds.has(String(item.product_group_key));
+              });
+              return { data: filteredShares, error: null };
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[resellerService] Sync check warning:', e);
+    }
+
+    return { data: shares, error };
   },
 
   /**
@@ -252,6 +278,7 @@ export const resellerService = {
       .select('*')
       .eq('share_id', shareId);
 
+    let finalCustomerPrice = customerPrice;
     if (!fetchItemsError && items && items.length > 0) {
       for (const item of items) {
         let newCustomerPrice = customerPrice;
@@ -265,6 +292,7 @@ export const resellerService = {
             newCustomerPrice = base;
           }
         }
+        finalCustomerPrice = newCustomerPrice;
 
         await supabase
           .from('reseller_share_items')
@@ -277,6 +305,24 @@ export const resellerService = {
       }
     }
 
+    // 3. Sync updated price to secondary DB boutique_products
+    if (share && items?.[0]?.product_group_key) {
+      this.getStorefront(share.reseller_id).then(async ({ data: sf }) => {
+        if (sf?.slug) {
+          const sb = getStorefrontSupabase();
+          if (sb) {
+            const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
+            if (tenant?.id) {
+              await sb.from('boutique_products')
+                .update({ retail_price: Number(finalCustomerPrice) })
+                .eq('tenant_id', tenant.id)
+                .eq('original_product_id', String(items[0].product_group_key));
+            }
+          }
+        }
+      }).catch(e => console.warn('[resellerService] Sync markup error:', e));
+    }
+
     return { data: share, error: null };
   },
 
@@ -284,10 +330,37 @@ export const resellerService = {
    * Deactivate a share
    */
   async deactivateShare(shareId) {
+    // 1. Fetch share details first
+    const { data: share } = await supabase
+      .from('reseller_shares')
+      .select('*, reseller_share_items(*)')
+      .eq('id', shareId)
+      .maybeSingle();
+
+    // 2. Mark inactive in primary DB
     const { error } = await supabase
       .from('reseller_shares')
       .update({ is_active: false })
       .eq('id', shareId);
+
+    // 3. Delete from secondary DB boutique_products
+    if (share && !error && share.reseller_share_items?.[0]?.product_group_key) {
+      const prodKey = String(share.reseller_share_items[0].product_group_key);
+      this.getStorefront(share.reseller_id).then(async ({ data: sf }) => {
+        if (sf?.slug) {
+          const sb = getStorefrontSupabase();
+          if (sb) {
+            const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
+            if (tenant?.id) {
+              await sb.from('boutique_products')
+                .delete()
+                .eq('tenant_id', tenant.id)
+                .eq('original_product_id', prodKey);
+            }
+          }
+        }
+      }).catch(e => console.warn('[resellerService] Sync delete error:', e));
+    }
     
     return { error };
   },
