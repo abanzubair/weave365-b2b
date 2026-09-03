@@ -127,6 +127,7 @@ export function getCategoryFromSlug(slug) {
 
 export const NON_PRODUCT_ROUTES = new Set([
   'home',
+  'store',
   'product',
   's',
   'partner',

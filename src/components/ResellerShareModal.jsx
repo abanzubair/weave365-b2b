@@ -45,7 +45,8 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
     return Math.round(Number(markupValue));
   }, [basePrice, markupType, markupValue]);
 
-  const rawWebsiteUrl = customDomain || '';
+  const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+  const rawWebsiteUrl = customDomain || (storeSlug ? `${siteOrigin}/store/${encodeURIComponent(storeSlug)}` : '');
   const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
 
   const handleAdd = async () => {

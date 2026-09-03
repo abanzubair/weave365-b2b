@@ -7,8 +7,8 @@ export default async function SharedCatalogueRoute({ params }) {
   const sharedSlug = decodeURIComponent(resolvedParams?.sharedSlug || '');
 
   const targetUrl = sharedSlug
-    ? `https://ecom-template-1-tau.vercel.app/${encodeURIComponent(sharedSlug)}`
-    : 'https://ecom-template-1-tau.vercel.app/';
+    ? `/store/${encodeURIComponent(sharedSlug)}`
+    : '/resell-sarees-online';
 
   redirect(targetUrl);
 }

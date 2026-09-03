@@ -7,6 +7,7 @@ const CSP_DIRECTIVES = [
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https://assets.weave365.com https://drive.google.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://assets.weave365.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://api.resend.com",
+  "frame-src 'self' https://ecom-template-1-tau.vercel.app",
   "frame-ancestors 'self' https://ecom-template-1-tau.vercel.app",
   "object-src 'none'",
   "base-uri 'self'",

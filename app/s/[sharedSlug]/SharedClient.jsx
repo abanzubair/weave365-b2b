@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 export default function SharedClient({ sharedSlug }) {
   useEffect(() => {
     const target = sharedSlug
-      ? `https://ecom-template-1-tau.vercel.app/${encodeURIComponent(sharedSlug)}`
-      : 'https://ecom-template-1-tau.vercel.app/';
+      ? `/store/${encodeURIComponent(sharedSlug)}`
+      : '/resell-sarees-online';
     window.location.replace(target);
   }, [sharedSlug]);
 

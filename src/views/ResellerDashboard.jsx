@@ -81,7 +81,8 @@ export function ResellerDashboard({ user, buyerProfile, navigate }) {
     );
   }
 
-  const rawWebsiteUrl = storefront?.custom_domain || '';
+  const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+  const rawWebsiteUrl = storefront?.custom_domain || (storefront?.slug ? `${siteOrigin}/store/${encodeURIComponent(storefront.slug)}` : '');
   const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
 
   return (

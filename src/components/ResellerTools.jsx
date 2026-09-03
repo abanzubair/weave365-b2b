@@ -32,7 +32,11 @@ import { resellerService, normalizeWebsiteUrl } from '../services/resellerServic
 import { fetchProducts } from '../productData.js';
 import '../styles/resellerTools.css';
 
-const TEMPLATE_BASE_URL = 'https://ecom-template-1-tau.vercel.app';
+export function getBoutiqueStoreUrl(slug) {
+  if (!slug) return '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+  return `${origin}/store/${encodeURIComponent(slug)}`;
+}
 
 export function ResellerTools({ user, buyerProfile, navigate }) {
   const [activeTab, setActiveTab] = useState('shares');
@@ -87,8 +91,8 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
   const slug = storefront?.slug || '';
   const rawCustomDomain = storefront?.custom_domain || '';
   const customDomainUrl = rawCustomDomain ? normalizeWebsiteUrl(rawCustomDomain) : '';
-  const hostedTemplateUrl = slug ? `${TEMPLATE_BASE_URL}/${encodeURIComponent(slug)}` : '';
-  const liveStoreUrl = storefront ? (customDomainUrl || hostedTemplateUrl) : '';
+  const hostedStoreUrl = slug ? getBoutiqueStoreUrl(slug) : '';
+  const liveStoreUrl = storefront ? (customDomainUrl || hostedStoreUrl) : '';
   const isWebsiteConfigured = Boolean(storefront && (storefront.id || storefront.slug || storefront.store_name));
   const activeSharesCount = shares.filter(s => s.is_active).length;
 
@@ -103,8 +107,12 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
   };
 
   const copyWebsiteLink = (urlToCopy) => {
-    const target = typeof urlToCopy === 'string' ? urlToCopy : liveStoreUrl;
+    let target = typeof urlToCopy === 'string' ? urlToCopy : liveStoreUrl;
     if (!target) return;
+    if (target.startsWith('/')) {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+      target = `${origin}${target}`;
+    }
     navigator.clipboard.writeText(target);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -806,12 +814,12 @@ function StorefrontSetupPanel({
             <span className="rt-input-hint">
               Live website URL:{' '}
               <a 
-                href={`${TEMPLATE_BASE_URL}/${encodeURIComponent(formData.slug || 'my-boutique')}`} 
+                href={`/store/${encodeURIComponent(formData.slug || 'my-boutique')}`} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 style={{ color: 'var(--gold-dark, #805d31)', fontWeight: 600, textDecoration: 'underline' }}
               >
-                {TEMPLATE_BASE_URL}/{formData.slug || 'my-boutique'}
+                {getBoutiqueStoreUrl(formData.slug || 'my-boutique')}
               </a>
             </span>
           </div>
