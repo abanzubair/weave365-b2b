@@ -278,4 +278,34 @@ export const resellerService = {
     
     return { error };
   },
+
+  /**
+   * Delete reseller storefront and associated shares/items
+   */
+  async deleteStorefront(resellerId) {
+    if (!resellerId) return { error: new Error('User ID is required') };
+
+    // 1. Delete all shares for this reseller (reseller_share_items will cascade delete)
+    const { error: sharesError } = await supabase
+      .from('reseller_shares')
+      .delete()
+      .eq('reseller_id', resellerId);
+
+    if (sharesError) {
+      console.error('Error deleting reseller shares:', sharesError);
+    }
+
+    // 2. Delete the storefront record
+    const { data, error } = await supabase
+      .from('reseller_storefronts')
+      .delete()
+      .eq('reseller_id', resellerId);
+
+    if (error) {
+      console.error('Error deleting reseller storefront:', error);
+      return { error };
+    }
+
+    return { data, error: null };
+  },
 };

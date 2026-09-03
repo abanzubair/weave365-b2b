@@ -14,7 +14,7 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
   const userIdentifier = user?.email || buyerProfile?.business_name || 'Boutique Owner';
   const whatsappNumber = storeConfig.whatsapp || '9919101369';
   
-  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/yr) for my account (${userIdentifier}).`;
+  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/month) for my account (${userIdentifier}).`;
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -68,7 +68,7 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
           <div className="rt-distilled-price-line">
             <span className="rt-distilled-curr">₹</span>
             <span className="rt-distilled-amount">999</span>
-            <span className="rt-distilled-period">/ year</span>
+            <span className="rt-distilled-period">/ month</span>
             <span className="rt-distilled-strike">₹2,999</span>
           </div>
           <span className="rt-distilled-subtext">Includes cloud hosting, template themes & free setup support</span>

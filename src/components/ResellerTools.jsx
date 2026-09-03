@@ -24,7 +24,9 @@ import {
   Percent,
   X,
   TrendingUp,
-  Tag
+  Tag,
+  AlertTriangle,
+  AlertCircle
 } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { fetchProducts } from '../productData.js';
@@ -39,6 +41,7 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
   const [catalogProducts, setCatalogProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   // Edit Price Modal State
   const [editingShare, setEditingShare] = useState(null);
@@ -81,13 +84,23 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
     return map;
   }, [catalogProducts]);
 
-  const slug = storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : '');
+  const slug = storefront?.slug || '';
   const rawCustomDomain = storefront?.custom_domain || '';
   const customDomainUrl = rawCustomDomain ? normalizeWebsiteUrl(rawCustomDomain) : '';
   const hostedTemplateUrl = slug ? `${TEMPLATE_BASE_URL}/${encodeURIComponent(slug)}` : '';
-  const liveStoreUrl = customDomainUrl || hostedTemplateUrl;
-  const isWebsiteConfigured = Boolean(storefront?.slug || storefront?.store_name || customDomainUrl);
+  const liveStoreUrl = storefront ? (customDomainUrl || hostedTemplateUrl) : '';
+  const isWebsiteConfigured = Boolean(storefront && (storefront.id || storefront.slug || storefront.store_name));
   const activeSharesCount = shares.filter(s => s.is_active).length;
+
+  const handleDeleteStorefront = async () => {
+    if (!user?.id) return;
+    const { error } = await resellerService.deleteStorefront(user.id);
+    if (error) throw error;
+    setStorefront(null);
+    setShares([]);
+    setToastMessage('Your boutique website and storefront have been successfully deleted.');
+    setTimeout(() => setToastMessage(''), 5000);
+  };
 
   const copyWebsiteLink = (urlToCopy) => {
     const target = typeof urlToCopy === 'string' ? urlToCopy : liveStoreUrl;
@@ -160,6 +173,22 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
 
   return (
     <div className="rt-container">
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="rt-toast-banner">
+          <Check size={16} className="rt-toast-icon" />
+          <span>{toastMessage}</span>
+          <button 
+            type="button" 
+            onClick={() => setToastMessage('')} 
+            className="rt-toast-close"
+            aria-label="Dismiss notification"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Top Overview Bar */}
       <div className="rt-top-summary">
         <div className="rt-summary-left">
@@ -431,6 +460,8 @@ export function ResellerTools({ user, buyerProfile, navigate }) {
           onCopyLink={copyWebsiteLink}
           copied={copied}
           onUpdate={setStorefront}
+          onDeleteStorefront={handleDeleteStorefront}
+          sharesCount={activeSharesCount}
         />
       )}
 
@@ -655,11 +686,14 @@ function StorefrontSetupPanel({
   liveStoreUrl,
   onCopyLink,
   copied,
-  onUpdate 
+  onUpdate,
+  onDeleteStorefront,
+  sharesCount = 0
 }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copiedApiUrl, setCopiedApiUrl] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [formData, setFormData] = useState({
     store_name: storefront?.store_name || '',
@@ -667,6 +701,15 @@ function StorefrontSetupPanel({
     whatsapp: storefront?.whatsapp || '',
     custom_domain: storefront?.custom_domain || '',
   });
+
+  useEffect(() => {
+    setFormData({
+      store_name: storefront?.store_name || '',
+      slug: storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : 'my-boutique'),
+      whatsapp: storefront?.whatsapp || '',
+      custom_domain: storefront?.custom_domain || '',
+    });
+  }, [storefront, user?.email]);
 
   const apiUrl = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
@@ -844,6 +887,149 @@ function StorefrontSetupPanel({
             {copiedApiUrl ? 'Copied' : 'Copy'}
           </button>
         </div>
+      </div>
+
+      {/* Danger Zone: Delete Storefront */}
+      {Boolean(storefront && (storefront.id || storefront.slug || storefront.store_name)) && (
+        <div className="rt-danger-zone">
+          <div className="rt-danger-zone-header">
+            <div className="rt-danger-zone-info">
+              <span className="rt-danger-zone-badge">Danger Zone</span>
+              <h4 className="rt-danger-zone-title">Delete Storefront &amp; Website</h4>
+              <p className="rt-danger-zone-desc">
+                Permanently delete your boutique website ({storefront.store_name || 'My Boutique'}), release your handle <code>{storefront.slug}</code>, and purge all {sharesCount} products from your catalog. This action cannot be undone.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="rt-danger-delete-btn"
+            >
+              <Trash2 size={15} />
+              <span>Delete Storefront</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 2-Step Verification Modal */}
+      {showDeleteModal && (
+        <DeleteStorefrontModal
+          storefront={storefront}
+          sharesCount={sharesCount}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirmDelete={onDeleteStorefront}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * 2-Step Verification Modal for Deleting Storefront
+ * Requires the user to explicitly type "delete my website" before allowing deletion.
+ */
+function DeleteStorefrontModal({ storefront, sharesCount, onClose, onConfirmDelete }) {
+  const [confirmInput, setConfirmInput] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const targetPhrase = 'delete my website';
+  const isMatch = confirmInput.trim().toLowerCase() === targetPhrase;
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    if (!isMatch || deleting) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await onConfirmDelete();
+      onClose();
+    } catch (err) {
+      console.error('Failed to delete storefront:', err);
+      setError(err.message || 'Failed to delete storefront. Please try again.');
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="rt-modal-overlay" onClick={deleting ? undefined : onClose}>
+      <div className="rt-modal-box rt-delete-modal-box" onClick={e => e.stopPropagation()}>
+        <div className="rt-modal-header rt-delete-modal-header">
+          <div className="rt-modal-header-title">
+            <div className="rt-delete-warn-icon">
+              <AlertTriangle size={18} />
+            </div>
+            <h3>Delete Boutique Website?</h3>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            disabled={deleting}
+            className="rt-modal-close-btn" 
+            aria-label="Close modal"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleDelete} className="rt-modal-body">
+          {error && (
+            <div className="rt-delete-error-banner">
+              <AlertCircle size={15} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="rt-delete-warning-card">
+            <p className="rt-delete-warning-text">
+              This action is permanent and <strong>cannot be reversed</strong>. Once deleted:
+            </p>
+            <ul className="rt-delete-warning-list">
+              <li>Your storefront <strong>{storefront?.store_name || 'Boutique'}</strong> will go offline immediately</li>
+              <li>Your live link <code>{storefront?.slug || ''}</code> will no longer work</li>
+              <li>All <strong>{sharesCount || 0}</strong> synced items in your catalog will be deleted</li>
+              <li>Any custom domain linking will be severed</li>
+            </ul>
+          </div>
+
+          <div className="rt-delete-confirm-group">
+            <label htmlFor="confirm-delete-input" className="rt-delete-confirm-label">
+              To verify, type <span className="rt-delete-phrase-pill">delete my website</span> below:
+            </label>
+            <input
+              id="confirm-delete-input"
+              type="text"
+              autoFocus
+              disabled={deleting}
+              value={confirmInput}
+              onChange={e => setConfirmInput(e.target.value)}
+              placeholder="delete my website"
+              className={`rt-delete-confirm-input ${isMatch ? 'matched' : ''}`}
+              autoComplete="off"
+              spellCheck="false"
+            />
+          </div>
+
+          <div className="rt-modal-footer rt-delete-modal-footer">
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={onClose}
+              className="rt-btn-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!isMatch || deleting}
+              className={`rt-btn-delete-confirm ${isMatch ? 'ready' : ''}`}
+            >
+              <Trash2 size={15} />
+              <span>{deleting ? 'Deleting Website…' : 'Delete My Website'}</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

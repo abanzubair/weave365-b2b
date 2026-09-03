@@ -1379,3 +1379,293 @@
     flex-shrink: 0;
   }
 }
+
+/* ===================================================
+   Toast Notification Banner
+   =================================================== */
+.rt-toast-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: rt-modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rt-toast-icon {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.rt-toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #166534;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.rt-toast-close:hover {
+  opacity: 1;
+}
+
+/* ===================================================
+   Danger Zone: Delete Storefront
+   =================================================== */
+.rt-danger-zone {
+  background: #ffffff;
+  border: 1px solid #fee2e2;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.rt-danger-zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .rt-danger-zone-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.rt-danger-zone-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.rt-danger-zone-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 4px 0;
+}
+
+.rt-danger-zone-desc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.rt-danger-zone-desc code {
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #334155;
+  font-family: monospace;
+}
+
+.rt-danger-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.rt-danger-delete-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+/* ===================================================
+   Delete Storefront 2-Step Verification Modal
+   =================================================== */
+.rt-delete-modal-box {
+  max-width: 480px;
+}
+
+.rt-delete-modal-header {
+  border-bottom: 1px solid #fee2e2;
+  background: #fff5f5;
+}
+
+.rt-delete-warn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rt-delete-modal-header .rt-modal-header-title h3 {
+  color: #991b1b;
+}
+
+.rt-delete-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+}
+
+.rt-delete-warning-card {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  padding: 1rem 1.125rem;
+  margin-bottom: 1.25rem;
+}
+
+.rt-delete-warning-text {
+  font-size: 0.8125rem;
+  color: #991b1b;
+  margin: 0 0 8px 0;
+  line-height: 1.45;
+}
+
+.rt-delete-warning-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.8125rem;
+  color: #7f1d1d;
+  line-height: 1.5;
+}
+
+.rt-delete-warning-list li {
+  margin-bottom: 4px;
+}
+
+.rt-delete-warning-list code {
+  background: #fee2e2;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-family: monospace;
+}
+
+.rt-delete-confirm-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.rt-delete-confirm-label {
+  font-size: 0.8125rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.rt-delete-phrase-pill {
+  display: inline-block;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  user-select: all;
+}
+
+.rt-delete-confirm-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 7px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.875rem;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.rt-delete-confirm-input:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.rt-delete-confirm-input.matched {
+  border-color: #dc2626;
+  background: #fffafa;
+}
+
+.rt-delete-modal-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.rt-btn-delete-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  transition: all 0.15s ease;
+}
+
+.rt-btn-delete-confirm.ready {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);
+}
+
+.rt-btn-delete-confirm.ready:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.rt-btn-delete-confirm.ready:active {
+  background: #991b1b;
+}
+
