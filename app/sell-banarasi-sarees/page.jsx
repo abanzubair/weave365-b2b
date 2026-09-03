@@ -20,7 +20,7 @@ export async function generateMetadata() {
       type: 'website',
       images: [
         {
-          url: 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg',
+          url: 'https://assets.weave365.com/assets/banner/sellersHero.webp',
           width: 1200,
           height: 630,
           alt: 'Sell Banarasi Sarees Online - Weave 365 Varanasi Seller Program',
@@ -32,7 +32,7 @@ export async function generateMetadata() {
       title: 'Sell Banarasi Sarees Online | Varanasi Sellers | Weave 365',
       description:
         'Varanasi weavers and sellers: list Banarasi sarees & suits on Weave 365, reach B2B & B2C buyers across India and worldwide, with fulfilment support.',
-      images: ['https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg'],
+      images: ['https://assets.weave365.com/assets/banner/sellersHero.webp'],
     },
   };
 

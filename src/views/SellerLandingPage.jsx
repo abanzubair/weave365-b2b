@@ -30,7 +30,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 import { assetSrc } from '../utils/assetSrc.js';
 import '../styles/sellerLandingPage.css';
 
-const HERO_IMAGE_URL = 'https://assets.weave365.com/assets/banner/weaver-onboard-hero.jpeg';
+const HERO_IMAGE_URL = 'https://assets.weave365.com/assets/banner/sellersHero.webp';
 
 export function SellerLandingPage({ navigate, openAuth }) {
   const [openFaq, setOpenFaq] = useState(null);
