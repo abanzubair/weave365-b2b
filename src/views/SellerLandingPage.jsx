@@ -235,9 +235,9 @@ export function SellerLandingPage({ navigate, openAuth }) {
         <div className="seller-hero-inner">
           <div className="seller-hero-content">
             <h1 className="seller-hero-title">
-              Start Selling Banarasi Sarees <span className="seller-no-wrap">&amp; Suits Online</span>
+              Sell Banarasi Sarees <span className="seller-no-wrap">&amp; Suits Online</span>
               <span className="seller-title-accent">
-                Reach Customers Across <span className="seller-no-wrap">India &amp; Worldwide</span>
+                Reach Buyers in <span className="seller-no-wrap">India &amp; Worldwide</span>
               </span>
             </h1>
 
