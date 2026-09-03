@@ -97,6 +97,7 @@ export function Footer({ navigate }) {
             <ul className="footer-link-list">
               <li><AppLink to="about" href="/about" navigate={navigate}>About</AppLink></li>
               <li><AppLink to="contact" href="/contact" navigate={navigate}>Contact</AppLink></li>
+              <li><AppLink to="sell-banarasi-sarees" href="/sell-banarasi-sarees" navigate={navigate}>Sell on Weave 365</AppLink></li>
               <li><AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate}>Partners</AppLink></li>
               <li><AppLink to="affiliate-program" href="/affiliate-program" navigate={navigate}>Affiliates</AppLink></li>
               <li><AppLink to="developer-api" href="/developer-api" navigate={navigate}>Developer API</AppLink></li>

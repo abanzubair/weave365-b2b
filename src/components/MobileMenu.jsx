@@ -213,6 +213,9 @@ export function MobileMenu(props) {
                 </AppLink>
 
                 <span className="mobile-mega-heading">Sell</span>
+                <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sell Banarasi Sarees</span>
+                </AppLink>
                 <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
                 </AppLink>
@@ -233,8 +236,8 @@ export function MobileMenu(props) {
                 <AppLink to="sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
                 </AppLink>
-                <AppLink to="weaver-onboarding" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Vendor Onboarding</span>
+                <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Seller Onboarding</span>
                 </AppLink>
                 <a href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20join%20the%20WhatsApp%20community" target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>

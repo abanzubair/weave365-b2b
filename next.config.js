@@ -99,6 +99,11 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: '/weaver-onboarding',
+        destination: '/sell-banarasi-sarees',
+        permanent: true,
+      },
+      {
         source: '/wholesale-banarasi-sarees',
         destination: '/wholesale-catalogue',
         permanent: true,

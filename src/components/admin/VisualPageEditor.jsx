@@ -527,7 +527,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
     { id: 'affiliate-program', label: 'Affiliate Program', path: '/affiliate-program' },
     { id: 'sourcing-partners', label: 'Sourcing & White Label', path: '/sourcing-partners' },
     { id: 'handloom-vs-powerloom-guide', label: 'Weave Comparison Guide', path: '/handloom-vs-powerloom-guide' },
-    { id: 'weaver-onboarding', label: 'Weaver Onboarding', path: '/weaver-onboarding' },
+    { id: 'sell-banarasi-sarees', label: 'Sell Banarasi Sarees', path: '/sell-banarasi-sarees' },
     { id: 'about', label: 'About Us', path: '/about' },
     { id: 'contact', label: 'Contact Us', path: '/contact' },
     { id: 'disclaimer', label: 'Disclaimer', path: '/disclaimer' },

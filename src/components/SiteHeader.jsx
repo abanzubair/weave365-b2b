@@ -170,7 +170,7 @@ export function SiteHeader(props) {
         </div>
         <div className="nav-item-dropdown" ref={partnerNavRef}>
           <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'weaver-onboarding' || route === 'custom-woven' || route === 'handloom-vs-powerloom-guide' ? 'active' : ''}
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'sell-banarasi-sarees' || route === 'sellers' || route === 'custom-woven' || route === 'handloom-vs-powerloom-guide' ? 'active' : ''}
             onClick={(e) => {
               e.stopPropagation();
               setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
@@ -190,6 +190,7 @@ export function SiteHeader(props) {
               <div className="mega-menu-col">
                 <div className="mega-menu-section">
                   <span className="mega-menu-heading">Sell</span>
+                  <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sell Banarasi Sarees</AppLink>
                   <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Reseller Center</AppLink>
                   <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
                   <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Services</AppLink>
@@ -201,7 +202,7 @@ export function SiteHeader(props) {
                   <span className="mega-menu-heading">Partner</span>
                   <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Collaboration</AppLink>
                   <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sourcing Partner</AppLink>
-                  <AppLink to="weaver-onboarding" navigate={navigate} onClick={() => setDropdownOpen(null)}>Vendor Onboarding</AppLink>
+                  <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Seller Onboarding</AppLink>
                   <a href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20join%20the%20WhatsApp%20community" target="_blank" rel="noopener noreferrer" onClick={() => setDropdownOpen(null)}>WhatsApp Community</a>
                 </div>
               </div>

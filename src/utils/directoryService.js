@@ -55,7 +55,7 @@ export const DEFAULT_DIRECTORY_CONFIG = {
       title: 'Sourcing Hubs',
       icon: 'Briefcase',
       links: [
-        { label: 'Weaver Partnership Program', type: 'route', target: 'weaver-onboarding', path: '/weaver-onboarding' },
+        { label: 'Sell Banarasi Sarees (Seller Program)', type: 'route', target: 'sell-banarasi-sarees', path: '/sell-banarasi-sarees' },
         { label: 'Bulk Sourcing & Custom Catalog', type: 'route', target: 'bulk-inquiry', path: '/bulk-inquiry' },
         { label: 'Varanasi Brand Story & Heritage', type: 'route', target: 'about', path: '/about' },
         { label: 'Insights & Sourcing Blog', type: 'route', target: 'blog', path: '/blog' }
