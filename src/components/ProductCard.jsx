@@ -570,7 +570,7 @@ export const ProductCard = memo(function ProductCard({
         <ResellerShareModal
           product={product}
           variant={selectedVariant}
-          user={{ id: priceAccess.userId }}
+          user={{ id: priceAccess?.userId }}
           priceAccess={priceAccess}
           onClose={() => setShowShareModal(false)}
         />

@@ -2,9 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Copy, Check, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles, Globe } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
+import { supabase } from '../supabaseClient';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
+import '../styles/resellerShareModal.css';
 
 /**
  * Modal for resellers to add a product to their external website catalog.
@@ -21,8 +23,14 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
   // Load the reseller's storefront settings
   useEffect(() => {
     async function loadStorefront() {
-      if (!user?.id) return;
-      const { data } = await resellerService.getStorefront(user.id);
+      let uid = user?.id;
+      if (!uid) {
+        const { data: { session } } = await supabase.auth.getSession();
+        uid = session?.user?.id;
+      }
+      if (!uid) return;
+
+      const { data } = await resellerService.getStorefront(uid);
       if (data?.slug) {
         setStoreSlug(data.slug);
       }
@@ -50,10 +58,19 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
   const externalWebsiteUrl = rawWebsiteUrl ? normalizeWebsiteUrl(rawWebsiteUrl) : '';
 
   const handleAdd = async () => {
-    if (!user?.id) return;
+    let uid = user?.id;
+    if (!uid) {
+      const { data: { session } } = await supabase.auth.getSession();
+      uid = session?.user?.id;
+    }
+    if (!uid) {
+      alert('Please log in to add products to your boutique website.');
+      return;
+    }
+
     setIsCreating(true);
     try {
-      const { error } = await resellerService.addToCatalog(user.id, {
+      const { error } = await resellerService.addToCatalog(uid, {
         title: product.title,
         markupType,
         markupValue: Number(markupValue),

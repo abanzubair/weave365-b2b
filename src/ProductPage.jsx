@@ -2203,7 +2203,7 @@ export function ProductDetail({
         <ResellerShareModal
           product={product}
           variant={variant}
-          user={{ id: priceAccess.userId }}
+          user={{ id: priceAccess?.userId }}
           priceAccess={priceAccess}
           onClose={() => setShowShareModal(false)}
         />
