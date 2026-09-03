@@ -705,7 +705,7 @@ function StorefrontSetupPanel({
 
   const [formData, setFormData] = useState({
     store_name: storefront?.store_name || '',
-    slug: storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : 'my-boutique'),
+    slug: storefront?.slug || '',
     whatsapp: storefront?.whatsapp || '',
     custom_domain: storefront?.custom_domain || '',
   });
@@ -713,11 +713,11 @@ function StorefrontSetupPanel({
   useEffect(() => {
     setFormData({
       store_name: storefront?.store_name || '',
-      slug: storefront?.slug || (user?.email ? user.email.split('@')[0].replace(/[^a-z0-9]/g, '') : 'my-boutique'),
+      slug: storefront?.slug || '',
       whatsapp: storefront?.whatsapp || '',
       custom_domain: storefront?.custom_domain || '',
     });
-  }, [storefront, user?.email]);
+  }, [storefront]);
 
   const apiUrl = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
@@ -791,7 +791,7 @@ function StorefrontSetupPanel({
               required 
               value={formData.store_name} 
               onChange={e => update('store_name', e.target.value)} 
-              placeholder="e.g. AbaZain" 
+              placeholder="e.g. Varanasi Silks" 
               className="rt-text-input"
             />
           </div>
@@ -808,7 +808,7 @@ function StorefrontSetupPanel({
               required 
               value={formData.slug} 
               onChange={e => update('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
-              placeholder="abazain" 
+              placeholder="my-boutique" 
               className="rt-text-input"
             />
             <span className="rt-input-hint">
