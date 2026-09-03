@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Truck, RotateCcw, ShieldCheck, CreditCard, ShieldAlert, HelpCircle } from 'lucide-react';
+import { FileText, Truck, RotateCcw, ShieldCheck, CreditCard, ShieldAlert, HelpCircle } from './icons.jsx';
 import '../styles/legal.css';
 
 export function LegalSidebar({ activeTab, navigate }) {

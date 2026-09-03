@@ -21,7 +21,7 @@ import {
   PackageCheck,
   MapPin,
   Clock
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
 import { storeConfig } from '../config.js';

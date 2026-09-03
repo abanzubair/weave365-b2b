@@ -34,7 +34,7 @@ import {
   Code2,
   X,
   ShieldCheck,
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { blogPosts } from '../data/blogPosts.js';
 import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';

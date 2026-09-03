@@ -23,7 +23,7 @@ import {
   Box,
   MousePointer,
   MousePointerClick
-} from 'lucide-react';
+} from '../icons.jsx';
 
 const DEVICE_PRESETS = [
   { id: 'laptop', label: 'Laptop / Desktop (1440 × 900 px)', width: 1440, height: 900 },

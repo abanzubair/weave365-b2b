@@ -25,7 +25,7 @@ import {
   Sparkles,
   Clock,
   MessageCircle,
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';

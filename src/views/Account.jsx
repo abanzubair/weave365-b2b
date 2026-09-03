@@ -44,7 +44,7 @@ import {
   Phone,
   Check,
   User
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';

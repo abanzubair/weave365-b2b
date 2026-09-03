@@ -16,7 +16,7 @@ import {
   ShoppingBag,
   ArrowDown,
   X,
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import {
   calculateHybridCartTotals,

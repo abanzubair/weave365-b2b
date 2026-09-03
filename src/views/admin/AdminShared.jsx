@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import {
   Copy,
   ExternalLink,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { adminEmails, getProductCategorySlug } from '../../config.js';
 import { supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';

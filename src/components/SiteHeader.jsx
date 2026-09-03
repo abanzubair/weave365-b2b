@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronDown, Search, User } from 'lucide-react';
+import { ChevronDown, Search, User } from './icons.jsx';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
 import { storeConfig, getCategorySlug, adminEmails } from '../config.js';

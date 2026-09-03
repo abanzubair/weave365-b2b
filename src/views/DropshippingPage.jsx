@@ -21,7 +21,7 @@ import {
   ShoppingBag,
   Truck,
   HeartHandshake
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/dropshipping.css';
 

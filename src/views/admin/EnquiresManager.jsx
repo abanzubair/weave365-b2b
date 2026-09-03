@@ -12,7 +12,7 @@ import {
   CheckCircle,
   Trash2,
   ExternalLink,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
 import { parseCartVariantCode } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';

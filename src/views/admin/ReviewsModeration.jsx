@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Check, Eye, RefreshCw, MessageSquareText, ThumbsUp, Trash2 } from 'lucide-react';
+import { Clock, Check, Eye, RefreshCw, MessageSquareText, ThumbsUp, Trash2 } from '../../components/icons.jsx';
 import { SharpStar } from '../ReviewsPage.jsx';
 
 export function ReviewsModeration({ reviewsFilter, setReviewsFilter, allSiteReviews, reviewsLoading, reviewsError, loadSiteReviews, reviewActionLoading, handleReviewAction }) {

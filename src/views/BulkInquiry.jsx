@@ -14,7 +14,7 @@ import {
   Send,
   Sparkles,
   Truck,
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';

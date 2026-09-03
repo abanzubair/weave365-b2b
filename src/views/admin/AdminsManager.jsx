@@ -19,7 +19,7 @@ import {
   Check,
   Globe,
   ExternalLink,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { adminEmails } from '../../config.js';
 import { isAdminUser } from './AdminShared.jsx';
 

@@ -22,7 +22,7 @@ import {
   Bot,
   TrendingUp,
   Download
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 

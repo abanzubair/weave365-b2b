@@ -5,7 +5,7 @@ import {
   ShoppingBag, 
   ShieldCheck,
   Check
-} from 'lucide-react';
+} from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { storeConfig } from '../config.js';
 import '../styles/resellerUpgrade.css';

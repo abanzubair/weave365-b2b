@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight } from './icons.jsx';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 

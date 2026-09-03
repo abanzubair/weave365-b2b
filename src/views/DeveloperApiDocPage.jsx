@@ -32,7 +32,7 @@ import {
   FileCode2,
   Server,
   Sparkles
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
 
 export default function DeveloperApiDocPage() {

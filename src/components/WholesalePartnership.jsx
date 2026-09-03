@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import '../styles/wholesalePartnership.css';
 

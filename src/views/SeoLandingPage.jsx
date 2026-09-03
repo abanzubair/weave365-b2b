@@ -5,7 +5,7 @@
  * and high-end aesthetic designs to drive boutique traffic and reseller conversions.
  */
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronDown, BookOpen, HelpCircle, ArrowRight } from '../components/icons.jsx';
 import { ProductCard } from '../components/ProductCard.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';
 import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';

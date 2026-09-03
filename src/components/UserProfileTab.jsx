@@ -18,7 +18,7 @@ import {
   Hash,
   ShieldCheck,
   ChevronDown
-} from 'lucide-react';
+} from './icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';

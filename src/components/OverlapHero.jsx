@@ -1,5 +1,5 @@
 import { AppLink } from './AppLink.jsx';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check } from './icons.jsx';
 import '../styles/overlapHero.css';
 
 export function OverlapHero({ navigate }) {

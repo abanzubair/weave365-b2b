@@ -13,7 +13,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Check, Share2 } from 'lucide-react';
+import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X, Check, Share2 } from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';

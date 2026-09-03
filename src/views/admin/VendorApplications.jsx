@@ -29,7 +29,7 @@ import {
   Eye,
   EyeOff,
   Power,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { PRICE_GROUPS, isVendorProfile } from '../../utils/buyerAccess.js';
 import {
   getVendorStockLocal,

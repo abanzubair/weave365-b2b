@@ -16,7 +16,7 @@ import {
   Linkedin,
   ArrowRight,
   ChevronRight
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { siteUrl, storeConfig } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/contact.css';

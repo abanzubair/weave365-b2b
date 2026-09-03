@@ -5,7 +5,7 @@
  * quantity steppers, and seamless links to Checkout and WhatsApp Enquiry.
  */
 import { useEffect, useMemo, useRef } from 'react';
-import { X, ArrowRight, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from 'lucide-react';
+import { X, ArrowRight, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from './icons.jsx';
 import { getProductCategorySlug } from '../config.js';
 import {
   calculateHybridCartTotals,

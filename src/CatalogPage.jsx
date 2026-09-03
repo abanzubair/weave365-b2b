@@ -4,7 +4,7 @@
  * instantaneous text search, custom responsive product grids, and quick order list compilation.
  */
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ChevronDown, Search, X, RotateCcw } from 'lucide-react';
+import { ChevronDown, Search, X, RotateCcw } from './components/icons.jsx';
 import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';

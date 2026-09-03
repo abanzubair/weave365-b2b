@@ -22,7 +22,7 @@ import {
   Award,
   HelpCircle,
   Package
-} from 'lucide-react';
+} from './icons.jsx';
 import {
   getDirectoryConfigLocal,
   fetchDirectoryConfigRemote,

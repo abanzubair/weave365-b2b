@@ -23,7 +23,7 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['@heroicons/react'],
   },
   allowedDevOrigins: [
     'localhost',

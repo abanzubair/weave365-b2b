@@ -6,7 +6,7 @@ import {
   Copy,
   Check,
   RefreshCw,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 
 /**
  * InvoiceCourierManager Component

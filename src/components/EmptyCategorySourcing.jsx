@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Sparkles, PackageCheck, Send, ArrowRight, ShieldCheck, HelpCircle, ChevronDown, Check } from 'lucide-react';
+import { Sparkles, PackageCheck, Send, ArrowRight, ShieldCheck, HelpCircle, ChevronDown, Check } from './icons.jsx';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import '../styles/emptyCategorySourcing.css';

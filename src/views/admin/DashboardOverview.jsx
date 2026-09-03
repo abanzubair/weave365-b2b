@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Printer,
   Database,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 
 export default function DashboardOverview({
   adminData,

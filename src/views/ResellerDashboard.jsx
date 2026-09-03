@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Globe,
   Store
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';

@@ -4,7 +4,7 @@
  * Prompts the customer to open/resume the active WhatsApp conversation to finalize details.
  */
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X } from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import '../styles/enquiryPopup.css';
 

@@ -21,7 +21,7 @@ import {
   Briefcase,
   Info,
   Shield,
-} from 'lucide-react';
+} from './icons.jsx';
 
 import { storeConfig, getCategorySlug } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';

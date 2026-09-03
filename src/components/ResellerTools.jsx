@@ -25,7 +25,7 @@ import {
   X,
   TrendingUp,
   Tag
-} from 'lucide-react';
+} from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { fetchProducts } from '../productData.js';
 import '../styles/resellerTools.css';

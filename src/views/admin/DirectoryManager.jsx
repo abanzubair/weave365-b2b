@@ -18,7 +18,7 @@ import {
   AlertCircle,
   Code,
   Copy
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import {
   getDirectoryConfigLocal,
   saveDirectoryConfig,

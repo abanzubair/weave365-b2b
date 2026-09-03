@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useMemo, useDeferredValue } from 'react';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from './icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useStorefront } from '../store/useStorefront.js';

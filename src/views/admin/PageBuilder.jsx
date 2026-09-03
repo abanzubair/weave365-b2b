@@ -4,7 +4,7 @@ import {
   RefreshCw,
   Plus,
   Trash2,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { saveSupabaseLandingPage, deleteSupabaseLandingPage, fetchSupabaseLandingPages } from '../../productData.js';
 
 export default function PageBuilder({

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw, Mail } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Mail } from './icons.jsx';
 import { storeConfig } from '../config.js';
 
 export class ErrorBoundary extends React.Component {

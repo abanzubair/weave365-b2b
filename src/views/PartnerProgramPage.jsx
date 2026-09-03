@@ -30,7 +30,7 @@ import {
   Store,
   Tags,
   Truck,
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { storeConfig, siteUrl } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/partnerProgram.css';

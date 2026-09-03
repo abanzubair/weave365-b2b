@@ -25,7 +25,7 @@ import {
   HelpCircle,
   ShoppingBag,
   Sparkles
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { assetSrc } from '../utils/assetSrc.js';
 import '../styles/sellerLandingPage.css';

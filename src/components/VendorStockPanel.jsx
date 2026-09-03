@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Tag,
   MessageCircle
-} from 'lucide-react';
+} from './icons.jsx';
 import '../styles/vendorStock.css';
 import { 
   STOCK_STATUS_OPTIONS, 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '../components/icons.jsx';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search } from '../components/icons.jsx';
 import { LegalSidebar } from '../components/LegalSidebar.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 

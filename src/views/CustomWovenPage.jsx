@@ -37,7 +37,7 @@ import {
   Heart,
   Globe,
   Gift
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/customWoven.css';

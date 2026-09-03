@@ -34,7 +34,7 @@ import {
   ArrowLeft,
   X,
   ShoppingBag,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
 import '../../styles/developerDashboard.css';

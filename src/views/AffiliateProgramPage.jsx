@@ -22,7 +22,7 @@ import {
   AlertTriangle, 
   ChevronDown,
   LineChart
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/affiliateProgramPage.css';
 

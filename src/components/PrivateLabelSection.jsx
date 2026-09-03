@@ -1,4 +1,4 @@
-import { ArrowRight, Image as ImageIcon, Check } from 'lucide-react';
+import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import '../styles/privateLabelSection.css';
 

@@ -19,7 +19,7 @@ import {
   ShoppingBag,
   Store,
   X,
-} from 'lucide-react';
+} from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import {

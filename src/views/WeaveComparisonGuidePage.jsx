@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowRight } from '../components/icons.jsx';
 import { seoLandingPages } from '../data/seoLandingPages.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/weaveComparisonGuide.css';

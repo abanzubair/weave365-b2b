@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, ArrowRight, Check } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Check } from './icons.jsx';
 
 /**
  * A bespoke, high-end Slide-to-Verify interactive Captcha component.

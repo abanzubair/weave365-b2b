@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Award, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from 'lucide-react';
+import { ArrowRight, Award, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from '../components/icons.jsx';
 import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { StateMessage } from '../components/StateMessage.jsx';

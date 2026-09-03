@@ -32,7 +32,7 @@ import {
   ZoomIn,
   X,
   Check,
-} from 'lucide-react';
+} from './components/icons.jsx';
 import { storeConfig, getProductCategorySlug, getCategorySlug, siteUrl } from './config.js';
 import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
 import { ResellerShareModal } from './components/ResellerShareModal.jsx';

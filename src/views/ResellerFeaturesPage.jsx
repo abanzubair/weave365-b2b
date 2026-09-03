@@ -26,7 +26,7 @@ import {
   Layers, 
   FileText,
   HeartHandshake
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/resellerFeatures.css';
 

@@ -35,7 +35,7 @@ import {
   MessageCircle,
   HelpCircle,
   ArrowUpRight
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';

@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import '../styles/resellerProgram.css';
 

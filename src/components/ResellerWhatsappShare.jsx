@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Share2 } from 'lucide-react';
+import { X, Share2 } from './icons.jsx';
 import {
   formatMoney,
   customerPrice,

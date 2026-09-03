@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Copy, Check, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles, Globe } from 'lucide-react';
+import { X, Copy, Check, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles, Globe } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
 import { storeConfig } from '../config.js';

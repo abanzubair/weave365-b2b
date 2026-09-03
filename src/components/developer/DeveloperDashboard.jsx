@@ -50,7 +50,7 @@ import {
   Calendar,
   ShieldCheck,
   MessageCircle
-} from 'lucide-react';
+} from '../icons.jsx';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { fetchProducts } from '../../productData.js';
 import '../../styles/developerDashboard.css';

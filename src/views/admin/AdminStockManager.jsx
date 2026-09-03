@@ -30,7 +30,7 @@ import {
   Square,
   Eye,
   SlidersHorizontal,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import {
   STOCK_STATUS_OPTIONS,
   formatISTDateTime,

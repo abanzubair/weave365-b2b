@@ -3,7 +3,7 @@
  * Purpose: Renders standard high-fidelity trust symbols and assurances (shipping, wholesale rates, quality check).
  * Displays beneath details/catalogues to maximize B2B buyer conversion and reliability signals.
  */
-import { Truck, Tag, ShieldCheck, Headphones } from 'lucide-react';
+import { Truck, Tag, ShieldCheck, Headphones } from './icons.jsx';
 import '../styles/productTrustStrip.css';
 
 const productTrustItems = [

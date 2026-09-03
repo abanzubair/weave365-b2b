@@ -4,7 +4,7 @@
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, Plus, ShoppingBag, X, Check, Info } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, X, Check, Info } from './icons.jsx';
 import {
   calculateHybridProductPrice,
   fallbackProductImage,

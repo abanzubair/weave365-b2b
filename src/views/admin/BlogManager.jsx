@@ -10,7 +10,7 @@ import {
   Upload,
   RefreshCw,
   Copy,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { saveSupabaseBlogPost, fetchSupabaseBlogPosts } from '../../productData.js';
 import { blogPosts } from '../../data/blogPosts.js';
 import { supabase } from '../../supabaseClient.js';

@@ -19,7 +19,7 @@ import {
   ArrowRight,
   TrendingUp,
   AlertCircle
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { storeConfig, siteUrl } from '../config.js';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';

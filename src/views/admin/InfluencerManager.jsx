@@ -13,7 +13,7 @@ import {
   Globe,
   Smartphone,
   Laptop
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { formatMoney } from '../../storefrontShared.jsx';
 

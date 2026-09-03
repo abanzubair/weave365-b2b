@@ -9,7 +9,7 @@ import {
   Download,
   Globe,
   ExternalLink,
-} from 'lucide-react';
+} from '../../components/icons.jsx';
 import { normalizeBuyerType, isVendorProfile } from '../../utils/buyerAccess.js';
 import { adminEmails } from '../../config.js';
 import {

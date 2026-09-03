@@ -4,7 +4,7 @@
  * Invites boutique partners and resellers to leave sourcing feedback.
  */
 import React from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare } from './icons.jsx';
 import '../styles/reviewStrip.css';
 
 export function ReviewStrip({ navigate }) {

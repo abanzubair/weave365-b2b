@@ -7,7 +7,7 @@ import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { AppLink } from './AppLink.jsx';
-import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Github } from 'lucide-react';
+import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Github } from './icons.jsx';
 
 function LinkedInIcon({ size = 15, className = "" }) {
   return (

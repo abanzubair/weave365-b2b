@@ -6,7 +6,7 @@ import {
   ShieldCheck, 
   Globe, 
   Award 
-} from 'lucide-react';
+} from '../components/icons.jsx';
 import { ContactSection } from './ContactPage.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/collaboration.css';
