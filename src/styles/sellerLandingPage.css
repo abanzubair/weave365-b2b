@@ -275,7 +275,7 @@
   color: #1a1613;
   margin: 0 0 1rem 0;
   letter-spacing: -0.01em;
-  text-wrap: balance;
+  /* text-wrap: balance; */
 }
 
 .seller-lead-paragraph {
