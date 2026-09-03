@@ -37,7 +37,7 @@ export const resellerService = {
       .from('reseller_storefronts')
       .select('*')
       .eq('reseller_id', resellerId)
-      .single();
+      .maybeSingle();
     
     return { data, error };
   },
