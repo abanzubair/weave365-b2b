@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '../supabaseClient';
+import { syncTenantToStorefrontDb, syncProductToStorefrontDb } from './boutiqueSyncService';
 
 /**
  * Normalizes an external website URL to ensure it has a valid https protocol and no trailing slashes.
@@ -59,6 +60,11 @@ export const resellerService = {
       .select()
       .single();
 
+    if (data && !error) {
+      // Background sync to isolated storefront database
+      syncTenantToStorefrontDb(data).catch(err => console.warn('[resellerService] Sync tenant warning:', err));
+    }
+
     return { data, error };
   },
 
@@ -102,6 +108,13 @@ export const resellerService = {
 
     if (itemError) {
       console.error('Error creating share item:', itemError);
+    } else {
+      // Background sync to isolated storefront database
+      this.getStorefront(resellerId).then(({ data: sf }) => {
+        if (sf?.slug) {
+          syncProductToStorefrontDb(sf, productData).catch(e => console.warn('[resellerService] Sync product warning:', e));
+        }
+      });
     }
 
     return { data: share, error: itemError };
@@ -285,6 +298,9 @@ export const resellerService = {
   async deleteStorefront(resellerId) {
     if (!resellerId) return { error: new Error('User ID is required') };
 
+    // 0. Fetch existing storefront to get slug for remote sync
+    const { data: existingSf } = await this.getStorefront(resellerId);
+
     // 1. Delete all shares for this reseller (reseller_share_items will cascade delete)
     const { error: sharesError } = await supabase
       .from('reseller_shares')
@@ -295,7 +311,7 @@ export const resellerService = {
       console.error('Error deleting reseller shares:', sharesError);
     }
 
-    // 2. Delete the storefront record
+    // 2. Delete the storefront record from primary DB
     const { data, error } = await supabase
       .from('reseller_storefronts')
       .delete()
@@ -304,6 +320,17 @@ export const resellerService = {
     if (error) {
       console.error('Error deleting reseller storefront:', error);
       return { error };
+    }
+
+    // 3. Delete tenant from isolated storefront database
+    if (existingSf?.slug) {
+      const sb = getStorefrontSupabase();
+      if (sb) {
+        sb.from('boutique_tenants')
+          .delete()
+          .eq('slug', existingSf.slug.toLowerCase().trim())
+          .catch(e => console.warn('[resellerService] Delete storefront remote error:', e));
+      }
     }
 
     return { data, error: null };
