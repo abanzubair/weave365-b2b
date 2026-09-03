@@ -48,10 +48,20 @@ export function SellerLandingPage({ navigate, openAuth }) {
   };
 
   const scrollToFaqs = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const el = document.getElementById('faqs');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const headerOffset = 85;
+      const elementPosition = el.getBoundingClientRect().top;
+      const currentScroll = window.scrollY || window.pageYOffset || 0;
+      const offsetPosition = elementPosition + currentScroll - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#faqs');
+      }
     }
   };
 
@@ -266,6 +276,13 @@ export function SellerLandingPage({ navigate, openAuth }) {
             {/* Action Suite */}
             <div className="seller-action-suite">
               <div className="seller-buttons-row">
+                <a 
+                  href="#faqs" 
+                  className="seller-btn-secondary"
+                  onClick={scrollToFaqs}
+                >
+                  <span>Seller FAQs</span>
+                </a>
                 <button 
                   type="button" 
                   className="seller-btn-primary" 
@@ -274,17 +291,10 @@ export function SellerLandingPage({ navigate, openAuth }) {
                   <span>Sell on Weave 365</span>
                   <ArrowRight size={15} />
                 </button>
-                <a 
-                  href="#faqs" 
-                  className="seller-btn-secondary"
-                  onClick={scrollToFaqs}
-                >
-                  <span>Seller FAQs</span>
-                </a>
               </div>
               <div className="seller-assurance-note">
                 <ShieldCheck size={16} className="seller-assurance-icon" />
-                <span>100% Free Registration • No Monthly Subscription • Direct Warehouse Payouts</span>
+                <span>Free Registration · No Monthly Subscription · Direct Payment</span>
               </div>
             </div>
           </div>

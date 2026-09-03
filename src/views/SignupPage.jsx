@@ -228,17 +228,79 @@ export function SignupPage({
     }
   }, [initialType]);
 
-  // Pre-fill authenticated Google/User info
+  // Pre-fill authenticated Google/User info & auto-complete pending registration if present
   useEffect(() => {
-    if (user?.email) {
+    if (!user) return;
+
+    if (user.email) {
       setEmail(user.email);
     }
-    const googleName = user?.user_metadata?.full_name || user?.user_metadata?.name || '';
+    const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
     if (googleName) {
       setProfile((prev) => ({
         ...prev,
         fullName: prev.fullName || toTitleCaseName(googleName),
       }));
+    }
+
+    // Check if user completed the registration form before clicking "Sign up with Google"
+    const pendingRaw = typeof window !== 'undefined' ? localStorage.getItem('pending_b2b_profile') : null;
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        localStorage.removeItem('pending_b2b_profile');
+
+        const cleanName = pending.fullName || toTitleCaseName(googleName || '');
+        const cleanWhatsapp = String(pending.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+        const cleanPincode = normalizePincodeInput(pending.pincode);
+
+        if (cleanName && cleanWhatsapp.length === 10 && pending.city && cleanPincode.length === 6) {
+          const isVendor = pending.buyerType === 'vendor' || pending.buyerSubtype === 'Vendor';
+          const newProfile = {
+            id: user.id,
+            email: user.email,
+            full_name: cleanName,
+            business_name: pending.businessName || '',
+            whatsapp: cleanWhatsapp,
+            whatsapp_country_code: pending.countryCode || '+91',
+            whatsapp_number: cleanWhatsapp,
+            buyer_type: isVendor ? 'vendor' : (pending.buyerType || 'customer'),
+            buyer_subtype: pending.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
+            role: isVendor ? 'vendor' : 'customer',
+            city: pending.city,
+            state: pending.state,
+            pincode: cleanPincode,
+            interested_categories: pending.interestedCategories || ['Saree'],
+            buying_behavior: 'instant',
+            approval_status: 'approved',
+            price_group: 'approved',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          (async () => {
+            setLoading(true);
+            if (isSupabaseConfigured) {
+              await supabase.auth.updateUser({
+                data: {
+                  buyer_profile: newProfile,
+                  role: isVendor ? 'vendor' : 'customer',
+                  full_name: cleanName,
+                },
+              });
+              await syncProfileFromUser({ ...user, user_metadata: { ...user.user_metadata, buyer_profile: newProfile } });
+            }
+            if (setBuyerProfile) setBuyerProfile(newProfile);
+            setLoading(false);
+            if (navigate) {
+              navigate(isVendor ? 'account' : 'home');
+            }
+          })();
+          return;
+        }
+      } catch (e) {
+        console.error('Error applying pending registration:', e);
+      }
     }
 
     // Do NOT hijack mode to complete-profile if resetting password or viewing forgot password
@@ -252,10 +314,10 @@ export function SignupPage({
       return;
     }
 
-    if (user && !isProfileComplete(user, buyerProfile)) {
+    if (!isProfileComplete(user, buyerProfile)) {
       setMode('complete-profile');
     }
-  }, [user, buyerProfile, initialMode, mode]);
+  }, [user, buyerProfile, initialMode, mode, navigate, setBuyerProfile]);
 
   useEffect(() => {
     if (isOnboarding || mode === 'complete-profile') {
@@ -449,6 +511,46 @@ export function SignupPage({
     } else {
       setMessage(`Demo mode: ${provider} OAuth simulated. Log in via email for full mock user.`);
     }
+  }
+
+  function handleGoogleRegister() {
+    const cleanName = toTitleCaseName(profile.fullName);
+    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const cleanPincode = normalizePincodeInput(profile.pincode);
+
+    if (
+      !cleanName ||
+      !profile.city.trim() ||
+      !profile.state.trim() ||
+      cleanWhatsapp.length !== 10 ||
+      cleanPincode.length !== 6
+    ) {
+      setMessage(
+        'Please enter your Full Name, 10-digit WhatsApp number, City, State, and 6-digit Pincode above to continue with Google.'
+      );
+      return;
+    }
+
+    const pendingProfile = {
+      fullName: cleanName,
+      whatsapp: cleanWhatsapp,
+      countryCode: profile.countryCode || '+91',
+      businessName: profile.businessName || '',
+      buyerType: profile.buyerType || 'customer',
+      buyerSubtype: profile.buyerSubtype || 'Customer',
+      city: profile.city.trim(),
+      state: profile.state.trim(),
+      pincode: cleanPincode,
+      interestedCategories: profile.interestedCategories || ['Saree'],
+    };
+
+    try {
+      localStorage.setItem('pending_b2b_profile', JSON.stringify(pendingProfile));
+    } catch (e) {
+      console.error('Storage error:', e);
+    }
+
+    handleSocialLogin('google');
   }
 
   const cleanSellerName = profile.fullName || '';
@@ -1294,15 +1396,29 @@ export function SignupPage({
                   ) : isOnboarding ? (
                     'Complete Registration & Continue'
                   ) : (
-                    'Get Started'
+                    'Create Account with Password'
                   )}
                 </button>
-                  {message && (
-                    <div className="signup-alert-error">
-                      <AlertCircle size={18} style={{ flexShrink: 0 }} />
-                      <span>{message}</span>
+
+                {!isOnboarding && (
+                  <>
+                    <div className="signup-divider">
+                      <span>or</span>
                     </div>
-                  )}
+
+                    <GoogleButton
+                      onClick={handleGoogleRegister}
+                      text="Sign up with Google"
+                    />
+                  </>
+                )}
+
+                {message && (
+                  <div className="signup-alert-error">
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                    <span>{message}</span>
+                  </div>
+                )}
                 </form>
               </div>
 

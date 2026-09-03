@@ -233,8 +233,16 @@ set search_path = public
 as $$
 declare
   bp jsonb;
+  v_whatsapp text;
 begin
   bp := coalesce(new.raw_user_meta_data->'buyer_profile', '{}'::jsonb);
+  v_whatsapp := coalesce(bp->>'whatsapp', new.raw_user_meta_data->>'whatsapp', '');
+
+  -- Do not create a profile row if WhatsApp number is missing (e.g. initial Google OAuth login).
+  -- The profile will be created once the user fills and submits their complete registration form.
+  if trim(v_whatsapp) = '' then
+    return new;
+  end if;
 
   insert into public.profiles (
     id,

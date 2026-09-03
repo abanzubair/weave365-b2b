@@ -21,6 +21,22 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.seller-page-wrapper p,
+.seller-hero-desc,
+.seller-lead-paragraph,
+.seller-ledger-desc,
+.seller-friction-desc,
+.seller-step-desc,
+.seller-index-lead,
+.seller-item-desc,
+.seller-audience-intro,
+.seller-audience-highlight-text,
+.seller-benefit-desc,
+.seller-faq-answer,
+.seller-closing-desc {
+  font-weight: 500;
+}
+
 /* --------------------------------------------------------------------------
    1. HERO BANNER (Standardized 2-Column Site Layout — Strictly Preserved)
    -------------------------------------------------------------------------- */
@@ -83,10 +99,10 @@
   font-size: clamp(16px, 1.2vw, 18px); /* Mobile: 16px >= 15px, Desktop: 17.5px - 18px > 15px */
   text-wrap: pretty;
   line-height: 1.75;
-  color: #55483b;
+  color: #1a1613;
   margin: 0 0 1.75rem;
   max-width: 640px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* Hero Key Bullet Points (Distilled, Clean 2-Column List) */
@@ -742,6 +758,7 @@
    -------------------------------------------------------------------------- */
 .seller-faqs-section {
   padding: clamp(4rem, 6vw, 6rem) 0;
+  scroll-margin-top: 85px;
 }
 
 .seller-faqs-container {

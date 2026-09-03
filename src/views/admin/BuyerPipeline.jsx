@@ -58,10 +58,20 @@ export default function BuyerPipeline({
       const isConfiguredAdmin = (adminEmails || []).some((adm) => String(adm).toLowerCase().trim() === email);
       return !isAdminUser(p) && !isConfiguredAdmin && p.role !== 'admin';
     });
+    const isIncomplete = (p) => {
+      const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '').slice(-10);
+      return cleanPhone.length < 10 || !String(p.city || '').trim();
+    };
+
     if (userTypeFilter === 'customer') {
-      profiles = profiles.filter((p) => !isVendorProfile(p));
+      profiles = profiles.filter((p) => !isVendorProfile(p) && !isIncomplete(p));
     } else if (userTypeFilter === 'vendor') {
       profiles = profiles.filter((p) => isVendorProfile(p));
+    } else if (userTypeFilter === 'incomplete') {
+      profiles = profiles.filter((p) => isIncomplete(p));
+    } else {
+      // 'all' -> Default view: verified buyers and vendors with completed details
+      profiles = profiles.filter((p) => !isIncomplete(p));
     }
     // Apply search filter
     if (searchQuery.trim()) {
@@ -264,9 +274,10 @@ export default function BuyerPipeline({
             onChange={(e) => setUserTypeFilter(e.target.value)}
             className="pipeline-filter-select"
           >
-            <option value="all">All Accounts</option>
-            <option value="customer">Customers</option>
+            <option value="all">Verified Buyers</option>
+            <option value="customer">Customers Only</option>
             <option value="vendor">Vendor Partners</option>
+            <option value="incomplete">Incomplete Drop-offs</option>
           </select>
 
           <select
