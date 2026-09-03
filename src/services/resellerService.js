@@ -1,8 +1,8 @@
 /**
  * @file resellerService.js
  * @description White-label B2B Reseller and Storefront Database Operations.
- * Manages Supabase CRUD operations for reseller storefront branding, custom pricing markup
- * strategies, catalog item synchronization, customer inquiry ingestion, and reseller dashboard reporting.
+ * Operates on the isolated secondary database as the single source of truth for all boutique
+ * website settings, published saree catalogs, retail pricing markups, and customer orders.
  * 
  * @module services/resellerService
  */
@@ -30,7 +30,7 @@ export function normalizeWebsiteUrl(url) {
  */
 export const resellerService = {
   /**
-   * Get reseller storefront settings
+   * Get reseller storefront settings (from primary DB mapping or secondary DB)
    */
   async getStorefront(resellerId) {
     const { data, error } = await supabase
@@ -54,14 +54,15 @@ export const resellerService = {
       sanitizedUpdates.custom_domain = cd ? cd : null;
     }
 
+    // 1. Keep mapping in primary DB
     const { data, error } = await supabase
       .from('reseller_storefronts')
       .upsert({ reseller_id: resellerId, ...sanitizedUpdates }, { onConflict: 'reseller_id' })
       .select()
       .single();
 
+    // 2. Direct sync to isolated secondary storefront database
     if (data && !error) {
-      // Background sync to isolated storefront database
       syncTenantToStorefrontDb(data).catch(err => console.warn('[resellerService] Sync tenant warning:', err));
     }
 
@@ -69,114 +70,231 @@ export const resellerService = {
   },
 
   /**
-   * Add a product to the reseller's catalog (creates a share record + item).
-   * If the reseller doesn't have a storefront yet, this will still work at the DB level,
-   * but the storefront must exist for the public page to load.
+   * Add a product to the reseller's boutique catalog.
+   * Saves DIRECTLY and EXCLUSIVELY to the dedicated Secondary DB.
    */
   async addToCatalog(resellerId, productData) {
-    // Generate a unique token for this share
-    const publicToken = Math.random().toString(36).substring(2, 10);
-
-    const { data: share, error: shareError } = await supabase
-      .from('reseller_shares')
-      .insert({
-        reseller_id: resellerId,
-        public_token: publicToken,
-        title: productData.title,
-        default_markup_type: productData.markupType,
-        default_markup_value: productData.markupValue,
-      })
-      .select()
-      .single();
-
-    if (shareError) {
-      console.error('Error creating share:', shareError);
-      return { error: shareError };
+    const { data: sf } = await this.getStorefront(resellerId);
+    if (!sf?.slug) {
+      return { error: new Error('Please configure your boutique brand name and handle first.') };
     }
 
-    const { error: itemError } = await supabase
-      .from('reseller_share_items')
-      .insert({
-        share_id: share.id,
-        product_group_key: productData.productId,
-        variant_code: productData.variantCode,
-        base_price_snapshot: productData.basePrice,
-        markup_type: productData.markupType,
-        markup_value: productData.markupValue,
-        customer_price: productData.customerPrice,
+    // Direct write to Secondary DB boutique_products
+    const syncRes = await syncProductToStorefrontDb(sf, productData);
+    if (syncRes?.error) {
+      console.error('Error adding product to boutique database:', syncRes.error);
+      return { error: syncRes.error };
+    }
+
+    return { data: syncRes?.data || { success: true }, error: null };
+  },
+
+  /**
+   * Get all products in the reseller's boutique catalog.
+   * Reads DIRECTLY and EXCLUSIVELY from the dedicated Secondary DB.
+   */
+  async getResellerShares(resellerId) {
+    const { data: sf } = await this.getStorefront(resellerId);
+    if (!sf?.slug) {
+      return { data: [], error: null };
+    }
+
+    const sb = getStorefrontSupabase();
+    if (!sb) {
+      console.warn('[resellerService] Storefront DB client not initialized');
+      return { data: [], error: null };
+    }
+
+    try {
+      // 1. Fetch tenant from secondary DB
+      const { data: tenant } = await sb
+        .from('boutique_tenants')
+        .select('id')
+        .eq('slug', sf.slug.toLowerCase().trim())
+        .maybeSingle();
+
+      if (!tenant?.id) {
+        return { data: [], error: null };
+      }
+
+      // 2. Query products exclusively from secondary DB
+      const { data: products, error } = await sb
+        .from('boutique_products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('[resellerService] Error fetching boutique products:', error);
+        return { data: [], error };
+      }
+
+      // 3. Map into expected schema for ResellerTools UI
+      const formatted = (products || []).map((p) => {
+        const base = Number(p.base_price || 0);
+        const retail = Number(p.retail_price || base);
+        const profit = retail - base;
+        const markupPct = base > 0 ? Math.round((profit / base) * 100) : 0;
+
+        return {
+          id: p.id,
+          is_active: p.is_published !== false,
+          title: p.title,
+          default_markup_type: 'percentage',
+          default_markup_value: markupPct,
+          created_at: p.created_at,
+          reseller_share_items: [
+            {
+              id: p.id,
+              product_group_key: p.original_product_id,
+              variant_code: p.sku || p.original_product_id,
+              base_price_snapshot: base,
+              customer_price: retail,
+              markup_type: 'percentage',
+              markup_value: markupPct,
+            },
+          ],
+        };
       });
 
-    if (itemError) {
-      console.error('Error creating share item:', itemError);
-    } else {
-      // Background sync to isolated storefront database
-      this.getStorefront(resellerId).then(({ data: sf }) => {
-        if (sf?.slug) {
-          syncProductToStorefrontDb(sf, productData).catch(e => console.warn('[resellerService] Sync product warning:', e));
+      return { data: formatted, error: null };
+    } catch (err) {
+      console.error('[resellerService] Critical error fetching boutique catalog:', err);
+      return { data: [], error: err };
+    }
+  },
+
+  /**
+   * Update retail selling price for a boutique product.
+   * Updates DIRECTLY on the Secondary DB.
+   */
+  async updateShareMarkup(productId, { markupType, markupValue, customerPrice }) {
+    const sb = getStorefrontSupabase();
+    if (!sb) return { error: new Error('Database client not available') };
+
+    try {
+      let finalPrice = Number(customerPrice || 0);
+
+      if (!finalPrice) {
+        const { data: existing } = await sb
+          .from('boutique_products')
+          .select('base_price')
+          .eq('id', productId)
+          .maybeSingle();
+
+        const base = Number(existing?.base_price || 0);
+        if (markupType === 'percentage') {
+          finalPrice = Math.round(base * (1 + Number(markupValue) / 100));
+        } else if (markupType === 'fixed_amount') {
+          finalPrice = Math.round(base + Number(markupValue));
+        } else {
+          finalPrice = base;
         }
-      });
-    }
+      }
 
-    return { data: share, error: itemError };
+      const { data, error } = await sb
+        .from('boutique_products')
+        .update({ retail_price: finalPrice })
+        .eq('id', productId)
+        .select()
+        .single();
+
+      return { data, error };
+    } catch (err) {
+      console.error('[resellerService] Error updating product price:', err);
+      return { error: err };
+    }
+  },
+
+  /**
+   * Remove or deactivate a product from the boutique catalog.
+   * Deletes DIRECTLY from the Secondary DB.
+   */
+  async deactivateShare(productId) {
+    const sb = getStorefrontSupabase();
+    if (!sb) return { error: new Error('Database client not available') };
+
+    try {
+      const { error } = await sb
+        .from('boutique_products')
+        .delete()
+        .eq('id', productId);
+
+      return { error };
+    } catch (err) {
+      console.error('[resellerService] Error deleting boutique product:', err);
+      return { error: err };
+    }
   },
 
   /**
    * Get the full public catalog for a storefront by slug.
-   * Returns the storefront info + ALL active share items combined.
+   * Reads DIRECTLY from Secondary DB.
    */
   async getStorefrontBySlug(slug) {
-    // 1. Get storefront by slug
-    const { data: storefront, error: storeError } = await supabase
-      .from('reseller_storefronts')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .single();
+    const sb = getStorefrontSupabase();
+    if (!sb || !slug) return { data: null, error: new Error('Invalid slug') };
 
-    if (storeError || !storefront) {
-      console.error('Storefront not found:', storeError);
-      return { data: null, error: storeError };
+    try {
+      const cleanSlug = slug.toLowerCase().trim();
+      const { data: tenant, error: tenantErr } = await sb
+        .from('boutique_tenants')
+        .select('*')
+        .eq('slug', cleanSlug)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (tenantErr || !tenant) {
+        return { data: null, error: tenantErr || new Error('Boutique not found') };
+      }
+
+      const { data: products, error: prodErr } = await sb
+        .from('boutique_products')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      const allItems = (products || []).map((p) => ({
+        id: p.id,
+        product_group_key: p.original_product_id,
+        variant_code: p.sku || p.original_product_id,
+        base_price_snapshot: p.base_price,
+        customer_price: p.retail_price,
+        share_title: p.title,
+      }));
+
+      return {
+        data: {
+          storefront: tenant,
+          items: allItems,
+        },
+        error: null,
+      };
+    } catch (err) {
+      return { data: null, error: err };
     }
-
-    // 2. Get ALL active shares for this reseller
-    const { data: shares, error: sharesError } = await supabase
-      .from('reseller_shares')
-      .select('*, reseller_share_items (*)')
-      .eq('reseller_id', storefront.reseller_id)
-      .eq('is_active', true);
-
-    if (sharesError) {
-      console.error('Error fetching shares:', sharesError);
-      return { data: null, error: sharesError };
-    }
-
-    // 3. Flatten all share items into one array
-    const allItems = (shares || []).flatMap(share =>
-      (share.reseller_share_items || []).map(item => ({
-        ...item,
-        share_title: share.title,
-      }))
-    );
-
-    return {
-      data: {
-        storefront,
-        items: allItems,
-      },
-      error: null,
-    };
   },
 
   /**
-   * Submit a customer inquiry from a shared link
+   * Submit a customer inquiry (stored in isolated storefront DB)
    */
   async submitInquiry(inquiryData) {
-    const { data, error } = await supabase
-      .from('reseller_customer_inquiries')
-      .insert(inquiryData)
+    const sb = getStorefrontSupabase();
+    if (!sb) return { error: new Error('Storefront DB not available') };
+
+    const { data, error } = await sb
+      .from('boutique_orders')
+      .insert({
+        customer_name: inquiryData.name || inquiryData.customer_name || 'Guest',
+        customer_phone: inquiryData.phone || inquiryData.customer_phone || '',
+        customer_email: inquiryData.email || inquiryData.customer_email || null,
+        total_amount: inquiryData.total_amount || 0,
+        status: 'new',
+      })
       .select()
       .single();
-    
+
     if (error) console.error('Error submitting inquiry:', error);
     return { data, error };
   },
@@ -185,206 +303,39 @@ export const resellerService = {
    * Get all customer inquiries for a reseller
    */
   async getResellerInquiries(resellerId) {
-    const { data, error } = await supabase
-      .from('reseller_customer_inquiries')
-      .select('*')
-      .eq('reseller_id', resellerId)
-      .neq('status', 'archived')
-      .order('created_at', { ascending: false });
-    
-    if (error) console.error('Error fetching inquiries:', error);
-    return { data, error };
-  },
+    const { data: sf } = await this.getStorefront(resellerId);
+    if (!sf?.slug) return { data: [], error: null };
 
-  /**
-   * Delete an inquiry
-   */
-  async deleteInquiry(inquiryId) {
-    const { error } = await supabase
-      .from('reseller_customer_inquiries')
-      .update({ status: 'archived' })
-      .eq('id', inquiryId);
-    
-    if (error) console.error('Error deleting inquiry:', error);
-    return { error };
-  },
+    const sb = getStorefrontSupabase();
+    if (!sb) return { data: [], error: null };
 
-  /**
-   * Get all shares for a reseller (dashboard)
-   */
-  async getResellerShares(resellerId) {
-    const { data: shares, error } = await supabase
-      .from('reseller_shares')
-      .select(`
-        *,
-        reseller_share_items (*)
-      `)
-      .eq('reseller_id', resellerId)
-      .order('created_at', { ascending: false });
-    
-    if (error || !shares) return { data: shares, error };
-
-    // Synchronize with secondary DB boutique_products so items deleted in the template admin panel are pruned here
-    try {
-      const { data: sf } = await this.getStorefront(resellerId);
-      if (sf?.slug) {
-        const sb = getStorefrontSupabase();
-        if (sb) {
-          const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
-          if (tenant?.id) {
-            const { data: secProds } = await sb.from('boutique_products').select('original_product_id, is_published').eq('tenant_id', tenant.id);
-            if (secProds) {
-              const activeIds = new Set(secProds.filter(p => p.is_published).map(p => String(p.original_product_id)));
-              const filteredShares = shares.filter(s => {
-                const item = s.reseller_share_items?.[0];
-                if (!item?.product_group_key) return true;
-                return activeIds.has(String(item.product_group_key));
-              });
-              return { data: filteredShares, error: null };
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('[resellerService] Sync check warning:', e);
-    }
-
-    return { data: shares, error };
-  },
-
-  /**
-   * Update markup price for a share and its share items
-   */
-  async updateShareMarkup(shareId, { markupType, markupValue, customerPrice }) {
-    // 1. Update reseller_shares record
-    const { data: share, error: shareError } = await supabase
-      .from('reseller_shares')
-      .update({
-        default_markup_type: markupType,
-        default_markup_value: markupValue,
-      })
-      .eq('id', shareId)
-      .select()
-      .single();
-
-    if (shareError) {
-      console.error('Error updating share markup:', shareError);
-      return { error: shareError };
-    }
-
-    // 2. Fetch existing share items to update customer_price
-    const { data: items, error: fetchItemsError } = await supabase
-      .from('reseller_share_items')
-      .select('*')
-      .eq('share_id', shareId);
-
-    let finalCustomerPrice = customerPrice;
-    if (!fetchItemsError && items && items.length > 0) {
-      for (const item of items) {
-        let newCustomerPrice = customerPrice;
-        if (!newCustomerPrice && item.base_price_snapshot) {
-          const base = Number(item.base_price_snapshot) || 0;
-          if (markupType === 'percentage') {
-            newCustomerPrice = Math.round(base * (1 + Number(markupValue) / 100));
-          } else if (markupType === 'fixed_amount') {
-            newCustomerPrice = Math.round(base + Number(markupValue));
-          } else {
-            newCustomerPrice = base;
-          }
-        }
-        finalCustomerPrice = newCustomerPrice;
-
-        await supabase
-          .from('reseller_share_items')
-          .update({
-            markup_type: markupType,
-            markup_value: markupValue,
-            customer_price: newCustomerPrice || item.customer_price,
-          })
-          .eq('id', item.id);
-      }
-    }
-
-    // 3. Sync updated price to secondary DB boutique_products
-    if (share && items?.[0]?.product_group_key) {
-      this.getStorefront(share.reseller_id).then(async ({ data: sf }) => {
-        if (sf?.slug) {
-          const sb = getStorefrontSupabase();
-          if (sb) {
-            const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
-            if (tenant?.id) {
-              await sb.from('boutique_products')
-                .update({ retail_price: Number(finalCustomerPrice) })
-                .eq('tenant_id', tenant.id)
-                .eq('original_product_id', String(items[0].product_group_key));
-            }
-          }
-        }
-      }).catch(e => console.warn('[resellerService] Sync markup error:', e));
-    }
-
-    return { data: share, error: null };
-  },
-
-  /**
-   * Deactivate a share
-   */
-  async deactivateShare(shareId) {
-    // 1. Fetch share details first
-    const { data: share } = await supabase
-      .from('reseller_shares')
-      .select('*, reseller_share_items(*)')
-      .eq('id', shareId)
+    const { data: tenant } = await sb
+      .from('boutique_tenants')
+      .select('id')
+      .eq('slug', sf.slug.toLowerCase().trim())
       .maybeSingle();
 
-    // 2. Mark inactive in primary DB
-    const { error } = await supabase
-      .from('reseller_shares')
-      .update({ is_active: false })
-      .eq('id', shareId);
+    if (!tenant?.id) return { data: [], error: null };
 
-    // 3. Delete from secondary DB boutique_products
-    if (share && !error && share.reseller_share_items?.[0]?.product_group_key) {
-      const prodKey = String(share.reseller_share_items[0].product_group_key);
-      this.getStorefront(share.reseller_id).then(async ({ data: sf }) => {
-        if (sf?.slug) {
-          const sb = getStorefrontSupabase();
-          if (sb) {
-            const { data: tenant } = await sb.from('boutique_tenants').select('id').eq('slug', sf.slug.toLowerCase().trim()).maybeSingle();
-            if (tenant?.id) {
-              await sb.from('boutique_products')
-                .delete()
-                .eq('tenant_id', tenant.id)
-                .eq('original_product_id', prodKey);
-            }
-          }
-        }
-      }).catch(e => console.warn('[resellerService] Sync delete error:', e));
-    }
-    
-    return { error };
+    const { data, error } = await sb
+      .from('boutique_orders')
+      .select('*')
+      .eq('tenant_id', tenant.id)
+      .order('created_at', { ascending: false });
+
+    return { data: data || [], error };
   },
 
   /**
-   * Delete reseller storefront and associated shares/items
+   * Delete reseller storefront and associated boutique records
    */
   async deleteStorefront(resellerId) {
     if (!resellerId) return { error: new Error('User ID is required') };
 
-    // 0. Fetch existing storefront to get slug for remote sync
+    // 1. Fetch existing storefront to get slug
     const { data: existingSf } = await this.getStorefront(resellerId);
 
-    // 1. Delete all shares for this reseller (reseller_share_items will cascade delete)
-    const { error: sharesError } = await supabase
-      .from('reseller_shares')
-      .delete()
-      .eq('reseller_id', resellerId);
-
-    if (sharesError) {
-      console.error('Error deleting reseller shares:', sharesError);
-    }
-
-    // 2. Delete the storefront record from primary DB
+    // 2. Delete the storefront mapping from primary DB
     const { data, error } = await supabase
       .from('reseller_storefronts')
       .delete()
@@ -395,14 +346,14 @@ export const resellerService = {
       return { error };
     }
 
-    // 3. Delete tenant from isolated storefront database
+    // 3. Delete tenant and cascade products from secondary DB
     if (existingSf?.slug) {
       const sb = getStorefrontSupabase();
       if (sb) {
         sb.from('boutique_tenants')
           .delete()
           .eq('slug', existingSf.slug.toLowerCase().trim())
-          .catch(e => console.warn('[resellerService] Delete storefront remote error:', e));
+          .catch((e) => console.warn('[resellerService] Delete storefront remote error:', e));
       }
     }
 
