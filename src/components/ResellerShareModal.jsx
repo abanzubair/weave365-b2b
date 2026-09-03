@@ -78,6 +78,9 @@ export function ResellerShareModal({ product, variant, user, priceAccess, onClos
         variantCode: variant?.code || product.variants?.[0]?.code,
         basePrice,
         customerPrice: calculatedCustomerPrice,
+        images: product.images || (product.image ? [product.image] : []),
+        category: product.category || 'Saree',
+        fabric: product.fabric || 'Pure Silk',
       });
       if (error) throw error;
       setDone(true);
