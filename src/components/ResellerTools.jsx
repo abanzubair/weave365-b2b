@@ -42,6 +42,7 @@ export const AVAILABLE_THEMES = [
     engineBadge: 'Next.js 16',
     styleBadge: 'Modern Editorial',
     accentColor: '#f59e0b',
+    image: '/images/themes/theme-vrtx-preview.png',
     previewUrl: 'https://ecom-template-1-tau.vercel.app',
     features: [
       'Deep onyx & gold luxury dark-mode',
@@ -57,6 +58,7 @@ export const AVAILABLE_THEMES = [
     engineBadge: 'Vite + React',
     styleBadge: 'Artisanal Silk & Gold',
     accentColor: '#b58342',
+    image: '/images/themes/theme-tavishi-preview.png',
     previewUrl: 'https://50k-gamma.vercel.app',
     features: [
       'Warm royal gold & ivory celebration palette',
@@ -953,47 +955,17 @@ function StorefrontSetupPanel({
                       </div>
                     </div>
 
-                    {/* Miniature Design Preview Mockup */}
-                    <div className={`rt-theme-mini-mockup rt-mockup-${theme.id}`}>
-                      {theme.id === 'vrtx-studio' ? (
-                        <div className="rt-mini-mockup-body rt-mini-dark">
-                          <div className="rt-mini-nav">
-                            <span className="rt-mini-brand">VRTX STUDIO</span>
-                            <span className="rt-mini-pill">BAG</span>
-                          </div>
-                          <div className="rt-mini-hero">
-                            <span className="rt-mini-eyebrow">EDITORIAL NOIR</span>
-                            <span className="rt-mini-title">PURE SILK HERITAGE</span>
-                          </div>
-                          <div className="rt-mini-products">
-                            <div className="rt-mini-pcard">
-                              <span className="rt-mini-pcard-tag">₹2,500</span>
-                            </div>
-                            <div className="rt-mini-pcard">
-                              <span className="rt-mini-pcard-tag">₹1,488</span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="rt-mini-mockup-body rt-mini-light">
-                          <div className="rt-mini-nav">
-                            <span className="rt-mini-brand-gold">TAVISHI HERITAGE</span>
-                            <span className="rt-mini-pill-gold">TRACK</span>
-                          </div>
-                          <div className="rt-mini-hero">
-                            <span className="rt-mini-eyebrow-gold">ARTISANAL WEAVES</span>
-                            <span className="rt-mini-title-gold">ROYAL BANARASI</span>
-                          </div>
-                          <div className="rt-mini-products">
-                            <div className="rt-mini-pcard-gold">
-                              <span className="rt-mini-pcard-gold-tag">₹2,500</span>
-                            </div>
-                            <div className="rt-mini-pcard-gold">
-                              <span className="rt-mini-pcard-gold-tag">₹1,488</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                    {/* Real Website Preview Screenshot */}
+                    <div className="rt-theme-screenshot-wrap">
+                      <img 
+                        src={theme.image} 
+                        alt={`${theme.name} Preview`} 
+                        className="rt-theme-screenshot-img"
+                        loading="lazy"
+                      />
+                      <div className="rt-theme-screenshot-overlay">
+                        <span className="rt-theme-zoom-hint">Live Template Preview</span>
+                      </div>
                     </div>
 
                     {/* Theme Info & Features */}
