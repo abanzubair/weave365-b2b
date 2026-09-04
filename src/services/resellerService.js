@@ -7,8 +7,7 @@
  * @module services/resellerService
  */
 
-import { supabase } from '../supabaseClient';
-import { syncTenantToStorefrontDb, syncProductToStorefrontDb, getStorefrontSupabase } from './boutiqueSyncService';
+import { syncProductToStorefrontDb, getStorefrontSupabase } from './boutiqueSyncService';
 
 /**
  * Normalizes an external website URL to ensure it has a valid https protocol and no trailing slashes.
@@ -26,26 +25,80 @@ export function normalizeWebsiteUrl(url) {
 }
 
 /**
- * Service for Reseller White-label operations
+ * Service for Reseller White-label operations.
+ * Operates EXCLUSIVELY on the secondary storefront database (boutique_tenants, boutique_products).
  */
 export const resellerService = {
   /**
-   * Get reseller storefront settings (from primary DB mapping or secondary DB)
+   * Get reseller storefront settings exclusively from secondary DB (boutique_tenants)
    */
   async getStorefront(resellerId) {
-    const { data, error } = await supabase
-      .from('reseller_storefronts')
-      .select('*')
-      .eq('reseller_id', resellerId)
-      .maybeSingle();
-    
-    return { data, error };
+    if (!resellerId) return { data: null, error: null };
+    const sb = getStorefrontSupabase();
+    if (!sb) return { data: null, error: new Error('Storefront database not configured') };
+
+    try {
+      // 1. Try finding tenant by metadata in about_text
+      let { data: tenant } = await sb
+        .from('boutique_tenants')
+        .select('*')
+        .ilike('about_text', `%${resellerId}%`)
+        .maybeSingle();
+
+      // 2. If not found, fetch active tenants and match owner_id or single default
+      if (!tenant) {
+        const { data: allTenants } = await sb
+          .from('boutique_tenants')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (allTenants && allTenants.length > 0) {
+          tenant = allTenants.find(t => t.reseller_id === resellerId || t.owner_id === resellerId);
+          if (!tenant && allTenants.length === 1 && !allTenants[0].about_text?.includes('reseller_id')) {
+            tenant = allTenants[0];
+          }
+        }
+      }
+
+      if (!tenant) return { data: null, error: null };
+
+      return {
+        data: {
+          id: tenant.id,
+          reseller_id: resellerId,
+          store_name: tenant.store_name,
+          slug: tenant.slug,
+          tagline: tenant.tagline || '',
+          logo_url: tenant.logo_url,
+          banner_url: tenant.banner_url,
+          whatsapp: tenant.whatsapp || '',
+          custom_domain: tenant.custom_domain,
+          theme_color: tenant.theme_color || 'vrtx-studio',
+          accent_color: tenant.accent_color || '#b58342',
+          theme_settings: {
+            theme_id: tenant.theme_color || 'vrtx-studio',
+            accent_color: tenant.accent_color || '#b58342',
+            primary_color: tenant.accent_color || '#0F172A',
+          },
+          about_text: tenant.about_text,
+          is_active: tenant.is_active !== false,
+          created_at: tenant.created_at,
+        },
+        error: null,
+      };
+    } catch (err) {
+      console.error('[resellerService] getStorefront error from secondary DB:', err);
+      return { data: null, error: err };
+    }
   },
 
   /**
-   * Update reseller storefront settings (upsert)
+   * Update reseller storefront settings exclusively in secondary DB (boutique_tenants)
    */
   async updateStorefront(resellerId, updates) {
+    const sb = getStorefrontSupabase();
+    if (!sb) return { data: null, error: new Error('Storefront database not configured') };
+
     const sanitizedUpdates = { ...updates };
     if ('custom_domain' in sanitizedUpdates) {
       const cd = typeof sanitizedUpdates.custom_domain === 'string'
@@ -54,19 +107,92 @@ export const resellerService = {
       sanitizedUpdates.custom_domain = cd ? cd : null;
     }
 
-    // 1. Keep mapping in primary DB
-    const { data, error } = await supabase
-      .from('reseller_storefronts')
-      .upsert({ reseller_id: resellerId, ...sanitizedUpdates }, { onConflict: 'reseller_id' })
-      .select()
-      .single();
+    try {
+      const { data: existingSf } = await this.getStorefront(resellerId);
+      const slug = (sanitizedUpdates.slug || existingSf?.slug || 'my-boutique').toLowerCase().trim();
 
-    // 2. Direct sync to isolated secondary storefront database
-    if (data && !error) {
-      syncTenantToStorefrontDb(data).catch(err => console.warn('[resellerService] Sync tenant warning:', err));
+      const metaTag = JSON.stringify({ reseller_id: resellerId });
+
+      const tenantPayload = {
+        slug,
+        store_name: sanitizedUpdates.store_name || existingSf?.store_name || slug,
+        tagline: sanitizedUpdates.tagline !== undefined ? sanitizedUpdates.tagline : (existingSf?.tagline || ''),
+        logo_url: sanitizedUpdates.logo_url !== undefined ? sanitizedUpdates.logo_url : (existingSf?.logo_url || null),
+        banner_url: sanitizedUpdates.banner_url !== undefined ? sanitizedUpdates.banner_url : (existingSf?.banner_url || null),
+        theme_color: sanitizedUpdates.theme_color || existingSf?.theme_color || 'vrtx-studio',
+        accent_color: sanitizedUpdates.accent_color || existingSf?.accent_color || '#b58342',
+        whatsapp: sanitizedUpdates.whatsapp !== undefined ? sanitizedUpdates.whatsapp : (existingSf?.whatsapp || ''),
+        custom_domain: sanitizedUpdates.custom_domain !== undefined ? sanitizedUpdates.custom_domain : (existingSf?.custom_domain || null),
+        about_text: metaTag,
+        is_active: sanitizedUpdates.is_active !== undefined ? sanitizedUpdates.is_active : true,
+      };
+
+      let resultTenant = null;
+
+      if (existingSf?.id) {
+        const { data, error } = await sb
+          .from('boutique_tenants')
+          .update(tenantPayload)
+          .eq('id', existingSf.id)
+          .select()
+          .single();
+        if (error) throw error;
+        resultTenant = data;
+      } else {
+        const { data: existingBySlug } = await sb
+          .from('boutique_tenants')
+          .select('id')
+          .eq('slug', slug)
+          .maybeSingle();
+
+        if (existingBySlug?.id) {
+          const { data, error } = await sb
+            .from('boutique_tenants')
+            .update(tenantPayload)
+            .eq('id', existingBySlug.id)
+            .select()
+            .single();
+          if (error) throw error;
+          resultTenant = data;
+        } else {
+          const { data, error } = await sb
+            .from('boutique_tenants')
+            .insert(tenantPayload)
+            .select()
+            .single();
+          if (error) throw error;
+          resultTenant = data;
+        }
+      }
+
+      return {
+        data: {
+          id: resultTenant.id,
+          reseller_id: resellerId,
+          store_name: resultTenant.store_name,
+          slug: resultTenant.slug,
+          tagline: resultTenant.tagline || '',
+          logo_url: resultTenant.logo_url,
+          banner_url: resultTenant.banner_url,
+          whatsapp: resultTenant.whatsapp || '',
+          custom_domain: resultTenant.custom_domain,
+          theme_color: resultTenant.theme_color,
+          accent_color: resultTenant.accent_color,
+          theme_settings: {
+            theme_id: resultTenant.theme_color,
+            accent_color: resultTenant.accent_color,
+            primary_color: resultTenant.accent_color || '#0F172A',
+          },
+          about_text: resultTenant.about_text,
+          is_active: resultTenant.is_active !== false,
+          created_at: resultTenant.created_at,
+        },
+        error: null,
+      };
+    } catch (err) {
+      console.error('[resellerService] updateStorefront error on secondary DB:', err);
+      return { data: null, error: err };
     }
-
-    return { data, error };
   },
 
   /**
@@ -327,40 +453,35 @@ export const resellerService = {
   },
 
   /**
-   * Delete reseller storefront and associated boutique records
+   * Delete reseller storefront and associated boutique records exclusively from secondary DB
    */
   async deleteStorefront(resellerId) {
     if (!resellerId) return { error: new Error('User ID is required') };
+    const sb = getStorefrontSupabase();
+    if (!sb) return { error: new Error('Storefront database not configured') };
 
-    // 1. Fetch existing storefront to get slug
-    const { data: existingSf } = await this.getStorefront(resellerId);
+    try {
+      const { data: existingSf } = await this.getStorefront(resellerId);
+      if (!existingSf) return { data: null, error: null };
 
-    // 2. Delete the storefront mapping from primary DB
-    const { data, error } = await supabase
-      .from('reseller_storefronts')
-      .delete()
-      .eq('reseller_id', resellerId);
+      if (existingSf.id) {
+        await sb
+          .from('boutique_products')
+          .delete()
+          .eq('tenant_id', existingSf.id);
 
-    if (error) {
-      console.error('Error deleting reseller storefront:', error);
-      return { error };
-    }
+        const { error } = await sb
+          .from('boutique_tenants')
+          .delete()
+          .eq('id', existingSf.id);
 
-    // 3. Delete tenant and cascade products from secondary DB
-    if (existingSf?.slug) {
-      try {
-        const sb = getStorefrontSupabase();
-        if (sb) {
-          await sb
-            .from('boutique_tenants')
-            .delete()
-            .eq('slug', existingSf.slug.toLowerCase().trim());
-        }
-      } catch (e) {
-        console.warn('[resellerService] Delete storefront remote error:', e);
+        if (error) throw error;
       }
-    }
 
-    return { data, error: null };
+      return { data: { success: true }, error: null };
+    } catch (err) {
+      console.error('[resellerService] deleteStorefront error on secondary DB:', err);
+      return { error: err };
+    }
   },
 };

@@ -478,20 +478,11 @@ create policy "page seo admin only"
 -- RESELLER WHITE-LABEL FEATURE
 -------------------------------------------------------------------------------
 
--- 1. Reseller Storefronts (Identity & Branding)
-create table if not exists public.reseller_storefronts (
-  id uuid primary key default gen_random_uuid(),
-  reseller_id uuid not null unique references public.profiles(id) on delete cascade,
-  store_name text not null,
-  slug text not null unique,
-  logo_url text,
-  whatsapp text,
-  theme_settings jsonb default '{"primary_color": "#0F172A", "accent_color": "#0369A1"}'::jsonb,
-  custom_domain text unique,
-  is_active boolean default true,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+-- 1. Reseller Storefronts (MIGRATED EXCLUSIVELY TO DEDICATED SECONDARY DATABASE)
+-- NOTE: Tenant data (branding, settings, catalogs, products) is stored ONLY in the isolated
+-- secondary database (table: public.boutique_tenants, public.boutique_products).
+-- Run this statement in the main Supabase SQL editor to drop the legacy table:
+-- DROP TABLE IF EXISTS public.reseller_storefronts CASCADE;
 
 -- 2. Reseller Shares (Links)
 create table if not exists public.reseller_shares (
@@ -539,27 +530,14 @@ create table if not exists public.reseller_customer_inquiries (
 );
 
 -- Indices
-create index if not exists reseller_storefronts_slug_idx on public.reseller_storefronts (slug);
 create index if not exists reseller_shares_public_token_idx on public.reseller_shares (public_token);
 create index if not exists reseller_share_items_share_id_idx on public.reseller_share_items (share_id);
 create index if not exists reseller_customer_inquiries_reseller_id_idx on public.reseller_customer_inquiries (reseller_id);
 
 -- RLS
-alter table public.reseller_storefronts enable row level security;
 alter table public.reseller_shares enable row level security;
 alter table public.reseller_share_items enable row level security;
 alter table public.reseller_customer_inquiries enable row level security;
-
--- Policies: Reseller Storefronts
-create policy "Public can view active storefronts"
-  on public.reseller_storefronts for select
-  using (is_active = true);
-
-create policy "Resellers can manage own storefront"
-  on public.reseller_storefronts for all
-  to authenticated
-  using (auth.uid() = reseller_id)
-  with check (auth.uid() = reseller_id);
 
 -- Policies: Reseller Shares
 create policy "Public can view active shares by token"
@@ -606,10 +584,6 @@ create policy "Resellers can view own inquiries"
   using (auth.uid() = reseller_id);
 
 -- Updated At Triggers
-drop trigger if exists touch_reseller_storefronts_updated_at on public.reseller_storefronts;
-create trigger touch_reseller_storefronts_updated_at
-before update on public.reseller_storefronts
-for each row execute function public.touch_updated_at();
 
 drop trigger if exists touch_reseller_shares_updated_at on public.reseller_shares;
 create trigger touch_reseller_shares_updated_at

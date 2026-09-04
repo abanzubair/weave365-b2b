@@ -23,6 +23,17 @@ export async function syncTenantToStorefrontDb(storefrontRecord) {
 
   try {
     const slug = storefrontRecord.slug.toLowerCase().trim();
+    const { data: existing } = await sb
+      .from('boutique_tenants')
+      .select('id, about_text')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    let metaAbout = storefrontRecord.about_text || existing?.about_text || null;
+    if (storefrontRecord.reseller_id && (!metaAbout || !metaAbout.includes(storefrontRecord.reseller_id))) {
+      metaAbout = JSON.stringify({ reseller_id: storefrontRecord.reseller_id });
+    }
+
     const payload = {
       slug,
       store_name: storefrontRecord.store_name || slug,
@@ -33,15 +44,9 @@ export async function syncTenantToStorefrontDb(storefrontRecord) {
       accent_color: storefrontRecord.accent_color || '#b58342',
       whatsapp: storefrontRecord.whatsapp || '',
       custom_domain: storefrontRecord.custom_domain || null,
-      about_text: storefrontRecord.about_text || null,
+      about_text: metaAbout,
       is_active: storefrontRecord.is_active !== false,
     };
-
-    const { data: existing } = await sb
-      .from('boutique_tenants')
-      .select('id')
-      .eq('slug', slug)
-      .maybeSingle();
 
     if (existing?.id) {
       const { data, error } = await sb

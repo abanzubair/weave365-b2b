@@ -1,24 +1,43 @@
 import React from 'react';
 import Link from 'next/link';
-import { supabase } from '../../../src/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { siteUrl } from '../../../src/config';
 
 export const runtime = 'edge';
+
+const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_URL || 'https://agsldsqeynzydujmijgc.supabase.co';
+const STOREFRONT_KEY = process.env.STOREFRONT_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_ANON_KEY;
+
+let storefrontDb = null;
+function getStorefrontClient() {
+  if (!storefrontDb && STOREFRONT_URL && STOREFRONT_KEY) {
+    storefrontDb = createClient(STOREFRONT_URL, STOREFRONT_KEY, {
+      auth: { persistSession: false },
+    });
+  }
+  return storefrontDb;
+}
 
 async function getStorefrontData(slug) {
   if (!slug) return null;
   const cleanSlug = String(slug).toLowerCase().trim();
 
   try {
-    const { data, error } = await supabase
-      .from('reseller_storefronts')
+    const sb = getStorefrontClient();
+    if (!sb) {
+      console.error('[store route] Storefront secondary DB not configured');
+      return null;
+    }
+
+    const { data, error } = await sb
+      .from('boutique_tenants')
       .select('*')
       .eq('slug', cleanSlug)
       .eq('is_active', true)
       .maybeSingle();
 
     if (error) {
-      console.error('[store route] Error fetching storefront:', error);
+      console.error('[store route] Error fetching storefront from secondary DB:', error);
       return null;
     }
     return data;

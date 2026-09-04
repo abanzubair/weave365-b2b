@@ -42,15 +42,16 @@ export default function BuyerPipeline({
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
 
   const storefrontsByReseller = useMemo(() => {
-    const list = adminData?.optional?.reseller_storefronts || [];
+    const list = adminData?.optional?.boutique_tenants || adminData?.optional?.reseller_storefronts || [];
     const map = {};
     list.forEach((sf) => {
-      if (sf?.reseller_id) {
-        map[sf.reseller_id] = sf;
+      const rid = sf?.reseller_id || sf?.owner_id || sf?.about_text?.match(/"reseller_id":"([^"]+)"/)?.[1];
+      if (rid) {
+        map[rid] = sf;
       }
     });
     return map;
-  }, [adminData?.optional?.reseller_storefronts]);
+  }, [adminData?.optional?.boutique_tenants, adminData?.optional?.reseller_storefronts]);
 
   const sortedProfiles = useMemo(() => {
     let profiles = (adminData.profiles || []).filter((p) => {

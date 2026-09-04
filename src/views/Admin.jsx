@@ -36,6 +36,7 @@ import {
   ShieldCheck,
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+import { getStorefrontSupabase } from '../services/boutiqueSyncService.js';
 import { blogPosts } from '../data/blogPosts.js';
 import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
@@ -80,7 +81,6 @@ const optionalTables = [
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
   { key: 'influencer_profiles', label: 'Influencer Profiles' },
-  { key: 'reseller_storefronts', label: 'Reseller Storefronts' },
 ];
 
 const emptyAdminData = {
@@ -202,9 +202,28 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       if (result.error) errors[key] = result.error.message;
     });
 
+    const sfDb = getStorefrontSupabase();
+    let secondaryTenants = [];
+    if (sfDb) {
+      try {
+        const { data: tenants } = await sfDb.from('boutique_tenants').select('*');
+        if (tenants) {
+          secondaryTenants = tenants.map(t => ({
+            ...t,
+            reseller_id: t.reseller_id || t.owner_id || t.about_text?.match(/"reseller_id":"([^"]+)"/)?.[1] || null,
+          }));
+        }
+      } catch (e) {
+        console.warn('Failed to load tenants from secondary DB:', e);
+      }
+    }
+
     optionalResults.forEach(([key, result]) => {
       optional[key] = result.data;
     });
+
+    optional.reseller_storefronts = secondaryTenants;
+    optional.boutique_tenants = secondaryTenants;
 
     setAdminData({
       profiles: profiles.data,

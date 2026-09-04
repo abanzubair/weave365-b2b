@@ -51,9 +51,24 @@ const driveImageUrl = (link) => {
   return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
 };
 
+// Lazy secondary database client for tenant data
+let storefrontDbInstance = null;
+async function getStorefrontDb() {
+  if (!storefrontDbInstance) {
+    const url = process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_URL || 'https://agsldsqeynzydujmijgc.supabase.co';
+    const key = process.env.STOREFRONT_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_ANON_KEY;
+    if (url && key) {
+      const { createClient } = await import('@supabase/supabase-js');
+      storefrontDbInstance = createClient(url, key, { auth: { persistSession: false } });
+    }
+  }
+  return storefrontDbInstance;
+}
+
 export async function GET(request) {
   try {
     const supabase = await getSupabase();
+    const sfDb = await getStorefrontDb();
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
     const domain = searchParams.get('domain');
@@ -68,38 +83,48 @@ export async function GET(request) {
 
     let storefront = null;
 
-    // 1. Resolve Storefront Branding & Settings
-    if (resellerId) {
-      const { data } = await supabase
-        .from('reseller_storefronts')
-        .select('*')
-        .eq('reseller_id', resellerId)
-        .eq('is_active', true)
-        .maybeSingle();
-      storefront = data;
-    } else if (slug) {
-      const { data } = await supabase
-        .from('reseller_storefronts')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .maybeSingle();
-      storefront = data;
-    } else if (domain) {
-      // Try exact and normalized custom domain variations matching the requested domain
-      const cleanDomain = domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      const { data: stores } = await supabase
-        .from('reseller_storefronts')
-        .select('*')
-        .eq('is_active', true);
-      
-      if (stores) {
-        storefront = stores.find(s => {
-          if (!s.custom_domain) return false;
-          const sDom = s.custom_domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-          return sDom === cleanDomain || sDom.includes(cleanDomain) || cleanDomain.includes(sDom);
-        });
+    // 1. Resolve Storefront Branding & Settings exclusively from Secondary DB (boutique_tenants)
+    if (sfDb) {
+      if (resellerId) {
+        const { data } = await sfDb
+          .from('boutique_tenants')
+          .select('*')
+          .ilike('about_text', `%${resellerId}%`)
+          .eq('is_active', true)
+          .maybeSingle();
+        storefront = data;
+      } else if (slug) {
+        const { data } = await sfDb
+          .from('boutique_tenants')
+          .select('*')
+          .eq('slug', slug.toLowerCase().trim())
+          .eq('is_active', true)
+          .maybeSingle();
+        storefront = data;
+      } else if (domain) {
+        const cleanDomain = domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+        const { data: stores } = await sfDb
+          .from('boutique_tenants')
+          .select('*')
+          .eq('is_active', true);
+        
+        if (stores) {
+          storefront = stores.find(s => {
+            if (!s.custom_domain) return false;
+            const sDom = s.custom_domain.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+            return sDom === cleanDomain || sDom.includes(cleanDomain) || cleanDomain.includes(sDom);
+          });
+        }
       }
+    }
+
+    if (storefront) {
+      const parsedResellerId = resellerId || storefront.owner_id || storefront.about_text?.match(/"reseller_id":"([^"]+)"/)?.[1] || null;
+      storefront.reseller_id = parsedResellerId;
+      storefront.theme_settings = storefront.theme_settings || {
+        theme_id: storefront.theme_color || 'vrtx-studio',
+        accent_color: storefront.accent_color || '#b58342'
+      };
     }
 
     if (!storefront) {
