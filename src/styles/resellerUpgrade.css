@@ -194,3 +194,234 @@
   font-weight: 500;
   margin-top: 2px;
 }
+
+/* ===================================================
+   Storefront Templates Preview Showcase (Upgrade Card)
+   =================================================== */
+
+.rt-upgrade-templates-section {
+  margin-bottom: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.rt-upgrade-templates-header {
+  margin-bottom: 1.125rem;
+}
+
+.rt-upgrade-templates-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.rt-upgrade-templates-icon {
+  color: var(--gold-dark, #805d31);
+}
+
+.rt-upgrade-templates-title {
+  font-family: var(--font-heading, inherit);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.rt-upgrade-templates-subtitle {
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 620px;
+}
+
+.rt-upgrade-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.125rem;
+}
+
+@media (max-width: 640px) {
+  .rt-upgrade-templates-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rt-upgrade-template-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  outline: none;
+}
+
+.rt-upgrade-template-card:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.06);
+}
+
+.rt-upgrade-template-card:focus-visible {
+  border-color: var(--gold-dark, #805d31);
+  box-shadow: 0 0 0 3px rgba(181, 131, 66, 0.15);
+}
+
+.rt-upgrade-template-card.active {
+  border-color: var(--gold-dark, #805d31);
+  background: #fffdfa;
+  box-shadow: 0 0 0 1px var(--gold-dark, #805d31), 0 8px 24px -4px rgba(181, 131, 66, 0.14);
+}
+
+/* Screenshot Preview */
+.rt-upgrade-screenshot-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+  position: relative;
+  background: #0f172a;
+}
+
+.rt-upgrade-screenshot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.rt-upgrade-template-card:hover .rt-upgrade-screenshot-img {
+  transform: scale(1.03);
+}
+
+/* Floating Radio Indicator */
+.rt-upgrade-radio-pill {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+}
+
+.rt-upgrade-radio-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1.5px solid rgba(15, 23, 42, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  color: transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.rt-upgrade-radio-dot.checked {
+  background: var(--gold-dark, #805d31);
+  border-color: var(--gold-dark, #805d31);
+  color: #ffffff;
+}
+
+/* Theme Body */
+.rt-upgrade-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0.625rem 0.25rem 0.125rem 0.25rem;
+  gap: 2px;
+}
+
+.rt-upgrade-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rt-upgrade-card-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.rt-upgrade-card-tag {
+  font-size: 0.6875rem;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.rt-upgrade-card-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Card Footer Bar */
+.rt-upgrade-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.rt-upgrade-template-card.active .rt-upgrade-card-footer {
+  border-top-color: #f5eedf;
+}
+
+.rt-upgrade-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #948e85;
+  transition: color 0.15s ease;
+}
+
+.rt-upgrade-status-text.is-active {
+  color: var(--gold-dark, #805d31);
+  font-weight: 700;
+}
+
+.rt-upgrade-demo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.rt-upgrade-demo-link:hover {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+

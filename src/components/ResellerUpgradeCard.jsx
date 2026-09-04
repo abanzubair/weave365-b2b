@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Globe, 
   Zap, 
   ShoppingBag, 
   ShieldCheck,
-  Check
+  Check,
+  ExternalLink,
+  Palette
 } from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { storeConfig } from '../config.js';
+import { AVAILABLE_THEMES } from './ResellerTools.jsx';
 import '../styles/resellerUpgrade.css';
 
 export function ResellerUpgradeCard({ user, buyerProfile }) {
+  const [selectedThemeId, setSelectedThemeId] = useState('tavishi-heritage');
   const userIdentifier = user?.email || buyerProfile?.business_name || 'Boutique Owner';
   const whatsappNumber = storeConfig.whatsapp || '9919101369';
+
+  const selectedTheme = AVAILABLE_THEMES.find(t => t.id === selectedThemeId) || AVAILABLE_THEMES[0];
   
-  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/month) for my account (${userIdentifier}).`;
+  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/month) with the ${selectedTheme.name} template for my account (${userIdentifier}).`;
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -62,6 +68,85 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
         </div>
       </div>
 
+      {/* Storefront Templates Showcase */}
+      <div className="rt-upgrade-templates-section">
+        <div className="rt-upgrade-templates-header">
+          <div className="rt-upgrade-templates-title-row">
+            <Palette size={16} className="rt-upgrade-templates-icon" />
+            <h3 className="rt-upgrade-templates-title">Explore Storefront Templates</h3>
+          </div>
+          <p className="rt-upgrade-templates-subtitle">
+            Preview the luxury themes included with your subscription. Test live demos and select your favorite aesthetic; you can switch anytime later with zero data loss.
+          </p>
+        </div>
+
+        <div className="rt-upgrade-templates-grid">
+          {AVAILABLE_THEMES.map((theme) => {
+            const isSelected = selectedThemeId === theme.id;
+            return (
+              <div
+                key={theme.id}
+                className={`rt-upgrade-template-card ${isSelected ? 'active' : ''}`}
+                onClick={() => setSelectedThemeId(theme.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setSelectedThemeId(theme.id);
+                }}
+              >
+                {/* 16:10 Screenshot Wrapper with Floating Selection Radio */}
+                <div className="rt-upgrade-screenshot-wrap">
+                  <img
+                    src={theme.image}
+                    alt={`${theme.name} Preview`}
+                    className="rt-upgrade-screenshot-img"
+                    loading="lazy"
+                  />
+                  <div className="rt-upgrade-radio-pill">
+                    <div className={`rt-upgrade-radio-dot ${isSelected ? 'checked' : ''}`}>
+                      {isSelected && <Check size={11} strokeWidth={3} />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Body */}
+                <div className="rt-upgrade-card-body">
+                  <div className="rt-upgrade-card-title-row">
+                    <h4 className="rt-upgrade-card-name">{theme.name}</h4>
+                    <span className="rt-upgrade-card-tag">{theme.tag}</span>
+                  </div>
+                  <p className="rt-upgrade-card-subtitle">{theme.subtitle}</p>
+
+                  {/* Card Footer with Status & Live Demo button */}
+                  <div className="rt-upgrade-card-footer" onClick={(e) => e.stopPropagation()}>
+                    <span className={`rt-upgrade-status-text ${isSelected ? 'is-active' : ''}`}>
+                      {isSelected ? (
+                        <>
+                          <Check size={12} strokeWidth={2.5} /> Selected Style
+                        </>
+                      ) : (
+                        'Click to choose'
+                      )}
+                    </span>
+
+                    <a
+                      href={theme.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rt-upgrade-demo-link"
+                      title={`Open live interactive demo of ${theme.name} in new tab`}
+                    >
+                      <span>Live Demo</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Pricing & Activation Bar */}
       <div className="rt-distilled-footer">
         <div className="rt-distilled-price-wrap">
@@ -71,7 +156,9 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <span className="rt-distilled-period">/ month</span>
             <span className="rt-distilled-strike">₹2,999</span>
           </div>
-          <span className="rt-distilled-subtext">Includes cloud hosting, template themes & free setup support</span>
+          <span className="rt-distilled-subtext">
+            Includes cloud hosting, {selectedTheme.name} theme & free setup support
+          </span>
         </div>
 
         <div className="rt-distilled-action">
@@ -85,10 +172,11 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <span>Activate on WhatsApp</span>
           </a>
           <span className="rt-distilled-note">
-            Setup ready in ~5 mins
+            Setup ready in ~5 mins • Selected: <strong>{selectedTheme.name}</strong>
           </span>
         </div>
       </div>
     </div>
   );
 }
+
