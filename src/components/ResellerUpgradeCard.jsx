@@ -68,7 +68,37 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
         </div>
       </div>
 
-      {/* Storefront Templates Showcase */}
+      {/* Pricing & Activation Bar */}
+      <div className="rt-distilled-footer">
+        <div className="rt-distilled-price-wrap">
+          <div className="rt-distilled-price-line">
+            <span className="rt-distilled-curr">₹</span>
+            <span className="rt-distilled-amount">999</span>
+            <span className="rt-distilled-period">/ month</span>
+            <span className="rt-distilled-strike">₹2,999</span>
+          </div>
+          <span className="rt-distilled-subtext">
+            Includes cloud hosting, {selectedTheme.name} theme & free setup support
+          </span>
+        </div>
+
+        <div className="rt-distilled-action">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rt-distilled-btn"
+          >
+            <WhatsappIcon size={18} />
+            <span>Activate on WhatsApp</span>
+          </a>
+          <span className="rt-distilled-note">
+            Setup ready in ~5 mins • Selected: <strong>{selectedTheme.name}</strong>
+          </span>
+        </div>
+      </div>
+
+      {/* Storefront Templates Showcase (Presented at the last) */}
       <div className="rt-upgrade-templates-section">
         <div className="rt-upgrade-templates-header">
           <div className="rt-upgrade-templates-title-row">
@@ -76,7 +106,7 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <h3 className="rt-upgrade-templates-title">Explore Storefront Templates</h3>
           </div>
           <p className="rt-upgrade-templates-subtitle">
-            Preview the luxury themes included with your subscription. Test live demos and select your favorite aesthetic; you can switch anytime later with zero data loss.
+            Preview the luxury themes included with your subscription. Test live demos below and choose your favorite aesthetic; you can switch anytime later with zero data loss.
           </p>
         </div>
 
@@ -144,36 +174,6 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Pricing & Activation Bar */}
-      <div className="rt-distilled-footer">
-        <div className="rt-distilled-price-wrap">
-          <div className="rt-distilled-price-line">
-            <span className="rt-distilled-curr">₹</span>
-            <span className="rt-distilled-amount">999</span>
-            <span className="rt-distilled-period">/ month</span>
-            <span className="rt-distilled-strike">₹2,999</span>
-          </div>
-          <span className="rt-distilled-subtext">
-            Includes cloud hosting, {selectedTheme.name} theme & free setup support
-          </span>
-        </div>
-
-        <div className="rt-distilled-action">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rt-distilled-btn"
-          >
-            <WhatsappIcon size={18} />
-            <span>Activate on WhatsApp</span>
-          </a>
-          <span className="rt-distilled-note">
-            Setup ready in ~5 mins • Selected: <strong>{selectedTheme.name}</strong>
-          </span>
         </div>
       </div>
     </div>
