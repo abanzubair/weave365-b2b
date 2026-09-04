@@ -240,14 +240,8 @@
 
 .rt-upgrade-templates-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.125rem;
-}
-
-@media (max-width: 640px) {
-  .rt-upgrade-templates-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .rt-upgrade-template-card {

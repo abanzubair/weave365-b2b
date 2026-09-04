@@ -50,6 +50,14 @@ export const AVAILABLE_THEMES = [
     tag: 'Artisanal Gold',
     image: '/images/themes/theme-tavishi-preview.png',
     previewUrl: 'https://50k-gamma.vercel.app',
+  },
+  {
+    id: 'kasaya-atelier',
+    name: 'Atelier Banaras',
+    subtitle: 'Quiet Luxury, Pure Silk & Handcrafted Zari',
+    tag: 'Quiet Luxury',
+    image: '/images/themes/theme-atelier-preview.png',
+    previewUrl: 'https://e-com-template-3.vercel.app',
   }
 ];
 
@@ -57,6 +65,9 @@ export function normalizeBoutiqueTheme(theme) {
   const t = String(theme || '').toLowerCase().trim();
   if (t === 'tavishi-heritage' || t === '50k' || t === 'theme-classic-luxury' || t === 'tavishi') {
     return 'tavishi-heritage';
+  }
+  if (t === 'kasaya-atelier' || t === 'atelier' || t === 'atelier-banaras' || t === 'ecom-template-3' || t === 'template-3' || t === 'e-com-template-3') {
+    return 'kasaya-atelier';
   }
   return 'vrtx-studio';
 }
