@@ -151,8 +151,16 @@ export default async function StorefrontHostPage({ params }) {
     );
   }
 
-  // Strictly isolated iframe targeting the reseller's specific tenant route
-  const templateTargetUrl = `https://ecom-template-1-tau.vercel.app/${encodeURIComponent(storefront.slug)}`;
+  // Strictly isolated iframe targeting the reseller's specific tenant route and chosen theme
+  const themeKey = String(storefront.theme_color || storefront.theme_settings?.theme_id || '').toLowerCase().trim();
+  const isTavishiHeritage = themeKey === 'tavishi-heritage' || themeKey === '50k' || themeKey === 'theme-classic-luxury' || themeKey === 'tavishi';
+
+  const vrtxBase = process.env.TEMPLATE_VRTX_URL || 'https://ecom-template-1-tau.vercel.app';
+  const tavishiBase = process.env.TEMPLATE_TAVISHI_URL || 'https://50k-gamma.vercel.app';
+
+  const templateTargetUrl = isTavishiHeritage
+    ? `${tavishiBase.replace(/\/+$/, '')}/?store=${encodeURIComponent(storefront.slug)}`
+    : `${vrtxBase.replace(/\/+$/, '')}/${encodeURIComponent(storefront.slug)}`;
 
   return (
     <main style={{

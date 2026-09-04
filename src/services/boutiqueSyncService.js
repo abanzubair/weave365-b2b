@@ -29,7 +29,7 @@ export async function syncTenantToStorefrontDb(storefrontRecord) {
       tagline: storefrontRecord.tagline || '',
       logo_url: storefrontRecord.logo_url || null,
       banner_url: storefrontRecord.banner_url || null,
-      theme_color: storefrontRecord.theme_color || '#0f172a',
+      theme_color: storefrontRecord.theme_color || 'vrtx-studio',
       accent_color: storefrontRecord.accent_color || '#b58342',
       whatsapp: storefrontRecord.whatsapp || '',
       custom_domain: storefrontRecord.custom_domain || null,

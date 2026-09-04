@@ -26,11 +26,54 @@ import {
   TrendingUp,
   Tag,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  Palette,
+  ShieldCheck
 } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { fetchProducts } from '../productData.js';
 import '../styles/resellerTools.css';
+
+export const AVAILABLE_THEMES = [
+  {
+    id: 'vrtx-studio',
+    name: 'VRTX Studio',
+    tagline: 'Minimal Dark & Modern Editorial Luxury',
+    engineBadge: 'Next.js 16',
+    styleBadge: 'Modern Editorial',
+    accentColor: '#f59e0b',
+    previewUrl: 'https://ecom-template-1-tau.vercel.app',
+    features: [
+      'Deep onyx & gold luxury dark-mode',
+      'Haute-couture editorial typography',
+      'Floating quick-inquiry shopping bag',
+      'Direct 1-tap WhatsApp checkout'
+    ],
+  },
+  {
+    id: 'tavishi-heritage',
+    name: 'Tavishi Heritage (50K)',
+    tagline: 'Warm Artisanal Silk & Royal Gold',
+    engineBadge: 'Vite + React',
+    styleBadge: 'Artisanal Silk & Gold',
+    accentColor: '#b58342',
+    previewUrl: 'https://50k-gamma.vercel.app',
+    features: [
+      'Warm royal gold & ivory celebration palette',
+      'Banarasi loom craftsmanship & heritage story',
+      'Live customer order tracking by phone',
+      'Festive saree showcase & high-res details'
+    ],
+  }
+];
+
+export function normalizeBoutiqueTheme(theme) {
+  const t = String(theme || '').toLowerCase().trim();
+  if (t === 'tavishi-heritage' || t === '50k' || t === 'theme-classic-luxury' || t === 'tavishi') {
+    return 'tavishi-heritage';
+  }
+  return 'vrtx-studio';
+}
 
 export function getBoutiqueStoreUrl(slug) {
   if (!slug) return '';
@@ -708,6 +751,7 @@ function StorefrontSetupPanel({
     slug: storefront?.slug || '',
     whatsapp: storefront?.whatsapp || '',
     custom_domain: storefront?.custom_domain || '',
+    theme_color: normalizeBoutiqueTheme(storefront?.theme_color || storefront?.theme_settings?.theme_id),
   });
 
   useEffect(() => {
@@ -716,6 +760,7 @@ function StorefrontSetupPanel({
       slug: storefront?.slug || '',
       whatsapp: storefront?.whatsapp || '',
       custom_domain: storefront?.custom_domain || '',
+      theme_color: normalizeBoutiqueTheme(storefront?.theme_color || storefront?.theme_settings?.theme_id),
     });
   }, [storefront]);
 
@@ -748,6 +793,12 @@ function StorefrontSetupPanel({
         slug: cleanSlug,
         whatsapp: formData.whatsapp.trim(),
         custom_domain: cleanDomain,
+        theme_color: formData.theme_color || 'vrtx-studio',
+        theme_settings: {
+          theme_id: formData.theme_color || 'vrtx-studio',
+          primary_color: formData.theme_color === 'tavishi-heritage' ? '#fffdfa' : '#09090b',
+          accent_color: formData.theme_color === 'tavishi-heritage' ? '#b58342' : '#f59e0b',
+        },
         is_active: true,
       };
 
@@ -862,6 +913,147 @@ function StorefrontSetupPanel({
               />
             </div>
             <span className="rt-input-hint">Leave blank to use your default hosted link above, or enter your custom domain.</span>
+          </div>
+        </div>
+
+        {/* Boutique Theme & Template Selector */}
+        <div className="rt-setup-row rt-setup-row-themes">
+          <div className="rt-setup-label">
+            <div className="rt-theme-label-header">
+              <Palette size={16} className="rt-theme-label-icon" />
+              <strong>Boutique Theme *</strong>
+            </div>
+            <span>Choose your storefront design and layout. Switch anytime with zero data loss.</span>
+          </div>
+          <div className="rt-setup-theme-container">
+            <div className="rt-theme-grid">
+              {AVAILABLE_THEMES.map((theme) => {
+                const isSelected = formData.theme_color === theme.id;
+                return (
+                  <div 
+                    key={theme.id}
+                    className={`rt-theme-card ${isSelected ? 'active' : ''}`}
+                    onClick={() => update('theme_color', theme.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') update('theme_color', theme.id); }}
+                  >
+                    {/* Card Badges and Radio Check */}
+                    <div className="rt-theme-card-header">
+                      <div className="rt-theme-card-badges">
+                        <span className={`rt-theme-style-badge rt-theme-badge-${theme.id}`}>
+                          {theme.styleBadge}
+                        </span>
+                        <span className="rt-theme-engine-badge">
+                          {theme.engineBadge}
+                        </span>
+                      </div>
+                      <div className={`rt-theme-radio ${isSelected ? 'checked' : ''}`}>
+                        {isSelected && <Check size={12} strokeWidth={3} />}
+                      </div>
+                    </div>
+
+                    {/* Miniature Design Preview Mockup */}
+                    <div className={`rt-theme-mini-mockup rt-mockup-${theme.id}`}>
+                      {theme.id === 'vrtx-studio' ? (
+                        <div className="rt-mini-mockup-body rt-mini-dark">
+                          <div className="rt-mini-nav">
+                            <span className="rt-mini-brand">VRTX STUDIO</span>
+                            <span className="rt-mini-pill">BAG</span>
+                          </div>
+                          <div className="rt-mini-hero">
+                            <span className="rt-mini-eyebrow">EDITORIAL NOIR</span>
+                            <span className="rt-mini-title">PURE SILK HERITAGE</span>
+                          </div>
+                          <div className="rt-mini-products">
+                            <div className="rt-mini-pcard">
+                              <span className="rt-mini-pcard-tag">₹2,500</span>
+                            </div>
+                            <div className="rt-mini-pcard">
+                              <span className="rt-mini-pcard-tag">₹1,488</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rt-mini-mockup-body rt-mini-light">
+                          <div className="rt-mini-nav">
+                            <span className="rt-mini-brand-gold">TAVISHI HERITAGE</span>
+                            <span className="rt-mini-pill-gold">TRACK</span>
+                          </div>
+                          <div className="rt-mini-hero">
+                            <span className="rt-mini-eyebrow-gold">ARTISANAL WEAVES</span>
+                            <span className="rt-mini-title-gold">ROYAL BANARASI</span>
+                          </div>
+                          <div className="rt-mini-products">
+                            <div className="rt-mini-pcard-gold">
+                              <span className="rt-mini-pcard-gold-tag">₹2,500</span>
+                            </div>
+                            <div className="rt-mini-pcard-gold">
+                              <span className="rt-mini-pcard-gold-tag">₹1,488</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Theme Info & Features */}
+                    <div className="rt-theme-meta">
+                      <div className="rt-theme-title-row">
+                        <h4 className="rt-theme-name">{theme.name}</h4>
+                        {isSelected && (
+                          <span className="rt-theme-active-tag">
+                            <Check size={11} strokeWidth={2.5} /> Active Theme
+                          </span>
+                        )}
+                      </div>
+                      <p className="rt-theme-tagline">{theme.tagline}</p>
+                      <ul className="rt-theme-features">
+                        {theme.features.map((feat, idx) => (
+                          <li key={idx}>
+                            <Check size={12} className="rt-theme-feat-check" />
+                            <span>{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Theme Action Buttons */}
+                    <div className="rt-theme-actions" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={`rt-theme-select-btn ${isSelected ? 'is-selected' : ''}`}
+                        onClick={() => update('theme_color', theme.id)}
+                      >
+                        {isSelected ? 'Active Theme' : 'Switch to This Theme'}
+                      </button>
+                      <a
+                        href={formData.slug ? `${theme.previewUrl}/?store=${encodeURIComponent(formData.slug)}` : theme.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rt-theme-preview-link"
+                        title="Open live preview in new tab"
+                      >
+                        <span>Demo</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Zero Data Loss Guarantee Banner */}
+            <div className="rt-theme-data-guarantee">
+              <div className="rt-guarantee-icon-wrap">
+                <ShieldCheck size={18} className="rt-guarantee-icon" />
+              </div>
+              <div className="rt-guarantee-text">
+                <strong>100% Data Preservation Guaranteed</strong>
+                <span>
+                  Switching themes updates only your website design layout. All {sharesCount} sarees in your catalog, custom retail markups, WhatsApp order integration, and customer order history transfer instantly without any data loss.
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
