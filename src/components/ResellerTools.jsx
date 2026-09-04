@@ -39,15 +39,15 @@ export const AVAILABLE_THEMES = [
     id: 'vrtx-studio',
     name: 'VRTX Studio',
     subtitle: 'Modern Editorial & Dark Onyx Luxury',
-    platform: 'Next.js 16',
+    tag: 'Editorial Noir',
     image: '/images/themes/theme-vrtx-preview.png',
     previewUrl: 'https://ecom-template-1-tau.vercel.app',
   },
   {
     id: 'tavishi-heritage',
-    name: 'Tavishi Heritage (50K)',
+    name: 'Tavishi Heritage',
     subtitle: 'Warm Artisanal Silk & Royal Gold',
-    platform: 'Vite + React',
+    tag: 'Artisanal Gold',
     image: '/images/themes/theme-tavishi-preview.png',
     previewUrl: 'https://50k-gamma.vercel.app',
   }
@@ -944,7 +944,7 @@ function StorefrontSetupPanel({
                     <div className="rt-theme-body">
                       <div className="rt-theme-title-row">
                         <h4 className="rt-theme-name">{theme.name}</h4>
-                        <span className="rt-theme-platform-tag">{theme.platform}</span>
+                        <span className="rt-theme-style-tag">{theme.tag}</span>
                       </div>
                       <p className="rt-theme-subtitle">{theme.subtitle}</p>
 
