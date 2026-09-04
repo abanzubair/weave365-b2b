@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Globe, 
   Zap, 
   ShoppingBag, 
   ShieldCheck,
-  Check,
   ExternalLink,
   Palette
 } from './icons.jsx';
@@ -14,13 +13,10 @@ import { AVAILABLE_THEMES } from './ResellerTools.jsx';
 import '../styles/resellerUpgrade.css';
 
 export function ResellerUpgradeCard({ user, buyerProfile }) {
-  const [selectedThemeId, setSelectedThemeId] = useState('tavishi-heritage');
   const userIdentifier = user?.email || buyerProfile?.business_name || 'Boutique Owner';
   const whatsappNumber = storeConfig.whatsapp || '9919101369';
 
-  const selectedTheme = AVAILABLE_THEMES.find(t => t.id === selectedThemeId) || AVAILABLE_THEMES[0];
-  
-  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/month) with the ${selectedTheme.name} template for my account (${userIdentifier}).`;
+  const whatsappMessage = `Hi Weave 365 team! I would like to activate the 'Build Your Own Website' add-on (₹999/month) for my account (${userIdentifier}).`;
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -106,74 +102,48 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <h3 className="rt-upgrade-templates-title">Explore Storefront Templates</h3>
           </div>
           <p className="rt-upgrade-templates-subtitle">
-            Preview the luxury themes included with your subscription. Test live demos below and choose your favorite aesthetic; you can switch anytime later with zero data loss.
+            Preview the luxury themes included with your subscription. Test live interactive demos below to explore each design aesthetic.
           </p>
         </div>
 
         <div className="rt-upgrade-templates-grid">
-          {AVAILABLE_THEMES.map((theme) => {
-            const isSelected = selectedThemeId === theme.id;
-            return (
-              <div
-                key={theme.id}
-                className={`rt-upgrade-template-card ${isSelected ? 'active' : ''}`}
-                onClick={() => setSelectedThemeId(theme.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') setSelectedThemeId(theme.id);
-                }}
-              >
-                {/* 16:10 Screenshot Wrapper with Floating Selection Radio */}
-                <div className="rt-upgrade-screenshot-wrap">
-                  <img
-                    src={theme.image}
-                    alt={`${theme.name} Preview`}
-                    className="rt-upgrade-screenshot-img"
-                    loading="lazy"
-                  />
-                  <div className="rt-upgrade-radio-pill">
-                    <div className={`rt-upgrade-radio-dot ${isSelected ? 'checked' : ''}`}>
-                      {isSelected && <Check size={11} strokeWidth={3} />}
-                    </div>
-                  </div>
+          {AVAILABLE_THEMES.map((theme) => (
+            <div key={theme.id} className="rt-upgrade-template-card">
+              {/* 16:10 Screenshot Wrapper */}
+              <div className="rt-upgrade-screenshot-wrap">
+                <img
+                  src={theme.image}
+                  alt={`${theme.name} Preview`}
+                  className="rt-upgrade-screenshot-img"
+                  loading="lazy"
+                />
+              </div>
+
+              {/* Card Body */}
+              <div className="rt-upgrade-card-body">
+                <div className="rt-upgrade-card-title-row">
+                  <h4 className="rt-upgrade-card-name">{theme.name}</h4>
+                  <span className="rt-upgrade-card-tag">{theme.tag}</span>
                 </div>
+                <p className="rt-upgrade-card-subtitle">{theme.subtitle}</p>
 
-                {/* Card Body */}
-                <div className="rt-upgrade-card-body">
-                  <div className="rt-upgrade-card-title-row">
-                    <h4 className="rt-upgrade-card-name">{theme.name}</h4>
-                    <span className="rt-upgrade-card-tag">{theme.tag}</span>
-                  </div>
-                  <p className="rt-upgrade-card-subtitle">{theme.subtitle}</p>
-
-                  {/* Card Footer with Status & Live Demo button */}
-                  <div className="rt-upgrade-card-footer" onClick={(e) => e.stopPropagation()}>
-                    <span className={`rt-upgrade-status-text ${isSelected ? 'is-active' : ''}`}>
-                      {isSelected ? (
-                        <>
-                          <Check size={12} strokeWidth={2.5} /> Selected Style
-                        </>
-                      ) : (
-                        'Click to choose'
-                      )}
-                    </span>
-
-                    <a
-                      href={theme.previewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rt-upgrade-demo-link"
-                      title={`Open live interactive demo of ${theme.name} in new tab`}
-                    >
-                      <span>Live Demo</span>
-                      <ExternalLink size={11} />
-                    </a>
-                  </div>
+                {/* Card Action: Direct Live Demo */}
+                <div className="rt-upgrade-card-footer">
+                  <span className="rt-upgrade-included-badge">Included in Add-on</span>
+                  <a
+                    href={theme.previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rt-upgrade-demo-link"
+                    title={`Open live interactive demo of ${theme.name} in new tab`}
+                  >
+                    <span>Live Demo</span>
+                    <ExternalLink size={12} />
+                  </a>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
