@@ -78,7 +78,7 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <span className="rt-distilled-strike">₹2,999</span>
           </div>
           <span className="rt-distilled-subtext">
-            Includes cloud hosting, {selectedTheme.name} theme & free setup support
+            Includes cloud hosting, template themes & free setup support
           </span>
         </div>
 
@@ -93,7 +93,7 @@ export function ResellerUpgradeCard({ user, buyerProfile }) {
             <span>Activate on WhatsApp</span>
           </a>
           <span className="rt-distilled-note">
-            Setup ready in ~5 mins • Selected: <strong>{selectedTheme.name}</strong>
+            Setup ready in ~5 mins
           </span>
         </div>
       </div>
