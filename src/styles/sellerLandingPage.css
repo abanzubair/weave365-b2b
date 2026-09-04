@@ -3,8 +3,11 @@
    Adheres to Impeccable Design Standards:
    - "quieter": Softened luxury palette, warm tinted neutrals, restrained accents.
    - "distill": Clean typographic hierarchy, zero decorative fluff, generous whitespace.
-   - Anti-pattern ban: STRICTLY NO NESTED CARDS. Flush editorial ledgers and hairline dividers.
-   - Standardized 2-column hero banner preserved to exact site specifications.
+   - Absolute Craft Rules:
+     * STRICTLY NO NESTED CARDS (no card inside card inside card).
+     * STRICTLY NO COLORED LEFT BORDERS (no border-left accents on callouts/cards).
+     * Pure unboxed hairline ledgers, delicate dividers, and balanced editorial spreads.
+     * Standardized 2-column hero banner preserved to exact site specifications.
    - Typography Rules:
      * Mobile (<= 860px): Body text / paragraph text is NEVER smaller than 15px.
      * Desktop (> 860px): Body text / paragraph text is STRICTLY greater than 15px (16px – 18px).
@@ -14,7 +17,7 @@
   background-color: #ffffff;
   color: #1a1613;
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 16.5px; /* Desktop default: strictly > 15px */
+  font-size: 16.5px;
   line-height: 1.68;
   overflow-x: hidden;
   position: relative;
@@ -25,16 +28,21 @@
 .seller-hero-desc,
 .seller-lead-paragraph,
 .seller-ledger-desc,
-.seller-friction-desc,
 .seller-step-desc,
-.seller-index-lead,
-.seller-item-desc,
-.seller-audience-intro,
-.seller-audience-highlight-text,
 .seller-benefit-desc,
 .seller-faq-answer,
-.seller-closing-desc {
+.seller-closing-line,
+.seller-hero-statement,
+.seller-friction-detail,
+.seller-category-desc {
   font-weight: 500;
+}
+
+.seller-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
 }
 
 /* --------------------------------------------------------------------------
@@ -51,6 +59,21 @@
 .seller-hero .premium-breadcrumb {
   padding: 0.5rem 0 0 0;
   margin: 0 0 1.25rem 0;
+}
+
+.seller-hero .premium-breadcrumb .breadcrumb-list {
+  font-size: 11.5px !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.06em !important;
+}
+
+.seller-hero .premium-breadcrumb .breadcrumb-item,
+.seller-hero .premium-breadcrumb .breadcrumb-item a,
+.seller-hero .premium-breadcrumb .breadcrumb-item button,
+.seller-hero .premium-breadcrumb .breadcrumb-item span,
+.seller-hero .premium-breadcrumb .breadcrumb-current {
+  font-size: 11.5px !important;
+  line-height: 1.4 !important;
 }
 
 .seller-hero-inner {
@@ -89,14 +112,13 @@
   text-wrap: balance;
 }
 
-/* Prevent orphan single words on new line */
 .seller-no-wrap {
   display: inline-block;
   white-space: nowrap;
 }
 
 .seller-hero-desc {
-  font-size: clamp(16px, 1.2vw, 18px); /* Mobile: 16px >= 15px, Desktop: 17.5px - 18px > 15px */
+  font-size: clamp(16px, 1.2vw, 18px);
   text-wrap: pretty;
   line-height: 1.75;
   color: #1a1613;
@@ -105,7 +127,6 @@
   font-weight: 500;
 }
 
-/* Hero Key Bullet Points (Distilled, Clean 2-Column List) */
 .seller-hero-bullets {
   list-style: none;
   padding: 0;
@@ -122,7 +143,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
+  font-size: clamp(15px, 0.95vw + 4px, 16.5px);
   color: #2b241c;
   line-height: 1.5;
   font-weight: 500;
@@ -134,7 +155,6 @@
   margin-top: 4px;
 }
 
-/* Action Suite & CTAs */
 .seller-action-suite {
   display: flex;
   flex-direction: column;
@@ -159,7 +179,7 @@
   padding: 0 28px;
   border-radius: 4px;
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(15px, 1vw, 16.5px); /* Mobile >= 15px, Desktop > 15px */
+  font-size: clamp(15px, 1vw, 16.5px);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-decoration: none;
@@ -200,7 +220,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(15px, 0.92vw + 3px, 16px); /* Mobile >= 15px, Desktop > 15px */
+  font-size: clamp(15px, 0.92vw + 3px, 16px);
   color: #6d5f50;
   font-weight: 600;
   line-height: 1.5;
@@ -211,7 +231,6 @@
   flex-shrink: 0;
 }
 
-/* 4:3 Ratio Photo Frame */
 .seller-hero-visual {
   display: flex;
   justify-content: center;
@@ -239,595 +258,504 @@
 }
 
 /* --------------------------------------------------------------------------
-   SHARED EDITORIAL LAYOUT UTILITIES (No nested cards, pure typography & lines)
+   2. GENERAL SECTION STYLES (Clean, Unboxed, Cardless Spreads)
    -------------------------------------------------------------------------- */
-.seller-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  box-sizing: border-box;
+.seller-section {
+  padding: clamp(3.5rem, 5.5vw, 5.5rem) 0;
+  border-top: 1px solid rgba(198, 158, 106, 0.22);
 }
 
-.seller-section-divider {
-  width: 100%;
-  height: 1px;
-  background: rgba(198, 158, 106, 0.25);
-  margin: 0;
-  border: none;
+.seller-section:nth-of-type(even) {
+  background: #faf8f5;
 }
 
-.seller-eyebrow {
-  display: inline-block;
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(13px, 0.8vw, 14px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #855b29;
-  margin-bottom: 0.75rem;
-}
-
-.seller-editorial-title {
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+.seller-section-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
   font-size: clamp(26px, 3.2vw, 38px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
   color: #1a1613;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.25rem 0;
   letter-spacing: -0.01em;
-  /* text-wrap: balance; */
+}
+
+.seller-title-center {
+  text-align: center;
+}
+
+.seller-hero-subtitle {
+  font-size: clamp(16px, 1.2vw, 19px);
+  font-weight: 600;
+  color: #855b29;
+  line-height: 1.5;
+  margin: 0 0 1.25rem 0;
+  text-wrap: balance;
+}
+
+.seller-hero-question {
+  font-size: clamp(16px, 1.1vw, 17.5px);
+  color: #3d342a;
+  line-height: 1.75;
+  margin: 0 0 1.5rem 0;
+  font-weight: 500;
+}
+
+/* Unboxed pain points: equal delicate border, NO thick left border */
+.seller-hero-pains {
+  font-size: clamp(15px, 1.05vw, 16.5px);
+  font-weight: 600;
+  color: #93362a;
+  background: #fdf6f5;
+  border: 1px solid rgba(212, 92, 79, 0.25);
+  padding: 0.95rem 1.35rem;
+  margin: 1.25rem 0 0 0;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+
+.seller-hero-statement {
+  font-size: clamp(16px, 1.05vw, 17px);
+  color: #2e261f;
+  line-height: 1.75;
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.seller-hero-statement:last-of-type {
+  margin-bottom: 1.25rem;
+}
+
+/* Editorial Callout: top hairline accent, NO left border, unboxed */
+.seller-hero-callout {
+  font-size: clamp(16px, 1.15vw, 18px);
+  font-weight: 600;
+  color: #1a1613;
+  border-top: 1px solid rgba(198, 158, 106, 0.4);
+  padding-top: 1.25rem;
+  margin-top: 1.25rem;
+  line-height: 1.65;
 }
 
 .seller-lead-paragraph {
-  font-size: clamp(16px, 1.1vw, 18.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.8;
-  color: #4a3e33;
-  margin: 0 0 1.25rem 0;
-  max-width: 100%;
-  text-wrap: pretty;
+  font-size: clamp(16px, 1.1vw, 17.5px);
+  color: #3d342a;
+  line-height: 1.75;
+  margin: 0 0 1.5rem 0;
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------
-   2. THE ALTERNATIVE HOOK SECTION (Clean Editorial Block, No Boxes)
+   3. SECTION 2: EDITORIAL 2-COLUMN SPLIT (No Nested Cards, Unboxed)
    -------------------------------------------------------------------------- */
 .seller-hook-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
   background: #faf8f5;
-  border-top: 1px solid rgba(198, 158, 106, 0.25);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
 }
 
-.seller-hook-grid {
+.seller-editorial-split {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 4vw, 5rem);
-  align-items: center;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: start;
 }
 
-.seller-hook-contrast-box {
-  border-left: 2px solid #855b29;
-  padding-left: 1.5rem;
-  margin: 1.75rem 0 0 0;
-}
-
-.seller-pain-tokens {
+.seller-hook-left {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 1rem;
+  flex-direction: column;
 }
 
-.seller-pain-token {
-  font-size: clamp(15px, 0.95vw + 3px, 16px); /* Mobile >= 15px, Desktop > 15px */
-  font-weight: 600;
-  color: #786452;
-  background: rgba(133, 91, 41, 0.08);
-  padding: 5px 12px;
-  border-radius: 3px;
-  text-decoration: line-through;
-  text-decoration-color: #a84236;
+.seller-hook-right {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.5rem;
 }
 
-.seller-hook-badge-banner {
-  background: #ffffff;
-  border: 1px solid rgba(198, 158, 106, 0.35);
-  padding: 2rem;
-  border-radius: 6px;
-}
-
-.seller-hook-badge-banner h3 {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.35rem;
-  font-weight: 500;
-  color: #1a1613;
-  margin: 0 0 0.85rem 0;
-}
-
-.seller-hook-badge-banner p {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.75;
-  color: #55483b;
-  margin: 0;
+.seller-narrative-block {
+  border-top: 2px solid rgba(198, 158, 106, 0.4);
+  padding-top: 1.5rem;
 }
 
 /* --------------------------------------------------------------------------
-   3. VALUE PILLARS (Unboxed Hairline Ledger — Zero Nested Cards)
+   4. SECTION 3: PILLARS (3-Column Hairline Ledger)
    -------------------------------------------------------------------------- */
-.seller-pillars-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-}
-
-.seller-pillars-header {
-  margin-bottom: 2.5rem;
-  max-width: 800px;
-}
-
 .seller-hairline-ledger {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid rgba(198, 158, 106, 0.3);
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 1.5rem;
 }
 
 .seller-ledger-cell {
-  padding: 2rem 1.75rem;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.3);
-  border-right: 1px solid rgba(198, 158, 106, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: background-color 0.2s ease;
+  padding: 2.25rem 1.75rem;
+  border-right: 1px solid rgba(198, 158, 106, 0.25);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
+  box-sizing: border-box;
 }
 
 .seller-ledger-cell:nth-child(3n) {
   border-right: none;
 }
 
-.seller-ledger-cell:hover {
-  background-color: #fdfcfb;
-}
-
-.seller-ledger-idx {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #855b29;
+.seller-ledger-cell:nth-last-child(-n+3) {
+  border-bottom: none;
 }
 
 .seller-ledger-title {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(18px, 1.3vw, 21px);
+  font-weight: 600;
   color: #1a1613;
-  margin: 0;
+  margin: 0 0 0.65rem 0;
 }
 
 .seller-ledger-desc {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.68;
-  color: #55483b;
+  font-size: clamp(15px, 0.95vw + 4px, 16.5px);
+  color: #4a4036;
+  line-height: 1.65;
   margin: 0;
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------
-   4. MARKETPLACE PAIN VS WEAVE 365 RELIEF (Comparative Asymmetric Split)
+   5. SECTION 4: MARKETPLACE PAINS & RELIEF (Hairline Ledger, Zero Cards)
    -------------------------------------------------------------------------- */
-.seller-contrast-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-  background: #faf8f5;
-  border-top: 1px solid rgba(198, 158, 106, 0.25);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
-}
-
-.seller-contrast-grid {
+.seller-friction-split {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 4.5vw, 5.5rem);
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
   align-items: start;
 }
 
-.seller-friction-list {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0 0;
+.seller-friction-left {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid rgba(198, 158, 106, 0.25);
 }
 
-.seller-friction-item {
-  padding: 1.15rem 0;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
+.seller-friction-ledger {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  border-top: 1px solid rgba(198, 158, 106, 0.3);
 }
 
-.seller-friction-title {
-  font-size: clamp(15.5px, 1vw, 17px); /* Mobile >= 15px, Desktop > 15px */
+.seller-friction-row {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.22);
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: #2e261f;
+}
+
+.seller-friction-name {
   font-weight: 700;
-  color: #2b241c;
+  color: #93362a;
+}
+
+.seller-friction-detail {
+  color: #3d342a;
+}
+
+.seller-friction-right {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  padding-top: 0.5rem;
 }
 
-.seller-friction-cross {
-  color: #a84236;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.seller-friction-desc {
-  font-size: clamp(15px, 0.92vw + 3px, 16px); /* Mobile >= 15px, Desktop > 15px */
-  color: #6d5f50;
-  margin: 0;
-  padding-left: 24px;
-  line-height: 1.6;
-}
-
-.seller-solution-narrative {
-  padding-top: 1rem;
+.seller-contrast-narrative {
+  border-top: 2px solid rgba(198, 158, 106, 0.4);
+  padding-top: 1.5rem;
 }
 
 .seller-relief-manifesto {
-  margin: 2rem 0;
-  padding: 2rem;
-  background: #ffffff;
-  border-left: 3px solid #855b29;
-  border-radius: 0 6px 6px 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-}
-
-.seller-relief-manifesto h3 {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.35rem;
-  font-weight: 500;
-  color: #1a1613;
-  margin: 0 0 0.5rem 0;
-}
-
-.seller-relief-manifesto p {
-  font-size: clamp(16px, 1.1vw, 18px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.75;
-  color: #4a3e33;
-  margin: 0;
-}
-
-/* --------------------------------------------------------------------------
-   5. 6-STEP ONBOARDING PROGRESSION (Numbered Linear Rail, No Floating Boxes)
-   -------------------------------------------------------------------------- */
-.seller-steps-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-}
-
-.seller-steps-header {
-  margin-bottom: 3rem;
-  max-width: 800px;
-}
-
-.seller-steps-rail {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.5rem 2rem;
-  position: relative;
-}
-
-.seller-step-node {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.seller-step-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
-}
-
-.seller-step-index {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #855b29;
-  line-height: 1;
-}
-
-.seller-step-title {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: 1.05rem;
-  font-weight: 750;
-  color: #1a1613;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.seller-step-desc {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.68;
-  color: #55483b;
-  margin: 0;
-}
-
-/* --------------------------------------------------------------------------
-   6. CATEGORIES & BUYER REACH (Editorial Two-Column List)
-   -------------------------------------------------------------------------- */
-.seller-categories-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-  background: #faf8f5;
-  border-top: 1px solid rgba(198, 158, 106, 0.25);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
-}
-
-.seller-dual-index-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: clamp(2.5rem, 4.5vw, 5rem);
-}
-
-.seller-index-column h3 {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: #1a1613;
-  margin: 0 0 0.5rem 0;
-}
-
-.seller-index-lead {
-  font-size: clamp(15.5px, 1vw, 17px); /* Mobile >= 15px, Desktop > 15px */
-  color: #6d5f50;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.7;
-}
-
-.seller-hairline-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-top: 1px solid rgba(198, 158, 106, 0.3);
-}
-
-.seller-hairline-item {
-  padding: 1.15rem 0;
-  border-bottom: 1px solid rgba(198, 158, 106, 0.3);
-}
-
-.seller-item-name {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a1613;
-  margin-bottom: 4px;
-}
-
-.seller-item-desc {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  color: #5c4e3f;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.seller-audience-intro {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  color: #55483b;
-  margin: 0 0 1rem 0;
-  line-height: 1.7;
-}
-
-.seller-audience-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 1.5rem 0 2rem 0;
-}
-
-.seller-audience-pill {
-  font-size: clamp(15px, 0.95vw + 3px, 16px); /* Mobile >= 15px, Desktop > 15px */
-  font-weight: 600;
-  color: #3b3025;
-  background: #ffffff;
-  border: 1px solid rgba(198, 158, 106, 0.4);
-  padding: 7px 16px;
-  border-radius: 4px;
-}
-
-.seller-audience-highlight-frame {
-  border-left: 2px solid #855b29;
-  padding-left: 1.25rem;
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  padding-top: 1.25rem;
   margin-top: 1.5rem;
 }
 
-.seller-audience-highlight-text {
-  font-size: clamp(15.5px, 1vw, 17px); /* Mobile >= 15px, Desktop > 15px */
-  color: #1a1613;
+.seller-narrative-line {
+  font-size: clamp(16px, 1.1vw, 17.5px);
   font-weight: 600;
-  line-height: 1.7;
-  margin: 0;
+  color: #1a1613;
+  line-height: 1.65;
+  margin: 0 0 0.5rem 0;
+}
+
+.seller-narrative-line:last-child {
+  margin-bottom: 0;
 }
 
 /* --------------------------------------------------------------------------
-   7. MODEL BENEFITS & PARALLEL BUSINESS ASSURANCE
+   6. SECTION 5: ONBOARDING STEPS (Hairline Progression Ledger, Zero Cards)
    -------------------------------------------------------------------------- */
-.seller-model-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-}
-
-.seller-benefits-grid {
+.seller-steps-ledger {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem 3rem;
-  border-top: 1px solid rgba(198, 158, 106, 0.3);
-  padding-top: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 1.5rem;
 }
 
-.seller-benefit-entry {
+.seller-step-cell {
+  padding: 2.25rem 1.75rem;
+  border-right: 1px solid rgba(198, 158, 106, 0.25);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
+  box-sizing: border-box;
+}
+
+.seller-step-cell:nth-child(3n) {
+  border-right: none;
+}
+
+.seller-step-cell:nth-last-child(-n+3) {
+  border-bottom: none;
+}
+
+.seller-step-title {
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(18px, 1.25vw, 20px);
+  font-weight: 600;
+  color: #855b29;
+  margin: 0 0 0.65rem 0;
+}
+
+.seller-step-desc {
+  font-size: clamp(15px, 0.95vw + 4px, 16.5px);
+  color: #4a4036;
+  line-height: 1.65;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   7. SECTIONS 6 & 7: DUAL GRID (Hairline Categories & Buyer Reach)
+   -------------------------------------------------------------------------- */
+.seller-dual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2.5rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.seller-dual-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+}
+
+.seller-categories-ledger {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(198, 158, 106, 0.3);
+}
+
+.seller-category-row {
+  padding: 1.05rem 0;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.22);
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: #2e261f;
+}
+
+.seller-category-name {
+  font-weight: 700;
+  color: #855b29;
+}
+
+.seller-category-desc {
+  color: #3d342a;
+}
+
+.seller-buyers-ledger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 2rem 0;
+}
+
+.seller-buyer-pill {
+  background: #ffffff;
+  border: 1px solid rgba(198, 158, 106, 0.4);
+  padding: 0.55rem 1.35rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: clamp(15px, 1vw, 16px);
+  color: #2b241c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.seller-reach-manifesto {
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  padding-top: 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. SECTION 8: BENEFITS (Hairline Ledger Grid, Zero Floating Cards)
+   -------------------------------------------------------------------------- */
+.seller-benefits-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 1.5rem;
+}
+
+.seller-benefit-cell {
+  padding: 2.25rem 2rem;
+  border-right: 1px solid rgba(198, 158, 106, 0.25);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
+  box-sizing: border-box;
+}
+
+.seller-benefit-cell:nth-child(2n) {
+  border-right: none;
+}
+
+.seller-benefit-cell-wide {
+  grid-column: 1 / -1;
+  border-right: none;
+  border-bottom: none;
 }
 
 .seller-benefit-title {
-  font-size: 1.08rem;
-  font-weight: 750;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(18px, 1.25vw, 20px);
+  font-weight: 600;
   color: #1a1613;
-  margin: 0;
+  margin: 0 0 0.65rem 0;
 }
 
 .seller-benefit-desc {
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.7;
-  color: #55483b;
+  font-size: clamp(15px, 0.95vw + 4px, 16.5px);
+  color: #4a4036;
+  line-height: 1.65;
   margin: 0;
-}
-
-.seller-parallel-strip {
-  margin-top: 3.5rem;
-  padding: 2.25rem;
-  background: #faf8f5;
-  border: 1px solid rgba(198, 158, 106, 0.35);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.seller-parallel-strip h4 {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 1.3rem;
   font-weight: 500;
-  color: #1a1613;
-  margin: 0;
 }
 
-.seller-parallel-strip p {
-  font-size: clamp(15.5px, 1vw, 17px); /* Mobile >= 15px, Desktop > 15px */
-  color: #4a3e33;
-  line-height: 1.75;
-  margin: 0;
+/* --------------------------------------------------------------------------
+   9. SECTION 9: PARALLEL FORMULA (Centered Clean Block, No Left Border)
+   -------------------------------------------------------------------------- */
+.seller-parallel-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.seller-parallel-wrap .seller-lead-paragraph {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .seller-parallel-formula {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(15px, 0.95vw + 3px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
+  background: #fbf8f4;
+  border: 1px solid rgba(198, 158, 106, 0.45);
+  border-radius: 8px;
+  padding: 1.35rem 2.25rem;
   font-weight: 700;
   color: #855b29;
-  letter-spacing: 0.01em;
-  margin-top: 0.5rem;
+  text-align: center;
+  font-size: clamp(16px, 1.3vw, 20px);
+  margin-top: 2rem;
+  box-shadow: 0 4px 16px -4px rgba(133, 91, 41, 0.08);
 }
 
 /* --------------------------------------------------------------------------
-   8. ELIGIBILITY CHECKLIST ("Kya Weave 365 Aapke Liye Hai?")
+   10. SECTION 10: SUITABILITY (2-Column Hairline Table List, Zero Cards)
    -------------------------------------------------------------------------- */
-.seller-eligibility-section {
-  padding: clamp(3.5rem, 5vw, 5.5rem) 0;
-  background: #faf8f5;
-  border-top: 1px solid rgba(198, 158, 106, 0.25);
-  border-bottom: 1px solid rgba(198, 158, 106, 0.25);
-}
-
-.seller-eligibility-list {
-  list-style: none;
-  padding: 0;
-  margin: 2rem 0 0 0;
+.seller-suitability-ledger {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem 2.5rem;
+  gap: 0 2.5rem;
   border-top: 1px solid rgba(198, 158, 106, 0.3);
-  padding-top: 1.75rem;
+  margin-top: 1.5rem;
 }
 
-.seller-eligibility-item {
+.seller-suitability-row {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  color: #2b241c;
-  line-height: 1.55;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(198, 158, 106, 0.22);
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: #2e261f;
   font-weight: 500;
 }
 
-.seller-check-icon {
+.seller-suitability-bullet {
   color: #855b29;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1;
   flex-shrink: 0;
-  margin-top: 4px;
+}
+
+.seller-suitability-text {
+  flex: 1;
 }
 
 /* --------------------------------------------------------------------------
-   9. FAQS (Flush Minimalist Accordion — Zero Floating Cards)
+   11. SECTION 11: FAQS ACCORDION (Centered Layout, Clean Numbers)
    -------------------------------------------------------------------------- */
 .seller-faqs-section {
-  padding: clamp(4rem, 6vw, 6rem) 0;
-  scroll-margin-top: 85px;
+  background: #faf8f5;
 }
 
-.seller-faqs-container {
-  max-width: 1600px;
-  width: 100%;
+.seller-faqs-wrap {
+  max-width: 1040px;
   margin: 0 auto;
-}
-
-.seller-faqs-header {
-  text-align: center;
-  margin-bottom: 3.5rem;
 }
 
 .seller-faqs-accordion {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid rgba(198, 158, 106, 0.3);
+  border-top: 1px solid rgba(198, 158, 106, 0.35);
+  margin-top: 1.5rem;
 }
 
 .seller-faq-item {
-  border-bottom: 1px solid rgba(198, 158, 106, 0.3);
+  border-bottom: 1px solid rgba(198, 158, 106, 0.35);
 }
 
 .seller-faq-trigger {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.45rem 0;
   background: transparent;
   border: none;
-  padding: 1.5rem 0;
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1.5rem;
   cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.seller-faq-trigger:hover .seller-faq-q {
-  color: #855b29;
+  text-align: left;
+  gap: 1.5rem;
 }
 
 .seller-faq-q-wrap {
   display: flex;
   align-items: baseline;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
-.seller-faq-index {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 0.95rem;
-  font-weight: 600;
+.seller-faq-num {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
   color: #855b29;
   flex-shrink: 0;
+  letter-spacing: -0.02em;
 }
 
 .seller-faq-q {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(16px, 1.1vw, 18px); /* Mobile >= 15px, Desktop > 15px */
-  font-weight: 650;
+  font-family: var(--font-hero-heading, 'Marcellus', serif);
+  font-size: clamp(17px, 1.2vw, 19.5px);
+  font-weight: 600;
   color: #1a1613;
+  line-height: 1.45;
   margin: 0;
-  line-height: 1.5;
-  transition: color 0.2s ease;
 }
 
 .seller-faq-toggle-icon {
   color: #855b29;
   flex-shrink: 0;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s ease;
 }
 
 .seller-faq-toggle-icon.open {
@@ -835,25 +763,25 @@
 }
 
 .seller-faq-answer {
-  padding: 0 0 1.5rem 2.2rem;
-  font-size: clamp(15px, 0.95vw + 4px, 16.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.8;
-  color: #55483b;
-  margin: 0;
+  font-size: clamp(15.5px, 1.05vw, 17px);
+  color: #4a4036;
+  line-height: 1.75;
+  padding: 0 0 1.75rem 2.25rem;
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------
-   10. FINAL CALL TO ACTION (Distilled, Quiet Luxury Closing)
+   12. SECTION 12: CLOSING & CTA (Centered Luxury)
    -------------------------------------------------------------------------- */
 .seller-closing-section {
-  padding: clamp(4rem, 6vw, 6.5rem) 0;
   background: #faf8f5;
   border-top: 1px solid rgba(198, 158, 106, 0.3);
   text-align: center;
+  padding: clamp(4rem, 6.5vw, 6.5rem) 0;
 }
 
 .seller-closing-content {
-  max-width: 820px;
+  max-width: 860px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -862,164 +790,185 @@
 
 .seller-closing-title {
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(28px, 3.6vw, 42px);
+  font-size: clamp(26px, 3.5vw, 42px);
   font-weight: 500;
   line-height: 1.25;
   color: #1a1613;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.25rem 0;
   text-wrap: balance;
 }
 
-.seller-closing-subtitle {
-  font-size: clamp(16px, 1.1vw, 18px); /* Mobile >= 15px, Desktop > 15px */
-  font-weight: 600;
-  color: #855b29;
+.seller-closing-line {
+  font-size: clamp(16px, 1.1vw, 18px);
+  color: #3d342a;
+  line-height: 1.75;
   margin: 0 0 1rem 0;
-  line-height: 1.6;
-  text-wrap: balance;
+  max-width: 760px;
+  font-weight: 500;
 }
 
-.seller-closing-desc {
-  font-size: clamp(16px, 1.05vw, 17.5px); /* Mobile >= 15px, Desktop > 15px */
-  line-height: 1.78;
-  color: #55483b;
-  margin: 0 0 2.25rem 0;
-  max-width: 680px;
-  text-wrap: pretty;
+.seller-cta-wrap {
+  margin-top: 1.75rem;
 }
 
 .seller-closing-tagline {
-  margin-top: 1.75rem;
+  margin-top: 2rem;
   font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: 0.98rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
   color: #855b29;
   font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
-   11. RESPONSIVE BREAKPOINTS & STRICT TYPOGRAPHY ENFORCEMENT
+   13. RESPONSIVE BREAKPOINTS & TYPOGRAPHY FLOOR ENFORCEMENT
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
-  .seller-hairline-ledger {
+  .seller-editorial-split,
+  .seller-friction-split,
+  .seller-dual-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .seller-hairline-ledger,
+  .seller-steps-ledger {
     grid-template-columns: repeat(2, 1fr);
   }
-  .seller-ledger-cell:nth-child(3n) {
-    border-right: 1px solid rgba(198, 158, 106, 0.3);
+
+  .seller-ledger-cell:nth-child(3n),
+  .seller-step-cell:nth-child(3n) {
+    border-right: 1px solid rgba(198, 158, 106, 0.25);
   }
-  .seller-ledger-cell:nth-child(2n) {
+
+  .seller-ledger-cell:nth-child(2n),
+  .seller-step-cell:nth-child(2n) {
     border-right: none;
   }
-  .seller-steps-rail {
-    grid-template-columns: repeat(2, 1fr);
+
+  .seller-ledger-cell:nth-last-child(-n+3),
+  .seller-step-cell:nth-last-child(-n+3) {
+    border-bottom: 1px solid rgba(198, 158, 106, 0.25);
   }
-  .seller-dual-index-grid {
-    grid-template-columns: 1fr;
-    gap: 3rem;
+
+  .seller-ledger-cell:nth-last-child(-n+2),
+  .seller-step-cell:nth-last-child(-n+2) {
+    border-bottom: none;
   }
 }
 
-/* MOBILE FLOOR GUARANTEE: Never smaller than 15px */
+/* Mobile Floor Rule: strictly >= 15px */
 @media (max-width: 860px) {
   .seller-page-wrapper {
     font-size: 15px;
   }
 
   .seller-page-wrapper p,
-  .seller-page-wrapper li,
+  .seller-page-wrapper li:not(.breadcrumb-item),
   .seller-bullet-item,
   .seller-ledger-desc,
   .seller-step-desc,
-  .seller-item-desc,
   .seller-benefit-desc,
-  .seller-friction-desc,
   .seller-faq-answer,
-  .seller-eligibility-item,
-  .seller-audience-intro,
-  .seller-audience-pill,
-  .seller-pain-token,
+  .seller-suitability-row,
+  .seller-buyer-pill,
   .seller-assurance-note {
     font-size: 15px !important;
     line-height: 1.65 !important;
   }
 
-  .seller-lead-paragraph,
+  .seller-hero .premium-breadcrumb {
+    margin-bottom: 1rem;
+    padding-top: 0.5rem;
+  }
+
+  .seller-hero .premium-breadcrumb .breadcrumb-list {
+    gap: 0.3rem 0.45rem !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .seller-hero .premium-breadcrumb .breadcrumb-item,
+  .seller-hero .premium-breadcrumb .breadcrumb-item a,
+  .seller-hero .premium-breadcrumb .breadcrumb-item button,
+  .seller-hero .premium-breadcrumb .breadcrumb-item span,
+  .seller-hero .premium-breadcrumb .breadcrumb-current {
+    font-size: 10.5px !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.05em !important;
+  }
+
   .seller-hero-desc,
-  .seller-relief-manifesto p,
-  .seller-closing-desc,
-  .seller-audience-highlight-text,
-  .seller-parallel-strip p {
+  .seller-lead-paragraph,
+  .seller-hero-subtitle,
+  .seller-hero-question,
+  .seller-hero-statement,
+  .seller-hero-callout,
+  .seller-hero-pains,
+  .seller-friction-row,
+  .seller-category-row,
+  .seller-closing-line,
+  .seller-narrative-line {
     font-size: 15.5px !important;
     line-height: 1.7 !important;
   }
 
-  /* Prevent horizontal overflow on mobile screens */
   .seller-no-wrap {
     white-space: normal;
     display: inline;
-  }
-
-  .seller-editorial-title {
-    overflow-wrap: break-word;
   }
 
   .seller-hero-inner {
     grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
   }
-  .seller-hook-grid,
-  .seller-contrast-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2.25rem;
-  }
-  .seller-hook-grid > div {
-    min-width: 0;
-    max-width: 100%;
-  }
-  .seller-hook-contrast-box {
-    padding-left: 1.15rem;
-    margin-top: 1.5rem;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  .seller-pain-tokens {
-    max-width: 100%;
-  }
-  .seller-pain-token {
-    max-width: 100%;
-    box-sizing: border-box;
-    white-space: normal;
-  }
-  .seller-hook-badge-banner {
-    padding: 1.5rem 1.25rem;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
+
   .seller-hero-bullets {
     grid-template-columns: 1fr;
   }
-  .seller-hairline-ledger {
-    grid-template-columns: 1fr;
+
+  .seller-container {
+    padding: 0 1.25rem;
   }
-  .seller-ledger-cell {
+
+  .seller-hero {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .seller-hairline-ledger,
+  .seller-steps-ledger,
+  .seller-benefits-ledger,
+  .seller-suitability-ledger {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .seller-ledger-cell,
+  .seller-step-cell,
+  .seller-benefit-cell {
+    padding: 1.5rem 0 !important;
     border-right: none !important;
+    border-bottom: 1px solid rgba(198, 158, 106, 0.25) !important;
   }
-  .seller-steps-rail {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+
+  .seller-ledger-cell:last-child,
+  .seller-step-cell:last-child,
+  .seller-benefit-cell:last-child {
+    border-bottom: none !important;
   }
-  .seller-benefits-grid,
-  .seller-eligibility-list {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+
+  .seller-parallel-formula {
+    padding: 1.15rem 1.25rem;
+    font-size: 15.5px !important;
   }
+
   .seller-faq-answer {
     padding-left: 0;
   }
 }
 
-/* DESKTOP FLOOR GUARANTEE: Strictly greater than 15px (16px to 18.5px) */
+/* Desktop Floor Rule: strictly > 15px (16px - 18px) */
 @media (min-width: 861px) {
   .seller-page-wrapper {
     font-size: 16.5px;
@@ -1028,23 +977,28 @@
   .seller-bullet-item,
   .seller-ledger-desc,
   .seller-step-desc,
-  .seller-item-desc,
   .seller-benefit-desc,
-  .seller-friction-desc,
-  .seller-faq-answer,
-  .seller-eligibility-item,
-  .seller-audience-intro,
-  .seller-hook-badge-banner p {
+  .seller-buyer-pill,
+  .seller-assurance-note {
+    font-size: 16px !important;
+    line-height: 1.7 !important;
+  }
+
+  .seller-lead-paragraph,
+  .seller-hero-statement,
+  .seller-friction-row,
+  .seller-category-row,
+  .seller-suitability-row,
+  .seller-faq-answer {
     font-size: 16.5px !important;
     line-height: 1.75 !important;
   }
 
   .seller-hero-desc,
-  .seller-lead-paragraph,
-  .seller-relief-manifesto p,
-  .seller-closing-desc,
-  .seller-audience-highlight-text,
-  .seller-parallel-strip p {
+  .seller-hero-subtitle,
+  .seller-hero-question,
+  .seller-hero-callout,
+  .seller-closing-line {
     font-size: 17.5px !important;
     line-height: 1.8 !important;
   }

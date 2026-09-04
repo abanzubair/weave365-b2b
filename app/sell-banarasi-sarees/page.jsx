@@ -46,7 +46,7 @@ const sellerFaqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'Kya registration free hai?',
+      name: '01- Kya registration free hai?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Haan. Weave 365 par Seller registration bilkul free hai. Koi monthly ya yearly fee nahi hai.',
@@ -54,7 +54,7 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Kya mujhe apni poori collection Weave 365 par list karni hogi?',
+      name: '02 - Kya mujhe apni poori collection Weave 365 par list karni hogi?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Nahi. Aapko apni poori collection list karne ki zaroorat nahi hai. Aap apne selected products hi Weave 365 par list kar sakte hain. Aap product ki photo aur details share kar dijiye. Baaki listing ka kaam hum kar lenge. Jitna product available hoga, utna hi aap sell kar sakte hain.',
@@ -62,7 +62,7 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Kya main saree ke saath suit, lehenga and dupatta bhi list kar sakta hoon?',
+      name: '03 - Kya main saree ke saath suit, lehenga and dupatta bhi list kar sakta hoon?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Haan. Aap Banarasi Sarees ke saath Suits, Dupattas aur Lehengas bhi list kar sakte hain. Aap jo products sell karna chahte hain, unki photo aur details share karna hoga.',
@@ -70,23 +70,23 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Kya meri collection online catalog mein show hogi?',
+      name: '04 - Kya meri collection online catalog mein show hogi?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Haan. Aapke approved products Weave 365 ke online catalog mein show kiye jayenge. Aapko extra listing ya product promotion fee dene ki zaroorat nahi hai. Marketplace ki tarah apne products ko upar dikhane ke liye alag se paid promotion karna nahi padega. Aap product ki photos aur details share kijiye. Hum unhe catalog mein add karke customers ke liye available karenge. Weave 365 website customer demand aur price ke basis par products ko automatically promote karegi.',
+        text: 'Haan. Aapke approved products Weave 365 ke online catalog mein show kiye jayenge. Aapko extra listing ya product promotion fee dene ki zaroorat nahi hai. Marketplace ki tarah apne products ko upar dikhane ke liye alag se paid promotion karna nahi padega. Aap product ki photos aur details share kijiye. Hum unhe catalog mein add karke customers ke liye available karenge. Aapka fayda: Aap apne products ko bina extra promotion fee ke India aur worldwide customers tak pahucha sakte hain. Agar aapke product ki price competitive hogi, to customers ke order aane ke chances bhi zyada honge. Weave 365 website customer demand aur price ke basis par products ko automatically promote karegi — iske liye aapko koi extra promotion fee nahi deni hogi.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Kya mujhe marketplace ki tarah customer returns manage karne padenge?',
+      name: '05 - Kya mujhe marketplace ki tarah customer returns manage karne padenge?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Nahi. Customer return, cancellation ka kaam Weave 365 handle karega. Aapko sirf product ki quality check karke jo photo diya hai wahi product hamare warehouse tak bhejna hai. Product mein koi quality problem ya galat product ho, to uske liye alag claim process rahega.',
+        text: 'Nahi. Customer return, cancellation ka kaam Weave 365 handle karega. Aapko ko sirf product ki quality check karke jo photo diya hai wahi product hamare warehouse tak bhejna hai. Product mein koi quality problem ya galat product ho, to uske liye alag claim process rahega.',
       },
     },
     {
       '@type': 'Question',
-      name: 'NDR aur RTO ka kya hoga?',
+      name: '06 - NDR aur RTO ka kya hoga?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'NDR ke liye aap zimmedaar nahi honge. RTO ke rules order process karne se pehle clear kar diye jayenge. Aapko order lene se pehle saari terms aur zimmedari clearly bata di jayegi.',
@@ -94,7 +94,7 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'GST ka kya hoga?',
+      name: '07 - GST ka kya hoga?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'GST ka rule aapke business aur order ke hisaab se rahega. Weave 365 applicable transaction ka GST invoice provide karega. Aapke customer ko sale par GST ki zimmedari aapke business par ho sakti hai, jo aapke GST registration aur business setup par depend karegi.',
@@ -102,7 +102,7 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Kya main apna existing business bhi continue kar sakta hoon?',
+      name: '08 - Kya main apna existing business bhi continue kar sakta hoon?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Haan. Aap apna existing business jaise chal raha hai waise hi continue kar sakte hain. Weave 365 ko aap extra business line ki tarah use kar sakte hain.',
@@ -110,18 +110,18 @@ const sellerFaqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Weave 365 par sell karna marketplace se kaise alag hai?',
+      name: '09 - Weave 365 par sell karna marketplace se kaise alag hai?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Weave 365 par seller ko sirf product list karke competition mein nahi chhod diya jata. Aapke approved products ko Weave 365 ke catalog mein customers ke liye available kiya jata hai bina monthly fee ya paid promotion ke. Aapka kaam product ki quality aur availability maintain karna hai. Baaki sales aur fulfilment Weave 365 handle karta hai.',
+        text: 'Weave 365 par seller ko sirf product list karke competition mein nahi chhod diya jata. Aapke approved products ko Weave 365 ke catalog mein customers ke liye available kiya jata hai. Aapko monthly fee ya paid promotion ke bina apne products showcase karne ka option milta hai. Aapka kaam product ki quality aur availability maintain karna hai. Baaki sales aur fulfilment ka process Weave 365 handle karta hai.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Mujhe apne products Weave 365 ke through hi kyun sell karne chahiye?',
+      name: '10 - Mujhe apne products Weave 365 ke through hi kyun sell karne chahiye?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Kyuki aapko apna alag online store banane aur customers lane ka poora burden nahi lena padta. Aap apne Banarasi products Weave 365 par list kijiye aur naye customers tak pahunchiye. Aap product ki quality check karke warehouse tak bhejiye; sales aur fulfilment Weave 365 handle karega.',
+        text: 'Kyuki aapko apna alag online store banane aur customers lane ka poora burden nahi lena padta. Aap apne Banarasi products Weave 365 par list kijiye aur naye customers tak pahunchiye. Aap product ki quality check karke hamare warehouse tak product bhejiye; sales aur fulfilment Weave 365 handle karega. Isse aap apna existing business bhi continue kar sakte hain aur Weave 365 ko ek additional sales channel ke roop mein use kar sakte hain.',
       },
     },
   ],
