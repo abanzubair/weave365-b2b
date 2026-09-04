@@ -38,34 +38,18 @@ export const AVAILABLE_THEMES = [
   {
     id: 'vrtx-studio',
     name: 'VRTX Studio',
-    tagline: 'Minimal Dark & Modern Editorial Luxury',
-    engineBadge: 'Next.js 16',
-    styleBadge: 'Modern Editorial',
-    accentColor: '#f59e0b',
+    subtitle: 'Modern Editorial & Dark Onyx Luxury',
+    platform: 'Next.js 16',
     image: '/images/themes/theme-vrtx-preview.png',
     previewUrl: 'https://ecom-template-1-tau.vercel.app',
-    features: [
-      'Deep onyx & gold luxury dark-mode',
-      'Haute-couture editorial typography',
-      'Floating quick-inquiry shopping bag',
-      'Direct 1-tap WhatsApp checkout'
-    ],
   },
   {
     id: 'tavishi-heritage',
     name: 'Tavishi Heritage (50K)',
-    tagline: 'Warm Artisanal Silk & Royal Gold',
-    engineBadge: 'Vite + React',
-    styleBadge: 'Artisanal Silk & Gold',
-    accentColor: '#b58342',
+    subtitle: 'Warm Artisanal Silk & Royal Gold',
+    platform: 'Vite + React',
     image: '/images/themes/theme-tavishi-preview.png',
     previewUrl: 'https://50k-gamma.vercel.app',
-    features: [
-      'Warm royal gold & ivory celebration palette',
-      'Banarasi loom craftsmanship & heritage story',
-      'Live customer order tracking by phone',
-      'Festive saree showcase & high-res details'
-    ],
   }
 ];
 
@@ -918,15 +902,16 @@ function StorefrontSetupPanel({
           </div>
         </div>
 
-        {/* Boutique Theme & Template Selector */}
+        {/* Boutique Theme & Template Selector (Distilled Luxury) */}
         <div className="rt-setup-row rt-setup-row-themes">
           <div className="rt-setup-label">
             <div className="rt-theme-label-header">
-              <Palette size={16} className="rt-theme-label-icon" />
+              <Palette size={15} className="rt-theme-label-icon" />
               <strong>Boutique Theme *</strong>
             </div>
-            <span>Choose your storefront design and layout. Switch anytime with zero data loss.</span>
+            <span>Select the visual style for your live website. Switch anytime with zero data loss.</span>
           </div>
+
           <div className="rt-setup-theme-container">
             <div className="rt-theme-grid">
               {AVAILABLE_THEMES.map((theme) => {
@@ -940,22 +925,7 @@ function StorefrontSetupPanel({
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') update('theme_color', theme.id); }}
                   >
-                    {/* Card Badges and Radio Check */}
-                    <div className="rt-theme-card-header">
-                      <div className="rt-theme-card-badges">
-                        <span className={`rt-theme-style-badge rt-theme-badge-${theme.id}`}>
-                          {theme.styleBadge}
-                        </span>
-                        <span className="rt-theme-engine-badge">
-                          {theme.engineBadge}
-                        </span>
-                      </div>
-                      <div className={`rt-theme-radio ${isSelected ? 'checked' : ''}`}>
-                        {isSelected && <Check size={12} strokeWidth={3} />}
-                      </div>
-                    </div>
-
-                    {/* Real Website Preview Screenshot */}
+                    {/* Visual Screenshot Preview with Floating Radio */}
                     <div className="rt-theme-screenshot-wrap">
                       <img 
                         src={theme.image} 
@@ -963,68 +933,53 @@ function StorefrontSetupPanel({
                         className="rt-theme-screenshot-img"
                         loading="lazy"
                       />
-                      <div className="rt-theme-screenshot-overlay">
-                        <span className="rt-theme-zoom-hint">Live Template Preview</span>
+                      <div className="rt-theme-radio-pill">
+                        <div className={`rt-theme-radio-dot ${isSelected ? 'checked' : ''}`}>
+                          {isSelected && <Check size={11} strokeWidth={3} />}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Theme Info & Features */}
-                    <div className="rt-theme-meta">
+                    {/* Theme Header & Details */}
+                    <div className="rt-theme-body">
                       <div className="rt-theme-title-row">
                         <h4 className="rt-theme-name">{theme.name}</h4>
-                        {isSelected && (
-                          <span className="rt-theme-active-tag">
-                            <Check size={11} strokeWidth={2.5} /> Active Theme
-                          </span>
-                        )}
+                        <span className="rt-theme-platform-tag">{theme.platform}</span>
                       </div>
-                      <p className="rt-theme-tagline">{theme.tagline}</p>
-                      <ul className="rt-theme-features">
-                        {theme.features.map((feat, idx) => (
-                          <li key={idx}>
-                            <Check size={12} className="rt-theme-feat-check" />
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                      <p className="rt-theme-subtitle">{theme.subtitle}</p>
 
-                    {/* Theme Action Buttons */}
-                    <div className="rt-theme-actions" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className={`rt-theme-select-btn ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => update('theme_color', theme.id)}
-                      >
-                        {isSelected ? 'Active Theme' : 'Switch to This Theme'}
-                      </button>
-                      <a
-                        href={formData.slug ? `${theme.previewUrl}/?store=${encodeURIComponent(formData.slug)}` : theme.previewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rt-theme-preview-link"
-                        title="Open live preview in new tab"
-                      >
-                        <span>Demo</span>
-                        <ExternalLink size={12} />
-                      </a>
+                      {/* Card Footer Bar */}
+                      <div className="rt-theme-footer" onClick={(e) => e.stopPropagation()}>
+                        <span className={`rt-theme-status-tag ${isSelected ? 'is-active' : ''}`}>
+                          {isSelected ? (
+                            <><Check size={12} strokeWidth={2.5} /> Active Theme</>
+                          ) : (
+                            'Click to select'
+                          )}
+                        </span>
+                        <a
+                          href={formData.slug ? `${theme.previewUrl}/?store=${encodeURIComponent(formData.slug)}` : theme.previewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rt-theme-demo-link"
+                          title="Open live preview in new tab"
+                        >
+                          <span>Live Demo</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Zero Data Loss Guarantee Banner */}
-            <div className="rt-theme-data-guarantee">
-              <div className="rt-guarantee-icon-wrap">
-                <ShieldCheck size={18} className="rt-guarantee-icon" />
-              </div>
-              <div className="rt-guarantee-text">
-                <strong>100% Data Preservation Guaranteed</strong>
-                <span>
-                  Switching themes updates only your website design layout. All {sharesCount} sarees in your catalog, custom retail markups, WhatsApp order integration, and customer order history transfer instantly without any data loss.
-                </span>
-              </div>
+            {/* Distilled Zero Data Loss Reassurance */}
+            <div className="rt-theme-data-guarantee-quiet">
+              <ShieldCheck size={15} className="rt-guarantee-icon-quiet" />
+              <span>
+                <strong>100% Data Preserved:</strong> All {sharesCount} sarees in your catalog, custom retail markups, WhatsApp ordering, and customer orders automatically shift to your chosen theme.
+              </span>
             </div>
           </div>
         </div>
