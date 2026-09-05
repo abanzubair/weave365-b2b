@@ -1,83 +1,88 @@
 import { AppLink } from './AppLink.jsx';
-import { ArrowRight, Check } from './icons.jsx';
+import { assetSrc } from '../utils/assetSrc.js';
+
+// Assets
+import mobHeroImage from '../../assets/mobH.webp';
+import deskHeroImage from '../../assets/deskH.webp';
 import '../styles/overlapHero.css';
 
 export function OverlapHero({ navigate }) {
+  const desktopImage = assetSrc(deskHeroImage);
+  const mobileImage = assetSrc(mobHeroImage);
+  const tagline = 'Banarasi Sarees and Suits for Wholesale, Resellers, Private Labels and Retail';
+  const description = 'Source Banarasi sarees & suits for wholesale, reselling, social media selling, boutique retail, private labels and personal use. Sell through WhatsApp, Instagram, Facebook and other online channels. Explore sarees by fabric, weave, design, price and buying quantity.';
+  const highlights = [
+    'Flexible MOQ',
+    'Dropshipping Available',
+    'Free Shipping Across India',
+    'Worldwide Shipping',
+  ];
+
   return (
-    <section className="overlap-hero" aria-label="Turn Your Reselling Business Into a Brand — Weave 365">
+    <section className="overlap-hero" aria-label="Banarasi Sarees and Suits Wholesale & Resellers">
       <div className="overlap-hero-container">
-        
-        {/* Left Column: Hero Editorial Content */}
-        <div className="overlap-hero-content-col">
-          
-          <h1 className="overlap-hero-title">
-            <span className="hero-title-main">Turn Your Reselling Business Into a Brand</span>
-            <div className="hero-title-sub-group">
-              <span className="hero-title-sub">Sell 50 Sarees or Suits in 30 Days.</span>
-              <span className="hero-title-sub">Get Your Own Website — FREE.</span>
-            </div>
-          </h1>
 
-          <div className="overlap-hero-desc">
-            <p className="hero-desc-channels">Sell on <strong>WhatsApp, Instagram &amp; Facebook.</strong></p>
-            <p className="hero-desc-tagline">Build your own brand, grow your customers, and start selling online.</p>
-          </div>
-
-          {/* Key Value Checklist / Trust Strip */}
-          <div className="overlap-hero-features-strip" role="list">
-            <div className="overlap-feature-item" role="listitem">
-              <span className="overlap-feature-badge" aria-hidden="true">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              <span className="overlap-feature-text">White Label Dropshipping Available</span>
-            </div>
-            <div className="overlap-feature-divider" />
-            <div className="overlap-feature-item" role="listitem">
-              <span className="overlap-feature-badge" aria-hidden="true">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              <span className="overlap-feature-text">Free Shipping Across India</span>
-            </div>
-          </div>
-
-          {/* Action CTAs */}
-          <div className="overlap-hero-actions">
-            <AppLink
-              to="resell-sarees-online"
-              href="/resell-sarees-online"
-              className="overlap-hero-cta-link primary-link"
-              navigate={navigate}
-              aria-label="Start Reselling"
-            >
-              <span className="link-label">Start Reselling</span>
-              <ArrowRight size={18} className="link-arrow" />
-            </AppLink>
-
-            <AppLink
-              to="dropshipping"
-              href="/dropshipping"
-              className="overlap-hero-cta-link primary-link"
-              navigate={navigate}
-              aria-label="Dropshipping"
-            >
-              <span className="link-label">Dropshipping</span>
-              <ArrowRight size={18} className="link-arrow" />
-            </AppLink>
+        {/* Responsive Background Image Layer */}
+        <div className="overlap-hero-bg-layer">
+          <div className="overlap-hero-card">
+            <picture className="overlap-hero-picture">
+              <source media="(min-width: 768px)" srcSet={desktopImage} />
+              <img
+                src={mobileImage}
+                alt="Banarasi Sarees and Suits Wholesale & Resellers"
+                className="overlap-hero-img"
+                draggable="false"
+                fetchPriority="high"
+                decoding="async"
+                width={768}
+                height={960}
+              />
+            </picture>
           </div>
         </div>
 
-        {/* Right Column: Clean Editorial Visual Frame */}
-        <div className="overlap-hero-visual-col">
-          <div className="overlap-hero-visual-frame">
-            <img
-              src="https://assets.weave365.com/assets/banner/heroFreeWebsite.webp"
-              alt="Turn Your Reselling Business Into a Brand — Weave 365"
-              className="visual-hero-img"
-              fetchPriority="high"
-              decoding="async"
-              width={960}
-              height={720}
-            />
+        {/* Foreground Content Layer */}
+        <div className="overlap-hero-content-layer">
+          <div className="overlap-hero-content-right">
+            <h1 className="overlap-hero-tagline" data-editable-key="hero_title">
+              {tagline}
+            </h1>
+
+            <div className="overlap-hero-divider"></div>
+
+            <p className="overlap-hero-description" data-editable-key="hero_subtitle">
+              {description}
+            </p>
+
+            <div className="overlap-hero-highlights">
+              {highlights.map((hl, i) => (
+                <span key={hl} className="highlight-item">
+                  {hl}
+                  {i < highlights.length - 1 && <span className="divider-dot">·</span>}
+                </span>
+              ))}
+            </div>
+
+            <div className="overlap-hero-actions">
+              <AppLink
+                to="wholesale-banarasi-sarees"
+                href="/wholesale-banarasi-sarees/"
+                className="overlap-hero-btn primary-btn"
+                navigate={navigate}
+              >
+                <span>Get Wholesale Pricing</span>
+                <span className="btn-arrow">&rarr;</span>
+              </AppLink>
+              <AppLink
+                to="resell-sarees-online"
+                href="/resell-sarees-online"
+                className="overlap-hero-btn secondary-btn"
+                navigate={navigate}
+              >
+                <span>Start Reselling</span>
+                <span className="btn-arrow">&rarr;</span>
+              </AppLink>
+            </div>
           </div>
         </div>
 

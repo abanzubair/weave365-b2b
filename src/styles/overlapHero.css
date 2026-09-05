@@ -1,388 +1,451 @@
 /* ═══════════════════════════════════════════════════════════════
-   WEAVE365 HOME HERO — EDITORIAL ATELIER AESTHETIC
-   Designed to match the refined Dropshipping Hero layout & typography,
-   preserving exact text copy and original button style.
+   OVERLAP HERO — Impeccable Luxury Polish
    ═══════════════════════════════════════════════════════════════ */
 
 .overlap-hero {
   position: relative;
   width: 100%;
-  background: var(--paper, #ffffff);
-  overflow-x: hidden;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
+  background-color: #eae5df;
+  overflow: hidden;
   box-sizing: border-box;
-  padding: clamp(2.75rem, 4.2vw, 4.5rem) var(--site-padding, 2rem) clamp(2.5rem, 3.85vw, 3.85rem) var(--site-padding, 2rem);
 }
 
 .overlap-hero-container {
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: clamp(1.75rem, 3vw, 3.25rem);
-  align-items: center;
-  box-sizing: border-box;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   LEFT COLUMN: EDITORIAL CONTENT
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-content-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  width: 100%;
-  align-items: flex-start;
-  text-align: left;
-  box-sizing: border-box;
-}
-
-/* Main Heading — Marcellus Editorial Style */
-.overlap-hero-title {
-  margin: 0 0 1.2rem 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.hero-title-main {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(24px, 2.35vw, 36px);
-  font-weight: 500;
-  line-height: 1.18;
-  letter-spacing: -0.015em;
-  color: #1a1613;
-  display: block;
-  white-space: nowrap;
-}
-
-.hero-title-sub-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.65rem;
-}
-
-.hero-title-sub {
-  font-family: var(--font-hero-heading, 'Marcellus', serif);
-  font-size: clamp(20px, 1.95vw, 28px);
-  font-weight: 500;
-  line-height: 1.22;
-  letter-spacing: -0.012em;
-  color: #855b29;
-  display: block;
-}
-
-/* Narrative Body */
-.overlap-hero-desc {
-  margin: 0 0 1.25rem 0;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.hero-desc-channels {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
-  line-height: 1.6;
-  color: #55483b;
-  margin: 0;
-  font-weight: 500;
-}
-
-.hero-desc-channels strong {
-  font-weight: 700;
-  color: #1a1613;
-}
-
-.hero-desc-tagline {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(1.02rem, 1.2vw, 1.12rem);
-  line-height: 1.6;
-  color: #55483b;
-  margin: 0;
-  font-weight: 500;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   ACTION CTAs — PRESERVED BUTTON STYLE
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: clamp(2rem, 3.5vw, 3.5rem);
-  width: 100%;
-  margin-bottom: 0;
-}
-
-.overlap-hero-cta-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(21px, 1.45vw, 25px);
-  font-weight: 600;
-  color: var(--heading, #000000);
-  text-decoration: none;
-  position: relative;
-  padding-bottom: 3px;
-  width: fit-content;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: color 0.25s ease;
-}
-
-.overlap-hero-cta-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--gold, #b78646);
-  transform: scaleX(0.85);
-  transform-origin: left;
-  transition: transform 0.25s ease, background-color 0.25s ease;
-}
-
-.overlap-hero-cta-link:hover {
-  color: var(--gold-dark, #805d31);
-}
-
-.overlap-hero-cta-link:hover::after {
-  transform: scaleX(1);
-  background: var(--gold-dark, #805d31);
-}
-
-.overlap-hero-cta-link .link-arrow {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-  color: var(--gold, #b78646);
-}
-
-.overlap-hero-cta-link:hover .link-arrow {
-  transform: translateX(4px);
-  color: var(--gold-dark, #805d31);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   KEY VALUES / TRUST STRIP (STYLED AS DROPSHIPPING METRICS BAR)
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-features-strip {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0;
-  margin: 0 0 1.75rem 0;
-  width: 100%;
-}
-
-.overlap-feature-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.overlap-feature-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: rgba(183, 134, 70, 0.16);
-  color: #805d31;
-  flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(128, 93, 49, 0.06);
-}
-
-.overlap-feature-text {
-  font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(14.5px, 1.05vw, 16px);
-  font-weight: 600;
-  color: #55483b;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-
-.overlap-feature-divider {
-  width: 1px;
-  height: 24px;
-  background: rgba(198, 158, 106, 0.35);
-  flex-shrink: 0;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RIGHT COLUMN: VISUAL PHOTO FRAME (EDITORIAL SHOWCASE)
-   ───────────────────────────────────────────────────────────── */
-
-.overlap-hero-visual-col {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: relative;
   width: 100%;
-}
-
-.overlap-hero-visual-frame {
-  position: relative;
-  width: 100%;
-  border-radius: 12px;
+  height: 100%;
+  height: 100svh;
+  height: 100dvh;
+  max-height: 100dvh;
+  background-color: #eae5df;
+  display: flex;
+  flex-direction: column; /* Mobile layout: image on top, text panel below */
   overflow: hidden;
-  box-shadow: 0 18px 48px rgba(54, 37, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(198, 158, 106, 0.35);
-  aspect-ratio: 16 / 12.1;
-  background: #faf7f2;
+  box-sizing: border-box;
 }
 
-.visual-hero-img {
+/* Background/Image Layer - Mobile: full width with header clearance spacing */
+.overlap-hero-bg-layer {
+  position: relative;
+  width: 100%;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: clamp(300px, 48vh, 420px);
+  background-color: #eae5df;
+  padding: 56px 16px 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Static Mobile Card Wrapper */
+.overlap-hero-card {
+  background-color: transparent;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  min-height: 0;
+}
+
+/* Images alignment */
+.overlap-hero-picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: clamp(260px, 44vh, 380px);
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(31, 20, 13, 0.08);
+  min-height: 0;
+}
+
+.overlap-hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 20%;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
+  border-radius: 12px;
 }
 
+/* Editorial Content Split Panel */
+.overlap-hero-content-layer {
+  position: relative;
+  width: 100%;
+  background-color: #eae5df;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(16px, 2.4vh, 24px) 20px calc(24px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  pointer-events: auto;
+  flex: 1 1 auto;
+}
 
-/* ─────────────────────────────────────────────────────────────
-   RESPONSIVE BREAKPOINTS
-   ───────────────────────────────────────────────────────────── */
+/* Text and details container inside panel */
+.overlap-hero-content-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+}
 
-@media (max-width: 1024px) {
-  .overlap-hero-container {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 2.25rem;
+.overlap-hero-tagline {
+  font-family: var(--font-heading);
+  font-style: normal;
+  font-size: clamp(18.5px, 4.8vw, 23px);
+  color: var(--ink, #1a1a1a);
+  line-height: 1.22;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.overlap-hero-tagline br {
+  display: none;
+}
+
+.overlap-hero-divider {
+  width: 36px;
+  height: 1.5px;
+  background-color: var(--gold-dark, #805d31);
+  margin: 6px 0 8px;
+  border-radius: 1px;
+}
+
+.overlap-hero-description {
+  display: block;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: clamp(13px, 3.4vw, 14.5px);
+  font-weight: 400;
+  color: #4a433d;
+  line-height: 1.48;
+  margin: 0 0 10px 0;
+  max-width: 400px;
+  text-wrap: pretty;
+}
+
+.overlap-hero-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: clamp(9px, 2.3vw, 10.5px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-dark, #805d31);
+  margin-bottom: 14px;
+  align-items: center;
+  gap: 5px;
+}
+
+.overlap-hero-highlights .highlight-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.overlap-hero-highlights .divider-dot {
+  color: var(--gold-dark, #805d31);
+  font-weight: bold;
+  opacity: 0.7;
+}
+
+/* Action buttons — Luxury Heritage Hero CTAs */
+.overlap-hero-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  max-width: 390px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlap-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(11px, 2.8vw, 12.5px);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              background 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+.overlap-hero-btn .btn-arrow {
+  display: inline-block;
+  font-size: 1.1em;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.overlap-hero-btn:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+.overlap-hero-btn.primary-btn {
+  background: var(--ink, #1a1a1a);
+  border: 1.5px solid var(--ink, #1a1a1a);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.overlap-hero-btn.primary-btn:hover {
+  background: #000000;
+  border-color: #000000;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.overlap-hero-btn.secondary-btn {
+  background: transparent;
+  border: 1.5px solid var(--ink, #1a1a1a);
+  color: var(--ink, #1a1a1a);
+}
+
+.overlap-hero-btn.secondary-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--ink, #1a1a1a);
+  color: var(--ink, #1a1a1a);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.overlap-hero-btn:active {
+  transform: scale(0.98);
+}
+
+.overlap-hero-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+@media (max-width: 330px) {
+  .overlap-hero-actions {
+    flex-direction: column;
+    max-width: 280px;
   }
-
-  .overlap-hero-visual-col {
+  .overlap-hero-btn {
     width: 100%;
-    max-width: 640px;
-    margin: 0 auto;
+    flex: none;
   }
 }
 
-@media (max-width: 768px) {
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP SPLIT-SCREEN LAYOUT (≥ 768px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
   .overlap-hero {
-    min-height: auto;
-    padding: clamp(2.5rem, 5.5vw, 3.5rem) clamp(1.25rem, 4.5vw, 1.75rem) 2.75rem clamp(1.25rem, 4.5vw, 1.75rem);
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: hidden;
   }
 
   .overlap-hero-container {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 1.5rem;
+    height: 100%;
+    flex-direction: row; /* Desktop layout: split screen */
   }
 
-  .overlap-hero-content-col {
-    padding-left: 10px;
+  /* Full bleed panel on desktop */
+  .overlap-hero-bg-layer {
+    width: 50%; /* 50-50 split on desktop */
+    height: 100%;
+    max-height: none;
+    flex: 0 0 50%;
+    padding: 0;
+    background-color: transparent;
+    min-height: 0;
+  }
+
+  .overlap-hero-card {
+    background-color: transparent;
+    padding: 0;
+    max-width: none;
+    box-shadow: none;
+    display: block;
+    height: 100%;
+  }
+
+  .overlap-hero-picture {
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    display: block;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .overlap-hero-img {
+    object-position: 12% center;
+    border-radius: 0;
+  }
+
+  .overlap-hero-content-layer {
+    width: 50%; /* 50-50 split on desktop */
+    height: 100%;
+    max-height: none;
+    flex: 0 0 50%;
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    justify-content: flex-start;
+    align-items: center;
+    padding: clamp(3.5rem, 5vw, 6rem) clamp(2.5rem, 4vw, 5rem);
+    padding-left: clamp(2.5rem, 4.5vw, 5.5rem);
+    padding-top: calc(72px + 2vh);
+  }
+
+  .overlap-hero-content-right {
     align-items: flex-start;
     text-align: left;
+    max-width: 680px;
     width: 100%;
   }
 
-  .overlap-hero-title {
-    font-size: clamp(24px, 7vw, 34px);
-    margin-bottom: 1rem;
+  .overlap-hero-tagline {
+    font-size: clamp(2.1rem, 2.75vw, 3.15rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
   }
 
-  .hero-title-main {
-    font-size: clamp(24px, 6.5vw, 32px);
-    line-height: 1.18;
-    white-space: normal;
+  .overlap-hero-divider {
+    margin: 1.3rem 0 1.5rem;
+    width: 56px;
+    height: 2px;
+    align-self: flex-start;
   }
 
-  .hero-title-sub-group {
-    margin-top: 0.5rem;
-    gap: 0.25rem;
-  }
-
-  .hero-title-sub {
-    font-size: clamp(19px, 5vw, 25px);
-    line-height: 1.22;
-  }
-
-  .overlap-hero-desc {
-    margin-bottom: 1.15rem;
-    max-width: 100%;
-    gap: 0.35rem;
-  }
-
-  .hero-desc-channels {
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  .hero-desc-tagline {
-    font-size: 14px;
-    line-height: 1.55;
-  }
-
-  .overlap-hero-features-strip {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.65rem;
-    padding-top: 0;
-    margin-top: 0;
+  .overlap-hero-description {
+    display: block;
+    max-width: 640px;
+    font-size: clamp(1.05rem, 1.15vw, 1.18rem);
+    line-height: 1.62;
+    color: #38312b;
     margin-bottom: 1.5rem;
+    text-wrap: pretty;
+  }
+
+  .overlap-hero-highlights {
+    display: flex;
+    justify-content: flex-start;
+    font-size: clamp(0.75rem, 0.8vw, 0.84rem);
+    letter-spacing: 0.09em;
+    margin-bottom: 2.2rem;
+    gap: 10px;
   }
 
   .overlap-hero-actions {
     display: flex;
     flex-direction: row;
+    grid-template-columns: none;
     justify-content: flex-start;
-    align-items: center;
-    gap: 1.75rem;
-    width: 100%;
-    margin-bottom: 0;
+    gap: 14px;
+    max-width: none;
+    margin: 0;
   }
 
-  .overlap-hero-cta-link {
-    font-size: 19px;
-  }
-
-  .overlap-feature-divider {
-    display: none;
-  }
-
-  .overlap-feature-text {
-    white-space: normal;
-    font-size: 14.5px;
-  }
-
-  .overlap-hero-visual-frame {
-    aspect-ratio: 16 / 11;
-    min-height: 0;
-    max-height: 352px;
-    border-radius: 12px;
+  .overlap-hero-btn {
+    width: auto;
+    flex: 0 0 auto;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 28px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
   }
 }
 
-@media (max-width: 380px) {
-  .overlap-hero {
-    padding: 2.25rem 1.15rem 2.2rem 1.15rem;
+/* Dark mode safety override to preserve editorial look */
+.dark-mode .overlap-hero {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-container {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-content-layer {
+  background-color: #1a1918;
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+.dark-mode .overlap-hero-tagline {
+  color: #ffffff;
+}
+.dark-mode .overlap-hero-description {
+  color: rgba(255, 255, 255, 0.75);
+}
+.dark-mode .overlap-hero-highlights {
+  color: rgba(255, 255, 255, 0.5);
+}
+.dark-mode .overlap-hero-btn.primary-btn {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+.dark-mode .overlap-hero-btn.primary-btn:hover {
+  background: #eae5df;
+  border-color: #eae5df;
+}
+.dark-mode .overlap-hero-btn.secondary-btn {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+.dark-mode .overlap-hero-btn.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #ffffff;
+}
+.dark-mode .overlap-hero-bg-layer {
+  background-color: #1a1918;
+}
+.dark-mode .overlap-hero-card {
+  background-color: transparent;
+  box-shadow: none;
+}
+@media (min-width: 768px) {
+  .dark-mode .overlap-hero-bg-layer {
+    background-color: transparent;
   }
-
-  .hero-title-main {
-    font-size: 24px;
-  }
-
-  .hero-title-sub {
-    font-size: 19px;
-    line-height: 1.22;
-  }
-
-  .overlap-hero-actions {
-    gap: 1.25rem;
-  }
-
-  .overlap-hero-cta-link {
-    font-size: 17px;
+  .dark-mode .overlap-hero-card {
+    background-color: transparent;
+    box-shadow: none;
   }
 }

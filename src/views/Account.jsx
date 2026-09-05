@@ -614,14 +614,14 @@ export function Account({
           <span>Addresses</span>
           {addresses.length > 0 && <span className="nav-count">{addresses.length}</span>}
         </button>
-        <button 
+        {/* <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'reseller' ? 'active' : ''}`}
           onClick={() => setActiveTab('reseller')}
         >
           <Globe size={16} />
           <span>Build Your Own Website</span>
-        </button>
+        </button> */}
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''}`}

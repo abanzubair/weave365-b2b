@@ -115,7 +115,7 @@ export function SiteHeader(props) {
   const setCartOpen = props.setCartOpen ?? store.setCartOpen;
   const cartProducts = props.cartProducts || [];
   return (
-    <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
+    <header className={`site-header ${route === 'home' ? 'home-header' : ''} ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
       <a
         href="/"
         className="brand"

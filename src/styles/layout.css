@@ -67,6 +67,24 @@
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Home Header: Completely transparent when at top (unscrolled) */
+.site-header.home-header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background: transparent !important;
+  border-bottom: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: background 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    backdrop-filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    -webkit-backdrop-filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .site-header.scrolled {
   background: color-mix(in srgb, var(--paper) 85%, transparent);
   transform: translateZ(0);
@@ -74,6 +92,16 @@
   backdrop-filter: blur(20px) saturate(1.8);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+
+.site-header.home-header.scrolled {
+  position: fixed;
+  transform: translateZ(0);
+  background: color-mix(in srgb, var(--paper) 80%, transparent) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+  backdrop-filter: blur(20px) saturate(1.8) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
 .brand {
