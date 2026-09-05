@@ -27,13 +27,15 @@
 .overlap-hero-container {
   position: relative;
   width: 100%;
-  max-width: 1560px;
+  --hero-padding-x: clamp(20px, 4vw, 64px);
+  --hero-padding-y: clamp(2rem, 3.5vw, 3.5rem);
+  max-width: calc(1600px + (var(--hero-padding-x) * 2));
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: clamp(2rem, 3.5vw, 3rem) clamp(20px, 4vw, 48px);
+  padding: var(--hero-padding-y) var(--hero-padding-x);
   box-sizing: border-box;
   gap: clamp(1.5rem, 3vw, 2.5rem);
 }
@@ -347,8 +349,7 @@
    ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 1440px) {
   .overlap-hero-container {
-    padding-left: clamp(32px, 4.5vw, 64px);
-    padding-right: clamp(32px, 4.5vw, 64px);
+    --hero-padding-x: clamp(32px, 4.5vw, 64px);
   }
 
   .overlap-hero-tagline {
