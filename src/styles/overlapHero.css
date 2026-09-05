@@ -122,8 +122,8 @@
 .overlap-hero-actions {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: clamp(8px, 2vw, 12px);
   width: 100%;
   max-width: 440px;
   justify-content: center;
@@ -134,13 +134,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: clamp(4px, 1.5vw, 8px);
   height: 48px;
   min-height: 48px;
-  padding: 0 26px;
+  padding: 0 clamp(8px, 2.5vw, 20px);
   border-radius: 6px;
   font-family: var(--font-body, 'Manrope', sans-serif);
-  font-size: clamp(0.85rem, 2vw, 0.92rem);
+  font-size: clamp(0.78rem, 2.2vw, 0.92rem);
   font-weight: 600;
   letter-spacing: 0.01em;
   text-decoration: none;
@@ -154,6 +156,7 @@
   display: inline-block;
   font-size: 1.15em;
   line-height: 1;
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
@@ -321,10 +324,12 @@
   }
 
   .overlap-hero-btn {
+    flex: 0 0 auto;
     height: 48px;
     min-height: 48px;
     padding: 0 28px;
     font-size: 0.9rem;
+    gap: 8px;
   }
 
   /* Right Panel */
