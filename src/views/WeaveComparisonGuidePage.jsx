@@ -5,7 +5,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/weaveComparisonGuide.css';
 
 export function WeaveComparisonGuidePage({ navigate }) {
-  const pageData = seoLandingPages['handloom-vs-powerloom-guide'] || {};
+  const pageData = seoLandingPages['handloom-vs-powerloom-guide'] || seoLandingPages['handloom-vs-semi-handloom-vs-powerloom-guide'] || {};
   const [openFaq, setOpenFaq] = useState(null);
 
   // Synchronize dynamic head titles on client route switches
@@ -83,6 +83,7 @@ export function WeaveComparisonGuidePage({ navigate }) {
                 <div className="weave-comparison-image-column">
                   <div className="weave-comparison-image-wrap">
                     <img src={sec.image} alt={sec.title} loading="lazy" />
+                    {sec.badge && <span className="weave-comparison-badge">{sec.badge}</span>}
                   </div>
                 </div>
                 <div className="weave-comparison-text-column">

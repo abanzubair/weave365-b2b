@@ -379,8 +379,8 @@ export const seoLandingPages = {
     }
   },
 
-  "handloom-vs-semi-handloom-vs-powerloom-guide": {
-    slug: "handloom-vs-semi-handloom-vs-powerloom-guide",
+  "handloom-vs-powerloom-guide": {
+    slug: "handloom-vs-powerloom-guide",
     metaTitle: "Handloom vs Semi Handloom vs Powerloom Guide | Weave 365",
     metaDescription: "Understand the real difference between handloom, semi handloom and powerloom fabric. Simple guide to help you choose genuine handwoven sarees and cloth.",
     ogTitle: "Handloom vs Semi Handloom vs Powerloom, Know the Difference",
@@ -450,3 +450,6 @@ export const seoLandingPages = {
     }
   }
 };
+
+// Backwards compatibility alias
+seoLandingPages["handloom-vs-semi-handloom-vs-powerloom-guide"] = seoLandingPages["handloom-vs-powerloom-guide"];
