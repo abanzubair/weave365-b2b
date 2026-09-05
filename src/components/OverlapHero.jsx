@@ -1,16 +1,11 @@
 import { AppLink } from './AppLink.jsx';
-import { assetSrc } from '../utils/assetSrc.js';
-
-// Assets
-import mobHeroImage from '../../assets/mobH.webp';
-import deskHeroImage from '../../assets/deskH.webp';
 import '../styles/overlapHero.css';
 
+const HERO_IMAGE_URL = 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp';
+
 export function OverlapHero({ navigate }) {
-  const desktopImage = assetSrc(deskHeroImage);
-  const mobileImage = assetSrc(mobHeroImage);
-  const tagline = 'Banarasi Sarees and Suits for Wholesale, Resellers, Private Labels and Retail';
-  const description = 'Source Banarasi sarees & suits for wholesale, reselling, social media selling, boutique retail, private labels and personal use. Sell through WhatsApp, Instagram, Facebook and other online channels. Explore sarees by fabric, weave, design, price and buying quantity.';
+  const heroImage = HERO_IMAGE_URL;
+
   const highlights = [
     'Flexible MOQ',
     'Dropshipping Available',
@@ -19,70 +14,68 @@ export function OverlapHero({ navigate }) {
   ];
 
   return (
-    <section className="overlap-hero" aria-label="Banarasi Sarees and Suits Wholesale & Resellers">
+    <section className="overlap-hero" aria-label="Source Banarasi Sarees & Suits from Varanasi">
       <div className="overlap-hero-container">
 
-        {/* Responsive Background Image Layer */}
-        <div className="overlap-hero-bg-layer">
-          <div className="overlap-hero-card">
-            <picture className="overlap-hero-picture">
-              <source media="(min-width: 768px)" srcSet={desktopImage} />
-              <img
-                src={mobileImage}
-                alt="Banarasi Sarees and Suits Wholesale & Resellers"
-                className="overlap-hero-img"
-                draggable="false"
-                fetchPriority="high"
-                decoding="async"
-                width={768}
-                height={960}
-              />
-            </picture>
-          </div>
-        </div>
-
-        {/* Foreground Content Layer */}
+        {/* Left: Editorial Content Panel */}
         <div className="overlap-hero-content-layer">
-          <div className="overlap-hero-content-right">
+          <div className="overlap-hero-content-left">
             <h1 className="overlap-hero-tagline" data-editable-key="hero_title">
-              {tagline}
+              <span className="hero-title-line line-1">Source Banarasi Sarees &amp; Suits from Varanasi</span>{' '}
+              <span className="hero-title-line line-2">for Your Store, Boutique or Online Business</span>
             </h1>
 
-            <div className="overlap-hero-divider"></div>
-
             <p className="overlap-hero-description" data-editable-key="hero_subtitle">
-              {description}
+              Wholesale sourcing for retailers, boutiques, resellers and social sellers. Buy in bulk, source single pieces, or fulfil customer orders through dropshipping.
             </p>
 
-            <div className="overlap-hero-highlights">
+            <div className="overlap-hero-highlights" aria-label="Key wholesale benefits">
               {highlights.map((hl, i) => (
                 <span key={hl} className="highlight-item">
-                  {hl}
-                  {i < highlights.length - 1 && <span className="divider-dot">·</span>}
+                  <span className="highlight-text">{hl}</span>
+                  {i < highlights.length - 1 && <span className="highlight-pipe" aria-hidden="true">|</span>}
                 </span>
               ))}
             </div>
 
             <div className="overlap-hero-actions">
               <AppLink
-                to="wholesale-banarasi-sarees"
-                href="/wholesale-banarasi-sarees/"
+                to="catalogue"
+                href="/catalogue"
                 className="overlap-hero-btn primary-btn"
                 navigate={navigate}
               >
-                <span>Get Wholesale Pricing</span>
-                <span className="btn-arrow">&rarr;</span>
+                <span>Shop Wholesale</span>
+                <span className="btn-arrow" aria-hidden="true">&rarr;</span>
               </AppLink>
               <AppLink
                 to="resell-sarees-online"
-                href="/resell-sarees-online"
+                href="/reseller-banarasi-sarees/"
                 className="overlap-hero-btn secondary-btn"
                 navigate={navigate}
               >
                 <span>Start Reselling</span>
-                <span className="btn-arrow">&rarr;</span>
+                <span className="btn-arrow" aria-hidden="true">&rarr;</span>
               </AppLink>
             </div>
+          </div>
+        </div>
+
+        {/* Right: Media Showcase Layer */}
+        <div className="overlap-hero-media-layer">
+          <div className="overlap-hero-card">
+            <picture className="overlap-hero-picture">
+              <img
+                src={heroImage}
+                alt="Source Banarasi sarees and suits from Varanasi"
+                className="overlap-hero-img"
+                draggable="false"
+                fetchPriority="high"
+                decoding="async"
+                width={1451}
+                height={1084}
+              />
+            </picture>
           </div>
         </div>
 
@@ -90,3 +83,4 @@ export function OverlapHero({ navigate }) {
     </section>
   );
 }
+
