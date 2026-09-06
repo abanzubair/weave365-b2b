@@ -94,11 +94,6 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/favicon.ico',
-        destination: 'https://assets.weave365.com/assets/banner/favicon.ico',
-        permanent: false,
-      },
-      {
         source: '/weaver-onboarding',
         destination: '/sell-banarasi-sarees',
         permanent: true,

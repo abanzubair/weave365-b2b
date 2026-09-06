@@ -58,14 +58,9 @@ export const metadata = {
     },
   },
   icons: {
-    icon: [
-      {
-        url: 'https://assets.weave365.com/assets/banner/favicon.ico',
-        type: 'image/x-icon',
-      },
-    ],
-    shortcut: 'https://assets.weave365.com/assets/banner/favicon.ico',
-    apple: 'https://assets.weave365.com/assets/banner/favicon.ico',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
@@ -107,9 +102,9 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-4K369BHS5L');
           `}
         </Script>
-        <link rel="icon" type="image/x-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
-        <link rel="shortcut icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
-        <link rel="apple-touch-icon" href="https://assets.weave365.com/assets/banner/favicon.ico" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="shortcut icon" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
         )}

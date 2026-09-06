@@ -69,7 +69,7 @@ export default function SchemaMarkup() {
         "@id": `${siteUrl}/#store`,
         name: "Weave 365 Wholesale",
         url: siteUrl,
-        image: "https://assets.weave365.com/assets/banner/favicon.svg",
+        image: `${siteUrl}/favicon.png`,
         description:
           "Wholesale Banarasi sarees, suits, lehengas and ethnic fabrics for B2B buyers, resellers and boutiques across India.",
         priceRange: "₹₹",
