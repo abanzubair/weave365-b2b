@@ -6102,72 +6102,234 @@
 }
 
 /* ==========================================================================
-   B2B Enquiries Manager (EnquiresManager.jsx) - High-Density Minimal System
+   B2B Enquiries Manager (EnquiresManager.jsx) - High-Density Multi-Column Grid
    ========================================================================== */
 .admin-enquiries-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 2px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+  align-items: stretch;
 }
 
-/* 1. Compact Minimal Card */
+/* Column Layout Variations */
+.admin-enquiries-list.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-enquiries-list.grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.admin-enquiries-list.grid-cols-auto {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (min-width: 1600px) {
+  .admin-enquiries-list.grid-cols-auto {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1400px) {
+  .admin-enquiries-list.grid-cols-5 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1150px) {
+  .admin-enquiries-list,
+  .admin-enquiries-list.grid-cols-4,
+  .admin-enquiries-list.grid-cols-5,
+  .admin-enquiries-list.grid-cols-auto {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .admin-enquiries-list,
+  .admin-enquiries-list.grid-cols-4,
+  .admin-enquiries-list.grid-cols-5,
+  .admin-enquiries-list.grid-cols-auto {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-enquiries-list,
+  .admin-enquiries-list.grid-cols-4,
+  .admin-enquiries-list.grid-cols-5,
+  .admin-enquiries-list.grid-cols-auto {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Column Layout Selector */
+.admin-enq-col-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 1. Compact High-Density Grid Card */
 .admin-enq-card,
 .admin-enquiry-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  border-radius: 12px;
+  padding: 13px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 9px;
   position: relative;
+  min-width: 0;
 }
 
 .admin-enq-card:hover,
 .admin-enquiry-card:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
-/* 2. Top Identity Row */
+/* Card Status Color Themes - Subtle Flat Tint (No Gradients, No Top Borders) */
+/* 1. NEW: Subtle Ice Blue Hint */
+.admin-enq-card.status-new {
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+}
+
+.admin-enq-card.status-new:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.admin-enq-card.status-new .admin-enq-contact-box {
+  background: #ffffff;
+  border-color: #e2edfb;
+}
+
+.admin-enq-card.status-new .admin-enq-group-tag {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* 2. CONTACTED: Subtle Warm Amber Hint */
+.admin-enq-card.status-contacted {
+  background: #fffdf5;
+  border: 1px solid #fef3c7;
+}
+
+.admin-enq-card.status-contacted:hover {
+  border-color: #fde68a;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
+}
+
+.admin-enq-card.status-contacted .admin-enq-contact-box {
+  background: #ffffff;
+  border-color: #fef3c7;
+}
+
+.admin-enq-card.status-contacted .admin-enq-group-tag {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+/* 3. COMPLETED: Subtle Mint Green Hint */
+.admin-enq-card.status-completed {
+  background: #f6fdf8;
+  border: 1px solid #dcfce7;
+}
+
+.admin-enq-card.status-completed:hover {
+  border-color: #bbf7d0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+}
+
+.admin-enq-card.status-completed .admin-enq-contact-box {
+  background: #ffffff;
+  border-color: #dcfce7;
+}
+
+.admin-enq-card.status-completed .admin-enq-group-tag {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+/* 2. Top Identity Header */
 .admin-enq-card-top,
 .admin-enq-card-header,
 .admin-enquiry-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .admin-enq-identity {
   display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-enq-name-row {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .admin-enq-buyer-name,
 .admin-enquiry-buyer-info h4 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   color: #0f172a;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.admin-enq-dot {
-  color: #cbd5e1;
-  font-size: 0.75rem;
+.admin-enq-sub-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.74rem;
 }
 
 .admin-enq-business {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   color: #64748b;
-  font-weight: 400;
+  font-weight: 450;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+.admin-enq-muted-type {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.admin-enq-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .admin-enq-group-tag {
@@ -6176,33 +6338,27 @@
   gap: 4px;
   background: #f1f5f9;
   color: #475569;
-  padding: 1.5px 7px;
+  padding: 1.5px 6px;
   border-radius: 9999px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   border: 1px solid #e2e8f0;
-}
-
-.admin-enq-top-meta,
-.admin-enq-right-meta,
-.admin-enquiry-right-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  width: fit-content;
+  margin-top: 1px;
 }
 
 .admin-enq-status-pill,
 .admin-enquiry-status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 1.5px 7px;
+  padding: 1px 6px;
   border-radius: 9999px;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   border: 1px solid transparent;
+  flex-shrink: 0;
 }
 
 .admin-enq-status-pill.pill-new,
@@ -6226,23 +6382,23 @@
   border-color: #dcfce7;
 }
 
-.admin-enq-date {
-  display: inline-flex;
-  align-items: center;
+/* 3. Compact Contact Box */
+.admin-enq-contact-box {
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+  background: #f8fafc;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
   font-size: 0.75rem;
-  color: #94a3b8;
 }
 
-/* 3. Inline Contact Details */
-.admin-enq-contact-row,
-.admin-enq-contact-bar,
-.admin-enquiry-contact-links {
+.admin-enq-contact-row-top {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .admin-enq-contact-link,
@@ -6250,9 +6406,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #475569;
+  color: #334155;
+  font-weight: 500;
   text-decoration: none;
   transition: color 0.15s ease;
+  min-width: 0;
 }
 
 .admin-enq-contact-link:hover,
@@ -6264,34 +6422,62 @@
 .admin-enq-contact-text {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   color: #64748b;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+.admin-enq-email-link {
+  color: #64748b;
+  font-size: 0.72rem;
+  overflow: hidden;
+}
+
+.admin-enq-email-link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 4. Streamlined Submissions Feed */
 .admin-enq-feed {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 6px;
+  gap: 5px;
+  flex: 1;
+  min-height: 0;
 }
 
 .admin-enq-feed-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 3px 8px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
   border-radius: 6px;
   background: #f8fafc;
-  font-size: 0.8rem;
-  min-height: 26px;
+  border: 1px solid #f1f5f9;
+}
+
+.admin-enq-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.admin-enq-feed-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
 }
 
 .admin-enq-feed-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #475569;
   background: #e2e8f0;
   padding: 0 4px;
   border-radius: 3px;
@@ -6299,16 +6485,26 @@
 }
 
 .admin-enq-feed-desc {
-  color: #334155;
-  font-weight: 450;
-  flex: 1;
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 0.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.admin-enq-cart-summary {
-  color: #475569;
+.admin-enq-feed-time {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.admin-enq-feed-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .admin-enq-item-tag,
@@ -6316,9 +6512,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 1.5px 7px;
-  font-size: 0.72rem;
-  font-weight: 500;
+  padding: 2px 7px;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: #2563eb;
   background: #eff6ff;
   border: 1px solid #dbeafe;
@@ -6336,17 +6532,9 @@
   border-color: #bfdbfe;
 }
 
-.admin-enq-feed-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
 .admin-enq-mini-status {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.62rem;
+  font-weight: 700;
   text-transform: uppercase;
   padding: 1px 5px;
   border-radius: 3px;
@@ -6367,31 +6555,16 @@
   color: #15803d;
 }
 
-.admin-enq-feed-time {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 5. Compact Action Footer */
+/* 5. Modern Card Footer Actions */
 .admin-enq-card-footer,
 .admin-enq-actions-bar,
 .admin-enquiry-actions-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   border-top: 1px solid #f1f5f9;
   padding-top: 8px;
-  flex-wrap: wrap;
-}
-
-.admin-enq-btn-group,
-.admin-enq-action-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .admin-enq-btn,
@@ -6401,9 +6574,9 @@
   justify-content: center;
   gap: 5px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 9px;
   border-radius: 6px;
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.15s ease;
@@ -6427,6 +6600,26 @@
   background: #dcfce7;
   border-color: #86efac;
   color: #14532d;
+}
+
+.admin-enq-btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-enq-actions-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.admin-enq-actions-secondary .admin-enq-btn {
+  flex: 1;
+  font-size: 0.72rem;
+  padding: 0 5px;
+  height: 26px;
+  white-space: nowrap;
 }
 
 .admin-enq-btn.btn-secondary,
@@ -6477,6 +6670,7 @@
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .admin-enq-delete-btn:hover,

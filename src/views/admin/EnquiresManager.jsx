@@ -240,6 +240,21 @@ export default function EnquiresManager({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grouped'); // 'grouped' | 'individual'
+  const [columnLayout, setColumnLayout] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('weave365_admin_enquiries_cols') || '4';
+    }
+    return '4';
+  });
+
+  const handleSetColumnLayout = (cols) => {
+    setColumnLayout(cols);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('weave365_admin_enquiries_cols', cols);
+      } catch (e) {}
+    }
+  };
   const [actionLoading, setActionLoading] = useState(null);
   const [localMessage, setLocalMessage] = useState(null);
   const [selectedItemModalData, setSelectedItemModalData] = useState(null);
@@ -470,6 +485,33 @@ export default function EnquiresManager({
             </button>
           </div>
 
+          <div className="admin-enq-col-toggle" title="Select cards per row">
+            <button
+              type="button"
+              className={`admin-enq-toggle-btn ${columnLayout === '4' ? 'active' : ''}`}
+              onClick={() => handleSetColumnLayout('4')}
+              title="Display 4 cards in a single row"
+            >
+              <span>4 / Row</span>
+            </button>
+            <button
+              type="button"
+              className={`admin-enq-toggle-btn ${columnLayout === '5' ? 'active' : ''}`}
+              onClick={() => handleSetColumnLayout('5')}
+              title="Display 5 cards in a single row"
+            >
+              <span>5 / Row</span>
+            </button>
+            <button
+              type="button"
+              className={`admin-enq-toggle-btn ${columnLayout === 'auto' ? 'active' : ''}`}
+              onClick={() => handleSetColumnLayout('auto')}
+              title="Auto responsive columns (fits 4 to 5 cards per row)"
+            >
+              <span>Auto</span>
+            </button>
+          </div>
+
           <button
             type="button"
             className="admin-enq-refresh-btn"
@@ -571,25 +613,37 @@ export default function EnquiresManager({
           )}
         </div>
       ) : viewMode === 'grouped' ? (
-        /* Compact Grouped Sessions View */
-        <div className="admin-enquiries-list">
+        /* High-Density Grouped Sessions View */
+        <div className={`admin-enquiries-list grid-cols-${columnLayout}`}>
           {groupedSessions.map((session) => {
             const isGroup = session.isGrouped;
             const sessionIds = session.enquiries.map((e) => e.id);
             const isLoading = actionLoading === sessionIds.join(',');
 
             return (
-              <div key={session.id} className="admin-enq-card">
-                {/* 1. Header: Buyer Name, Business, Group Badge, Status, Date */}
+              <div key={session.id} className={`admin-enq-card status-${session.overallStatus}`}>
+                {/* 1. Header: Buyer Name & Status Pill, Sub-meta & Group Tag */}
                 <div className="admin-enq-card-top">
                   <div className="admin-enq-identity">
-                    <span className="admin-enq-buyer-name">{session.buyerName}</span>
-                    {session.businessName && session.businessName !== 'Individual / Direct' && (
-                      <>
-                        <span className="admin-enq-dot">&bull;</span>
-                        <span className="admin-enq-business">{session.businessName}</span>
-                      </>
-                    )}
+                    <div className="admin-enq-name-row">
+                      <span className="admin-enq-buyer-name" title={session.buyerName}>{session.buyerName}</span>
+                      <span className={`admin-enq-status-pill pill-${session.overallStatus}`}>
+                        {session.overallStatus}
+                      </span>
+                    </div>
+
+                    <div className="admin-enq-sub-identity">
+                      {session.businessName && session.businessName !== 'Individual / Direct' ? (
+                        <span className="admin-enq-business" title={session.businessName}>{session.businessName}</span>
+                      ) : (
+                        <span className="admin-enq-business admin-enq-muted-type">Direct Buyer</span>
+                      )}
+                      <span className="admin-enq-date" title={session.latestDateStr}>
+                        <Calendar size={10} />
+                        <span>{session.latestDateStr}</span>
+                      </span>
+                    </div>
+
                     {isGroup && session.timeSpanText && (
                       <span className="admin-enq-group-tag" title="Enquiries received within a 24-hour window">
                         <Clock size={10} />
@@ -597,51 +651,45 @@ export default function EnquiresManager({
                       </span>
                     )}
                   </div>
-
-                  <div className="admin-enq-top-meta">
-                    <span className={`admin-enq-status-pill pill-${session.overallStatus}`}>
-                      {session.overallStatus}
-                    </span>
-                    <span className="admin-enq-date">
-                      <Calendar size={10} />
-                      <span>{session.latestDateStr}</span>
-                    </span>
-                  </div>
                 </div>
 
-                {/* 2. Contact Meta: Clean inline contact links */}
-                <div className="admin-enq-contact-row">
-                  {session.phone && (
-                    <a
-                      href={getWhatsappUrl(session.phone)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="admin-enq-contact-link"
-                      title="Direct phone / WhatsApp contact"
-                    >
-                      <Phone size={11} />
-                      <span>{session.phone}</span>
-                    </a>
-                  )}
+                {/* 2. Contact Box: Phone, Pincode, Email */}
+                <div className="admin-enq-contact-box">
+                  <div className="admin-enq-contact-row-top">
+                    {session.phone ? (
+                      <a
+                        href={getWhatsappUrl(session.phone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="admin-enq-contact-link"
+                        title="Direct phone / WhatsApp contact"
+                      >
+                        <Phone size={11} />
+                        <span>{session.phone}</span>
+                      </a>
+                    ) : (
+                      <span className="admin-enq-contact-text admin-enq-muted-type">No phone</span>
+                    )}
+                    {session.pincode && (
+                      <span className="admin-enq-contact-text" title={`Pincode: ${session.pincode}`}>
+                        <MapPin size={11} />
+                        <span>{session.pincode}</span>
+                      </span>
+                    )}
+                  </div>
                   {session.email && (
                     <a
                       href={`mailto:${session.email}`}
-                      className="admin-enq-contact-link"
-                      title="Send email"
+                      className="admin-enq-contact-link admin-enq-email-link"
+                      title={`Email: ${session.email}`}
                     >
                       <Mail size={11} />
                       <span>{session.email}</span>
                     </a>
                   )}
-                  {session.pincode && (
-                    <span className="admin-enq-contact-text">
-                      <MapPin size={11} />
-                      <span>{session.pincode}</span>
-                    </span>
-                  )}
                 </div>
 
-                {/* 3. Submissions Feed: Compact, minimal rows */}
+                {/* 3. Submissions Feed: High-density cardlets */}
                 <div className="admin-enq-feed">
                   {session.enquiries.map((enq, index) => {
                     const items = extractEnquiryItems(enq);
@@ -661,69 +709,74 @@ export default function EnquiresManager({
 
                     return (
                       <div key={enq.id} className="admin-enq-feed-item">
-                        {isGroup && (
-                          <span className="admin-enq-feed-badge">#{session.enquiries.length - index}</span>
-                        )}
-                        <span className="admin-enq-feed-desc" title={cleanedMsg}>
-                          {isAutoCart ? (
-                            <span>Cart enquiry &bull; {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
-                          ) : (
-                            cleanedMsg
+                        <div className="admin-enq-feed-header">
+                          <div className="admin-enq-feed-title-wrap">
+                            {isGroup && (
+                              <span className="admin-enq-feed-badge">#{session.enquiries.length - index}</span>
+                            )}
+                            <span className="admin-enq-feed-desc" title={cleanedMsg}>
+                              {isAutoCart ? (
+                                <span>Cart &bull; {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+                              ) : (
+                                cleanedMsg
+                              )}
+                            </span>
+                          </div>
+                          {enqTimeStr && <span className="admin-enq-feed-time">{enqTimeStr}</span>}
+                        </div>
+
+                        <div className="admin-enq-feed-footer">
+                          {itemCount > 0 && (
+                            <button
+                              type="button"
+                              className="admin-enq-item-tag"
+                              onClick={() => openItemsModalForEnquiry(enq)}
+                              title="Inspect enquired items"
+                            >
+                              <ShoppingBag size={11} />
+                              <span>View {itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
+                              <ExternalLink size={10} />
+                            </button>
                           )}
-                        </span>
 
-                        {itemCount > 0 && (
-                          <button
-                            type="button"
-                            className="admin-enq-item-tag"
-                            onClick={() => openItemsModalForEnquiry(enq)}
-                            title="Inspect enquired items"
-                          >
-                            <ShoppingBag size={11} />
-                            <span>View {itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
-                            <ExternalLink size={10} />
-                          </button>
-                        )}
-
-                        <div className="admin-enq-feed-meta">
                           {isGroup && enqStatus !== session.overallStatus && (
                             <span className={`admin-enq-mini-status status-${enqStatus}`}>
                               {enqStatus}
                             </span>
                           )}
-                          {enqTimeStr && <span className="admin-enq-feed-time">{enqTimeStr}</span>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* 4. Action Bar: Compact, clean actions */}
+                {/* 4. Action Bar: Primary WhatsApp Quote & Compact Status/Delete Actions */}
                 <div className="admin-enq-card-footer">
-                  <div className="admin-enq-btn-group">
-                    {session.phone && (
-                      <a
-                        href={`${getWhatsappUrl(session.phone)}?text=${encodeURIComponent(
-                          generateWhatsAppGroupMsg(session.enquiries, products)
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="admin-enq-btn btn-whatsapp"
-                        title="Send consolidated WhatsApp quotation"
-                      >
-                        <WhatsappIcon size={13} />
-                        <span>WhatsApp Quote</span>
-                      </a>
-                    )}
+                  {session.phone && (
+                    <a
+                      href={`${getWhatsappUrl(session.phone)}?text=${encodeURIComponent(
+                        generateWhatsAppGroupMsg(session.enquiries, products)
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-enq-btn btn-whatsapp admin-enq-btn-full"
+                      title="Send consolidated WhatsApp quotation"
+                    >
+                      <WhatsappIcon size={13} />
+                      <span>WhatsApp Quote</span>
+                    </a>
+                  )}
 
+                  <div className="admin-enq-actions-secondary">
                     {session.totalItemsCount > 1 && isGroup && (
                       <button
                         type="button"
                         className="admin-enq-btn btn-outline"
                         onClick={() => openItemsModalForSession(session)}
+                        title={`View all ${session.totalItemsCount} items across this session`}
                       >
-                        <ShoppingBag size={12} />
-                        <span>All Items ({session.totalItemsCount})</span>
+                        <ShoppingBag size={11} />
+                        <span>All ({session.totalItemsCount})</span>
                       </button>
                     )}
 
@@ -733,8 +786,9 @@ export default function EnquiresManager({
                         disabled={isLoading}
                         onClick={() => updateStatus(sessionIds, 'contacted')}
                         className="admin-enq-btn btn-secondary"
+                        title="Mark Contacted"
                       >
-                        {isGroup ? 'Mark Contacted' : 'Mark Contacted'}
+                        Contacted
                       </button>
                     )}
 
@@ -744,30 +798,31 @@ export default function EnquiresManager({
                         disabled={isLoading}
                         onClick={() => updateStatus(sessionIds, 'completed')}
                         className="admin-enq-btn btn-secondary"
+                        title="Mark Completed"
                       >
-                        {isGroup ? 'Mark Completed' : 'Mark Completed'}
+                        Completed
                       </button>
                     )}
-                  </div>
 
-                  <button
-                    type="button"
-                    title={isGroup ? 'Delete session' : 'Delete enquiry'}
-                    disabled={isLoading}
-                    onClick={() => handleDelete(sessionIds)}
-                    className="admin-enq-delete-btn"
-                    aria-label="Delete enquiry"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                    <button
+                      type="button"
+                      title={isGroup ? 'Delete session' : 'Delete enquiry'}
+                      disabled={isLoading}
+                      onClick={() => handleDelete(sessionIds)}
+                      className="admin-enq-delete-btn"
+                      aria-label="Delete enquiry"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       ) : (
-        /* Compact Individual Flat View */
-        <div className="admin-enquiries-list">
+        /* High-Density Individual Flat View */
+        <div className={`admin-enquiries-list grid-cols-${columnLayout}`}>
           {filtered.map((item) => {
             const buyerName = item.buyer_name || item.name || 'Direct Buyer';
             const businessName = item.business_name || item.company || 'Individual / Direct';
@@ -793,106 +848,123 @@ export default function EnquiresManager({
             const isAutoCart = !item.message || /^Enquiry for \d+\s*items?\s*in cart$/i.test(item.message);
 
             return (
-              <div key={item.id} className="admin-enq-card">
+              <div key={item.id} className={`admin-enq-card status-${status}`}>
                 {/* 1. Header */}
                 <div className="admin-enq-card-top">
                   <div className="admin-enq-identity">
-                    <span className="admin-enq-buyer-name">{buyerName}</span>
-                    {businessName && businessName !== 'Individual / Direct' && (
-                      <>
-                        <span className="admin-enq-dot">&bull;</span>
-                        <span className="admin-enq-business">{businessName}</span>
-                      </>
-                    )}
-                  </div>
+                    <div className="admin-enq-name-row">
+                      <span className="admin-enq-buyer-name" title={buyerName}>{buyerName}</span>
+                      <span className={`admin-enq-status-pill pill-${status}`}>
+                        {status}
+                      </span>
+                    </div>
 
-                  <div className="admin-enq-top-meta">
-                    <span className={`admin-enq-status-pill pill-${status}`}>
-                      {status}
-                    </span>
-                    <span className="admin-enq-date">
-                      <Calendar size={10} />
-                      <span>{dateStr}</span>
-                    </span>
+                    <div className="admin-enq-sub-identity">
+                      {businessName && businessName !== 'Individual / Direct' ? (
+                        <span className="admin-enq-business" title={businessName}>{businessName}</span>
+                      ) : (
+                        <span className="admin-enq-business admin-enq-muted-type">Direct Buyer</span>
+                      )}
+                      <span className="admin-enq-date" title={dateStr}>
+                        <Calendar size={10} />
+                        <span>{dateStr}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* 2. Contact Meta */}
-                <div className="admin-enq-contact-row">
-                  {phone && (
-                    <a
-                      href={getWhatsappUrl(phone)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="admin-enq-contact-link"
-                    >
-                      <Phone size={11} />
-                      <span>{phone}</span>
-                    </a>
-                  )}
+                <div className="admin-enq-contact-box">
+                  <div className="admin-enq-contact-row-top">
+                    {phone ? (
+                      <a
+                        href={getWhatsappUrl(phone)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="admin-enq-contact-link"
+                        title="Direct phone / WhatsApp contact"
+                      >
+                        <Phone size={11} />
+                        <span>{phone}</span>
+                      </a>
+                    ) : (
+                      <span className="admin-enq-contact-text admin-enq-muted-type">No phone</span>
+                    )}
+                    {item.pincode && (
+                      <span className="admin-enq-contact-text" title={`Pincode: ${item.pincode}`}>
+                        <MapPin size={11} />
+                        <span>{item.pincode}</span>
+                      </span>
+                    )}
+                  </div>
                   {email && (
-                    <a href={`mailto:${email}`} className="admin-enq-contact-link">
+                    <a
+                      href={`mailto:${email}`}
+                      className="admin-enq-contact-link admin-enq-email-link"
+                      title={`Email: ${email}`}
+                    >
                       <Mail size={11} />
                       <span>{email}</span>
                     </a>
-                  )}
-                  {item.pincode && (
-                    <span className="admin-enq-contact-text">
-                      <MapPin size={11} />
-                      <span>{item.pincode}</span>
-                    </span>
                   )}
                 </div>
 
                 {/* 3. Message / Items row */}
                 <div className="admin-enq-feed">
                   <div className="admin-enq-feed-item">
-                    <span className="admin-enq-feed-desc" title={msg}>
-                      {isAutoCart ? (
-                        <span>Cart enquiry &bull; {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
-                      ) : (
-                        msg || 'Catalogue enquiry'
-                      )}
-                    </span>
+                    <div className="admin-enq-feed-header">
+                      <span className="admin-enq-feed-desc" title={msg}>
+                        {isAutoCart ? (
+                          <span>Cart &bull; {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+                        ) : (
+                          msg || 'Catalogue enquiry'
+                        )}
+                      </span>
+                    </div>
                     {itemCount > 0 && (
-                      <button
-                        type="button"
-                        className="admin-enq-item-tag"
-                        onClick={() => openItemsModalForEnquiry(item)}
-                      >
-                        <ShoppingBag size={11} />
-                        <span>View {itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
-                        <ExternalLink size={10} />
-                      </button>
+                      <div className="admin-enq-feed-footer">
+                        <button
+                          type="button"
+                          className="admin-enq-item-tag"
+                          onClick={() => openItemsModalForEnquiry(item)}
+                          title="Inspect enquired items"
+                        >
+                          <ShoppingBag size={11} />
+                          <span>View {itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
+                          <ExternalLink size={10} />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* 4. Action Bar */}
                 <div className="admin-enq-card-footer">
-                  <div className="admin-enq-btn-group">
-                    {phone && (
-                      <a
-                        href={`${getWhatsappUrl(phone)}?text=${encodeURIComponent(
-                          generateWhatsAppGroupMsg([item], products)
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="admin-enq-btn btn-whatsapp"
-                      >
-                        <WhatsappIcon size={13} />
-                        <span>WhatsApp Quote</span>
-                      </a>
-                    )}
+                  {phone && (
+                    <a
+                      href={`${getWhatsappUrl(phone)}?text=${encodeURIComponent(
+                        generateWhatsAppGroupMsg([item], products)
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-enq-btn btn-whatsapp admin-enq-btn-full"
+                      title="Send WhatsApp quotation"
+                    >
+                      <WhatsappIcon size={13} />
+                      <span>WhatsApp Quote</span>
+                    </a>
+                  )}
 
+                  <div className="admin-enq-actions-secondary">
                     {status !== 'contacted' && (
                       <button
                         type="button"
                         disabled={isLoading}
                         onClick={() => updateStatus(item.id, 'contacted')}
                         className="admin-enq-btn btn-secondary"
+                        title="Mark Contacted"
                       >
-                        Mark Contacted
+                        Contacted
                       </button>
                     )}
 
@@ -902,21 +974,23 @@ export default function EnquiresManager({
                         disabled={isLoading}
                         onClick={() => updateStatus(item.id, 'completed')}
                         className="admin-enq-btn btn-secondary"
+                        title="Mark Completed"
                       >
-                        Mark Completed
+                        Completed
                       </button>
                     )}
-                  </div>
 
-                  <button
-                    type="button"
-                    title="Delete Enquiry"
-                    disabled={isLoading}
-                    onClick={() => handleDelete(item.id)}
-                    className="admin-enq-delete-btn"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                    <button
+                      type="button"
+                      title="Delete Enquiry"
+                      disabled={isLoading}
+                      onClick={() => handleDelete(item.id)}
+                      className="admin-enq-delete-btn"
+                      aria-label="Delete enquiry"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
