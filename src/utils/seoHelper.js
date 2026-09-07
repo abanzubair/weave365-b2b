@@ -1,5 +1,6 @@
 import { fetchSupabasePageSeoSettings, fetchProducts } from '../productData.js';
 import { siteUrl, DEFAULT_OG_IMAGE, getCategoryFromSlug, storeConfig } from '../config.js';
+import { sortByStockDateDesc } from './sortProducts.js';
 
 /**
  * Featured first-image mapping for static marketing / guide / landing pages (Level 2 fallback).
@@ -135,11 +136,14 @@ export async function resolveSeoImage({
   if (categoryName) {
     try {
       const products = await fetchProducts().catch(() => []);
-      const matchedProd = products.find((p) => {
+      const categoryProducts = products.filter((p) => {
+        if (p.isArchived) return false;
         const pCat = String(p.category || '').toLowerCase();
         return pCat === categoryName.toLowerCase();
       });
-      const firstProdImg = matchedProd?.images?.[0];
+      // Sort identically to CatalogueClient (newest stock-in date first) so the image matches the first product displayed on the page
+      const sorted = sortByStockDateDesc(categoryProducts);
+      const firstProdImg = sorted[0]?.images?.[0];
       if (isValidImageUrl(firstProdImg)) {
         return {
           url: ensureAbsoluteUrl(firstProdImg),
@@ -156,7 +160,9 @@ export async function resolveSeoImage({
   if (['/catalogue', '/wholesale-catalogue', '/new-arrivals'].includes(normalizedPath)) {
     try {
       const products = await fetchProducts().catch(() => []);
-      const firstProdImg = products[0]?.images?.[0];
+      const activeProducts = products.filter((p) => !p.isArchived);
+      const sorted = sortByStockDateDesc(activeProducts);
+      const firstProdImg = sorted[0]?.images?.[0];
       if (isValidImageUrl(firstProdImg)) {
         return {
           url: ensureAbsoluteUrl(firstProdImg),

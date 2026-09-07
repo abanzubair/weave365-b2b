@@ -68,7 +68,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" prefix="og: https://ogp.me/ns#" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <SchemaMarkup />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

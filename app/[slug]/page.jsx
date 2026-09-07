@@ -3,6 +3,7 @@ import { fetchProducts, fetchConfigOptions, fetchSupabaseLandingPages } from '..
 import { seoCategoryRoutes, seoCategoryMap, getCategorySlug, siteUrl } from '../../src/config.js';
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
+import { sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import CatalogueClient from '../catalogue/CatalogueClient.jsx';
 import SeoLandingPageClient from './SeoLandingPageClient.jsx';
 
@@ -45,10 +46,19 @@ export async function generateMetadata({ params }) {
         : categoryName.endsWith('s')
         ? categoryName
         : `${categoryName}s`;
+
+    const products = await fetchProducts().catch(() => []);
+    const categoryProducts = products.filter(
+      (p) => !p.isArchived && String(p.category || '').toLowerCase() === categoryName.toLowerCase()
+    );
+    const sorted = sortByStockDateDesc(categoryProducts);
+    const firstImage = sorted[0]?.images?.[0] || undefined;
+
     const defaultMeta = {
       title: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
       description: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
       alternates: { canonical: `${siteUrl}/${canonicalSlug}` },
+      firstImage,
       openGraph: {
         title: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
         description: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
