@@ -54,6 +54,12 @@ const TEMPLATES = [
     desc: 'Help & Support',
     message: 'Hi! I’d like to know about [write your question here]. Please help me.',
   },
+  {
+    id: 'channel',
+    title: 'Join on WhatsApp',
+    desc: 'Weave 365 Updates',
+    url: storeConfig.whatsappChannel || 'https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U',
+  },
 ];
 
 export function WhatsAppFloat() {
@@ -86,9 +92,9 @@ export function WhatsAppFloat() {
     };
   }, [isOpen]);
 
-  const handleSelectTemplate = (templateMessage) => {
-    const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(templateMessage)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleSelectItem = (item) => {
+    const targetUrl = item.url || `https://wa.me/${fullPhone}?text=${encodeURIComponent(item.message || '')}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
     setIsOpen(false);
   };
 
@@ -123,7 +129,7 @@ export function WhatsAppFloat() {
                 key={item.id}
                 type="button"
                 className="wa-distilled-item"
-                onClick={() => handleSelectTemplate(item.message)}
+                onClick={() => handleSelectItem(item)}
               >
                 <div className="wa-distilled-text">
                   <span className="wa-distilled-item-title">{item.title}</span>

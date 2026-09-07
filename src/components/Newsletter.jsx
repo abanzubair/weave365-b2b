@@ -6,6 +6,7 @@ import React from 'react';
 import { Star, ArrowRight } from './icons.jsx';
 import { useRouter } from 'next/navigation';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
+import { storeConfig } from '../config.js';
 import '../styles/newsletter.css';
 
 export function Newsletter({ navigate }) {
@@ -38,7 +39,7 @@ export function Newsletter({ navigate }) {
 
           <div className="editorial-hub-actions">
             <a
-              href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20get%20wholesale%20updates"
+              href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"}
               target="_blank"
               rel="noopener noreferrer"
               className="editorial-hub-whatsapp-btn"

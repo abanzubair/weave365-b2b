@@ -239,7 +239,7 @@ export function MobileMenu(props) {
                 <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Seller Onboarding</span>
                 </AppLink>
-                <a href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20join%20the%20WhatsApp%20community" target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
+                <a href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"} target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
                 </a>
 

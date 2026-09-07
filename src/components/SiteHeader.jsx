@@ -203,7 +203,7 @@ export function SiteHeader(props) {
                   <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Collaboration</AppLink>
                   <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sourcing Partner</AppLink>
                   <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Seller Onboarding</AppLink>
-                  <a href="https://wa.me/919919101369?text=Hi%20Weave365%2C%20I%20would%20like%20to%20join%20the%20WhatsApp%20community" target="_blank" rel="noopener noreferrer" onClick={() => setDropdownOpen(null)}>WhatsApp Community</a>
+                  <a href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"} target="_blank" rel="noopener noreferrer" onClick={() => setDropdownOpen(null)}>WhatsApp Community</a>
                 </div>
               </div>
               <div className="mega-menu-col">
