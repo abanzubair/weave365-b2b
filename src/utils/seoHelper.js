@@ -268,10 +268,6 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         description: ogDescription,
         images: [resolvedImage.url],
       },
-      other: {
-        ...defaultMetadata.other,
-        'image': resolvedImage.url,
-      },
     };
 
     if (override?.robotsIndex === false || override?.robotsFollow === false) {
