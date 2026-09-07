@@ -173,7 +173,7 @@ export async function saveSiteCustomizer(customizerData) {
   return true;
 }
 
-function normalizeLoadedProduct(product) {
+function normalizeLoadedProduct(product, idx) {
   if (!product) return product;
   let statusTags = (product.statusTags || []).map((tag) => {
     if (tag && tag.key === 'new-arrivals') {
@@ -226,8 +226,12 @@ function normalizeLoadedProduct(product) {
     statusTags = [{ key: 'new-arrival', label: 'New Arrival' }, ...statusTags];
   }
 
+  const stockTimestamp = product.stockInDate ? new Date(product.stockInDate).getTime() : NaN;
+
   return {
     ...product,
+    _originalIndex: product._originalIndex !== undefined ? product._originalIndex : (typeof idx === 'number' ? idx : 0),
+    _stockTimestamp: isNaN(stockTimestamp) ? 0 : stockTimestamp,
     isNew,
     isArchived,
     statusTags: dedupeStatusTags(statusTags),
@@ -237,7 +241,7 @@ function normalizeLoadedProduct(product) {
 export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
-    const normalizedProducts = cachedJson.map(normalizeLoadedProduct);
+    const normalizedProducts = cachedJson.map((p, idx) => normalizeLoadedProduct(p, idx));
     if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('weave365_vendor_product_stock');
@@ -469,7 +473,7 @@ export async function parseProductCsv(text) {
   }
 
   const now = new Date();
-  return Array.from(products.values()).map((product) => {
+  return Array.from(products.values()).map((product, idx) => {
     const baseStatusTags = dedupeStatusTags(product.statusTags);
     const statusKeys = new Set(baseStatusTags.map((tag) => tag.key));
     const isOutOfStock = statusKeys.has('out-of-stock');
@@ -503,6 +507,8 @@ export async function parseProductCsv(text) {
 
     return {
       ...product,
+      _originalIndex: idx,
+      _stockTimestamp: isNaN(stockTime) ? 0 : stockTime,
       isNew,
       isOutOfStock,
       isFastMoving,

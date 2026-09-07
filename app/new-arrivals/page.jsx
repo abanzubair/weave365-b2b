@@ -1,5 +1,6 @@
 import { fetchProducts } from '../../src/productData.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
+import { getTopProductForCatalogue } from '../../src/utils/sortProducts.js';
 import { siteUrl } from '../../src/config.js';
 import NewArrivalsClient from './NewArrivalsClient.jsx';
 
@@ -7,7 +8,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata() {
   const products = await fetchProducts().catch(() => []);
-  const firstImage = products[0]?.images?.[0] || undefined;
+  const topProduct = getTopProductForCatalogue(products);
+  const firstImage = topProduct?.images?.[0] || undefined;
 
   const defaultMeta = {
     title: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',

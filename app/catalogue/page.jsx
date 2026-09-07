@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { fetchProducts, fetchConfigOptions } from '../../src/productData.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
+import { getTopProductForCategory, getTopProductForCatalogue, sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import { siteUrl, getCategorySlug } from '../../src/config.js';
 import CatalogPageSkeleton from '../../src/components/CatalogPageSkeleton.jsx';
 import CatalogueClient from './CatalogueClient.jsx';
@@ -37,13 +38,18 @@ export async function generateMetadata({ searchParams }) {
   }
 
   const products = await fetchProducts().catch(() => []);
-  let matchingProduct = null;
+  let topProduct = null;
   if (category && category !== 'all' && category !== 'All') {
-    matchingProduct = products.find((p) => String(p.category || '').toLowerCase() === category.toLowerCase());
+    topProduct = getTopProductForCategory(products, category);
   } else if (fabric && fabric !== 'all' && fabric !== 'All') {
-    matchingProduct = products.find((p) => String(p.fabric || '').toLowerCase() === fabric.toLowerCase());
+    const activeProducts = products.filter(
+      (p) => !p.isArchived && String(p.fabric || '').toLowerCase() === fabric.toLowerCase()
+    );
+    topProduct = sortByStockDateDesc(activeProducts)[0] || null;
+  } else {
+    topProduct = getTopProductForCatalogue(products);
   }
-  const firstImage = matchingProduct?.images?.[0] || products[0]?.images?.[0] || undefined;
+  const firstImage = topProduct?.images?.[0] || undefined;
 
   const defaultMeta = {
     title,
