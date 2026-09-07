@@ -15,10 +15,17 @@ export async function generateMetadata({ params }) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
+  const blogs = await fetchSupabaseBlogPosts().catch(() => []);
+  const matchingBlog = blogs.find(
+    (b) => String(b.category || '').toLowerCase() === prettyCategoryName.toLowerCase()
+  );
+  const firstImage = matchingBlog?.image || blogs?.[0]?.image || '/reseller_premium_catalog_display.webp';
+
   const defaultMeta = {
     title: `${prettyCategoryName} Wholesale Saree Sourcing Guides | Weave 365`,
     description: `Explore all expert ${prettyCategoryName} guides and boutique reselling articles direct from Varanasi master weavers on Weave 365.`,
     alternates: { canonical: `${siteUrl}/blog/category/${encodeURIComponent(categorySlug)}` },
+    firstImage,
     openGraph: {
       title: `${prettyCategoryName} Wholesale Saree Sourcing Guides | Weave 365`,
       description: `Explore all expert ${prettyCategoryName} guides and boutique reselling articles direct from Varanasi master weavers on Weave 365.`,

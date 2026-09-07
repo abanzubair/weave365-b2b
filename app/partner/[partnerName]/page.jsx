@@ -16,10 +16,18 @@ export async function generateMetadata({ params }) {
         .join(' ')
     : 'Partner';
 
+  const products = await fetchProducts().catch(() => []);
+  const partnerProduct = products.find((p) => {
+    const slug = (p.sourcePartner || p.sellerName || '').toLowerCase().replace(/\s+/g, '-');
+    return slug === partnerSlug.toLowerCase();
+  });
+  const firstImage = partnerProduct?.images?.[0] || undefined;
+
   const defaultMeta = {
     title: `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
     description: `Browse the exclusive saree collection by our weaver partner ${prettyPartnerName} on Weave 365.`,
     alternates: { canonical: `${siteUrl}/partner/${encodeURIComponent(partnerSlug)}` },
+    firstImage,
     openGraph: {
       title: `${prettyPartnerName}'s Collection | ${storeConfig.name}`,
       description: `Browse the exclusive saree collection by our weaver partner ${prettyPartnerName} on Weave 365.`,

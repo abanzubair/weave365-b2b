@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { fetchProducts } from '../../../src/productData.js';
 import { getProductCategorySlug, siteUrl, storeConfig } from '../../../src/config.js';
 import { isSupabaseConfigured, supabase } from '../../../src/supabaseClient.js';
+import { getSeoMetadata } from '../../../src/utils/seoHelper.js';
 import ProductPageClient from './ProductPageClient.jsx';
 
 export const revalidate = 3600;
@@ -134,26 +135,29 @@ export async function generateMetadata({ params }) {
     product.summary ||
     product.description ||
     `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
-  const imageUrl = product.images?.[0] || 'https://assets.weave365.com/assets/banner/Weave365.svg';
+  const imageUrl = product.images?.[0] || undefined;
 
-  return {
+  const defaultMeta = {
     title,
     description,
     alternates: { canonical: canonicalUrl },
+    firstImage: imageUrl,
     openGraph: {
       title,
       description,
       url: canonicalUrl,
       type: 'website',
-      images: [{ url: imageUrl, alt: title, width: 1200, height: 630 }],
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: title, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [imageUrl],
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
+
+  return getSeoMetadata(`/${categorySlug}/${encodeURIComponent(product.id)}`, defaultMeta);
 }
 
 export default async function ProductPage({ params }) {

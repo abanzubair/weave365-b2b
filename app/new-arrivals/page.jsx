@@ -6,11 +6,15 @@ import NewArrivalsClient from './NewArrivalsClient.jsx';
 export const revalidate = 3600;
 
 export async function generateMetadata() {
+  const products = await fetchProducts().catch(() => []);
+  const firstImage = products[0]?.images?.[0] || undefined;
+
   const defaultMeta = {
     title: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
     description:
       'Explore our latest collection of handwoven pure silk Banarasi sarees, suits, and fabrics direct from Varanasi weavers. Updated weekly with fresh designs.',
     alternates: { canonical: `${siteUrl}/new-arrivals` },
+    firstImage,
     openGraph: {
       title: 'New Arrivals: Latest Wholesale Banarasi Sarees & Suits | Weave 365',
       description:

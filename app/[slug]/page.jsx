@@ -68,11 +68,12 @@ export async function generateMetadata({ params }) {
       title: pageData.metaTitle,
       description: pageData.metaDescription,
       alternates: { canonical: `${siteUrl}/${slug}` },
+      firstImage: pageData.imageUrl || undefined,
       openGraph: {
         title: pageData.ogTitle || pageData.metaTitle,
         description: pageData.ogDescription || pageData.metaDescription,
         url: `${siteUrl}/${slug}`,
-        images: pageData.imageUrl ? [{ url: pageData.imageUrl }] : [],
+        ...(pageData.imageUrl ? { images: [{ url: pageData.imageUrl }] } : {}),
       },
     };
     return getSeoMetadata(`/${slug}`, defaultMeta);

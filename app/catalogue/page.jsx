@@ -36,10 +36,20 @@ export async function generateMetadata({ searchParams }) {
     canonical = `/catalogue?fabric=${encodeURIComponent(fabric)}`;
   }
 
+  const products = await fetchProducts().catch(() => []);
+  let matchingProduct = null;
+  if (category && category !== 'all' && category !== 'All') {
+    matchingProduct = products.find((p) => String(p.category || '').toLowerCase() === category.toLowerCase());
+  } else if (fabric && fabric !== 'all' && fabric !== 'All') {
+    matchingProduct = products.find((p) => String(p.fabric || '').toLowerCase() === fabric.toLowerCase());
+  }
+  const firstImage = matchingProduct?.images?.[0] || products[0]?.images?.[0] || undefined;
+
   const defaultMeta = {
     title,
     description,
     alternates: { canonical: `${siteUrl}${canonical}` },
+    firstImage,
     openGraph: {
       title,
       description,

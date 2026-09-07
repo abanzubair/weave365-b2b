@@ -189,7 +189,7 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
         "name": "Weave 365",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://assets.weave365.com/assets/banner/Weave365.svg"
+          "url": `${siteUrl}/favicon.png`
         }
       },
       "datePublished": post.date || new Date().toISOString(),

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { cache } from 'react';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { siteUrl } from '../../../src/config';
+import { siteUrl, DEFAULT_OG_IMAGE } from '../../../src/config';
 
 export const runtime = 'edge';
+export const revalidate = 300; // Cache on CDN Edge for 5 minutes
 
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_URL || 'https://agsldsqeynzydujmijgc.supabase.co';
 const STOREFRONT_KEY = process.env.STOREFRONT_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_STOREFRONT_SUPABASE_ANON_KEY;
@@ -18,9 +19,19 @@ function getStorefrontClient() {
   return storefrontDb;
 }
 
-async function getStorefrontData(slug) {
+// In-memory edge cache to prevent repeated database hits for the same storefront
+const edgeStoreCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export const getStorefrontData = cache(async (slug) => {
   if (!slug) return null;
   const cleanSlug = String(slug).toLowerCase().trim();
+
+  // Check in-memory edge cache
+  const cached = edgeStoreCache.get(cleanSlug);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data;
+  }
 
   try {
     const sb = getStorefrontClient();
@@ -31,7 +42,7 @@ async function getStorefrontData(slug) {
 
     const { data, error } = await sb
       .from('boutique_tenants')
-      .select('*')
+      .select('slug, store_name, logo_url, theme_color, theme_settings, is_active')
       .eq('slug', cleanSlug)
       .eq('is_active', true)
       .maybeSingle();
@@ -40,12 +51,16 @@ async function getStorefrontData(slug) {
       console.error('[store route] Error fetching storefront from secondary DB:', error);
       return null;
     }
+
+    if (data) {
+      edgeStoreCache.set(cleanSlug, { data, timestamp: Date.now() });
+    }
     return data;
   } catch (err) {
     console.error('[store route] Server error:', err);
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -63,26 +78,36 @@ export async function generateMetadata({ params }) {
   const storeDescription = `Explore exclusive handcrafted Banarasi sarees, suits, and handloom textiles from ${storefront.store_name || 'our boutique'}, curated with Weave 365.`;
   const canonicalUrl = `${siteUrl}/store/${encodeURIComponent(storeSlug)}`;
 
-  return {
-    title: storeTitle,
-    description: storeDescription,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
+    const storeImage = storefront.logo_url || DEFAULT_OG_IMAGE;
+
+    return {
       title: storeTitle,
       description: storeDescription,
-      url: canonicalUrl,
-      type: 'website',
-      siteName: storefront.store_name || 'Weave 365',
-      images: storefront.logo_url ? [{ url: storefront.logo_url }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: storeTitle,
-      description: storeDescription,
-    },
-  };
+      alternates: {
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title: storeTitle,
+        description: storeDescription,
+        url: canonicalUrl,
+        type: 'website',
+        siteName: storefront.store_name || 'Weave 365',
+        images: [
+          {
+            url: storeImage,
+            width: 1200,
+            height: 630,
+            alt: storeTitle,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: storeTitle,
+        description: storeDescription,
+        images: [storeImage],
+      },
+    };
 }
 
 export default async function StorefrontHostPage({ params }) {

@@ -33,9 +33,9 @@ export const metadata = {
     siteName: "Weave 365",
     images: [
       {
-        url: "https://assets.weave365.com/assets/banner/Weave365.svg",
-        width: 539,
-        height: 100,
+        url: `${siteUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
         alt: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
       },
     ],
@@ -47,7 +47,7 @@ export const metadata = {
     title: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",
     description:
       "Wholesale Banarasi sarees and suits for boutiques, retailers, sourcing partners and white label brands. Flexible MOQ. Global shipping & dropshipping support.",
-    images: ["https://assets.weave365.com/assets/banner/Weave365.svg"],
+    images: [`${siteUrl}/og-image.png`],
   },
   robots: {
     index: true,

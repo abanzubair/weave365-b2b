@@ -189,4 +189,5 @@ export function getProductCategorySlug(productId, productCategory = null) {
 
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
 
-
+export const DEFAULT_OG_IMAGE = `${siteUrl}/og-image.png`;
+export const DEFAULT_FAVICON_IMAGE = `${siteUrl}/favicon.png`;

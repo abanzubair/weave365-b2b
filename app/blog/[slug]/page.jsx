@@ -22,11 +22,12 @@ export async function generateMetadata({ params }) {
     title: post.metaTitle || post.title,
     description: post.metaDescription || post.summary,
     alternates: { canonical: `${siteUrl}/blog/${encodeURIComponent(slug)}` },
+    firstImage: post.image || undefined,
     openGraph: {
       title: post.metaTitle || post.title,
       description: post.metaDescription || post.summary,
       url: `${siteUrl}/blog/${encodeURIComponent(slug)}`,
-      images: post.image ? [{ url: post.image }] : [],
+      ...(post.image ? { images: [{ url: post.image }] } : {}),
     },
   };
 
