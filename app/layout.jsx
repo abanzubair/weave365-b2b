@@ -34,6 +34,8 @@ export const metadata = {
     images: [
       {
         url: `${siteUrl}/og-image.png`,
+        secureUrl: `${siteUrl}/og-image.png`,
+        type: 'image/png',
         width: 1200,
         height: 630,
         alt: "Banarasi Sarees and Suits for Wholesale & Export | Weave 365",

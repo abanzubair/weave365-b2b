@@ -200,9 +200,39 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
       path,
     });
 
-    const isFavicon = resolvedImage.url.endsWith('favicon.png');
-    const imageWidth = isFavicon ? 512 : 1200;
-    const imageHeight = isFavicon ? 512 : 630;
+    // Determine image format / MIME type
+    const cleanUrl = resolvedImage.url.split('?')[0].toLowerCase();
+    const imageType = cleanUrl.endsWith('.png')
+      ? 'image/png'
+      : cleanUrl.endsWith('.webp')
+      ? 'image/webp'
+      : 'image/jpeg';
+
+    // Respect caller-provided dimensions or detect based on image source
+    const callerImage = defaultMetadata?.openGraph?.images?.[0];
+    const isFavicon = cleanUrl.endsWith('favicon.png');
+    const isProductPhoto =
+      cleanUrl.includes('assets.weave365.com') ||
+      cleanUrl.includes('/suit/') ||
+      cleanUrl.includes('/saree/') ||
+      resolvedImage.source?.includes('product') ||
+      defaultMetadata?.firstImage !== undefined;
+
+    let imageWidth = callerImage?.width;
+    let imageHeight = callerImage?.height;
+
+    if (!imageWidth || !imageHeight) {
+      if (isFavicon) {
+        imageWidth = 512;
+        imageHeight = 512;
+      } else if (isProductPhoto) {
+        imageWidth = 900;
+        imageHeight = 1200;
+      } else {
+        imageWidth = 1200;
+        imageHeight = 630;
+      }
+    }
 
     const nextMeta = {
       ...defaultMetadata,
@@ -223,6 +253,8 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         images: [
           {
             url: resolvedImage.url,
+            secureUrl: resolvedImage.url,
+            type: imageType,
             width: imageWidth,
             height: imageHeight,
             alt: ogTitle,
@@ -235,6 +267,10 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         title: ogTitle,
         description: ogDescription,
         images: [resolvedImage.url],
+      },
+      other: {
+        ...defaultMetadata.other,
+        'image': resolvedImage.url,
       },
     };
 
@@ -259,6 +295,8 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         images: [
           {
             url: DEFAULT_OG_IMAGE,
+            secureUrl: DEFAULT_OG_IMAGE,
+            type: 'image/png',
             width: 1200,
             height: 630,
             alt: storeConfig.name || 'Weave 365',

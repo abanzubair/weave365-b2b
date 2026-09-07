@@ -95,6 +95,12 @@ export async function generateMetadata({ params }) {
         images: [
           {
             url: storeImage,
+            secureUrl: storeImage,
+            type: storeImage?.endsWith('.png')
+              ? 'image/png'
+              : storeImage?.endsWith('.webp')
+              ? 'image/webp'
+              : 'image/jpeg',
             width: 1200,
             height: 630,
             alt: storeTitle,

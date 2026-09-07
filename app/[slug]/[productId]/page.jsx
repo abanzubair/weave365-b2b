@@ -147,7 +147,24 @@ export async function generateMetadata({ params }) {
       description,
       url: canonicalUrl,
       type: 'website',
-      ...(imageUrl ? { images: [{ url: imageUrl, alt: title, width: 1200, height: 630 }] } : {}),
+      ...(imageUrl
+        ? {
+            images: [
+              {
+                url: imageUrl,
+                secureUrl: imageUrl,
+                type: imageUrl.endsWith('.png')
+                  ? 'image/png'
+                  : imageUrl.endsWith('.webp')
+                  ? 'image/webp'
+                  : 'image/jpeg',
+                width: 900,
+                height: 1200,
+                alt: title,
+              },
+            ],
+          }
+        : {}),
     },
     twitter: {
       card: 'summary_large_image',
