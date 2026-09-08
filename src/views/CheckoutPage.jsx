@@ -91,6 +91,7 @@ export function CheckoutPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [showExpressPayNotice, setShowExpressPayNotice] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState('');
   const [activeDeliveryDetails, setActiveDeliveryDetails] = useState(null);
@@ -380,6 +381,12 @@ export function CheckoutPage({
     e?.preventDefault();
     if (!items.length) return;
 
+    // If QR code is already revealed and payment was initiated, clicking again confirms order
+    if (showQrCode && paymentMethod === 'upi' && activeDeliveryDetails) {
+      void recordOrderReceived(activeDeliveryDetails, pendingWhatsappUrl);
+      return;
+    }
+
     // Form validations
     if (!formName.trim() || !formPhone.trim() || !formAddr1.trim() || !formCity.trim() || !formState.trim() || !formPincode.trim()) {
       alert('Please fill in all required delivery address fields.');
@@ -446,21 +453,23 @@ export function CheckoutPage({
 
     setPendingWhatsappUrl(whatsappUrl);
 
-    const isMobile = typeof window !== 'undefined' && (
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      window.innerWidth <= 768
-    );
-
-    if (isMobile) {
-      // Mobile: Open native UPI App chooser directly!
-      window.location.href = rawUpiUrl;
-      setTimeout(() => {
-        void recordOrderReceived(deliveryDetails, whatsappUrl);
-      }, 1200);
-    } else {
-      // Desktop: Open QR Code modal
+    if (paymentMethod === 'upi') {
       setIsSubmitting(false);
+      setShowQrCode(true);
       setShowQrModal(true);
+
+      const isMobileDevice = typeof window !== 'undefined' && (
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      );
+      if (isMobileDevice) {
+        try {
+          window.location.href = rawUpiUrl;
+        } catch (err) {
+          console.log('Mobile UPI intent launch:', err);
+        }
+      }
+    } else {
+      void recordOrderReceived(deliveryDetails, whatsappUrl);
     }
   };
 
@@ -1112,7 +1121,25 @@ export function CheckoutPage({
                 <QrCode size={20} style={{ color: '#0f172a' }} />
               </label>
 
-              {paymentMethod === 'upi' && (
+              {paymentMethod === 'upi' && !showQrCode && (
+                <div style={{
+                  fontSize: '0.82rem',
+                  color: '#64748b',
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  marginTop: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <QrCode size={16} style={{ color: '#0f172a', flexShrink: 0 }} />
+                  <span>Payment QR code and UPI details will appear once you click <strong>{shippingMode === 'dropship' ? 'Place Dropship Order' : `Pay ${formatMoney(total)}`}</strong> below.</span>
+                </div>
+              )}
+
+              {paymentMethod === 'upi' && showQrCode && (
                 <div className="upi-qr-box">
                   <div style={{ fontSize: '0.86rem', color: '#475569', fontWeight: '500' }}>
                     Scan QR with any UPI App (GPay, PhonePe, Paytm):
@@ -1124,15 +1151,25 @@ export function CheckoutPage({
                     style={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', padding: '6px', boxSizing: 'border-box' }}
                   />
                   <div className="upi-vpa-code">{storeConfig.upiId || 'weave365@upi'}</div>
-                  <button
-                    type="button"
-                    className="shipping-mode-btn"
-                    onClick={copyUpiId}
-                    style={{ border: '1px solid #cbd5e1', padding: '6px 16px', fontSize: '0.8rem' }}
-                  >
-                    {copiedUpi ? <Check size={14} /> : <Copy size={14} />}
-                    {copiedUpi ? 'Copied UPI VPA!' : 'Copy UPI ID'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      className="shipping-mode-btn"
+                      onClick={copyUpiId}
+                      style={{ border: '1px solid #cbd5e1', padding: '6px 16px', fontSize: '0.8rem' }}
+                    >
+                      {copiedUpi ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedUpi ? 'Copied UPI VPA!' : 'Copy UPI ID'}
+                    </button>
+                    <button
+                      type="button"
+                      className="shipping-mode-btn"
+                      onClick={() => setShowQrModal(true)}
+                      style={{ border: '1px solid #0f172a', background: '#0f172a', color: '#ffffff', padding: '6px 16px', fontSize: '0.8rem' }}
+                    >
+                      <QrCode size={14} /> Open Fullscreen QR
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1163,10 +1200,17 @@ export function CheckoutPage({
               type="submit"
               className="checkout-submit-btn"
               disabled={isSubmitting}
-              style={{ marginTop: '20px' }}
+              style={{
+                marginTop: '20px',
+                backgroundColor: showQrCode && paymentMethod === 'upi' ? '#16a34a' : undefined,
+              }}
             >
               {isSubmitting ? (
                 'Processing Order...'
+              ) : showQrCode && paymentMethod === 'upi' ? (
+                <>
+                  <CheckCircle size={18} /> I Have Paid • Confirm Order
+                </>
               ) : (
                 shippingMode === 'dropship'
                   ? `Place Dropship Order • ${formatMoney(total)}`
@@ -1252,9 +1296,42 @@ export function CheckoutPage({
               {formatMoney(total)}
             </div>
 
-            <div className="upi-vpa-code" style={{ width: '100%', boxSizing: 'border-box' }}>
-              {storeConfig.upiId}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', justifyContent: 'center' }}>
+              <div className="upi-vpa-code" style={{ margin: 0 }}>
+                {storeConfig.upiId || 'weave365@upi'}
+              </div>
+              <button
+                type="button"
+                className="shipping-mode-btn"
+                onClick={copyUpiId}
+                style={{ border: '1px solid #cbd5e1', padding: '6px 14px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                {copiedUpi ? <Check size={14} style={{ color: '#16a34a' }} /> : <Copy size={14} />}
+                {copiedUpi ? 'Copied!' : 'Copy'}
+              </button>
             </div>
+
+            <a
+              href={rawUpiUrl}
+              className="shipping-mode-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                width: '100%',
+                padding: '10px 16px',
+                backgroundColor: '#0f172a',
+                color: '#ffffff',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '600',
+                fontSize: '0.88rem',
+                boxSizing: 'border-box',
+              }}
+            >
+              <QrCode size={16} /> Open in UPI App directly
+            </a>
 
             <button
               type="button"
@@ -1263,9 +1340,9 @@ export function CheckoutPage({
                 setShowQrModal(false);
                 void recordOrderReceived(activeDeliveryDetails, pendingWhatsappUrl);
               }}
-              style={{ width: '100%', backgroundColor: '#16a34a', marginTop: '8px' }}
+              style={{ width: '100%', backgroundColor: '#16a34a', marginTop: '4px' }}
             >
-              I Have Paid • Confirm Order
+              <CheckCircle size={18} /> I Have Paid • Confirm Order
             </button>
           </div>
         </div>
