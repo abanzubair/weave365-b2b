@@ -245,6 +245,26 @@ export function CheckoutPage({
   }, [items, shippingSpeed]);
 
 
+  const grossItemsTotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      const singlePrice = Number(
+        item.variant?.prices?.b2r ||
+        item.variant?.prices?.single ||
+        item.variant?.prices?.reseller ||
+        item.variant?.prices?.mrp ||
+        item.variant?.prices?.offer ||
+        item.product?.resellerPrice ||
+        item.product?.price ||
+        0
+      );
+      return sum + (singlePrice * (Number(item.quantity) || 1));
+    }, 0);
+  }, [items]);
+
+  const bulkDiscount = useMemo(() => {
+    return Math.max(0, grossItemsTotal - (baseTotal || 0));
+  }, [grossItemsTotal, baseTotal]);
+
   const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
 
   const { baseAmount, gstAmount } = useMemo(() => {
@@ -570,7 +590,16 @@ export function CheckoutPage({
                 onScroll={checkScrollState}
               >
                 {items.map((item, idx) => {
-                  const itemUnitPrice = customerPrice(item.variant?.prices, priceAccess) || 0;
+                  const itemSinglePrice = Number(
+                    item.variant?.prices?.b2r ||
+                    item.variant?.prices?.single ||
+                    item.variant?.prices?.reseller ||
+                    item.variant?.prices?.mrp ||
+                    item.variant?.prices?.offer ||
+                    item.product?.resellerPrice ||
+                    item.product?.price ||
+                    0
+                  );
                   const itemImg = item.selectedColorImage || item.variant?.image || item.product?.images?.[0] || fallbackProductImage;
 
                   return (
@@ -583,7 +612,7 @@ export function CheckoutPage({
                         </div>
                       </div>
                       <div className="checkout-item-price">
-                        {formatMoney(itemUnitPrice * item.quantity)}
+                        {canViewPrices ? formatMoney(itemSinglePrice * item.quantity) : priceNoticeForAccess(priceAccess)}
                       </div>
                     </div>
                   );
@@ -605,13 +634,27 @@ export function CheckoutPage({
 
             {/* Financial Summary Table */}
             <div className="checkout-financial-table">
+              {bulkDiscount > 0 && (
+                <>
+                  <div className="checkout-summary-row">
+                    <span>Items Total</span>
+                    <span>{formatMoney(grossItemsTotal)}</span>
+                  </div>
+
+                  <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
+                    <span>Bulk Buyer Discount</span>
+                    <span>-{formatMoney(bulkDiscount)}</span>
+                  </div>
+                </>
+              )}
+
               <div className="checkout-summary-row">
-                <span>Subtotal (Base Price)</span>
+                <span>Sub Total</span>
                 <span>{formatMoney(baseAmount)}</span>
               </div>
 
               <div className="checkout-summary-row">
-                <span>Estimated GST (5%)</span>
+                <span>GST 5%</span>
                 <span style={{ color: '#0f172a', fontWeight: '500' }}>+{formatMoney(gstAmount)}</span>
               </div>
 
