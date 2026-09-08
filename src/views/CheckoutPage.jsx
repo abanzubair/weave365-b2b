@@ -29,6 +29,7 @@ import {
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
+import QRCodeImage from '../components/QRCodeImage.jsx';
 import '../styles/checkout.css';
 
 export function CheckoutPage({
@@ -1116,10 +1117,11 @@ export function CheckoutPage({
                   <div style={{ fontSize: '0.86rem', color: '#475569', fontWeight: '500' }}>
                     Scan QR with any UPI App (GPay, PhonePe, Paytm):
                   </div>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(rawUpiUrl)}`}
+                  <QRCodeImage
+                    text={rawUpiUrl}
+                    size={170}
                     alt="UPI Payment QR Code"
-                    style={{ width: '170px', height: '170px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', padding: '6px' }}
+                    style={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', padding: '6px', boxSizing: 'border-box' }}
                   />
                   <div className="upi-vpa-code">{storeConfig.upiId || 'weave365@upi'}</div>
                   <button
@@ -1238,10 +1240,11 @@ export function CheckoutPage({
             </div>
 
             <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(rawUpiUrl)}`}
+              <QRCodeImage
+                text={rawUpiUrl}
+                size={210}
                 alt="UPI Payment QR Code"
-                style={{ width: '210px', height: '210px', borderRadius: '8px', display: 'block', margin: '0 auto' }}
+                style={{ borderRadius: '8px', margin: '0 auto', background: '#fff' }}
               />
             </div>
 
