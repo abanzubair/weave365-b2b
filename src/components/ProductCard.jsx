@@ -183,7 +183,7 @@ export const ProductCard = memo(function ProductCard({
       const isSaree = String(product.category || '').toLowerCase() === 'saree';
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
       const isWholesaler = priceAccess?.priceGroup === 'wholesale';
-      const shippingLine = isWholesaler ? 'Excluded: GST & Shipping' : 'Included: Free Shipping in India (Excluding GST)';
+      const shippingLine = isWholesaler ? 'Included: GST (Free Shipping in India)' : 'Included: Free Shipping in India (Including GST)';
       let priceText = 'On request';
       if (resellerPrice > 0) {
         priceText = `${formatMoney(resellerPrice)} /pc`;

@@ -897,7 +897,7 @@ export function ProductDetail({
       const lengthText = isSaree ? '6.3m (including 85cm Blouse)' : (product.length || 'Standard');
 
       const isWholesaler = priceAccess?.priceGroup === 'wholesale';
-      const shippingLine = isWholesaler ? 'Excluded: GST & Shipping' : 'Included: Free Shipping in India (Excluding GST)';
+      const shippingLine = isWholesaler ? 'Included: GST (Free Shipping in India)' : 'Included: Free Shipping in India (Including GST)';
       let priceText = 'On request';
       if (displayPrice != null && displayPrice > 0) {
         if (isWholesaler && totalColors > 1 && !isSoldAsPc && !isUnder999) {
@@ -1356,7 +1356,7 @@ export function ProductDetail({
             <div className={`product-middle-details ${(showSellPanel || showBuyPanel) ? 'blurred-details' : ''}`}>
               <div className="product-logistics-info">
                 <div className="tax-shipping-line">
-                  <span className="tax-item">Excluding GST</span>
+                  <span className="tax-item">Including GST</span>
                   <span className="bullet-sep">•</span>
                   <span className="shipping-note-badge">Free Shipping</span>
                 </div>

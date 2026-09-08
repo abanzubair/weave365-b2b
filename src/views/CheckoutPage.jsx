@@ -245,7 +245,14 @@ export function CheckoutPage({
   }, [items, shippingSpeed]);
 
 
-  const total = baseTotal + shippingFee;
+  const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
+
+  const { baseAmount, gstAmount } = useMemo(() => {
+    const netItems = Math.max(0, (baseTotal || 0) - (discount || 0));
+    const base = Math.round(netItems / 1.05);
+    const gst = netItems - base;
+    return { baseAmount: base, gstAmount: gst };
+  }, [baseTotal, discount]);
 
 
   const upiId = storeConfig.upiId || 'weave365@upi';
@@ -599,8 +606,13 @@ export function CheckoutPage({
             {/* Financial Summary Table */}
             <div className="checkout-financial-table">
               <div className="checkout-summary-row">
-                <span>Subtotal</span>
-                <span>{formatMoney(subtotal)}</span>
+                <span>Subtotal (Base Price)</span>
+                <span>{formatMoney(baseAmount)}</span>
+              </div>
+
+              <div className="checkout-summary-row">
+                <span>Estimated GST (5%)</span>
+                <span style={{ color: '#0f172a', fontWeight: '500' }}>+{formatMoney(gstAmount)}</span>
               </div>
 
               {discount > 0 && (
@@ -618,8 +630,6 @@ export function CheckoutPage({
                     : 'FREE'}
                 </span>
               </div>
-
-
 
               <div className="checkout-summary-row total-row">
                 <span>Total</span>
