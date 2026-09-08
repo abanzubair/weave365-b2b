@@ -45,7 +45,7 @@ export function Newsletter({ navigate }) {
               className="editorial-hub-whatsapp-btn"
             >
               <WhatsappIcon size={19} />
-              <span>Get WhatsApp Updates</span>
+              <span>WhatsApp Channel</span>
             </a>
           </div>
         </div>

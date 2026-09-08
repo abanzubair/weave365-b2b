@@ -25,6 +25,8 @@ export function profileRowFromUser(user) {
     whatsapp_country_code: buyerProfile.whatsapp_country_code || '',
     whatsapp_number: buyerProfile.whatsapp_number || '',
     business_name: buyerProfile.business_name || '',
+    website: buyerProfile.website || '',
+    social_handle: buyerProfile.social_handle || buyerProfile.socialHandle || '',
     buyer_type: isVendor ? 'vendor' : (buyerProfile.buyer_type || 'customer'),
     buyer_subtype: buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : 'Customer'),
     role: isVendor ? 'vendor' : (buyerProfile.role || user.user_metadata?.role || 'customer'),
@@ -47,9 +49,19 @@ export async function syncProfileFromUser(user) {
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from('profiles')
     .upsert(profileRow, { onConflict: 'id' });
+
+  // If the columns don't exist yet on public.profiles (e.g. pending DB migration),
+  // retry without website and social_handle to ensure user signup/login is not blocked.
+  if (error && (error.message?.includes('website') || error.message?.includes('social_handle') || error.code === 'PGRST204')) {
+    const { website, social_handle, ...fallbackRow } = profileRow;
+    const retryResult = await supabase
+      .from('profiles')
+      .upsert(fallbackRow, { onConflict: 'id' });
+    error = retryResult.error;
+  }
 
   return { error: error || null };
 }

@@ -175,7 +175,7 @@ export function Footer({ navigate }) {
               <li><AppLink to="catalogue" href="/catalogue" navigate={navigate}>Sell Catalogue</AppLink></li>
               <li><AppLink to="white-label" href="/white-label" navigate={navigate}>Brand Building</AppLink></li>
               <li><AppLink to="developer-api" href="/developer-api" navigate={navigate}>Agentic Commerce</AppLink></li>
-              <li><a href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"} target="_blank" rel="noreferrer">Community</a></li>
+              <li><a href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"} target="_blank" rel="noreferrer">WhatsApp Channel</a></li>
             </ul>
           </div>
 

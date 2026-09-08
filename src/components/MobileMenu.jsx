@@ -240,7 +240,7 @@ export function MobileMenu(props) {
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Seller Onboarding</span>
                 </AppLink>
                 <a href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"} target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Channel</span>
                 </a>
 
                 <span className="mobile-mega-heading">Learn</span>

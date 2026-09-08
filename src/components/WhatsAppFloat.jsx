@@ -56,7 +56,7 @@ const TEMPLATES = [
   },
   {
     id: 'channel',
-    title: 'Join on WhatsApp',
+    title: 'WhatsApp Channel',
     desc: 'Weave 365 Updates',
     url: storeConfig.whatsappChannel || 'https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U',
   },

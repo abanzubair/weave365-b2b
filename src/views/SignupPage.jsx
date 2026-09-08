@@ -164,6 +164,8 @@ export function SignupPage({
     countryCode: '+91',
     whatsapp: '',
     businessName: '',
+    website: '',
+    socialHandle: '',
     buyerType: 'customer',
     buyerSubtype: 'Customer',
     buyingBehavior: 'instant',
@@ -188,6 +190,8 @@ export function SignupPage({
       setPassword('');
       setProfile((prev) => ({
         ...prev,
+        website: '',
+        socialHandle: '',
         buyerType: 'customer',
         buyerSubtype: 'Customer',
       }));
@@ -243,6 +247,15 @@ export function SignupPage({
       }));
     }
 
+    const existingBuyerProfile = buyerProfile || user.user_metadata?.buyer_profile;
+    if (existingBuyerProfile) {
+      setProfile((prev) => ({
+        ...prev,
+        website: prev.website || existingBuyerProfile.website || '',
+        socialHandle: prev.socialHandle || existingBuyerProfile.social_handle || existingBuyerProfile.socialHandle || '',
+      }));
+    }
+
     // Check if user completed the registration form before clicking "Sign up with Google"
     const pendingRaw = typeof window !== 'undefined' ? localStorage.getItem('pending_b2b_profile') : null;
     if (pendingRaw) {
@@ -261,6 +274,8 @@ export function SignupPage({
             email: user.email,
             full_name: cleanName,
             business_name: pending.businessName || '',
+            website: (pending.website || '').trim(),
+            social_handle: (pending.socialHandle || pending.social_handle || '').trim(),
             whatsapp: cleanWhatsapp,
             whatsapp_country_code: pending.countryCode || '+91',
             whatsapp_number: cleanWhatsapp,
@@ -369,6 +384,8 @@ export function SignupPage({
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: profile.businessName.trim(),
+      website: (profile.website || '').trim(),
+      social_handle: (profile.socialHandle || '').trim(),
       buyer_type: isVendor ? 'vendor' : 'customer',
       buyer_subtype: profile.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
       role: isVendor ? 'vendor' : 'customer',
@@ -536,6 +553,8 @@ export function SignupPage({
       whatsapp: cleanWhatsapp,
       countryCode: profile.countryCode || '+91',
       businessName: profile.businessName || '',
+      website: (profile.website || '').trim(),
+      socialHandle: (profile.socialHandle || '').trim(),
       buyerType: profile.buyerType || 'customer',
       buyerSubtype: profile.buyerSubtype || 'Customer',
       city: profile.city.trim(),
@@ -1220,9 +1239,6 @@ export function SignupPage({
                             <span className="signup-role-custom-radio" aria-hidden="true">
                               <span className="signup-role-radio-inner" />
                             </span>
-                            {option.isSeller && (
-                              <Store size={13} className="signup-role-seller-icon" aria-hidden="true" />
-                            )}
                             <span className="signup-role-radio-label">{option.label}</span>
                           </label>
                         );
@@ -1356,6 +1372,31 @@ export function SignupPage({
                       autoComplete="email"
                       required
                       disabled={isOnboarding}
+                      className="signup-input"
+                    />
+                  </div>
+
+                  {/* Website / Online Store */}
+                  <div className="signup-field">
+                    <label className="signup-label">Website / Online Store (Optional)</label>
+                    <input
+                      type="url"
+                      value={profile.website}
+                      onChange={(e) => updateProfile('website', e.target.value)}
+                      placeholder="https://yourstore.com"
+                      autoComplete="url"
+                      className="signup-input"
+                    />
+                  </div>
+
+                  {/* Social Handle */}
+                  <div className="signup-field">
+                    <label className="signup-label">Social Handle (Optional)</label>
+                    <input
+                      type="text"
+                      value={profile.socialHandle}
+                      onChange={(e) => updateProfile('socialHandle', e.target.value)}
+                      placeholder="@yourhandle or profile link"
                       className="signup-input"
                     />
                   </div>

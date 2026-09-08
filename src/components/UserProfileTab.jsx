@@ -17,7 +17,9 @@ import {
   Landmark,
   Hash,
   ShieldCheck,
-  ChevronDown
+  ChevronDown,
+  Globe,
+  Instagram
 } from './icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
@@ -62,6 +64,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
     countryCode: '+91',
     whatsappNumber: '',
     businessName: '',
+    website: '',
+    socialHandle: '',
     buyerSubtype: 'Customer',
     buyingBehavior: 'instant',
     city: '',
@@ -96,6 +100,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       countryCode: p.whatsapp_country_code || '+91',
       whatsappNumber: cleanWhatsapp,
       businessName: p.business_name || '',
+      website: p.website || '',
+      socialHandle: p.social_handle || p.socialHandle || '',
       buyerSubtype: p.buyer_subtype || (p.buyer_type === 'vendor' ? 'Vendor' : 'Customer'),
       buyingBehavior: p.buying_behavior || 'instant',
       city: cleanCity,
@@ -183,6 +189,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
         whatsapp_country_code: formData.countryCode,
         whatsapp_number: cleanWhatsapp,
         business_name: formData.businessName.trim(),
+        website: (formData.website || '').trim(),
+        social_handle: (formData.socialHandle || '').trim(),
         buyer_type: isVendor ? 'vendor' : 'customer',
         buyer_subtype: formData.buyerSubtype,
         role: isVendor ? 'vendor' : (buyerProfile?.role || 'customer'),
@@ -215,6 +223,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           whatsapp_country_code: formData.countryCode,
           whatsapp_number: cleanWhatsapp,
           business_name: formData.businessName.trim(),
+          website: (formData.website || '').trim(),
+          social_handle: (formData.socialHandle || '').trim(),
           buyer_type: isVendor ? 'vendor' : 'customer',
           buyer_subtype: formData.buyerSubtype,
           role: isVendor ? 'vendor' : (buyerProfile?.role || 'customer'),
@@ -228,9 +238,17 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           updated_at: new Date().toISOString(),
         };
 
-        const { error: dbError } = await supabase
+        let { error: dbError } = await supabase
           .from('profiles')
           .upsert(profileRow, { onConflict: 'id' });
+
+        if (dbError && (dbError.message?.includes('website') || dbError.message?.includes('social_handle') || dbError.code === 'PGRST204')) {
+          const { website, social_handle, ...fallbackRow } = profileRow;
+          const retryResult = await supabase
+            .from('profiles')
+            .upsert(fallbackRow, { onConflict: 'id' });
+          dbError = retryResult.error;
+        }
 
         if (dbError) {
           console.error('Profiles table sync error:', dbError);
@@ -424,6 +442,44 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                 />
               </div>
               <span className="account-field-hint">Displayed on custom catalogs &amp; wholesale records</span>
+            </div>
+
+            {/* Website / Online Store */}
+            <div className="account-form-field">
+              <label className="account-form-label" htmlFor="profile-website">
+                <span>Website / Online Store</span>
+              </label>
+              <div className="account-input-with-icon">
+                <Globe size={16} className="account-field-icon" />
+                <input
+                  id="profile-website"
+                  type="url"
+                  className="account-form-input"
+                  value={formData.website}
+                  onChange={(e) => handleChange('website', e.target.value)}
+                  placeholder="https://yourstore.com"
+                />
+              </div>
+              <span className="account-field-hint">Your public online storefront or business website</span>
+            </div>
+
+            {/* Social Handle */}
+            <div className="account-form-field">
+              <label className="account-form-label" htmlFor="profile-social">
+                <span>Social Handle</span>
+              </label>
+              <div className="account-input-with-icon">
+                <Instagram size={16} className="account-field-icon" />
+                <input
+                  id="profile-social"
+                  type="text"
+                  className="account-form-input"
+                  value={formData.socialHandle}
+                  onChange={(e) => handleChange('socialHandle', e.target.value)}
+                  placeholder="@yourhandle or profile URL"
+                />
+              </div>
+              <span className="account-field-hint">Used to showcase your retail presence &amp; designs</span>
             </div>
           </div>
         </div>

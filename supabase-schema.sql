@@ -21,6 +21,9 @@ create table if not exists public.profiles (
   approval_status text default 'pending',
   role text default 'customer',
   city text,
+  state text,
+  website text,
+  social_handle text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -35,7 +38,10 @@ alter table public.profiles add column if not exists buyer_type text default 'wh
 alter table public.profiles add column if not exists buyer_subtype text;
 alter table public.profiles add column if not exists buying_behavior text default 'instant';
 alter table public.profiles add column if not exists city text;
+alter table public.profiles add column if not exists state text;
 alter table public.profiles add column if not exists pincode text;
+alter table public.profiles add column if not exists website text;
+alter table public.profiles add column if not exists social_handle text;
 alter table public.profiles add column if not exists interested_categories jsonb default '[]'::jsonb;
 alter table public.profiles add column if not exists price_group text default 'pending';
 alter table public.profiles add column if not exists approval_status text default 'pending';
@@ -257,6 +263,8 @@ begin
     city,
     state,
     pincode,
+    website,
+    social_handle,
     interested_categories,
     buying_behavior,
     role,
@@ -278,6 +286,8 @@ begin
     coalesce(bp->>'city', ''),
     coalesce(bp->>'state', ''),
     coalesce(bp->>'pincode', ''),
+    coalesce(bp->>'website', new.raw_user_meta_data->>'website', ''),
+    coalesce(bp->>'social_handle', bp->>'socialHandle', new.raw_user_meta_data->>'social_handle', new.raw_user_meta_data->>'socialHandle', ''),
     coalesce(bp->'interested_categories', '[]'::jsonb),
     coalesce(bp->>'buying_behavior', 'instant'),
     coalesce(new.raw_user_meta_data->>'role', bp->>'role', 'customer'),
@@ -295,6 +305,8 @@ begin
     city = case when public.profiles.city is null or public.profiles.city = '' then excluded.city else public.profiles.city end,
     state = case when public.profiles.state is null or public.profiles.state = '' then excluded.state else public.profiles.state end,
     pincode = case when public.profiles.pincode is null or public.profiles.pincode = '' then excluded.pincode else public.profiles.pincode end,
+    website = case when public.profiles.website is null or public.profiles.website = '' then excluded.website else public.profiles.website end,
+    social_handle = case when public.profiles.social_handle is null or public.profiles.social_handle = '' then excluded.social_handle else public.profiles.social_handle end,
     interested_categories = case when public.profiles.interested_categories is null or public.profiles.interested_categories = '[]'::jsonb then excluded.interested_categories else public.profiles.interested_categories end,
     updated_at = now();
 
