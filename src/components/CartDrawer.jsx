@@ -354,7 +354,7 @@ export function CartDrawer(props) {
                   <span className="total-tax-note">Including GST • Free Shipping</span>
                 </div>
                 <strong className="total-value">
-                  {total != null ? formatMoney(total) : priceNoticeForAccess(priceAccess)}
+                  {total != null ? formatMoney(total, 2) : priceNoticeForAccess(priceAccess)}
                 </strong>
               </div>
             </div>

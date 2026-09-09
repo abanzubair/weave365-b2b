@@ -222,7 +222,7 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
   const itemSection = itemLines.join('\n\n');
 
   const summarySection = [
-    canViewPrices && finalTotal != null ? `Total: ${formatMoney(finalTotal)} (Including GST • Free Shipping)` : '',
+    canViewPrices && finalTotal != null ? `Total: ${formatMoney(finalTotal, 2)} (Including GST • Free Shipping)` : '',
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',
   ].filter(Boolean).join('\n');
