@@ -286,7 +286,7 @@ export const ProductCard = memo(function ProductCard({
       return;
     }
     if (typeof addToCart === 'function') {
-      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
+      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || 'Standard';
       addToCart(product, selectedVariant, 1, { colorName: defaultColor });
     }
   };
@@ -299,7 +299,7 @@ export const ProductCard = memo(function ProductCard({
       return;
     }
     if (typeof addToCart === 'function') {
-      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
+      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || 'Standard';
       addToCart(product, selectedVariant, 1, { colorName: defaultColor });
     }
   };
@@ -311,7 +311,7 @@ export const ProductCard = memo(function ProductCard({
       return;
     }
     if (typeof addToCart === 'function') {
-      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || '';
+      const defaultColor = selectedVariant?.color || product?.colorOptions?.[0]?.name || 'Standard';
       addToCart(product, selectedVariant, 1, { colorName: defaultColor });
     }
   };

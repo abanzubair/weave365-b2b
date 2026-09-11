@@ -194,7 +194,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     const trackingUrl = `https://weave365.com/order-tracking/${inquiry.id}`;
     const carrierText = inquiry.tracking_carrier ? ` via ${inquiry.tracking_carrier} (AWB: ${inquiry.tracking_number || 'in transit'})` : '';
     
-    const msg = `Namaste ${recipientName}, your order #${orderIdShort} from Weave365 is confirmed${carrierText}.\n\nYou can track live delivery status here:\n${trackingUrl}\n\nThank you for choosing authentic Banarasi handlooms!`;
+    const msg = `Hello ${recipientName}, your order #${orderIdShort} from Weave365 is confirmed${carrierText}.\n\nYou can track live delivery status here:\n${trackingUrl}\n\nThank you for choosing authentic Banarasi handlooms!`;
     return `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`;
   };
 

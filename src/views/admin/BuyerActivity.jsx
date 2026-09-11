@@ -207,11 +207,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       let items = [];
       if (Array.isArray(cart.items) && cart.items.length > 0) {
         items = cart.items.map((it) => {
-          const info = getProductDetails(it.item_key || it.product_id, it.variant_code);
+          const info = getProductDetails(it.product_group_key || it.item_key || it.product_id, it.variant_code);
           return { ...info, qty: it.quantity || it.qty || 1 };
         });
       } else {
-        const info = getProductDetails(cart.item_key || cart.product_id, cart.variant_code);
+        const info = getProductDetails(cart.product_group_key || cart.item_key || cart.product_id, cart.variant_code);
         items = [{ ...info, qty: cart.quantity || cart.qty || 1 }];
       }
 
@@ -697,7 +697,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                 <div className="action-menu-popup">
                                   {b.phone && (
                                     <a
-                                      href={`https://wa.me/${String(b.phone).replace(/\D/g, '')}?text=Hello%20${encodeURIComponent(b.name)},%20we%20noticed%20your%20activity%20on%20Weave365.`}
+                                      href={`https://wa.me/${String(b.phone).replace(/\D/g, '').length === 10 ? '91' + String(b.phone).replace(/\D/g, '') : String(b.phone).replace(/\D/g, '')}?text=${encodeURIComponent(
+                                        act.activityType === 'Abandoned Carts' || act.type === 'abandoned'
+                                          ? `Hello ${b.name} (${b.businessName || 'Boutique'}), this is Weave365 Varanasi Weaver Facility. We noticed you selected ${act.products[0]?.title || 'Banarasi Handloom items'} on our store. We provide direct weaver wholesale pricing and instant parcel dispatch. Would you like assistance confirming your order?`
+                                          : `Hello ${b.name}, this is Weave365 Varanasi Handloom. We noticed your interest in ${act.products[0]?.title || 'our collection'} on Weave365.`
+                                      )}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="action-menu-item"

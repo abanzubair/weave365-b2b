@@ -82,9 +82,7 @@ export function CartDrawer(props) {
     return items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
   }, [items]);
 
-  const hasUnselectedColors = useMemo(() => {
-    return items.some((item) => item.selectedColorName === 'Select Color');
-  }, [items]);
+  const hasUnselectedColors = false;
 
   const groupedItems = useMemo(() => {
     const groups = new Map();
@@ -104,12 +102,16 @@ export function CartDrawer(props) {
     });
 
     return Array.from(groups.values()).map((group) => {
-      const activeItems = group.items.filter(
-        (item) => item.selectedColorName && item.selectedColorName !== 'Select Color'
-      );
+      const activeItems = group.items.map((item) => ({
+        ...item,
+        selectedColorName: (!item.selectedColorName || item.selectedColorName === 'Select Color')
+          ? (group.colorOptions?.[0]?.name || 'Standard')
+          : item.selectedColorName,
+      }));
       return {
         ...group,
-        selectedColorNames: new Set(group.items.map((item) => item.selectedColorName).filter(Boolean)),
+        items: activeItems,
+        selectedColorNames: new Set(activeItems.map((item) => item.selectedColorName).filter(Boolean)),
         totalQuantity: activeItems.reduce((sum, item) => sum + item.quantity, 0),
         selectedColorsCount: activeItems.length,
       };
@@ -117,6 +119,12 @@ export function CartDrawer(props) {
   }, [items]);
 
   const handleGoToCheckout = () => {
+    items.forEach((item) => {
+      if ((!item.selectedColorName || item.selectedColorName === 'Select Color') && typeof addCartColor === 'function') {
+        const defaultColor = item.colorOptions?.[0] || { name: 'Standard' };
+        addCartColor(item, defaultColor);
+      }
+    });
     if (onClose) onClose();
     if (navigate) navigate('checkout');
   };
@@ -260,7 +268,9 @@ export function CartDrawer(props) {
                               )}
                               <div className="variant-labels">
                                 <span className="variant-name">
-                                  {item.selectedColorName || 'Selected Color'}
+                                  {(!item.selectedColorName || item.selectedColorName === 'Select Color')
+                                    ? 'Standard / As Shown'
+                                    : item.selectedColorName}
                                 </span>
                                 <span className="variant-price">
                                   {canViewPrices
@@ -359,18 +369,11 @@ export function CartDrawer(props) {
               </div>
             </div>
 
-            {hasUnselectedColors && (
-              <div className="cart-warning-note">
-                Please select a color for all items before proceeding.
-              </div>
-            )}
-
             <div className="cart-actions-column">
               <button
                 type="button"
                 className="cart-checkout-btn-primary"
                 onClick={handleGoToCheckout}
-                disabled={hasUnselectedColors}
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight size={16} />

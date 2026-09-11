@@ -834,7 +834,7 @@ export function ProductDetail({
 
   function handleBuyNow() {
     if (product.isOutOfStock) return;
-    const colorToUse = selectedColorName || variant?.color || (totalColors > 1 ? 'Select Color' : '');
+    const colorToUse = selectedColorName || variant?.color || product.colorOptions?.[0]?.name || product.variants?.[0]?.color || 'Standard';
     if (colorToUse) {
       addToCart(product, variant, 1, { colorName: colorToUse });
     } else {

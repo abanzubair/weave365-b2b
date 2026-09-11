@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Wholesale Checkout | Weave 365',
+  title: 'Checkout | Weave 365',
   robots: {
     index: false,
     follow: false,

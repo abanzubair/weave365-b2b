@@ -822,9 +822,9 @@ export function SignupPage({
           </div>
 
           <div className="signup-hero-bottom">
-            <span className="signup-hero-subtag">You can easily</span>
+            <span className="signup-hero-subtag">Direct from Varanasi Weavers</span>
             <h1 className="signup-hero-headline">
-              Get access your personal hub for clarity and productivity
+              Source Authentic Banarasi Handloom at Direct Weaver Prices
             </h1>
           </div>
         </div>

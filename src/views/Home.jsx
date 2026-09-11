@@ -35,10 +35,10 @@ const defaultHero = {
   image: 'https://assets.weave365.com/assets/banner/hero1.webp',
   mobileImage: 'https://assets.weave365.com/assets/banner/hero1m.webp',
   title: 'Beyond\nBeauty',
-  subtitle: 'Bringing You the Elements of Style',
-  buttonText: 'Read More',
+  subtitle: 'Direct from Varanasi Weavers • Zero Middlemen',
+  buttonText: 'Shop Wholesale Catalog',
   buttonLink: 'catalogue',
-  button2Text: 'Request Catalog',
+  button2Text: 'Request Bulk Sample',
   button2Link: 'bulk-inquiry',
   rightText: "WHOLESALE\nSAREE\nCOLLECTION\n'26",
 };

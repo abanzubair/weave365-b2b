@@ -309,38 +309,8 @@ export function AppShell({ children }) {
     return Boolean(isEmailAdmin || isRoleAdmin);
   }, [user, buyerProfile]);
 
-  // Route Guard: Safely enforce profile completion for authenticated buyers
-  useEffect(() => {
-    // 1. NEVER redirect unauthenticated guests
-    if (!user) return;
-
-    // 2. Wait until profile has completed loading from Supabase
-    if (!isProfileHydrated) return;
-
-    // 3. NEVER redirect admin accounts
-    if (isAdmin) return;
-
-    // 4. Whitelist safe routes (onboarding, login, legal policies, contact, etc.)
-    const safePrefixes = [
-      '/signup',
-      '/login',
-      '/register',
-      '/privacy-security',
-      '/terms-conditions',
-      '/disclaimer',
-      '/shipping-delivery',
-      '/returns-cancellation',
-      '/contact',
-    ];
-    if (safePrefixes.some((prefix) => pathname.startsWith(prefix))) {
-      return;
-    }
-
-    // 5. If logged in and wholesale profile is incomplete, redirect to complete-profile
-    if (!isProfileComplete(user, buyerProfile)) {
-      router.replace('/signup?mode=complete-profile');
-    }
-  }, [user, isProfileHydrated, buyerProfile, isAdmin, pathname, router]);
+  // Allow authenticated users to browse freely without route hijacking
+  // Incomplete profiles are prompted organically at checkout or inside Account page
 
   const productsById = useMemo(() => {
     const map = new Map();

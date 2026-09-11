@@ -17,6 +17,7 @@ import { GET as googleShoppingGet } from './googleShoppingHandler.js';
 import { GET as vendorRegistrationGet, POST as vendorRegistrationPost } from './vendorRegistrationHandler.js';
 import { POST as adminSyncPost } from './adminSyncHandler.js';
 import { POST as checkEmailPost } from './checkEmailHandler.js';
+import { POST as orderPost } from './orderHandler.js';
 import { generateSitemapXml } from './sitemapHandler.js';
 import { GET as catalogGet } from './catalogHandler.js';
 import { handleDeveloperApiGet, handleDeveloperApiPost } from './developerApiHandler.js';
@@ -49,6 +50,7 @@ export async function POST(request, { params }) {
     return handleDeveloperApiPost(request, routeArray);
   }
 
+  if (routeKey === 'orders' || routeKey === 'order') return orderPost(request);
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);
   if (routeKey === 'inquiry-notification') return inquiryNotificationPost(request);

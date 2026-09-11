@@ -756,7 +756,7 @@ export default function VendorApplications({
                   const cleanPhone = cleanPhoneDigits(vendor.whatsapp || vendor.whatsapp_number);
                   const waUrl = cleanPhone
                     ? `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(
-                        `Namaste ${vendor.full_name || 'Partner'}, greetings from Weave365 Admin team!`
+                        `Hello ${vendor.full_name || 'Partner'}, greetings from Weave365 Admin team!`
                       )}`
                     : null;
 
@@ -1139,7 +1139,7 @@ export default function VendorApplications({
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number) && (
                   <a
-                    href={`https://wa.me/${cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number)}?text=${encodeURIComponent(`Namaste ${inspectVendor.full_name || 'Partner'}, greetings from Weave365!`)}`}
+                    href={`https://wa.me/${cleanPhoneDigits(inspectVendor.whatsapp || inspectVendor.whatsapp_number)}?text=${encodeURIComponent(`Hello ${inspectVendor.full_name || 'Partner'}, greetings from Weave365!`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="admin-btn-save-drive"
