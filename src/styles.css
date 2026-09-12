@@ -224,7 +224,6 @@ a:active {
 /* Performance Optimization: Skip layout & render computation for below-the-fold sections on initial paint */
 .category-section,
 .deal-section,
-.home-product-section,
 .wholesale-partnership-section,
 .reseller-program-section,
 .occasion-showcase-section,

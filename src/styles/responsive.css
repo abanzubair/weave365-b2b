@@ -730,7 +730,7 @@
   }
 
   .home-product-section {
-    overflow-x: hidden !important;
+    overflow: visible !important;
   }
 
   /* ═══════════════════════════════════════════════════════════════
