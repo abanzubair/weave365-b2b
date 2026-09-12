@@ -1,5 +1,6 @@
 import { ArrowRight } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/wholesalePartnership.css';
 
 export function WholesalePartnership({ imageUrl, navigate }) {
@@ -13,15 +14,26 @@ export function WholesalePartnership({ imageUrl, navigate }) {
         <div className="wholesale-partnership-visual-side">
           <div className="partnership-gallery-container">
             <div className="partnership-image-wrapper">
-              <img 
-                src={imageUrl || fallbackImage} 
-                alt="Banarasi sarees and suits wholesale sourcing in Varanasi" 
-                className="partnership-image" 
-                loading="lazy"
-                decoding="async"
-                width={700}
-                height={525}
-              />
+              {(() => {
+                const raw = imageUrl || fallbackImage;
+                return (
+                  <img 
+                    src={getOptimizedImageUrl(raw, 'listing')} 
+                    alt="Banarasi sarees and suits wholesale sourcing in Varanasi" 
+                    className="partnership-image" 
+                    loading="lazy"
+                    decoding="async"
+                    width={700}
+                    height={525}
+                    onError={(e) => {
+                      const fallback = getOriginalImageUrl(raw);
+                      if (e.currentTarget.src !== fallback && fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
+                  />
+                );
+              })()}
             </div>
             <span className="partnership-caption">Fig. 01 // Wholesale Sourcing & Manufacturing, Varanasi</span>
           </div>

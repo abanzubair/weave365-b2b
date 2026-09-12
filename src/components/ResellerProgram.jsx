@@ -1,5 +1,6 @@
 import { ArrowRight, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/resellerProgram.css';
 
 export function ResellerProgram({ imageUrl, navigate }) {
@@ -79,15 +80,26 @@ export function ResellerProgram({ imageUrl, navigate }) {
         <div className="reseller-program-visual-side">
           <div className="reseller-gallery-container">
             <div className="reseller-image-wrapper">
-              <img 
-                src={imageUrl || fallbackImage} 
-                alt="Start selling Banarasi sarees and suits without inventory with Weave 365" 
-                className="reseller-image" 
-                loading="lazy"
-                decoding="async"
-                width={700}
-                height={525}
-              />
+              {(() => {
+                const raw = imageUrl || fallbackImage;
+                return (
+                  <img 
+                    src={getOptimizedImageUrl(raw, 'listing')} 
+                    alt="Start selling Banarasi sarees and suits without inventory with Weave 365" 
+                    className="reseller-image" 
+                    loading="lazy"
+                    decoding="async"
+                    width={700}
+                    height={525}
+                    onError={(e) => {
+                      const fallback = getOriginalImageUrl(raw);
+                      if (e.currentTarget.src !== fallback && fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
+                  />
+                );
+              })()}
             </div>
             <span className="reseller-caption">Fig. 02 // Zero-Inventory Reseller & Dropshipping Program</span>
           </div>

@@ -1,4 +1,5 @@
 import { AppLink } from './AppLink.jsx';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/overlapHero.css';
 
 const HERO_IMAGE_URL = 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp';
@@ -66,7 +67,9 @@ export function OverlapHero({ navigate }) {
           <div className="overlap-hero-card">
             <picture className="overlap-hero-picture">
               <img
-                src={heroImage}
+                src={getOptimizedImageUrl(heroImage, 'detail')}
+                srcSet={getImageSrcSet(heroImage, ['listing', 'detail'])}
+                sizes="(max-width: 768px) 100vw, 1450px"
                 alt="Source Banarasi sarees and suits from Varanasi"
                 className="overlap-hero-img"
                 draggable="false"
@@ -74,6 +77,13 @@ export function OverlapHero({ navigate }) {
                 decoding="async"
                 width={1451}
                 height={1084}
+                onError={(e) => {
+                  const fallback = getOriginalImageUrl(heroImage);
+                  if (e.currentTarget.src !== fallback && fallback) {
+                    e.currentTarget.src = fallback;
+                    e.currentTarget.removeAttribute('srcset');
+                  }
+                }}
               />
             </picture>
           </div>

@@ -1,5 +1,6 @@
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/occasionShowcase.css';
 
 export function OccasionShowcase({ imageUrl, navigate }) {
@@ -23,13 +24,19 @@ export function OccasionShowcase({ imageUrl, navigate }) {
             <div className="occasion-image-wrapper">
               {imageUrl ? (
                 <img 
-                  src={imageUrl} 
+                  src={getOptimizedImageUrl(imageUrl, 'listing')} 
                   alt="Discover handcrafted Banarasi sarees and suits for weddings, celebrations and gifting" 
                   className="occasion-image" 
                   loading="lazy"
                   decoding="async"
                   width={700}
                   height={525}
+                  onError={(e) => {
+                    const fallback = getOriginalImageUrl(imageUrl);
+                    if (e.currentTarget.src !== fallback && fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               ) : (
                 <div className="occasion-image-placeholder">

@@ -7,7 +7,7 @@ export const revalidate = 3600; // Cache and revalidate every hour
 
 export async function generateMetadata() {
   const heroSlides = await fetchHeroData().catch(() => []);
-  const firstHeroImage = heroSlides?.[0]?.imageUrl || '/deskH.webp';
+  const firstHeroImage = heroSlides?.[0]?.imageUrl || 'https://assets.weave365.com/assets/banner/hero1.webp';
 
   const defaultMeta = {
     title: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',

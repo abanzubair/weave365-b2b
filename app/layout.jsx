@@ -79,20 +79,6 @@ export default function RootLayout({ children }) {
         />
         <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://assets.weave365.com" />
-        <link
-          rel="preload"
-          as="image"
-          href="/deskH.webp"
-          media="(min-width: 768px)"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/mobH.webp"
-          media="(max-width: 767px)"
-          fetchPriority="high"
-        />
         {/* Google tag (gtag.js) */}
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">

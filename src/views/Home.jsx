@@ -20,6 +20,7 @@ import { OccasionShowcase } from '../components/OccasionShowcase.jsx';
 import { PrivateLabelSection } from '../components/PrivateLabelSection.jsx';
 import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { AppLink } from '../components/AppLink.jsx';
@@ -656,13 +657,20 @@ export function Home({
               <article className="deal-card" key={product.id}>
                 <AppLink to="product" productId={product.id} className="deal-image" navigate={navigate}>
                   <img
-                    src={image}
+                    src={getOptimizedImageUrl(image, 'listing')}
                     alt={product.title}
                     loading="lazy"
                     decoding="async"
                     width={360}
                     height={480}
-                    onError={(e) => { e.target.style.opacity = '0'; }}
+                    onError={(e) => {
+                      const fallback = getOriginalImageUrl(image);
+                      if (e.target.src !== fallback && fallback) {
+                        e.target.src = fallback;
+                      } else {
+                        e.target.style.opacity = '0';
+                      }
+                    }}
                   />
                   <span>{discountPercent}% Off</span>
                 </AppLink>
@@ -711,15 +719,27 @@ export function Home({
                 }}
                 style={{ textDecoration: 'none' }}
               >
-                <img
-                  src={categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length]}
-                  alt={name}
-                  loading="lazy"
-                  decoding="async"
-                  width={300}
-                  height={300}
-                  onError={(e) => { e.target.style.opacity = '0'; }}
-                />
+                {(() => {
+                  const rawCategoryImg = categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length];
+                  return (
+                    <img
+                      src={getOptimizedImageUrl(rawCategoryImg, 'thumbnail')}
+                      alt={name}
+                      loading="lazy"
+                      decoding="async"
+                      width={300}
+                      height={300}
+                      onError={(e) => {
+                        const fallback = getOriginalImageUrl(rawCategoryImg);
+                        if (e.target.src !== fallback && fallback) {
+                          e.target.src = fallback;
+                        } else {
+                          e.target.style.opacity = '0';
+                        }
+                      }}
+                    />
+                  );
+                })()}
                 <span>{name}</span>
                 <ArrowRight size={18} />
               </AppLink>

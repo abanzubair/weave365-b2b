@@ -1,5 +1,6 @@
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/privateLabelSection.css';
 
 export function PrivateLabelSection({ imageUrl, navigate }) {
@@ -96,13 +97,19 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
             <div className="private-label-image-wrapper">
               {imageUrl ? (
                 <img
-                  src={imageUrl}
+                  src={getOptimizedImageUrl(imageUrl, 'listing')}
                   alt="Custom woven Banarasi collections and private label manufacturing"
                   className="private-label-image"
                   loading="lazy"
                   decoding="async"
                   width={700}
                   height={525}
+                  onError={(e) => {
+                    const fallback = getOriginalImageUrl(imageUrl);
+                    if (e.currentTarget.src !== fallback && fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               ) : (
                 <div className="private-label-image-placeholder">
