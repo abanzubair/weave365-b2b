@@ -52,6 +52,11 @@ import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
 import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
+import {
+  getOptimizedImageUrl,
+  getImageSrcSet,
+  getOriginalImageUrl
+} from './utils/imageOptimizer.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { usePageSeo } from './hooks/usePageSeo.js';
 import { getStoredReferralCode } from './utils/influencerHelpers.js';
@@ -939,10 +944,11 @@ export function ProductDetail({
       await Promise.allSettled(
         validImages.map(async (url, index) => {
           try {
+            const rawUrl = getOriginalImageUrl(url) || url;
             let blob = null;
-            if (url.startsWith('http')) {
+            if (rawUrl.startsWith('http')) {
               try {
-                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(url)}`);
+                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(rawUrl)}`);
                 if (proxyRes.ok) {
                   blob = await proxyRes.blob();
                 }
@@ -952,7 +958,7 @@ export function ProductDetail({
             }
 
             if (!blob) {
-              const directRes = await fetch(url);
+              const directRes = await fetch(rawUrl);
               if (directRes.ok) {
                 blob = await directRes.blob();
               }
@@ -1146,13 +1152,20 @@ export function ProductDetail({
                   onClick={() => handleImageChange(image)}
                 >
                   <img
-                    src={image}
+                    src={getOptimizedImageUrl(image, 'thumbnail')}
                     alt={`${product.title} view ${index + 1}`}
                     loading="lazy"
                     decoding="async"
                     width={64}
                     height={85}
-                    onError={(e) => { e.target.style.opacity = '0'; }}
+                    onError={(e) => {
+                      const raw = getOriginalImageUrl(image);
+                      if (e.target.src !== raw && raw) {
+                        e.target.src = raw;
+                      } else {
+                        e.target.style.opacity = '0';
+                      }
+                    }}
                   />
                 </button>
               ))}
@@ -1193,13 +1206,23 @@ export function ProductDetail({
               ) : (
                 <>
                   <img
-                    src={selectedImage || product.images[0] || fallbackProductImage}
+                    src={getOptimizedImageUrl(selectedImage || product.images[0], 'detail') || fallbackProductImage}
+                    srcSet={getImageSrcSet(selectedImage || product.images[0], ['listing', 'detail'])}
+                    sizes="(max-width: 768px) 100vw, 600px"
                     alt={product.title}
                     fetchPriority="high"
                     decoding="async"
                     width={600}
                     height={800}
-                    onError={(e) => { e.target.style.opacity = '0'; }}
+                    onError={(e) => {
+                      const raw = getOriginalImageUrl(selectedImage || product.images[0]);
+                      if (e.target.src !== raw && raw) {
+                        e.target.src = raw;
+                        e.target.removeAttribute('srcset');
+                      } else {
+                        e.target.style.opacity = '0';
+                      }
+                    }}
                   />
                   <button type="button" className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
                     <ZoomIn size={18} />
@@ -1436,13 +1459,20 @@ export function ProductDetail({
                           title={optionName}
                         >
                           <img
-                            src={option.image || fallbackProductImage}
+                            src={getOptimizedImageUrl(option.image, 'thumbnail') || fallbackProductImage}
                             alt={optionName}
                             loading="lazy"
                             decoding="async"
                             width={48}
                             height={48}
-                            onError={(e) => { e.target.style.opacity = '0'; }}
+                            onError={(e) => {
+                              const raw = getOriginalImageUrl(option.image);
+                              if (e.target.src !== raw && raw) {
+                                e.target.src = raw;
+                              } else {
+                                e.target.style.opacity = '0';
+                              }
+                            }}
                           />
                         </button>
                       );
@@ -1711,15 +1741,23 @@ export function ProductDetail({
         <div className="product-highlight-showcase">
           <div className="showcase-image-col">
             <img
-              src={product.images[1] || product.images[0] || fallbackProductImage}
+              src={getOptimizedImageUrl(product.images[1] || product.images[0], 'detail') || fallbackProductImage}
+              srcSet={getImageSrcSet(product.images[1] || product.images[0], ['listing', 'detail'])}
+              sizes="(max-width: 768px) 100vw, 500px"
               alt={`${product.title} fabric close-up`}
               loading="lazy"
               decoding="async"
               width={500}
               height={600}
               onError={(e) => {
-                if (product.images[1] && e.target.src !== product.images[0]) {
-                  e.target.src = product.images[0];
+                const raw1 = getOriginalImageUrl(product.images[1]);
+                const raw0 = getOriginalImageUrl(product.images[0]);
+                if (raw1 && e.target.src !== raw1 && e.target.src !== raw0) {
+                  e.target.src = raw1;
+                  e.target.removeAttribute('srcset');
+                } else if (raw0 && e.target.src !== raw0) {
+                  e.target.src = raw0;
+                  e.target.removeAttribute('srcset');
                 } else {
                   e.target.style.opacity = '0';
                 }
@@ -2170,10 +2208,16 @@ export function ProductDetail({
           )}
 
           <img
-            src={zoomImage}
+            src={getOptimizedImageUrl(zoomImage, 'zoom')}
             alt="Zoomed view"
             className="zoom-modal-img"
             onClick={(e) => e.stopPropagation()}
+            onError={(e) => {
+              const raw = getOriginalImageUrl(zoomImage);
+              if (e.target.src !== raw && raw) {
+                e.target.src = raw;
+              }
+            }}
           />
         </div>
       )}

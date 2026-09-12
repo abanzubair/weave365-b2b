@@ -28,6 +28,7 @@ import {
   calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
@@ -797,10 +798,24 @@ export function CheckoutPage({
                     0
                   );
                   const itemImg = item.selectedColorImage || item.variant?.image || item.product?.images?.[0] || fallbackProductImage;
+                  const optimizedThumb = getOptimizedImageUrl(itemImg, 'thumbnail');
 
                   return (
                     <div className="checkout-item-row" key={`${item.productGroupKey}-${item.variantCode}-${idx}`}>
-                      <img src={itemImg} alt={item.product?.title || 'Product'} className="checkout-item-thumb" />
+                      <img
+                        src={optimizedThumb}
+                        alt={item.product?.title || 'Product'}
+                        className="checkout-item-thumb"
+                        loading="lazy"
+                        onError={(e) => {
+                          const fallback = getOriginalImageUrl(itemImg);
+                          if (e.currentTarget.src !== fallback && fallback) {
+                            e.currentTarget.src = fallback;
+                          } else {
+                            e.currentTarget.src = fallbackProductImage;
+                          }
+                        }}
+                      />
                       <div className="checkout-item-details">
                         <div className="checkout-item-name">{item.product?.title}</div>
                         <div className="checkout-item-variant">

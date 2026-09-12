@@ -49,6 +49,16 @@ export async function GET(request) {
     // Clean up key
     key = String(key || '').trim().replace(/^\//, '');
 
+    // Strip Cloudflare transformation prefix if present in key
+    if (key.includes('cdn-cgi/image/')) {
+      const cdnParts = key.split('cdn-cgi/image/')[1] || '';
+      const slashIdx = cdnParts.indexOf('/');
+      if (slashIdx !== -1) {
+        key = cdnParts.slice(slashIdx + 1);
+      }
+    }
+    key = String(key || '').trim().replace(/^\//, '');
+
     // Detect Content-Type from extension
     const ext = (key || decodedImageUrl).split('?')[0].split('.').pop()?.toLowerCase() || '';
     const mimeTypes = {

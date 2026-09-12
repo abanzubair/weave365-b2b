@@ -10,6 +10,7 @@ import {
   fallbackProductImage,
   formatMoney,
 } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import '../styles/variationQuantityDrawer.css';
 
@@ -175,11 +176,18 @@ export function VariationQuantityDrawer({
                   aria-label={`Select ${row.name}`}
                 >
                   <img
-                    src={row.image}
+                    src={getOptimizedImageUrl(row.image, 'thumbnail')}
                     alt={row.name}
                     loading="lazy"
                     decoding="async"
-                    onError={(event) => { event.currentTarget.src = fallbackProductImage; }}
+                    onError={(event) => {
+                      const fallback = getOriginalImageUrl(row.image);
+                      if (event.currentTarget.src !== fallback && fallback) {
+                        event.currentTarget.src = fallback;
+                      } else {
+                        event.currentTarget.src = fallbackProductImage;
+                      }
+                    }}
                   />
                 </button>
               ))}
@@ -220,10 +228,18 @@ export function VariationQuantityDrawer({
                       onClick={() => selectRow(row)}
                     >
                       <img
-                        src={row.image}
+                        src={getOptimizedImageUrl(row.image, 'thumbnail')}
                         alt={row.name}
                         className="row-swatch-thumb"
-                        onError={(e) => { e.currentTarget.src = fallbackProductImage; }}
+                        loading="lazy"
+                        onError={(e) => {
+                          const fallback = getOriginalImageUrl(row.image);
+                          if (e.currentTarget.src !== fallback && fallback) {
+                            e.currentTarget.src = fallback;
+                          } else {
+                            e.currentTarget.src = fallbackProductImage;
+                          }
+                        }}
                       />
                       <span className="row-color-title">{row.name}</span>
                     </button>

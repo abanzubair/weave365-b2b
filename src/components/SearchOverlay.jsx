@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { Search, ArrowRight } from './icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useStorefront } from '../store/useStorefront.js';
 import { fetchProducts } from '../productData.js';
@@ -277,7 +278,8 @@ export function SearchOverlay(props) {
                     <div className="results-products-grid">
                       {matchingProducts.slice(0, 6).map((product) => {
                         const price = customerPrice(product.variants?.[0]?.prices || {}, priceAccess);
-                        const image = product.images?.[0] || fallbackProductImage;
+                        const rawImage = product.images?.[0] || fallbackProductImage;
+                        const optimizedImage = getOptimizedImageUrl(rawImage, 'thumbnail');
                         return (
                           <div
                             key={product.id}
@@ -289,7 +291,19 @@ export function SearchOverlay(props) {
                             }}
                           >
                             <div className="result-img-wrapper">
-                              <img src={image} alt={product.title} loading="lazy" />
+                              <img
+                                src={optimizedImage}
+                                alt={product.title}
+                                loading="lazy"
+                                onError={(e) => {
+                                  const fallback = getOriginalImageUrl(rawImage);
+                                  if (e.currentTarget.src !== fallback && fallback) {
+                                    e.currentTarget.src = fallback;
+                                  } else {
+                                    e.currentTarget.src = fallbackProductImage;
+                                  }
+                                }}
+                              />
                               {product.fabric && <span className="result-fabric-badge">{product.fabric}</span>}
                             </div>
                             <div className="result-card-info">

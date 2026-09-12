@@ -24,6 +24,7 @@ import {
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { storeConfig } from '../config.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import '../styles/orderTracking.css';
@@ -602,10 +603,18 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                     return (
                       <div key={index} className="tracking-item-row">
                         <img 
-                          src={imageSrc} 
+                          src={getOptimizedImageUrl(imageSrc, 'thumbnail')} 
                           alt={title} 
                           className="tracking-item-img"
-                          onError={(e) => { e.target.src = fallbackProductImage; }}
+                          loading="lazy"
+                          onError={(e) => {
+                            const fallback = getOriginalImageUrl(imageSrc);
+                            if (e.currentTarget.src !== fallback && fallback) {
+                              e.currentTarget.src = fallback;
+                            } else {
+                              e.currentTarget.src = fallbackProductImage;
+                            }
+                          }}
                         />
                         <div className="tracking-item-info">
                           <div className="tracking-item-name">{title}</div>

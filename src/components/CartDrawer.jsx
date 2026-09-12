@@ -13,6 +13,7 @@ import {
   fallbackProductImage,
   formatMoney,
 } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useStorefront } from '../store/useStorefront.js';
@@ -202,14 +203,26 @@ export function CartDrawer(props) {
                   <article className="cart-item-card" key={group.key}>
                     {/* Header: Image, Title, Code & Delete */}
                     <div className="cart-item-header">
-                      <img
-                        className="cart-item-thumb"
-                        src={group.items[0]?.selectedColorImage || group.product.images[0] || fallbackProductImage}
-                        alt={group.product.title}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => { e.target.src = fallbackProductImage; }}
-                      />
+                      {(() => {
+                        const rawImg = group.items[0]?.selectedColorImage || group.product.images[0] || fallbackProductImage;
+                        return (
+                          <img
+                            className="cart-item-thumb"
+                            src={getOptimizedImageUrl(rawImg, 'thumbnail')}
+                            alt={group.product.title}
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              const fallback = getOriginalImageUrl(rawImg);
+                              if (e.target.src !== fallback && fallback) {
+                                e.target.src = fallback;
+                              } else {
+                                e.target.src = fallbackProductImage;
+                              }
+                            }}
+                          />
+                        );
+                      })()}
 
                       <div className="cart-item-info">
                         <div className="cart-item-top-row">
@@ -321,9 +334,17 @@ export function CartDrawer(props) {
                                 title={isAlreadySelected ? `${color.name} already in bag` : `Add ${color.name}`}
                               >
                                 <img
-                                  src={color.image || fallbackProductImage}
+                                  src={getOptimizedImageUrl(color.image, 'thumbnail') || fallbackProductImage}
                                   alt={color.name || 'Color option'}
                                   loading="lazy"
+                                  onError={(e) => {
+                                    const fallback = getOriginalImageUrl(color.image);
+                                    if (e.target.src !== fallback && fallback) {
+                                      e.target.src = fallback;
+                                    } else {
+                                      e.target.src = fallbackProductImage;
+                                    }
+                                  }}
                                 />
                                 <span>{color.name}</span>
                                 {!isAlreadySelected && <Plus size={13} className="plus-icon" />}

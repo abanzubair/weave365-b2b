@@ -28,6 +28,11 @@ import {
   customerPrice,
   formatMoney
 } from '../storefrontShared.jsx';
+import {
+  getOptimizedImageUrl,
+  getImageSrcSet,
+  getOriginalImageUrl
+} from '../utils/imageOptimizer.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { ResellerShareModal } from './ResellerShareModal.jsx';
 import { ResellerWhatsappShare } from './ResellerWhatsappShare.jsx';
@@ -44,7 +49,10 @@ export const ProductCard = memo(function ProductCard({
   openAuth,
 }) {
   const selectedVariant = variant || product.variants[0];
-  const image = product.images[0] || fallbackProductImage;
+  const rawImage = product.images[0] || fallbackProductImage;
+  const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'listing'), [rawImage]);
+  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['thumbnail', 'listing']), [rawImage]);
+  const image = optimizedImage;
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
   const resellerPrice = Number(selectedVariant?.prices?.b2r || selectedVariant?.prices?.single || wholesalePrice);
   const canViewPrice = wholesalePrice > 0 || resellerPrice > 0;
@@ -220,10 +228,11 @@ export const ProductCard = memo(function ProductCard({
       await Promise.allSettled(
         validImages.map(async (url, index) => {
           try {
+            const rawUrl = getOriginalImageUrl(url) || url;
             let blob = null;
-            if (url.startsWith('http')) {
+            if (rawUrl.startsWith('http')) {
               try {
-                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(url)}`);
+                const proxyRes = await fetch(`/api/image?url=${encodeURIComponent(rawUrl)}`);
                 if (proxyRes.ok) {
                   blob = await proxyRes.blob();
                 }
@@ -233,7 +242,7 @@ export const ProductCard = memo(function ProductCard({
             }
 
             if (!blob) {
-              const directRes = await fetch(url);
+              const directRes = await fetch(rawUrl);
               if (directRes.ok) {
                 blob = await directRes.blob();
               }
@@ -337,11 +346,21 @@ export const ProductCard = memo(function ProductCard({
           aria-label={`View details for ${product.title}`}
         >
           <img
-            src={image}
+            src={optimizedImage}
+            srcSet={cardSrcSet}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 380px"
             alt={descriptiveAlt}
             loading="lazy"
             decoding="async"
-            onError={(e) => { e.currentTarget.src = fallbackProductImage; }}
+            onError={(e) => {
+              const fallback = getOriginalImageUrl(rawImage);
+              if (e.currentTarget.src !== fallback && fallback) {
+                e.currentTarget.src = fallback;
+                e.currentTarget.removeAttribute('srcset');
+              } else {
+                e.currentTarget.src = fallbackProductImage;
+              }
+            }}
           />
         </AppLink>
 

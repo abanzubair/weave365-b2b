@@ -46,6 +46,7 @@ import {
   User
 } from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
+import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
@@ -700,13 +701,25 @@ export function Account({
                             {/* Product Header */}
                             <div className="draft-cart-group-header">
                               <div className="draft-cart-group-main">
-                                <img 
-                                  src={group.items[0]?.selectedColorImage || group.product?.images?.[0] || fallbackProductImage} 
-                                  alt={group.product?.title} 
-                                  className="draft-cart-group-thumb"
-                                  loading="lazy" 
-                                  onError={(e) => { e.target.src = fallbackProductImage; }}
-                                />
+                                {(() => {
+                                  const raw = group.items[0]?.selectedColorImage || group.product?.images?.[0] || fallbackProductImage;
+                                  return (
+                                    <img 
+                                      src={getOptimizedImageUrl(raw, 'thumbnail')} 
+                                      alt={group.product?.title} 
+                                      className="draft-cart-group-thumb"
+                                      loading="lazy" 
+                                      onError={(e) => {
+                                        const fallback = getOriginalImageUrl(raw);
+                                        if (e.currentTarget.src !== fallback && fallback) {
+                                          e.currentTarget.src = fallback;
+                                        } else {
+                                          e.currentTarget.src = fallbackProductImage;
+                                        }
+                                      }}
+                                    />
+                                  );
+                                })()}
                                 <div className="draft-cart-group-meta">
                                   <h4 className="draft-cart-group-title">{group.product?.title || 'Product'}</h4>
                                   <div className="draft-cart-group-sub">
