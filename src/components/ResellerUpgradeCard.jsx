@@ -10,7 +10,6 @@ import {
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { storeConfig } from '../config.js';
 import { AVAILABLE_THEMES } from './ResellerTools.jsx';
-import '../styles/resellerUpgrade.css';
 
 export function ResellerUpgradeCard({ user, buyerProfile }) {
   const userIdentifier = user?.email || buyerProfile?.business_name || 'Boutique Owner';

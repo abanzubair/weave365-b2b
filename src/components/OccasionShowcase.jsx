@@ -1,9 +1,11 @@
+import '../styles/occasionShowcase.css';
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import '../styles/occasionShowcase.css';
 
 export function OccasionShowcase({ imageUrl, navigate }) {
+  const localImage = "/assets/banner/endUserHome.webp";
+  const cdnFallback = imageUrl || "https://assets.weave365.com/assets/banner/endUserHome.webp";
   const benefits = [
     'Single-Piece Shopping',
     'Curated Banarasi Collections',
@@ -22,29 +24,20 @@ export function OccasionShowcase({ imageUrl, navigate }) {
         <div className="occasion-showcase-visual-side">
           <div className="occasion-gallery-container">
             <div className="occasion-image-wrapper">
-              {imageUrl ? (
-                <img 
-                  src={getOptimizedImageUrl(imageUrl, 'listing')} 
-                  alt="Discover handcrafted Banarasi sarees and suits for weddings, celebrations and gifting" 
-                  className="occasion-image" 
-                  loading="lazy"
-                  decoding="async"
-                  width={700}
-                  height={525}
-                  onError={(e) => {
-                    const fallback = getOriginalImageUrl(imageUrl);
-                    if (e.currentTarget.src !== fallback && fallback) {
-                      e.currentTarget.src = fallback;
-                    }
-                  }}
-                />
-              ) : (
-                <div className="occasion-image-placeholder">
-                  <ImageIcon size={44} strokeWidth={1.2} className="placeholder-icon" />
-                  <span className="placeholder-title">Visual Showcase</span>
-                  <span className="placeholder-subtext">Handcrafted Banarasi Moments</span>
-                </div>
-              )}
+              <img 
+                src={localImage} 
+                alt="Discover handcrafted Banarasi sarees and suits for weddings, celebrations and gifting" 
+                className="occasion-image" 
+                loading="lazy"
+                decoding="async"
+                width={600}
+                height={450}
+                onError={(e) => {
+                  if (e.currentTarget.src !== cdnFallback) {
+                    e.currentTarget.src = cdnFallback;
+                  }
+                }}
+              />
             </div>
             <span className="occasion-caption">Fig. 03 // Handcrafted Banarasi Sarees & Occasion Wear</span>
           </div>
@@ -102,7 +95,7 @@ export function OccasionShowcase({ imageUrl, navigate }) {
                 href="/banarasi-sarees/occasion/"
                 className="occasion-cta-link secondary-cta" 
                 navigate={navigate}
-                aria-label="Shop sarees by occasion"
+                aria-label="Shop by Occasion"
                 style={{ textDecoration: 'none' }}
               >
                 <span className="link-label">Shop by Occasion</span>

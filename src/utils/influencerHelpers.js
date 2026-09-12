@@ -7,7 +7,10 @@
  * @module utils/influencerHelpers
  */
 
-import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+async function getSupabase() {
+  const mod = await import('../supabaseClient.js');
+  return mod.isSupabaseConfigured && mod.supabase ? mod.supabase : null;
+}
 
 /**
  * Validates a referral code against the approved influencer profiles.
@@ -15,7 +18,9 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
  * @returns {Promise<Object|null>} Influencer profile data if valid, null otherwise.
  */
 export async function validateReferralCode(code) {
-  if (!code || !isSupabaseConfigured) return null;
+  if (!code) return null;
+  const supabase = await getSupabase();
+  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from('influencer_profiles')
@@ -43,8 +48,12 @@ export async function validateReferralCode(code) {
  * @returns {Promise<{data: Object|null, error: Object|null}>}
  */
 export async function applyAsInfluencer(userId, referralCode, paymentDetails) {
-  if (!isSupabaseConfigured || !userId) {
-    return { data: null, error: { message: 'Supabase not configured or user not authenticated' } };
+  if (!userId) {
+    return { data: null, error: { message: 'User not authenticated' } };
+  }
+  const supabase = await getSupabase();
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase not configured' } };
   }
 
   const codeClean = referralCode.trim().toUpperCase();
@@ -88,7 +97,9 @@ export async function applyAsInfluencer(userId, referralCode, paymentDetails) {
  */
 export async function fetchInfluencerStats(userId) {
   const stats = { profile: null, clicks: 0, referrals: [] };
-  if (!isSupabaseConfigured || !userId) return stats;
+  if (!userId) return stats;
+  const supabase = await getSupabase();
+  if (!supabase) return stats;
 
   try {
     // 1. Get profile
@@ -140,10 +151,13 @@ export async function fetchInfluencerStats(userId) {
  * @param {number} [params.saleAmount] - Total order sale amount.
  */
 export async function recordReferral({ orderId, inquiryId, buyerId, buyerName, items, saleAmount }) {
-  if (typeof window === 'undefined' || !isSupabaseConfigured) return;
+  if (typeof window === 'undefined') return;
 
   const refCode = getStoredReferralCode();
   if (!refCode) return;
+
+  const supabase = await getSupabase();
+  if (!supabase) return;
 
   try {
     // 1. Fetch influencer ID and commission rate

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight } from './icons.jsx';
 import { siteUrl } from '../config.js';
+import '../styles/breadcrumb.css';
 
 /**
  * Premium Unified Breadcrumb navigation component with integrated JSON-LD schema.

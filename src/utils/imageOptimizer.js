@@ -15,7 +15,8 @@
 
 // 1. Standard transformation presets (Deterministic & Edge-Cached)
 export const IMAGE_PRESETS = {
-  thumbnail: { width: 400, quality: 80, format: 'auto', fit: 'scale-down' },
+  thumbnail: { width: 240, quality: 75, format: 'auto', fit: 'scale-down' },
+  card: { width: 450, quality: 80, format: 'auto', fit: 'scale-down' },
   listing: { width: 800, quality: 85, format: 'auto', fit: 'scale-down' },
   detail: { width: 1400, quality: 88, format: 'auto', fit: 'scale-down' },
   zoom: { width: 2400, quality: 90, format: 'auto', fit: 'scale-down' },

@@ -8,7 +8,10 @@
  * @module utils/profileHelpers
  */
 
-import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
+async function getSupabase() {
+  const mod = await import('../supabaseClient.js');
+  return mod.isSupabaseConfigured && mod.supabase ? mod.supabase : null;
+}
 import { applyAutoApprovalToBuyerProfile, isVendorProfile } from './buyerAccess.js';
 
 export function profileRowFromUser(user) {
@@ -44,7 +47,8 @@ export function profileRowFromUser(user) {
 }
 
 export async function syncProfileFromUser(user) {
-  if (!isSupabaseConfigured) return { error: null };
+  const supabase = await getSupabase();
+  if (!supabase) return { error: null };
 
   const profileRow = profileRowFromUser(user);
   if (!profileRow) return { error: null };
@@ -70,7 +74,8 @@ export async function loadProfileForUser(user) {
   if (!user) return { profile: null, error: null };
 
   const fallbackProfile = user.user_metadata?.buyer_profile || user.buyer_profile || null;
-  if (!isSupabaseConfigured) {
+  const supabase = await getSupabase();
+  if (!supabase) {
     return { profile: fallbackProfile, error: null };
   }
 

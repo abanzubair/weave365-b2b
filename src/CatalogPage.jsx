@@ -13,6 +13,7 @@ import Breadcrumb from './components/Breadcrumb.jsx';
 import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
 import { usePageSeo } from './hooks/usePageSeo.js';
 import { seoCategoryMap, getCategorySlug } from './config.js';
+import './styles/catalogPage.css';
 
 export function Catalog({
   title,

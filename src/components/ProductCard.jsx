@@ -5,6 +5,7 @@
  * and links to bulk enquiry or reseller markup WhatsApp share modals.
  */
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
+import '../styles/productCard.css';
 
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
@@ -34,9 +35,17 @@ import {
   getOriginalImageUrl
 } from '../utils/imageOptimizer.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
-import { ResellerShareModal } from './ResellerShareModal.jsx';
 import { ResellerWhatsappShare } from './ResellerWhatsappShare.jsx';
-import { EnquiryPopup } from './EnquiryPopup.jsx';
+import dynamic from 'next/dynamic';
+
+const ResellerShareModal = dynamic(
+  () => import('./ResellerShareModal.jsx').then((m) => m.ResellerShareModal),
+  { ssr: false }
+);
+const EnquiryPopup = dynamic(
+  () => import('./EnquiryPopup.jsx').then((m) => m.EnquiryPopup),
+  { ssr: false }
+);
 
 export const ProductCard = memo(function ProductCard({
   product,
@@ -50,8 +59,8 @@ export const ProductCard = memo(function ProductCard({
 }) {
   const selectedVariant = variant || product.variants[0];
   const rawImage = product.images[0] || fallbackProductImage;
-  const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'listing'), [rawImage]);
-  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['thumbnail', 'listing']), [rawImage]);
+  const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'card'), [rawImage]);
+  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['thumbnail', 'card', 'listing']), [rawImage]);
   const image = optimizedImage;
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
   const resellerPrice = Number(selectedVariant?.prices?.b2r || selectedVariant?.prices?.single || wholesalePrice);
@@ -348,10 +357,12 @@ export const ProductCard = memo(function ProductCard({
           <img
             src={optimizedImage}
             srcSet={cardSrcSet}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 380px"
+            sizes="(max-width: 640px) 260px, (max-width: 1024px) 280px, 320px"
             alt={descriptiveAlt}
             loading="lazy"
             decoding="async"
+            width={300}
+            height={400}
             onError={(e) => {
               const fallback = getOriginalImageUrl(rawImage);
               if (e.currentTarget.src !== fallback && fallback) {
@@ -579,11 +590,13 @@ export const ProductCard = memo(function ProductCard({
         return isMobile ? createPortal(content, document.body) : content;
       })()}
 
-      <EnquiryPopup
-        open={popupOpen}
-        onClose={() => setPopupOpen(false)}
-        whatsappUrl={whatsappUrl}
-      />
+      {popupOpen && (
+        <EnquiryPopup
+          open={popupOpen}
+          onClose={() => setPopupOpen(false)}
+          whatsappUrl={whatsappUrl}
+        />
+      )}
 
       {showShareModal && (
         <ResellerShareModal
@@ -595,7 +608,7 @@ export const ProductCard = memo(function ProductCard({
         />
       )}
 
-      {priceAccess?.canViewPrices && (
+      {priceAccess?.canViewPrices && showResellerWhatsapp && (
         <ResellerWhatsappShare
           product={product}
           variant={selectedVariant}

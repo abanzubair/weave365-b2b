@@ -3,11 +3,11 @@
  * Purpose: Editorial, non-card, full-width (1600px) layout for WhatsApp updates and weaver reviews.
  */
 import React from 'react';
+import '../styles/newsletter.css';
 import { Star, ArrowRight } from './icons.jsx';
 import { useRouter } from 'next/navigation';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { storeConfig } from '../config.js';
-import '../styles/newsletter.css';
 
 export function Newsletter({ navigate }) {
   const router = useRouter();
@@ -57,7 +57,7 @@ export function Newsletter({ navigate }) {
         <div className="editorial-hub-col">
           <div className="editorial-hub-header">
             <div className="editorial-hub-rating">
-              <div className="editorial-hub-stars" aria-label="5 out of 5 stars rating">
+              <div className="editorial-hub-stars" role="img" aria-label="5 out of 5 stars rating">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star key={star} size={15} fill="var(--gold)" stroke="var(--gold)" />
                 ))}

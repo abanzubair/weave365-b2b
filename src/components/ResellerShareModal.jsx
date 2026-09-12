@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import '../styles/resellerShareModal.css';
 import { createPortal } from 'react-dom';
 import { X, Copy, Check, Calculator, IndianRupee, Percent, ExternalLink, Store, Sparkles, Globe } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
@@ -6,7 +7,6 @@ import { supabase } from '../supabaseClient';
 import { formatMoney, customerPrice } from '../utils/priceUtils';
 import { storeConfig } from '../config.js';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
-import '../styles/resellerShareModal.css';
 
 /**
  * Modal for resellers to add a product to their external website catalog.

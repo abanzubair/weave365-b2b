@@ -559,17 +559,29 @@
   }
 
   .category-dot {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .category-dot::before {
+    content: '';
+    display: block;
     width: 6px;
     height: 6px;
     border-radius: 999px;
     background: rgba(0, 0, 0, 0.2);
-    border: none;
-    padding: 0;
-    cursor: pointer;
     transition: all 0.25s ease;
   }
 
-  .category-dot.active {
+  .category-dot.active::before {
     width: 18px;
     background: var(--primary, #9a6435);
     border-radius: 4px;

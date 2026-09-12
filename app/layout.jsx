@@ -60,39 +60,71 @@ export const metadata = {
     },
   },
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+    ],
     shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    apple: '/apple-touch-icon.png',
   },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" prefix="og: https://ogp.me/ns#" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html
+      lang="en"
+      prefix="og: https://ogp.me/ns#"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <SchemaMarkup />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Marcellus&display=swap"
-          rel="stylesheet"
-        />
-        <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://assets.weave365.com" />
+        {/* Preload critical LCP hero image for mobile and desktop FIRST */}
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/banner/heroFreeWebsite-400.webp"
+          media="(max-width: 640px)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/banner/heroFreeWebsite-600.webp"
+          media="(min-width: 641px)"
+          fetchPriority="high"
+        />
+        {/* Preload critical primary UI body font and heading font */}
+        <link
+          rel="preload"
+          href="/fonts/manrope-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/cormorant-garamond-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {/* Google tag (gtag.js) */}
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L" strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-4K369BHS5L');
+            if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=G-4K369BHS5L';
+              document.head.appendChild(s);
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-4K369BHS5L');
+            }
           `}
         </Script>
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="shortcut icon" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/favicon.png" />
         {process.env.NEXT_PUBLIC_R2_URL && (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
         )}

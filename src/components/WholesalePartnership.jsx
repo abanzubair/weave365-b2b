@@ -1,10 +1,11 @@
+import '../styles/wholesalePartnership.css';
 import { ArrowRight } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import '../styles/wholesalePartnership.css';
 
 export function WholesalePartnership({ imageUrl, navigate }) {
-  const fallbackImage = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
+  const fallbackImage = "/assets/banner/weaver-partner.webp";
+  const cdnFallback = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
 
   return (
     <section id="wholesale-partnership" className="wholesale-partnership-section" aria-labelledby="wholesale-partnership-heading">
@@ -18,17 +19,16 @@ export function WholesalePartnership({ imageUrl, navigate }) {
                 const raw = imageUrl || fallbackImage;
                 return (
                   <img 
-                    src={getOptimizedImageUrl(raw, 'listing')} 
+                    src={raw} 
                     alt="Banarasi sarees and suits wholesale sourcing in Varanasi" 
                     className="partnership-image" 
                     loading="lazy"
                     decoding="async"
-                    width={700}
-                    height={525}
+                    width={600}
+                    height={450}
                     onError={(e) => {
-                      const fallback = getOriginalImageUrl(raw);
-                      if (e.currentTarget.src !== fallback && fallback) {
-                        e.currentTarget.src = fallback;
+                      if (e.currentTarget.src !== cdnFallback) {
+                        e.currentTarget.src = cdnFallback;
                       }
                     }}
                   />

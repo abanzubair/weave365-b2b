@@ -4,7 +4,6 @@
  * Renders whenever notFound() is called server-side or an unmatched route is visited
  * directly (bypassing the catch-all [[...slug]]).
  */
-import '../src/styles.css';
 import { NotFoundPage } from '../src/views/NotFoundPage.jsx';
 
 export const metadata = {

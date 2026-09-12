@@ -7,9 +7,11 @@
 .internal-link-network {
   padding: 4.5rem 0 4rem;
   background: var(--paper);
-  min-height: 380px;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 380px;
+  position: relative;
+  width: 100%;
+  clear: both;
+  box-sizing: border-box;
+  margin-bottom: 2rem;
 }
 
 .directory-container {
@@ -31,7 +33,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: var(--gold);
+  color: #634015;
   text-transform: uppercase;
   display: block;
   margin-bottom: 0.5rem;
@@ -95,7 +97,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.5rem;
 }
 
 .directory-col li {
@@ -109,7 +111,10 @@
   color: var(--muted);
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 0;
+  min-height: 28px;
 }
 
 .directory-col a:hover {

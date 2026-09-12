@@ -5,7 +5,8 @@
  * and dispatches live events when configurations are updated.
  */
 
-import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
+// Note: supabaseClient is dynamically imported inside fetchDirectoryConfigRemote and saveDirectoryConfig
+// to avoid bundling @supabase/supabase-js into the critical layout bundle.
 
 export const DIRECTORY_STORAGE_KEY = 'weave365_directory_config';
 export const DIRECTORY_UPDATED_EVENT = 'directory-config-updated';
@@ -108,7 +109,6 @@ export function getDirectoryConfigLocal() {
  * Fetches directory configuration from Supabase and syncs with local cache.
  */
 export async function fetchDirectoryConfigRemote(force = false) {
-  if (!isSupabaseConfigured) return getDirectoryConfigLocal();
   if (!force && inMemoryConfig && Array.isArray(inMemoryConfig.columns)) {
     return inMemoryConfig;
   }
@@ -118,6 +118,9 @@ export async function fetchDirectoryConfigRemote(force = false) {
   
   inFlightFetch = (async () => {
     try {
+      const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
+      if (!isSupabaseConfigured || !supabase) return getDirectoryConfigLocal();
+
       const { data, error } = await supabase
         .from('site_directory_settings')
         .select('config')
@@ -167,7 +170,8 @@ export async function saveDirectoryConfig(newConfig) {
     }
 
     // 2. Save to Supabase if configured
-    if (isSupabaseConfigured) {
+    const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
+    if (isSupabaseConfigured && supabase) {
       const { error } = await supabase
         .from('site_directory_settings')
         .upsert({

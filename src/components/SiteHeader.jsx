@@ -126,7 +126,7 @@ export function SiteHeader(props) {
           }
         }}
       >
-        <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" />
+        <img src={brandLogoSrc} alt={storeConfig.name} className="brand-logo" width={151} height={28} />
       </a>
       <nav className="main-nav">
         <AppLink 

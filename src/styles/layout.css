@@ -269,8 +269,8 @@
   justify-content: center;
   padding: 5px 18px;
   min-height: 32px;
-  background: #b58245;
-  border: 1.5px solid #b58245;
+  background: #875a22;
+  border: 1.5px solid #875a22;
   border-radius: 9999px;
   font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 13px;
@@ -280,12 +280,12 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 1px 3px rgba(181, 130, 69, 0.2);
+  box-shadow: 0 1px 3px rgba(135, 90, 34, 0.2);
 }
 
 .nav-account-pill-btn:hover {
-  background: #a37237;
-  border-color: #a37237;
+  background: #734c1b;
+  border-color: #734c1b;
   color: #ffffff;
 }
 
@@ -841,9 +841,11 @@
 }
 
 .footer-brand {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-bottom: 16px;
   text-decoration: none;
+  min-height: 44px;
 }
 
 .footer-logo {
@@ -884,6 +886,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  min-height: 28px;
 }
 
 .contact-icon {
@@ -902,6 +905,10 @@
 }
 
 .contact-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 0;
   color: #5a5047;
   text-decoration: none;
   transition: color 0.2s ease;
@@ -941,7 +948,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
 }
 
@@ -951,13 +958,16 @@
 }
 
 .footer-link-list a {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 500;
   color: #61564d;
   text-decoration: none;
   line-height: 1.45;
+  padding: 4px 0;
+  min-height: 28px;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
@@ -970,6 +980,8 @@
   display: inline-flex !important;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
+  padding: 6px 0;
 }
 
 .footer-social-link .social-icon {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import '../styles/onboardingWalkthrough.css';
 import { createPortal } from 'react-dom';
 import { X, ArrowRight } from './icons.jsx';
-import '../styles/onboardingWalkthrough.css';
 
 export function ResellerOnboardingWalkthrough({ user, buyerProfile, priceAccess }) {
   const [showWalkthrough, setShowWalkthrough] = useState(false);

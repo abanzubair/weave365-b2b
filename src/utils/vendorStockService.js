@@ -5,7 +5,10 @@
  * and dispatches live events for real-time reactivity across storefront & account pages.
  */
 
-import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
+async function getSupabase() {
+  const mod = await import('../supabaseClient.js');
+  return mod.isSupabaseConfigured && mod.supabase ? mod.supabase : null;
+}
 
 export const VENDOR_STOCK_STORAGE_KEY = 'weave365_vendor_product_stock';
 export const VENDOR_STOCK_UPDATED_EVENT = 'vendor-stock-updated';
@@ -128,6 +131,9 @@ export async function fetchVendorStockOverrides(forceRefresh = false) {
 
   inFlightFetchPromise = (async () => {
     try {
+      const supabase = await getSupabase();
+      if (!supabase) return localOverrides;
+
       const { data, error } = await supabase
         .from('vendor_product_stock')
         .select('*');
@@ -214,20 +220,25 @@ export async function saveVendorProductStock({
   setVendorStockLocal(updatedOverrides);
 
   // 2. Coalesce rapid clicks into a single debounced Supabase write
-  if (isSupabaseConfigured) {
-    if (saveDebounceTimers.has(productId)) {
-      clearTimeout(saveDebounceTimers.get(productId));
-    }
+  if (saveDebounceTimers.has(productId)) {
+    clearTimeout(saveDebounceTimers.get(productId));
+  }
 
-    return new Promise((resolve) => {
-      const timer = setTimeout(async () => {
-        saveDebounceTimers.delete(productId);
-        try {
-          const { error } = await supabase
-            .from('vendor_product_stock')
-            .upsert(
-              {
-                product_id: productId,
+  return new Promise((resolve) => {
+    const timer = setTimeout(async () => {
+      saveDebounceTimers.delete(productId);
+      try {
+        const supabase = await getSupabase();
+        if (!supabase) {
+          resolve({ success: true, localOnly: true });
+          return;
+        }
+
+        const { error } = await supabase
+          .from('vendor_product_stock')
+          .upsert(
+            {
+              product_id: productId,
                 vendor_code: updateItem.vendorCode,
                 vendor_name: updateItem.vendorName,
                 stock_status: updateItem.stockStatus,
@@ -254,9 +265,6 @@ export async function saveVendorProductStock({
 
       saveDebounceTimers.set(productId, timer);
     });
-  }
-
-  return { success: true, item: updateItem };
 }
 
 /**
@@ -337,14 +345,17 @@ export async function batchSaveVendorStock({
 
   setVendorStockLocal(newOverrides);
 
-  if (isSupabaseConfigured && dbRows.length > 0) {
+  if (dbRows.length > 0) {
     try {
-      const { error } = await supabase
-        .from('vendor_product_stock')
-        .upsert(dbRows, { onConflict: 'product_id' });
+      const supabase = await getSupabase();
+      if (supabase) {
+        const { error } = await supabase
+          .from('vendor_product_stock')
+          .upsert(dbRows, { onConflict: 'product_id' });
 
-      if (error) {
-        console.warn('[vendorStockService] Supabase batch upsert error:', error.message);
+        if (error) {
+          console.warn('[vendorStockService] Supabase batch upsert error:', error.message);
+        }
       }
     } catch (err) {
       console.error('[vendorStockService] Batch save exception:', err);

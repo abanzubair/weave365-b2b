@@ -4,9 +4,9 @@
  * Prompts the customer to open/resume the active WhatsApp conversation to finalize details.
  */
 import { createPortal } from 'react-dom';
+import '../styles/enquiryPopup.css';
 import { X } from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
-import '../styles/enquiryPopup.css';
 
 export function EnquiryPopup({ open, onClose, whatsappUrl }) {
   if (!open) return null;

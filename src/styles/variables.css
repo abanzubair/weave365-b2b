@@ -1,11 +1,13 @@
 :root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-manrope-google: 'Manrope', system-ui, sans-serif;
   --font-heading: 'Cormorant Garamond', Georgia, serif;
   --font-modern-heading: 'Manrope', sans-serif;
-  --font-hero-heading: 'Marcellus', Georgia, serif;
+  --font-hero-heading: 'Marcellus', 'Cormorant Garamond', Georgia, serif;
   --font-hero-body: 'Manrope', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-modern-body: 'Manrope', sans-serif;
-  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-inter: 'Manrope', system-ui, -apple-system, sans-serif;
   --font-ui: 'Manrope', sans-serif;
   --font-footer: 'Manrope', sans-serif;
 

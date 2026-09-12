@@ -1,6 +1,6 @@
 import React from 'react';
-import { FileText, Truck, RotateCcw, ShieldCheck, CreditCard, ShieldAlert, HelpCircle } from './icons.jsx';
 import '../styles/legal.css';
+import { FileText, Truck, RotateCcw, ShieldCheck, CreditCard, ShieldAlert, HelpCircle } from './icons.jsx';
 
 export function LegalSidebar({ activeTab, navigate }) {
   const menuItems = [

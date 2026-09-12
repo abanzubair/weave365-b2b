@@ -17,6 +17,7 @@ import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimiz
 
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import { useStorefront } from '../store/useStorefront.js';
+import '../styles/cartDrawer.css';
 
 function HorizontalScrollRow({ className, children, ...props }) {
   const scrollRef = useRef(null);
@@ -152,6 +153,8 @@ export function CartDrawer(props) {
       <aside
         className={`cart-drawer ${open ? 'open' : ''}`}
         aria-hidden={!open}
+        inert={!open ? '' : undefined}
+        hidden={!open}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header */}

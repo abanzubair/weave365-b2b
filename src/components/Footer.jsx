@@ -60,7 +60,7 @@ export function Footer({ navigate }) {
         {/* Left Column: Brand & Contact Info */}
         <div className="footer-brand-section">
           <AppLink to="home" href="/" navigate={navigate} className="footer-brand" aria-label="Weave 365 Home">
-            <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" />
+            <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo footer-logo" width={173} height={32} />
           </AppLink>
 
           <h3 className="footer-tagline">Banarasi Sourcing &amp; Commerce Platform</h3>

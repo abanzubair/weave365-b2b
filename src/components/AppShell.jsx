@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useStorefront } from '../store/useStorefront.js';
-import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import { applyCustomTheme } from '../utils/themeEngine.js';
-import { fetchSiteCustomizer, fetchProducts, fetchConfigOptions } from '../productData.js';
 import { clearStoredReferralCode, setStoredReferralCode } from '../utils/influencerHelpers.js';
 import { useAppNavigate } from '../hooks/useAppNavigate.js';
 import {
@@ -20,12 +18,30 @@ import {
   VENDOR_STOCK_UPDATED_EVENT,
 } from '../utils/vendorStockService.js';
 
+import dynamic from 'next/dynamic';
 import { SiteHeader } from './SiteHeader.jsx';
-import { SearchOverlay } from './SearchOverlay.jsx';
-import { MobileMenu } from './MobileMenu.jsx';
-import { CartDrawer } from './CartDrawer.jsx';
-import { ResellerOnboardingWalkthrough } from './ResellerOnboardingWalkthrough.jsx';
-import { WhatsAppFloat } from './WhatsAppFloat.jsx';
+
+const SearchOverlay = dynamic(
+  () => import('./SearchOverlay.jsx').then((m) => m.SearchOverlay),
+  { ssr: false }
+);
+const MobileMenu = dynamic(
+  () => import('./MobileMenu.jsx').then((m) => m.MobileMenu),
+  { ssr: false }
+);
+const CartDrawer = dynamic(
+  () => import('./CartDrawer.jsx').then((m) => m.CartDrawer),
+  { ssr: false }
+);
+const WhatsAppFloat = dynamic(
+  () => import('./WhatsAppFloat.jsx').then((m) => m.WhatsAppFloat),
+  { ssr: false }
+);
+
+const ResellerOnboardingWalkthrough = dynamic(
+  () => import('./ResellerOnboardingWalkthrough.jsx').then((m) => m.ResellerOnboardingWalkthrough),
+  { ssr: false }
+);
 import { InternalLinkNetwork } from './InternalLinkNetwork.jsx';
 import { Footer } from './Footer.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
@@ -68,6 +84,12 @@ export function AppShell({ children }) {
     setConfigOptions,
   } = useStorefront();
 
+  const [showWaFloat, setShowWaFloat] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWaFloat(true), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Expose global navigate for legacy AppLink / window clicks
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -87,21 +109,26 @@ export function AppShell({ children }) {
     }
   }, [pathname]);
 
-  // Customizer theme
+  // Customizer theme (deferred to avoid network competition during page start)
   useEffect(() => {
-    fetchSiteCustomizer()
-      .then((customizer) => {
-        if (customizer) {
-          applyCustomTheme(customizer);
-        }
-      })
-      .catch((err) => console.error('Error loading custom theme:', err));
+    const timer = setTimeout(() => {
+      import('../productData.js')
+        .then((m) => m.fetchSiteCustomizer())
+        .then((customizer) => {
+          if (customizer) {
+            applyCustomTheme(customizer);
+          }
+        })
+        .catch((err) => console.error('Error loading custom theme:', err));
+    }, 4000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Lazy-load products & config options only when needed
   useEffect(() => {
-    // Skip eager product fetch on purely static text/policy pages
-    const staticTextPages = [
+    // Skip eager product fetch on homepage and purely static text/policy pages
+    const skipProductFetchPages = [
+      '/',
       '/privacy-security',
       '/terms-conditions',
       '/disclaimer',
@@ -110,91 +137,108 @@ export function AppShell({ children }) {
       '/about',
       '/contact',
     ];
-    if (staticTextPages.includes(pathname)) {
+
+    if (skipProductFetchPages.includes(pathname)) {
       return;
     }
 
-    if (products.length === 0) {
-      fetchProducts()
-        .then((prods) => {
-          if (prods && prods.length > 0) setProducts(prods);
-        })
-        .catch(console.error);
+    if (!products || products.length === 0) {
+      import('../productData.js').then((m) => m.fetchProducts()).then(setProducts).catch(console.error);
     }
-    if (!configOptions || configOptions.categories?.length === 0) {
-      fetchConfigOptions()
-        .then((cfg) => {
-          if (cfg) setConfigOptions(cfg);
-        })
-        .catch(console.error);
+    if (!configOptions || Object.keys(configOptions).length === 0) {
+      import('../productData.js').then((m) => m.fetchConfigOptions()).then(setConfigOptions).catch(console.error);
     }
-  }, [pathname, products.length, configOptions, setProducts, setConfigOptions]);
+  }, [pathname, products, configOptions, setProducts, setConfigOptions]);
 
-  // Live Vendor Stock Availability Synchronization
+  // Listen for vendor stock real-time sync events from developer panel
   useEffect(() => {
-    const handleStockUpdate = (e) => {
-      const overrides = e.detail || getVendorStockLocal();
-      const currentProds = useStorefront.getState().products;
-      if (currentProds && currentProds.length > 0) {
-        const updated = applyStockOverridesToProducts(currentProds, overrides);
-        setProducts(updated);
+    const handleStockUpdate = (event) => {
+      const overrides = event.detail || getVendorStockLocal();
+      if (overrides && Object.keys(overrides).length > 0) {
+        const currentProds = useStorefront.getState().products;
+        if (currentProds && currentProds.length > 0) {
+          const updated = applyStockOverridesToProducts(currentProds, overrides);
+          setProducts(updated);
+        }
       }
     };
     window.addEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
 
-    // Initial background fetch to ensure fresh stock status from Supabase
-    fetchVendorStockOverrides()
-      .then((overrides) => {
-        if (overrides && Object.keys(overrides).length > 0) {
-          const currentProds = useStorefront.getState().products;
-          if (currentProds && currentProds.length > 0) {
-            const updated = applyStockOverridesToProducts(currentProds, overrides);
-            setProducts(updated);
+    // Background fetch to ensure fresh stock status from Supabase after page load settles
+    const timer = setTimeout(() => {
+      fetchVendorStockOverrides()
+        .then((overrides) => {
+          if (overrides && Object.keys(overrides).length > 0) {
+            const currentProds = useStorefront.getState().products;
+            if (currentProds && currentProds.length > 0) {
+              const updated = applyStockOverridesToProducts(currentProds, overrides);
+              setProducts(updated);
+            }
           }
-        }
-      })
-      .catch((err) => console.warn('[AppShell] Vendor stock hydration notice:', err?.message || err));
+        })
+        .catch((err) => console.warn('[AppShell] Vendor stock hydration notice:', err?.message || err));
+    }, 4500);
 
-    return () => window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+    return () => {
+      window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+      clearTimeout(timer);
+    };
   }, [setProducts]);
 
-  // Supabase Auth Listener
+  // Supabase Auth Listener (loaded dynamically and deferred to avoid loading @supabase/supabase-js during initial paint)
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      const localUser = localStorage.getItem('sareeva_user');
-      if (localUser) {
-        try {
+    let isMounted = true;
+    let authUnsubscribe = null;
+
+    // Immediately restore cached local session if present so user sees their state with zero latency
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const localUser = localStorage.getItem('sareeva_user');
+        if (localUser) {
           const parsedUser = JSON.parse(localUser);
           setUser(parsedUser);
           setBuyerProfile(parsedUser.user_metadata?.buyer_profile || parsedUser.buyer_profile || null);
-        } catch (e) {
-          console.error(e);
         }
+      } catch (e) {
+        console.error(e);
       }
-      setIsProfileHydrated(true);
-      return;
     }
+    setIsProfileHydrated(true);
 
-    supabase.auth.getSession().then(({ data }) => {
-      const sessionUser = data.session?.user || null;
-      setUser(sessionUser);
-      if (!sessionUser) {
-        setIsProfileHydrated(true);
-      }
-    });
+    // Defer loading heavy Supabase auth module until after initial render is complete
+    const timer = setTimeout(() => {
+      import('../supabaseClient.js').then(({ isSupabaseConfigured, supabase }) => {
+        if (!isMounted) return;
+        if (!isSupabaseConfigured || !supabase) {
+          return;
+        }
 
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      const sessionUser = session?.user || null;
-      setUser(sessionUser);
-      if (!sessionUser) {
-        setIsProfileHydrated(true);
-      }
-      if (event === 'PASSWORD_RECOVERY') {
-        navigate('signup', null, null, { mode: 'reset-password' });
-      }
-    });
+        supabase.auth.getSession().then(({ data }) => {
+          if (!isMounted) return;
+          const sessionUser = data.session?.user || null;
+          setUser(sessionUser);
+        });
 
-    return () => data?.subscription?.unsubscribe();
+        const { data } = supabase.auth.onAuthStateChange((event, session) => {
+          if (!isMounted) return;
+          const sessionUser = session?.user || null;
+          setUser(sessionUser);
+          if (event === 'PASSWORD_RECOVERY') {
+            navigate('signup', null, null, { mode: 'reset-password' });
+          }
+        });
+
+        authUnsubscribe = () => data?.subscription?.unsubscribe();
+      }).catch((err) => {
+        console.error('Error loading Supabase auth:', err);
+      });
+    }, 3500);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+      if (authUnsubscribe) authUnsubscribe();
+    };
   }, [setUser, setBuyerProfile, navigate, setIsProfileHydrated]);
 
   // Hydrate User Profile & Influencer Referral
@@ -212,15 +256,13 @@ export function AppShell({ children }) {
       setIsProfileHydrated(false);
 
       try {
-        if (isSupabaseConfigured) {
-          await syncProfileFromUser(user);
-        }
-
+        await syncProfileFromUser(user);
         const { profile } = await loadProfileForUser(user);
         if (isActive) {
           setBuyerProfile(profile);
 
-          if (isSupabaseConfigured) {
+          const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
+          if (isSupabaseConfigured && supabase) {
             supabase
               .from('influencer_profiles')
               .select('referral_code, is_approved')
@@ -232,22 +274,22 @@ export function AppShell({ children }) {
                 }
               })
               .catch((err) => console.error('[Referral] Error:', err));
-          }
 
-          if (isSupabaseConfigured && profile?.whatsapp_number) {
-            const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
-            try {
-              const { data: vProfile } = await supabase
-                .from('vendor_profiles')
-                .select('status, drive_folder_url')
-                .eq('whatsapp_number', cleanWhatsapp)
-                .maybeSingle();
+            if (profile?.whatsapp_number) {
+              const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
+              try {
+                const { data: vProfile } = await supabase
+                  .from('vendor_profiles')
+                  .select('status, drive_folder_url')
+                  .eq('whatsapp_number', cleanWhatsapp)
+                  .maybeSingle();
 
-              if (vProfile && isActive) {
-                setVendorOnboarding(vProfile);
+                if (vProfile && isActive) {
+                  setVendorOnboarding(vProfile);
+                }
+              } catch (e) {
+                console.error('Error hydrating vendor profile:', e);
               }
-            } catch (e) {
-              console.error('Error hydrating vendor profile:', e);
             }
           }
         }
@@ -274,16 +316,20 @@ export function AppShell({ children }) {
       return;
     }
 
-    if (isSupabaseConfigured) {
-      loadSavedState(user.id).then(({ savedCart, savedFavorites }) => {
-        setCart(savedCart);
-        setFavorites(savedFavorites);
-      });
-      return;
-    }
-
-    setCart(readLocal(`cart_${user.id}`));
-    setFavorites(readLocal(`favorites_${user.id}`));
+    import('../supabaseClient.js').then(({ isSupabaseConfigured }) => {
+      if (isSupabaseConfigured) {
+        loadSavedState(user.id).then(({ savedCart, savedFavorites }) => {
+          setCart(savedCart);
+          setFavorites(savedFavorites);
+        });
+      } else {
+        setCart(readLocal(`cart_${user.id}`));
+        setFavorites(readLocal(`favorites_${user.id}`));
+      }
+    }).catch(() => {
+      setCart(readLocal(`cart_${user.id}`));
+      setFavorites(readLocal(`favorites_${user.id}`));
+    });
   }, [user, setCart, setFavorites]);
 
   // Search lock scroll
@@ -448,7 +494,8 @@ export function AppShell({ children }) {
 
   const handleSignOut = useCallback(async () => {
     try {
-      if (isSupabaseConfigured) {
+      const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
+      if (isSupabaseConfigured && supabase) {
         await supabase.auth.signOut();
       }
     } catch (e) {
@@ -511,7 +558,7 @@ export function AppShell({ children }) {
         />
       )}
 
-      {!hideShellSections && (
+      {!hideShellSections && searchActive && (
         <SearchOverlay
           searchActive={searchActive}
           setSearchActive={setSearchActive}
@@ -553,7 +600,7 @@ export function AppShell({ children }) {
         <Footer navigate={navigate} scrollToSection={scrollToSection} />
       )}
 
-      {!hideShellSections && (
+      {!hideShellSections && cartOpen && (
         <CartDrawer
           open={cartOpen}
           onClose={() => setCartOpen(false)}
@@ -571,7 +618,7 @@ export function AppShell({ children }) {
         />
       )}
 
-      {!hideShellSections && (
+      {!hideShellSections && user && (
         <ResellerOnboardingWalkthrough
           user={user}
           buyerProfile={buyerProfile}
@@ -579,7 +626,7 @@ export function AppShell({ children }) {
         />
       )}
 
-      {!hideShellSections && <WhatsAppFloat />}
+      {!hideShellSections && showWaFloat && <WhatsAppFloat />}
     </>
   );
 }

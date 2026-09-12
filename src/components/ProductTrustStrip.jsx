@@ -3,8 +3,8 @@
  * Purpose: Renders standard high-fidelity trust symbols and assurances (shipping, wholesale rates, quality check).
  * Displays beneath details/catalogues to maximize B2B buyer conversion and reliability signals.
  */
-import { Truck, Tag, ShieldCheck, Headphones } from './icons.jsx';
 import '../styles/productTrustStrip.css';
+import { Truck, Tag, ShieldCheck, Headphones } from './icons.jsx';
 
 const productTrustItems = [
   { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Secure shipping across India & overseas' },

@@ -8,7 +8,10 @@
  * @module utils/cartHelpers
  */
 
-import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
+async function getSupabase() {
+  const mod = await import('../supabaseClient.js');
+  return mod.isSupabaseConfigured && mod.supabase ? mod.supabase : null;
+}
 
 const colorKeyMarker = '::color=';
 
@@ -107,6 +110,9 @@ export function changeCartColor(cart, cartItem, nextColorName) {
 }
 
 export async function loadSavedState(userId) {
+  const supabase = await getSupabase();
+  if (!supabase) return { savedCart: [], savedFavorites: [] };
+
   const [cartResult, favoriteResult] = await Promise.all([
     supabase.from('cart_items').select('product_group_key, variant_code, quantity').eq('user_id', userId),
     supabase.from('favorites').select('product_group_key, variant_code').eq('user_id', userId),
@@ -126,7 +132,8 @@ export async function loadSavedState(userId) {
 }
 
 export async function persistCart(cart, userId) {
-  if (!isSupabaseConfigured) {
+  const supabase = await getSupabase();
+  if (!supabase) {
     localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
     return;
   }
@@ -155,7 +162,8 @@ export async function persistCart(cart, userId) {
 }
 
 export async function persistFavorites(favorites, userId) {
-  if (!isSupabaseConfigured) {
+  const supabase = await getSupabase();
+  if (!supabase) {
     localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites));
     return;
   }

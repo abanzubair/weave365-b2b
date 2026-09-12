@@ -1,10 +1,11 @@
+import '../styles/resellerProgram.css';
 import { ArrowRight, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import '../styles/resellerProgram.css';
 
 export function ResellerProgram({ imageUrl, navigate }) {
-  const fallbackImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
+  const fallbackImage = "/assets/banner/brand-collab.webp";
+  const cdnFallback = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
 
   const benefits = [
     '₹0 to Start',
@@ -65,7 +66,7 @@ export function ResellerProgram({ imageUrl, navigate }) {
                 href="/catalogue"
                 className="reseller-cta-link secondary-cta" 
                 navigate={navigate}
-                aria-label="Explore wholesale catalog"
+                aria-label="What Should I Sell Today - Wholesale Catalog"
                 style={{ textDecoration: 'none' }}
               >
                 <span className="link-label">What Should I Sell Today</span>
@@ -84,17 +85,16 @@ export function ResellerProgram({ imageUrl, navigate }) {
                 const raw = imageUrl || fallbackImage;
                 return (
                   <img 
-                    src={getOptimizedImageUrl(raw, 'listing')} 
+                    src={raw} 
                     alt="Start selling Banarasi sarees and suits without inventory with Weave 365" 
                     className="reseller-image" 
                     loading="lazy"
                     decoding="async"
-                    width={700}
-                    height={525}
+                    width={600}
+                    height={450}
                     onError={(e) => {
-                      const fallback = getOriginalImageUrl(raw);
-                      if (e.currentTarget.src !== fallback && fallback) {
-                        e.currentTarget.src = fallback;
+                      if (e.currentTarget.src !== cdnFallback) {
+                        e.currentTarget.src = cdnFallback;
                       }
                     }}
                   />

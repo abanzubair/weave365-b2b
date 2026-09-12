@@ -1,22 +1,11 @@
 @import './styles/variables.css';
+@import './styles/fonts.css';
 @import './styles/layout.css';
-@import './styles/breadcrumb.css';
 @import './styles/components.css';
 @import './styles/pages.css';
 @import './styles/responsive.css';
-@import './styles/productCard.css';
-@import './styles/sectionTitle.css';
-@import './styles/internalLinkNetwork.css';
-@import './styles/newsletter.css';
-@import './styles/whatsappFloat.css';
-@import './styles/signupPage.css';
-@import './styles/resellerTools.css';
-@import './styles/resellerWhatsappShare.css';
-@import './styles/resellerProgram.css';
-@import './styles/wholesalePartnership.css';
-@import './styles/occasionShowcase.css';
-@import './styles/privateLabelSection.css';
-@import './styles/legal.css';
+
+
 
 .search-lock {
   overflow: hidden !important;
@@ -203,17 +192,17 @@
 }
 
 .seo-inline-link {
-  color: var(--gold-dark, #805d31);
+  color: #634015;
   text-decoration: underline;
-  text-decoration-color: rgba(128, 93, 49, 0.4);
+  text-decoration-color: rgba(99, 64, 21, 0.4);
   text-underline-offset: 3px;
   transition: all 0.2s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .seo-inline-link:hover {
-  color: var(--primary-color, #c69e6a);
-  text-decoration-color: var(--primary-color, #c69e6a);
+  color: #442a0b;
+  text-decoration-color: #442a0b;
 }
 
 /* Global Touch and Tap Highlight resets to prevent default browser blue tap/selection highlights */
@@ -231,3 +220,28 @@ button:active,
 a:active {
   outline: none !important;
 }
+
+/* Performance Optimization: Skip layout & render computation for below-the-fold sections on initial paint */
+.category-section,
+.deal-section,
+.home-product-section,
+.wholesale-partnership-section,
+.reseller-program-section,
+.occasion-showcase-section,
+.private-label-section,
+.newsletter-section,
+.home-blog-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
+}
+
+.internal-link-network {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 950px;
+}
+
+.site-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 850px;
+}
+

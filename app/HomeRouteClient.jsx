@@ -25,18 +25,22 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
     setCartOpen,
   } = useStorefront();
 
-  // Sync initial SSR data to store if store is empty
+  // Sync initial SSR data to store in background after initial render settles
   useEffect(() => {
-    if (initialProducts.length > 0 && storeProducts.length === 0) {
-      setProducts(initialProducts);
-    }
-    if (initialHeroSlides.length > 0 && storeHeroSlides.length === 0) {
-      setHeroSlides(initialHeroSlides);
-    }
-    if (initialBlogs.length > 0 && storeBlogs.length === 0) {
-      setBlogs(initialBlogs);
-    }
-  }, [initialProducts, initialHeroSlides, initialBlogs, storeProducts.length, storeHeroSlides.length, storeBlogs.length, setProducts, setHeroSlides, setBlogs]);
+    const timer = setTimeout(() => {
+      const state = useStorefront.getState();
+      if (initialProducts.length > 0 && state.products.length === 0) {
+        setProducts(initialProducts);
+      }
+      if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
+        setHeroSlides(initialHeroSlides);
+      }
+      if (initialBlogs.length > 0 && state.blogs.length === 0) {
+        setBlogs(initialBlogs);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [initialProducts, initialHeroSlides, initialBlogs, setProducts, setHeroSlides, setBlogs]);
 
   const activeProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
   const activeHeroSlides = storeHeroSlides.length > 0 ? storeHeroSlides : initialHeroSlides;

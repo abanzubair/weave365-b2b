@@ -9,15 +9,38 @@ import Image from 'next/image';
 import { ArrowRight, Award, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from '../components/icons.jsx';
 import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
-import { StateMessage } from '../components/StateMessage.jsx';
-import { ProductCard } from '../components/ProductCard.jsx';
-import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
-import { Newsletter } from '../components/Newsletter.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import { WholesalePartnership } from '../components/WholesalePartnership.jsx';
-import { ResellerProgram } from '../components/ResellerProgram.jsx';
-import { OccasionShowcase } from '../components/OccasionShowcase.jsx';
-import { PrivateLabelSection } from '../components/PrivateLabelSection.jsx';
+import dynamic from 'next/dynamic';
+
+const HomeProductRails = dynamic(
+  () => import('../components/HomeProductRails.jsx').then((m) => m.HomeProductRails),
+  { ssr: false }
+);
+
+const WholesalePartnership = dynamic(
+  () => import('../components/WholesalePartnership.jsx').then((m) => m.WholesalePartnership),
+  { ssr: false }
+);
+const ResellerProgram = dynamic(
+  () => import('../components/ResellerProgram.jsx').then((m) => m.ResellerProgram),
+  { ssr: false }
+);
+const OccasionShowcase = dynamic(
+  () => import('../components/OccasionShowcase.jsx').then((m) => m.OccasionShowcase),
+  { ssr: false }
+);
+const PrivateLabelSection = dynamic(
+  () => import('../components/PrivateLabelSection.jsx').then((m) => m.PrivateLabelSection),
+  { ssr: false }
+);
+const Newsletter = dynamic(
+  () => import('../components/Newsletter.jsx').then((m) => m.Newsletter),
+  { ssr: false }
+);
+const HomeBlogSection = dynamic(
+  () => import('../components/HomeBlogSection.jsx').then((m) => m.HomeBlogSection),
+  { ssr: false }
+);
 import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
@@ -25,12 +48,18 @@ import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { AppLink } from '../components/AppLink.jsx';
 import { OverlapHero } from '../components/OverlapHero.jsx';
-import '../styles/blog.css';
-import '../styles/heroPremium.css';
 
 export const SHOW_OVERLAP_HERO = true;
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
+
+export const localCategoryImages = {
+  saree: '/assets/category/saree.webp',
+  suit: '/assets/category/suit.webp',
+  dupatta: '/assets/category/dupatta.webp',
+  lehenga: '/assets/category/lehenga.webp',
+  'under 999': '/assets/category/under999.webp',
+};
 
 const defaultHero = {
   image: 'https://assets.weave365.com/assets/banner/hero1.webp',
@@ -157,6 +186,58 @@ function twoDigit(value) {
   return String(value).padStart(2, '0');
 }
 
+function DeferredSection({ children, minHeight = '360px', rootMargin = '150px' }) {
+  const [shouldRender, setShouldRender] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setShouldRender(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShouldRender(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return (
+    <div ref={containerRef} style={shouldRender ? undefined : { minHeight }}>
+      {shouldRender ? children : null}
+    </div>
+  );
+}
+
+function DealTimer() {
+  const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDealCountdown(getDealCountdown());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="deal-timer" aria-label="Deal ends countdown">
+      <Clock3 size={18} />
+      <span>{twoDigit(dealCountdown.hours)}</span>
+      <small>Hrs</small>
+      <span>{twoDigit(dealCountdown.minutes)}</span>
+      <small>Min</small>
+      <span>{twoDigit(dealCountdown.seconds)}</span>
+      <small>Sec</small>
+    </div>
+  );
+}
+
 const scrollProductRail = (rowId, direction) => {
   const rail = document.getElementById(rowId);
   if (!rail) return;
@@ -193,7 +274,6 @@ export function Home({
     navigate(to, productId, shopName);
   };
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [dealCountdown, setDealCountdown] = useState(() => getDealCountdown());
   const dealRailRef = useRef(null);
   const [activeCategoryPage, setActiveCategoryPage] = useState(0);
   const categoryRailRef = useRef(null);
@@ -242,7 +322,7 @@ export function Home({
   }, [heroSlides, isMobile]);
 
   useEffect(() => {
-    if (bannerSlides.length <= 1) return;
+    if (SHOW_OVERLAP_HERO || bannerSlides.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
@@ -250,14 +330,6 @@ export function Home({
 
     return () => clearInterval(interval);
   }, [bannerSlides.length]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDealCountdown(getDealCountdown());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
 
 
@@ -464,10 +536,10 @@ export function Home({
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
-  const resellerSectionImage = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
-  const brandCollabSectionImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
-  const occasionSectionImage = "https://assets.weave365.com/assets/banner/endUserHome.webp";
-  const privateLabelSectionImage = "https://assets.weave365.com/assets/banner/privateLabelCustomWeave.webp";
+  const resellerSectionImage = "/assets/banner/weaver-partner.webp";
+  const brandCollabSectionImage = "/assets/banner/brand-collab.webp";
+  const occasionSectionImage = "/assets/banner/endUserHome.webp";
+  const privateLabelSectionImage = "/assets/banner/brand-collab.webp";
 
   const openHeroLink = (link, fallbackRoute) => {
     const target = String(link || fallbackRoute || '').trim();
@@ -638,15 +710,7 @@ export function Home({
             <span className="deal-kicker"><BadgePercent size={15} /> Deal of the Day</span>
             <h2 id="deal-heading">Today's strongest wholesale offers</h2>
             <p>Limited-time prices on selected sarees. Pick the deal before the counter refreshes tonight.</p>
-            <div className="deal-timer" aria-label="Deal ends countdown">
-              <Clock3 size={18} />
-              <span>{twoDigit(dealCountdown.hours)}</span>
-              <small>Hrs</small>
-              <span>{twoDigit(dealCountdown.minutes)}</span>
-              <small>Min</small>
-              <span>{twoDigit(dealCountdown.seconds)}</span>
-              <small>Sec</small>
-            </div>
+            <DealTimer />
           </div>
 
           <div
@@ -720,15 +784,17 @@ export function Home({
                 style={{ textDecoration: 'none' }}
               >
                 {(() => {
-                  const rawCategoryImg = categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length];
+                  const localImg = localCategoryImages[name.toLowerCase()];
+                  const rawCategoryImg = localImg || categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length];
+                  const imgSrc = localImg || (rawCategoryImg && rawCategoryImg.startsWith('/') ? rawCategoryImg : getOptimizedImageUrl(rawCategoryImg, 'thumbnail'));
                   return (
                     <img
-                      src={getOptimizedImageUrl(rawCategoryImg, 'thumbnail')}
+                      src={imgSrc}
                       alt={name}
                       loading="lazy"
                       decoding="async"
-                      width={300}
-                      height={300}
+                      width={240}
+                      height={240}
                       onError={(e) => {
                         const fallback = getOriginalImageUrl(rawCategoryImg);
                         if (e.target.src !== fallback && fallback) {
@@ -764,184 +830,47 @@ export function Home({
           View All Categories
         </AppLink>
       </section>
+      <DeferredSection minHeight="700px">
+        <HomeProductRails
+          arrivals={arrivals}
+          bestsellers={bestsellers}
+          status={status}
+          error={error}
+          scrollProductRail={scrollProductRail}
+          navigate={navigate}
+          addToCart={addToCart}
+          toggleFavorite={toggleFavorite}
+          favoriteKeys={favoriteKeys}
+          priceAccess={priceAccess}
+          openAuth={openAuth}
+        />
+      </DeferredSection>
 
-      <section className="section home-product-section new-arrivals-section">
-        <div className="section-heading-row">
-          <SectionTitle title="New Arrivals" align="left" />
-          <AppLink to="catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            View All <ArrowRight size={17} />
-          </AppLink>
-        </div>
-        {status === 'error' && <StateMessage status={status} error={error} />}
-        <div className="scroll-wrapper">
-          <button type="button"
-            className="scroll-arrow left"
-            onClick={() => scrollProductRail('new-arrivals-row', -1)}
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
+      <DeferredSection minHeight="500px">
+        <WholesalePartnership imageUrl={resellerSectionImage} navigate={navigate} />
+      </DeferredSection>
 
-          <div className="product-row scrollable-row" id="new-arrivals-row">
-            {status === 'loading' ? (
-              <CatalogPageSkeleton count={5} wrap={false} />
-            ) : (
-              arrivals.map(({ product, image, variant }, index) => (
-                <ProductCard
-                  key={`${product.id}-${index}`}
-                  product={{ ...product, images: [image, ...product.images] }}
-                  variant={variant}
-                  navigate={navigate}
-                  addToCart={addToCart}
-                  toggleFavorite={toggleFavorite}
-                  isFavorite={favoriteKeys.has(product.id)}
-                  priceAccess={priceAccess}
-                  openAuth={openAuth}
-                />
-              ))
-            )}
-          </div>
+      <DeferredSection minHeight="500px">
+        <ResellerProgram imageUrl={brandCollabSectionImage} navigate={navigate} />
+      </DeferredSection>
 
-          <button type="button"
-            className="scroll-arrow right"
-            onClick={() => scrollProductRail('new-arrivals-row', 1)}
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-      </section>
+      <DeferredSection minHeight="500px">
+        <OccasionShowcase imageUrl={occasionSectionImage} navigate={navigate} />
+      </DeferredSection>
 
-      {(status === 'loading' || bestsellers.length > 0) && (
-        <section className="section home-product-section bestsellers-section">
-          <div className="section-heading-row">
-            <SectionTitle title="Best Sellers" align="left" />
-            <AppLink to="catalogue" className="text-button" navigate={navigate} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              View All <ArrowRight size={17} />
-            </AppLink>
-          </div>
-          {status === 'error' && <StateMessage status={status} error={error} />}
-          <div className="scroll-wrapper">
-            <button type="button"
-              className="scroll-arrow left"
-              onClick={() => scrollProductRail('bestsellers-row', -1)}
-              aria-label="Scroll left"
-            >
-              <ChevronLeft size={24} />
-            </button>
-
-            <div className="product-row scrollable-row" id="bestsellers-row">
-              {status === 'loading' ? (
-                <CatalogPageSkeleton count={5} wrap={false} />
-              ) : (
-                bestsellers.map(({ product, image, variant }, index) => (
-                  <ProductCard
-                    key={`${product.id}-${index}`}
-                    product={{ ...product, images: [image, ...product.images] }}
-                    variant={variant}
-                    navigate={navigate}
-                    addToCart={addToCart}
-                    toggleFavorite={toggleFavorite}
-                    isFavorite={favoriteKeys.has(product.id)}
-                    priceAccess={priceAccess}
-                    openAuth={openAuth}
-                  />
-                ))
-              )}
-            </div>
-
-            <button type="button"
-              className="scroll-arrow right"
-              onClick={() => scrollProductRail('bestsellers-row', 1)}
-              aria-label="Scroll right"
-            >
-              <ChevronRight size={24} />
-            </button>
-          </div>
-        </section>
-      )}
-
-      <WholesalePartnership imageUrl={resellerSectionImage} navigate={navigate} />
-
-      <ResellerProgram imageUrl={brandCollabSectionImage} navigate={navigate} />
-
-      <OccasionShowcase imageUrl={occasionSectionImage} navigate={navigate} />
-
-      <PrivateLabelSection imageUrl={privateLabelSectionImage} navigate={navigate} />
+      <DeferredSection minHeight="500px">
+        <PrivateLabelSection imageUrl={privateLabelSectionImage} navigate={navigate} />
+      </DeferredSection>
 
       {/* Weave 365 Insights Section */}
-      <section className="home-blog-section">
-        <div className="home-blog-header">
-          <div className="home-blog-header-left">
-            <h2>Insights from Banaras Looms</h2>
-          </div>
-          <div className="home-blog-header-right">
-            <AppLink
-              to="blog"
-              className="blog-filter-btn active"
-              navigate={navigate}
-              style={{ padding: '0.75rem 2rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              Read All Insights
-            </AppLink>
-          </div>
-        </div>
-
-        <div className="scroll-wrapper blog-scroll-wrapper">
-          <button type="button"
-            className="scroll-arrow left blog-scroll-arrow"
-            onClick={() => scrollProductRail('home-blog-row', -1)}
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          <div className="home-blog-grid" id="home-blog-row">
-            {isMounted && blogs.slice(0, 4).map((post) => (
-              <AppLink
-                key={post.slug}
-                to="blog"
-                productId={post.slug}
-                className="blog-card"
-                navigate={navigate}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
-              >
-                <div className="card-img-wrapper">
-                  <img src={post.image} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
-                  <span className="card-category-badge">{post.category}</span>
-                </div>
-                <div className="card-info-pane">
-                  <div className="post-meta-strip">
-                    <span className="post-meta-item">
-                      <Calendar size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.date}
-                    </span>
-                    <span className="meta-divider"></span>
-                    <span className="post-meta-item">
-                      <Clock size={12} style={{ marginRight: '4px', display: 'inline', verticalAlign: 'middle' }} /> {post.readTime}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: 'var(--h5-size)', fontWeight: 600, minHeight: '3.4rem' }}>{post.title}</h3>
-                  <p style={{ fontSize: 'var(--body-size)', fontWeight: 400 }}>{post.intro}</p>
-                  <span
-                    className="read-more-link"
-                    style={{ marginTop: 'auto', fontSize: 'var(--small-size)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    Read Guide <ArrowRight size={14} />
-                  </span>
-                </div>
-              </AppLink>
-            ))}
-          </div>
-
-          <button type="button"
-            className="scroll-arrow right blog-scroll-arrow"
-            onClick={() => scrollProductRail('home-blog-row', 1)}
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-      </section>
+      <DeferredSection minHeight="450px">
+        <HomeBlogSection
+          blogs={blogs}
+          navigate={navigate}
+          scrollProductRail={scrollProductRail}
+          isMounted={isMounted}
+        />
+      </DeferredSection>
 
       <section className="seo-compact-section">
         <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>
@@ -995,7 +924,9 @@ export function Home({
         </div>
       </section>
 
-      <Newsletter navigate={navigate} />
+      <DeferredSection minHeight="240px">
+        <Newsletter navigate={navigate} />
+      </DeferredSection>
     </>
   );
 }

@@ -5,6 +5,7 @@
  * and direct integration with the external standalone boutique template.
  */
 import React, { useState, useEffect, useMemo } from 'react';
+import '../styles/resellerTools.css';
 import { 
   Copy, 
   Check, 
@@ -32,7 +33,6 @@ import {
 } from './icons.jsx';
 import { resellerService, normalizeWebsiteUrl } from '../services/resellerService';
 import { fetchProducts } from '../productData.js';
-import '../styles/resellerTools.css';
 
 export const AVAILABLE_THEMES = [
   {

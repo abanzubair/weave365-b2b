@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import '../styles/vendorStock.css';
 import { 
   Package, 
   Search, 
@@ -20,7 +21,6 @@ import {
   Tag,
   MessageCircle
 } from './icons.jsx';
-import '../styles/vendorStock.css';
 import { 
   STOCK_STATUS_OPTIONS, 
   formatISTDateTime, 

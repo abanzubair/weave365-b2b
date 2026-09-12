@@ -1,9 +1,11 @@
+import '../styles/privateLabelSection.css';
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import '../styles/privateLabelSection.css';
 
 export function PrivateLabelSection({ imageUrl, navigate }) {
+  const localImage = "/assets/banner/brand-collab.webp";
+  const cdnFallback = imageUrl || "https://assets.weave365.com/assets/banner/brand-collab.jpg";
   const benefits = [
     'Custom Woven Collections',
     'Your Own Branding',
@@ -95,29 +97,20 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
         <div className="private-label-visual-side">
           <div className="private-label-gallery-container">
             <div className="private-label-image-wrapper">
-              {imageUrl ? (
-                <img
-                  src={getOptimizedImageUrl(imageUrl, 'listing')}
-                  alt="Custom woven Banarasi collections and private label manufacturing"
-                  className="private-label-image"
-                  loading="lazy"
-                  decoding="async"
-                  width={700}
-                  height={525}
-                  onError={(e) => {
-                    const fallback = getOriginalImageUrl(imageUrl);
-                    if (e.currentTarget.src !== fallback && fallback) {
-                      e.currentTarget.src = fallback;
-                    }
-                  }}
-                />
-              ) : (
-                <div className="private-label-image-placeholder">
-                  <ImageIcon size={44} strokeWidth={1.2} className="placeholder-icon" />
-                  <span className="placeholder-title">Visual Showcase</span>
-                  <span className="placeholder-subtext">Private Label & Custom Weaving Atelier</span>
-                </div>
-              )}
+              <img
+                src={localImage}
+                alt="Custom woven Banarasi collections and private label manufacturing"
+                className="private-label-image"
+                loading="lazy"
+                decoding="async"
+                width={600}
+                height={450}
+                onError={(e) => {
+                  if (e.currentTarget.src !== cdnFallback) {
+                    e.currentTarget.src = cdnFallback;
+                  }
+                }}
+              />
             </div>
             <span className="private-label-caption">Fig. 04 // Private Label & Custom Weaving Atelier</span>
           </div>

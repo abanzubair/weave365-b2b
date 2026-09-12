@@ -4,6 +4,7 @@
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import '../styles/variationQuantityDrawer.css';
 import { Minus, Plus, ShoppingBag, X, Check, Info } from './icons.jsx';
 import {
   calculateHybridProductPrice,
@@ -12,7 +13,6 @@ import {
 } from '../storefrontShared.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import '../styles/variationQuantityDrawer.css';
 
 function buildQuantityMap(options) {
   return options.reduce((map, option) => ({ ...map, [option.key]: 0 }), {});

@@ -31,6 +31,26 @@ import {
 } from '../utils/directoryService.js';
 import { getCategorySlug } from '../config.js';
 
+const DIRECTORY_CSS = `
+.internal-link-network{padding:4.5rem 0 4rem;background:var(--paper);position:relative;width:100%;clear:both;box-sizing:border-box;margin-bottom:2rem}
+.directory-container{width:min(1600px,calc(100% - var(--site-padding,48px)*2));max-width:1600px;margin:0 auto;min-height:320px;box-sizing:border-box}
+.directory-header{margin-bottom:3.5rem;text-align:center;min-height:80px}
+.directory-kicker{font-family:var(--font-hero-body);font-size:0.75rem;font-weight:700;letter-spacing:0.2em;color:#634015;text-transform:uppercase;display:block;margin-bottom:0.5rem}
+.directory-title{font-family:var(--font-hero-heading);font-size:2.25rem;font-weight:400;line-height:1.2;letter-spacing:-0.02em;color:var(--gold-dark);margin:0 0 1.25rem}
+.directory-divider{width:60px;height:2px;background:var(--gold);margin:0 auto;opacity:0.5}
+.directory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3rem 2rem;min-height:220px}
+.directory-col{display:flex;flex-direction:column;min-height:180px}
+.col-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;padding-bottom:0.5rem;border-bottom:1px solid var(--line)}
+.col-icon{color:var(--gold)}
+.directory-col h3{font-family:var(--font-hero-heading);font-size:1.05rem;font-weight:500;color:var(--gold-dark);margin:0}
+.directory-col ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.5rem}
+.directory-col li{margin:0}
+.directory-col a{font-family:var(--font-hero-body);font-size:0.9rem;font-weight:500;color:var(--muted);text-decoration:none;transition:all 0.25s cubic-bezier(0.16,1,0.3,1);display:inline-flex;align-items:center;padding:4px 0;min-height:28px}
+.directory-col a:hover{color:var(--gold);transform:translateX(4px)}
+@media (max-width:991px){.directory-grid{grid-template-columns:repeat(2,1fr);gap:2.5rem 2rem}.internal-link-network{padding:4rem var(--site-padding) 2rem}.directory-title{font-size:1.85rem}}
+@media (max-width:576px){.directory-grid{grid-template-columns:1fr;gap:2rem}.directory-header{text-align:left;margin-bottom:2.5rem}.directory-divider{margin:0}.internal-link-network{padding:3.5rem var(--site-padding) 2rem}}
+`;
+
 const ICON_MAP = {
   Compass,
   Grid,
@@ -68,12 +88,23 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
       setConfig(initialConfig);
     }
 
-    // 2. Fetch remote config once on mount if needed
-    void fetchDirectoryConfigRemote().then(remoteData => {
-      if (remoteData) {
-        setConfig(prev => (JSON.stringify(prev) !== JSON.stringify(remoteData) ? remoteData : prev));
+    // 2. Fetch remote config in background after page load settles
+    const timer = setTimeout(() => {
+      const runFetch = () => {
+        void fetchDirectoryConfigRemote().then(remoteData => {
+          if (remoteData) {
+            setConfig(prev => (JSON.stringify(prev) !== JSON.stringify(remoteData) ? remoteData : prev));
+          }
+        });
+      };
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        window.requestIdleCallback(runFetch, { timeout: 15000 });
+      } else {
+        runFetch();
       }
-    });
+    }, 12000);
+
+    return () => clearTimeout(timer);
 
     // 3. Listen for Admin Panel instant updates
     const handleUpdate = (e) => {
@@ -130,6 +161,7 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
 
   return (
     <section className="internal-link-network" aria-label="B2B Sourcing & Heritage Directory">
+      <style dangerouslySetInnerHTML={{ __html: DIRECTORY_CSS }} />
       <div className="directory-container">
         {config.title && (
           <div className="directory-header">

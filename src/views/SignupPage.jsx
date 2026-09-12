@@ -6,6 +6,7 @@
  * corporate B2B profile fields and Supabase authentication.
  */
 'use client';
+import '../styles/signupPage.css';
 
 import { useState, useEffect, useRef } from 'react';
 import {
