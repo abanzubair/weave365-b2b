@@ -316,7 +316,6 @@ export default function BuyerPipeline({
                 <th>Registered</th>
                 <th>Buyer</th>
                 <th>Type</th>
-                <th>Categories</th>
                 <th>Cart</th>
                 <th>Favourites</th>
                 <th>Dashboard</th>
@@ -381,15 +380,6 @@ export default function BuyerPipeline({
                       <span className="pipeline-type-label">
                         {getBuyerTypeLabel(profile)}
                       </span>
-                    </td>
-                    <td>
-                      {profile.interested_categories && Array.isArray(profile.interested_categories) && profile.interested_categories.length > 0 ? (
-                        <span className="admin-categories-tags">
-                          {profile.interested_categories.join(', ')}
-                        </span>
-                      ) : (
-                        <span className="pipeline-muted">-</span>
-                      )}
                     </td>
                     <td>
                       <button
@@ -464,7 +454,7 @@ export default function BuyerPipeline({
               })}
               {displayedProfiles.length === 0 && (
                 <tr>
-                  <td colSpan="9" className="admin-table-empty">No profiles found.</td>
+                  <td colSpan="8" className="admin-table-empty">No profiles found.</td>
                 </tr>
               )}
             </tbody>
