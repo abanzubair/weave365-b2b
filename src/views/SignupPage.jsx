@@ -36,22 +36,22 @@ import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
+    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
+    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
   </svg>
 );
 
 const BehanceIcon = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
-    <path d="M7.5 13.5c-1.6 0-2.3.8-2.3 2 0 1.2.7 2 2.3 2 1.3 0 2-.6 2.2-1.5h1.9c-.3 1.9-1.9 3-4.1 3-2.8 0-4.4-1.8-4.4-4.4 0-2.7 1.7-4.5 4.5-4.5 2.5 0 4.1 1.6 4.1 4.2v.7H5.2c.1 1 .8 1.6 2.3 1.6.9 0 1.6-.3 1.9-.9h2.1c-.5 1.4-1.7 2.1-4 2.1zM5.3 12h3.9c-.1-.9-.7-1.4-1.9-1.4-1.2 0-1.9.5-2 1.4zm11.3-4.8h4.5v1.4h-4.5V7.2zm4.1 5.3c0-1.8-1.2-2.7-2.8-2.7h-3.4v8.2h3.6c1.8 0 3-1 3-2.8 0-1.1-.6-1.9-1.5-2.2 1.4-.4 2.1-1.3 2.1-2.5zm-4.3-.2h1.4c.8 0 1.3.4 1.3 1.2 0 .7-.5 1.1-1.3 1.1h-1.4v-2.3zm1.6 5.8h-1.6v-2.4h1.6c.9 0 1.4.4 1.4 1.2 0 .8-.5 1.2-1.4 1.2z"/>
+    <path d="M7.5 13.5c-1.6 0-2.3.8-2.3 2 0 1.2.7 2 2.3 2 1.3 0 2-.6 2.2-1.5h1.9c-.3 1.9-1.9 3-4.1 3-2.8 0-4.4-1.8-4.4-4.4 0-2.7 1.7-4.5 4.5-4.5 2.5 0 4.1 1.6 4.1 4.2v.7H5.2c.1 1 .8 1.6 2.3 1.6.9 0 1.6-.3 1.9-.9h2.1c-.5 1.4-1.7 2.1-4 2.1zM5.3 12h3.9c-.1-.9-.7-1.4-1.9-1.4-1.2 0-1.9.5-2 1.4zm11.3-4.8h4.5v1.4h-4.5V7.2zm4.1 5.3c0-1.8-1.2-2.7-2.8-2.7h-3.4v8.2h3.6c1.8 0 3-1 3-2.8 0-1.1-.6-1.9-1.5-2.2 1.4-.4 2.1-1.3 2.1-2.5zm-4.3-.2h1.4c.8 0 1.3.4 1.3 1.2 0 .7-.5 1.1-1.3 1.1h-1.4v-2.3zm1.6 5.8h-1.6v-2.4h1.6c.9 0 1.4.4 1.4 1.2 0 .8-.5 1.2-1.4 1.2z" />
   </svg>
 );
 
 const FacebookIcon = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" fill="#1877F2" aria-hidden="true">
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
   </svg>
 );
 
@@ -129,13 +129,13 @@ export function SignupPage({
   initialType = null,
 }) {
   const profileComplete = isProfileComplete(user, buyerProfile);
-  const isResettingPassword = initialMode === 'reset-password' || 
+  const isResettingPassword = initialMode === 'reset-password' ||
     (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'));
 
   const isOnboarding = Boolean(
     !isResettingPassword &&
     initialMode !== 'forgot-password' &&
-    user && 
+    user &&
     (!profileComplete || initialMode === 'complete-profile' || initialMode === 'completion-profile')
   );
 
@@ -151,7 +151,7 @@ export function SignupPage({
     }
     return initialMode || 'login';
   }); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -377,9 +377,9 @@ export function SignupPage({
 
   function buildBuyerProfile() {
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-    const isVendor = profile.buyerType === 'vendor' || 
-                     String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
-                     String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
+    const isVendor = profile.buyerType === 'vendor' ||
+      String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
+      String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
 
     return applyAutoApprovalToBuyerProfile({
       full_name: toTitleCaseName(profile.fullName),
@@ -499,7 +499,7 @@ export function SignupPage({
     if (error) {
       setMessage(error.message);
     } else {
-      await supabase.auth.signOut().catch(() => {});
+      await supabase.auth.signOut().catch(() => { });
       if (setUser) setUser(null);
       if (setBuyerProfile) setBuyerProfile(null);
       setMessage('Password updated successfully! Please sign in with your new password.');
@@ -747,17 +747,17 @@ export function SignupPage({
         mode === 'login'
           ? await supabase.auth.signInWithPassword({ email, password })
           : await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                emailRedirectTo: redirectUrl,
-                data: {
-                  buyer_profile: registeredProfile,
-                  role: isVendorRegister ? 'vendor' : 'customer',
-                  full_name: toTitleCaseName(profile.fullName),
-                },
+            email,
+            password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                buyer_profile: registeredProfile,
+                role: isVendorRegister ? 'vendor' : 'customer',
+                full_name: toTitleCaseName(profile.fullName),
               },
-            });
+            },
+          });
 
       if (result.error) {
         setMessage(result.error.message);
@@ -834,10 +834,10 @@ export function SignupPage({
               {mode === 'login'
                 ? 'Welcome back'
                 : mode === 'forgot-password'
-                ? 'Reset password'
-                : mode === 'reset-password'
-                ? 'Set new password'
-                : 'Create an account'}
+                  ? 'Reset password'
+                  : mode === 'reset-password'
+                    ? 'Set new password'
+                    : 'Create an account'}
             </h1>
           </div>
 
@@ -853,255 +853,93 @@ export function SignupPage({
         <div className="signup-form-panel">
           <div className="signup-form-inner">
             {/* Seller Registration Application Received State */}
-          {message === 'seller-registered' ? (
-            <div className="signup-status-card signup-seller-status-card">
-              <div className="signup-status-icon signup-seller-status-icon">
-                <Store size={26} />
-              </div>
-              <h2 className="signup-status-title">Application Received</h2>
-              <p className="signup-status-desc">
-                We'll review your loom and business details and reach out within <strong>2 business days</strong>.
-              </p>
+            {message === 'seller-registered' ? (
+              <div className="signup-status-card signup-seller-status-card">
+                <div className="signup-status-icon signup-seller-status-icon">
+                  <Store size={26} />
+                </div>
+                <h2 className="signup-status-title">Application Received</h2>
+                <p className="signup-status-desc">
+                  We'll review your loom and business details and reach out within <strong>2 business days</strong>.
+                </p>
 
-              <div className="signup-seller-fasttrack">
-                <span className="signup-seller-fasttrack-hint">
-                  Need faster activation?
-                </span>
-                <a
-                  href={sellerWaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="signup-seller-whatsapp-btn"
-                >
-                  <WhatsappIcon size={17} />
-                  <span>Chat on WhatsApp</span>
-                </a>
-              </div>
+                <div className="signup-seller-fasttrack">
+                  <span className="signup-seller-fasttrack-hint">
+                    Need faster activation?
+                  </span>
+                  <a
+                    href={sellerWaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="signup-seller-whatsapp-btn"
+                  >
+                    <WhatsappIcon size={17} />
+                    <span>Chat on WhatsApp</span>
+                  </a>
+                </div>
 
-              <button
-                type="button"
-                className="signup-seller-secondary-btn"
-                onClick={() => navigate('home')}
-              >
-                Explore wholesale catalog →
-              </button>
-            </div>
-          ) : message === 'verification-email-sent' ? (
-            <div className="signup-status-card">
-              <div className="signup-status-icon">
-                <Mail size={24} />
-              </div>
-              <h2 className="signup-status-title">Check your inbox</h2>
-              <p className="signup-status-desc">
-                We sent a verification link to <strong style={{ color: '#0f172a' }}>{email}</strong>.
-                Please confirm your email address to activate your account and unlock factory wholesale pricing.
-              </p>
-              <button
-                type="button"
-                className="signup-submit-btn"
-                onClick={() => {
-                  setMode('login');
-                  setMessage('');
-                }}
-              >
-                Back to Login <ArrowRight size={16} />
-              </button>
-            </div>
-          ) : message === 'demo-verification-sent' ? (
-            <div className="signup-status-card">
-              <div className="signup-status-icon">
-                <Mail size={24} />
-              </div>
-              <h2 className="signup-status-title">Verify Your Email (Demo Mode)</h2>
-              <p className="signup-status-desc">
-                A verification link has been simulated for <strong style={{ color: '#0f172a' }}>{email}</strong>.
-                In production, clicking the email link activates the account.
-              </p>
-              <button
-                type="button"
-                className="signup-submit-btn"
-                onClick={handleSimulateVerification}
-              >
-                Simulate Verification Click →
-              </button>
-            </div>
-          ) : mode === 'forgot-password' ? (
-            /* Forgot Password Mode */
-            <div>
-              <div className="signup-form-header">
                 <button
                   type="button"
-                  onClick={() => { setMode('login'); setMessage(''); }}
-                  className="signup-back-btn"
+                  className="signup-seller-secondary-btn"
+                  onClick={() => navigate('home')}
                 >
-                  <ArrowLeft size={16} /> Back to Login
+                  Explore wholesale catalog →
                 </button>
-                <h2 className="signup-form-title">Reset your password</h2>
-                <p className="signup-form-subtitle">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
               </div>
-
-              <form onSubmit={submit} className="signup-form">
-                <div className="signup-field">
-                  <label className="signup-label">Your email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    required
-                    className="signup-input"
-                  />
+            ) : message === 'verification-email-sent' ? (
+              <div className="signup-status-card">
+                <div className="signup-status-icon">
+                  <Mail size={24} />
                 </div>
-
-                <button type="submit" className="signup-submit-btn" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="auth-spinner" /> Sending Link...</> : 'Send Reset Link'}
-                </button>
-              </form>
-
-              {message === 'account-not-found' && (
-                <div className="signup-alert-not-found">
-                  <div className="alert-not-found-icon">
-                    <AlertCircle size={18} />
-                  </div>
-                  <div className="alert-not-found-body">
-                    <div className="alert-not-found-title">Account Not Found</div>
-                    <p className="alert-not-found-desc">
-                      No registered wholesale account exists for <strong>{email}</strong>. Please check for typos or create a new account.
-                    </p>
-                    <button
-                      type="button"
-                      className="signup-not-found-btn"
-                      onClick={() => {
-                        setMode('register');
-                        setMessage('');
-                      }}
-                    >
-                      <span>Sign Up for an Account</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              )}
-              {message === 'reset-link-sent' && (
-                <p className="signup-alert-success">
-                  ✓ Reset link sent! Please check your email inbox and spam folder.
+                <h2 className="signup-status-title">Check your inbox</h2>
+                <p className="signup-status-desc">
+                  We sent a verification link to <strong style={{ color: '#0f172a' }}>{email}</strong>.
+                  Please confirm your email address to activate your account and unlock factory wholesale pricing.
                 </p>
-              )}
-              {message === 'demo-reset-sent' && (
-                <div style={{ marginTop: '16px' }}>
-                  <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
-                  <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
-                    Simulate Reset Link →
-                  </button>
-                </div>
-              )}
-              {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
-                <div className="signup-alert-error">
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>{message}</span>
-                </div>
-              )}
-
-            </div>
-          ) : mode === 'reset-password' ? (
-            /* Reset Password Mode */
-            <div>
-              <div className="signup-form-header">
-                <h2 className="signup-form-title">Set new password</h2>
-                <p className="signup-form-subtitle">Choose a strong new password with at least 6 characters.</p>
-              </div>
-
-              <form onSubmit={submit} className="signup-form">
-                <div className="signup-field">
-                  <label className="signup-label">New Password</label>
-                  <div className="signup-input-wrapper">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      required
-                      minLength={6}
-                      className="signup-input"
-                    />
-                    <button
-                      type="button"
-                      className="signup-password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button type="submit" className="signup-submit-btn" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="auth-spinner" /> Updating...</> : 'Update Password'}
+                <button
+                  type="button"
+                  className="signup-submit-btn"
+                  onClick={() => {
+                    setMode('login');
+                    setMessage('');
+                  }}
+                >
+                  Back to Login <ArrowRight size={16} />
                 </button>
-              </form>
-              {message && (
-                <div className="signup-alert-error">
-                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                  <span>{message}</span>
+              </div>
+            ) : message === 'demo-verification-sent' ? (
+              <div className="signup-status-card">
+                <div className="signup-status-icon">
+                  <Mail size={24} />
                 </div>
-              )}
-            </div>
-          ) : user && profileComplete && mode !== 'register' && !loading ? (
-            /* =================================================================
-               Already Logged In (Profile Complete) View
-               ================================================================= */
-            <div className="signup-form-view-wrapper">
-              <div className="signup-form-centered-body">
+                <h2 className="signup-status-title">Verify Your Email (Demo Mode)</h2>
+                <p className="signup-status-desc">
+                  A verification link has been simulated for <strong style={{ color: '#0f172a' }}>{email}</strong>.
+                  In production, clicking the email link activates the account.
+                </p>
+                <button
+                  type="button"
+                  className="signup-submit-btn"
+                  onClick={handleSimulateVerification}
+                >
+                  Simulate Verification Click →
+                </button>
+              </div>
+            ) : mode === 'forgot-password' ? (
+              /* Forgot Password Mode */
+              <div>
                 <div className="signup-form-header">
-                  <div className="signup-form-title-row">
-                    <h2 className="signup-form-title">You're signed in</h2>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setMode('login'); setMessage(''); }}
+                    className="signup-back-btn"
+                  >
+                    <ArrowLeft size={16} /> Back to Login
+                  </button>
+                  <h2 className="signup-form-title">Reset your password</h2>
                   <p className="signup-form-subtitle">
-                    Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your account is active.
+                    Enter your email address and we'll send you a link to reset your password.
                   </p>
-                </div>
-
-                <div className="signup-signedin-actions">
-                  <button
-                    type="button"
-                    className="signup-submit-btn signup-signedin-btn"
-                    onClick={() => navigate('catalogue')}
-                  >
-                    Browse Catalogue <ArrowRight size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="signup-google-btn signup-signedin-btn"
-                    onClick={() => navigate('account')}
-                  >
-                    Go to My Account
-                  </button>
-                </div>
-
-                <div className="signup-switch-link" style={{ marginTop: '16px' }}>
-                  Want to switch accounts?{' '}
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-
-              <div className="signup-form-bottom-footer">
-                <LegalDisclaimer />
-              </div>
-            </div>
-          ) : mode === 'login' && !isOnboarding ? (
-            /* =================================================================
-               Login View
-               ================================================================= */
-            <div className="signup-form-view-wrapper">
-              <div className="signup-form-centered-body">
-                <div className="signup-form-header">
-                  <h2 className="signup-form-title">Welcome back</h2>
                 </div>
 
                 <form onSubmit={submit} className="signup-form">
@@ -1112,21 +950,78 @@ export function SignupPage({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@example.com"
-                      autoComplete="email"
                       required
                       className="signup-input"
                     />
                   </div>
 
+                  <button type="submit" className="signup-submit-btn" disabled={loading}>
+                    {loading ? <><Loader2 size={16} className="auth-spinner" /> Sending Link...</> : 'Send Reset Link'}
+                  </button>
+                </form>
+
+                {message === 'account-not-found' && (
+                  <div className="signup-alert-not-found">
+                    <div className="alert-not-found-icon">
+                      <AlertCircle size={18} />
+                    </div>
+                    <div className="alert-not-found-body">
+                      <div className="alert-not-found-title">Account Not Found</div>
+                      <p className="alert-not-found-desc">
+                        No registered wholesale account exists for <strong>{email}</strong>. Please check for typos or create a new account.
+                      </p>
+                      <button
+                        type="button"
+                        className="signup-not-found-btn"
+                        onClick={() => {
+                          setMode('register');
+                          setMessage('');
+                        }}
+                      >
+                        <span>Sign Up for an Account</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {message === 'reset-link-sent' && (
+                  <p className="signup-alert-success">
+                    ✓ Reset link sent! Please check your email inbox and spam folder.
+                  </p>
+                )}
+                {message === 'demo-reset-sent' && (
+                  <div style={{ marginTop: '16px' }}>
+                    <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
+                    <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
+                      Simulate Reset Link →
+                    </button>
+                  </div>
+                )}
+                {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
+                  <div className="signup-alert-error">
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                    <span>{message}</span>
+                  </div>
+                )}
+
+              </div>
+            ) : mode === 'reset-password' ? (
+              /* Reset Password Mode */
+              <div>
+                <div className="signup-form-header">
+                  <h2 className="signup-form-title">Set new password</h2>
+                  <p className="signup-form-subtitle">Choose a strong new password with at least 6 characters.</p>
+                </div>
+
+                <form onSubmit={submit} className="signup-form">
                   <div className="signup-field">
-                    <label className="signup-label">Password</label>
+                    <label className="signup-label">New Password</label>
                     <div className="signup-input-wrapper">
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="••••••••••••"
-                        autoComplete="current-password"
                         required
                         minLength={6}
                         className="signup-input"
@@ -1135,368 +1030,57 @@ export function SignupPage({
                         type="button"
                         className="signup-password-toggle"
                         onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Toggle password visibility"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="signup-options-row">
-                    <label className="signup-remember-label">
-                      <input
-                        type="checkbox"
-                        checked={profile.rememberMe || false}
-                        onChange={(e) => updateProfile('rememberMe', e.target.checked)}
-                      />
-                      <span>Remember me</span>
-                    </label>
-                    <button
-                      type="button"
-                      className="signup-forgot-btn"
-                      onClick={() => { setMode('forgot-password'); setMessage(''); }}
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-
                   <button type="submit" className="signup-submit-btn" disabled={loading}>
-                    {loading ? (
-                      <><Loader2 size={16} className="auth-spinner" /> Signing in...</>
-                    ) : (
-                      'Sign In'
-                    )}
+                    {loading ? <><Loader2 size={16} className="auth-spinner" /> Updating...</> : 'Update Password'}
                   </button>
-
-                  <div className="signup-switch-link">
-                    Don't have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('register');
-                        setMessage('');
-                      }}
-                    >
-                      Sign up
-                    </button>
-                  </div>
-
-                  <div className="signup-divider">
-                    <span>or</span>
-                  </div>
-
-                  <GoogleButton
-                    onClick={() => handleSocialLogin('google')}
-                    text="Sign in with Google"
-                  />
-
-                  {message && (
-                    <div className="signup-alert-error">
-                      <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                      <span>{message}</span>
-                    </div>
-                  )}
                 </form>
-              </div>
-
-              <div className="signup-form-bottom-footer">
-                <LegalDisclaimer />
-              </div>
-            </div>
-          ) : (
-            /* =================================================================
-               Signup / Complete Profile Form (Customer or Partner)
-               ================================================================= */
-            <div className="signup-form-view-wrapper">
-              <div className="signup-form-centered-body">
-                <div className="signup-form-header">
-                  <div className="signup-form-title-row">
-                    <h2 className="signup-form-title">
-                      {isOnboarding ? 'Complete Your Profile' : 'Create an account'}
-                    </h2>
-                  </div>
-                  {isOnboarding && (
-                    <p className="signup-form-subtitle">
-                      Provide your business details to unlock wholesale catalog access.
-                    </p>
-                  )}
-                </div>
-
-                <form onSubmit={submit} className="signup-form">
-                <div className="signup-form-grid">
-                  {/* Business Type / Role Selector */}
-                  <div className="signup-field signup-field-full">
-                    <label className="signup-label">
-                      <span>Business Type *</span>
-                    </label>
-                    <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
-                      {ACCOUNT_ROLE_OPTIONS.map((option) => {
-                        const isSelected = Boolean(
-                          profile.buyerSubtype && (
-                            (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
-                            (option.id === 'vendor' && profile.buyerType === 'vendor') ||
-                            (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer') ||
-                            (option.id === 'online_store' && (
-                              (profile.buyerSubtype || '').toLowerCase() === 'website owner' ||
-                              (profile.buyerSubtype || '').toLowerCase() === 'website_owner'
-                            ))
-                          )
-                        );
-
-                        return (
-                          <label
-                            key={option.id}
-                            className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
-                            title={option.isSeller ? "Register as a Seller / Weaver to list and sell products on Weave 365" : undefined}
-                          >
-                            <input
-                              type="radio"
-                              name="accountRole"
-                              value={option.id}
-                              checked={isSelected}
-                              required
-                              onChange={() => {
-                                setProfile((prev) => ({
-                                  ...prev,
-                                  buyerType: option.buyerType,
-                                  buyerSubtype: option.buyerSubtype,
-                                }));
-                              }}
-                              className="signup-role-radio-input"
-                            />
-                            <span className="signup-role-custom-radio" aria-hidden="true">
-                              <span className="signup-role-radio-inner" />
-                            </span>
-                            <span className="signup-role-radio-label">{option.label}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Full Name */}
-                  <div className="signup-field">
-                    <label className="signup-label">Full Name *</label>
-                    <input
-                      type="text"
-                      value={profile.fullName}
-                      onChange={(e) => updateProfile('fullName', e.target.value)}
-                      onBlur={(e) => updateProfile('fullName', toTitleCaseName(e.target.value))}
-                      placeholder="Enter your full name"
-                      autoComplete="name"
-                      required
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Business Name */}
-                  <div className="signup-field">
-                    <label className="signup-label">Business Name (Optional)</label>
-                    <input
-                      type="text"
-                      value={profile.businessName}
-                      onChange={(e) => updateProfile('businessName', e.target.value)}
-                      placeholder="Optional business name"
-                      autoComplete="organization"
-                      className="signup-input"
-                    />
-                  </div>
-
-
-
-
-                  {/* WhatsApp Number (Full Width for comfortable digits typing) */}
-                  <div className="signup-field signup-field-full">
-                    <label className="signup-label">WhatsApp Number *</label>
-                    <div className="signup-input-phone-group">
-                      <select
-                        className="signup-select"
-                        value={profile.countryCode}
-                        onChange={(e) => updateProfile('countryCode', e.target.value)}
-                      >
-                        {countryCodes.map((item) => (
-                          <option key={item.value} value={item.value}>
-                            {item.label}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="tel"
-                        value={profile.whatsapp}
-                        onChange={(e) =>
-                          updateProfile(
-                            'whatsapp',
-                            e.target.value.replace(/\D/g, '').slice(0, 10)
-                          )
-                        }
-                        placeholder="Enter 10-digit WhatsApp number"
-                        autoComplete="tel-national"
-                        required
-                        className="signup-input"
-                      />
-                    </div>
-                  </div>
-
-                  {/* City */}
-                  <div className="signup-field">
-                    <label className="signup-label">City *</label>
-                    <input
-                      type="text"
-                      value={profile.city}
-                      onChange={(e) => updateProfile('city', e.target.value)}
-                      placeholder="e.g. Varanasi"
-                      autoComplete="address-level2"
-                      required
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* State */}
-                  <div className="signup-field">
-                    <label className="signup-label">State *</label>
-                    <input
-                      type="text"
-                      value={profile.state}
-                      onChange={(e) => updateProfile('state', e.target.value)}
-                      placeholder="e.g. Uttar Pradesh"
-                      autoComplete="address-level1"
-                      required
-                      className="signup-input"
-                    />
-                  </div>
-
-
-                  {/* Pincode */}
-                  <div className="signup-field">
-                    <label className="signup-label">Pincode *</label>
-                    <input
-                      type="text"
-                      value={profile.pincode}
-                      onChange={(e) =>
-                        updateProfile('pincode', normalizePincodeInput(e.target.value))
-                      }
-                      placeholder="6-digit pincode"
-                      inputMode="numeric"
-                      required
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="signup-field">
-                    <label className="signup-label">
-                      <span>Email Address *</span>
-                      {isOnboarding && (
-                        <span className="signup-verified-badge">
-                          <Check size={11} /> Google Verified
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      autoComplete="email"
-                      required
-                      disabled={isOnboarding}
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Website */}
-                  <div className="signup-field">
-                    <label className="signup-label">Website</label>
-                    <input
-                      type="url"
-                      value={profile.website}
-                      onChange={(e) => updateProfile('website', e.target.value)}
-                      placeholder="https://yourstore.com"
-                      autoComplete="url"
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Social Handle */}
-                  <div className="signup-field">
-                    <label className="signup-label">Social Handle</label>
-                    <input
-                      type="text"
-                      value={profile.socialHandle}
-                      onChange={(e) => updateProfile('socialHandle', e.target.value)}
-                      placeholder="@yourhandle or profile link"
-                      className="signup-input"
-                    />
-                  </div>
-
-                  {/* Password (Only for standard email registrations, not Google onboarding) */}
-                  {!isOnboarding && (
-                    <div className="signup-field signup-field-full">
-                      <label className="signup-label">Password *</label>
-                      <div className="signup-input-wrapper">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Minimum 6 characters"
-                          autoComplete="new-password"
-                          minLength={6}
-                          required
-                          className="signup-input"
-                          style={{ paddingRight: '44px' }}
-                        />
-                        <button
-                          type="button"
-                          className="signup-password-toggle"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-
-                <button type="submit" className="signup-submit-btn" disabled={loading}>
-                  {loading ? (
-                    <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
-                  ) : isOnboarding ? (
-                    'Complete Registration & Continue'
-                  ) : (
-                    'Create Account with Password'
-                  )}
-                </button>
-
-                {!isOnboarding && (
-                  <>
-                    <div className="signup-divider">
-                      <span>or</span>
-                    </div>
-
-                    <GoogleButton
-                      onClick={handleGoogleRegister}
-                      text="Sign up with Google"
-                    />
-                  </>
-                )}
-
                 {message && (
                   <div className="signup-alert-error">
-                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
                     <span>{message}</span>
                   </div>
                 )}
-                </form>
               </div>
+            ) : user && profileComplete && mode !== 'register' && !loading ? (
+              /* =================================================================
+                 Already Logged In (Profile Complete) View
+                 ================================================================= */
+              <div className="signup-form-view-wrapper">
+                <div className="signup-form-centered-body">
+                  <div className="signup-form-header">
+                    <div className="signup-form-title-row">
+                      <h2 className="signup-form-title">You're signed in</h2>
+                    </div>
+                    <p className="signup-form-subtitle">
+                      Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your account is active.
+                    </p>
+                  </div>
 
-              <div className="signup-form-bottom-footer">
-                <LegalDisclaimer />
+                  <div className="signup-signedin-actions">
+                    <button
+                      type="button"
+                      className="signup-submit-btn signup-signedin-btn"
+                      onClick={() => navigate('catalogue')}
+                    >
+                      Browse Catalogue <ArrowRight size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="signup-google-btn signup-signedin-btn"
+                      onClick={() => navigate('account')}
+                    >
+                      Go to My Account
+                    </button>
+                  </div>
 
-                {isOnboarding && user?.email ? (
-                  <div className="signup-switch-link">
-                    Signed in as {user.email} •{' '}
+                  <div className="signup-switch-link" style={{ marginTop: '16px' }}>
+                    Want to switch accounts?{' '}
                     <button
                       type="button"
                       onClick={handleSignOut}
@@ -1504,23 +1088,439 @@ export function SignupPage({
                       Sign out
                     </button>
                   </div>
-                ) : (
-                  <div className="signup-switch-link">
-                    Already have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('login');
-                        setMessage('');
-                      }}
-                    >
-                      Sign in
-                    </button>
-                  </div>
-                )}
+                </div>
+
+                <div className="signup-form-bottom-footer">
+                  <LegalDisclaimer />
+                </div>
               </div>
-            </div>
-          )}
+            ) : mode === 'login' && !isOnboarding ? (
+              /* =================================================================
+                 Login View
+                 ================================================================= */
+              <div className="signup-form-view-wrapper">
+                <div className="signup-form-centered-body">
+                  <div className="signup-form-header">
+                    <h2 className="signup-form-title">Welcome back</h2>
+                  </div>
+
+                  <form onSubmit={submit} className="signup-form">
+                    <div className="signup-field">
+                      <label className="signup-label">Your email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        autoComplete="email"
+                        required
+                        className="signup-input"
+                      />
+                    </div>
+
+                    <div className="signup-field">
+                      <label className="signup-label">Password</label>
+                      <div className="signup-input-wrapper">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          autoComplete="current-password"
+                          required
+                          minLength={6}
+                          className="signup-input"
+                        />
+                        <button
+                          type="button"
+                          className="signup-password-toggle"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle password visibility"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="signup-options-row">
+                      <label className="signup-remember-label">
+                        <input
+                          type="checkbox"
+                          checked={profile.rememberMe || false}
+                          onChange={(e) => updateProfile('rememberMe', e.target.checked)}
+                        />
+                        <span>Remember me</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="signup-forgot-btn"
+                        onClick={() => { setMode('forgot-password'); setMessage(''); }}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+
+                    <button type="submit" className="signup-submit-btn" disabled={loading}>
+                      {loading ? (
+                        <><Loader2 size={16} className="auth-spinner" /> Signing in...</>
+                      ) : (
+                        'Sign In'
+                      )}
+                    </button>
+
+                    <div className="signup-switch-link">
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('register');
+                          setMessage('');
+                        }}
+                      >
+                        Sign up
+                      </button>
+                    </div>
+
+                    <div className="signup-divider">
+                      <span>or</span>
+                    </div>
+
+                    <GoogleButton
+                      onClick={() => handleSocialLogin('google')}
+                      text="Sign in with Google"
+                    />
+
+                    {message && (
+                      <div className="signup-alert-error">
+                        <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                        <span>{message}</span>
+                      </div>
+                    )}
+                  </form>
+                </div>
+
+                <div className="signup-form-bottom-footer">
+                  <LegalDisclaimer />
+                </div>
+              </div>
+            ) : (
+              /* =================================================================
+                 Signup / Complete Profile Form (Customer or Partner)
+                 ================================================================= */
+              <div className="signup-form-view-wrapper">
+                <div className="signup-form-centered-body">
+                  <div className="signup-form-header">
+                    <div className="signup-form-title-row">
+                      <h2 className="signup-form-title">
+                        {isOnboarding ? 'Complete Your Profile' : 'Create an account'}
+                      </h2>
+                    </div>
+                    {isOnboarding && (
+                      <p className="signup-form-subtitle">
+                        Provide your business details to unlock wholesale catalog access.
+                      </p>
+                    )}
+                  </div>
+
+                  <form onSubmit={submit} className="signup-form">
+                    <div className="signup-form-grid">
+                      {/* Business Type / Role Selector */}
+                      <div className="signup-field signup-field-full">
+                        <label className="signup-label">
+                          <span>Business Type *</span>
+                        </label>
+                        <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
+                          {ACCOUNT_ROLE_OPTIONS.map((option) => {
+                            const isSelected = Boolean(
+                              profile.buyerSubtype && (
+                                (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
+                                (option.id === 'vendor' && profile.buyerType === 'vendor') ||
+                                (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer') ||
+                                (option.id === 'online_store' && (
+                                  (profile.buyerSubtype || '').toLowerCase() === 'website owner' ||
+                                  (profile.buyerSubtype || '').toLowerCase() === 'website_owner'
+                                ))
+                              )
+                            );
+
+                            return (
+                              <label
+                                key={option.id}
+                                className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
+                                title={option.isSeller ? "Register as a Seller / Weaver to list and sell products on Weave 365" : undefined}
+                              >
+                                <input
+                                  type="radio"
+                                  name="accountRole"
+                                  value={option.id}
+                                  checked={isSelected}
+                                  required
+                                  onChange={() => {
+                                    setProfile((prev) => ({
+                                      ...prev,
+                                      buyerType: option.buyerType,
+                                      buyerSubtype: option.buyerSubtype,
+                                    }));
+                                  }}
+                                  className="signup-role-radio-input"
+                                />
+                                <span className="signup-role-custom-radio" aria-hidden="true">
+                                  <span className="signup-role-radio-inner" />
+                                </span>
+                                <span className="signup-role-radio-label">{option.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Full Name */}
+                      <div className="signup-field">
+                        <label className="signup-label">Full Name *</label>
+                        <input
+                          type="text"
+                          value={profile.fullName}
+                          onChange={(e) => updateProfile('fullName', e.target.value)}
+                          onBlur={(e) => updateProfile('fullName', toTitleCaseName(e.target.value))}
+                          placeholder="Enter your full name"
+                          autoComplete="name"
+                          required
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* Business Name */}
+                      <div className="signup-field">
+                        <label className="signup-label">Business Name</label>
+                        <input
+                          type="text"
+                          value={profile.businessName}
+                          onChange={(e) => updateProfile('businessName', e.target.value)}
+                          placeholder="Optional business name"
+                          autoComplete="organization"
+                          className="signup-input"
+                        />
+                      </div>
+
+
+
+
+                      {/* WhatsApp Number (Full Width for comfortable digits typing) */}
+                      <div className="signup-field signup-field-full">
+                        <label className="signup-label">WhatsApp Number *</label>
+                        <div className="signup-input-phone-group">
+                          <select
+                            className="signup-select"
+                            value={profile.countryCode}
+                            onChange={(e) => updateProfile('countryCode', e.target.value)}
+                          >
+                            {countryCodes.map((item) => (
+                              <option key={item.value} value={item.value}>
+                                {item.label}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="tel"
+                            value={profile.whatsapp}
+                            onChange={(e) =>
+                              updateProfile(
+                                'whatsapp',
+                                e.target.value.replace(/\D/g, '').slice(0, 10)
+                              )
+                            }
+                            placeholder="Enter 10-digit WhatsApp number"
+                            autoComplete="tel-national"
+                            required
+                            className="signup-input"
+                          />
+                        </div>
+                      </div>
+
+                      {/* City */}
+                      <div className="signup-field">
+                        <label className="signup-label">City *</label>
+                        <input
+                          type="text"
+                          value={profile.city}
+                          onChange={(e) => updateProfile('city', e.target.value)}
+                          placeholder="e.g. Varanasi"
+                          autoComplete="address-level2"
+                          required
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* State */}
+                      <div className="signup-field">
+                        <label className="signup-label">State *</label>
+                        <input
+                          type="text"
+                          value={profile.state}
+                          onChange={(e) => updateProfile('state', e.target.value)}
+                          placeholder="e.g. Uttar Pradesh"
+                          autoComplete="address-level1"
+                          required
+                          className="signup-input"
+                        />
+                      </div>
+
+
+                      {/* Pincode */}
+                      <div className="signup-field">
+                        <label className="signup-label">Pincode *</label>
+                        <input
+                          type="text"
+                          value={profile.pincode}
+                          onChange={(e) =>
+                            updateProfile('pincode', normalizePincodeInput(e.target.value))
+                          }
+                          placeholder="6-digit pincode"
+                          inputMode="numeric"
+                          required
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="signup-field">
+                        <label className="signup-label">
+                          <span>Email Address *</span>
+                          {isOnboarding && (
+                            <span className="signup-verified-badge">
+                              <Check size={11} /> Google Verified
+                            </span>
+                          )}
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                          required
+                          disabled={isOnboarding}
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* Website */}
+                      <div className="signup-field">
+                        <label className="signup-label">Website</label>
+                        <input
+                          type="url"
+                          value={profile.website}
+                          onChange={(e) => updateProfile('website', e.target.value)}
+                          placeholder="https://yourstore.com"
+                          autoComplete="url"
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* Social Handle */}
+                      <div className="signup-field">
+                        <label className="signup-label">Social Handle</label>
+                        <input
+                          type="text"
+                          value={profile.socialHandle}
+                          onChange={(e) => updateProfile('socialHandle', e.target.value)}
+                          placeholder="@yourhandle or profile link"
+                          className="signup-input"
+                        />
+                      </div>
+
+                      {/* Password (Only for standard email registrations, not Google onboarding) */}
+                      {!isOnboarding && (
+                        <div className="signup-field signup-field-full">
+                          <label className="signup-label">Password *</label>
+                          <div className="signup-input-wrapper">
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="Minimum 6 characters"
+                              autoComplete="new-password"
+                              minLength={6}
+                              required
+                              className="signup-input"
+                              style={{ paddingRight: '44px' }}
+                            />
+                            <button
+                              type="button"
+                              className="signup-password-toggle"
+                              onClick={() => setShowPassword(!showPassword)}
+                              aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
+                    <button type="submit" className="signup-submit-btn" disabled={loading}>
+                      {loading ? (
+                        <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
+                      ) : isOnboarding ? (
+                        'Complete Registration & Continue'
+                      ) : (
+                        'Create Account with Password'
+                      )}
+                    </button>
+
+                    {!isOnboarding && (
+                      <>
+                        <div className="signup-divider">
+                          <span>or</span>
+                        </div>
+
+                        <GoogleButton
+                          onClick={handleGoogleRegister}
+                          text="Sign up with Google"
+                        />
+                      </>
+                    )}
+
+                    {message && (
+                      <div className="signup-alert-error">
+                        <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                        <span>{message}</span>
+                      </div>
+                    )}
+                  </form>
+                </div>
+
+                <div className="signup-form-bottom-footer">
+                  <LegalDisclaimer />
+
+                  {isOnboarding && user?.email ? (
+                    <div className="signup-switch-link">
+                      Signed in as {user.email} •{' '}
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="signup-switch-link">
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('login');
+                          setMessage('');
+                        }}
+                      >
+                        Sign in
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
