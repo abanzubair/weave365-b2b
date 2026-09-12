@@ -205,7 +205,13 @@ export function AppShell({ children }) {
     }
     setIsProfileHydrated(true);
 
-    // Defer loading heavy Supabase auth module until after initial render is complete
+    // On admin and account routes, resolve session immediately (0ms). On public storefront defer to preserve LCP.
+    const isSpecialRoute = typeof window !== 'undefined' && (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/account')
+    );
+    const delay = isSpecialRoute ? 0 : 3500;
+
     const timer = setTimeout(() => {
       import('../supabaseClient.js').then(({ isSupabaseConfigured, supabase }) => {
         if (!isMounted) return;
@@ -232,7 +238,7 @@ export function AppShell({ children }) {
       }).catch((err) => {
         console.error('Error loading Supabase auth:', err);
       });
-    }, 3500);
+    }, delay);
 
     return () => {
       isMounted = false;

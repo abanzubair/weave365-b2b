@@ -367,10 +367,10 @@ const TEMPLATES = [
     message: 'Hi! I’d like to know about [write your question here]. Please help me.',
   },
   {
-    id: 'channel',
-    title: 'WhatsApp Channel',
-    desc: 'Weave 365 Updates',
-    url: storeConfig.whatsappChannel || 'https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U',
+    id: 'community',
+    title: 'WhatsApp Community',
+    desc: 'Weave 365 Announcements',
+    url: storeConfig.whatsappCommunity || storeConfig.whatsappChannel || 'https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga',
   },
 ];
 

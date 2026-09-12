@@ -24,7 +24,6 @@ export default function BuyerPipeline({
   loadAdminData,
   handleManualSync,
   setSelectedUserList,
-  updateBuyerPriceAccess,
   toggleResellerDashboard,
   updateInquiryStatus,
   user,
@@ -99,9 +98,6 @@ export default function BuyerPipeline({
         const favB = userFavoriteMap.get(b.id) || [];
         valA = favA.length;
         valB = favB.length;
-      } else if (userSortField === 'approval') {
-        valA = String(a.approval_status || 'pending').toLowerCase();
-        valB = String(b.approval_status || 'pending').toLowerCase();
       } else { // 'date'
         valA = new Date(a.created_at || 0).getTime();
         valB = new Date(b.created_at || 0).getTime();
@@ -204,7 +200,7 @@ export default function BuyerPipeline({
       alert('No data to export.');
       return;
     }
-    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Categories', 'Type', 'Behavior', 'Approval'];
+    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Categories', 'Type', 'Behavior'];
     const csvRows = sortedProfiles.map(profile => {
       const categoriesStr = Array.isArray(profile.interested_categories)
         ? profile.interested_categories.join('; ')
@@ -218,7 +214,6 @@ export default function BuyerPipeline({
         categoriesStr,
         getBuyerTypeLabel(profile.buyer_type),
         getBuyingBehaviorLabel(profile.buying_behavior),
-        profile.approval_status || 'pending',
       ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
     });
     const csv = [headers.join(','), ...csvRows].join('\n');
@@ -290,7 +285,6 @@ export default function BuyerPipeline({
             <option value="name">Sort: Name</option>
             <option value="order_list">Sort: Orders</option>
             <option value="favourites">Sort: Favourites</option>
-            <option value="approval">Sort: Approval</option>
           </select>
           <button
             type="button"
@@ -325,7 +319,6 @@ export default function BuyerPipeline({
                 <th>Categories</th>
                 <th>Cart</th>
                 <th>Favourites</th>
-                <th>Approval</th>
                 <th>Dashboard</th>
                 <th>Action</th>
               </tr>
@@ -334,10 +327,6 @@ export default function BuyerPipeline({
               {displayedProfiles.map((profile, index) => {
                 const cartRows = userCartMap.get(profile.id) || [];
                 const favoriteRows = userFavoriteMap.get(profile.id) || [];
-
-                const currentStatusVal =
-                  profile.approval_status === 'approved' ? 'approved' :
-                    profile.approval_status === 'suspended' ? 'suspended' : 'pending';
 
                 const storefront = storefrontsByReseller[profile.id] || (profile.user_id ? storefrontsByReseller[profile.user_id] : null);
                 const storeSlug = storefront?.slug || profile.reseller_slug || profile.store_slug;
@@ -425,11 +414,6 @@ export default function BuyerPipeline({
                       </button>
                     </td>
                     <td>
-                      <span className={`admin-badge-status status-${String(profile.approval_status || 'pending').toLowerCase().trim().replace(/[^a-z0-9]/g, '-')}`}>
-                        {profile.approval_status || 'pending'}
-                      </span>
-                    </td>
-                    <td>
                       <div className="reseller-dashboard-cell">
                         <div className="reseller-dashboard-status-row">
                           <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
@@ -472,24 +456,6 @@ export default function BuyerPipeline({
                             <Copy size={16} />
                           )}
                         </button>
-                        <select
-                          value={currentStatusVal}
-                          onChange={async (e) => {
-                            const val = e.target.value;
-                            if (val === 'approved') {
-                              await updateBuyerPriceAccess(profile, 'approved', 'approved');
-                            } else if (val === 'pending') {
-                              await updateBuyerPriceAccess(profile, 'pending', 'pending');
-                            } else if (val === 'suspended') {
-                              await updateBuyerPriceAccess(profile, 'suspended', 'pending');
-                            }
-                          }}
-                          className="pipeline-action-select"
-                        >
-                          <option value="approved">Approve</option>
-                          <option value="pending">Pending</option>
-                          <option value="suspended">Suspend</option>
-                        </select>
                       </div>
                     </td>
                   </tr>
@@ -498,7 +464,7 @@ export default function BuyerPipeline({
               })}
               {displayedProfiles.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="admin-table-empty">No profiles found.</td>
+                  <td colSpan="9" className="admin-table-empty">No profiles found.</td>
                 </tr>
               )}
             </tbody>

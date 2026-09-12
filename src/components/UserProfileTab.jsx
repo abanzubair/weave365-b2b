@@ -444,10 +444,10 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
               <span className="account-field-hint">Displayed on custom catalogs &amp; wholesale records</span>
             </div>
 
-            {/* Website / Online Store */}
+            {/* Website */}
             <div className="account-form-field">
               <label className="account-form-label" htmlFor="profile-website">
-                <span>Website / Online Store</span>
+                <span>Website</span>
               </label>
               <div className="account-input-with-icon">
                 <Globe size={16} className="account-field-icon" />

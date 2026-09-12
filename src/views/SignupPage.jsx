@@ -71,11 +71,11 @@ const countryCodes = [
 const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Under 999'];
 
 const ACCOUNT_ROLE_OPTIONS = [
-  { id: 'customer', label: 'Buyer', buyerType: 'customer', buyerSubtype: 'Customer' },
-  { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
-  { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
   { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
-  { id: 'online_store', label: 'Online Store', buyerType: 'customer', buyerSubtype: 'Online Store' },
+  { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
+  { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
+  { id: 'customer', label: 'Buyer', buyerType: 'customer', buyerSubtype: 'Customer' },
+  { id: 'online_store', label: 'Website Owner', buyerType: 'customer', buyerSubtype: 'Online Store' },
   { id: 'vendor', label: 'Sell on Weave 365', buyerType: 'vendor', buyerSubtype: 'Vendor', isSeller: true },
 ];
 
@@ -167,8 +167,8 @@ export function SignupPage({
     businessName: '',
     website: '',
     socialHandle: '',
-    buyerType: 'customer',
-    buyerSubtype: 'Customer',
+    buyerType: '',
+    buyerSubtype: '',
     buyingBehavior: 'instant',
     city: '',
     state: '',
@@ -193,8 +193,8 @@ export function SignupPage({
         ...prev,
         website: '',
         socialHandle: '',
-        buyerType: 'customer',
-        buyerSubtype: 'Customer',
+        buyerType: '',
+        buyerSubtype: '',
       }));
       setMode('login');
       setMessage('');
@@ -221,7 +221,9 @@ export function SignupPage({
           opt.buyerType === lower ||
           opt.buyerSubtype.toLowerCase() === lower ||
           (lower === 'buyer' && opt.id === 'customer') ||
-          (lower === 'partner' && opt.id === 'vendor')
+          (lower === 'partner' && opt.id === 'vendor') ||
+          (lower === 'seller' && opt.id === 'vendor') ||
+          ((lower === 'website_owner' || lower === 'website owner') && opt.id === 'online_store')
       );
       if (matched) {
         setProfile((prev) => ({
@@ -532,6 +534,11 @@ export function SignupPage({
   }
 
   function handleGoogleRegister() {
+    if (!profile.buyerSubtype) {
+      setMessage('Please select your Business Type.');
+      return;
+    }
+
     const cleanName = toTitleCaseName(profile.fullName);
     const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
     const cleanPincode = normalizePincodeInput(profile.pincode);
@@ -613,6 +620,12 @@ export function SignupPage({
 
       // Handle Post-Google Onboarding / Complete Profile
       if (mode === 'complete-profile') {
+        if (!profile.buyerSubtype) {
+          setMessage('Please select your Business Type.');
+          setLoading(false);
+          return;
+        }
+
         const cleanName = toTitleCaseName(profile.fullName);
         const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
 
@@ -669,6 +682,12 @@ export function SignupPage({
       }
 
       if (mode === 'register') {
+        if (!profile.buyerSubtype) {
+          setMessage('Please select your Business Type.');
+          setLoading(false);
+          return;
+        }
+
         const cleanName = toTitleCaseName(profile.fullName);
         const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
 
@@ -1212,10 +1231,17 @@ export function SignupPage({
                     </label>
                     <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
                       {ACCOUNT_ROLE_OPTIONS.map((option) => {
-                        const isSelected =
-                          (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
-                          (option.id === 'vendor' && profile.buyerType === 'vendor') ||
-                          (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer');
+                        const isSelected = Boolean(
+                          profile.buyerSubtype && (
+                            (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
+                            (option.id === 'vendor' && profile.buyerType === 'vendor') ||
+                            (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer') ||
+                            (option.id === 'online_store' && (
+                              (profile.buyerSubtype || '').toLowerCase() === 'website owner' ||
+                              (profile.buyerSubtype || '').toLowerCase() === 'website_owner'
+                            ))
+                          )
+                        );
 
                         return (
                           <label
@@ -1228,6 +1254,7 @@ export function SignupPage({
                               name="accountRole"
                               value={option.id}
                               checked={isSelected}
+                              required
                               onChange={() => {
                                 setProfile((prev) => ({
                                   ...prev,
@@ -1377,9 +1404,9 @@ export function SignupPage({
                     />
                   </div>
 
-                  {/* Website / Online Store */}
+                  {/* Website */}
                   <div className="signup-field">
-                    <label className="signup-label">Website / Online Store (Optional)</label>
+                    <label className="signup-label">Website</label>
                     <input
                       type="url"
                       value={profile.website}
@@ -1392,7 +1419,7 @@ export function SignupPage({
 
                   {/* Social Handle */}
                   <div className="signup-field">
-                    <label className="signup-label">Social Handle (Optional)</label>
+                    <label className="signup-label">Social Handle</label>
                     <input
                       type="text"
                       value={profile.socialHandle}

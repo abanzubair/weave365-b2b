@@ -10,8 +10,10 @@ export default function AdminClient() {
   const navigate = useAppNavigate();
   const {
     user,
+    setUser,
     buyerProfile,
     setBuyerProfile,
+    isProfileHydrated,
     blogs,
     setBlogs,
     products,
@@ -43,8 +45,10 @@ export default function AdminClient() {
   return (
     <Admin
       user={user}
+      setUser={setUser}
       buyerProfile={buyerProfile}
       onProfileChange={setBuyerProfile}
+      isProfileHydrated={isProfileHydrated}
       openAuth={() => navigate('signup', null, null, { mode: 'login' })}
       blogs={blogs}
       setBlogs={setBlogs}

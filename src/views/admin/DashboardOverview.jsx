@@ -762,8 +762,8 @@ export default function DashboardOverview({
       {/* 4. Recent Order Table */}
       <article className="admin-panel">
         <div className="admin-panel-head" style={{ borderBottom: '1px solid #f3f4f6', paddingBottom: '16px' }}>
-          <span>Recent Order</span>
-          <small>{enquiryRows.length} entries total</small>
+          <span>Recent Orders</span>
+          <small>{enquiryRows.length} {enquiryRows.length === 1 ? 'entry' : 'entries'} total</small>
         </div>
 
         <div className="admin-table-wrap">

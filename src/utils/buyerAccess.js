@@ -34,14 +34,13 @@ export function applyAutoApprovalToBuyerProfile(profile) {
   const isVendor = isVendorProfile(profile);
   const buyerType = isVendor ? 'vendor' : 'customer';
   const role = isVendor ? 'vendor' : (profile?.role || 'customer');
-  const blockedByPincode = isVaranasiPincode(profile?.pincode);
 
   return {
     ...profile,
     buyer_type: buyerType,
     role: role,
-    approval_status: blockedByPincode ? 'pending' : 'approved',
-    price_group: blockedByPincode ? 'pending' : 'approved',
+    approval_status: 'approved',
+    price_group: 'approved',
   };
 }
 
@@ -59,12 +58,13 @@ export function getBuyerAccess(user, buyerProfile) {
       buyerType: 'guest',
       priceGroup: 'guest',
       priceLabel: 'Price',
-      approvalStatus: 'guest',
+      approvalStatus: 'approved',
       userId: null,
       userEmail: null,
       buyerName: null,
       buyerPhone: null,
       buyerPincode: null,
+      blockedByVaranasiPincode: false,
       isVendor: false,
     };
   }
@@ -72,28 +72,18 @@ export function getBuyerAccess(user, buyerProfile) {
   const profile = buyerProfile || getBuyerProfileFromUser(user) || {};
   const isVendor = profile.buyer_subtype?.toLowerCase().includes('vendor') || profile.buyer_type === 'vendor';
   const buyerType = isVendor ? 'vendor' : 'customer';
-  const approvalStatus = profile.approval_status || 'approved';
-  
-  // Geotargeting block check for Varanasi pincodes
-  const blockedByPincode = isVaranasiPincode(profile.pincode);
-  const isRestricted = approvalStatus === 'suspended' || approvalStatus === 'rejected' || (blockedByPincode && approvalStatus === 'pending');
-  const isApproved = approvalStatus === 'approved' && !isRestricted;
-
-  let message = '';
-  if (approvalStatus === 'rejected') message = 'Your buyer account needs review. Showing prices.';
-  if (approvalStatus === 'suspended') message = 'Price access is paused. Showing prices.';
-  if (blockedByPincode && approvalStatus === 'pending') message = 'Your account approval is pending. Showing prices.';
+  const blockedByPincode = Boolean(isVaranasiPincode(profile.pincode));
 
   return {
     isLoggedIn: true,
     canViewPrices: true,
-    reason: isRestricted ? approvalStatus : (isApproved ? 'approved' : approvalStatus),
-    message,
+    reason: 'approved',
+    message: '',
     buyerType,
     isVendor,
-    priceGroup: isApproved ? 'approved' : 'pending',
+    priceGroup: 'approved',
     priceLabel: 'Wholesale & Reseller',
-    approvalStatus,
+    approvalStatus: 'approved',
     blockedByVaranasiPincode: blockedByPincode,
     userId: user.id || null,
     userEmail: user.email || null,

@@ -91,11 +91,70 @@ const emptyAdminData = {
   errors: {},
 };
 
-export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [], setBlogs, products = [], landingPages = [], setLandingPages, navigate }) {
+export function Admin({
+  user,
+  setUser,
+  buyerProfile,
+  onProfileChange,
+  isProfileHydrated,
+  openAuth,
+  blogs = [],
+  setBlogs,
+  products = [],
+  landingPages = [],
+  setLandingPages,
+  navigate
+}) {
   const [status, setStatus] = useState('idle');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
-  const allowed = isAdminUser(user) || buyerProfile?.role === 'admin';
+
+  // Auth checking state: display loading screen while resolving Supabase session
+  const [localUser, setLocalUser] = useState(user);
+  const [authChecking, setAuthChecking] = useState(() => !user);
+
+  useEffect(() => {
+    if (user) {
+      setLocalUser(user);
+      setAuthChecking(false);
+      return;
+    }
+
+    let isMounted = true;
+    if (!isSupabaseConfigured || !supabase) {
+      setAuthChecking(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (session?.user) {
+        setLocalUser(session.user);
+        if (setUser) setUser(session.user);
+      }
+      setAuthChecking(false);
+    }).catch((err) => {
+      console.warn('Admin session check error:', err);
+      if (isMounted) setAuthChecking(false);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+      if (session?.user) {
+        setLocalUser(session.user);
+        if (setUser) setUser(session.user);
+      }
+      setAuthChecking(false);
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, [user, setUser]);
+
+  const activeUser = user || localUser;
+  const allowed = isAdminUser(activeUser) || buyerProfile?.role === 'admin';
 
   // Tab control with automatic URL query persistence & localStorage cache
   const [activeTab, setActiveTabState] = useState(() => {
@@ -249,7 +308,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ email: user?.email }),
+        body: JSON.stringify({ email: activeUser?.email }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -264,37 +323,6 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     }
   }
 
-  // API Call: Update buyer profile access pricing groups
-  async function updateBuyerPriceAccess(profile, approvalStatus, priceGroup) {
-    if (!isSupabaseConfigured || !allowed) return;
-
-    const update = {
-      approval_status: approvalStatus,
-      price_group: priceGroup,
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(update)
-      .eq('id', profile.id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setAdminData((current) => ({
-      ...current,
-      profiles: current.profiles.map((row) => (
-        row.id === profile.id ? { ...row, ...update } : row
-      )),
-    }));
-
-    if (profile.id === user?.id && onProfileChange) {
-      onProfileChange({ ...(buyerProfile || profile), ...update });
-    }
-  }
 
   // API Call: Enable/Disable white-label reseller dashboard
   async function toggleResellerDashboard(profile, isEnabled) {
@@ -317,7 +345,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       )),
     }));
 
-    if (profile.id === user?.id && onProfileChange) {
+    if (profile.id === activeUser?.id && onProfileChange) {
       onProfileChange({ ...(buyerProfile || profile), reseller_dashboard_enabled: isEnabled });
     }
   }
@@ -376,7 +404,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       )),
     }));
 
-    if (profileId === user?.id && onProfileChange) {
+    if (profileId === activeUser?.id && onProfileChange) {
       onProfileChange({ ...(buyerProfile || {}), ...update });
     }
 
@@ -439,7 +467,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
   useEffect(() => {
     void loadAdminData();
     void loadSiteReviews();
-  }, [allowed, user?.id]);
+  }, [allowed, activeUser?.id]);
 
   useEffect(() => {
     if ((activeTab === 'partners' || activeTab === 'enquires' || activeTab === 'tracking') && allowed) {
@@ -544,7 +572,21 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     return { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard };
   }, [activeTab, sidebarSections]);
 
-  if (!user) {
+  if (authChecking) {
+    return (
+      <section className="admin-loading-screen">
+        <div className="admin-loading-card">
+          <div className="admin-loading-spinner-wrap">
+            <div className="admin-loading-spinner" />
+          </div>
+          <h2 className="admin-loading-title">Weave 365 Admin</h2>
+          <p className="admin-loading-desc">Verifying credentials and loading dashboard...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!activeUser) {
     return (
       <section className="admin-locked-page">
         <LockKeyhole size={34} />
@@ -560,7 +602,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
       <section className="admin-locked-page">
         <LockKeyhole size={34} />
         <h1>Admin Access Only</h1>
-        <p>{user.email} is logged in, but this email is not in your admin list.</p>
+        <p>{activeUser.email} is logged in, but this email is not in your admin list.</p>
       </section>
     );
   }
@@ -575,7 +617,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
     );
   }
 
-  const userName = user?.email ? user.email.split('@')[0] : 'admin';
+  const userName = activeUser?.email ? activeUser.email.split('@')[0] : 'admin';
   const notificationCount = pendingReviews.length;
 
   return (
@@ -713,7 +755,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           {activeTab === 'admins' && (
             <AdminsManager
               adminData={adminData}
-              user={user}
+              user={activeUser}
               toggleResellerDashboard={toggleResellerDashboard}
             />
           )}
@@ -726,10 +768,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
               loadAdminData={loadAdminData}
               handleManualSync={handleManualSync}
               setSelectedUserList={setSelectedUserList}
-              updateBuyerPriceAccess={updateBuyerPriceAccess}
               toggleResellerDashboard={toggleResellerDashboard}
               updateInquiryStatus={updateInquiryStatus}
-              user={user}
+              user={activeUser}
             />
           )}
 
@@ -743,7 +784,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           )}
 
           {activeTab === 'customizer' && (
-            <SiteCustomizerTab user={user} navigate={navigate} />
+            <SiteCustomizerTab user={activeUser} navigate={navigate} />
           )}
 
           {activeTab === 'seo' && (
@@ -782,10 +823,9 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <VendorApplications
               adminData={adminData}
               loadAdminData={loadAdminData}
-              updateBuyerPriceAccess={updateBuyerPriceAccess}
               updateVendorProfile={updateVendorProfile}
               products={products}
-              user={user}
+              user={activeUser}
               buyerProfile={buyerProfile}
               navigate={navigate}
               setActiveTab={setActiveTab}
@@ -803,7 +843,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
           {activeTab === 'stock' && (
             <AdminStockManager
               products={products}
-              user={user}
+              user={activeUser}
               buyerProfile={buyerProfile}
             />
           )}
@@ -841,7 +881,7 @@ export function Admin({ user, buyerProfile, onProfileChange, openAuth, blogs = [
             <ApiManager
               adminData={adminData}
               loadAdminData={loadAdminData}
-              user={user}
+              user={activeUser}
             />
           )}
         </div>

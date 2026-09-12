@@ -50,7 +50,8 @@ export const storeConfig = {
   email: process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com',
   phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',
   whatsapp: process.env.NEXT_PUBLIC_STORE_WHATSAPP || '9919101369',
-  whatsappChannel: process.env.NEXT_PUBLIC_STORE_WHATSAPP_CHANNEL || 'https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U',
+  whatsappCommunity: process.env.NEXT_PUBLIC_STORE_WHATSAPP_COMMUNITY || 'https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga',
+  whatsappChannel: process.env.NEXT_PUBLIC_STORE_WHATSAPP_COMMUNITY || process.env.NEXT_PUBLIC_STORE_WHATSAPP_CHANNEL || 'https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga',
   minimumOrderValue: Number(process.env.NEXT_PUBLIC_MIN_ORDER_VALUE || 10000),
   upiId: process.env.NEXT_PUBLIC_STORE_UPI || '9919101369@kotak',
 };

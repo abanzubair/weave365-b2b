@@ -22,7 +22,6 @@ import {
   X,
 } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
-import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import {
   fallbackProductImage,
   buildSingleProductWhatsappUrl,
@@ -65,7 +64,6 @@ export const ProductCard = memo(function ProductCard({
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
   const resellerPrice = Number(selectedVariant?.prices?.b2r || selectedVariant?.prices?.single || wholesalePrice);
   const canViewPrice = wholesalePrice > 0 || resellerPrice > 0;
-  const isPriceLocked = !canViewPrice;
   const colorCount = product.totalColors || product.variants?.length || 1;
   const setPrice = wholesalePrice * colorCount;
   const isOutOfStock = Boolean(product.isOutOfStock || product.stockStatusOverride === 'out-of-stock');
@@ -409,17 +407,10 @@ export const ProductCard = memo(function ProductCard({
           </AppLink>
         </h3>
 
-        <div className={`card-info-grid ${(isPriceLocked || !showRightInfo) ? 'price-locked' : ''}`}>
+        <div className={`card-info-grid ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
           <div className="info-left">
-            {!isPriceLocked ? (
+            {canViewPrice && (
               <strong>{formatMoney(resellerPrice)} <span className="price-unit">/pc</span></strong>
-            ) : (
-              <div className="price-pending-notice">
-                <div className="notice-text">
-                  <strong>{priceNoticeForAccess(priceAccess)}</strong>
-                  <span>Prices will be visible once approved</span>
-                </div>
-              </div>
             )}
           </div>
 

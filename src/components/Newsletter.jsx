@@ -39,13 +39,13 @@ export function Newsletter({ navigate }) {
 
           <div className="editorial-hub-actions">
             <a
-              href={storeConfig.whatsappChannel || "https://whatsapp.com/channel/0029VbDZu7d002TAnjpEdo0U"}
+              href={storeConfig.whatsappCommunity || storeConfig.whatsappChannel || "https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga"}
               target="_blank"
               rel="noopener noreferrer"
               className="editorial-hub-whatsapp-btn"
             >
               <WhatsappIcon size={19} />
-              <span>WhatsApp Channel</span>
+              <span>WhatsApp Community</span>
             </a>
           </div>
         </div>
