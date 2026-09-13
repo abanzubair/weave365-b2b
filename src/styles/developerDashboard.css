@@ -3838,5 +3838,207 @@
   cursor: not-allowed;
 }
 
+/* ==========================================================================
+   Suspended / Inactive API Notice (Distilled, Clarified, Quieter)
+   ========================================================================== */
+.dev-suspended-quiet-card {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
 
+.dev-suspended-quiet-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
 
+.dev-suspended-quiet-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dev-suspended-quiet-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.dev-suspended-quiet-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.dev-suspended-quiet-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dev-suspended-quiet-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #991b1b;
+  background: #fef2f2;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.dev-suspended-quiet-desc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dev-suspended-quiet-action {
+  flex-shrink: 0;
+}
+
+.dev-quiet-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  line-height: 1.4;
+}
+
+.dev-quiet-action-btn:active {
+  transform: scale(0.98);
+}
+
+.dev-quiet-action-btn.support {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+}
+
+.dev-quiet-action-btn.support:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.dev-quiet-action-btn.support:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+.dev-quiet-action-btn.admin {
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  color: #ffffff;
+}
+
+.dev-quiet-action-btn.admin:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.dev-quiet-action-btn.admin:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .dev-suspended-quiet-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dev-suspended-quiet-action {
+    width: 100%;
+  }
+
+  .dev-quiet-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.dev-permission-status.suspended {
+  color: #dc2626;
+}
+
+.dev-permission-status.suspended .dev-permission-dot {
+  background: #ef4444;
+}
+
+.dev-permission-toggle-btn.suspended {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.dev-permission-toggle-btn.suspended .dev-permission-dot {
+  background: #ef4444;
+}
+
+.dev-permission-toggle-btn.suspended:hover {
+  background: #fee2e2;
+}
+
+.dev-metric-badge-suspended {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  margin-left: 6px;
+}
+
+.dev-cred-row.suspended .dev-cred-input {
+  background: #fff5f5;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.dev-test-console-suspended-notice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: #991b1b;
+  margin-bottom: 12px;
+}

@@ -1037,6 +1037,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             </div>
 
             <DeveloperDashboard
+              key={`${inspectedKeyId}-${inspectedRecord?.is_active ? 'active' : 'suspended'}-${inspectedRecord?.orders_enabled ? 'orders' : 'noorders'}`}
               apiKeyRecord={inspectedRecord}
               isAdminMode={true}
               onAdminUpdate={(updatedKey) => {

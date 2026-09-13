@@ -49,10 +49,12 @@ import {
   MapPin,
   Calendar,
   ShieldCheck,
-  MessageCircle
+  MessageCircle,
+  Power
 } from '../icons.jsx';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { fetchProducts } from '../../productData.js';
+import { storeConfig } from '../../config.js';
 import '../../styles/developerDashboard.css';
 
 /**
@@ -612,7 +614,16 @@ export function DeveloperDashboard({
     } else {
       void loadData();
     }
-  }, [initialKeyRecord?.id, user?.id]);
+  }, [
+    initialKeyRecord?.id,
+    initialKeyRecord?.is_active,
+    initialKeyRecord?.orders_enabled,
+    initialKeyRecord?.tier,
+    initialKeyRecord?.monthly_quota,
+    initialKeyRecord?.rate_limit_rps,
+    initialKeyRecord?.updated_at,
+    user?.id,
+  ]);
 
   // Load Products for Visual Catalog Curator
   useEffect(() => {
@@ -1184,6 +1195,57 @@ export function DeveloperDashboard({
         </div>
       )}
 
+      {/* Distilled, Clarified & Quieter Suspended API Notice */}
+      {apiKey && !apiKey.is_active && (
+        <div
+          className="dev-suspended-quiet-card"
+          role="alert"
+          aria-live="polite"
+        >
+          <div className="dev-suspended-quiet-main">
+            <div className="dev-suspended-quiet-icon" aria-hidden="true">
+              <AlertTriangle size={16} />
+            </div>
+            <div className="dev-suspended-quiet-text">
+              <div className="dev-suspended-quiet-title-row">
+                <h4 className="dev-suspended-quiet-title">API Access Suspended</h4>
+                <span className="dev-suspended-quiet-code" aria-label="HTTP Status: 403 Forbidden">403 Forbidden</span>
+              </div>
+              <p className="dev-suspended-quiet-desc">
+                {isAdminMode
+                  ? 'All external requests to /api/v1 are blocked. Storefront catalog syncing and dropship orders are paused.'
+                  : 'Your API key is inactive and live requests are blocked. Contact Weave365 support on WhatsApp to restore access.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="dev-suspended-quiet-action">
+            {isAdminMode ? (
+              <button
+                type="button"
+                className="dev-quiet-action-btn admin"
+                onClick={() => handleAdminToggleActiveChange(true)}
+              >
+                <Power size={13} aria-hidden="true" />
+                <span>Reactivate Key</span>
+              </button>
+            ) : (
+              <a
+                href={`https://wa.me/${(String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '').length === 10 ? '91' : '') + String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Hi Weave365 team, my API access for ${apiKey?.client_name || 'my storefront'} is currently suspended. Please help review and reactivate.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dev-quiet-action-btn support"
+              >
+                <MessageCircle size={14} aria-hidden="true" />
+                <span>Contact Support</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 2. User & Storefront Activation Profile Card with Integrated Actions */}
       <UserActivationInfoCard
         apiKey={apiKey}
@@ -1240,7 +1302,14 @@ export function DeveloperDashboard({
       <div className="dev-metrics-grid">
         <div className="dev-metric-card">
           <div className="dev-metric-head">
-            <span className="dev-metric-label">Monthly Request Quota</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="dev-metric-label">Monthly Request Quota</span>
+              {!apiKey?.is_active && (
+                <span className="dev-metric-badge-suspended">
+                  <AlertTriangle size={10} /> Paused
+                </span>
+              )}
+            </div>
             <Activity size={15} className="dev-metric-icon" />
           </div>
           <div className="dev-metric-value">
@@ -1248,26 +1317,43 @@ export function DeveloperDashboard({
           </div>
           <div className="dev-progress-bar-wrap">
             <div
-              className={`dev-progress-bar ${usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
-              style={{ transform: `scaleX(${usagePercent / 100})` }}
+              className={`dev-progress-bar ${!apiKey?.is_active ? 'disabled' : usagePercent > 85 ? 'danger' : usagePercent > 60 ? 'warning' : 'good'}`}
+              style={{
+                transform: `scaleX(${usagePercent / 100})`,
+                background: !apiKey?.is_active ? '#cbd5e1' : undefined,
+              }}
             />
           </div>
           <div className="dev-metric-footer">
-            <span>{remainingQuota.toLocaleString()} requests remaining ({usagePercent}% used)</span>
+            <span>
+              {!apiKey?.is_active
+                ? 'API suspended • Requests blocked'
+                : `${remainingQuota.toLocaleString()} requests remaining (${usagePercent}% used)`}
+            </span>
             <span>Resets in {daysInMonthLeft} days</span>
           </div>
         </div>
 
         <div className="dev-metric-card">
           <div className="dev-metric-head">
-            <span className="dev-metric-label">Rate Limit & Throughput</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="dev-metric-label">Rate Limit & Throughput</span>
+              {!apiKey?.is_active && (
+                <span className="dev-metric-badge-suspended">
+                  <AlertTriangle size={10} /> Blocked
+                </span>
+              )}
+            </div>
             <Zap size={15} className="dev-metric-icon" />
           </div>
           <div className="dev-metric-value">
-            {apiKey?.rate_limit_rps || 1} <span className="dev-metric-unit">req / sec</span>
+            {!apiKey?.is_active ? 0 : (apiKey?.rate_limit_rps || 1)}{' '}
+            <span className="dev-metric-unit">{!apiKey?.is_active ? 'req / sec (Blocked)' : 'req / sec'}</span>
           </div>
           <p className="dev-metric-subtext">
-            Standard burst allowance: {Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent requests
+            {!apiKey?.is_active
+              ? 'All storefront requests are rejected with 403 Forbidden until reactivated.'
+              : `Standard burst allowance: ${Math.max(5, (apiKey?.rate_limit_rps || 1) * 3)} concurrent requests`}
           </p>
         </div>
       </div>
@@ -1278,6 +1364,11 @@ export function DeveloperDashboard({
           <div className="dev-card-title">
             <KeyRound size={16} />
             <h3>API Credentials</h3>
+            {!apiKey?.is_active && (
+              <span className="dev-metric-badge-suspended">
+                <AlertTriangle size={10} /> Key Suspended (403 Forbidden)
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
@@ -1304,10 +1395,16 @@ export function DeveloperDashboard({
         </div>
 
         <div className="dev-credentials-list">
-          <div className="dev-cred-row">
+          <div className={`dev-cred-row ${!apiKey?.is_active ? 'suspended' : ''}`}>
             <div className="dev-cred-info">
               <span className="dev-cred-name">API Secret Key</span>
-              <span className="dev-cred-desc">Pass in HTTP header: <code>X-API-Key: &lt;your_key&gt;</code></span>
+              <span className="dev-cred-desc">
+                {!apiKey?.is_active ? (
+                  <span style={{ color: '#dc2626', fontWeight: 600 }}>⚠️ Inactive: Incoming requests with this key will return 403 Forbidden</span>
+                ) : (
+                  <>Pass in HTTP header: <code>X-API-Key: &lt;your_key&gt;</code></>
+                )}
+              </span>
             </div>
             <div className="dev-cred-input-wrap">
               <input
@@ -1365,34 +1462,41 @@ export function DeveloperDashboard({
       <div className="dev-card">
         <div className="dev-card-head">
           <div className="dev-card-title">
-            <Shield size={16} style={{ color: '#64748b' }} />
+            <Shield size={16} style={{ color: apiKey?.is_active ? '#64748b' : '#ef4444' }} />
             <h3>API Permissions &amp; Endpoint Access</h3>
+            {!apiKey?.is_active && (
+              <span className="dev-metric-badge-suspended">
+                <AlertTriangle size={10} /> Suspended
+              </span>
+            )}
           </div>
         </div>
         <div className="dev-permissions-grid">
           <div className="dev-permission-item">
             <div className="dev-permission-head">
               <span className="dev-permission-title">Wholesale Catalog</span>
-              <span className="dev-permission-status active">
+              <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
                 <span className="dev-permission-dot" />
-                Active
+                {apiKey?.is_active ? 'Active' : 'Suspended'}
               </span>
             </div>
             <div className="dev-permission-foot">
               <span className="dev-permission-endpoint">GET /catalog, /products/:sku</span>
+              {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
             </div>
           </div>
 
           <div className="dev-permission-item">
             <div className="dev-permission-head">
               <span className="dev-permission-title">Live Stock Status</span>
-              <span className="dev-permission-status active">
+              <span className={`dev-permission-status ${apiKey?.is_active ? 'active' : 'suspended'}`}>
                 <span className="dev-permission-dot" />
-                Active
+                {apiKey?.is_active ? 'Active' : 'Suspended'}
               </span>
             </div>
             <div className="dev-permission-foot">
               <span className="dev-permission-endpoint">GET /stock-status</span>
+              {!apiKey?.is_active && <span className="dev-permission-note" style={{ color: '#dc2626' }}>403 Blocked</span>}
             </div>
           </div>
 
@@ -1404,24 +1508,26 @@ export function DeveloperDashboard({
                   type="button"
                   onClick={() => handleAdminToggleOrdersChange(!apiKey?.orders_enabled)}
                   disabled={!apiKey?.is_active}
-                  className={`dev-permission-toggle-btn ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : 'disabled'}`}
-                  title={!apiKey?.is_active ? 'Cannot enable Order API: API key is disabled' : 'Toggle Order API Access'}
+                  className={`dev-permission-toggle-btn ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}
+                  title={!apiKey?.is_active ? 'Cannot enable Order API: API key is suspended' : 'Toggle Order API Access'}
                 >
                   <span className="dev-permission-dot" />
-                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Enabled' : 'Disabled'}
+                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Enabled' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
                 </button>
               ) : (
-                <span className={`dev-permission-status ${apiKey?.orders_enabled ? 'active' : 'disabled'}`}>
+                <span className={`dev-permission-status ${(apiKey?.orders_enabled && apiKey?.is_active) ? 'active' : !apiKey?.is_active ? 'suspended' : 'disabled'}`}>
                   <span className="dev-permission-dot" />
-                  {apiKey?.orders_enabled ? 'Active' : 'Disabled'}
+                  {(apiKey?.orders_enabled && apiKey?.is_active) ? 'Active' : (!apiKey?.is_active ? 'Suspended' : 'Disabled')}
                 </span>
               )}
             </div>
             <div className="dev-permission-foot">
               <span className="dev-permission-endpoint">POST /orders</span>
-              {!apiKey?.orders_enabled && !isAdminMode && (
+              {!apiKey?.is_active ? (
+                <span className="dev-permission-note" style={{ color: '#dc2626' }}>API suspended</span>
+              ) : !apiKey?.orders_enabled && !isAdminMode ? (
                 <span className="dev-permission-note">Growth tier only</span>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -1954,10 +2060,21 @@ fetchWeave365Catalog();`}
             <div className="dev-card-title">
               <Play size={18} />
               <h3>Live API Test Console</h3>
+              {!apiKey?.is_active && (
+                <span className="dev-metric-badge-suspended">
+                  <AlertTriangle size={10} /> Suspended
+                </span>
+              )}
             </div>
           </div>
 
           <div className="dev-test-console">
+            {!apiKey?.is_active && (
+              <div className="dev-test-console-suspended-notice">
+                <AlertTriangle size={15} style={{ flexShrink: 0 }} />
+                <span>Your API Key is currently suspended. Requests sent from this console or external storefronts will return <strong>HTTP 403 Forbidden</strong> until reactivated.</span>
+              </div>
+            )}
             <div className="dev-test-bar">
               <div className="dev-test-input-group">
                 <span className="dev-http-badge">GET</span>
