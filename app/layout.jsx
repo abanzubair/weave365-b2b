@@ -95,21 +95,6 @@ export default function RootLayout({ children }) {
           media="(min-width: 641px)"
           fetchPriority="high"
         />
-        {/* Preload critical primary UI body font and heading font */}
-        <link
-          rel="preload"
-          href="/fonts/manrope-latin.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/cormorant-garamond-600.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
         {/* Google tag (gtag.js) */}
         <Script id="google-analytics" strategy="lazyOnload">
           {`

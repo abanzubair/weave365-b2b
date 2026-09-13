@@ -70,20 +70,16 @@ export function OverlapHero({ navigate }) {
         <div className="overlap-hero-media-layer">
           <div className="overlap-hero-card">
             <picture className="overlap-hero-picture">
-              <source
-                media="(max-width: 640px)"
-                srcSet={HERO_IMAGE_400_URL}
-                type="image/webp"
-              />
+              <source media="(min-width: 641px)" srcSet={HERO_IMAGE_600_URL} type="image/webp" />
               <img
-                src={HERO_IMAGE_600_URL}
+                src={HERO_IMAGE_400_URL}
                 alt="Source Banarasi sarees and suits from Varanasi"
                 className="overlap-hero-img"
                 draggable="false"
                 fetchPriority="high"
                 decoding="sync"
-                width={600}
-                height={450}
+                width={400}
+                height={300}
                 onError={(e) => {
                   const fallback = getOptimizedImageUrl(CDN_HERO_URL, 'listing');
                   if (e.currentTarget.src !== fallback) {
