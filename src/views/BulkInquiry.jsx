@@ -19,6 +19,7 @@ import { storeConfig } from '../config.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import '../styles/bulkInquiry.css';
 
 const initialInquiry = {
   name: '',
