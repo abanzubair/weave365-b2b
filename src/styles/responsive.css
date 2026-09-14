@@ -880,10 +880,15 @@
   /* --- Filter Bar: evenly spaced across entire mobile screen (100vw) --- */
   .catalog-filters-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px 6px;
     width: 100%;
     padding-bottom: 4px;
+    box-sizing: border-box;
+  }
+
+  .catalog-filters-container > .filter-dropdown:nth-child(odd):last-of-type {
+    grid-column: span 2;
   }
 
   .filter-dropdown {
@@ -893,42 +898,64 @@
 
   .filter-dropdown-trigger {
     width: 100%;
-    min-height: 36px;
-    padding: 4px 6px;
-    border-radius: 6px;
-    gap: 4px;
+    min-height: 42px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    gap: 6px;
     justify-content: space-between;
     touch-action: manipulation;
-    border-color: var(--surface-accent);
-    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    background: var(--white);
+    box-sizing: border-box;
+  }
+
+  .filter-dropdown.open .filter-dropdown-trigger {
+    border-color: var(--gold);
+    box-shadow: 0 2px 8px rgba(183, 134, 70, 0.15);
   }
 
   .filter-label-wrap {
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
     min-width: 0;
     overflow: hidden;
+    text-align: left;
   }
 
   .filter-label-wrap label {
-    font-size: 9px;
+    font-size: 8.5px;
+    line-height: 1.1;
     margin-bottom: 0;
-    flex: 0 0 auto;
-  }
-
-  .filter-label-wrap span {
-    font-size: 11px;
+    color: var(--gold-mid);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
+  }
+
+  .filter-label-wrap span {
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--brown-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .filter-dropdown-trigger svg {
     width: 14px;
     height: 14px;
     flex: 0 0 auto;
+    color: var(--gold-mid);
+    transition: transform 0.2s ease;
+  }
+
+  .filter-dropdown.open .filter-dropdown-trigger svg {
+    transform: rotate(180deg);
   }
 
   /* Dropdown menu → bottom-sheet style on mobile */
@@ -939,12 +966,34 @@
     left: 0;
     right: 0;
     width: 100%;
-    max-height: 60vh;
+    max-height: 65vh;
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -10px 40px rgba(31, 20, 13, 0.18);
-    padding: 12px 16px 28px;
+    padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px));
     z-index: 5001;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
     animation: sheetSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .filter-dropdown-menu::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line, #e2d9cf);
+    margin: 0 auto 12px;
+  }
+
+  .fabric-filter .filter-dropdown-menu,
+  .weave-filter .filter-dropdown-menu,
+  .occasion-filter .filter-dropdown-menu {
+    width: 100%;
   }
 
   .filter-dropdown.closing .filter-dropdown-menu {
@@ -956,15 +1005,29 @@
     display: flex;
     align-items: center;
     font-size: 15px;
+    font-weight: 500;
     padding: 10px 16px;
     border-radius: 10px;
     touch-action: manipulation;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--brown-900);
+    margin-bottom: 4px;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
-  /* Backdrop overlay for open filter sheet */
-  /* Removed redundant backdrop as we use explicit div in JSX */
-  .filter-dropdown.open::before {
-    display: none;
+  .filter-dropdown-menu button.active {
+    background: var(--surface-soft);
+    color: var(--gold-dark);
+    font-weight: 700;
+  }
+
+  .filter-dropdown-menu button:hover,
+  .filter-dropdown-menu button:active {
+    background: var(--surface-soft);
+    color: var(--gold-dark);
   }
 
   @keyframes sheetSlideUp {
