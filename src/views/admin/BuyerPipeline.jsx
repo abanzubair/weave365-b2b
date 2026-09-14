@@ -9,6 +9,8 @@ import {
   Download,
   Globe,
   ExternalLink,
+  Instagram,
+  Facebook,
 } from '../../components/icons.jsx';
 import { normalizeBuyerType, isVendorProfile } from '../../utils/buyerAccess.js';
 import { adminEmails } from '../../config.js';
@@ -16,6 +18,62 @@ import {
   joinByUser,
   isAdminUser,
 } from './AdminShared.jsx';
+
+function getSocialInfo(rawHandle) {
+  if (!rawHandle || typeof rawHandle !== 'string') return null;
+  const trimmed = rawHandle.trim();
+  if (!trimmed) return null;
+
+  let url = trimmed;
+  let display = trimmed;
+  let type = 'instagram';
+
+  if (/^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\//i.test(trimmed)) {
+    type = 'instagram';
+    const cleanPath = trimmed
+      .replace(/^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\/?/i, '')
+      .replace(/[?#].*$/, '')
+      .replace(/\/+$/, '')
+      .replace(/^@/, '');
+    display = cleanPath ? `@${cleanPath}` : trimmed;
+    url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+  } else if (/^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\//i.test(trimmed)) {
+    type = 'facebook';
+    const cleanPath = trimmed
+      .replace(/^(https?:\/\/)?(www\.)?(facebook\.com|fb\.com)\/?/i, '')
+      .replace(/[?#].*$/, '')
+      .replace(/\/+$/, '');
+    display = cleanPath ? `fb/${cleanPath}` : trimmed;
+    url = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+  } else if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    type = 'link';
+    display = trimmed.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+    url = trimmed;
+  } else {
+    const clean = trimmed.replace(/^@+/, '');
+    display = `@${clean}`;
+    url = `https://instagram.com/${clean}`;
+  }
+
+  return { url, display, type };
+}
+
+function getWebsiteInfo(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+
+  const url = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+    ? trimmed
+    : `https://${trimmed}`;
+
+  const display = trimmed
+    .replace(/^https?:\/\//i, '')
+    .replace(/^www\./i, '')
+    .replace(/\/$/, '');
+
+  return { url, display };
+}
 
 export default function BuyerPipeline({
   adminData,
@@ -29,7 +87,7 @@ export default function BuyerPipeline({
   user,
 }) {
   // Local state for filters and sorting
-  const [userTypeFilter, setUserTypeFilter] = useState('all');
+  const [userTypeFilter, setUserTypeFilter] = useState('customer');
   const [userPageLimit, setUserPageLimit] = useState('10');
   const [userSortField, setUserSortField] = useState('date');
   const [userSortOrder, setUserSortOrder] = useState('desc');
@@ -80,7 +138,9 @@ export default function BuyerPipeline({
         const name = String(p.full_name || p.business_name || '').toLowerCase();
         const email = String(p.email || '').toLowerCase();
         const phone = String(p.whatsapp || '').toLowerCase();
-        return name.includes(q) || email.includes(q) || phone.includes(q);
+        const social = String(p.social_handle || p.socialHandle || '').toLowerCase();
+        const website = String(p.website || p.client_website || '').toLowerCase();
+        return name.includes(q) || email.includes(q) || phone.includes(q) || social.includes(q) || website.includes(q);
       });
     }
     return [...profiles].sort((a, b) => {
@@ -152,6 +212,8 @@ export default function BuyerPipeline({
       `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
       profile.email || '',
       profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+      profile.social_handle || profile.socialHandle || '',
+      profile.website || profile.client_website || '',
       categoriesStr,
       getBuyerTypeLabel(profile),
       getBuyingBehaviorLabel(profile.buying_behavior)
@@ -181,6 +243,8 @@ export default function BuyerPipeline({
         `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        profile.social_handle || profile.socialHandle || '',
+        profile.website || profile.client_website || '',
         categoriesStr,
         getBuyerTypeLabel(profile),
         getBuyingBehaviorLabel(profile.buying_behavior)
@@ -200,7 +264,7 @@ export default function BuyerPipeline({
       alert('No data to export.');
       return;
     }
-    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Categories', 'Type', 'Behavior'];
+    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Social Handle', 'Website', 'Categories', 'Type', 'Behavior'];
     const csvRows = sortedProfiles.map(profile => {
       const categoriesStr = Array.isArray(profile.interested_categories)
         ? profile.interested_categories.join('; ')
@@ -211,6 +275,8 @@ export default function BuyerPipeline({
         `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        profile.social_handle || profile.socialHandle || '',
+        profile.website || profile.client_website || '',
         categoriesStr,
         getBuyerTypeLabel(profile.buyer_type),
         getBuyingBehaviorLabel(profile.buying_behavior),
@@ -258,7 +324,7 @@ export default function BuyerPipeline({
           <Search size={18} className="pipeline-search-icon" />
           <input
             type="text"
-            placeholder="Search by name, email, or phone."
+            placeholder="Search by name, email, phone, social, or website..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pipeline-search-input"
@@ -270,8 +336,8 @@ export default function BuyerPipeline({
             onChange={(e) => setUserTypeFilter(e.target.value)}
             className="pipeline-filter-select"
           >
-            <option value="all">Verified Buyers</option>
             <option value="customer">Customers Only</option>
+            <option value="all">Verified Buyers</option>
             <option value="vendor">Vendor Partners</option>
             <option value="incomplete">Incomplete Drop-offs</option>
           </select>
@@ -312,20 +378,22 @@ export default function BuyerPipeline({
           <table className="admin-table pipeline-table">
             <thead>
               <tr>
-                <th>S.No.</th>
-                <th>Registered</th>
-                <th>Buyer</th>
-                <th>Type</th>
-                <th>Cart</th>
-                <th>Favourites</th>
-                <th>Dashboard</th>
-                <th>Action</th>
+                <th className="pipeline-col-sno">S.No.</th>
+                <th className="pipeline-col-registered">Registered</th>
+                <th className="pipeline-col-buyer">Buyer</th>
+                <th className="pipeline-col-type">Type</th>
+                <th className="pipeline-col-items">Cart & Fav</th>
+                <th className="pipeline-col-social">Social & Web</th>
+                <th className="pipeline-col-dashboard">Dashboard</th>
+                <th className="pipeline-col-action">Action</th>
               </tr>
             </thead>
             <tbody>
               {displayedProfiles.map((profile, index) => {
                 const cartRows = userCartMap.get(profile.id) || [];
                 const favoriteRows = userFavoriteMap.get(profile.id) || [];
+                const socialInfo = getSocialInfo(profile.social_handle || profile.socialHandle);
+                const websiteInfo = getWebsiteInfo(profile.website || profile.client_website);
 
                 const storefront = storefrontsByReseller[profile.id] || (profile.user_id ? storefrontsByReseller[profile.user_id] : null);
                 const storeSlug = storefront?.slug || profile.reseller_slug || profile.store_slug;
@@ -337,8 +405,8 @@ export default function BuyerPipeline({
 
                 return (
                   <tr key={profile.id}>
-                    <td><strong>{sortedProfiles.length - index}</strong></td>
-                    <td>
+                    <td className="pipeline-col-sno"><strong>{sortedProfiles.length - index}</strong></td>
+                    <td className="pipeline-col-registered">
                       {profile.created_at ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <strong style={{ fontSize: '12.5px', color: '#0f172a' }}>
@@ -350,19 +418,35 @@ export default function BuyerPipeline({
                         </div>
                       ) : 'N/A'}
                     </td>
-                    <td>
+                    <td className="pipeline-col-buyer">
                       <div className="pipeline-buyer-cell">
-                        <strong className="admin-capitalize">{profile.full_name || profile.business_name || 'Unnamed'}</strong>
+                        <strong
+                          className="admin-capitalize"
+                          title={profile.full_name || profile.business_name || 'Unnamed'}
+                        >
+                          {profile.full_name || profile.business_name || 'Unnamed'}
+                        </strong>
                         {profile.business_name && profile.full_name && (
-                          <span className="pipeline-buyer-business">{profile.business_name}</span>
+                          <span className="pipeline-buyer-business" title={profile.business_name}>
+                            {profile.business_name}
+                          </span>
                         )}
                         {(profile.city || profile.pincode) && (
-                          <span className="pipeline-buyer-location">
+                          <span
+                            className="pipeline-buyer-location"
+                            title={`${profile.city || 'No City'}${profile.pincode ? `, ${profile.pincode}` : ''}`}
+                          >
                             {profile.city || 'No City'}{profile.pincode ? `, ${profile.pincode}` : ''}
                           </span>
                         )}
                         {profile.email && (
-                          <a href={`mailto:${profile.email}`} className="pipeline-buyer-email">{profile.email}</a>
+                          <a
+                            href={`mailto:${profile.email}`}
+                            className="pipeline-buyer-email"
+                            title={profile.email}
+                          >
+                            {profile.email}
+                          </a>
                         )}
                         {profile.whatsapp && (
                           <a
@@ -370,40 +454,80 @@ export default function BuyerPipeline({
                             target="_blank"
                             rel="noreferrer"
                             className="pipeline-buyer-phone"
+                            title={profile.whatsapp}
                           >
                             {profile.whatsapp}
                           </a>
                         )}
                       </div>
                     </td>
-                    <td>
+                    <td className="pipeline-col-type">
                       <span className="pipeline-type-label">
                         {getBuyerTypeLabel(profile)}
                       </span>
                     </td>
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedUserList({ profile, type: 'cart' })}
-                        className={`admin-list-link-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
-                        disabled={cartRows.length === 0}
-                      >
-                        <ShoppingBag size={16} strokeWidth={2.2} />
-                        <span>{cartRows.length} {cartRows.length === 1 ? 'row' : 'rows'}</span>
-                      </button>
+                    <td className="pipeline-col-items">
+                      <div className="pipeline-items-cell">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedUserList({ profile, type: 'cart' })}
+                          className={`admin-list-link-btn cart-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
+                          disabled={cartRows.length === 0}
+                          title={cartRows.length > 0 ? `View ${cartRows.length} cart ${cartRows.length === 1 ? 'item' : 'items'}` : 'Cart is empty'}
+                        >
+                          <ShoppingBag size={14} strokeWidth={2.2} />
+                          <span>{cartRows.length} Cart</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
+                          className={`admin-list-link-btn fav-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
+                          disabled={favoriteRows.length === 0}
+                          title={favoriteRows.length > 0 ? `View ${favoriteRows.length} favourite ${favoriteRows.length === 1 ? 'item' : 'items'}` : 'No favourites'}
+                        >
+                          <Heart size={14} strokeWidth={2.2} />
+                          <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'Fav' : 'Favs'}</span>
+                        </button>
+                      </div>
                     </td>
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
-                        className={`admin-list-link-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
-                        disabled={favoriteRows.length === 0}
-                      >
-                        <Heart size={16} strokeWidth={2.2} />
-                        <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'item' : 'items'}</span>
-                      </button>
+                    <td className="pipeline-col-social">
+                      <div className="pipeline-social-cell">
+                        {socialInfo && (
+                          <a
+                            href={socialInfo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`pipeline-social-badge ${socialInfo.type}`}
+                            title={`Open ${socialInfo.display} (${socialInfo.url})`}
+                          >
+                            {socialInfo.type === 'facebook' ? (
+                              <Facebook size={12} className="pipeline-badge-icon" />
+                            ) : (
+                              <Instagram size={12} className="pipeline-badge-icon" />
+                            )}
+                            <span className="pipeline-badge-text">{socialInfo.display}</span>
+                            <ExternalLink size={10} className="pipeline-badge-ext" />
+                          </a>
+                        )}
+                        {websiteInfo && (
+                          <a
+                            href={websiteInfo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pipeline-social-badge website"
+                            title={`Open website: ${websiteInfo.url}`}
+                          >
+                            <Globe size={12} className="pipeline-badge-icon" />
+                            <span className="pipeline-badge-text">{websiteInfo.display}</span>
+                            <ExternalLink size={10} className="pipeline-badge-ext" />
+                          </a>
+                        )}
+                        {!socialInfo && !websiteInfo && (
+                          <span className="pipeline-no-social">—</span>
+                        )}
+                      </div>
                     </td>
-                    <td>
+                    <td className="pipeline-col-dashboard">
                       <div className="reseller-dashboard-cell">
                         <div className="reseller-dashboard-status-row">
                           <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
@@ -432,7 +556,7 @@ export default function BuyerPipeline({
                         )}
                       </div>
                     </td>
-                    <td>
+                    <td className="pipeline-col-action">
                       <div className="pipeline-action-cell">
                         <button
                           type="button"
@@ -465,7 +589,7 @@ export default function BuyerPipeline({
       {/* Row count summary */}
       <div className="pipeline-footer-summary">
         Showing {displayedProfiles.length} of {sortedProfiles.length} customers
-        {userTypeFilter !== 'all' && ` (${userTypeFilter})`}
+        {userTypeFilter !== 'customer' && ` (${userTypeFilter})`}
       </div>
 
       {/* Notices */}

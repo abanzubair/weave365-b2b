@@ -1,0 +1,195 @@
+/* ═══════════════════════════════════════════════════════════════
+   CUSTOMER SEGMENTATION SECTION ("How Do You Buy From Us?")
+   Distilled B2B Commercial Routing Grid
+   ═══════════════════════════════════════════════════════════════ */
+
+.customer-segmentation-section {
+  width: 100%;
+  background-color: #ffffff;
+  padding: clamp(3rem, 6vw, 5rem) 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.customer-segmentation-container {
+  width: 100%;
+  max-width: calc(1600px + (var(--site-padding, clamp(16px, 3.5vw, 48px)) * 2));
+  margin: 0 auto;
+  padding: 0 var(--site-padding, clamp(16px, 3.5vw, 48px));
+  box-sizing: border-box;
+}
+
+/* Header Area */
+.customer-segmentation-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto clamp(2rem, 4vw, 3.25rem) auto;
+}
+
+.segmentation-heading {
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 600;
+  color: var(--heading, #171513);
+  line-height: 1.2;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.01em;
+}
+
+.segmentation-subtitle {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+  font-weight: 400;
+  color: #4b4b4b;
+  line-height: 1.6;
+  margin: 0 auto;
+  max-width: 560px;
+}
+
+/* Grid Layout: 1 col (mobile), 2 col (tablet), 3 col (desktop) */
+.customer-segmentation-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 2vw, 26px);
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .customer-segmentation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .customer-segmentation-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Distilled Segmentation Card */
+.segment-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.segment-card:hover {
+  border-color: rgba(183, 134, 70, 0.45);
+  box-shadow: 0 16px 36px -8px rgba(31, 20, 13, 0.08);
+  transform: translateY(-3px);
+}
+
+.segment-card-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(22px, 2.5vw, 30px);
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+  outline: none;
+  border-radius: 14px;
+}
+
+.segment-card-link:focus-visible {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--gold, #b78646);
+}
+
+/* Card Header: Icon + Optional Tag */
+.segment-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  min-height: 28px;
+}
+
+.segment-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-dark, #805d31);
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.segment-card:hover .segment-icon {
+  transform: scale(1.08);
+  color: var(--gold, #b78646);
+}
+
+.segment-tag {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-dark, #805d31);
+  background-color: #fbf8f3;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(183, 134, 70, 0.22);
+}
+
+/* Title & Description */
+.segment-card-title {
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(1.35rem, 1.8vw, 1.6rem);
+  font-weight: 600;
+  color: #171513;
+  line-height: 1.25;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+.segment-card:hover .segment-card-title {
+  color: var(--gold-dark, #805d31);
+}
+
+.segment-card-description {
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: #4b4b4b;
+  line-height: 1.62;
+  margin: 0 0 24px 0;
+}
+
+/* Action Link with Animated Arrow */
+.segment-card-action {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body, 'Manrope', sans-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gold-dark, #805d31);
+  letter-spacing: 0.01em;
+  transition: color 0.2s ease;
+}
+
+.segment-action-arrow {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  flex-shrink: 0;
+}
+
+.segment-card:hover .segment-action-arrow {
+  transform: translateX(5px);
+}
+
+/* Highlighted Card (Wholesale & Bulk) */
+.segment-card.highlighted-segment {
+  border-color: rgba(183, 134, 70, 0.28);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfcf9 100%);
+}
+
+.segment-card.highlighted-segment:hover {
+  border-color: var(--gold, #b78646);
+  box-shadow: 0 16px 40px -8px rgba(183, 134, 70, 0.12);
+}

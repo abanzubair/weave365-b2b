@@ -4,11 +4,11 @@
    ================================================== */
 
 .private-label-section {
-  background-color: var(--cream, #f9f7f2);
+  background-color: #ffffff;
   width: 100%;
-  padding: 96px 0;
-  border-top: 1px solid rgba(183, 134, 70, 0.1);
-  border-bottom: 1px solid rgba(183, 134, 70, 0.1);
+  padding: clamp(48px, 6vw, 96px) 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
   position: relative;
 }

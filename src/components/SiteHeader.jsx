@@ -130,12 +130,74 @@ export function SiteHeader(props) {
       </a>
       <nav className="main-nav">
         <AppLink 
-          to="new-arrivals" 
-          className={route === 'new-arrivals' ? 'active' : ''} 
+          to="catalogue" 
+          className={route === 'catalogue' || route === 'wholesale-catalogue' ? 'active' : ''} 
           navigate={navigate}
         >
-          NEW ARRIVALS
+          WHOLESALE
         </AppLink>
+        <div className="nav-item-dropdown" ref={partnerNavRef}>
+          <button type="button"
+            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'sell-banarasi-sarees' || route === 'sellers' || route === 'custom-woven' || route === 'handloom-vs-powerloom-guide' ? 'active' : ''}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
+            }}
+          >
+            BUSINESS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
+          </button>
+          <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'} className="dropdown-menu business-mega-menu">
+            <div className="mega-menu-grid">
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Wholesale &amp; Sourcing</span>
+                  <AppLink to="catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>Wholesale Catalog</AppLink>
+                  <AppLink to="bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>Bulk Inquiry &amp; MOQ</AppLink>
+                  <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Boutique &amp; Retail Sourcing</AppLink>
+                </div>
+              </div>
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Resell &amp; Dropship</span>
+                  <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sell Without Inventory</AppLink>
+                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Website Dropshipping</AppLink>
+                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Program</AppLink>
+                  <AppLink to="affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>Affiliate Program</AppLink>
+                </div>
+              </div>
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Build Your Brand</span>
+                  <AppLink to="custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>Custom Woven Sarees</AppLink>
+                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>Private Label Manufacturing</AppLink>
+                  <AppLink 
+                    to="custom-woven#weaving-techniques" 
+                    navigate={navigate} 
+                    onClick={(e) => {
+                      setDropdownOpen(null);
+                      const el = document.getElementById('weaving-techniques');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  >
+                    Weaving Techniques
+                  </AppLink>
+                  <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} onClick={() => setDropdownOpen(null)}>Handloom vs Powerloom</AppLink>
+                </div>
+              </div>
+              <div className="mega-menu-col">
+                <div className="mega-menu-section">
+                  <span className="mega-menu-heading">Company &amp; Artisans</span>
+                  <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sell on Weave 365</AppLink>
+                  <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Artisan Collaboration</AppLink>
+                  <AppLink to="about" navigate={navigate} onClick={() => setDropdownOpen(null)}>About Weave 365</AppLink>
+                  <a href={storeConfig.whatsappCommunity || storeConfig.whatsappChannel || "https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga"} target="_blank" rel="noopener noreferrer" onClick={() => setDropdownOpen(null)}>WhatsApp Community</a>
+                </div>
+              </div>
+            </div>
+          </DropdownPortal>
+        </div>
         <div className="nav-item-dropdown" ref={categoriesRef}>
           <button type="button"
             className={dropdownOpen === 'categories' ? 'active' : ''}
@@ -144,9 +206,17 @@ export function SiteHeader(props) {
               setDropdownOpen(dropdownOpen === 'categories' ? null : 'categories');
             }}
           >
-            CATEGORIES <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
+            COLLECTIONS <ChevronDown size={14} className={dropdownOpen === 'categories' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={categoriesRef} isOpen={dropdownOpen === 'categories'}>
+            <AppLink
+              to="new-arrivals"
+              href="/new-arrivals"
+              navigate={navigate}
+              onClick={() => setDropdownOpen(null)}
+            >
+              New Arrivals
+            </AppLink>
             {categories.map((cat) => {
               const isAll = cat === 'All' || cat === 'all';
               const targetSlug = isAll ? 'catalogue' : getCategorySlug(cat);
@@ -168,80 +238,19 @@ export function SiteHeader(props) {
             })}
           </DropdownPortal>
         </div>
-        <div className="nav-item-dropdown" ref={partnerNavRef}>
-          <button type="button"
-            className={dropdownOpen === 'partner' || route === 'sourcing-partners' || route === 'white-label' || route === 'bulk-inquiry' || route === 'dropshipping' || route === 'collaboration' || route === 'sell-banarasi-sarees' || route === 'sellers' || route === 'custom-woven' || route === 'handloom-vs-powerloom-guide' ? 'active' : ''}
-            onClick={(e) => {
-              e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'partner' ? null : 'partner');
-            }}
-          >
-            BUSINESS <ChevronDown size={14} className={dropdownOpen === 'partner' ? 'rotate' : ''} />
-          </button>
-          <DropdownPortal anchorRef={partnerNavRef} isOpen={dropdownOpen === 'partner'} className="dropdown-menu business-mega-menu">
-            <div className="mega-menu-grid">
-              <div className="mega-menu-col">
-                <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Buy</span>
-                  <AppLink to="wholesale-catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>Wholesale</AppLink>
-                  <AppLink to="bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>Bulk Enquiry</AppLink>
-                </div>
-              </div>
-              <div className="mega-menu-col">
-                <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Sell</span>
-                  <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sell Banarasi Sarees</AppLink>
-                  <AppLink to="resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>Reseller Center</AppLink>
-                  <AppLink to="white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>White Label Catalog</AppLink>
-                  <AppLink to="dropshipping" navigate={navigate} onClick={() => setDropdownOpen(null)}>Dropshipping Services</AppLink>
-                  <AppLink to="affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>Affiliate Program</AppLink>
-                </div>
-              </div>
-              <div className="mega-menu-col">
-                <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Partner</span>
-                  <AppLink to="collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>Collaboration</AppLink>
-                  <AppLink to="sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>Sourcing Partner</AppLink>
-                  <AppLink to="sell-banarasi-sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>Seller Onboarding</AppLink>
-                  <a href={storeConfig.whatsappCommunity || storeConfig.whatsappChannel || "https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga"} target="_blank" rel="noopener noreferrer" onClick={() => setDropdownOpen(null)}>WhatsApp Community</a>
-                </div>
-              </div>
-              <div className="mega-menu-col">
-                <div className="mega-menu-section">
-                  <span className="mega-menu-heading">Learn</span>
-                  <AppLink to="custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>Custom Woven</AppLink>
-                  <AppLink 
-                    to="custom-woven#weaving-techniques" 
-                    navigate={navigate} 
-                    onClick={(e) => {
-                      setDropdownOpen(null);
-                      const el = document.getElementById('weaving-techniques');
-                      if (el) {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }
-                    }}
-                  >
-                    Weaving Techniques
-                  </AppLink>
-                  <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} onClick={() => setDropdownOpen(null)}>Handloom vs Powerloom</AppLink>
-                </div>
-              </div>
-            </div>
-          </DropdownPortal>
-        </div>
+        <AppLink 
+          to="custom-woven" 
+          className={route === 'custom-woven' ? 'active' : ''} 
+          navigate={navigate}
+        >
+          CUSTOM WOVEN
+        </AppLink>
         <AppLink 
           to="about" 
           className={route === 'about' ? 'active' : ''} 
           navigate={navigate}
         >
           ABOUT
-        </AppLink>
-        <AppLink 
-          to="contact" 
-          className={route === 'contact' ? 'active' : ''} 
-          navigate={navigate}
-        >
-          CONTACT
         </AppLink>
       </nav>
 
@@ -373,22 +382,22 @@ export function SiteHeader(props) {
             <button
               type="button"
               onClick={() => {
-                if (navigate) navigate('resell-sarees-online');
-                else window.location.href = '/resell-sarees-online';
-                setDropdownOpen(null);
-              }}
-            >
-              Start Reselling
-            </button>
-            <button
-              type="button"
-              onClick={() => {
                 if (navigate) navigate('catalogue');
                 else window.location.href = '/catalogue';
                 setDropdownOpen(null);
               }}
             >
-              Shop Products
+              Shop Wholesale
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('resell-sarees-online');
+                else window.location.href = '/resell-sarees-online';
+                setDropdownOpen(null);
+              }}
+            >
+              Sell Without Inventory
             </button>
             <button
               type="button"
@@ -398,7 +407,17 @@ export function SiteHeader(props) {
                 setDropdownOpen(null);
               }}
             >
-              Wholesale Buying
+              Bulk Sourcing &amp; MOQ
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigate) navigate('custom-woven');
+                else window.location.href = '/custom-woven';
+                setDropdownOpen(null);
+              }}
+            >
+              Custom Woven Sourcing
             </button>
           </DropdownPortal>
         </div>

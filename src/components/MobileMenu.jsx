@@ -139,32 +139,121 @@ export function MobileMenu(props) {
         </div>
 
         <nav className="mobile-menu-nav">
-          {/* 1. NEW ARRIVALS */}
+          {/* 1. WHOLESALE */}
           <button type="button" 
             className="mobile-menu-item" 
             onClick={() => {
-              navigate('new-arrivals');
+              navigate('catalogue');
               onClose();
             }}
           >
-            <span className="mobile-menu-icon"><Sparkles size={20} /></span>
-            <span className="mobile-menu-label">NEW ARRIVALS</span>
+            <span className="mobile-menu-icon"><Briefcase size={20} /></span>
+            <span className="mobile-menu-label">WHOLESALE CATALOG</span>
             <ArrowRight size={16} className="mobile-menu-arrow" />
           </button>
 
-          {/* 3. CATEGORIES */}
+          {/* 2. BUSINESS SOLUTIONS */}
+          <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
+            <button type="button" 
+              className="mobile-menu-item mobile-menu-account-trigger" 
+              onClick={() => toggleSection('business')}
+            >
+              <span className="mobile-menu-icon"><Store size={20} /></span>
+              <span className="mobile-menu-label">BUSINESS SOLUTIONS</span>
+              <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
+            </button>
+            
+            <div className="mobile-account-items">
+              <div className="mobile-account-items-inner">
+                <span className="mobile-mega-heading">Wholesale &amp; Sourcing</span>
+                <AppLink to="catalogue" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Wholesale Catalog</span>
+                </AppLink>
+                <AppLink to="bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Inquiry &amp; MOQ</span>
+                </AppLink>
+                <AppLink to="sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Boutique &amp; Retail Sourcing</span>
+                </AppLink>
+
+                <span className="mobile-mega-heading">Resell &amp; Dropship</span>
+                <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sell Without Inventory</span>
+                </AppLink>
+                <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Website Dropshipping</span>
+                </AppLink>
+                <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Program</span>
+                </AppLink>
+                <AppLink to="affiliate-program" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
+                </AppLink>
+
+                <span className="mobile-mega-heading">Build Your Brand</span>
+                <AppLink to="custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven Sarees</span>
+                </AppLink>
+                <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Private Label Manufacturing</span>
+                </AppLink>
+                <AppLink 
+                  to="custom-woven#weaving-techniques" 
+                  navigate={navigate} 
+                  className="mobile-account-subitem" 
+                  onClick={(e) => {
+                    onClose(e);
+                    const el = document.getElementById('weaving-techniques');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                >
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Weaving Techniques</span>
+                </AppLink>
+                <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Handloom vs Powerloom</span>
+                </AppLink>
+
+                <span className="mobile-mega-heading">Company &amp; Artisans</span>
+                <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sell on Weave 365</span>
+                </AppLink>
+                <AppLink to="collaboration" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Artisan Collaboration</span>
+                </AppLink>
+                <AppLink to="about" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>About Weave 365</span>
+                </AppLink>
+                <a href={storeConfig.whatsappCommunity || storeConfig.whatsappChannel || "https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga"} target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. COLLECTIONS */}
           <div className={`mobile-account-dropdown ${categoriesOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => toggleSection('categories')}
             >
               <span className="mobile-menu-icon"><Layers size={20} /></span>
-              <span className="mobile-menu-label">CATEGORIES</span>
+              <span className="mobile-menu-label">COLLECTIONS</span>
               <ChevronDown size={18} className={`mobile-menu-chevron ${categoriesOpen ? 'rotated' : ''}`} />
             </button>
             
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
+                <AppLink
+                  to="new-arrivals"
+                  href="/new-arrivals"
+                  className="mobile-account-subitem"
+                  navigate={navigate}
+                  onClick={onClose}
+                >
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>New Arrivals</span>
+                </AppLink>
                 {categories.map((cat) => {
                   const isAll = cat === 'All' || cat === 'all';
                   const targetSlug = isAll ? 'catalogue' : getCategorySlug(cat);
@@ -191,82 +280,18 @@ export function MobileMenu(props) {
             </div>
           </div>
 
-          {/* 4. BUSINESS */}
-          <div className={`mobile-account-dropdown ${partnerOpen ? 'is-open' : ''}`}>
-            <button type="button" 
-              className="mobile-menu-item mobile-menu-account-trigger" 
-              onClick={() => toggleSection('business')}
-            >
-              <span className="mobile-menu-icon"><Briefcase size={20} /></span>
-              <span className="mobile-menu-label">BUSINESS</span>
-              <ChevronDown size={18} className={`mobile-menu-chevron ${partnerOpen ? 'rotated' : ''}`} />
-            </button>
-            
-            <div className="mobile-account-items">
-              <div className="mobile-account-items-inner">
-                <span className="mobile-mega-heading">Buy</span>
-                <AppLink to="wholesale-catalogue" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Wholesale</span>
-                </AppLink>
-                <AppLink to="bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Bulk Enquiry</span>
-                </AppLink>
-
-                <span className="mobile-mega-heading">Sell</span>
-                <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sell Banarasi Sarees</span>
-                </AppLink>
-                <AppLink to="resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Reseller Center</span>
-                </AppLink>
-                <AppLink to="white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>White Label Catalog</span>
-                </AppLink>
-                <AppLink to="dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Dropshipping Services</span>
-                </AppLink>
-                <AppLink to="affiliate-program" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Affiliate Program</span>
-                </AppLink>
-
-                <span className="mobile-mega-heading">Partner</span>
-                <AppLink to="collaboration" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Collaboration</span>
-                </AppLink>
-                <AppLink to="sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Sourcing Partner</span>
-                </AppLink>
-                <AppLink to="sell-banarasi-sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Seller Onboarding</span>
-                </AppLink>
-                <a href={storeConfig.whatsappCommunity || storeConfig.whatsappChannel || "https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga"} target="_blank" rel="noopener noreferrer" className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>WhatsApp Community</span>
-                </a>
-
-                <span className="mobile-mega-heading">Learn</span>
-                <AppLink to="custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven</span>
-                </AppLink>
-                <AppLink 
-                  to="custom-woven#weaving-techniques" 
-                  navigate={navigate} 
-                  className="mobile-account-subitem" 
-                  onClick={(e) => {
-                    onClose(e);
-                    const el = document.getElementById('weaving-techniques');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }}
-                >
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Weaving Techniques</span>
-                </AppLink>
-                <AppLink to="handloom-vs-powerloom-guide" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Handloom vs Powerloom</span>
-                </AppLink>
-              </div>
-            </div>
-          </div>
+          {/* 4. CUSTOM WOVEN */}
+          <button type="button" 
+            className="mobile-menu-item" 
+            onClick={() => {
+              navigate('custom-woven');
+              onClose();
+            }}
+          >
+            <span className="mobile-menu-icon"><Sparkles size={20} /></span>
+            <span className="mobile-menu-label">CUSTOM WOVEN</span>
+            <ArrowRight size={16} className="mobile-menu-arrow" />
+          </button>
 
           {/* 5. ABOUT */}
           <button type="button" 

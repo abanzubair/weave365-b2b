@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  --hero-bg: #faf8f5;
+  --hero-bg: #ffffff;
   --hero-ink: #171513;
   --hero-desc: #473f38;
   --hero-gold-dust: rgba(183, 134, 70, 0.14);
@@ -11,8 +11,8 @@
   --hero-gold-border: rgba(183, 134, 70, 0.55);
   --hero-gold-border-hover: rgba(183, 134, 70, 0.85);
   --hero-gold-text: #634315;
-  --hero-secondary-bg: rgba(183, 134, 70, 0.04);
-  --hero-secondary-border: rgba(183, 134, 70, 0.38);
+  --hero-secondary-bg: #ffffff;
+  --hero-secondary-border: rgba(183, 134, 70, 0.45);
   --hero-secondary-text: #5a4128;
 }
 
@@ -117,7 +117,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BUTTONS — Transparent Dusty Gold Aesthetic (No Black)
+   BUTTONS — High-Contrast B2B Primary & Secondary
    ═══════════════════════════════════════════════════════════════ */
 .overlap-hero-actions {
   display: flex;
@@ -164,43 +164,45 @@
   transform: translateX(4px);
 }
 
-/* Primary CTA: Transparent Dusty Gold */
+/* Primary CTA: High-Contrast Solid B2B */
 .overlap-hero-btn.primary-btn {
-  background: var(--hero-gold-dust);
-  border: 1.5px solid var(--hero-gold-border);
-  color: var(--hero-gold-text);
-  box-shadow: 0 2px 10px rgba(183, 134, 70, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #171513;
+  border: 1.5px solid #171513;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(23, 21, 19, 0.18);
 }
 
 .overlap-hero-btn.primary-btn:hover {
-  background: var(--hero-gold-dust-hover);
-  border-color: var(--hero-gold-border-hover);
-  color: #4a300d;
-  box-shadow: 0 6px 20px rgba(183, 134, 70, 0.22);
+  background: var(--gold-dark, #805d31);
+  border-color: var(--gold-dark, #805d31);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.25);
   transform: translateY(-2px);
 }
 
-/* Secondary CTA: Soft Transparent Outline */
+/* Secondary CTA: Crisp Outlined B2B */
 .overlap-hero-btn.secondary-btn {
-  background: var(--hero-secondary-bg);
-  border: 1.5px solid var(--hero-secondary-border);
-  color: var(--hero-secondary-text);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #ffffff;
+  border: 1.5px solid rgba(183, 134, 70, 0.45);
+  color: #5a4128;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .overlap-hero-btn.secondary-btn:hover {
-  background: var(--hero-gold-dust);
-  border-color: var(--hero-gold-border);
-  color: var(--hero-gold-text);
-  box-shadow: 0 4px 14px rgba(183, 134, 70, 0.12);
+  background: #fbf9f5;
+  border-color: var(--gold, #b78646);
+  color: #171513;
+  box-shadow: 0 4px 14px rgba(183, 134, 70, 0.14);
   transform: translateY(-2px);
 }
 
 .overlap-hero-btn:active {
   transform: scale(0.98);
+}
+
+.overlap-hero-btn:focus-visible {
+  outline: 2px solid var(--gold, #b78646);
+  outline-offset: 3px;
 }
 
 .overlap-hero-btn:focus-visible {

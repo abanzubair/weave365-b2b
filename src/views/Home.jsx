@@ -48,6 +48,7 @@ import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { AppLink } from '../components/AppLink.jsx';
 import { OverlapHero } from '../components/OverlapHero.jsx';
+import { CustomerSegmentation } from '../components/CustomerSegmentation.jsx';
 
 export const SHOW_OVERLAP_HERO = true;
 
@@ -703,6 +704,8 @@ export function Home({
         )}
       </section>
       )}
+
+      <CustomerSegmentation navigate={navigate} />
 
       {dealProducts.length > 0 && (
         <section className="deal-section" aria-labelledby="deal-heading">
