@@ -1531,59 +1531,12 @@
     margin-top: 4px !important;
   }
 
-  .scannable-specs-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px 12px !important;
-  }
-
-  .product-scannable-specs-card {
-    margin: 14px 0 16px !important;
-    padding: 14px 14px !important;
-  }
-
-  .pdp-purchase-actions-area {
-    max-width: 100% !important;
-    margin: 16px 0 !important;
-  }
-
-  .pdp-primary-buy-btn {
-    min-height: 50px !important;
-    font-size: 15px !important;
-  }
-
-  .pdp-secondary-actions-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
-  }
-
-  .pdp-secondary-cart-btn,
-  .pdp-secondary-whatsapp-btn {
-    min-height: 46px !important;
-    font-size: 13px !important;
-    padding: 0 10px !important;
-  }
-
-  .pdp-reseller-box {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 10px !important;
-    padding: 12px 14px !important;
-  }
-
-  .reseller-box-action-btn {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
   .product-secondary-actions {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
 
   @media screen and (max-width: 360px) {
-    .pdp-secondary-actions-grid {
-      grid-template-columns: 1fr !important;
-    }
     .product-secondary-actions {
       grid-template-columns: 1fr !important;
     }

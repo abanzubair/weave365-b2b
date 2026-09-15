@@ -160,26 +160,18 @@
   margin: 0 0 24px 0;
 }
 
-/* Action CTA Buttons (Prominent interactive buttons) */
+/* Action Link with Animated Arrow */
 .segment-card-action {
   margin-top: auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  width: 100%;
-  height: 44px;
-  min-height: 44px;
-  padding: 0 16px;
-  border-radius: 6px;
   font-family: var(--font-body, 'Manrope', sans-serif);
   font-size: 0.88rem;
   font-weight: 600;
+  color: var(--gold-dark, #805d31);
   letter-spacing: 0.01em;
-  text-decoration: none;
-  box-sizing: border-box;
-  touch-action: manipulation;
-  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.2s ease;
 }
 
 .segment-action-arrow {
@@ -187,43 +179,8 @@
   flex-shrink: 0;
 }
 
-/* Primary Button (Wholesale & Bulk): Black Button with Gold Hover (Hero banner style) */
-.segment-card-action.primary-btn {
-  background: #171513;
-  border: 1.5px solid #171513;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(23, 21, 19, 0.18);
-}
-
-.segment-card:hover .segment-card-action.primary-btn,
-.segment-card-action.primary-btn:hover {
-  background: var(--gold-dark, #805d31);
-  border-color: var(--gold-dark, #805d31);
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.25);
-  transform: translateY(-2px);
-}
-
-/* Secondary Button (All other cards): Transparent button with gold border */
-.segment-card-action.secondary-btn {
-  background: transparent;
-  border: 1.5px solid rgba(183, 134, 70, 0.45);
-  color: #5a4128;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.segment-card:hover .segment-card-action.secondary-btn,
-.segment-card-action.secondary-btn:hover {
-  background: #fbf9f5;
-  border-color: var(--gold, #b78646);
-  color: #171513;
-  box-shadow: 0 4px 14px rgba(183, 134, 70, 0.12);
-  transform: translateY(-2px);
-}
-
-.segment-card:hover .segment-action-arrow,
-.segment-card-action:hover .segment-action-arrow {
-  transform: translateX(4px);
+.segment-card:hover .segment-action-arrow {
+  transform: translateX(5px);
 }
 
 /* Highlighted Card (Wholesale & Bulk) */
@@ -236,31 +193,3 @@
   border-color: var(--gold, #b78646);
   box-shadow: 0 16px 40px -8px rgba(183, 134, 70, 0.12);
 }
-
-/* Dark Mode Support */
-.dark-mode .segment-card-action.primary-btn {
-  background: #252220;
-  border-color: var(--gold, #b78646);
-  color: #ffffff;
-}
-
-.dark-mode .segment-card:hover .segment-card-action.primary-btn,
-.dark-mode .segment-card-action.primary-btn:hover {
-  background: var(--gold-dark, #805d31);
-  border-color: var(--gold, #b78646);
-  color: #ffffff;
-}
-
-.dark-mode .segment-card-action.secondary-btn {
-  background: transparent;
-  border-color: rgba(197, 160, 89, 0.4);
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.dark-mode .segment-card:hover .segment-card-action.secondary-btn,
-.dark-mode .segment-card-action.secondary-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--gold, #b78646);
-  color: #ffffff;
-}
-
