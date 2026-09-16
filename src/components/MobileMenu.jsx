@@ -88,6 +88,7 @@ export function MobileMenu(props) {
   const fullPhone = whatsappPhone.length === 10 ? `91${whatsappPhone}` : whatsappPhone;
   const wholesaleWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to talk to the Wholesale Team regarding bulk sourcing.')}`;
   const resellWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to talk to Reseller Support regarding selling without inventory.')}`;
+  const customWovenWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to discuss a custom woven / private label saree requirement.')}`;
 
   const accountItems = [
     ...(isAdmin ? [
@@ -268,20 +269,16 @@ export function MobileMenu(props) {
                 <AppLink to="handloom-vs-powerloom-guide" href="/handloom-vs-powerloom-guide" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Handloom vs Powerloom Guide</span>
                 </AppLink>
-                <AppLink
-                  to="custom-woven#inquiry-form"
-                  href="/custom-woven#inquiry-form"
-                  navigate={navigate}
+                <a
+                  href={customWovenWaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mobile-contextual-action"
-                  onClick={(e) => {
-                    onClose(e);
-                    const el = document.getElementById('inquiry-form');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }}
+                  onClick={onClose}
                 >
                   <WhatsappIcon size={16} />
                   <span>Discuss Your Requirement</span>
-                </AppLink>
+                </a>
               </div>
             </div>
           </div>

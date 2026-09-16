@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Copy,
+  Download,
+  Check,
   ExternalLink,
 } from '../../components/icons.jsx';
 import { adminEmails, getProductCategorySlug } from '../../config.js';
 import { supabase } from '../../supabaseClient.js';
-import { parseCartVariantCode } from '../../utils/cartHelpers.js';
+import { parseCartVariantCode, resolveItemSku, resolveItemVariant } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 
 export function isAdminUser(user) {
@@ -110,6 +113,8 @@ export function MetricCard({ icon: Icon, label, value, hint, colorClass = '' }) 
 }
 
 export function UserListModal({ selectedUserList, setSelectedUserList, userCartMap, userFavoriteMap, products }) {
+  const [copied, setCopied] = useState(false);
+
   if (!selectedUserList) return null;
 
   const { profile, type } = selectedUserList;
@@ -119,91 +124,255 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
     ? (userCartMap.get(profile.id) || [])
     : (userFavoriteMap.get(profile.id) || []);
 
+  const getResolvedItems = () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.weave365.com';
+    return rows.map((row, idx) => {
+      const product = products.find(p => p.id === row.product_group_key || p.groupKey === row.product_group_key);
+      const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
+      const variant = resolveItemVariant(product, row.variant_code || row.variantCode || '', colorName);
+      const colorOptions = product?.colorOptions || [];
+      const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
+
+      const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
+      const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
+      const pId = row.product_group_key || product?.id || product?.groupKey;
+      const productUrl = pId ? `${origin}/${categorySlug}/${encodeURIComponent(pId)}` : '';
+      const displayCode = resolveItemSku(product, row.variant_code || row.variantCode, row.product_group_key, selectedColorName);
+      const vendorCode = product?.vendorCode || product?.raw?.VID || product?.raw?.vid || '';
+      const vendorName = product?.partner || product?.raw?.Partner || product?.raw?.partner || '';
+      const qty = row.quantity || 1;
+
+      return {
+        index: idx + 1,
+        title: itemTitle,
+        code: displayCode,
+        color: selectedColorName,
+        quantity: qty,
+        vendorCode,
+        vendorName,
+        url: productUrl,
+      };
+    });
+  };
+
+  const generateVendorText = () => {
+    const items = getResolvedItems();
+
+    const header = `📦 VENDOR STOCK AVAILABILITY INQUIRY\n` +
+      `Total Items: ${items.length}\n` +
+      `----------------------------------------\n\n`;
+
+    const itemBlocks = items.map((item) => {
+      let block = `${item.index}. ${item.title}\n`;
+      block += `   • Code: ${item.code}\n`;
+      if (item.color) {
+        block += `   • Color: ${item.color}\n`;
+      }
+      if (isCart) {
+        block += `   • Quantity: ${item.quantity} pc${item.quantity > 1 ? 's' : ''}\n`;
+      }
+      if (item.vendorCode || item.vendorName) {
+        block += `   • Loom / Vendor: ${[item.vendorCode, item.vendorName].filter(Boolean).join(' - ')}\n`;
+      }
+      if (item.url) {
+        block += `   • Product URL: ${item.url}\n`;
+      }
+      return block;
+    });
+
+    const footer = `\n----------------------------------------\nPlease confirm stock availability and dispatch readiness.`;
+    return header + itemBlocks.join('\n') + footer;
+  };
+
+  const generateVendorCSV = () => {
+    const items = getResolvedItems();
+    const headers = ['Item #', 'Design Code', 'Product Title', 'Color', 'Quantity', 'Vendor Code', 'Vendor Name', 'Product URL'];
+    const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+
+    const rowsCsv = items.map((item) => [
+      escapeCsv(item.index),
+      escapeCsv(item.code),
+      escapeCsv(item.title),
+      escapeCsv(item.color),
+      escapeCsv(item.quantity),
+      escapeCsv(item.vendorCode),
+      escapeCsv(item.vendorName),
+      escapeCsv(item.url),
+    ].join(','));
+
+    return [headers.map(escapeCsv).join(','), ...rowsCsv].join('\r\n');
+  };
+
+  const handleCopy = () => {
+    const text = generateVendorText();
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleDownload = (format = 'txt') => {
+    const dateStr = new Date().toISOString().slice(0, 10);
+
+    let content, mime, ext;
+    if (format === 'csv') {
+      content = generateVendorCSV();
+      mime = 'text/csv;charset=utf-8';
+      ext = 'csv';
+    } else {
+      content = generateVendorText();
+      mime = 'text/plain;charset=utf-8';
+      ext = 'txt';
+    }
+
+    const filename = `vendor-stock-inquiry-${dateStr}.${ext}`;
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
   return createPortal(
     <div className="admin-modal-overlay" onClick={() => setSelectedUserList(null)}>
       <div className="admin-review-modal admin-user-list-modal" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="admin-modal-header">
-          <div>
-            <span className="admin-modal-subtitle">{title}</span>
+          <div className="admin-modal-header-info">
             <h3 className="admin-modal-title">{profile.business_name || profile.full_name || 'Unnamed buyer'}</h3>
-            <span className="admin-modal-header-meta">
-              {profile.email} {profile.whatsapp ? ` | WhatsApp: ${profile.whatsapp}` : ''}
-            </span>
+            <div className="admin-modal-header-meta">
+              <span>{title}</span>
+              <span className="admin-meta-dot">·</span>
+              <span>{profile.email}</span>
+              {profile.whatsapp && (
+                <>
+                  <span className="admin-meta-dot">·</span>
+                  <span>WhatsApp: {profile.whatsapp}</span>
+                </>
+              )}
+            </div>
           </div>
           <button type="button" onClick={() => setSelectedUserList(null)} className="admin-modal-close-btn" aria-label="Close modal">×</button>
         </div>
+
+        {/* Vendor Stock Inquiry Toolbar */}
+        {rows.length > 0 && (
+          <div className="admin-user-list-toolbar">
+            <span className="admin-user-list-count">{rows.length} {rows.length === 1 ? 'item' : 'items'}</span>
+            <div className="admin-user-list-toolbar-actions">
+              <button
+                type="button"
+                className={`admin-user-list-btn copy-btn ${copied ? 'copied' : ''}`}
+                onClick={handleCopy}
+                title="Copy item list with product URLs (no customer info, no prices) to clipboard for WhatsApp/email"
+              >
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+                <span>{copied ? 'Copied' : 'Copy'}</span>
+              </button>
+              <button
+                type="button"
+                className="admin-user-list-btn download-btn"
+                onClick={() => handleDownload('txt')}
+                title="Download formatted text file with URLs and item specs"
+              >
+                <Download size={13} />
+                <span>.txt</span>
+              </button>
+              <button
+                type="button"
+                className="admin-user-list-btn csv-btn"
+                onClick={() => handleDownload('csv')}
+                title="Download CSV spreadsheet with product URLs (no prices, no customer info)"
+              >
+                <Download size={13} />
+                <span>.csv</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modal Body */}
         <div className="admin-modal-body">
           {rows.length === 0 ? (
             <p className="admin-modal-empty">This list is currently empty.</p>
           ) : (
-            rows.map((row, idx) => {
-              const product = products.find(p => p.id === row.product_group_key || p.groupKey === row.product_group_key);
-              const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
-              const variant = product?.variants?.find(v => v.code === baseVariantCode);
-              const colorOptions = product?.colorOptions || [];
-              const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
-              const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
-              const itemImage = selectedColor?.image || variant?.image || product?.images?.[0] || fallbackProductImage;
-              
-              const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
-              const displayCode = row.variant_code || row.variantCode || baseVariantCode || row.product_group_key;
+            <div className="admin-user-items-list">
+              {rows.map((row, idx) => {
+                const product = products.find(p => p.id === row.product_group_key || p.groupKey === row.product_group_key);
+                const { baseVariantCode, colorName } = parseCartVariantCode(row.variant_code || row.variantCode || '');
+                const variant = resolveItemVariant(product, row.variant_code || row.variantCode || '', colorName);
+                const colorOptions = product?.colorOptions || [];
+                const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
+                const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
+                const itemImage = selectedColor?.image || variant?.image || product?.images?.[0] || fallbackProductImage;
 
-              const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
-              const pId = row.product_group_key || product?.id || product?.groupKey;
-              const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+                const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
+                const displayCode = resolveItemSku(product, row.variant_code || row.variantCode, row.product_group_key, selectedColorName);
 
-              return (
-                <a
-                  key={row.id || idx}
-                  href={productUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="admin-user-item-card-link"
-                  title="Click to open product page in new tab"
-                >
-                  <div className="admin-user-item-card">
+                const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
+                const pId = row.product_group_key || product?.id || product?.groupKey;
+                const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+
+                return (
+                  <a
+                    key={row.id || idx}
+                    href={productUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="admin-user-item-row"
+                    title="Open product page in new tab"
+                  >
                     <img
                       src={itemImage}
                       className="admin-user-item-thumb"
                       alt={itemTitle}
                       onError={(e) => { e.target.src = fallbackProductImage; }}
                     />
-                    <div className="admin-user-item-details">
-                      <div className="admin-user-item-header-row">
-                        <h4 className="admin-user-item-title">{itemTitle}</h4>
-                        <ExternalLink size={16} className="admin-item-ext-icon" />
+                    <div className="admin-user-item-info">
+                      <div className="admin-user-item-title-wrap">
+                        <span className="admin-user-item-title">{itemTitle}</span>
+                        <ExternalLink size={13} className="admin-item-ext-icon" />
                       </div>
                       <div className="admin-user-item-meta">
-                        <span className="admin-item-code">Code: <code>{displayCode}</code></span>
-                        {selectedColorName && (
-                          <span className="admin-item-color">Color: <strong className="admin-capitalize">{selectedColorName}</strong></span>
+                        <span className="admin-meta-code">{displayCode}</span>
+                        {selectedColorName && <span className="admin-meta-dot">·</span>}
+                        {selectedColorName && <span className="admin-meta-color">{selectedColorName}</span>}
+                        {isCart && <span className="admin-meta-dot">·</span>}
+                        {isCart && <span className="admin-meta-qty">Qty {row.quantity || 1}</span>}
+                      </div>
+                    </div>
+                    {variant?.prices && (
+                      <div className="admin-user-item-pricing">
+                        {variant.prices.mrp && (
+                          <div className="admin-pricing-row">
+                            <span className="admin-pricing-label">Wholesale</span>
+                            <span className="admin-pricing-val">{formatMoney(variant.prices.mrp)}</span>
+                          </div>
                         )}
-                        {isCart && (
-                          <span className="admin-user-item-qty">Qty: <strong>x{row.quantity || 1}</strong></span>
+                        {variant.prices.b2r && (
+                          <div className="admin-pricing-row">
+                            <span className="admin-pricing-label">Reseller</span>
+                            <span className="admin-pricing-val">{formatMoney(variant.prices.b2r)}</span>
+                          </div>
                         )}
                       </div>
-                      {variant?.prices && (
-                        <div className="admin-user-item-price">
-                          {variant.prices.mrp && (
-                            <span className="price-tag">
-                              Wholesale: <strong>{formatMoney(variant.prices.mrp)}</strong>
-                            </span>
-                          )}
-                          {variant.prices.b2r && (
-                            <span className="price-tag">
-                              Reseller: <strong>{formatMoney(variant.prices.b2r)}</strong>
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </a>
-              );
-            })
+                    )}
+                  </a>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

@@ -18,7 +18,7 @@ import {
   MapPin,
 } from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
-import { parseCartVariantCode } from '../../utils/cartHelpers.js';
+import { parseCartVariantCode, resolveItemSku, resolveItemVariant } from '../../utils/cartHelpers.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug, siteUrl } from '../../config.js';
 import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
@@ -186,12 +186,12 @@ function generateWhatsAppGroupMsg(enquiries, products) {
     }
 
     const { baseVariantCode, colorName } = parseCartVariantCode(searchCode || '');
-    const variant = matchedProduct?.variants?.find((v) => v.code === baseVariantCode);
+    const variant = resolveItemVariant(matchedProduct, searchCode || '', colorName);
     const colorOptions = matchedProduct?.colorOptions || [];
     const selectedColorName = colorName || row.color || variant?.color || colorOptions[0]?.name || '';
 
     const itemTitle = matchedProduct?.title || `Product Design Code: ${resolvedKey || 'N/A'}`;
-    const displayCode = searchCode || baseVariantCode || resolvedKey || 'N/A';
+    const displayCode = resolveItemSku(matchedProduct, searchCode, resolvedKey, selectedColorName);
     const qty = Number(row.quantity) || 1;
 
     let unitPrice = 0;
@@ -1080,7 +1080,7 @@ function EnquiryItemsModal({ isOpen, onClose, modalData, products = [] }) {
               }
 
               const { baseVariantCode, colorName } = parseCartVariantCode(searchCode || '');
-              const variant = matchedProduct?.variants?.find((v) => v.code === baseVariantCode);
+              const variant = resolveItemVariant(matchedProduct, searchCode || '', colorName);
               const colorOptions = matchedProduct?.colorOptions || [];
               const selectedColorName = colorName || row.color || variant?.color || colorOptions[0]?.name || '';
               const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
@@ -1088,7 +1088,7 @@ function EnquiryItemsModal({ isOpen, onClose, modalData, products = [] }) {
 
               const resolvedKey = productKey || matchedProduct?.id || matchedProduct?.groupKey;
               const itemTitle = matchedProduct?.title || `Product Design Code: ${resolvedKey || 'N/A'}`;
-              const displayCode = searchCode || baseVariantCode || resolvedKey || 'N/A';
+              const displayCode = resolveItemSku(matchedProduct, searchCode, resolvedKey, selectedColorName);
 
               const categorySlug = matchedProduct ? getProductCategorySlug(matchedProduct.id || matchedProduct.groupKey, matchedProduct.category) : 'catalogue';
               const pId = resolvedKey || matchedProduct?.id || matchedProduct?.groupKey;

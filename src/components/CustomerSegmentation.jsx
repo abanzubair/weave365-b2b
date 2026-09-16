@@ -133,9 +133,11 @@ export function CustomerSegmentation({ navigate }) {
                   <h3 className="segment-card-title">{segment.title}</h3>
                   <p className="segment-card-description">{segment.description}</p>
 
-                  <div className="segment-card-action">
-                    <span className="segment-action-text">{segment.ctaText}</span>
-                    <ArrowRight size={16} className="segment-action-arrow" aria-hidden="true" />
+                  <div className="segment-card-action-container">
+                    <div className="segment-card-action">
+                      <span className="segment-action-text">{segment.ctaText}</span>
+                      <ArrowRight size={15} className="segment-action-arrow" aria-hidden="true" />
+                    </div>
                   </div>
                 </AppLink>
               </article>

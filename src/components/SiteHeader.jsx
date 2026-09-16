@@ -119,6 +119,7 @@ export function SiteHeader(props) {
   const fullPhone = whatsappPhone.length === 10 ? `91${whatsappPhone}` : whatsappPhone;
   const wholesaleWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to talk to the Wholesale Team regarding bulk sourcing.')}`;
   const resellWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to talk to Reseller Support regarding selling without inventory.')}`;
+  const customWovenWaLink = `https://wa.me/${fullPhone}?text=${encodeURIComponent('Hi Weave 365, I would like to discuss a custom woven / private label saree requirement.')}`;
 
   const isWholesaleActive = ['catalogue', 'wholesale-catalogue', 'sarees', 'suits', 'bulk-inquiry', 'sourcing-partners', 'wholesale-banarasi-sarees'].includes(route);
   const isResellActive = ['resell-sarees-online', 'dropshipping', 'white-label', 'reseller-faqs', 'affiliate-program', 'reseller-dashboard'].includes(route);
@@ -264,20 +265,16 @@ export function SiteHeader(props) {
               Handloom vs Powerloom Guide
             </AppLink>
             <div className="nav-dropdown-divider" />
-            <AppLink
-              to="custom-woven#inquiry-form"
-              href="/custom-woven#inquiry-form"
-              navigate={navigate}
+            <a
+              href={customWovenWaLink}
+              target="_blank"
+              rel="noopener noreferrer"
               className="nav-contextual-action"
-              onClick={(e) => {
-                setDropdownOpen(null);
-                const el = document.getElementById('inquiry-form');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
+              onClick={() => setDropdownOpen(null)}
             >
               <WhatsappIcon size={14} />
               <span>Discuss Your Requirement</span>
-            </AppLink>
+            </a>
           </DropdownPortal>
         </div>
 

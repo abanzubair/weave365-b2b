@@ -1807,14 +1807,15 @@
   padding: 16px;
 }
 
+/* User List Modal (Cart & Favorites) - Distilled */
 .admin-user-list-modal {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 20px 24px;
   width: 100%;
-  max-width: 640px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: adminModalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 620px;
+  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  animation: adminModalFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -1825,45 +1826,51 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 16px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.admin-user-list-modal .admin-modal-subtitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #0284c7;
-  background: #e0f2fe;
-  padding: 3px 8px;
-  border-radius: 6px;
-  display: inline-block;
+.admin-user-list-modal .admin-modal-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .admin-user-list-modal .admin-modal-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  color: #111827;
-  margin: 6px 0 2px 0;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .admin-user-list-modal .admin-modal-header-meta {
-  font-size: 13px;
-  color: #6b7280;
-  display: block;
+  font-size: 12.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+.admin-meta-dot {
+  color: #cbd5e1;
+  font-weight: 700;
 }
 
 .admin-user-list-modal .admin-modal-close-btn {
-  background: #f3f4f6;
-  border: none;
-  color: #4b5563;
-  font-size: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 18px;
   line-height: 1;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1873,8 +1880,195 @@
 }
 
 .admin-user-list-modal .admin-modal-close-btn:hover {
-  background: #e5e7eb;
-  color: #111827;
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Distilled Toolbar */
+.admin-user-list-modal .admin-user-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 10px 0;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.admin-user-list-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.admin-user-list-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-user-list-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.admin-user-list-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.admin-user-list-btn.copy-btn.copied {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+/* Distilled Body & Items List */
+.admin-user-list-modal .admin-modal-body {
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.admin-user-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-user-item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s ease;
+}
+
+.admin-user-item-row:last-child {
+  border-bottom: none;
+}
+
+.admin-user-item-row:hover {
+  background: #f8fafc;
+}
+
+.admin-user-list-modal .admin-user-item-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.admin-user-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-user-item-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-user-list-modal .admin-user-item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.admin-user-item-row .admin-item-ext-icon {
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.admin-user-item-row:hover .admin-item-ext-icon {
+  color: #0f172a;
+}
+
+.admin-user-list-modal .admin-user-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.admin-meta-code {
+  color: #475569;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.admin-meta-color {
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.admin-meta-qty {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.admin-user-item-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-left: 12px;
+}
+
+.admin-pricing-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.admin-pricing-label {
+  font-size: 10.5px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 500;
+}
+
+.admin-pricing-val {
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .admin-user-list-modal .admin-modal-body {

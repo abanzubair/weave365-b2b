@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useStorefront } from '../store/useStorefront.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
-import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections } from '../utils/cartHelpers.js';
+import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections, resolveItemVariant } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
@@ -396,7 +396,7 @@ export function AppShell({ children }) {
       .map((item) => {
         const product = productsById.get(item.productGroupKey);
         const { baseVariantCode, colorName } = parseCartVariantCode(item.variantCode);
-        const variant = product?.variants.find((entry) => entry.code === baseVariantCode);
+        const variant = resolveItemVariant(product, item.variantCode, colorName) || product?.variants?.find((entry) => entry.code === baseVariantCode);
         const colorOptions = product?.colorOptions || [];
         const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
         const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
