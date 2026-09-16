@@ -1249,18 +1249,40 @@
     order: 2;
     display: flex !important;
     flex-direction: row !important;
-    overflow-x: auto;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     width: 100% !important;
     height: auto !important;
     max-height: none !important;
-    padding: 4px 0 8px !important;
+    padding: 6px 2px 12px !important;
     gap: 10px !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(183, 134, 70, 0.4) transparent !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x pan-y !important;
+    overscroll-behavior-x: contain !important;
+    overscroll-behavior-y: auto !important;
+    scroll-behavior: smooth;
+    cursor: grab;
+  }
+
+  .vertical-thumbs:active {
+    cursor: grabbing;
   }
 
   .vertical-thumbs::-webkit-scrollbar {
-    display: none;
+    display: block !important;
+    height: 4px !important;
+  }
+
+  .vertical-thumbs::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-radius: 4px !important;
+  }
+
+  .vertical-thumbs::-webkit-scrollbar-thumb {
+    background: rgba(183, 134, 70, 0.4) !important;
+    border-radius: 4px !important;
   }
 
   .vertical-thumbs button {
@@ -1270,6 +1292,15 @@
     aspect-ratio: 3/4 !important;
     border-radius: 8px;
     touch-action: manipulation;
+    scroll-snap-align: start;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .vertical-thumbs button img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   .product-specs-panel,

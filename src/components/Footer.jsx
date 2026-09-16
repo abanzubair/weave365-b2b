@@ -7,7 +7,7 @@ import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { AppLink } from './AppLink.jsx';
-import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Github } from './icons.jsx';
+import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Building2, Tag, FileText } from './icons.jsx';
 
 function LinkedInIcon({ size = 15, className = "" }) {
   return (
@@ -71,9 +71,24 @@ export function Footer({ navigate }) {
 
           <div className="footer-contact-details">
             <div className="footer-contact-line">
+              <Building2 size={14} className="contact-icon" />
+              <strong className="contact-label">Company Name:</strong>
+              <span className="contact-value">{storeConfig.companyName || 'Nexrize Ventures'}</span>
+            </div>
+            <div className="footer-contact-line">
+              <FileText size={14} className="contact-icon" />
+              <strong className="contact-label">GSTIN:</strong>
+              <span className="contact-value">{storeConfig.gstin || '09ADDPA8944K1ZA'}</span>
+            </div>
+            <div className="footer-contact-line">
+              <Tag size={14} className="contact-icon" />
+              <strong className="contact-label">Brand Name:</strong>
+              <span className="contact-value">{storeConfig.brandName || storeConfig.name || 'Weave 365'}</span>
+            </div>
+            <div className="footer-contact-line">
               <MapPin size={14} className="contact-icon" />
               <strong className="contact-label">Registered Office:</strong>
-              <span className="contact-value">Varanasi, Uttar Pradesh, India</span>
+              <span className="contact-value">{storeConfig.registeredOffice || 'Varanasi, Uttar Pradesh, India'}</span>
             </div>
             <div className="footer-contact-line">
               <Phone size={14} className="contact-icon" />
@@ -185,40 +200,8 @@ export function Footer({ navigate }) {
 
         {/* Bottom Bar */}
         <div className="footer-bottom">
-          <p className="footer-copyright">&copy; {new Date().getFullYear()} {storeConfig.name}. All rights reserved.</p>
+          <p className="footer-copyright">&copy; {new Date().getFullYear()} {storeConfig.companyName || 'Nexrize Ventures'} ({storeConfig.name || 'Weave 365'}). All rights reserved.</p>
           <div className="footer-bottom-right">
-            <span className="developer-credit-text">Designed &amp; Developed by</span>
-            <a 
-              href="https://github.com/abanzubair" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="developer-name-link"
-            >
-              Aban Zubair
-            </a>
-            <div className="developer-social-icons">
-              <a 
-                href="https://github.com/abanzubair" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="developer-icon-btn" 
-                aria-label="Aban Zubair GitHub Profile"
-                title="GitHub"
-              >
-                <Github size={13} />
-              </a>
-              <a 
-                href="https://linkedin.com/in/abanzubair" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="developer-icon-btn" 
-                aria-label="Aban Zubair LinkedIn Profile"
-                title="LinkedIn"
-              >
-                <LinkedInIcon size={13} />
-              </a>
-            </div>
-            <span className="footer-divider" aria-hidden="true">•</span>
             <button type="button" onClick={scrollToTop} className="footer-back-to-top">
               Back to Top &uarr;
             </button>

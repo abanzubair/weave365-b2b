@@ -68,7 +68,21 @@ import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import './styles/resellerTools.css';
 
 export function ProductDetailWrapper(props) {
-  const product = props.productsById?.get(props.productId) || (props.products && props.products.length > 0 ? props.products.find((p) => p.id === props.productId) || (!props.productId ? props.products[0] : null) : null);
+  let product = props.productsById?.get(props.productId) || (props.products && props.products.length > 0 ? props.products.find((p) => p.id === props.productId) || (!props.productId ? props.products[0] : null) : null);
+  let resolvedColorName = props.initialColorName;
+  let resolvedVariantCode = props.initialVariantCode;
+
+  if (!product && props.products && props.products.length > 0 && props.productId) {
+    product = props.products.find((p) => p.variants?.some((v) => v.code === props.productId));
+    if (product) {
+      resolvedVariantCode = props.productId;
+      const matchedVariant = product.variants.find((v) => v.code === props.productId);
+      if (!resolvedColorName && matchedVariant?.color) {
+        resolvedColorName = matchedVariant.color;
+      }
+    }
+  }
+
   const isFavorite = product ? props.favoriteKeys?.has(product.id) : false;
 
   useEffect(() => {
@@ -79,7 +93,15 @@ export function ProductDetailWrapper(props) {
 
   if (!product) return <ProductPageSkeleton />;
 
-  return <ProductDetail {...props} product={product} isFavorite={isFavorite} />;
+  return (
+    <ProductDetail
+      {...props}
+      product={product}
+      isFavorite={isFavorite}
+      initialColorName={resolvedColorName}
+      initialVariantCode={resolvedVariantCode}
+    />
+  );
 }
 
 const scrollProductRail = (rowId, direction) => {
@@ -111,11 +133,67 @@ export function ProductDetail({
   openAuth,
   user,
   onReady,
+  initialColorName = null,
+  initialVariantCode = null,
 }) {
-  const initialColorName = product.colorOptions?.[0]?.name || product.variants[0]?.color || '';
-  const [selectedImage, setSelectedImage] = useState(product.images[0]);
-  const [selectedColorName, setSelectedColorName] = useState(initialColorName);
-  const [variantCode, setVariantCode] = useState(product.variants[0]?.code);
+  const resolvedInitial = useMemo(() => {
+    let colorQuery = initialColorName;
+    let variantQuery = initialVariantCode;
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (!colorQuery) colorQuery = params.get('color');
+      if (!variantQuery) variantQuery = params.get('variant');
+    }
+
+    if (colorQuery) {
+      const targetColor = String(colorQuery).trim().toLowerCase();
+      const matchedColorOpt = (product.colorOptions || []).find(
+        (c) => String(c.name || '').trim().toLowerCase() === targetColor
+      );
+      const matchedVariant = (product.variants || []).find(
+        (v) => String(v.color || '').trim().toLowerCase() === targetColor
+      );
+
+      if (matchedColorOpt || matchedVariant) {
+        const foundColorName = matchedColorOpt?.name || matchedVariant?.color;
+        const foundImage = matchedColorOpt?.image || matchedVariant?.image || product.images[0];
+        const foundVariantCode = matchedVariant?.code || product.variants[0]?.code;
+        return {
+          colorName: foundColorName,
+          image: foundImage,
+          variantCode: foundVariantCode,
+        };
+      }
+    }
+
+    if (variantQuery) {
+      const targetCode = String(variantQuery).trim().toLowerCase();
+      const matchedVariant = (product.variants || []).find(
+        (v) => String(v.code || '').trim().toLowerCase() === targetCode
+      );
+      if (matchedVariant) {
+        const foundColorName = matchedVariant.color || product.colorOptions?.[0]?.name || '';
+        const foundImage = matchedVariant.image || product.images[0];
+        return {
+          colorName: foundColorName,
+          image: foundImage,
+          variantCode: matchedVariant.code,
+        };
+      }
+    }
+
+    const defaultColorName = product.colorOptions?.[0]?.name || product.variants[0]?.color || '';
+    return {
+      colorName: defaultColorName,
+      image: product.images[0],
+      variantCode: product.variants[0]?.code,
+    };
+  }, [initialColorName, initialVariantCode, product]);
+
+  const [selectedImage, setSelectedImage] = useState(resolvedInitial.image);
+  const [selectedColorName, setSelectedColorName] = useState(resolvedInitial.colorName);
+  const [variantCode, setVariantCode] = useState(resolvedInitial.variantCode);
   const [isDownloading, setIsDownloading] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(null);
   const [zoomImage, setZoomImage] = useState(null);
@@ -127,6 +205,63 @@ export function ProductDetail({
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [whatsappShareOpen, setWhatsappShareOpen] = useState(false);
   const shareMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (resolvedInitial.colorName) {
+      setSelectedColorName(resolvedInitial.colorName);
+    }
+    if (resolvedInitial.image) {
+      setSelectedImage(resolvedInitial.image);
+    }
+    if (resolvedInitial.variantCode) {
+      setVariantCode(resolvedInitial.variantCode);
+    }
+  }, [resolvedInitial]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const colorQuery = params.get('color');
+      const variantQuery = params.get('variant');
+      if (!colorQuery && !variantQuery) return;
+
+      if (colorQuery) {
+        const targetColor = String(colorQuery).trim().toLowerCase();
+        const matched = (product.colorOptions || []).find(
+          (c) => String(c.name || '').trim().toLowerCase() === targetColor
+        ) || (product.variants || []).find(
+          (v) => String(v.color || '').trim().toLowerCase() === targetColor
+        );
+        if (matched) {
+          const colorName = matched.name || matched.color;
+          setSelectedColorName(colorName);
+          if (matched.image) setSelectedImage(matched.image);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [product]);
+
+  const updateUrlForColor = useCallback((colorName, code) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      if (colorName) {
+        url.searchParams.set('color', colorName);
+      } else {
+        url.searchParams.delete('color');
+      }
+      if (code && code.includes('-')) {
+        url.searchParams.set('variant', code);
+      } else {
+        url.searchParams.delete('variant');
+      }
+      window.history.replaceState(window.history.state, '', url.pathname + url.search);
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.location.hash) {
@@ -1108,7 +1243,9 @@ export function ProductDetail({
     if (matchingVariant?.code) {
       setVariantCode(matchingVariant.code);
     }
-  }, [colorOptions, product.variants]);
+
+    updateUrlForColor(nextColorName, matchingVariant?.code);
+  }, [colorOptions, product.variants, updateUrlForColor]);
 
   const handleImageChange = useCallback((nextImage) => {
     setSelectedImage(nextImage);
@@ -1128,8 +1265,85 @@ export function ProductDetail({
     const nextColorName = matchingVariant?.color || matchingColor?.name || product.colorOptions?.[0]?.name || product.variants[0]?.color;
     if (nextColorName) {
       setSelectedColorName(nextColorName);
+      updateUrlForColor(nextColorName, matchingVariant?.code);
     }
-  }, [colorOptions, product.colorOptions, product.variants]);
+  }, [colorOptions, product.colorOptions, product.variants, updateUrlForColor]);
+
+  const thumbsRef = useRef(null);
+  const isDraggingThumbs = useRef(false);
+  const dragStartX = useRef(0);
+  const scrollStartX = useRef(0);
+  const hasDraggedThumbs = useRef(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  // Auto-scroll active thumbnail into view smoothly
+  useEffect(() => {
+    if (!thumbsRef.current) return;
+    const activeThumb = thumbsRef.current.querySelector('button.active');
+    if (activeThumb) {
+      activeThumb.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [selectedImage]);
+
+  const goToNextImage = useCallback(() => {
+    if (!product.images || product.images.length <= 1) return;
+    const currentIndex = product.images.indexOf(selectedImage);
+    const nextIdx = currentIndex === -1 ? 0 : (currentIndex + 1) % product.images.length;
+    handleImageChange(product.images[nextIdx]);
+  }, [product.images, selectedImage, handleImageChange]);
+
+  const goToPrevImage = useCallback(() => {
+    if (!product.images || product.images.length <= 1) return;
+    const currentIndex = product.images.indexOf(selectedImage);
+    const prevIdx = currentIndex === -1 ? 0 : (currentIndex - 1 + product.images.length) % product.images.length;
+    handleImageChange(product.images[prevIdx]);
+  }, [product.images, selectedImage, handleImageChange]);
+
+  // Mouse drag-to-scroll for horizontal thumbnail rail
+  const handleThumbsMouseDown = (e) => {
+    if (!thumbsRef.current) return;
+    isDraggingThumbs.current = true;
+    hasDraggedThumbs.current = false;
+    dragStartX.current = e.pageX - thumbsRef.current.offsetLeft;
+    scrollStartX.current = thumbsRef.current.scrollLeft;
+  };
+
+  const handleThumbsMouseMove = (e) => {
+    if (!isDraggingThumbs.current || !thumbsRef.current) return;
+    const x = e.pageX - thumbsRef.current.offsetLeft;
+    const walk = x - dragStartX.current;
+    if (Math.abs(walk) > 5) {
+      hasDraggedThumbs.current = true;
+    }
+    thumbsRef.current.scrollLeft = scrollStartX.current - walk;
+  };
+
+  const handleThumbsMouseUp = () => {
+    isDraggingThumbs.current = false;
+  };
+
+  // Touch swipe handlers on the main image
+  const handleMainTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleMainTouchEnd = (e) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0) {
+        goToNextImage();
+      } else {
+        goToPrevImage();
+      }
+    }
+  };
 
   const breadcrumbItems = [
     { name: 'Home', url: '/', route: 'home' },
@@ -1145,12 +1359,23 @@ export function ProductDetail({
 
         <div className="product-hero-grid">
           <div className="product-media">
-            <div className="vertical-thumbs" style={galleryStyle}>
+            <div
+              className="vertical-thumbs"
+              ref={thumbsRef}
+              style={galleryStyle}
+              onMouseDown={handleThumbsMouseDown}
+              onMouseMove={handleThumbsMouseMove}
+              onMouseUp={handleThumbsMouseUp}
+              onMouseLeave={handleThumbsMouseUp}
+            >
               {product.images.map((image, index) => (
                 <button type="button"
                   key={image}
                   className={selectedImage === image ? 'active' : ''}
-                  onClick={() => handleImageChange(image)}
+                  onClick={() => {
+                    if (hasDraggedThumbs.current) return;
+                    handleImageChange(image);
+                  }}
                 >
                   <img
                     src={getOptimizedImageUrl(image, 'thumbnail')}
@@ -1173,7 +1398,10 @@ export function ProductDetail({
               {product.video && (
                 <button type="button"
                   className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
-                  onClick={() => setSelectedImage(product.video)}
+                  onClick={() => {
+                    if (hasDraggedThumbs.current) return;
+                    setSelectedImage(product.video);
+                  }}
                 >
                   <div className="video-thumb-container">
                     <img
@@ -1193,7 +1421,12 @@ export function ProductDetail({
               )}
             </div>
 
-            <div className="catalog-main-image" ref={mainImageRef}>
+            <div
+              className="catalog-main-image"
+              ref={mainImageRef}
+              onTouchStart={handleMainTouchStart}
+              onTouchEnd={handleMainTouchEnd}
+            >
               {selectedImage && (selectedImage.startsWith('https://www.youtube.com/embed') || selectedImage.startsWith('https://www.youtube-nocookie.com/embed')) ? (
                 <div className="video-container">
                   <iframe
@@ -1225,6 +1458,35 @@ export function ProductDetail({
                       }
                     }}
                   />
+                  {product.images && product.images.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        className="main-image-nav-btn prev"
+                        aria-label="Previous image"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToPrevImage();
+                        }}
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        className="main-image-nav-btn next"
+                        aria-label="Next image"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToNextImage();
+                        }}
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                      <div className="main-image-counter">
+                        {Math.max(1, product.images.indexOf(selectedImage) + 1)} / {product.images.length}
+                      </div>
+                    </>
+                  )}
                   <button type="button" className="zoom-button" aria-label="View larger image" onClick={() => setZoomImage(selectedImage || product.images[0] || fallbackProductImage)}>
                     <ZoomIn size={18} />
                   </button>
@@ -1388,11 +1650,6 @@ export function ProductDetail({
                   <Globe size={18} className="globe-hint-icon" />
                   <span>International air cargo available; freight rates reduce per unit with larger volume.</span>
                 </div>
-                {!(priceAccess?.priceGroup === 'reseller' || priceAccess?.priceGroup === 'guest') && (
-                  <div className="b2b-custom-hint">
-                    Need custom bulk freight or specific timelines? WhatsApp us your order quantity and destination pin code.
-                  </div>
-                )}
               </div>
 
               <div className="product-specs-list">

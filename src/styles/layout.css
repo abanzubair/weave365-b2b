@@ -877,16 +877,16 @@
 .footer-contact-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .footer-contact-line {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 28px;
+  min-height: unset;
 }
 
 .contact-icon {
@@ -907,8 +907,8 @@
 .contact-link {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 4px 0;
+  min-height: unset;
+  padding: 0;
   color: #5a5047;
   text-decoration: none;
   transition: color 0.2s ease;
@@ -1025,53 +1025,6 @@
   color: #786a60;
 }
 
-.developer-credit-text {
-  color: #786a60;
-}
-
-.developer-name-link {
-  font-weight: 600;
-  color: var(--ink, #1f140d);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.developer-name-link:hover {
-  color: var(--gold-dark, #805d31);
-}
-
-.developer-social-icons {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 2px;
-}
-
-.developer-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(183, 134, 70, 0.08);
-  color: var(--gold-dark, #805d31);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.developer-icon-btn:hover {
-  background: rgba(183, 134, 70, 0.18);
-  color: var(--gold, #b78646);
-  transform: translateY(-1px);
-}
-
-.footer-divider {
-  color: rgba(183, 134, 70, 0.4);
-  user-select: none;
-  margin: 0 4px;
-}
-
 .footer-back-to-top {
   background: transparent;
   border: none;
@@ -1100,9 +1053,7 @@
 .dark-mode .footer-tagline,
 .dark-mode .contact-label,
 .dark-mode .footer-col-heading,
-.dark-mode .footer-back-to-top,
-.dark-mode .developer-credit-text,
-.dark-mode .developer-name-link {
+.dark-mode .footer-back-to-top {
   color: #ffffff;
 }
 .dark-mode .footer-desc,
@@ -1113,17 +1064,8 @@
 .dark-mode .footer-bottom-right {
   color: rgba(255, 255, 255, 0.7);
 }
-.dark-mode .developer-icon-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--gold, #b78646);
-}
-.dark-mode .developer-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-}
 .dark-mode .contact-link:hover,
 .dark-mode .footer-link-list a:hover,
-.dark-mode .developer-name-link:hover,
 .dark-mode .footer-back-to-top:hover {
   color: var(--gold, #b78646);
 }

@@ -133,10 +133,17 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
       const colorOptions = product?.colorOptions || [];
       const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
 
-      const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
-      const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
+      const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey, product?.category) : 'catalogue';
       const pId = row.product_group_key || product?.id || product?.groupKey;
-      const productUrl = pId ? `${origin}/${categorySlug}/${encodeURIComponent(pId)}` : '';
+      const queryParams = [];
+      if (selectedColorName) {
+        queryParams.push(`color=${encodeURIComponent(selectedColorName)}`);
+      }
+      if (variant?.code && variant.code !== pId) {
+        queryParams.push(`variant=${encodeURIComponent(variant.code)}`);
+      }
+      const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+      const productUrl = pId ? `${origin}/${categorySlug}/${encodeURIComponent(pId)}${queryString}` : '';
       const displayCode = resolveItemSku(product, row.variant_code || row.variantCode, row.product_group_key, selectedColorName);
       const vendorCode = product?.vendorCode || product?.raw?.VID || product?.raw?.vid || '';
       const vendorName = product?.partner || product?.raw?.Partner || product?.raw?.partner || '';
@@ -321,9 +328,17 @@ export function UserListModal({ selectedUserList, setSelectedUserList, userCartM
                 const itemTitle = product?.title || `Product Design Code: ${row.product_group_key}`;
                 const displayCode = resolveItemSku(product, row.variant_code || row.variantCode, row.product_group_key, selectedColorName);
 
-                const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey) : 'catalogue';
+                const categorySlug = product ? getProductCategorySlug(product.id || product.groupKey, product?.category) : 'catalogue';
                 const pId = row.product_group_key || product?.id || product?.groupKey;
-                const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+                const queryParams = [];
+                if (selectedColorName) {
+                  queryParams.push(`color=${encodeURIComponent(selectedColorName)}`);
+                }
+                if (variant?.code && variant.code !== pId) {
+                  queryParams.push(`variant=${encodeURIComponent(variant.code)}`);
+                }
+                const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+                const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}${queryString}` : '#';
 
                 return (
                   <a

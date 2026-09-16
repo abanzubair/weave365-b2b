@@ -212,9 +212,17 @@ function generateWhatsAppGroupMsg(enquiries, products) {
         matchedProduct.id || matchedProduct.groupKey,
         matchedProduct.category
       );
+      const queryParams = [];
+      if (selectedColorName) {
+        queryParams.push(`color=${encodeURIComponent(selectedColorName)}`);
+      }
+      if (variant?.code && variant.code !== (matchedProduct.id || matchedProduct.groupKey)) {
+        queryParams.push(`variant=${encodeURIComponent(variant.code)}`);
+      }
+      const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
       const productUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(
         matchedProduct.id || matchedProduct.groupKey
-      )}`;
+      )}${queryString}`;
       itemsText += `\n   Link: ${productUrl}`;
     }
     itemsText += '\n\n';
@@ -1092,7 +1100,15 @@ function EnquiryItemsModal({ isOpen, onClose, modalData, products = [] }) {
 
               const categorySlug = matchedProduct ? getProductCategorySlug(matchedProduct.id || matchedProduct.groupKey, matchedProduct.category) : 'catalogue';
               const pId = resolvedKey || matchedProduct?.id || matchedProduct?.groupKey;
-              const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}` : '#';
+              const queryParams = [];
+              if (selectedColorName) {
+                queryParams.push(`color=${encodeURIComponent(selectedColorName)}`);
+              }
+              if (variant?.code && variant.code !== pId) {
+                queryParams.push(`variant=${encodeURIComponent(variant.code)}`);
+              }
+              const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+              const productUrl = pId ? `/${categorySlug}/${encodeURIComponent(pId)}${queryString}` : '#';
 
               return (
                 <a

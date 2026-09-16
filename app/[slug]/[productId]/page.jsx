@@ -8,31 +8,51 @@ import ProductPageClient from './ProductPageClient.jsx';
 export const revalidate = 3600;
 export const runtime = 'edge';
 
-function generateProductSchemas(product, activeReviews = []) {
+function generateProductSchemas(product, activeReviews = [], requestedColor = null) {
   if (!product) return null;
 
   const categorySlug = getProductCategorySlug(product.id, product.category);
-  const prodUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(product.id)}`;
+  const colorQuery = requestedColor ? `?color=${encodeURIComponent(requestedColor)}` : '';
+  const prodUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(product.id)}${colorQuery}`;
 
   const totalColors = product.totalColors ?? (product.variants?.length > 1 ? product.variants.length : Math.max(1, Math.min(product.images?.length || 0, 4)));
-  const variant = product.variants?.[0] || { code: product.id, prices: {} };
+
+  let variant = product.variants?.[0] || { code: product.id, prices: {} };
+  let primaryImage = product.images?.[0] || '';
+  if (requestedColor) {
+    const matchedV = (product.variants || []).find(
+      (v) => String(v.color || '').toLowerCase() === String(requestedColor).toLowerCase()
+    );
+    if (matchedV) {
+      variant = matchedV;
+      if (matchedV.image) primaryImage = matchedV.image;
+    }
+  }
+
+  const cleanTitle = (product.title || product.metaTitle || 'Banarasi Saree')
+    .replace(new RegExp(`\\s*\\|?\\s*${storeConfig.name || 'Weave 365'}\\s*$`, 'i'), '')
+    .trim();
+  const schemaProductName = requestedColor ? `${requestedColor} ${cleanTitle}` : (product.title || cleanTitle);
   const displayPrice = variant.prices?.single || variant.prices?.mrp || 2500;
+  const images = primaryImage ? [primaryImage, ...(product.images || []).filter(img => img !== primaryImage)] : (product.images || []);
 
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.title || product.metaTitle,
-    image: product.images || [],
+    name: schemaProductName,
+    image: images,
     description: product.description || `Elegant handwoven Banarasi saree styled in ${product.fabric || 'pure silk'}. Sourced directly from Varanasi.`,
-    sku: product.id || variant.code,
+    sku: variant.code || product.id,
     mpn: variant.code || product.id,
+    ...(requestedColor ? { color: requestedColor } : {}),
     brand: {
       '@type': 'Brand',
       name: storeConfig.name || 'Weave 365',
     },
     offers: {
-      '@type': 'AggregateOffer',
+      '@type': requestedColor ? 'Offer' : 'AggregateOffer',
       priceCurrency: 'INR',
+      price: displayPrice,
       lowPrice: displayPrice,
       highPrice: Math.round(displayPrice * 1.5),
       offerCount: totalColors,
@@ -114,28 +134,85 @@ function generateProductSchemas(product, activeReviews = []) {
     ],
   };
 
-  return { productSchema, faqSchema };
+  const categoryName = product.category || (categorySlug === 'saree' ? 'Sarees' : categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1));
+  const categoryUrl = `${siteUrl}/${categorySlug === 'saree' ? 'sarees' : categorySlug === 'suit' ? 'suits' : categorySlug}`;
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: categoryName,
+        item: categoryUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: schemaProductName,
+        item: prodUrl,
+      },
+    ],
+  };
+
+  return { productSchema, faqSchema, breadcrumbSchema };
 }
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
-  const productId = decodeURIComponent(resolvedParams?.productId || '');
+  const resolvedSearchParams = await searchParams;
+  const rawId = decodeURIComponent(resolvedParams?.productId || '');
   const products = await fetchProducts().catch(() => []);
-  const product = products.find((item) => item.id === productId);
+  let product = products.find((item) => item.id === rawId);
+  let requestedColor = resolvedSearchParams?.color || null;
+
+  if (!product) {
+    product = products.find((item) => item.variants?.some((v) => v.code === rawId));
+    if (product) {
+      const v = product.variants.find((v) => v.code === rawId);
+      if (v?.color) requestedColor = v.color;
+    }
+  }
 
   if (!product || product.isArchived) {
     return { title: 'Product Not Found | Weave 365' };
   }
 
+  let imageUrl = product.images?.[0] || undefined;
+  if (requestedColor) {
+    const colorOpt = product.colorOptions?.find(
+      (c) => String(c.name || '').toLowerCase() === String(requestedColor).toLowerCase()
+    );
+    const variantOpt = product.variants?.find(
+      (v) => String(v.color || '').toLowerCase() === String(requestedColor).toLowerCase()
+    );
+    if (colorOpt?.image || variantOpt?.image) {
+      imageUrl = colorOpt?.image || variantOpt?.image;
+    }
+  }
+
   const categorySlug = getProductCategorySlug(product.id, product.category);
-  const canonicalUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(product.id)}`;
-  const title = product.metaTitle || product.title || `${storeConfig.name} Product`;
-  const description =
-    product.metaDescription ||
-    product.summary ||
-    product.description ||
-    `View ${title} in the ${storeConfig.name} wholesale catalogue.`;
-  const imageUrl = product.images?.[0] || undefined;
+  const colorQuery = requestedColor ? `?color=${encodeURIComponent(requestedColor)}` : '';
+  const canonicalUrl = `${siteUrl}/${categorySlug}/${encodeURIComponent(product.id)}${colorQuery}`;
+  const brandName = storeConfig.name || 'Weave 365';
+  const rawTitle = product.metaTitle || product.title || `${brandName} Product`;
+  const cleanBaseTitle = rawTitle.replace(new RegExp(`\\s*\\|?\\s*${brandName}\\s*$`, 'i'), '').trim();
+  const title = requestedColor
+    ? `${requestedColor} ${cleanBaseTitle} | ${brandName}`
+    : rawTitle;
+  const description = requestedColor
+    ? `Buy ${requestedColor} ${product.title || 'Banarasi Saree'}. Direct Varanasi weaver wholesale price. ${product.description || ''}`
+    : (product.metaDescription ||
+      product.summary ||
+      product.description ||
+      `View ${title} in the ${storeConfig.name} wholesale catalogue.`);
 
   const defaultMeta = {
     title,
@@ -174,16 +251,33 @@ export async function generateMetadata({ params }) {
     },
   };
 
-  return getSeoMetadata(`/${categorySlug}/${encodeURIComponent(product.id)}`, defaultMeta);
+  return getSeoMetadata(`/${categorySlug}/${encodeURIComponent(product.id)}${colorQuery}`, defaultMeta, {
+    firstImage: imageUrl,
+    pageImage: imageUrl,
+  });
 }
 
-export default async function ProductPage({ params }) {
+export default async function ProductPage({ params, searchParams }) {
   const resolvedParams = await params;
-  const productId = decodeURIComponent(resolvedParams?.productId || '');
+  const resolvedSearchParams = await searchParams;
+  const rawId = decodeURIComponent(resolvedParams?.productId || '');
   const categoryParam = resolvedParams?.slug || resolvedParams?.category || '';
 
   const products = await fetchProducts().catch(() => []);
-  const product = products.find((item) => item.id === productId);
+  let product = products.find((item) => item.id === rawId);
+
+  // If rawId is a variant code (e.g. 102045-4), redirect to parent product with ?color=
+  if (!product) {
+    product = products.find((item) => item.variants?.some((v) => v.code === rawId));
+    if (product) {
+      const matchedVariant = product.variants.find((v) => v.code === rawId);
+      const catSlug = getProductCategorySlug(product.id, product.category);
+      const colorQuery = matchedVariant?.color
+        ? `?color=${encodeURIComponent(matchedVariant.color)}`
+        : `?variant=${encodeURIComponent(rawId)}`;
+      redirect(`/${catSlug}/${encodeURIComponent(product.id)}${colorQuery}`);
+    }
+  }
 
   if (!product || product.isArchived) {
     notFound();
@@ -191,8 +285,14 @@ export default async function ProductPage({ params }) {
 
   const expectedCategorySlug = getProductCategorySlug(product.id, product.category);
   if (categoryParam !== expectedCategorySlug) {
-    redirect(`/${expectedCategorySlug}/${encodeURIComponent(product.id)}`);
+    const colorQuery = resolvedSearchParams?.color
+      ? `?color=${encodeURIComponent(resolvedSearchParams.color)}`
+      : '';
+    redirect(`/${expectedCategorySlug}/${encodeURIComponent(product.id)}${colorQuery}`);
   }
+
+  const initialColorName = resolvedSearchParams?.color || null;
+  const initialVariantCode = resolvedSearchParams?.variant || null;
 
   let activeReviews = [];
   if (isSupabaseConfigured) {
@@ -212,10 +312,18 @@ export default async function ProductPage({ params }) {
     }
   }
 
-  const schemas = generateProductSchemas(product, activeReviews);
+  const schemas = generateProductSchemas(product, activeReviews, initialColorName);
 
   return (
     <>
+      {schemas?.breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schemas.breadcrumbSchema).replace(/</g, '\\u003c'),
+          }}
+        />
+      )}
       {schemas?.productSchema && (
         <script
           type="application/ld+json"
@@ -236,6 +344,8 @@ export default async function ProductPage({ params }) {
         productId={product.id}
         initialProduct={product}
         initialAllProducts={products}
+        initialColorName={initialColorName}
+        initialVariantCode={initialVariantCode}
       />
     </>
   );

@@ -33,7 +33,10 @@ export function AppLink({
     if (to === 'home') {
       url = '/';
     } else if (to === 'product' && productId) {
-      url = `/${getProductCategorySlug(productId)}/${encodeURIComponent(productId)}`;
+      const colorQuery = navOptions.color
+        ? `?color=${encodeURIComponent(navOptions.color)}`
+        : (navOptions.variant ? `?variant=${encodeURIComponent(navOptions.variant)}` : '');
+      url = `/${getProductCategorySlug(productId)}/${encodeURIComponent(productId)}${colorQuery}`;
     } else if (to === 'partner' && productId) {
       // Slugify partner name
       const slug = String(productId).toLowerCase().trim().replace(/\s+/g, '-');

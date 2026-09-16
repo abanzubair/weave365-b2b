@@ -9,7 +9,13 @@ import { upsertCart, upsertCartSelections, persistCart, persistFavorites } from 
 import { serviceablePincodes } from '../../../src/config.js';
 import { getVendorStockLocal, applyStockOverridesToProducts } from '../../../src/utils/vendorStockService.js';
 
-export default function ProductPageClient({ productId, initialProduct, initialAllProducts = [] }) {
+export default function ProductPageClient({
+  productId,
+  initialProduct,
+  initialAllProducts = [],
+  initialColorName = null,
+  initialVariantCode = null,
+}) {
   const navigate = useAppNavigate();
   const {
     user,
@@ -140,6 +146,8 @@ export default function ProductPageClient({ productId, initialProduct, initialAl
       codStatus={codStatus}
       checkPincode={checkPincode}
       user={user}
+      initialColorName={initialColorName}
+      initialVariantCode={initialVariantCode}
     />
   );
 }

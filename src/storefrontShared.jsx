@@ -187,7 +187,11 @@ export function buildWhatsappUrl(items, total, pincode, codStatus, priceAccess, 
     const product = group.product || firstItem.product;
     const variant = group.variant || firstItem.variant;
     const catSlug = getProductCategorySlug(product.id, product.category);
-    const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(product.id)}`;
+    const singleColor = group.items.length === 1 && group.items[0].selectedColorName && group.items[0].selectedColorName !== 'Select Color'
+      ? group.items[0].selectedColorName
+      : null;
+    const colorParam = singleColor ? `?color=${encodeURIComponent(singleColor)}` : '';
+    const productUrl = `${siteUrl}/${catSlug}/${encodeURIComponent(product.id)}${colorParam}`;
     const pricing = group.pricing || calculateHybridProductPrice(product, group.items);
 
     let priceSummary = '';
@@ -256,7 +260,8 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pi
   const canViewPrices = priceAccess?.canViewPrices !== false;
   const pricing = calculateHybridProductPrice(product, quantity, variant);
   const catSlug = getProductCategorySlug(product.id, product.category);
-  const productUrl = `${siteUrl}/${catSlug}/${product.id}`;
+  const colorQuery = variant?.color ? `?color=${encodeURIComponent(variant.color)}` : '';
+  const productUrl = `${siteUrl}/${catSlug}/${product.id}${colorQuery}`;
 
   let priceText = '';
   if (canViewPrices && pricing.totalPrice > 0) {
@@ -273,7 +278,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pi
     `Hello ${storeConfig.name},`,
     `I want to buy this catalog:`,
     `${product.title}`,
-    `Code: ${variant.code} | Quantity: ${quantity} pc${quantity === 1 ? '' : 's'}`,
+    `Code: ${variant.code}${variant.color ? ` | Color: ${variant.color}` : ''} | Quantity: ${quantity} pc${quantity === 1 ? '' : 's'}`,
     priceText,
     pincode ? `Pincode: ${pincode}` : '',
     codStatus === 'available' ? 'COD checked: Available' : '',

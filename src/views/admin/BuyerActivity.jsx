@@ -134,8 +134,17 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
 
     const title = prod ? prod.title : (itemKey ? `Product #${rawKey}` : 'Banarasi Craft Article');
     const categorySlug = getProductCategorySlug(pid, prod?.category);
-    const url = pid ? `/${categorySlug}/${encodeURIComponent(pid)}` : '/catalogue';
-    const image = prod?.image || null;
+    const matchedV = prod?.variants?.find(v => v.code === variantCode || v.code === rawKey);
+    const queryParams = [];
+    if (matchedV?.color) {
+      queryParams.push(`color=${encodeURIComponent(matchedV.color)}`);
+    }
+    if (matchedV?.code && matchedV.code !== pid) {
+      queryParams.push(`variant=${encodeURIComponent(matchedV.code)}`);
+    }
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+    const url = pid ? `/${categorySlug}/${encodeURIComponent(pid)}${queryString}` : '/catalogue';
+    const image = matchedV?.image || prod?.image || null;
 
     return { title, url, image, pid };
   };

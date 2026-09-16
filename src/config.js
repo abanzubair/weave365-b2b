@@ -46,6 +46,10 @@ export const serviceablePincodes = [
 
 export const storeConfig = {
   name: process.env.NEXT_PUBLIC_STORE_NAME || 'Weave 365',
+  companyName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'Nexrize Ventures',
+  gstin: process.env.NEXT_PUBLIC_STORE_GSTIN || '09ADDPA8944K1ZA',
+  brandName: 'Weave 365',
+  registeredOffice: 'Varanasi, Uttar Pradesh, India',
   subtitle: process.env.NEXT_PUBLIC_STORE_SUBTITLE || 'WHOLESALE',
   email: process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com',
   phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',

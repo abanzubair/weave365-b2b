@@ -18,7 +18,10 @@ export function useAppNavigate() {
       href = '/';
     } else if (nextRoute === 'product' && productId) {
       const catSlug = getProductCategorySlug(productId);
-      href = `/${catSlug}/${encodeURIComponent(productId)}`;
+      const colorQuery = navOptions.color
+        ? `?color=${encodeURIComponent(navOptions.color)}`
+        : (navOptions.variant ? `?variant=${encodeURIComponent(navOptions.variant)}` : '');
+      href = `/${catSlug}/${encodeURIComponent(productId)}${colorQuery}`;
     } else if (nextRoute === 'order-tracking') {
       href = productId ? `/order-tracking/${encodeURIComponent(productId)}` : '/order-tracking';
     } else if (nextRoute === 'partner') {

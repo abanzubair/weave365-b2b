@@ -168,7 +168,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     const price = Number(item.price) || Number(matchedVariant?.prices?.b2r) || Number(matchedProd?.price) || 0;
     const targetProductId = matchedProd?.id || item.product_id || baseCode || skuCode;
     const categorySlug = getProductCategorySlug(targetProductId, matchedProd?.category);
-    const productUrl = targetProductId ? `/${categorySlug}/${encodeURIComponent(targetProductId)}` : '#';
+    const queryParams = [];
+    if (color && color !== 'Standard') {
+      queryParams.push(`color=${encodeURIComponent(color)}`);
+    }
+    if (matchedVariant?.code && matchedVariant.code !== targetProductId) {
+      queryParams.push(`variant=${encodeURIComponent(matchedVariant.code)}`);
+    }
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+    const productUrl = targetProductId ? `/${categorySlug}/${encodeURIComponent(targetProductId)}${queryString}` : '#';
 
     return {
       sku: skuCode || 'SKU',
