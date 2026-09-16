@@ -118,7 +118,6 @@ const saveDebounceTimers = new Map();
  */
 export async function fetchVendorStockOverrides(forceRefresh = false) {
   const localOverrides = getVendorStockLocal();
-  if (!isSupabaseConfigured) return localOverrides;
 
   const now = Date.now();
   if (!forceRefresh && Object.keys(localOverrides).length > 0 && (now - lastFetchTimestamp < FETCH_CACHE_TTL_MS)) {
@@ -161,8 +160,9 @@ export async function fetchVendorStockOverrides(forceRefresh = false) {
           }
         }
         lastFetchTimestamp = Date.now();
-        setVendorStockLocal(mapped);
-        return mapped;
+        const merged = { ...localOverrides, ...mapped };
+        setVendorStockLocal(merged);
+        return merged;
       }
     } catch (err) {
       console.error('[vendorStockService] Unexpected fetch error:', err);
@@ -230,7 +230,7 @@ export async function saveVendorProductStock({
       try {
         const supabase = await getSupabase();
         if (!supabase) {
-          resolve({ success: true, localOnly: true });
+          resolve({ success: true, localOnly: true, item: updateItem });
           return;
         }
 
@@ -374,7 +374,7 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
 
   return products.map((product) => {
     const key = product.id || product.groupKey;
-    const override = overrides[key];
+    const override = overrides[key] || (product.id ? overrides[product.id] : null) || (product.groupKey ? overrides[product.groupKey] : null);
     if (!override) return product;
 
     const stockKey = override.stockStatus;
@@ -382,13 +382,15 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
 
     // Filter out existing stock tags and prepend the active override tag
     const nonStockTags = (product.statusTags || []).filter(
-      (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(tag.key)
+      (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
     );
 
     const updatedTags = [
       { key: stockKey, label: stockLabel },
       ...nonStockTags,
     ];
+
+    const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && Boolean(product.isArchived));
 
     return {
       ...product,
@@ -401,6 +403,7 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
       isReadyStock: stockKey === 'ready-stock',
       isPreOrder: stockKey === 'pre-order',
       isBackSoon: stockKey === 'back-soon',
+      isArchived,
     };
   });
 }

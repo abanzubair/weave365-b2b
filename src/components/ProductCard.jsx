@@ -297,7 +297,7 @@ export const ProductCard = memo(function ProductCard({
   const handleBuyNowDirect = (e) => {
     if (e) e.stopPropagation();
     handleClose();
-    if (product.isOutOfStock) {
+    if (isOutOfStock) {
       handleEnquiryClick(e);
       return;
     }
@@ -310,7 +310,7 @@ export const ProductCard = memo(function ProductCard({
   const handleAddToCartOnly = (e) => {
     if (e) e.stopPropagation();
     handleClose();
-    if (product.isOutOfStock) {
+    if (isOutOfStock) {
       handleEnquiryClick(e);
       return;
     }
@@ -322,7 +322,7 @@ export const ProductCard = memo(function ProductCard({
 
   const handleBuyNowClick = (e) => {
     if (e) e.stopPropagation();
-    if (product.isOutOfStock) {
+    if (isOutOfStock) {
       handleEnquiryClick(e);
       return;
     }

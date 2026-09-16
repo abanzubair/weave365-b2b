@@ -16,6 +16,7 @@ import {
   getVendorStockLocal,
   applyStockOverridesToProducts,
   VENDOR_STOCK_UPDATED_EVENT,
+  VENDOR_STOCK_STORAGE_KEY,
 } from '../utils/vendorStockService.js';
 
 import dynamic from 'next/dynamic';
@@ -164,6 +165,25 @@ export function AppShell({ children }) {
     };
     window.addEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
 
+    // Cross-tab synchronization via native storage event
+    const handleStorageChange = (e) => {
+      if (e.key === VENDOR_STOCK_STORAGE_KEY && e.newValue) {
+        try {
+          const overrides = JSON.parse(e.newValue);
+          if (overrides && Object.keys(overrides).length > 0) {
+            const currentProds = useStorefront.getState().products;
+            if (currentProds && currentProds.length > 0) {
+              const updated = applyStockOverridesToProducts(currentProds, overrides);
+              setProducts(updated);
+            }
+          }
+        } catch (err) {
+          // Ignore JSON parse errors from concurrent writes
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     // Background fetch to ensure fresh stock status from Supabase after page load settles
     const timer = setTimeout(() => {
       fetchVendorStockOverrides()
@@ -181,6 +201,7 @@ export function AppShell({ children }) {
 
     return () => {
       window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);
+      window.removeEventListener('storage', handleStorageChange);
       clearTimeout(timer);
     };
   }, [setProducts]);
