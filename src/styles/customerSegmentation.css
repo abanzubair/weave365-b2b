@@ -173,7 +173,10 @@
 .segment-card-action {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  width: 228px;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 9px 16px;
   background-color: #fbf8f3;
   border: 1px solid rgba(183, 134, 70, 0.3);
@@ -184,6 +187,7 @@
   color: var(--gold-dark, #805d31);
   letter-spacing: 0.01em;
   line-height: 1.3;
+  white-space: nowrap;
   transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
   box-shadow: 0 1px 3px rgba(128, 93, 49, 0.06);
 }
@@ -207,7 +211,7 @@
   color: #ffffff;
 }
 
-/* Highlighted Card (Wholesale & Bulk) */
+/* Highlighted Card (Wholesale & Bulk) - Black primary button, Gold on hover (matching Hero Banner) */
 .segment-card.highlighted-segment {
   border-color: rgba(183, 134, 70, 0.28);
   background: linear-gradient(180deg, #ffffff 0%, #fdfcf9 100%);
@@ -219,12 +223,19 @@
 }
 
 .segment-card.highlighted-segment .segment-card-action {
-  background-color: #f6eee3;
-  border-color: rgba(183, 134, 70, 0.38);
+  background-color: #171513;
+  border-color: #171513;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(23, 21, 19, 0.18);
+}
+
+.segment-card.highlighted-segment .segment-card-action .segment-action-arrow {
+  color: #ffffff;
 }
 
 .segment-card.highlighted-segment:hover .segment-card-action {
-  background-color: #875a22;
-  border-color: #875a22;
+  background-color: var(--gold-dark, #805d31);
+  border-color: var(--gold-dark, #805d31);
   color: #ffffff;
+  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.25);
 }
