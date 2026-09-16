@@ -6,7 +6,7 @@ import { sortByStockDateDesc, getTopProductForCategory, getTopProductForCatalogu
  * Featured first-image mapping for static marketing / guide / landing pages (Level 2 fallback).
  */
 export const ROUTE_FIRST_IMAGES = {
-  '/': '/deskH.webp',
+  '/': 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp',
   '/handloom-vs-powerloom-guide': '/banarasi_loom_detail.webp',
   '/handloom-vs-semi-handloom-vs-powerloom-guide': '/banarasi_loom_detail.webp',
   '/sourcing-partners': '/artisan_at_loom_premium.webp',
@@ -59,6 +59,9 @@ export function ensureAbsoluteUrl(url, base = siteUrl) {
   }
   if (trimmed.startsWith('//')) {
     return `https:${trimmed}`;
+  }
+  if (trimmed.startsWith('assets.weave365.com') || trimmed.startsWith('images.weave365.in') || trimmed.startsWith('www.')) {
+    return `https://${trimmed}`;
   }
   const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return `${base.replace(/\/$/, '')}${cleanPath}`;
@@ -210,12 +213,15 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
     // Respect caller-provided dimensions or detect based on image source
     const callerImage = defaultMetadata?.openGraph?.images?.[0];
     const isFavicon = cleanUrl.endsWith('favicon.png');
+    const isBanner =
+      cleanUrl.includes('/banner/') ||
+      cleanUrl.includes('hero') ||
+      cleanUrl.includes('deskh');
     const isProductPhoto =
-      cleanUrl.includes('assets.weave365.com') ||
-      cleanUrl.includes('/suit/') ||
-      cleanUrl.includes('/saree/') ||
-      resolvedImage.source?.includes('product') ||
-      defaultMetadata?.firstImage !== undefined;
+      !isBanner &&
+      (cleanUrl.includes('/suit/') ||
+        cleanUrl.includes('/saree/') ||
+        resolvedImage.source?.includes('product'));
 
     let imageWidth = callerImage?.width;
     let imageHeight = callerImage?.height;

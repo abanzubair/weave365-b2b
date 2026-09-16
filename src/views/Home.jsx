@@ -63,8 +63,8 @@ export const localCategoryImages = {
 };
 
 const defaultHero = {
-  image: 'https://assets.weave365.com/assets/banner/hero1.webp',
-  mobileImage: 'https://assets.weave365.com/assets/banner/hero1m.webp',
+  image: 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp',
+  mobileImage: 'https://assets.weave365.com/assets/banner/heroFreeWebsite-600.webp',
   title: 'Beyond\nBeauty',
   subtitle: 'Direct from Varanasi Weavers • Zero Middlemen',
   buttonText: 'Shop Wholesale Catalog',

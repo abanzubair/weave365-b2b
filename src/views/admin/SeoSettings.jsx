@@ -6,9 +6,11 @@ import {
   Upload,
   RefreshCw,
   Copy,
+  Image as ImageIcon,
 } from '../../components/icons.jsx';
 import { seoCategoryRoutes } from '../../config.js';
 import { saveSupabasePageSeoSetting } from '../../productData.js';
+import { ROUTE_FIRST_IMAGES } from '../../utils/seoHelper.js';
 import {
   normalizeSeoPath,
   mapSeoRow,
@@ -278,11 +280,26 @@ export default function SeoSettings({
     return pageSeoRows.find((row) => normalizeSeoPath(row.path) === normalized) || null;
   }, [pageSeoRows, pageSeoPath]);
 
+  const defaultPageImage = useMemo(() => {
+    const normalized = normalizeSeoPath(pageSeoPath);
+    return ROUTE_FIRST_IMAGES[normalized] || 'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp';
+  }, [pageSeoPath]);
+
   const currentSeoMeta = useMemo(() => ({
     title: selectedSavedSeo?.metaTitle || selectedDefaultSeo?.metaTitle || '',
     description: selectedSavedSeo?.metaDescription || selectedDefaultSeo?.metaDescription || '',
+    imageUrl: selectedSavedSeo?.imageUrl || '',
+    defaultImageUrl: defaultPageImage,
     source: selectedSavedSeo ? 'Supabase override' : selectedDefaultSeo?.metaTitle ? 'Code default' : 'Not found',
-  }), [selectedDefaultSeo, selectedSavedSeo]);
+  }), [selectedDefaultSeo, selectedSavedSeo, defaultPageImage]);
+
+  const hasInitializedRef = useRef(false);
+  useEffect(() => {
+    if (pageSeoRows.length > 0 && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      loadPageSeoForm(pageSeoPath);
+    }
+  }, [pageSeoRows, pageSeoPath]);
 
   function resetPageSeoForm(nextPath = '/') {
     const normalizedPath = normalizeSeoPath(nextPath);
@@ -446,7 +463,7 @@ export default function SeoSettings({
                   <span className="admin-current-meta-kicker">Current Meta</span>
                   <strong>{currentSeoMeta.source}</strong>
                 </div>
-                {(currentSeoMeta.title || currentSeoMeta.description) && (
+                {(currentSeoMeta.title || currentSeoMeta.description || currentSeoMeta.imageUrl) && (
                   <button
                     type="button"
                     className="admin-current-meta-copy"
@@ -455,13 +472,14 @@ export default function SeoSettings({
                       setPageSeoMetaDescription(currentSeoMeta.description);
                       if (!pageSeoOgTitle) setPageSeoOgTitle(currentSeoMeta.title);
                       if (!pageSeoOgDescription) setPageSeoOgDescription(currentSeoMeta.description);
+                      if (!pageSeoImageUrl && currentSeoMeta.imageUrl) setPageSeoImageUrl(currentSeoMeta.imageUrl);
                     }}
                   >
                     <Copy size={13} /> Use Values
                   </button>
                 )}
               </div>
-              {currentSeoMeta.title || currentSeoMeta.description ? (
+              {currentSeoMeta.title || currentSeoMeta.description || currentSeoMeta.imageUrl ? (
                 <div className="admin-current-meta-grid">
                   <div>
                     <small>Title</small>
@@ -470,6 +488,23 @@ export default function SeoSettings({
                   <div>
                     <small>Description</small>
                     <p>{currentSeoMeta.description}</p>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <small>Active Social (OG) Image</small>
+                    <p style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: currentSeoMeta.imageUrl ? '#16a34a' : '#94a3b8'
+                      }} />
+                      {currentSeoMeta.imageUrl ? (
+                        <span>Custom override: <code style={{ fontSize: '11px', background: '#f1f5f9', padding: '1px 4px', borderRadius: '3px' }}>{currentSeoMeta.imageUrl}</code></span>
+                      ) : (
+                        <span>Default fallback: <code style={{ fontSize: '11px', background: '#f1f5f9', padding: '1px 4px', borderRadius: '3px' }}>{currentSeoMeta.defaultImageUrl.split('/').pop()}</code></span>
+                      )}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -550,14 +585,72 @@ export default function SeoSettings({
             </div>
 
             <div className="admin-field-container">
-              <label className="admin-field-label">Social Preview Image URL</label>
+              <div className="admin-flex-between" style={{ marginBottom: '4px' }}>
+                <label className="admin-field-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <ImageIcon size={15} /> Social Preview Image URL (og:image)
+                </label>
+                {pageSeoPath === '/' && (
+                  <button
+                    type="button"
+                    onClick={() => setPageSeoImageUrl('https://assets.weave365.com/assets/banner/heroFreeWebsite.webp')}
+                    style={{
+                      fontSize: '11.5px',
+                      color: '#15803d',
+                      background: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Use Current Hero Image
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={pageSeoImageUrl}
                 onChange={(e) => setPageSeoImageUrl(e.target.value)}
-                placeholder="https://..."
+                placeholder="https://assets.weave365.com/..."
                 className="admin-field-input"
               />
+              <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{
+                  width: '96px',
+                  height: '52px',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  background: '#e2e8f0',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <img
+                    src={pageSeoImageUrl.trim() || defaultPageImage}
+                    alt="OG Preview"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>
+                  {pageSeoImageUrl.trim() ? (
+                    <div>
+                      <strong style={{ color: '#166534' }}>Custom OG Image active</strong>
+                      <div style={{ fontSize: '11px', color: '#64748b', wordBreak: 'break-all' }}>{pageSeoImageUrl.trim()}</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <span>Using default image: </span>
+                      <strong style={{ color: '#334155' }}>{defaultPageImage.split('/').pop()}</strong>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>Provide a custom image URL above to override the default on WhatsApp, Twitter, and Facebook.</div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="admin-robots-row">
@@ -625,6 +718,44 @@ export default function SeoSettings({
                   </span>
                   {pageSeoMetaDescription || currentSeoMeta.description || 'Start typing a page description...'}
                 </p>
+              </div>
+            </div>
+          </article>
+
+          <article className="admin-panel admin-m0" style={{ marginTop: '14px' }}>
+            <div className="admin-panel-head" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
+              <span style={{ fontWeight: '600', fontSize: '15px', whiteSpace: 'nowrap' }}>Social Card Preview</span>
+              <small style={{ whiteSpace: 'nowrap', color: '#6b7280', margin: 0 }}>WhatsApp / Twitter / FB</small>
+            </div>
+            <div className="admin-p20">
+              <div style={{
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '1px solid #e2e8f0',
+                background: '#ffffff',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{ width: '100%', height: '130px', overflow: 'hidden', background: '#f1f5f9' }}>
+                  <img
+                    src={pageSeoImageUrl.trim() || defaultPageImage}
+                    alt="Social Preview"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    onError={(e) => {
+                      e.currentTarget.src = defaultPageImage;
+                    }}
+                  />
+                </div>
+                <div style={{ padding: '10px 12px' }}>
+                  <div style={{ fontSize: '10.5px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', fontWeight: '500' }}>
+                    weave365.com
+                  </div>
+                  <h4 style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '600', color: '#0f172a', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {pageSeoOgTitle || pageSeoMetaTitle || currentSeoMeta.title || 'Page Title'}
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '11.5px', color: '#64748b', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {pageSeoOgDescription || pageSeoMetaDescription || currentSeoMeta.description || 'Page Description'}
+                  </p>
+                </div>
               </div>
             </div>
           </article>

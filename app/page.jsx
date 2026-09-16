@@ -7,7 +7,10 @@ export const revalidate = 3600; // Cache and revalidate every hour
 
 export async function generateMetadata() {
   const heroSlides = await fetchHeroData().catch(() => []);
-  const firstHeroImage = heroSlides?.[0]?.imageUrl || 'https://assets.weave365.com/assets/banner/hero1.webp';
+  const firstHeroImage =
+    heroSlides?.[0]?.image ||
+    heroSlides?.[0]?.imageUrl ||
+    'https://assets.weave365.com/assets/banner/heroFreeWebsite.webp';
 
   const defaultMeta = {
     title: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
@@ -20,6 +23,16 @@ export async function generateMetadata() {
       description:
         'Premium Banarasi sarees at wholesale prices for retailers, boutiques and resellers across India. Explore silk, organza, katan and designer Banarasi collections.',
       url: siteUrl,
+      images: [
+        {
+          url: firstHeroImage,
+          secureUrl: firstHeroImage,
+          type: 'image/webp',
+          width: 1200,
+          height: 630,
+          alt: 'Wholesale Banarasi Sarees Online | Saree Supplier India | Weave 365',
+        },
+      ],
     },
   };
 
