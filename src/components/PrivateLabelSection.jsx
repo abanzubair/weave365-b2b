@@ -1,11 +1,13 @@
 import '../styles/privateLabelSection.css';
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
-import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 export function PrivateLabelSection({ imageUrl, navigate }) {
-  const localImage = "/assets/banner/brand-collab.webp";
-  const cdnFallback = imageUrl || "https://assets.weave365.com/assets/banner/brand-collab.jpg";
+  const fallbackImage = "/assets/banner/brand-collab.webp";
+  const cdnImage = imageUrl || "https://assets.weave365.com/assets/banner/brand-collab.jpg";
+  const optimizedSrc = getOptimizedImageUrl(cdnImage, 'listing');
+  const optimizedSrcSet = getImageSrcSet(cdnImage, ['card', 'listing', 'detail']);
   const benefits = [
     'Custom Woven Collections',
     'Your Own Branding',
@@ -98,7 +100,9 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
           <div className="private-label-gallery-container">
             <div className="private-label-image-wrapper">
               <img
-                src={localImage}
+                src={optimizedSrc}
+                srcSet={optimizedSrcSet}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                 alt="Custom woven Banarasi collections and private label manufacturing"
                 className="private-label-image"
                 loading="lazy"
@@ -106,8 +110,9 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
                 width={600}
                 height={450}
                 onError={(e) => {
-                  if (e.currentTarget.src !== cdnFallback) {
-                    e.currentTarget.src = cdnFallback;
+                  if (e.currentTarget.src !== fallbackImage) {
+                    e.currentTarget.src = fallbackImage;
+                    e.currentTarget.removeAttribute('srcset');
                   }
                 }}
               />

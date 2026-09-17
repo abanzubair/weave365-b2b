@@ -43,7 +43,7 @@ const HomeBlogSection = dynamic(
 );
 import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
-import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { sortByStockDateDesc } from '../utils/sortProducts.js';
 import { usePageSeo } from '../hooks/usePageSeo.js';
 import { AppLink } from '../components/AppLink.jsx';
@@ -53,6 +53,14 @@ import { CustomerSegmentation } from '../components/CustomerSegmentation.jsx';
 export const SHOW_OVERLAP_HERO = true;
 
 export const homeCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
+
+export const categoryCdnImages = {
+  saree: 'https://assets.weave365.com/image/c1saree.webp',
+  suit: 'https://assets.weave365.com/image/c2suit.webp',
+  dupatta: 'https://assets.weave365.com/image/c3dupatta.webp',
+  lehenga: 'https://assets.weave365.com/image/c4lehenga.webp',
+  'under 999': 'https://assets.weave365.com/image/c6under999.webp',
+};
 
 export const localCategoryImages = {
   saree: '/assets/category/saree.webp',
@@ -525,7 +533,8 @@ export function Home({
     const map = {};
     heroSlides.forEach(slide => {
       if (slide.type !== 'banner' && slide.type !== 'banner mobile') {
-        map[slide.type] = slide.image;
+        const key = String(slide.type || '').trim().toLowerCase();
+        if (key) map[key] = slide.image;
       }
     });
     return map;
@@ -537,10 +546,10 @@ export function Home({
     return productImages.length ? productImages : [fallbackHeroImage];
   }, [fallbackHeroImage, products]);
 
-  const resellerSectionImage = "/assets/banner/weaver-partner.webp";
-  const brandCollabSectionImage = "/assets/banner/brand-collab.webp";
-  const occasionSectionImage = "/assets/banner/endUserHome.webp";
-  const privateLabelSectionImage = "/assets/banner/brand-collab.webp";
+  const resellerSectionImage = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
+  const brandCollabSectionImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
+  const occasionSectionImage = "https://assets.weave365.com/assets/banner/endUserHome.webp";
+  const privateLabelSectionImage = "https://assets.weave365.com/assets/banner/brand-collab.jpg";
 
   const openHeroLink = (link, fallbackRoute) => {
     const target = String(link || fallbackRoute || '').trim();
@@ -725,6 +734,8 @@ export function Home({
                 <AppLink to="product" productId={product.id} className="deal-image" navigate={navigate}>
                   <img
                     src={getOptimizedImageUrl(image, 'listing')}
+                    srcSet={getImageSrcSet(image, ['card', 'listing'])}
+                    sizes="(max-width: 640px) 190px, (max-width: 1024px) 220px, 280px"
                     alt={product.title}
                     loading="lazy"
                     decoding="async"
@@ -734,6 +745,7 @@ export function Home({
                       const fallback = getOriginalImageUrl(image);
                       if (e.target.src !== fallback && fallback) {
                         e.target.src = fallback;
+                        e.target.removeAttribute('srcset');
                       } else {
                         e.target.style.opacity = '0';
                       }
@@ -787,21 +799,26 @@ export function Home({
                 style={{ textDecoration: 'none' }}
               >
                 {(() => {
-                  const localImg = localCategoryImages[name.toLowerCase()];
-                  const rawCategoryImg = localImg || categoryImages[name.toLowerCase()] || categoryPreviewImages[index % categoryPreviewImages.length];
-                  const imgSrc = localImg || (rawCategoryImg && rawCategoryImg.startsWith('/') ? rawCategoryImg : getOptimizedImageUrl(rawCategoryImg, 'thumbnail'));
+                  const key = name.toLowerCase();
+                  const rawCategoryImg = categoryImages[key] || categoryCdnImages[key] || categoryPreviewImages[index % categoryPreviewImages.length];
+                  const imgSrc = getOptimizedImageUrl(rawCategoryImg, 'card');
+                  const imgSrcSet = getImageSrcSet(rawCategoryImg, ['thumbnail', 'card']);
+
                   return (
                     <img
                       src={imgSrc}
+                      srcSet={imgSrcSet}
+                      sizes="(max-width: 480px) 180px, (max-width: 1024px) 220px, 260px"
                       alt={name}
                       loading="lazy"
                       decoding="async"
                       width={240}
                       height={240}
                       onError={(e) => {
-                        const fallback = getOriginalImageUrl(rawCategoryImg);
+                        const fallback = getOriginalImageUrl(rawCategoryImg) || localCategoryImages[key];
                         if (e.target.src !== fallback && fallback) {
                           e.target.src = fallback;
+                          e.target.removeAttribute('srcset');
                         } else {
                           e.target.style.opacity = '0';
                         }

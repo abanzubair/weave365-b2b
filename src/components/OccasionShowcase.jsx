@@ -1,11 +1,14 @@
 import '../styles/occasionShowcase.css';
 import { ArrowRight, Image as ImageIcon, Check } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
-import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 export function OccasionShowcase({ imageUrl, navigate }) {
-  const localImage = "/assets/banner/endUserHome.webp";
-  const cdnFallback = imageUrl || "https://assets.weave365.com/assets/banner/endUserHome.webp";
+  const fallbackImage = "/assets/banner/endUserHome.webp";
+  const cdnImage = imageUrl || "https://assets.weave365.com/assets/banner/endUserHome.webp";
+  const optimizedSrc = getOptimizedImageUrl(cdnImage, 'listing');
+  const optimizedSrcSet = getImageSrcSet(cdnImage, ['card', 'listing', 'detail']);
+
   const benefits = [
     'Single-Piece Shopping',
     'Curated Banarasi Collections',
@@ -25,7 +28,9 @@ export function OccasionShowcase({ imageUrl, navigate }) {
           <div className="occasion-gallery-container">
             <div className="occasion-image-wrapper">
               <img 
-                src={localImage} 
+                src={optimizedSrc} 
+                srcSet={optimizedSrcSet}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
                 alt="Discover handcrafted Banarasi sarees and suits for weddings, celebrations and gifting" 
                 className="occasion-image" 
                 loading="lazy"
@@ -33,8 +38,9 @@ export function OccasionShowcase({ imageUrl, navigate }) {
                 width={600}
                 height={450}
                 onError={(e) => {
-                  if (e.currentTarget.src !== cdnFallback) {
-                    e.currentTarget.src = cdnFallback;
+                  if (e.currentTarget.src !== fallbackImage) {
+                    e.currentTarget.src = fallbackImage;
+                    e.currentTarget.removeAttribute('srcset');
                   }
                 }}
               />

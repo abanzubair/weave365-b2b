@@ -18,6 +18,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';
 import { getStoredReferralCode } from '../utils/influencerHelpers.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/blog.css';
 
 const slugifyCategory = (cat) => {
@@ -520,9 +521,20 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
       <section className="blog-post-hero">
         <div className="blog-post-hero-overlay"></div>
         <img 
-          src={post.image} 
+          src={getOptimizedImageUrl(post.image, 'detail')} 
+          srcSet={getImageSrcSet(post.image, ['listing', 'detail'])}
+          sizes="100vw"
           alt={post.title} 
           className="blog-post-hero-bg" 
+          fetchPriority="high"
+          decoding="async"
+          onError={(e) => {
+            const fallback = getOriginalImageUrl(post.image);
+            if (fallback && e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+              e.currentTarget.removeAttribute('srcset');
+            }
+          }}
         />
         
         <div className="blog-post-hero-content">
@@ -740,7 +752,23 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
                 style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
               >
                 <div className="card-img-wrapper">
-                  <img src={rPost.image} alt={rPost.title} loading="lazy" />
+                  <img 
+                    src={getOptimizedImageUrl(rPost.image, 'card')}
+                    srcSet={getImageSrcSet(rPost.image, ['card', 'listing'])}
+                    sizes="(max-width: 768px) 90vw, (max-width: 1024px) 45vw, 380px"
+                    alt={rPost.title} 
+                    loading="lazy" 
+                    decoding="async"
+                    width={382}
+                    height={200}
+                    onError={(e) => {
+                      const fallback = getOriginalImageUrl(rPost.image);
+                      if (fallback && e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                        e.currentTarget.removeAttribute('srcset');
+                      }
+                    }}
+                  />
                   <span className="card-category-badge">{rPost.category}</span>
                 </div>
                 <div className="card-info-pane">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, ArrowRight } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
-import { getOptimizedImageUrl } from '../utils/imageOptimizer.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/homeBlog.css';
 
 export function HomeBlogSection({ blogs = [], navigate, scrollProductRail, isMounted }) {
@@ -44,7 +44,23 @@ export function HomeBlogSection({ blogs = [], navigate, scrollProductRail, isMou
               style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
             >
               <div className="card-img-wrapper">
-                <img src={getOptimizedImageUrl(post.image, 'thumbnail')} alt={post.title} loading="lazy" decoding="async" width={400} height={250} />
+                <img
+                  src={getOptimizedImageUrl(post.image, 'card')}
+                  srcSet={getImageSrcSet(post.image, ['card', 'listing'])}
+                  sizes="(max-width: 768px) 90vw, (max-width: 1024px) 45vw, 380px"
+                  alt={post.title}
+                  loading="lazy"
+                  decoding="async"
+                  width={382}
+                  height={200}
+                  onError={(e) => {
+                    const fallback = getOriginalImageUrl(post.image);
+                    if (fallback && e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                      e.currentTarget.removeAttribute('srcset');
+                    }
+                  }}
+                />
                 <span className="card-category-badge">{post.category}</span>
               </div>
               <div className="card-info-pane">

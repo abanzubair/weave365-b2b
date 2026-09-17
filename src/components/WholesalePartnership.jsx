@@ -1,11 +1,13 @@
 import '../styles/wholesalePartnership.css';
 import { ArrowRight } from './icons.jsx';
 import { AppLink } from './AppLink.jsx';
-import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 export function WholesalePartnership({ imageUrl, navigate }) {
   const fallbackImage = "/assets/banner/weaver-partner.webp";
-  const cdnFallback = "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
+  const cdnImage = imageUrl || "https://assets.weave365.com/assets/banner/weaver-partner.jpg";
+  const optimizedSrc = getOptimizedImageUrl(cdnImage, 'listing');
+  const optimizedSrcSet = getImageSrcSet(cdnImage, ['card', 'listing', 'detail']);
 
   return (
     <section id="wholesale-partnership" className="wholesale-partnership-section" aria-labelledby="wholesale-partnership-heading">
@@ -15,25 +17,23 @@ export function WholesalePartnership({ imageUrl, navigate }) {
         <div className="wholesale-partnership-visual-side">
           <div className="partnership-gallery-container">
             <div className="partnership-image-wrapper">
-              {(() => {
-                const raw = imageUrl || fallbackImage;
-                return (
-                  <img 
-                    src={raw} 
-                    alt="Banarasi sarees and suits wholesale sourcing in Varanasi" 
-                    className="partnership-image" 
-                    loading="lazy"
-                    decoding="async"
-                    width={600}
-                    height={450}
-                    onError={(e) => {
-                      if (e.currentTarget.src !== cdnFallback) {
-                        e.currentTarget.src = cdnFallback;
-                      }
-                    }}
-                  />
-                );
-              })()}
+              <img 
+                src={optimizedSrc} 
+                srcSet={optimizedSrcSet}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                alt="Banarasi sarees and suits wholesale sourcing in Varanasi" 
+                className="partnership-image" 
+                loading="lazy"
+                decoding="async"
+                width={600}
+                height={450}
+                onError={(e) => {
+                  if (e.currentTarget.src !== fallbackImage) {
+                    e.currentTarget.src = fallbackImage;
+                    e.currentTarget.removeAttribute('srcset');
+                  }
+                }}
+              />
             </div>
             <span className="partnership-caption">Fig. 01 // Wholesale Sourcing & Manufacturing, Varanasi</span>
           </div>

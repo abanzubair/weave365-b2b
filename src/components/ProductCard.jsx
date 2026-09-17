@@ -59,7 +59,7 @@ export const ProductCard = memo(function ProductCard({
   const selectedVariant = variant || product.variants[0];
   const rawImage = product.images[0] || fallbackProductImage;
   const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'card'), [rawImage]);
-  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['thumbnail', 'card', 'listing']), [rawImage]);
+  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['card', 'listing']), [rawImage]);
   const image = optimizedImage;
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
   const resellerPrice = Number(selectedVariant?.prices?.b2r || selectedVariant?.prices?.single || wholesalePrice);

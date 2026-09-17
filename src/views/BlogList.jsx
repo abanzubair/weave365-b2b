@@ -15,6 +15,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ArrowRight, Calendar, Clock, User, Filter, Search, X } from '../components/icons.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
+import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/blog.css';
 
 const slugifyCategory = (cat) => {
@@ -216,9 +217,21 @@ export function BlogList({ navigate, blogs = [] }) {
                 >
                   <div className="card-img-wrapper">
                     <img 
-                      src={post.image} 
+                      src={getOptimizedImageUrl(post.image, 'card')} 
+                      srcSet={getImageSrcSet(post.image, ['card', 'listing'])}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
                       alt={post.title} 
                       loading="lazy"
+                      decoding="async"
+                      width={382}
+                      height={200}
+                      onError={(e) => {
+                        const fallback = getOriginalImageUrl(post.image);
+                        if (fallback && e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                          e.currentTarget.removeAttribute('srcset');
+                        }
+                      }}
                     />
                     <span className="card-category-badge">{post.category}</span>
                   </div>
