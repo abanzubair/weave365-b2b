@@ -210,7 +210,7 @@ export function ContactSection({ navigate }) {
                 </div>
                 <div className="contact-item-info">
                   <span className="contact-label">Email Us</span>
-                  <span className="contact-value">weave365@gmail.com</span>
+                  <a href="mailto:support@weave365.com" className="contact-value" style={{ color: 'inherit', textDecoration: 'none' }}>support@weave365.com</a>
                 </div>
               </div>
 
@@ -320,7 +320,7 @@ export function ContactPage({ navigate }) {
     "@type": "LocalBusiness",
     "name": "Weave 365",
     "image": `${siteUrl}/favicon.png`,
-    "email": "weave365@gmail.com",
+    "email": "support@weave365.com",
     "telephone": "+919919101369",
     "url": `${siteUrl}/contact`,
     "priceRange": "$$$$",

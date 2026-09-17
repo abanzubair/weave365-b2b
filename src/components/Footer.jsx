@@ -98,7 +98,7 @@ export function Footer({ navigate }) {
             <div className="footer-contact-line">
               <Mail size={14} className="contact-icon" />
               <strong className="contact-label">Email:</strong>
-              <a href="mailto:weave365@gmail.com" className="contact-value contact-link">weave365@gmail.com</a>
+              <a href="mailto:support@weave365.com" className="contact-value contact-link">support@weave365.com</a>
             </div>
           </div>
         </div>

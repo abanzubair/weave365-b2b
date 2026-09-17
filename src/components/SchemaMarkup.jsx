@@ -36,7 +36,7 @@ export default function SchemaMarkup() {
             closes: "18:00",
           },
         },
-        email: "weave365@gmail.com",
+        email: "support@weave365.com",
         sameAs: [
           "https://www.instagram.com/weaves365.wholesale",
           "https://www.facebook.com/weaves365",
