@@ -11,6 +11,53 @@
   font-family: var(--font-body, 'Manrope', sans-serif);
 }
 
+/* Unauthenticated Empty Page Centering */
+.empty-page {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 580px;
+  padding: 60px 20px 80px;
+}
+
+.empty-page svg {
+  color: var(--gold-mid, #b78646);
+  margin: 0 auto 12px;
+}
+
+.empty-page h1 {
+  margin: 16px 0 10px;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(26px, 4vw, 36px);
+  color: var(--ink, #1a1a1a);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.empty-page p {
+  color: var(--muted, #666);
+  margin: 0 auto 24px;
+  line-height: 1.6;
+  font-size: 15px;
+  max-width: 480px;
+}
+
+.empty-page .primary-button {
+  min-width: 200px;
+  height: 48px;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
 /* ───────────────────────────────────────────────────────────────────
    1. MINIMAL HERO HEADER & IDENTITY STRIP
    ─────────────────────────────────────────────────────────────────── */

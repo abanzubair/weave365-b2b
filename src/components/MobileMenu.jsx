@@ -475,9 +475,9 @@ export function MobileMenu(props) {
                 }
               </span>
             </a>
-            <a href={`mailto:${storeConfig.email}`}>
+            <a href={`mailto:${storeConfig.email || 'support@weave365.com'}`}>
               <MessageCircle size={16} />
-              <span>{storeConfig.email}</span>
+              <span>{storeConfig.email || 'support@weave365.com'}</span>
             </a>
           </div>
         </div>

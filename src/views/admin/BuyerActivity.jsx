@@ -21,7 +21,9 @@ import {
   Laptop,
   Bot,
   TrendingUp,
-  Download
+  Download,
+  ChevronUp,
+  X
 } from '../../components/icons.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
@@ -68,7 +70,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   const [viewMode, setViewMode] = useState('interactions'); // 'interactions' | 'traffic'
   const [activityFilter, setActivityFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'cart_qty' | 'activity_count' | 'intent'
   const [searchQuery, setSearchQuery] = useState('');
+  const [displayMode, setDisplayMode] = useState('grouped'); // 'grouped' | 'feed'
+  const [expandedBuyerKey, setExpandedBuyerKey] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState({});
 
@@ -274,11 +279,138 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [adminData, products, profileMap, productMap]);
 
-  // Filter interaction activities
+  // Unique key extractor to group interactions by customer
+  const getBuyerKey = (b) => {
+    const phoneDigits = String(b?.phone || '').replace(/\D/g, '');
+    if (phoneDigits && phoneDigits.length >= 10) {
+      return `phone_${phoneDigits.slice(-10)}`;
+    }
+    if (b?.email && b.email.includes('@')) {
+      return `email_${b.email.toLowerCase().trim()}`;
+    }
+    const cleanName = String(b?.name || 'buyer').toLowerCase().replace(/\s+/g, '_').trim();
+    const cleanCity = String(b?.city || '').toLowerCase().trim();
+    return `name_${cleanName}_${cleanCity}`;
+  };
+
+  // Compile Grouped Buyer Dossiers
+  const groupedBuyers = useMemo(() => {
+    const map = new Map();
+
+    allActivities.forEach((act) => {
+      const key = getBuyerKey(act.buyer);
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          buyer: { ...act.buyer },
+          lastActive: act.date,
+          firstSeen: act.date,
+          counts: {
+            abandoned: 0,
+            cart: 0,
+            download: 0,
+            favourites: 0,
+            enquiry: 0,
+            total: 0,
+          },
+          productsMap: new Map(),
+          activities: [],
+        });
+      }
+
+      const group = map.get(key);
+      group.activities.push(act);
+      group.counts.total++;
+
+      const actTime = new Date(act.date).getTime();
+      if (actTime > new Date(group.lastActive).getTime()) {
+        group.lastActive = act.date;
+        if (act.buyer.phone && !group.buyer.phone) group.buyer.phone = act.buyer.phone;
+        if (act.buyer.email && !group.buyer.email) group.buyer.email = act.buyer.email;
+        if (act.buyer.businessName && act.buyer.businessName !== 'B2B Client') {
+          group.buyer.businessName = act.buyer.businessName;
+        }
+      }
+      if (actTime < new Date(group.firstSeen).getTime()) {
+        group.firstSeen = act.date;
+      }
+
+      if (act.activityType === 'Abandoned Carts') group.counts.abandoned++;
+      else if (act.activityType === 'Shopping Carts') group.counts.cart++;
+      else if (act.activityType === 'Catalogue Downloads') group.counts.download++;
+      else if (act.activityType === 'Favourites') group.counts.favourites++;
+      else if (act.activityType === 'Enquiry') group.counts.enquiry++;
+
+      act.products.forEach((p) => {
+        const pKey = p.pid || p.title;
+        if (!group.productsMap.has(pKey)) {
+          group.productsMap.set(pKey, { ...p });
+        } else {
+          const ex = group.productsMap.get(pKey);
+          ex.qty = (ex.qty || 1) + (p.qty || 1);
+        }
+      });
+    });
+
+    return Array.from(map.values()).map((g) => {
+      g.products = Array.from(g.productsMap.values());
+      g.activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      // Total cart item quantity (shopping carts + abandoned carts)
+      const cartQty = g.activities.reduce((sum, act) => {
+        if (act.activityType === 'Shopping Carts' || act.activityType === 'Abandoned Carts' || act.type === 'cart' || act.type === 'abandoned') {
+          return sum + act.products.reduce((pSum, p) => pSum + (Number(p.qty) || 1), 0);
+        }
+        return sum;
+      }, 0);
+
+      // Total quantity of products across all interactions
+      const totalProdQty = g.products.reduce((sum, p) => sum + (Number(p.qty) || 1), 0);
+
+      g.totalCartQty = cartQty > 0 ? cartQty : (g.counts.cart > 0 || g.counts.abandoned > 0 ? totalProdQty : 0);
+      g.totalQty = totalProdQty;
+      g.totalActivities = g.counts.total;
+
+      // Intent score
+      g.intentScore = (g.counts.abandoned * 100) + (g.counts.enquiry * 80) + (g.counts.cart * 50) + (g.counts.download * 20) + (g.counts.favourites * 5);
+
+      // High activity flag (bulk cart volume e.g. 5+ items, 90+ items, or 4+ activities)
+      g.isHighActivity = g.totalCartQty >= 5 || g.totalActivities >= 4 || g.totalQty >= 5;
+
+      return g;
+    });
+  }, [allActivities]);
+
+  const activityCounts = useMemo(() => {
+    const counts = {
+      all: allActivities.length,
+      Favourites: 0,
+      Enquiry: 0,
+      'Abandoned Carts': 0,
+      'Shopping Carts': 0,
+      'Catalogue Downloads': 0,
+      'High Activity': 0,
+    };
+    allActivities.forEach((act) => {
+      if (counts[act.activityType] !== undefined) counts[act.activityType]++;
+    });
+    counts['High Activity'] = groupedBuyers.filter((g) => g.isHighActivity).length;
+    return counts;
+  }, [allActivities, groupedBuyers]);
+
+  // Filter interaction activities for Live Feed
   const filteredActivities = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return allActivities.filter((act) => {
-      if (activityFilter !== 'all' && act.activityType !== activityFilter) return false;
+    let list = allActivities.filter((act) => {
+      if (activityFilter !== 'all') {
+        if (activityFilter === 'high-activity') {
+          const bKey = getBuyerKey(act.buyer);
+          const grp = groupedBuyers.find((g) => g.key === bKey);
+          if (!grp || !grp.isHighActivity) return false;
+        } else if (act.activityType !== activityFilter) {
+          return false;
+        }
+      }
       if (typeFilter !== 'all' && act.buyer.type !== typeFilter) return false;
 
       if (q) {
@@ -289,15 +421,73 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       }
       return true;
     });
-  }, [allActivities, activityFilter, typeFilter, searchQuery]);
 
-  const activityCounts = useMemo(() => {
-    const counts = { all: allActivities.length, Favourites: 0, Enquiry: 0, 'Abandoned Carts': 0, 'Shopping Carts': 0, 'Catalogue Downloads': 0 };
-    allActivities.forEach((act) => {
-      if (counts[act.activityType] !== undefined) counts[act.activityType]++;
+    return list.sort((a, b) => {
+      if (sortBy === 'cart_qty') {
+        const qA = a.products.reduce((s, p) => s + (Number(p.qty) || 1), 0);
+        const qB = b.products.reduce((s, p) => s + (Number(p.qty) || 1), 0);
+        if (qB !== qA) return qB - qA;
+      }
+      if (sortBy === 'activity_count') {
+        const bKeyA = getBuyerKey(a.buyer);
+        const bKeyB = getBuyerKey(b.buyer);
+        const grpA = groupedBuyers.find((g) => g.key === bKeyA);
+        const grpB = groupedBuyers.find((g) => g.key === bKeyB);
+        const countDiff = (grpB?.totalActivities || 0) - (grpA?.totalActivities || 0);
+        if (countDiff !== 0) return countDiff;
+      }
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
-    return counts;
-  }, [allActivities]);
+  }, [allActivities, activityFilter, typeFilter, searchQuery, sortBy, groupedBuyers]);
+
+  // Filter and Sort grouped buyers
+  const filteredGroupedBuyers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    let result = groupedBuyers.filter((g) => {
+      if (activityFilter !== 'all') {
+        if (activityFilter === 'high-activity') {
+          if (!g.isHighActivity) return false;
+        } else if (activityFilter === 'Abandoned Carts' && g.counts.abandoned === 0) return false;
+        else if (activityFilter === 'Shopping Carts' && g.counts.cart === 0) return false;
+        else if (activityFilter === 'Catalogue Downloads' && g.counts.download === 0) return false;
+        else if (activityFilter === 'Favourites' && g.counts.favourites === 0) return false;
+        else if (activityFilter === 'Enquiry' && g.counts.enquiry === 0) return false;
+      }
+      if (typeFilter !== 'all' && g.buyer.type !== typeFilter) return false;
+
+      if (q) {
+        const b = g.buyer;
+        const text = `${b.name} ${b.businessName} ${b.email} ${b.phone} ${b.location} ${b.type}`.toLowerCase();
+        const pMatch = g.products.some((p) => p.title.toLowerCase().includes(q) || (p.pid && p.pid.toLowerCase().includes(q)));
+        return text.includes(q) || pMatch;
+      }
+      return true;
+    });
+
+    return result.sort((a, b) => {
+      if (sortBy === 'cart_qty') {
+        // High volume / 90+ items in cart at the top!
+        const diff = (b.totalCartQty || 0) - (a.totalCartQty || 0);
+        if (diff !== 0) return diff;
+        const totalDiff = (b.totalQty || 0) - (a.totalQty || 0);
+        if (totalDiff !== 0) return totalDiff;
+        return (b.totalActivities || 0) - (a.totalActivities || 0);
+      }
+      if (sortBy === 'activity_count') {
+        // Most activities at top!
+        const diff = (b.totalActivities || 0) - (a.totalActivities || 0);
+        if (diff !== 0) return diff;
+        return (b.totalCartQty || 0) - (a.totalCartQty || 0);
+      }
+      if (sortBy === 'intent') {
+        const diff = (b.intentScore || 0) - (a.intentScore || 0);
+        if (diff !== 0) return diff;
+        return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+      }
+      // Default: 'recent'
+      return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+    });
+  }, [groupedBuyers, activityFilter, typeFilter, searchQuery, sortBy]);
 
   // Filtered raw site analytics (Excludes /admin pages, localhost, and local dev network)
   const cleanSiteAnalytics = useMemo(() => {
@@ -388,6 +578,65 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     });
   }, [cleanSiteAnalytics, categoryFilter, searchQuery]);
 
+  const formatTimeClean = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMin = Math.round(diffMs / (60 * 1000));
+    const diffHours = Math.round(diffMs / (60 * 60 * 1000));
+
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHours < 24 && d.getDate() === now.getDate()) {
+      return `Today, ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getWhatsAppUrl = (phone, text) => {
+    if (!phone) return null;
+    const clean = String(phone).replace(/\D/g, '');
+    const full = clean.length === 10 ? `91${clean}` : clean;
+    return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
+  };
+
+  const getGroupedWhatsAppUrl = (group) => {
+    const b = group.buyer;
+    if (!b?.phone) return null;
+    const topProd = group.products[0]?.title || 'our collection';
+    let msg = '';
+    const cartQtyText = group.totalCartQty > 1 ? ` (${group.totalCartQty} items)` : '';
+
+    if (group.counts.abandoned > 0 || group.totalCartQty >= 5) {
+      msg = `Hello ${b.name}, this is Weave 365 Varanasi Weaver Facility. We noticed your wholesale cart${cartQtyText} including ${topProd}. We provide direct weaver bulk pricing and express parcel dispatch. Would you like assistance confirming your parcel?`;
+    } else if (group.counts.download > 0) {
+      msg = `Hello ${b.name}, this is Weave 365 Varanasi Handloom. We noticed you downloaded our latest wholesale catalogues. Are you looking for sarees, suits, or custom weave collections for your store?`;
+    } else if (group.counts.enquiry > 0) {
+      msg = `Hello ${b.name}, this is Weave 365. Regarding your wholesale enquiry on our store, our sourcing desk is available to assist you.`;
+    } else {
+      msg = `Hello ${b.name}, this is Weave 365 Varanasi Handloom. We noticed your interest in ${topProd} on our B2B wholesale platform. How can we assist your business today?`;
+    }
+    return getWhatsAppUrl(b.phone, msg);
+  };
+
+  const getFeedWhatsAppUrl = (act) => {
+    const b = act.buyer;
+    if (!b?.phone) return null;
+    const topProd = act.products[0]?.title || 'our collection';
+    let msg = '';
+    if (act.activityType === 'Abandoned Carts' || act.type === 'abandoned') {
+      msg = `Hello ${b.name} (${b.businessName || 'Boutique'}), this is Weave 365 Varanasi Weaver Facility. We noticed you selected ${topProd} on our store. We provide direct weaver wholesale pricing and instant parcel dispatch. Would you like assistance confirming your order?`;
+    } else if (act.activityType === 'Catalogue Downloads') {
+      msg = `Hello ${b.name}, this is Weave 365 Varanasi Handloom. We noticed you downloaded the catalogue for ${topProd}. Are you looking for wholesale pricing or swatches?`;
+    } else if (act.activityType === 'Enquiry') {
+      msg = `Hello ${b.name}, this is Weave 365. Regarding your wholesale enquiry on ${topProd}, our sourcing desk is ready to assist you.`;
+    } else {
+      msg = `Hello ${b.name}, this is Weave 365 Varanasi Handloom. We noticed your interest in ${topProd} on Weave365. How can we assist you?`;
+    }
+    return getWhatsAppUrl(b.phone, msg);
+  };
+
   const handleCopyActivity = (activity) => {
     const b = activity.buyer;
     const pText = activity.products.map((p) => `- ${p.title} (Qty: ${p.qty}) [${p.url}]`).join('\n');
@@ -397,6 +646,29 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     setCopyFeedback((prev) => ({ ...prev, [activity.id]: true }));
     setTimeout(() => {
       setCopyFeedback((prev) => ({ ...prev, [activity.id]: false }));
+    }, 2000);
+  };
+
+  const handleCopyGroup = (group) => {
+    const b = group.buyer;
+    const text = `Weave 365 Buyer Lead Summary:\n` +
+      `Name: ${b.name} (${b.businessName})\n` +
+      `Tier: ${b.type}\n` +
+      `Phone: ${b.phone || 'N/A'}\n` +
+      `Email: ${b.email || 'N/A'}\n` +
+      `Location: ${b.location}\n` +
+      `Last Active: ${new Date(group.lastActive).toLocaleString('en-IN')}\n` +
+      `Summary: ${group.counts.abandoned ? `Abandoned Carts: ${group.counts.abandoned}, ` : ''}` +
+      `${group.counts.download ? `Downloads: ${group.counts.download}, ` : ''}` +
+      `${group.counts.favourites ? `Favourites: ${group.counts.favourites}, ` : ''}` +
+      `${group.counts.enquiry ? `Enquiries: ${group.counts.enquiry}` : ''}\n` +
+      `Products of Interest:\n` +
+      group.products.map((p) => `- ${p.title} (Qty: ${p.qty || 1}, ID: ${p.pid || 'N/A'})`).join('\n');
+
+    navigator.clipboard.writeText(text);
+    setCopyFeedback((prev) => ({ ...prev, [group.key]: true }));
+    setTimeout(() => {
+      setCopyFeedback((prev) => ({ ...prev, [group.key]: false }));
     }, 2000);
   };
 
@@ -486,269 +758,516 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
 
       {viewMode === 'interactions' ? (
         <>
-          {/* 2. Activity Metric Cards */}
-          <div className="buyer-activity-metrics-grid">
-            <div
-              className={`buyer-activity-card ${activityFilter === 'all' ? 'active' : ''}`}
+          {/* 2. Distilled Metric Filter Strip */}
+          <div className="buyer-filter-strip">
+            <button
+              type="button"
+              className={`filter-strip-pill ${activityFilter === 'all' ? 'active' : ''}`}
               onClick={() => setActivityFilter('all')}
             >
-              <div className="card-icon icon-all"><Activity size={22} /></div>
-              <div>
-                <span className="card-label">Total Activities</span>
-                <div className="card-val">{activityCounts.all}</div>
-              </div>
-            </div>
+              <span>All Activities</span>
+              <span className="pill-count">{activityCounts.all}</span>
+            </button>
 
-            <div
-              className={`buyer-activity-card ${activityFilter === 'Favourites' ? 'active' : ''}`}
-              onClick={() => setActivityFilter('Favourites')}
+            <button
+              type="button"
+              className={`filter-strip-pill pill-high-activity ${activityFilter === 'high-activity' ? 'active' : ''}`}
+              onClick={() => setActivityFilter(activityFilter === 'high-activity' ? 'all' : 'high-activity')}
+              title="Filter buyers with large cart volume or frequent interactions"
             >
-              <div className="card-icon icon-favourites"><Heart size={22} /></div>
-              <div>
-                <span className="card-label">Favourites</span>
-                <div className="card-val">{activityCounts.Favourites}</div>
-              </div>
-            </div>
+              <span className="pill-dot dot-high-activity" />
+              <span>🔥 High Activity</span>
+              <span className="pill-count">{activityCounts['High Activity']}</span>
+            </button>
 
-            <div
-              className={`buyer-activity-card ${activityFilter === 'Enquiry' ? 'active' : ''}`}
-              onClick={() => setActivityFilter('Enquiry')}
-            >
-              <div className="card-icon icon-enquiry"><MessageSquare size={22} /></div>
-              <div>
-                <span className="card-label">Enquiry</span>
-                <div className="card-val">{activityCounts.Enquiry}</div>
-              </div>
-            </div>
-
-            <div
-              className={`buyer-activity-card ${activityFilter === 'Abandoned Carts' ? 'active' : ''}`}
+            <button
+              type="button"
+              className={`filter-strip-pill pill-abandoned ${activityFilter === 'Abandoned Carts' ? 'active' : ''}`}
               onClick={() => setActivityFilter('Abandoned Carts')}
             >
-              <div className="card-icon icon-abandoned"><Clock size={22} /></div>
-              <div>
-                <span className="card-label">Abandoned Carts</span>
-                <div className="card-val">{activityCounts['Abandoned Carts']}</div>
-              </div>
-            </div>
+              <span className="pill-dot dot-abandoned" />
+              <span>Abandoned Carts</span>
+              <span className="pill-count">{activityCounts['Abandoned Carts']}</span>
+            </button>
 
-            <div
-              className={`buyer-activity-card ${activityFilter === 'Shopping Carts' ? 'active' : ''}`}
-              onClick={() => setActivityFilter('Shopping Carts')}
-            >
-              <div className="card-icon icon-shopping"><ShoppingBag size={22} /></div>
-              <div>
-                <span className="card-label">Shopping Carts</span>
-                <div className="card-val">{activityCounts['Shopping Carts']}</div>
-              </div>
-            </div>
-
-            <div
-              className={`buyer-activity-card ${activityFilter === 'Catalogue Downloads' ? 'active' : ''}`}
+            <button
+              type="button"
+              className={`filter-strip-pill pill-downloads ${activityFilter === 'Catalogue Downloads' ? 'active' : ''}`}
               onClick={() => setActivityFilter('Catalogue Downloads')}
             >
-              <div className="card-icon icon-download"><Download size={22} /></div>
-              <div>
-                <span className="card-label">Downloads</span>
-                <div className="card-val">{activityCounts['Catalogue Downloads']}</div>
-              </div>
-            </div>
+              <span className="pill-dot dot-download" />
+              <span>Downloads</span>
+              <span className="pill-count">{activityCounts['Catalogue Downloads']}</span>
+            </button>
+
+            <button
+              type="button"
+              className={`filter-strip-pill pill-favourites ${activityFilter === 'Favourites' ? 'active' : ''}`}
+              onClick={() => setActivityFilter('Favourites')}
+            >
+              <span className="pill-dot dot-fav" />
+              <span>Favourites</span>
+              <span className="pill-count">{activityCounts.Favourites}</span>
+            </button>
+
+            <button
+              type="button"
+              className={`filter-strip-pill pill-enquiry ${activityFilter === 'Enquiry' ? 'active' : ''}`}
+              onClick={() => setActivityFilter('Enquiry')}
+            >
+              <span className="pill-dot dot-enquiry" />
+              <span>Enquiries</span>
+              <span className="pill-count">{activityCounts.Enquiry}</span>
+            </button>
+
+            <button
+              type="button"
+              className={`filter-strip-pill pill-cart ${activityFilter === 'Shopping Carts' ? 'active' : ''}`}
+              onClick={() => setActivityFilter('Shopping Carts')}
+            >
+              <span className="pill-dot dot-cart" />
+              <span>Active Carts</span>
+              <span className="pill-count">{activityCounts['Shopping Carts']}</span>
+            </button>
           </div>
 
-          {/* 3. Search and Filters Bar */}
+          {/* 3. Streamlined Search & Mode Toolbar */}
           <div className="buyer-activity-toolbar">
             <div className="search-input-wrapper">
-              <Search size={18} className="search-icon" />
+              <Search size={16} className="search-icon" />
               <input
                 type="text"
-                placeholder="Search by Buyer Name, Company, Email, Phone, Product Name, or Location..."
+                placeholder="Search buyer name, phone, city, product..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="toolbar-search-input"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="btn-clear-search"
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
 
-            <div className="toolbar-type-filter">
-              <label htmlFor="type-filter-select"><Filter size={16} /> Buyer Tier:</label>
-              <select
-                id="type-filter-select"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="toolbar-select-dropdown"
-              >
-                <option value="all">All Buyer Tiers</option>
-                <option value="Wholesaler">Wholesale (B2B)</option>
-                <option value="Reseller">Reseller (B2R)</option>
-                <option value="User">Single Piece (D2C)</option>
-              </select>
+            <div className="toolbar-controls-right">
+              <div className="buyer-view-mode-toggle">
+                <button
+                  type="button"
+                  className={`view-toggle-btn ${displayMode === 'grouped' ? 'active' : ''}`}
+                  onClick={() => setDisplayMode('grouped')}
+                  title="Group interactions by customer"
+                >
+                  <User size={14} />
+                  <span>By Buyer ({filteredGroupedBuyers.length})</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-toggle-btn ${displayMode === 'feed' ? 'active' : ''}`}
+                  onClick={() => setDisplayMode('feed')}
+                  title="View chronological activity stream"
+                >
+                  <Activity size={14} />
+                  <span>Live Feed ({filteredActivities.length})</span>
+                </button>
+              </div>
+
+              <div className="toolbar-filters-row">
+                {/* Sort By Selector */}
+                <div className="toolbar-select-group">
+                  <label htmlFor="sort-by-select" className="toolbar-control-label">Sort:</label>
+                  <select
+                    id="sort-by-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="toolbar-select-dropdown toolbar-sort-dropdown"
+                    title="Sort buyers by activity, cart volume, or intent"
+                  >
+                    <option value="recent">🕒 Recently Active</option>
+                    <option value="cart_qty">🛍️ Highest Cart Volume</option>
+                    <option value="activity_count">⚡ Most Activities</option>
+                    <option value="intent">🎯 Highest Buyer Intent</option>
+                  </select>
+                </div>
+
+                <div className="toolbar-type-filter">
+                  <select
+                    id="type-filter-select"
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="toolbar-select-dropdown"
+                  >
+                    <option value="all">All Buyer Tiers</option>
+                    <option value="Wholesaler">Wholesale (B2B)</option>
+                    <option value="Reseller">Reseller (B2R)</option>
+                    <option value="User">Single Piece (D2C)</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 4. Unified Interactions Table */}
+          {/* 4. Data Table Display */}
           <div className="buyer-activity-table-wrapper">
-            <table className="buyer-activity-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '210px' }}>Date & Time</th>
-                  <th style={{ width: '230px' }}>Buyer Detail</th>
-                  <th style={{ width: '130px' }}>Activity Type</th>
-                  <th style={{ width: '300px' }}>Products Involved</th>
-                  <th style={{ width: '110px', textAlign: 'center' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredActivities.length === 0 ? (
+            {displayMode === 'grouped' ? (
+              /* Grouped By Buyer View */
+              <table className="buyer-activity-table table-grouped">
+                <thead>
                   <tr>
-                    <td colSpan={5} className="empty-state-cell">
-                      No buyer interaction records found matching your filters.
-                    </td>
+                    <th style={{ width: '250px' }}>Buyer &amp; Location</th>
+                    <th style={{ width: '230px' }}>Intent Summary</th>
+                    <th style={{ width: '290px' }}>Products of Interest</th>
+                    <th style={{ width: '130px' }}>Last Active</th>
+                    <th style={{ width: '200px', textAlign: 'right' }}>Actions</th>
                   </tr>
-                ) : (
-                  filteredActivities.map((act) => {
-                    const b = act.buyer;
-                    const formattedDate = new Date(act.date).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
+                </thead>
+                <tbody>
+                  {filteredGroupedBuyers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state-cell">
+                        No buyer profiles found matching your active filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredGroupedBuyers.map((group) => {
+                      const b = group.buyer;
+                      const isExpanded = expandedBuyerKey === group.key;
+                      const waLink = getGroupedWhatsAppUrl(group);
+                      const topProd = group.products[0];
 
-                    return (
-                      <tr key={act.id}>
-                        <td className="cell-date">
-                          <div className="date-main">{formattedDate}</div>
-                          <div className="cell-id" title={act.id}>ID: {String(act.id).length > 18 ? String(act.id).slice(0, 14) + '…' : act.id}</div>
-                        </td>
+                      return (
+                        <tr key={group.key} className="buyer-group-row-wrapper">
+                          <td colSpan={5} style={{ padding: 0, border: 'none' }}>
+                            <div className={`buyer-group-main-row ${isExpanded ? 'is-expanded' : ''}`}>
+                              {/* 1. Buyer & Tier */}
+                              <div className="group-col col-buyer">
+                                <div className="buyer-primary-row">
+                                  <span className="buyer-name" title={b.name}>{b.name}</span>
+                                  <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
+                                    {b.type}
+                                  </span>
+                                  <span className="mobile-time-badge">{formatTimeClean(group.lastActive)}</span>
+                                </div>
+                                <div className="buyer-secondary-row">
+                                  {b.businessName && b.businessName !== 'B2B Client' && (
+                                    <span className="buyer-biz">{b.businessName} · </span>
+                                  )}
+                                  <span className="buyer-loc">{b.location}</span>
+                                  {b.phone && <span className="buyer-phone"> · {b.phone}</span>}
+                                </div>
+                              </div>
 
-                        <td className="cell-buyer">
-                          <div className="buyer-card-wrapper">
-                            <div className="buyer-name">{b.name}</div>
-                            <div className="buyer-business">{b.businessName}</div>
-                            <div className="buyer-meta-list">
-                              <span className="meta-item"><MapPin size={13.5} /> {b.location}</span>
-                              {b.email && <span className="meta-item"><Mail size={13.5} /> {b.email}</span>}
-                              {b.phone && <span className="meta-item"><Phone size={13.5} /> {b.phone}</span>}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="cell-activity-type">
-                          <div className="activity-type-wrapper">
-                            <span className={`badge-activity ${getActivityBadgeClass(act.activityType)}`}>
-                              {act.activityType}
-                            </span>
-                            <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
-                              {b.type}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="cell-products">
-                          <div className="products-list-wrapper">
-                            {act.products.map((p, idx) => (
-                              <div key={idx} className="product-item-row">
-                                <div className="product-thumb">
-                                  {p.image ? (
-                                    <img src={p.image} alt={p.title} />
-                                  ) : (
-                                    <div className="thumb-placeholder"><Building size={16} /></div>
+                              {/* 2. Intent Summary */}
+                              <div className="group-col col-intent">
+                                <div className="intent-badges-row">
+                                  {group.totalCartQty >= 15 ? (
+                                    <span className="intent-badge badge-high-volume" title={`High Volume Lead: ${group.totalCartQty} total pieces in wholesale cart`}>
+                                      🔥 {group.totalCartQty} Bulk Items
+                                    </span>
+                                  ) : group.totalCartQty >= 5 ? (
+                                    <span className="intent-badge badge-bulk-cart" title={`Active cart with ${group.totalCartQty} items`}>
+                                      🛍️ {group.totalCartQty} in Cart
+                                    </span>
+                                  ) : null}
+                                  {group.counts.total >= 5 && (
+                                    <span className="intent-badge badge-high-activity" title={`${group.counts.total} total recorded interactions`}>
+                                      ⚡ {group.counts.total} Acts
+                                    </span>
+                                  )}
+                                  {group.counts.abandoned > 0 && (
+                                    <span className="intent-badge badge-abandoned" title="Cart left idle for >24 hours without checkout">
+                                      <Clock size={12} /> Abandoned ({group.counts.abandoned})
+                                    </span>
+                                  )}
+                                  {group.counts.enquiry > 0 && (
+                                    <span className="intent-badge badge-enquiry" title="Wholesale enquiry submitted">
+                                      <MessageSquare size={12} /> Enquiry ({group.counts.enquiry})
+                                    </span>
+                                  )}
+                                  {group.counts.download > 0 && (
+                                    <span className="intent-badge badge-download" title="Catalogues downloaded">
+                                      <Download size={12} /> {group.counts.download} DLs
+                                    </span>
+                                  )}
+                                  {group.counts.favourites > 0 && (
+                                    <span className="intent-badge badge-fav" title="Favourited items">
+                                      <Heart size={12} /> {group.counts.favourites}
+                                    </span>
+                                  )}
+                                  {group.counts.cart > 0 && (
+                                    <span className="intent-badge badge-cart" title="Items currently in cart (<24 hours old)">
+                                      <ShoppingBag size={12} /> Active Cart
+                                    </span>
                                   )}
                                 </div>
-                                <div className="product-details">
-                                  <a
-                                    href={p.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="product-title-link"
-                                  >
-                                    {p.title}
-                                  </a>
-                                  <div className="product-meta">
-                                    <span className="qty-tag">Qty: <strong>{p.qty}</strong></span>
-                                    {p.pid && <span className="code-tag">ID: {p.pid}</span>}
+                              </div>
+
+                              {/* 3. Products */}
+                              <div className="group-col col-products">
+                                {topProd ? (
+                                  <div className="product-compact-preview">
+                                    {topProd.image ? (
+                                      <img src={topProd.image} alt={topProd.title} className="compact-prod-thumb" />
+                                    ) : (
+                                      <div className="compact-thumb-fallback"><Building size={14} /></div>
+                                    )}
+                                    <div className="compact-prod-info">
+                                      <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title">
+                                        {topProd.title}
+                                      </a>
+                                      <div className="compact-prod-meta">
+                                        <span>Qty: <strong>{topProd.qty}</strong></span>
+                                        {group.totalCartQty > topProd.qty && (
+                                          <span className="compact-total-cart-pill" title="Total cart items across all products">
+                                            Total {group.totalCartQty}
+                                          </span>
+                                        )}
+                                        {group.products.length > 1 && (
+                                          <span className="compact-more-pill">+{group.products.length - 1} more</span>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
+                                ) : (
+                                  <span className="text-muted">—</span>
+                                )}
                               </div>
-                            ))}
-                            {act.message && (
-                              <div className="enquiry-message-snippet">
-                                💬 <em>"{act.message}"</em>
+
+                              {/* 4. Time */}
+                              <div className="group-col col-time">
+                                <span className="time-relative">{formatTimeClean(group.lastActive)}</span>
                               </div>
-                            )}
-                          </div>
-                        </td>
 
-                        <td className="cell-actions">
-                          <div className="actions-wrapper">
-                            <button
-                              type="button"
-                              className="btn-quick-copy"
-                              onClick={() => handleCopyActivity(act)}
-                              title="Copy details"
-                            >
-                              {copyFeedback[act.id] ? <Check size={18} style={{ color: '#10B981' }} /> : <Copy size={18} />}
-                            </button>
-
-                            <div className="action-dropdown-container">
-                              <button
-                                type="button"
-                                className="btn-action-trigger"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenDropdownId(openDropdownId === act.id ? null : act.id);
-                                }}
-                              >
-                                Action <ChevronDown size={15} />
-                              </button>
-
-                              {openDropdownId === act.id && (
-                                <div className="action-menu-popup">
-                                  {b.phone && (
+                              {/* 5. Actions */}
+                              <div className="group-col col-actions">
+                                <div className="actions-cluster">
+                                  {waLink && (
                                     <a
-                                      href={`https://wa.me/${String(b.phone).replace(/\D/g, '').length === 10 ? '91' + String(b.phone).replace(/\D/g, '') : String(b.phone).replace(/\D/g, '')}?text=${encodeURIComponent(
-                                        act.activityType === 'Abandoned Carts' || act.type === 'abandoned'
-                                          ? `Hello ${b.name} (${b.businessName || 'Boutique'}), this is Weave365 Varanasi Weaver Facility. We noticed you selected ${act.products[0]?.title || 'Banarasi Handloom items'} on our store. We provide direct weaver wholesale pricing and instant parcel dispatch. Would you like assistance confirming your order?`
-                                          : `Hello ${b.name}, this is Weave365 Varanasi Handloom. We noticed your interest in ${act.products[0]?.title || 'our collection'} on Weave365.`
-                                      )}`}
+                                      href={waLink}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="action-menu-item"
-                                      onClick={() => setOpenDropdownId(null)}
+                                      className="btn-quick-wa"
+                                      title="Direct WhatsApp with prefilled intent context"
                                     >
-                                      <MessageSquare size={16} style={{ color: '#25D366' }} /> WhatsApp Buyer
-                                    </a>
-                                  )}
-                                  {b.email && (
-                                    <a
-                                      href={`mailto:${b.email}?subject=Weave365%20Inquiry%20Support&body=Hello%20${encodeURIComponent(b.name)},`}
-                                      className="action-menu-item"
-                                      onClick={() => setOpenDropdownId(null)}
-                                    >
-                                      <Mail size={16} style={{ color: '#2563eb' }} /> Email Buyer
+                                      <MessageSquare size={13} />
+                                      <span>WhatsApp</span>
                                     </a>
                                   )}
                                   <button
                                     type="button"
-                                    className="action-menu-item"
-                                    onClick={() => {
-                                      handleCopyActivity(act);
-                                      setOpenDropdownId(null);
-                                    }}
+                                    className="btn-icon-soft"
+                                    onClick={() => handleCopyGroup(group)}
+                                    title="Copy buyer summary"
                                   >
-                                    <Copy size={16} /> Copy Details
+                                    {copyFeedback[group.key] ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`btn-expand-trigger ${isExpanded ? 'active' : ''}`}
+                                    onClick={() => setExpandedBuyerKey(isExpanded ? null : group.key)}
+                                    title={isExpanded ? 'Collapse history' : 'Expand session history'}
+                                  >
+                                    <span>{group.activities.length} logs</span>
+                                    {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                                   </button>
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+
+                            {/* Expandable Session Timeline Drawer */}
+                            {isExpanded && (
+                              <div className="buyer-timeline-drawer">
+                                <div className="drawer-header">
+                                  <div className="drawer-title-block">
+                                    <span className="drawer-title">Session Activity Timeline</span>
+                                    <span className="drawer-subtitle">
+                                      Showing all {group.activities.length} interactions for {b.name}
+                                      {group.totalCartQty > 0 ? ` · ${group.totalCartQty} items in wholesale cart` : ''}
+                                    </span>
+                                  </div>
+                                  <div className="drawer-contact-pills">
+                                    {b.email && (
+                                      <a href={`mailto:${b.email}`} className="contact-pill">
+                                        <Mail size={12} /> {b.email}
+                                      </a>
+                                    )}
+                                    {b.phone && (
+                                      <span className="contact-pill">
+                                        <Phone size={12} /> {b.phone}
+                                      </span>
+                                    )}
+                                    {b.location && (
+                                      <span className="contact-pill">
+                                        <MapPin size={12} /> {b.location}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="timeline-items-list">
+                                  {group.activities.map((act) => (
+                                    <div key={act.id} className="timeline-item">
+                                      <div className="timeline-badge-col">
+                                        <span className={`badge-activity ${getActivityBadgeClass(act.activityType)}`}>
+                                          {act.activityType}
+                                        </span>
+                                        <span className="timeline-date">{formatTimeClean(act.date)}</span>
+                                      </div>
+                                      <div className="timeline-content-col">
+                                        {act.products.map((p, idx) => (
+                                          <div key={idx} className="timeline-product-snippet">
+                                            {p.image && <img src={p.image} alt={p.title} className="tiny-thumb" />}
+                                            <a href={p.url} target="_blank" rel="noopener noreferrer" className="timeline-prod-link">
+                                              {p.title}
+                                            </a>
+                                            <span className="timeline-prod-qty">×{p.qty}</span>
+                                            {p.pid && <span className="timeline-pid">#{p.pid}</span>}
+                                          </div>
+                                        ))}
+                                        {act.message && (
+                                          <div className="timeline-enquiry-msg">
+                                            💬 "{act.message}"
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="timeline-action-col">
+                                        <button
+                                          type="button"
+                                          className="btn-tiny-copy"
+                                          onClick={() => handleCopyActivity(act)}
+                                          title="Copy log details"
+                                        >
+                                          {copyFeedback[act.id] ? <Check size={12} style={{ color: '#10b981' }} /> : <Copy size={12} />}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              /* Streamlined Live Feed View */
+              <table className="buyer-activity-table table-feed">
+                <thead>
+                  <tr>
+                    <th style={{ width: '150px' }}>Date &amp; Time</th>
+                    <th style={{ width: '230px' }}>Buyer &amp; Tier</th>
+                    <th style={{ width: '150px' }}>Activity Type</th>
+                    <th style={{ width: '310px' }}>Product Involved</th>
+                    <th style={{ width: '150px', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredActivities.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="empty-state-cell">
+                        No buyer interaction records found matching your filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredActivities.map((act) => {
+                      const b = act.buyer;
+                      const waLink = getFeedWhatsAppUrl(act);
+                      const topProd = act.products[0];
+
+                      return (
+                        <tr key={act.id} className="feed-row">
+                          <td className="cell-date">
+                            <span className="time-relative">{formatTimeClean(act.date)}</span>
+                          </td>
+
+                          <td className="cell-buyer">
+                            <div className="buyer-primary-row">
+                              <span className="buyer-name" title={b.name}>{b.name}</span>
+                              <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
+                                {b.type}
+                              </span>
+                              <span className="mobile-time-badge">{formatTimeClean(act.date)}</span>
+                            </div>
+                            <div className="buyer-secondary-row">
+                              <span className="buyer-loc">{b.location}</span>
+                              {b.phone && <span className="buyer-phone"> · {b.phone}</span>}
+                            </div>
+                          </td>
+
+                          <td className="cell-activity-type">
+                            <span className={`badge-activity ${getActivityBadgeClass(act.activityType)}`}>
+                              {act.activityType}
+                            </span>
+                          </td>
+
+                          <td className="cell-products">
+                            {topProd ? (
+                              <div className="product-compact-preview">
+                                {topProd.image ? (
+                                  <img src={topProd.image} alt={topProd.title} className="compact-prod-thumb" />
+                                ) : (
+                                  <div className="compact-thumb-fallback"><Building size={14} /></div>
+                                )}
+                                <div className="compact-prod-info">
+                                  <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title">
+                                    {topProd.title}
+                                  </a>
+                                  <div className="compact-prod-meta">
+                                    <span>Qty: <strong>{topProd.qty}</strong></span>
+                                    {act.products.length > 1 && (
+                                      <span className="compact-more-pill">+{act.products.length - 1} more</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-muted">—</span>
+                            )}
+                            {act.message && (
+                              <div className="timeline-enquiry-msg" style={{ marginTop: '4px' }}>
+                                💬 "{act.message}"
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="cell-actions">
+                            <div className="actions-cluster" style={{ justifyContent: 'flex-end' }}>
+                              {waLink && (
+                                <a
+                                  href={waLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn-quick-wa"
+                                  title="WhatsApp Buyer"
+                                >
+                                  <MessageSquare size={13} />
+                                  <span>WhatsApp</span>
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                className="btn-icon-soft"
+                                onClick={() => handleCopyActivity(act)}
+                                title="Copy event details"
+                              >
+                                {copyFeedback[act.id] ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </>
       ) : (
