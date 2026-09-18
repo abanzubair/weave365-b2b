@@ -1656,15 +1656,11 @@ export function ProductDetail({
                 <div className="tax-shipping-line">
                   <span className="tax-item">GST Included</span>
                   <span className="bullet-sep">•</span>
-                  <span className="shipping-note-badge">Free Shipping Across India</span>
+                  <span className="tax-item">Free Shipping Across India</span>
                 </div>
                 <div className="delivery-time-info">
                   <div className="delivery-time-label">Delivery Time</div>
                   <div className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</div>
-                </div>
-                <div className="international-hint">
-                  <Globe size={18} className="globe-hint-icon" />
-                  <span>International air cargo available; freight rates reduce per unit with larger volume.</span>
                 </div>
               </div>
 
