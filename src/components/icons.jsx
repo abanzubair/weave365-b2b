@@ -287,6 +287,7 @@ export const Copy = wrapIcon(Hero_DocumentDuplicateIcon, 'Copy');
 export const Cpu = wrapIcon(Hero_CpuChipIcon, 'Cpu');
 export const CreditCard = wrapIcon(Hero_CreditCardIcon, 'CreditCard');
 export const Crown = wrapIcon(Hero_SparklesIcon, 'Crown');
+export const Cube = wrapIcon(Hero_CubeIcon, 'Cube');
 export const Database = wrapIcon(Hero_CircleStackIcon, 'Database');
 export const DollarSign = wrapIcon(Hero_CurrencyDollarIcon, 'DollarSign');
 export const Download = wrapIcon(Hero_ArrowDownTrayIcon, 'Download');

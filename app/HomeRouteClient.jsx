@@ -28,17 +28,34 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
   // Sync initial SSR data to store in background after initial render settles
   useEffect(() => {
     const timer = setTimeout(() => {
+      // Hydrate full catalog in background so subsequent client navigations have all products and images
+      import('../src/productData.js')
+        .then((m) => m.fetchProducts())
+        .then((all) => {
+          if (all && all.length > 0) {
+            setProducts(all);
+          } else {
+            const state = useStorefront.getState();
+            if (initialProducts.length > 0 && state.products.length === 0) {
+              setProducts(initialProducts);
+            }
+          }
+        })
+        .catch(() => {
+          const state = useStorefront.getState();
+          if (initialProducts.length > 0 && state.products.length === 0) {
+            setProducts(initialProducts);
+          }
+        });
+
       const state = useStorefront.getState();
-      if (initialProducts.length > 0 && state.products.length === 0) {
-        setProducts(initialProducts);
-      }
       if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
         setHeroSlides(initialHeroSlides);
       }
       if (initialBlogs.length > 0 && state.blogs.length === 0) {
         setBlogs(initialBlogs);
       }
-    }, 2000);
+    }, 1500);
     return () => clearTimeout(timer);
   }, [initialProducts, initialHeroSlides, initialBlogs, setProducts, setHeroSlides, setBlogs]);
 

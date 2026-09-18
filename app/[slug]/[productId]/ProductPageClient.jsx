@@ -33,12 +33,17 @@ export default function ProductPageClient({
   } = useStorefront();
 
   useEffect(() => {
-    if (initialAllProducts.length > 0 && storeProducts.length === 0) {
+    if (initialAllProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialAllProducts.length)) {
       setProducts(initialAllProducts);
     }
   }, [initialAllProducts, storeProducts.length, setProducts]);
 
-  const allProducts = storeProducts.length > 0 ? storeProducts : initialAllProducts;
+  const allProducts = useMemo(() => {
+    if (initialAllProducts.length > storeProducts.length) {
+      return initialAllProducts;
+    }
+    return storeProducts.length > 0 ? storeProducts : initialAllProducts;
+  }, [storeProducts, initialAllProducts]);
 
   const productsById = useMemo(() => {
     const map = new Map();
@@ -49,11 +54,14 @@ export default function ProductPageClient({
         : p;
       map.set(p.id, overridden);
     });
-    if (initialProduct && !map.has(initialProduct.id)) {
+    if (initialProduct) {
       const overriddenInit = (overrides && overrides[initialProduct.id])
         ? applyStockOverridesToProducts([initialProduct], overrides)[0]
         : initialProduct;
-      map.set(initialProduct.id, overriddenInit);
+      const existing = map.get(initialProduct.id);
+      if (!existing || (initialProduct.images?.length || 0) >= (existing.images?.length || 0)) {
+        map.set(initialProduct.id, overriddenInit);
+      }
     }
     return map;
   }, [allProducts, initialProduct]);
@@ -132,6 +140,7 @@ export default function ProductPageClient({
   return (
     <ProductDetailWrapper
       productId={productId}
+      initialProduct={initialProduct}
       products={allProducts}
       productsById={productsById}
       navigate={navigate}

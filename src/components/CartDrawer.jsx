@@ -385,7 +385,7 @@ export function CartDrawer(props) {
               <div className="totals-line main-total-line">
                 <div>
                   <span className="total-label">Estimated Total</span>
-                  <span className="total-tax-note">Including GST • Free Shipping</span>
+                  <span className="total-tax-note">GST Included • Free Shipping Across India</span>
                 </div>
                 <strong className="total-value">
                   {total != null ? formatMoney(total, 2) : priceNoticeForAccess(priceAccess)}

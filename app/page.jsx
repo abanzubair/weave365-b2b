@@ -79,7 +79,7 @@ export default async function HomePage() {
 
   const rawProducts = homeProductMap.size > 0 ? Array.from(homeProductMap.values()) : allProducts.slice(0, 24);
 
-  // Trim product payload to avoid bloated SSR JSON serialization (~200KB reduction)
+  // Trim heavy unneeded raw and description fields to keep homepage SSR payload lightweight while preserving complete images and variants
   const products = rawProducts.map((p) => ({
     id: p.id,
     title: p.title,
@@ -87,13 +87,13 @@ export default async function HomePage() {
     purity: p.purity || '',
     fabric: p.fabric || '',
     work: p.work || '',
-    images: Array.isArray(p.images) ? p.images.slice(0, 2) : [],
-    variants: (p.variants || []).slice(0, 2).map((v) => ({
+    images: Array.isArray(p.images) ? p.images : [],
+    variants: (p.variants || []).map((v) => ({
       code: v.code || '',
       color: v.color || '',
       prices: v.prices || {},
       stock: v.stock,
-      images: Array.isArray(v.images) ? v.images.slice(0, 1) : [],
+      images: Array.isArray(v.images) ? v.images : [],
     })),
     colorOptions: p.colorOptions || [],
     totalColors: p.totalColors || p.variants?.length || 1,

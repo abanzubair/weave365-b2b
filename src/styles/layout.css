@@ -1500,12 +1500,12 @@
   }
 
   .product-media {
-    grid-template-columns: 132px 1fr;
-    gap: 10px;
+    grid-template-columns: 112px 1fr;
+    gap: 16px;
   }
 
   .vertical-thumbs {
-    width: 132px;
+    width: 112px;
     padding-right: 4px;
     box-sizing: border-box;
     scrollbar-gutter: stable;

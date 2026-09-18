@@ -23,7 +23,7 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
   } = useStorefront();
 
   useEffect(() => {
-    if (initialProducts.length > 0 && storeProducts.length === 0) {
+    if (initialProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialProducts.length)) {
       setProducts(initialProducts);
     }
     if (initialLandingPages.length > 0 && storeLandingPages.length === 0) {
@@ -31,7 +31,7 @@ export default function SeoLandingPageClient({ slug, pageData, initialProducts =
     }
   }, [initialProducts, initialLandingPages, storeProducts.length, storeLandingPages.length, setProducts, setLandingPages]);
 
-  const allProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
+  const allProducts = (storeProducts.length >= initialProducts.length && storeProducts.length > 0) ? storeProducts : initialProducts;
   const allLandingPages = storeLandingPages.length > 0 ? storeLandingPages : initialLandingPages;
 
   const priceAccess = useMemo(() => {

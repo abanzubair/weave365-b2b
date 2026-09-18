@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  Cube,
   Download,
   Gift,
   Globe,
@@ -68,7 +69,15 @@ import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 import './styles/resellerTools.css';
 
 export function ProductDetailWrapper(props) {
-  let product = props.productsById?.get(props.productId) || (props.products && props.products.length > 0 ? props.products.find((p) => p.id === props.productId) || (!props.productId ? props.products[0] : null) : null);
+  let product = props.productsById?.get(props.productId);
+  if (props.initialProduct && props.initialProduct.id === props.productId) {
+    if (!product || (props.initialProduct.images?.length || 0) > (product.images?.length || 0)) {
+      product = props.initialProduct;
+    }
+  }
+  if (!product) {
+    product = (props.products && props.products.length > 0 ? props.products.find((p) => p.id === props.productId) || (!props.productId ? props.products[0] : null) : null);
+  }
   let resolvedColorName = props.initialColorName;
   let resolvedVariantCode = props.initialVariantCode;
 
@@ -938,7 +947,6 @@ export function ProductDetail({
     [galleryHeight],
   );
 
-  const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [showSellPanel, setShowSellPanel] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const sheetRef = useRef(null);
@@ -947,14 +955,13 @@ export function ProductDetail({
   const handleClosePanel = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
-      setShowBuyPanel(false);
       setShowSellPanel(false);
       setIsClosing(false);
     }, 180);
   }, []);
 
   useEffect(() => {
-    if (!showBuyPanel && !showSellPanel) return;
+    if (!showSellPanel) return;
     const handleClickOutside = (e) => {
       if (popoverWrapperRef.current && !popoverWrapperRef.current.contains(e.target)) {
         handleClosePanel();
@@ -971,7 +978,7 @@ export function ProductDetail({
       document.removeEventListener('touchstart', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showBuyPanel, showSellPanel, handleClosePanel]);
+  }, [showSellPanel, handleClosePanel]);
 
   function handleBuyNow() {
     if (product.isOutOfStock) return;
@@ -1183,10 +1190,14 @@ export function ProductDetail({
   const [prevProduct, setPrevProduct] = useState(product);
   if (product !== prevProduct) {
     setPrevProduct(product);
-    setSelectedImage(product.images[0]);
-    setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
-    setVariantCode(product.variants[0]?.code);
-    setVariationDrawerOpen(false);
+    if (product?.id !== prevProduct?.id) {
+      setSelectedImage(product.images[0]);
+      setSelectedColorName(product.colorOptions?.[0]?.name || product.variants[0]?.color || '');
+      setVariantCode(product.variants[0]?.code);
+      setVariationDrawerOpen(false);
+    } else if (selectedImage && !product.images.includes(selectedImage)) {
+      setSelectedImage(product.images[0]);
+    }
   }
 
   useEffect(() => {
@@ -1508,9 +1519,10 @@ export function ProductDetail({
                   ['Weave', product.weave],
                   ['Purity', product.purity],
                   ['Type', product.type],
+                  [isSaree ? 'Saree Length' : 'Length', isSaree ? (product.sareeLength || product.length || '6.3m (including 85cm Blouse piece)') : (product.length || null)],
                 ].map(([label, value]) => value && (
-                  <div key={label} className="spec-item">
-                    <span className="spec-label">{label}</span>
+                  <div key={label} className={`spec-item ${label.toLowerCase().includes('length') ? 'spec-item-wide' : ''}`}>
+                    <span className="spec-label">{label}{label.toLowerCase().includes('length') ? ':' : ''}</span>
                     <span className="spec-value">{value}</span>
                   </div>
                 ))}
@@ -1639,12 +1651,16 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className={`product-middle-details ${(showSellPanel || showBuyPanel) ? 'blurred-details' : ''}`}>
+            <div className={`product-middle-details ${showSellPanel ? 'blurred-details' : ''}`}>
               <div className="product-logistics-info">
                 <div className="tax-shipping-line">
-                  <span className="tax-item">Including GST</span>
+                  <span className="tax-item">GST Included</span>
                   <span className="bullet-sep">•</span>
-                  <span className="shipping-note-badge">Free Shipping</span>
+                  <span className="shipping-note-badge">Free Shipping Across India</span>
+                </div>
+                <div className="delivery-time-info">
+                  <div className="delivery-time-label">Delivery Time</div>
+                  <div className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</div>
                 </div>
                 <div className="international-hint">
                   <Globe size={18} className="globe-hint-icon" />
@@ -1741,9 +1757,50 @@ export function ProductDetail({
             </div>
 
             <div className="product-main-actions">
-              <div className={`product-actions-popover-wrapper ${(showSellPanel || showBuyPanel) ? 'has-active-panel' : ''}`} ref={popoverWrapperRef}>
-                <div className="product-secondary-actions">
-                  <div className={`product-action-col sell-col ${showSellPanel ? 'active-col' : ''}`}>
+              <div className="product-primary-cta-row">
+                <button
+                  type="button"
+                  className="product-btn-buy-now"
+                  onClick={handleBuyNow}
+                  disabled={product.isOutOfStock}
+                >
+                  <Cube size={18} strokeWidth={2} />
+                  <span>BUY NOW</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="product-btn-add-cart"
+                  onClick={() => setVariationDrawerOpen(true)}
+                  disabled={product.isOutOfStock}
+                >
+                  <ShoppingBag size={18} strokeWidth={2} />
+                  <span>Add to Cart</span>
+                </button>
+              </div>
+
+              <div className="reseller-callout-card">
+                <h3 className="reseller-callout-heading">Are you a reseller?</h3>
+                <p className="reseller-callout-text">
+                  Add your own profit margin, share our white-label catalogue on social media, and sell to your customers. Download product images and details, or list the products on your own website.
+                </p>
+
+                <div className="reseller-callout-actions">
+                  <div className="reseller-sell-wrapper" ref={popoverWrapperRef}>
+                    <button
+                      type="button"
+                      className={`reseller-sell-btn ${showSellPanel ? 'is-open' : ''}`}
+                      onClick={() => {
+                        if (showSellPanel) {
+                          handleClosePanel();
+                        } else {
+                          setShowSellPanel(true);
+                        }
+                      }}
+                    >
+                      Sell This Product
+                    </button>
+
                     {showSellPanel && (
                       <div className={`product-page-popover sell-popover ${isClosing ? 'closing' : ''}`} ref={sheetRef}>
                         <div className="sheet-header">
@@ -1809,120 +1866,26 @@ export function ProductDetail({
                         </div>
                       </div>
                     )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (showSellPanel) {
-                          handleClosePanel();
-                        } else {
-                          setShowBuyPanel(false);
-                          setShowSellPanel(true);
-                        }
-                      }}
-                      className={`buy-card-btn sell-card-btn page-action-sell-btn ${showSellPanel ? 'is-open' : ''}`}
-                    >
-                      <span>SELL THIS</span>
-                      <ChevronUp size={15} className={`btn-dropdown-chevron ${showSellPanel ? 'rotated' : ''}`} />
-                    </button>
                   </div>
 
-                  <div className={`product-action-col buy-col ${showBuyPanel ? 'active-col' : ''}`}>
-                    {showBuyPanel && (
-                      <div className={`product-page-popover buy-popover ${isClosing ? 'closing' : ''}`} ref={sheetRef}>
-                        <div className="sheet-header">
-                          <span className="sheet-title">Buy Options</span>
-                          <button type="button" className="sheet-close" onClick={handleClosePanel} aria-label="Close panel">
-                            <X size={16} strokeWidth={2.5} />
-                          </button>
-                        </div>
-
-                        <div className="sheet-list">
-                          <button
-                            type="button"
-                            className={`sheet-item ${product.isOutOfStock ? 'disabled' : ''}`}
-                            onClick={() => {
-                              handleClosePanel();
-                              handleBuyNow();
-                            }}
-                            disabled={product.isOutOfStock}
-                          >
-                            <div className="item-icon package"><PackageCheck size={20} /></div>
-                            <div className="item-copy">
-                              <strong>Buy Now</strong>
-                              <span>{product.isOutOfStock ? 'Currently out of stock' : 'Add to bag & checkout'}</span>
-                            </div>
-                            <ChevronRight size={18} className="item-chevron" />
-                          </button>
-
-                          <button
-                            type="button"
-                            className={`sheet-item ${product.isOutOfStock ? 'disabled' : ''}`}
-                            onClick={() => {
-                              handleClosePanel();
-                              setVariationDrawerOpen(true);
-                            }}
-                            disabled={product.isOutOfStock}
-                          >
-                            <div className="item-icon bag"><ShoppingBag size={20} /></div>
-                            <div className="item-copy">
-                              <strong>Add to Cart</strong>
-                              <span>{product.isOutOfStock ? 'Currently out of stock' : 'Add item to your cart'}</span>
-                            </div>
-                            <ChevronRight size={18} className="item-chevron" />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="sheet-item"
-                            onClick={(e) => {
-                              handleClosePanel();
-                              const url = buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess);
-                              window.open(url, '_blank');
-                            }}
-                          >
-                            <div className="item-icon whatsapp"><WhatsappIcon size={20} /></div>
-                            <div className="item-copy">
-                              <strong>Enquiry</strong>
-                              <span>Chat with us on WhatsApp</span>
-                            </div>
-                            <ChevronRight size={18} className="item-chevron" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      className={`add-to-bag-btn buy-trigger-btn page-action-buy-btn ${showBuyPanel ? 'is-open' : ''}`}
-                      onClick={() => {
-                        if (showBuyPanel) {
-                          handleClosePanel();
-                        } else {
-                          setShowSellPanel(false);
-                          setShowBuyPanel(true);
-                        }
-                      }}
-                    >
-                      <span>BUY NOW</span>
-                      <ChevronUp size={15} className={`btn-dropdown-chevron ${showBuyPanel ? 'rotated' : ''}`} />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="reseller-whatsapp-btn"
+                    onClick={() => {
+                      const url = buildSingleProductWhatsappUrl(product, variant, totalColors, pincode, codStatus, priceAccess);
+                      window.open(url, '_blank');
+                    }}
+                  >
+                    <WhatsappIcon size={18} className="reseller-whatsapp-icon" />
+                    <span>Ask on WhatsApp</span>
+                  </button>
                 </div>
               </div>
-              <p className="buyer-note">
-                <LockKeyhole size={14} /> Registered wholesale buyers can download photos and share catalogs
-              </p>
             </div>
 
             {product.description && (
               <div className="product-summary-block">
                 <p className="product-summary-text">{product.description}</p>
-                {String(product.category || '').toLowerCase() === 'saree' && (
-                  <div className="saree-length-pill">
-                    <strong>Saree Length:</strong> 6.3m (including 85cm Blouse piece)
-                  </div>
-                )}
               </div>
             )}
 
@@ -1945,8 +1908,8 @@ export function ProductDetail({
                 <p className="editorial-copy">
                   {product.description || `Enhance your boutique collections with our curated Banarasi products. Direct loom-to-store transparency ensures fair prices for artisans and pristine material quality for global buyers.`}
                   {String(product.category || '').toLowerCase() === 'saree' && (
-                    <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--brown-900)' }}>
-                      Saree Length: 6.3m (including 85cm Blouse)
+                    <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--brown-900)', whiteSpace: 'nowrap' }}>
+                      Saree Length: 6.3m (including 85cm Blouse piece)
                     </span>
                   )}
                 </p>

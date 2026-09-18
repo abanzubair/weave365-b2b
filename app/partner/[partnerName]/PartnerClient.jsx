@@ -23,12 +23,12 @@ export default function PartnerClient({ partnerSlug, initialProducts = [] }) {
   } = useStorefront();
 
   useEffect(() => {
-    if (initialProducts.length > 0 && storeProducts.length === 0) {
+    if (initialProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialProducts.length)) {
       setProducts(initialProducts);
     }
   }, [initialProducts, storeProducts.length, setProducts]);
 
-  const rawProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
+  const rawProducts = (storeProducts.length >= initialProducts.length && storeProducts.length > 0) ? storeProducts : initialProducts;
 
   const partnerFilteredProducts = useMemo(() => {
     return rawProducts.filter(

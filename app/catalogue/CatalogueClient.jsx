@@ -35,7 +35,7 @@ export default function CatalogueClient({
   } = useStorefront();
 
   useEffect(() => {
-    if (initialProducts.length > 0 && storeProducts.length === 0) {
+    if (initialProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialProducts.length)) {
       setProducts(initialProducts);
     }
     if (initialConfigOptions && (!storeConfigOptions?.categories || storeConfigOptions.categories.length === 0)) {
@@ -43,7 +43,9 @@ export default function CatalogueClient({
     }
   }, [initialProducts, initialConfigOptions, storeProducts.length, storeConfigOptions, setProducts, setConfigOptions]);
 
-  const rawProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
+  const rawProducts = (storeProducts.length >= initialProducts.length && storeProducts.length > 0)
+    ? storeProducts
+    : initialProducts;
   const config = (storeConfigOptions?.categories?.length > 0 ? storeConfigOptions : initialConfigOptions) || {
     categories: [],
     fabrics: [],
