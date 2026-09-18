@@ -423,7 +423,7 @@ export function CheckoutPage({
           quantity: item.quantity,
           price: customerPrice(item.variant?.prices, priceAccess),
         })),
-        saleAmount: saleAmount,
+        saleAmount: saleAmount > 0 ? saleAmount : (total || 0),
       });
 
       if (clearCart) {

@@ -17,7 +17,7 @@ import { Calendar, Clock, User, ArrowRight, ChevronLeft, ChevronRight, Search, X
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';
-import { getStoredReferralCode } from '../utils/influencerHelpers.js';
+import { getStoredReferralCode, getOwnAffiliateCode } from '../utils/influencerHelpers.js';
 import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import '../styles/blog.css';
 
@@ -41,11 +41,11 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   const handleUniversalShare = async () => {
     let shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     if (typeof window !== 'undefined') {
-      const refCode = getStoredReferralCode();
+      const refCode = getOwnAffiliateCode() || getStoredReferralCode();
       if (refCode) {
         try {
           const urlObj = new URL(shareUrl);
-          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer')) {
+          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer') && !urlObj.searchParams.has('affiliate')) {
             urlObj.searchParams.set('ref', refCode);
             shareUrl = urlObj.toString();
           }

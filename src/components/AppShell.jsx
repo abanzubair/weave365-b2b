@@ -9,7 +9,13 @@ import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../u
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import { applyCustomTheme } from '../utils/themeEngine.js';
-import { clearStoredReferralCode, setStoredReferralCode } from '../utils/influencerHelpers.js';
+import {
+  clearStoredReferralCode,
+  setStoredReferralCode,
+  handleIncomingReferral,
+  setOwnAffiliateCode,
+  clearOwnAffiliateCode,
+} from '../utils/influencerHelpers.js';
 import { useAppNavigate } from '../hooks/useAppNavigate.js';
 import {
   fetchVendorStockOverrides,
@@ -102,6 +108,13 @@ export function AppShell({ children }) {
   useEffect(() => {
     trackSiteTraffic();
   }, []);
+
+  // Inbound affiliate referral detection (?ref=..., ?affiliate=..., ?influencer=...)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      void handleIncomingReferral(window.location.search);
+    }
+  }, [pathname]);
 
   // Ensure every route transition cleanly starts at the top of the new page
   useEffect(() => {
@@ -276,6 +289,7 @@ export function AppShell({ children }) {
       if (!user) {
         setBuyerProfile(null);
         setVendorOnboarding(null);
+        clearOwnAffiliateCode();
         setIsProfileHydrated(true);
         return;
       }
@@ -297,7 +311,9 @@ export function AppShell({ children }) {
               .maybeSingle()
               .then(({ data }) => {
                 if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
-                  setStoredReferralCode(data.referral_code.trim().toUpperCase());
+                  setOwnAffiliateCode(data.referral_code.trim().toUpperCase());
+                } else if (isActive) {
+                  clearOwnAffiliateCode();
                 }
               })
               .catch((err) => console.error('[Referral] Error:', err));

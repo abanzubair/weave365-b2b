@@ -60,7 +60,7 @@ import {
 } from './utils/imageOptimizer.js';
 import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { usePageSeo } from './hooks/usePageSeo.js';
-import { getStoredReferralCode } from './utils/influencerHelpers.js';
+import { getStoredReferralCode, getOwnAffiliateCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import SliderCaptcha from './components/SliderCaptcha.jsx';
 import { SharpStar } from './views/ReviewsPage.jsx';
@@ -1146,11 +1146,11 @@ export function ProductDetail({
   const shareProductPage = useCallback(async () => {
     let shareUrl = typeof window !== 'undefined' ? window.location.href : `${siteUrl}/${getProductCategorySlug(product.id, product.category)}/${product.id}`;
     if (typeof window !== 'undefined') {
-      const refCode = getStoredReferralCode();
+      const refCode = getOwnAffiliateCode() || getStoredReferralCode();
       if (refCode) {
         try {
           const urlObj = new URL(shareUrl);
-          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer')) {
+          if (!urlObj.searchParams.has('ref') && !urlObj.searchParams.has('influencer') && !urlObj.searchParams.has('affiliate')) {
             urlObj.searchParams.set('ref', refCode);
             shareUrl = urlObj.toString();
           }
