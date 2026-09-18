@@ -466,19 +466,11 @@ export function Account({
     return (placedOrders || []).filter(o => o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry');
   }, [placedOrders]);
 
-  const pendingOrdersList = useMemo(() => {
-    return (placedOrders || []).filter(o => {
-      if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
-      const s = String(o.status || '').toLowerCase();
-      return s !== 'delivered' && s !== 'completed' && s !== 'cancelled' && s !== 'done' && s !== 'rejected';
-    });
-  }, [placedOrders]);
 
   const orderHistoryList = useMemo(() => {
     return (placedOrders || []).filter(o => {
       if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
-      const s = String(o.status || '').toLowerCase();
-      return s === 'delivered' || s === 'completed' || s === 'cancelled' || s === 'done' || s === 'rejected';
+      return true;
     });
   }, [placedOrders]);
 
@@ -672,8 +664,8 @@ export function Account({
                   className={`account-order-subtab-btn ${orderSubTab === 'pending' ? 'active' : ''}`}
                   onClick={() => setOrderSubTab('pending')}
                 >
-                  Pending Order {((cartItems?.length || 0) + (pendingOrdersList?.length || 0)) > 0 && (
-                    <span className="subtab-badge">({(cartItems?.length || 0) + (pendingOrdersList?.length || 0)})</span>
+                  Pending Order {(cartItems?.length || 0) > 0 && (
+                    <span className="subtab-badge">({cartItems.length})</span>
                   )}
                 </button>
                 <button
@@ -690,7 +682,7 @@ export function Account({
               <div className="pending-orders-section">
                 {/* 1. DRAFT SOURCING CART ITEMS */}
                 {cartItems && cartItems.length > 0 && (
-                  <div className="draft-cart-container" style={{ marginBottom: pendingOrdersList.length > 0 ? '36px' : '0' }}>
+                  <div className="draft-cart-container">
                     <div className="draft-cart-groups-stack">
                       {groupedCartItems.map((group) => {
                         const hybridInfo = hybridTotals.productPricing?.[group.product?.id];
@@ -819,119 +811,11 @@ export function Account({
                   </div>
                 )}
 
-                {/* 2. PLACED PENDING ORDERS IF ANY */}
-                {pendingOrdersList && pendingOrdersList.length > 0 && (
-                  <div className="account-orders-stack" style={{ marginTop: cartItems.length > 0 ? '24px' : '0' }}>
-                    {cartItems.length > 0 && (
-                      <h4 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px', color: '#1a1a1a' }}>
-                        Confirmed Pending Orders ({pendingOrdersList.length})
-                      </h4>
-                    )}
-                    {pendingOrdersList.map((order) => {
-                      const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      });
-                      const statusStyle = getStatusBadgeStyle(order.status);
-                      const orderTotal = order.items && Array.isArray(order.items)
-                        ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
-                        : 0;
-                      const isDropshipOrder = Boolean(order.is_dropship);
-
-                      return (
-                        <div 
-                          key={order.id} 
-                          className={`account-minimal-order-card ${isDropshipOrder ? 'is-dropship' : ''}`}
-                        >
-                          <div className="order-card-top-bar">
-                            <div className="order-ref-group">
-                              <span className="order-ref-code">#{order.id}</span>
-                              {isDropshipOrder && (
-                                <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
-                                  Dropship
-                                </span>
-                              )}
-                              <span className="order-date-text">{orderDate}</span>
-                            </div>
-                            <span 
-                              className="order-status-pill"
-                              style={statusStyle}
-                            >
-                              {order.status || 'Processing'}
-                            </span>
-                          </div>
-
-                          {isDropshipOrder && (
-                            <div className="order-dropship-info-box">
-                              <div><strong>Sender Label:</strong> {order.dropship_sender_name || order.business_name || 'Reseller'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
-                              <div><strong>Deliver To:</strong> {order.dropship_recipient_name || order.buyer_name} ({order.dropship_recipient_phone || 'N/A'}) — {order.dropship_recipient_city} {order.dropship_recipient_pincode ? `(${order.dropship_recipient_pincode})` : ''}</div>
-                            </div>
-                          )}
-
-                          <div className="order-items-list">
-                            {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
-                              <div key={idx} className="order-item-row">
-                                <div className="order-item-left">
-                                  <span className="order-item-bullet" />
-                                  <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
-                                  {item.color && <span className="order-item-variant">· {item.color}</span>}
-                                </div>
-                                <span className="order-item-qty">Qty {item.quantity || 1}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="order-card-bottom-bar">
-                            <div className="order-total-block">
-                              <span className="order-total-label">Total:</span>
-                              <span className="order-total-value">
-                                {orderTotal > 0 ? formatMoney(orderTotal) : 'Price on request'}
-                              </span>
-                            </div>
-
-                            <div className="order-card-actions">
-                              <button 
-                                type="button" 
-                                className="order-track-btn"
-                                onClick={() => navigate('order-tracking', order.id)}
-                              >
-                                <span>Track Order</span>
-                                <ArrowUpRight size={13} />
-                              </button>
-                              {isDropshipOrder && (
-                                <button
-                                  type="button"
-                                  className="order-copy-link-btn"
-                                  onClick={() => copyCustomerTrackingLink(order.id)}
-                                  title="Copy tracking link for your customer"
-                                >
-                                  {copiedTrackingId === order.id ? (
-                                    <>
-                                      <Check size={13} style={{ color: '#059669' }} />
-                                      <span style={{ color: '#059669' }}>Copied!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Share2 size={13} />
-                                      <span>Customer Link</span>
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* EMPTY STATE IF BOTH CART AND PENDING ORDERS ARE EMPTY */}
-                {(!cartItems || cartItems.length === 0) && (!pendingOrdersList || pendingOrdersList.length === 0) && (
+                {/* EMPTY STATE IF CART IS EMPTY */}
+                {(!cartItems || cartItems.length === 0) && (
                   <div className="account-empty-state">
                     <ShoppingBag size={36} strokeWidth={1.5} />
-                    <h3 className="account-empty-title">No pending orders or cart items</h3>
+                    <h3 className="account-empty-title">No pending cart items</h3>
                     <p className="account-empty-desc">Explore the wholesale catalogue to select sarees and add them to your draft order.</p>
                     <button type="button" className="primary-button" onClick={() => navigate('catalogue')}>
                       Browse Wholesale Catalogue
@@ -956,7 +840,7 @@ export function Account({
 
                       const emptyDesc = orderSubTab === 'enquiry'
                         ? 'Once you submit a wholesale or custom sourcing inquiry, your live updates will appear here.'
-                        : 'Your completed and delivered wholesale orders will be archived here for easy reference.';
+                        : 'Your placed wholesale orders and live tracking updates will appear here.';
 
                       return (
                         <div className="account-empty-state">
