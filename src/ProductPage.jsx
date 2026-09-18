@@ -596,8 +596,8 @@ export function ProductDetail({
 
   const handleRestrictedAction = useCallback((actionName, actionFn) => {
     if (!priceAccess?.isLoggedIn) {
-      setToastMessage(`Login to ${actionName.toLowerCase()}`);
-      setTimeout(() => setToastMessage(''), 3000);
+      setToastMessage(`Only logged in users can ${actionName.toLowerCase()}`);
+      setTimeout(() => setToastMessage(''), 3500);
       return;
     }
     actionFn();
@@ -993,12 +993,9 @@ export function ProductDetail({
   const downloadImagesAsZip = useCallback(async () => {
     const userId = priceAccess?.userId;
     const productId = product.id;
-    if (!userId) {
-      if (typeof navigate === 'function') {
-        navigate('signup');
-      } else if (typeof openAuth === 'function') {
-        openAuth();
-      }
+    if (!priceAccess?.isLoggedIn || !userId) {
+      setToastMessage('Only logged in users can download catalogue photos');
+      setTimeout(() => setToastMessage(''), 3500);
       return;
     }
 
@@ -1812,16 +1809,21 @@ export function ProductDetail({
                             className="sheet-item reseller-primary"
                             onClick={() => {
                               handleClosePanel();
-                              if (priceAccess?.canViewPrices) {
-                                setWhatsappShareOpen(true);
-                              } else {
-                                handleRestrictedAction('Share', shareProductPage);
+                              if (!priceAccess?.isLoggedIn) {
+                                handleRestrictedAction('share catalogue details', () => setWhatsappShareOpen(true));
+                                return;
                               }
+                              setWhatsappShareOpen(true);
                             }}
                           >
                             <div className="item-icon share"><Share2 size={20} /></div>
                             <div className="item-copy">
                               <strong>Share on Social Media</strong>
+                              {!priceAccess?.isLoggedIn ? (
+                                <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                              ) : (
+                                <span>Custom margin & unbranded specs</span>
+                              )}
                             </div>
                             <ChevronRight size={18} className="item-chevron" />
                           </button>
@@ -1832,13 +1834,18 @@ export function ProductDetail({
                             onClick={async () => {
                               if (isDownloading) return;
                               handleClosePanel();
-                              handleRestrictedAction('Download', downloadImagesAsZip);
+                              handleRestrictedAction('download catalogue photos', downloadImagesAsZip);
                             }}
                             disabled={isDownloading}
                           >
                             <div className="item-icon download"><Download size={20} /></div>
                             <div className="item-copy">
                               <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
+                              {!priceAccess?.isLoggedIn ? (
+                                <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                              ) : (
+                                <span>HD images & spec details</span>
+                              )}
                             </div>
                             <ChevronRight size={18} className="item-chevron" />
                           </button>
@@ -2470,7 +2477,7 @@ export function ProductDetail({
         />
       )}
 
-      {priceAccess?.canViewPrices && (
+      {priceAccess?.isLoggedIn && (
         <ResellerWhatsappShare
           showTrigger={false}
           open={whatsappShareOpen}

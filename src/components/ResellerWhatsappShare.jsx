@@ -58,7 +58,7 @@ export function ResellerWhatsappShare({
     }
   }
 
-  const isApprovedReseller = Boolean(priceAccess?.canViewPrices);
+  const isApprovedReseller = Boolean(priceAccess?.isLoggedIn && priceAccess?.canViewPrices !== false);
   const activeVariant = variant || product?.variants?.[0] || {};
   const prices = activeVariant?.prices || product?.variants?.[0]?.prices || {};
   const wholesalePrice = Number(prices.mrp || prices.offer || 0);
@@ -97,7 +97,7 @@ export function ResellerWhatsappShare({
 
   useEffect(() => {
     let isActive = true;
-    if (open && isApprovedReseller && shareImages.length > 0) {
+    if (open && priceAccess?.isLoggedIn && isApprovedReseller && shareImages.length > 0) {
       setIsPreparingImages(true);
       setPreparedFiles([]);
       
@@ -125,9 +125,9 @@ export function ResellerWhatsappShare({
       setIsPreparingImages(false);
     }
     return () => { isActive = false; };
-  }, [open, shareImagesKey, isApprovedReseller, product?.title, activeVariant?.code]);
+  }, [open, shareImagesKey, isApprovedReseller, product?.title, activeVariant?.code, priceAccess?.isLoggedIn]);
 
-  if (!isApprovedReseller || !product) return null;
+  if (!priceAccess?.isLoggedIn || !isApprovedReseller || !product) return null;
 
   async function copyMessage() {
     try {

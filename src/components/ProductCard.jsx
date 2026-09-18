@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronDown,
   Download,
+  LockKeyhole,
   PackageCheck,
   Palette,
   Share2,
@@ -21,6 +22,7 @@ import {
   Store,
   X,
 } from './icons.jsx';
+import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
 import { AppLink } from './AppLink.jsx';
 import {
   fallbackProductImage,
@@ -91,6 +93,11 @@ export const ProductCard = memo(function ProductCard({
   const [isClosing, setIsClosing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3500);
+  };
 
   const isUnder999 = String(product.category || '').toLowerCase() === 'under 999';
   const filteredStatusTags = useMemo(() => {
@@ -175,18 +182,40 @@ export const ProductCard = memo(function ProductCard({
   }, [showBuyPanel, showSellPanel, isMobile]);
 
   const handleDownloadPhotos = async () => {
-    if (!priceAccess?.userId) {
+    const userId = priceAccess?.userId;
+    const productId = product.id;
+    if (!priceAccess?.isLoggedIn || !userId) {
       handleClose();
-      if (typeof navigate === 'function') {
-        navigate('signup');
-      } else if (typeof openAuth === 'function') {
-        openAuth();
-      }
+      triggerToast('Only logged in users can download catalogue photos');
+      return;
+    }
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const localKey = `weave365_dl_${userId}_${productId}_${todayStr}`;
+
+    if (localStorage.getItem(localKey)) {
+      handleClose();
+      triggerToast('Limit reached: 1 download per product per day');
       return;
     }
 
     try {
       setIsDownloading(true);
+
+      if (isSupabaseConfigured) {
+        const { error } = await supabase.from('download_logs').insert({
+          user_id: userId,
+          product_id: productId
+        });
+
+        if (error) {
+          console.warn('Database rate limit blocked download:', error);
+          localStorage.setItem(localKey, 'true');
+          handleClose();
+          triggerToast('Limit reached: 1 download per product per day');
+          return;
+        }
+      }
 
       const [{ default: JSZip }, fileSaverModule] = await Promise.all([
         import('jszip'),
@@ -285,10 +314,13 @@ export const ProductCard = memo(function ProductCard({
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 40000);
       }
+      // Log download locally
+      localStorage.setItem(localKey, 'true');
       handleClose();
+      triggerToast('Catalogue downloaded successfully');
     } catch (error) {
       console.error('Error downloading images:', error);
-      alert('Failed to download images. Please try again.');
+      triggerToast('Failed to download images. Please try again.');
     } finally {
       setIsDownloading(false);
     }
@@ -470,12 +502,21 @@ export const ProductCard = memo(function ProductCard({
                   className="sheet-item reseller-primary"
                   onClick={() => {
                     handleClose();
+                    if (!priceAccess?.isLoggedIn) {
+                      triggerToast('Only logged in users can share catalogue details');
+                      return;
+                    }
                     setShowResellerWhatsapp(true);
                   }}
                 >
                   <div className="item-icon share"><Share2 size={20} /></div>
                   <div className="item-copy">
                     <strong>Share on Social Media</strong>
+                    {!priceAccess?.isLoggedIn ? (
+                      <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                    ) : (
+                      <span>Custom margin & unbranded specs</span>
+                    )}
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -485,6 +526,11 @@ export const ProductCard = memo(function ProductCard({
                   className="sheet-item"
                   onClick={async () => {
                     if (isDownloading) return;
+                    if (!priceAccess?.isLoggedIn) {
+                      handleClose();
+                      triggerToast('Only logged in users can download catalogue photos');
+                      return;
+                    }
                     await handleDownloadPhotos();
                   }}
                   disabled={isDownloading}
@@ -492,6 +538,11 @@ export const ProductCard = memo(function ProductCard({
                   <div className="item-icon download"><Download size={20} /></div>
                   <div className="item-copy">
                     <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
+                    {!priceAccess?.isLoggedIn ? (
+                      <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                    ) : (
+                      <span>HD images & spec details</span>
+                    )}
                   </div>
                   <ChevronRight size={18} className="item-chevron" />
                 </button>
@@ -599,7 +650,7 @@ export const ProductCard = memo(function ProductCard({
         />
       )}
 
-      {priceAccess?.canViewPrices && showResellerWhatsapp && (
+      {priceAccess?.isLoggedIn && showResellerWhatsapp && (
         <ResellerWhatsappShare
           product={product}
           variant={selectedVariant}
@@ -609,6 +660,13 @@ export const ProductCard = memo(function ProductCard({
           onClose={() => setShowResellerWhatsapp(false)}
           showTrigger={false}
         />
+      )}
+
+      {toastMessage && typeof document !== 'undefined' && createPortal(
+        <div className="elegant-toast show" style={{ zIndex: 9999 }}>
+          {toastMessage}
+        </div>,
+        document.body
       )}
     </article>
   );
