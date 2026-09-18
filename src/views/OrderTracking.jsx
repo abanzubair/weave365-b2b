@@ -487,7 +487,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                 ) : (
                   <div className="carrier-pending-box">
                     <p className="carrier-status-note">
-                      Order is undergoing 5-point quality inspection at our Varanasi fulfillment center.
+                      Order is undergoing quality inspection at our Varanasi fulfillment center.
                     </p>
                     <span className="carrier-pending-pill">
                       Carrier AWB will be updated upon dispatch
