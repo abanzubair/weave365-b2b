@@ -1871,35 +1871,23 @@ export function ProductDetail({
                   <ShieldCheck size={16} className="spec-icon" />
                   <strong>
                     <a
-                      href="https://weave365.com/disclaimer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (typeof navigate === 'function') {
-                          navigate('disclaimer');
-                        } else if (typeof window !== 'undefined') {
-                          window.location.href = '/disclaimer';
-                        }
-                      }}
+                      href="https://www.weave365.com/terms-conditions"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="policy-link"
                     >
-                      View Policy ↗
+                      View Policies ↗
                     </a>
                   </strong>
                   <span className="note-sep">·</span>
                   <strong>
                     <a
-                      href="https://weave365.com/reseller-faqs"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (typeof navigate === 'function') {
-                          navigate('reseller-faqs');
-                        } else if (typeof window !== 'undefined') {
-                          window.location.href = '/reseller-faqs';
-                        }
-                      }}
+                      href="https://www.weave365.com/reseller-faqs"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="policy-link"
                     >
-                      Reseller FAQ ↗
+                      Reseller FAQs ↗
                     </a>
                   </strong>
                 </div>
