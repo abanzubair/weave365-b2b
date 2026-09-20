@@ -1680,7 +1680,7 @@ export function ProductDetail({
                   <span className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</span>
                 </div>
               </div>
-Right side mein jo card hai ise thoda sa niche khiskao. 
+
               {colorOptions.length > 0 && (
                 <section className="product-variation-card" aria-labelledby="product-variation-heading">
                   <div className="variation-card-head">
