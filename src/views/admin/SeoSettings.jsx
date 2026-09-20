@@ -8,7 +8,7 @@ import {
   Copy,
   Image as ImageIcon,
 } from '../../components/icons.jsx';
-import { seoCategoryRoutes } from '../../config.js';
+import { seoCategoryRoutes, getCategorySlug } from '../../config.js';
 import { saveSupabasePageSeoSetting } from '../../productData.js';
 import { ROUTE_FIRST_IMAGES } from '../../utils/seoHelper.js';
 import {
@@ -209,15 +209,17 @@ const staticSeoDefaults = [
   },
 ];
 
-const categorySeoDefaults = Object.entries(seoCategoryRoutes || {}).map(([slug, categoryName]) => {
-  const pluralName = categoryName === 'Under 999' ? categoryName : (categoryName.endsWith('s') ? categoryName : `${categoryName}s`);
-  return {
-    path: `/${slug}`,
-    label: pluralName,
-    metaTitle: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
-    metaDescription: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
-  };
-});
+const categorySeoDefaults = Object.entries(seoCategoryRoutes || {})
+  .filter(([slug, categoryName]) => slug === getCategorySlug(categoryName))
+  .map(([slug, categoryName]) => {
+    const pluralName = categoryName === 'Under 999' ? categoryName : (categoryName.endsWith('s') ? categoryName : `${categoryName}s`);
+    return {
+      path: `/${slug}`,
+      label: pluralName,
+      metaTitle: `Wholesale Banarasi ${pluralName} Online | Weave 365`,
+      metaDescription: `Buy handwoven premium Banarasi ${pluralName.toLowerCase()} at wholesale prices direct from Varanasi weavers. High quality, verified silk collections.`,
+    };
+  });
 
 export default function SeoSettings({
   adminData,
@@ -263,12 +265,23 @@ export default function SeoSettings({
 
   const pageSeoOptions = useMemo(() => {
     const options = new Map(defaultSeoPageOptions.map((item) => [normalizeSeoPath(item.path), item]));
+    (pageSeoRows || []).forEach((row) => {
+      const norm = normalizeSeoPath(row.path);
+      if (!options.has(norm)) {
+        options.set(norm, {
+          path: norm,
+          label: `${norm} (Custom)`,
+          metaTitle: row.metaTitle,
+          metaDescription: row.metaDescription,
+        });
+      }
+    });
     return Array.from(options.values()).sort((a, b) => {
       if (a.path === '/') return -1;
       if (b.path === '/') return 1;
       return (a.label || '').localeCompare(b.label || '');
     });
-  }, [defaultSeoPageOptions]);
+  }, [defaultSeoPageOptions, pageSeoRows]);
 
   const selectedDefaultSeo = useMemo(() => {
     const normalized = normalizeSeoPath(pageSeoPath);
