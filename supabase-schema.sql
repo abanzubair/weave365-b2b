@@ -1761,3 +1761,123 @@ create policy "Public read api_usage_daily"
   on public.api_usage_daily for select
   to anon, authenticated
   using (true);
+
+-- ==============================================================================
+-- COUNTRY-BASED PRICING & DYNAMIC EXCHANGE RATES
+-- ==============================================================================
+create table if not exists public.country_pricing_configs (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,               -- ISO 2-letter country code (e.g. 'IN', 'US', 'QA', 'AE')
+  name text not null,                      -- Country name (e.g. 'India', 'USA', 'Qatar', 'UAE')
+  currency text not null,                  -- ISO currency code (e.g. 'INR', 'USD', 'QAR', 'AED')
+  currency_symbol text not null,           -- Currency symbol (e.g. '₹', '$', 'QAR', 'AED')
+  markup_percent numeric not null default 0, -- Markup % applied to base INR product price
+  flag text default '🌐',                  -- Emoji flag
+  enabled boolean not null default true,   -- Whether country is selectable
+  is_base boolean not null default false,  -- Base reference currency (India/INR)
+  sort_order int default 0,                -- Display ordering
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists idx_country_pricing_configs_code on public.country_pricing_configs(code);
+create index if not exists idx_country_pricing_configs_enabled on public.country_pricing_configs(enabled);
+
+create table if not exists public.exchange_rates_cache (
+  id text primary key default 'INR',       -- Base currency
+  rates jsonb not null default '{}'::jsonb,-- Map of currency -> exchange rate
+  provider text default 'ExchangeRate-API',
+  last_updated timestamptz default now(),
+  next_refresh timestamptz,
+  expires_at bigint
+);
+
+alter table public.country_pricing_configs enable row level security;
+alter table public.exchange_rates_cache enable row level security;
+
+-- Read policies: Public access (anonymous + authenticated)
+drop policy if exists "Public read country_pricing_configs" on public.country_pricing_configs;
+create policy "Public read country_pricing_configs"
+  on public.country_pricing_configs for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "Public read exchange_rates_cache" on public.exchange_rates_cache;
+create policy "Public read exchange_rates_cache"
+  on public.exchange_rates_cache for select
+  to anon, authenticated
+  using (true);
+
+-- Write policies: Admin & Service Role access
+drop policy if exists "Admin manage country_pricing_configs" on public.country_pricing_configs;
+create policy "Admin manage country_pricing_configs"
+  on public.country_pricing_configs for all
+  to authenticated
+  using (true)
+  with check (true);
+
+drop policy if exists "Admin manage exchange_rates_cache" on public.exchange_rates_cache;
+create policy "Admin manage exchange_rates_cache"
+  on public.exchange_rates_cache for all
+  to authenticated
+  using (true)
+  with check (true);
+
+-- Seed Initial Countries (Configurable from Admin Panel)
+insert into public.country_pricing_configs (code, name, currency, currency_symbol, markup_percent, flag, enabled, is_base, sort_order)
+values
+  ('IN', 'India', 'INR', '₹', 0, '🇮🇳', true, true, 1),
+  ('US', 'USA', 'USD', '$', 10, '🇺🇸', true, false, 2),
+  ('QA', 'Qatar', 'QAR', 'QAR', 15, '🇶🇦', true, false, 3),
+  ('AE', 'UAE', 'AED', 'AED', 12, '🇦🇪', true, false, 4),
+  ('GB', 'United Kingdom', 'GBP', '£', 12, '🇬🇧', true, false, 5),
+  ('EU', 'Eurozone', 'EUR', '€', 12, '🇪🇺', true, false, 6),
+  ('CA', 'Canada', 'CAD', 'CA$', 12, '🇨🇦', true, false, 7),
+  ('AU', 'Australia', 'AUD', 'A$', 12, '🇦🇺', true, false, 8),
+  ('SG', 'Singapore', 'SGD', 'S$', 10, '🇸🇬', true, false, 9),
+  ('SA', 'Saudi Arabia', 'SAR', 'SAR', 15, '🇸🇦', true, false, 10),
+  ('KW', 'Kuwait', 'KWD', 'KWD', 15, '🇰🇼', true, false, 11),
+  ('OM', 'Oman', 'OMR', 'OMR', 15, '🇴🇲', true, false, 12),
+  ('BH', 'Bahrain', 'BHD', 'BHD', 15, '🇧🇭', true, false, 13)
+on conflict (code) do update set
+  name = excluded.name,
+  currency = excluded.currency,
+  currency_symbol = excluded.currency_symbol,
+  markup_percent = excluded.markup_percent,
+  flag = excluded.flag,
+  enabled = excluded.enabled,
+  is_base = excluded.is_base,
+  sort_order = excluded.sort_order,
+  updated_at = now();
+
+-- Seed Initial Exchange Rates Cache
+insert into public.exchange_rates_cache (id, rates, provider, last_updated, next_refresh, expires_at)
+values (
+  'INR',
+  '{
+    "INR": 1,
+    "USD": 0.0118,
+    "QAR": 0.0430,
+    "AED": 0.0433,
+    "EUR": 0.0109,
+    "GBP": 0.0093,
+    "CAD": 0.0162,
+    "AUD": 0.0181,
+    "SGD": 0.0157,
+    "SAR": 0.0442,
+    "KWD": 0.0036,
+    "OMR": 0.0045,
+    "BHD": 0.0044
+  }'::jsonb,
+  'ExchangeRate-API',
+  now(),
+  now() + interval '6 hours',
+  extract(epoch from (now() + interval '6 hours')) * 1000
+)
+on conflict (id) do update set
+  rates = excluded.rates,
+  provider = excluded.provider,
+  last_updated = excluded.last_updated,
+  next_refresh = excluded.next_refresh,
+  expires_at = excluded.expires_at;
+

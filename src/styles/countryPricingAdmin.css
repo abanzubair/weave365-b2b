@@ -1,0 +1,771 @@
+/* ==========================================================================
+   Country Pricing & Currency Admin Styling
+   Refined with Impeccable 'distill' and 'quieter' principles:
+   - Restrained palette (neutrals dominant, subtle gold/slate accents)
+   - Calmer typographic scale (no uppercase shouting, lower visual weight)
+   - Zero card-in-card nesting; clean tabular alignment
+   - Custom toggle switches replacing raw HTML checkboxes
+   - Integrated input suffixes and tabular numerals
+   ========================================================================== */
+
+.cpa-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  font-family: var(--font-inter, 'Manrope', system-ui, -apple-system, sans-serif);
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+/* 1. Header Area */
+.cpa-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.25rem;
+}
+
+.cpa-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cpa-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cpa-title-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.cpa-subtitle {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.cpa-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.cpa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+  line-height: 1.25;
+  white-space: nowrap;
+  outline: none;
+}
+
+.cpa-btn-secondary {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.cpa-btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.cpa-btn-primary {
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  color: #ffffff;
+}
+
+.cpa-btn-primary:hover:not(:disabled) {
+  background: #1e293b;
+  border-color: #1e293b;
+}
+
+.cpa-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cpa-btn:focus-visible {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
+}
+
+/* Status Banner / Notification */
+.cpa-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  animation: cpaFadeIn 0.2s ease-out;
+}
+
+.cpa-notice-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.cpa-notice-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+@keyframes cpaFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Top Two-Column Grid */
+.cpa-top-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.25rem;
+}
+
+.cpa-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cpa-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cpa-card-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cpa-card-title-icon {
+  color: #64748b;
+}
+
+.cpa-badge-subtle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #dcfce7;
+  letter-spacing: 0.01em;
+}
+
+.cpa-card-meta-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cpa-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cpa-meta-sep {
+  color: #cbd5e1;
+}
+
+.cpa-meta-strong {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Rate Grid */
+.cpa-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.cpa-rate-chip {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: border-color 0.15s ease;
+}
+
+.cpa-rate-chip:hover {
+  border-color: #e2e8f0;
+}
+
+.cpa-rate-chip-pair {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.cpa-rate-chip-val {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Price Simulator Inputs & Breakdown */
+.cpa-sim-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.cpa-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cpa-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.cpa-input {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.84rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cpa-input:focus {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.cpa-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 10px 6px;
+  padding-right: 1.75rem;
+}
+
+/* Simulator Output Breakdown (No nested card) */
+.cpa-sim-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.25rem;
+}
+
+.cpa-sim-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cpa-sim-val {
+  color: #1e293b;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.cpa-sim-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 0.6rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 0.2rem;
+}
+
+.cpa-sim-total-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cpa-sim-total-val {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cpa-sim-footnote {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 3. Country Table Section */
+.cpa-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cpa-table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.cpa-table-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cpa-table-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cpa-table-subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cpa-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.cpa-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8125rem;
+}
+
+.cpa-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.cpa-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.1s ease;
+}
+
+.cpa-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.cpa-table tbody tr:hover {
+  background-color: #fafbfc;
+}
+
+.cpa-table td {
+  padding: 0.85rem 1.25rem;
+  vertical-align: middle;
+  color: #334155;
+}
+
+/* Country Cell */
+.cpa-country-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.cpa-flag {
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cpa-country-names {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cpa-country-name {
+  font-weight: 500;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.cpa-country-code {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+/* Currency Cell */
+.cpa-curr-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.cpa-curr-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.cpa-base-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Markup Suffix Input */
+.cpa-markup-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  width: 80px;
+}
+
+.cpa-markup-input {
+  width: 100%;
+  padding: 0.35rem 1.5rem 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
+  font-weight: 500;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cpa-markup-input:focus {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.cpa-markup-input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.cpa-markup-suffix {
+  position: absolute;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  pointer-events: none;
+  font-weight: 500;
+}
+
+/* Rate Cell */
+.cpa-fx-rate-cell {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+.cpa-fx-rate-base {
+  color: #94a3b8;
+}
+
+.cpa-fx-rate-val {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+/* Switch Toggle (Replaces ugly HTML checkbox) */
+.cpa-switch-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cpa-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: background-color 0.2s ease;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.cpa-switch:focus-visible {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
+}
+
+.cpa-switch.active {
+  background: #0f172a;
+}
+
+.cpa-switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cpa-switch-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  transform: translateX(0);
+}
+
+.cpa-switch.active .cpa-switch-thumb {
+  transform: translateX(14px);
+}
+
+.cpa-switch-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  user-select: none;
+}
+
+.cpa-switch-label.active {
+  color: #0f172a;
+}
+
+/* Delete / Action Button */
+.cpa-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+
+.cpa-icon-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.cpa-icon-btn:focus-visible {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #dc2626;
+}
+
+/* 4. Modal Dialog */
+.cpa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+  animation: cpaOverlayFade 0.15s ease-out;
+}
+
+.cpa-modal-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: cpaModalScale 0.15s ease-out;
+}
+
+@keyframes cpaOverlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cpaModalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.cpa-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cpa-modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cpa-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.cpa-modal-close:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.cpa-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cpa-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+/* Spin animation for refresh button */
+.cpa-spin {
+  animation: cpaSpin 1s linear infinite;
+}
+
+@keyframes cpaSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cpa-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cpa-header-actions {
+    justify-content: flex-start;
+  }
+  .cpa-rates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cpa-sim-inputs {
+    grid-template-columns: 1fr;
+  }
+  .cpa-table-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

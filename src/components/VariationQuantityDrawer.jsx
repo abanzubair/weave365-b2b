@@ -7,10 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../styles/variationQuantityDrawer.css';
 import { Minus, Plus, ShoppingBag, X, Check, Info } from './icons.jsx';
 import {
-  calculateHybridProductPrice,
+  calculateLocalizedHybridProductPrice,
   fallbackProductImage,
   formatMoney,
 } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 
@@ -94,11 +95,12 @@ export function VariationQuantityDrawer({
 
   const selectedRow = rows.find((row) => row.key === activeKey) || rows[0];
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const totalQuantity = Object.values(quantities).reduce((total, quantity) => total + quantity, 0);
 
   const pricing = useMemo(() => {
-    return calculateHybridProductPrice(product, totalQuantity, product?.variants?.[0]);
-  }, [product, totalQuantity]);
+    return calculateLocalizedHybridProductPrice(product, totalQuantity, product?.variants?.[0], currentCountry, exchangeRates);
+  }, [product, totalQuantity, currentCountry, exchangeRates]);
 
   const subtotal = canViewPrices ? pricing.totalPrice : null;
 
@@ -245,7 +247,7 @@ export function VariationQuantityDrawer({
                     </button>
 
                     <span className="variation-row-price">
-                      {canViewPrices ? formatMoney(unitPrice) : priceNoticeForAccess(priceAccess)}
+                      {canViewPrices ? formatMoney(unitPrice, { currency: currentCountry?.currency }) : priceNoticeForAccess(priceAccess)}
                     </span>
 
                     <div className="quantity-stepper" aria-label={`${row.name} quantity`}>
@@ -267,19 +269,19 @@ export function VariationQuantityDrawer({
                 {pricing.completeSets > 0 && pricing.extraPieces === 0 && (
                   <div className="tier-status-message success">
                     <Check size={15} className="status-icon" />
-                    <span><strong>{pricing.completeSets} Set{pricing.completeSets > 1 ? 's' : ''} ({pricing.totalQty} pcs)</strong> at Wholesale Rate ({formatMoney(pricing.wholesalePrice)}/pc)</span>
+                    <span><strong>{pricing.completeSets} Set{pricing.completeSets > 1 ? 's' : ''} ({pricing.totalQty} pcs)</strong> at Wholesale Rate ({formatMoney(pricing.wholesalePrice, { currency: currentCountry?.currency })}/pc)</span>
                   </div>
                 )}
                 {pricing.completeSets === 0 && (
                   <div className="tier-status-message info">
                     <Info size={15} className="status-icon" />
-                    <span><strong>{pricing.totalQty} pc{pricing.totalQty > 1 ? 's' : ''}</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice)}/pc). Add {pricing.setSize - pricing.totalQty} more for Wholesale price!</span>
+                    <span><strong>{pricing.totalQty} pc{pricing.totalQty > 1 ? 's' : ''}</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice, { currency: currentCountry?.currency })}/pc). Add {pricing.setSize - pricing.totalQty} more for Wholesale price!</span>
                   </div>
                 )}
                 {pricing.completeSets > 0 && pricing.extraPieces > 0 && (
                   <div className="tier-status-message success">
                     <Check size={15} className="status-icon" />
-                    <span><strong>{pricing.completeSets} Set</strong> at Wholesale ({formatMoney(pricing.wholesalePrice)}/pc) + <strong>{pricing.extraPieces} extra</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice)}/pc)</span>
+                    <span><strong>{pricing.completeSets} Set</strong> at Wholesale ({formatMoney(pricing.wholesalePrice, { currency: currentCountry?.currency })}/pc) + <strong>{pricing.extraPieces} extra</strong> at Single Piece Rate ({formatMoney(pricing.resellerPrice, { currency: currentCountry?.currency })}/pc)</span>
                   </div>
                 )}
               </div>
@@ -290,7 +292,7 @@ export function VariationQuantityDrawer({
         <footer className="variation-drawer-foot">
           <div className="drawer-subtotal-row">
             <span>Subtotal ({totalQuantity} pc{totalQuantity === 1 ? '' : 's'})</span>
-            <strong>{subtotal != null ? formatMoney(subtotal) : priceNoticeForAccess(priceAccess)}</strong>
+            <strong>{subtotal != null ? formatMoney(subtotal, { currency: currentCountry?.currency }) : priceNoticeForAccess(priceAccess)}</strong>
           </div>
           <div className="drawer-action-row">
             <button

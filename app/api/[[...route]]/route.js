@@ -21,6 +21,7 @@ import { POST as orderPost } from './orderHandler.js';
 import { generateSitemapXml } from './sitemapHandler.js';
 import { GET as catalogGet } from './catalogHandler.js';
 import { handleDeveloperApiGet, handleDeveloperApiPost } from './developerApiHandler.js';
+import { GET as countryPricingGet, POST as countryPricingPost } from './countryPricingHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
@@ -33,6 +34,7 @@ export async function GET(request, { params }) {
 
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
+  if (routeKey === 'country-pricing' || routeKey === 'countries') return countryPricingGet(request);
   if (routeKey === 'image') return imageGet(request);
   if (routeKey === 'storefront') return storefrontGet(request);
   if (routeKey === 'feed/google-shopping') return googleShoppingGet(request);
@@ -51,6 +53,7 @@ export async function POST(request, { params }) {
   }
 
   if (routeKey === 'orders' || routeKey === 'order') return orderPost(request);
+  if (routeKey === 'country-pricing' || routeKey === 'admin/country-pricing') return countryPricingPost(request);
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);
   if (routeKey === 'inquiry-notification') return inquiryNotificationPost(request);

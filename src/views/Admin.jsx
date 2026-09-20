@@ -34,6 +34,7 @@ import {
   Code2,
   X,
   ShieldCheck,
+  Globe,
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { getStorefrontSupabase } from '../services/boutiqueSyncService.js';
@@ -58,6 +59,7 @@ import BuyerActivity from './admin/BuyerActivity.jsx';
 import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
 import AdminStockManager from './admin/AdminStockManager.jsx';
 import ApiManager from './admin/ApiManager.jsx';
+import CountryPricingManager from './admin/CountryPricingManager.jsx';
 
 import { storeConfig } from '../config.js';
 import { isVendorProfile } from '../utils/buyerAccess.js';
@@ -554,6 +556,7 @@ export function Admin({
     {
       title: 'Settings',
       items: [
+        { key: 'country-pricing', label: 'Country Pricing', icon: Globe, badge: null },
         { key: 'blogs', label: 'Blog Manager', icon: FileText, badge: null },
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
@@ -875,6 +878,10 @@ export function Admin({
               products={products}
               loading={status === 'loading'}
             />
+          )}
+
+          {activeTab === 'country-pricing' && (
+            <CountryPricingManager adminData={adminData} />
           )}
 
           {activeTab === 'api-manager' && (

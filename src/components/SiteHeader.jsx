@@ -3,6 +3,7 @@ import { ChevronDown, Search, User } from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
+import { CountrySelector } from './CountrySelector.jsx';
 import { storeConfig, getCategorySlug, adminEmails } from '../config.js';
 import { useStorefront } from '../store/useStorefront.js';
 
@@ -408,6 +409,11 @@ export function SiteHeader(props) {
       </button>
 
       <div className="header-actions-premium">
+        {/* Country & Currency Selector */}
+        <div className="desktop-only-action">
+          <CountrySelector variant="desktop" />
+        </div>
+
         <button 
           className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
           type="button" 

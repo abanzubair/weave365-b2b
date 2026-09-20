@@ -1,0 +1,305 @@
+/**
+ * @file countrySelector.css
+ * @description Styles for Desktop & Mobile Country & Currency Selector
+ */
+
+/* Desktop Trigger Pill */
+.country-selector-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.country-selector-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--premium-navy, #0f172a);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.country-selector-trigger:hover {
+  background: #ffffff;
+  border-color: var(--gold, #b78646);
+  color: var(--gold-dark, #805d31);
+  box-shadow: 0 2px 8px rgba(183, 134, 70, 0.12);
+}
+
+.country-selector-trigger.is-open {
+  border-color: var(--gold, #b78646);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(183, 134, 70, 0.15);
+}
+
+.country-flag-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.country-trigger-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.country-trigger-code {
+  color: var(--gold-dark, #805d31);
+  font-weight: 700;
+}
+
+.country-trigger-chevron {
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.country-trigger-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* Desktop Dropdown Menu */
+.country-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+  animation: countryDropdownFade 0.2s ease forwards;
+}
+
+@keyframes countryDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.country-dropdown-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.country-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.country-search-icon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.country-search-input {
+  width: 100%;
+  padding: 7px 10px 7px 32px;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  font-size: 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.country-search-input:focus {
+  border-color: var(--gold, #b78646);
+  box-shadow: 0 0 0 2px rgba(183, 134, 70, 0.15);
+}
+
+.country-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.country-dropdown-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+}
+
+.country-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.country-dropdown-item:hover {
+  background: #f8fafc;
+}
+
+.country-dropdown-item.is-selected {
+  background: rgba(183, 134, 70, 0.08);
+}
+
+.country-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.country-item-flag {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.country-item-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.country-item-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.country-item-currency {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.country-item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.country-item-check {
+  color: var(--gold, #b78646);
+  display: flex;
+}
+
+.country-dropdown-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* =========================================================
+   Mobile Variant (Inside Mobile Drawer)
+   ========================================================= */
+.mobile-country-selector {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.mobile-country-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: var(--font-hero-body, 'Manrope', sans-serif);
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.mobile-country-trigger-btn:hover,
+.mobile-country-trigger-btn.is-open {
+  background: #ffffff;
+  border-color: var(--gold, #b78646);
+}
+
+.mobile-country-trigger-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-country-trigger-icon {
+  color: var(--gold-dark, #805d31);
+  display: flex;
+}
+
+.mobile-country-trigger-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-country-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.mobile-country-current {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--premium-navy, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-country-current-flag {
+  font-size: 1.1rem;
+}
+
+.mobile-country-body {
+  margin-top: 8px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  animation: countryDropdownFade 0.2s ease forwards;
+}
+
+.mobile-country-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 8px;
+  padding: 0;
+  list-style: none;
+}

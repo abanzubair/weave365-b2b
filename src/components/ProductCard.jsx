@@ -28,8 +28,10 @@ import {
   fallbackProductImage,
   buildSingleProductWhatsappUrl,
   customerPrice,
-  formatMoney
+  formatMoney,
+  getLocalizedPrice,
 } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
@@ -59,6 +61,7 @@ export const ProductCard = memo(function ProductCard({
   openAuth,
 }) {
   const selectedVariant = variant || product.variants[0];
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const rawImage = product.images[0] || fallbackProductImage;
   const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'card'), [rawImage]);
   const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['card', 'listing']), [rawImage]);
@@ -69,6 +72,18 @@ export const ProductCard = memo(function ProductCard({
   const colorCount = product.totalColors || product.variants?.length || 1;
   const setPrice = wholesalePrice * colorCount;
   const isOutOfStock = Boolean(product.isOutOfStock || product.stockStatusOverride === 'out-of-stock');
+
+  const localizedReseller = useMemo(() => {
+    return getLocalizedPrice(resellerPrice, currentCountry, exchangeRates);
+  }, [resellerPrice, currentCountry, exchangeRates]);
+
+  const localizedWholesale = useMemo(() => {
+    return getLocalizedPrice(wholesalePrice, currentCountry, exchangeRates);
+  }, [wholesalePrice, currentCountry, exchangeRates]);
+
+  const localizedSetPrice = useMemo(() => {
+    return getLocalizedPrice(setPrice, currentCountry, exchangeRates);
+  }, [setPrice, currentCountry, exchangeRates]);
 
   const descriptiveAlt = useMemo(() => {
     const parts = [];
@@ -84,7 +99,7 @@ export const ProductCard = memo(function ProductCard({
 
   const [enquiryState, setEnquiryState] = useState('idle');
   const [popupOpen, setPopupOpen] = useState(false);
-  const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess);
+  const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess, currentCountry, exchangeRates);
   const canResellerShare = priceAccess?.canViewPrices !== false;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
@@ -230,7 +245,7 @@ export const ProductCard = memo(function ProductCard({
       const shippingLine = isWholesaler ? 'Included: GST (Free Shipping in India)' : 'Included: Free Shipping in India (Including GST)';
       let priceText = 'On request';
       if (resellerPrice > 0) {
-        priceText = `${formatMoney(resellerPrice)} /pc`;
+        priceText = `${localizedReseller.formatted} /pc`;
       }
 
       const detailsLines = [
@@ -442,7 +457,7 @@ export const ProductCard = memo(function ProductCard({
         <div className={`card-info-grid ${(!canViewPrice || !showRightInfo) ? 'price-locked' : ''}`}>
           <div className="info-left">
             {canViewPrice && (
-              <strong>{formatMoney(resellerPrice)} <span className="price-unit">/pc</span></strong>
+              <strong>{localizedReseller.formatted} <span className="price-unit">/pc</span></strong>
             )}
           </div>
 

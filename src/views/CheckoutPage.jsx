@@ -21,13 +21,15 @@ import {
 } from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import {
-  calculateHybridCartTotals,
+  calculateLocalizedHybridCartTotals,
   customerPrice,
   formatMoney,
+  getLocalizedPrice,
   buildWhatsappUrl,
   calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
@@ -222,18 +224,19 @@ export function CheckoutPage({
 
   // Financial calculations
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const { subtotal, discount, baseTotal, productPricing } = useMemo(() => {
     if (!canViewPrices || !items.length) {
       return { subtotal: 0, discount: 0, baseTotal: 0, productPricing: {} };
     }
-    const totals = calculateHybridCartTotals(items, priceAccess);
+    const totals = calculateLocalizedHybridCartTotals(items, priceAccess, currentCountry, exchangeRates);
     return {
       subtotal: totals.subtotal,
       discount: totals.discount,
       baseTotal: totals.total,
       productPricing: totals.productPricing || {},
     };
-  }, [canViewPrices, items, priceAccess]);
+  }, [canViewPrices, items, priceAccess, currentCountry, exchangeRates]);
 
   const hasSets = Object.values(productPricing || {}).some((p) => p.completeSets > 0);
 
@@ -270,7 +273,7 @@ export function CheckoutPage({
 
   const grossItemsTotal = useMemo(() => {
     return items.reduce((sum, item) => {
-      const singlePrice = Number(
+      const baseSinglePrice = Number(
         item.variant?.prices?.b2r ||
         item.variant?.prices?.single ||
         item.variant?.prices?.reseller ||
@@ -280,9 +283,10 @@ export function CheckoutPage({
         item.product?.price ||
         0
       );
-      return sum + (singlePrice * (Number(item.quantity) || 1));
+      const locSingle = getLocalizedPrice(baseSinglePrice, currentCountry, exchangeRates);
+      return sum + (locSingle.finalPrice * (Number(item.quantity) || 1));
     }, 0);
-  }, [items]);
+  }, [items, currentCountry, exchangeRates]);
 
   const bulkDiscount = useMemo(() => {
     return Math.max(0, grossItemsTotal - (baseTotal || 0));
@@ -370,6 +374,10 @@ export function CheckoutPage({
           payment_method: method,
           shipping_mode: shippingMode,
           shipping_speed: shippingSpeed,
+          currency: currentCountry?.currency || 'INR',
+          country_code: currentCountry?.code || 'IN',
+          exchange_rate: exchangeRates?.[currentCountry?.currency] || 1,
+          markup_percent: currentCountry?.markupPercent || 0,
           delivery_details: deliveryDetails,
           dropship_details: {
             sender_name: senderName,
@@ -380,14 +388,19 @@ export function CheckoutPage({
             sender_pincode: senderPincode,
             packing_preference: packingPreference,
           },
-          items: items.map(item => ({
-            product_id: item.productGroupKey,
-            product_title: item.product?.title || '',
-            variant_code: item.variant?.code || '',
-            color: item.selectedColorName || 'Standard',
-            quantity: item.quantity,
-            price: customerPrice(item.variant?.prices, priceAccess),
-          })),
+          items: items.map(item => {
+            const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
+            const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
+            return {
+              product_id: item.productGroupKey,
+              product_title: item.product?.title || '',
+              variant_code: item.variant?.code || '',
+              color: item.selectedColorName || 'Standard',
+              quantity: item.quantity,
+              price: locPrice.finalPrice,
+              base_inr_price: rawPrice,
+            };
+          }),
           total_amount: total,
           notes: finalNotes,
         }),
@@ -472,9 +485,10 @@ export function CheckoutPage({
 
     const targetPhone = String(storeConfig.whatsapp || '9919101369').replace(/\D/g, '');
     const waPhone = targetPhone.startsWith('91') ? targetPhone : `91${targetPhone}`;
+    const formattedTotal = formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 });
     const waText = method === 'whatsapp'
-      ? `Hello Weave365, I would like to place an order for ${items.length} items (Total: ₹${total}). Delivery to: ${deliveryDetails.full_name}, ${deliveryDetails.city} - ${deliveryDetails.pincode}. Please confirm availability and dispatch.`
-      : `Hello Weave365, I have completed the UPI payment of ₹${total} to 9919101369@kotak for my order to ${deliveryDetails.city}.${customUtr ? ` UPI Ref/UTR: ${customUtr}.` : ''} Please find my payment screenshot attached for verification.`;
+      ? `Hello Weave365, I would like to place an order for ${items.length} items (Total: ${formattedTotal}). Delivery to: ${deliveryDetails.full_name}, ${deliveryDetails.city} - ${deliveryDetails.pincode}. Please confirm availability and dispatch.`
+      : `Hello Weave365, I have completed the payment of ${formattedTotal} for my order to ${deliveryDetails.city}.${customUtr ? ` Ref/UTR: ${customUtr}.` : ''} Please find my payment details attached for verification.`;
 
     const currentWhatsappUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`;
 
@@ -787,7 +801,7 @@ export function CheckoutPage({
                 onScroll={checkScrollState}
               >
                 {items.map((item, idx) => {
-                  const itemSinglePrice = Number(
+                  const baseSingle = Number(
                     item.variant?.prices?.b2r ||
                     item.variant?.prices?.single ||
                     item.variant?.prices?.reseller ||
@@ -797,6 +811,7 @@ export function CheckoutPage({
                     item.product?.price ||
                     0
                   );
+                  const itemSinglePrice = getLocalizedPrice(baseSingle, currentCountry, exchangeRates).finalPrice;
                   const itemImg = item.selectedColorImage || item.variant?.image || item.product?.images?.[0] || fallbackProductImage;
                   const optimizedThumb = getOptimizedImageUrl(itemImg, 'thumbnail');
 
@@ -823,7 +838,7 @@ export function CheckoutPage({
                         </div>
                       </div>
                       <div className="checkout-item-price">
-                        {canViewPrices ? formatMoney(itemSinglePrice * item.quantity) : priceNoticeForAccess(priceAccess)}
+                        {canViewPrices ? formatMoney(itemSinglePrice * item.quantity, { currency: currentCountry?.currency }) : priceNoticeForAccess(priceAccess)}
                       </div>
                     </div>
                   );
@@ -849,30 +864,30 @@ export function CheckoutPage({
                 <>
                   <div className="checkout-summary-row">
                     <span>Items Total</span>
-                    <span>{formatMoney(grossItemsTotal)}</span>
+                    <span>{formatMoney(grossItemsTotal, { currency: currentCountry?.currency })}</span>
                   </div>
 
                   <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
                     <span>Bulk Buyer Discount</span>
-                    <span>-{formatMoney(bulkDiscount)}</span>
+                    <span>-{formatMoney(bulkDiscount, { currency: currentCountry?.currency })}</span>
                   </div>
                 </>
               )}
 
               <div className="checkout-summary-row">
                 <span>Taxable Amount</span>
-                <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(baseAmount, 2)}</span>
+                <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(baseAmount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
               </div>
 
               <div className="checkout-summary-row">
-                <span>GST 5%</span>
-                <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(gstAmount, 2)}</span>
+                <span>{currentCountry?.code === 'IN' ? 'GST 5%' : 'Estimated Tax / Duties (Included)'}</span>
+                <span style={{ color: '#0f172a', fontWeight: '500' }}>{formatMoney(gstAmount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
               </div>
 
               {discount > 0 && (
                 <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
                   <span>Combo Discount</span>
-                  <span>-{formatMoney(discount)}</span>
+                  <span>-{formatMoney(discount, { currency: currentCountry?.currency })}</span>
                 </div>
               )}
 
@@ -880,14 +895,14 @@ export function CheckoutPage({
                 <span>Shipping ({shippingSpeed === 'expedited' ? 'Express' : 'Standard'})</span>
                 <span style={{ color: '#0f172a', fontWeight: '500' }}>
                   {shippingSpeed === 'expedited'
-                    ? formatMoney(expeditedShippingFee, 2)
-                    : formatMoney(0, 2)}
+                    ? formatMoney(expeditedShippingFee, { currency: currentCountry?.currency, fractionDigits: 2 })
+                    : formatMoney(0, { currency: currentCountry?.currency, fractionDigits: 2 })}
                 </span>
               </div>
 
               <div className="checkout-summary-row total-row">
-                <span>Total</span>
-                <span>{formatMoney(total, 2)}</span>
+                <span>Total ({currentCountry?.currency})</span>
+                <span>{formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
               </div>
             </div>
           </div>

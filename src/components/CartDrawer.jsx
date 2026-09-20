@@ -8,11 +8,13 @@ import { useEffect, useMemo, useRef } from 'react';
 import { X, ArrowRight, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from './icons.jsx';
 import { getProductCategorySlug } from '../config.js';
 import {
-  calculateHybridCartTotals,
+  calculateLocalizedHybridCartTotals,
   customerPrice,
   fallbackProductImage,
   formatMoney,
+  getLocalizedPrice,
 } from '../storefrontShared.jsx';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
 
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
@@ -68,17 +70,18 @@ export function CartDrawer(props) {
   const drawerBodyRef = useRef(null);
 
   const canViewPrices = priceAccess?.canViewPrices !== false;
+  const { currentCountry, exchangeRates } = useCountryCurrency();
 
   const { subtotal, discount, total, productPricing } = useMemo(() => {
     if (!canViewPrices) return { subtotal: null, discount: 0, total: null, productPricing: {} };
-    const totals = calculateHybridCartTotals(items, priceAccess);
+    const totals = calculateLocalizedHybridCartTotals(items, priceAccess, currentCountry, exchangeRates);
     return {
       subtotal: totals.subtotal,
       discount: totals.discount,
       total: totals.total,
       productPricing: totals.productPricing || {},
     };
-  }, [canViewPrices, items, priceAccess]);
+  }, [canViewPrices, items, priceAccess, currentCountry, exchangeRates]);
 
   const totalItemsCount = useMemo(() => {
     return items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
@@ -269,7 +272,7 @@ export function CartDrawer(props) {
                         const unitPrice =
                           hybridInfo && group.totalQuantity >= hybridInfo.setSize
                             ? hybridInfo.wholesalePrice
-                            : hybridInfo?.resellerPrice || customerPrice(item.variant.prices, priceAccess);
+                            : hybridInfo?.resellerPrice || getLocalizedPrice(customerPrice(item.variant.prices, priceAccess), currentCountry, exchangeRates).finalPrice;
 
                         return (
                           <div className="cart-variant-row" key={item.variantCode}>
@@ -290,7 +293,7 @@ export function CartDrawer(props) {
                                 </span>
                                 <span className="variant-price">
                                   {canViewPrices
-                                    ? `${formatMoney(unitPrice)} / pc`
+                                    ? `${formatMoney(unitPrice, { currency: currentCountry?.currency })} / pc`
                                     : priceNoticeForAccess(priceAccess)}
                                 </span>
                               </div>
@@ -373,11 +376,11 @@ export function CartDrawer(props) {
                 <>
                   <div className="totals-line subtotal-line">
                     <span>Subtotal</span>
-                    <span>{formatMoney(subtotal)}</span>
+                    <span>{formatMoney(subtotal, { currency: currentCountry?.currency })}</span>
                   </div>
                   <div className="totals-line discount-line">
                     <span>Set Wholesale Savings</span>
-                    <span>-{formatMoney(discount)}</span>
+                    <span>-{formatMoney(discount, { currency: currentCountry?.currency })}</span>
                   </div>
                 </>
               )}
@@ -385,10 +388,19 @@ export function CartDrawer(props) {
               <div className="totals-line main-total-line">
                 <div>
                   <span className="total-label">Estimated Total</span>
-                  <span className="total-tax-note">GST Included • Free Shipping Across India</span>
+                  <span className="total-tax-note">
+                    {currentCountry?.code === 'IN'
+                      ? 'GST Included • Free Shipping Across India'
+                      : `Converted to ${currentCountry?.currency} • Standard Shipping Included`}
+                  </span>
                 </div>
                 <strong className="total-value">
-                  {total != null ? formatMoney(total, 2) : priceNoticeForAccess(priceAccess)}
+                  {total != null
+                    ? formatMoney(total, {
+                        currency: currentCountry?.currency,
+                        fractionDigits: currentCountry?.currency === 'INR' ? 0 : 2,
+                      })
+                    : priceNoticeForAccess(priceAccess)}
                 </strong>
               </div>
             </div>

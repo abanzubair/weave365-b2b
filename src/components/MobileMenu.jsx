@@ -29,6 +29,7 @@ import { assetSrc } from '../utils/assetSrc.js';
 import { DemoToggle } from '../utils/demoHelper.js';
 import { AppLink } from './AppLink.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
+import { CountrySelector } from './CountrySelector.jsx';
 
 const pluralizeCategory = (cat) => {
   if (!cat) return '';
@@ -433,6 +434,8 @@ export function MobileMenu(props) {
 
         <div className="mobile-menu-bottom-section">
           <div className="mobile-menu-divider" />
+          {/* Country & Currency Selector */}
+          <CountrySelector variant="mobile" onClose={onClose} />
           <DemoToggle user={user} isMobile={true} />
           
           {/* My Account Dropdown */}

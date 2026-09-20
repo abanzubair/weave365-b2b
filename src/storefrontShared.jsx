@@ -13,7 +13,12 @@ import {
   calculateHybridProductPrice,
   calculateHybridCartTotals,
   parsePositiveNumber,
-  checkProductPriceInRange
+  checkProductPriceInRange,
+  getLocalizedPrice,
+  calculateLocalizedHybridProductPrice,
+  calculateLocalizedHybridCartTotals,
+  roundCurrency,
+  formatCurrency,
 } from './utils/priceUtils.js';
 
 export {
@@ -25,7 +30,12 @@ export {
   parsePositiveNumber,
   checkProductPriceInRange,
   priceForBuyer,
-  priceNoticeForAccess
+  priceNoticeForAccess,
+  getLocalizedPrice,
+  calculateLocalizedHybridProductPrice,
+  calculateLocalizedHybridCartTotals,
+  roundCurrency,
+  formatCurrency,
 };
 
 

@@ -54,7 +54,19 @@ export function middleware(request) {
     return applySecurityHeaders(redirectRes);
   }
 
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  const detectedCountry = request.headers.get('cf-ipcountry') || 
+                          request.headers.get('x-vercel-ip-country') || 
+                          request.headers.get('x-country-code');
+  if (detectedCountry && detectedCountry !== 'XX' && detectedCountry !== 'T1') {
+    requestHeaders.set('x-detected-country', detectedCountry.toUpperCase());
+  }
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   return applySecurityHeaders(response);
 }
 

@@ -45,7 +45,10 @@ import {
   fallbackProductImage,
   formatMoney,
   formatWeight,
+  getLocalizedPrice,
+  roundCurrency,
 } from './storefrontShared.jsx';
+import { useCountryCurrency } from './store/useCountryCurrency.js';
 import { Newsletter } from './components/Newsletter.jsx';
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
 import { ProductCard } from './components/ProductCard.jsx';
@@ -613,14 +616,30 @@ export function ProductDetail({
     () => product.variants.find((item) => item.code === variantCode) || product.variants[0],
     [product.variants, variantCode],
   );
+  const { currentCountry, exchangeRates } = useCountryCurrency();
   const wholesalePrice = Number(variant?.prices?.mrp || variant?.prices?.offer || 0);
   const resellerPrice = Number(variant?.prices?.b2r || variant?.prices?.single || wholesalePrice);
-  const displayPrice = resellerPrice;
+
+  const localizedWholesale = useMemo(() => {
+    return getLocalizedPrice(wholesalePrice, currentCountry, exchangeRates);
+  }, [wholesalePrice, currentCountry, exchangeRates]);
+
+  const localizedReseller = useMemo(() => {
+    return getLocalizedPrice(resellerPrice, currentCountry, exchangeRates);
+  }, [resellerPrice, currentCountry, exchangeRates]);
+
+  const localizedSetPrice = useMemo(() => {
+    return getLocalizedPrice(wholesalePrice * totalColors, currentCountry, exchangeRates);
+  }, [wholesalePrice, totalColors, currentCountry, exchangeRates]);
+
+  const displayPrice = localizedReseller.finalPrice;
   const canViewPrice = (wholesalePrice > 0 || resellerPrice > 0) && priceAccess?.canViewPrices !== false;
-  const setPrice = wholesalePrice * totalColors;
-  const setSavingsAmount = resellerPrice > wholesalePrice && totalColors > 1
-    ? (resellerPrice - wholesalePrice) * totalColors
+  const setPrice = localizedSetPrice.finalPrice;
+
+  const setSavingsAmount = localizedReseller.finalPrice > localizedWholesale.finalPrice && totalColors > 1
+    ? roundCurrency((localizedReseller.finalPrice - localizedWholesale.finalPrice) * totalColors, currentCountry?.currency)
     : 0;
+
   const setSavingsPercent = resellerPrice > wholesalePrice
     ? Math.round(((resellerPrice - wholesalePrice) / resellerPrice) * 100)
     : 0;
@@ -1046,9 +1065,9 @@ export function ProductDetail({
       let priceText = 'On request';
       if (displayPrice != null && displayPrice > 0) {
         if (isWholesaler && totalColors > 1 && !isSoldAsPc && !isUnder999) {
-          priceText = `${formatMoney(displayPrice * totalColors)} /Set (${formatMoney(displayPrice)} /pc)`;
+          priceText = `${localizedSetPrice.formatted} /Set (${localizedWholesale.formatted} /pc)`;
         } else {
-          priceText = `${formatMoney(displayPrice)} /pc`;
+          priceText = `${localizedReseller.formatted} /pc`;
         }
       }
 
@@ -1608,7 +1627,7 @@ export function ProductDetail({
                             <span className="price-card-tag">Single Piece</span>
                           </div>
                           <div className="price-card-main">
-                            {formatMoney(resellerPrice)} <span className="unit">/pc</span>
+                            {localizedReseller.formatted} <span className="unit">/pc</span>
                           </div>
                           <div className="price-card-sub">MOQ: 1 pc</div>
                         </div>
@@ -1621,10 +1640,10 @@ export function ProductDetail({
                             )}
                           </div>
                           <div className="price-card-main">
-                            {formatMoney(setPrice)} <span className="unit">/set</span>
+                            {localizedSetPrice.formatted} <span className="unit">/set</span>
                           </div>
                           <div className="price-card-sub">
-                            {totalColors} pcs · {formatMoney(wholesalePrice)}/pc
+                            {totalColors} pcs · {localizedWholesale.formatted}/pc
                           </div>
                         </div>
                       </>
@@ -1635,7 +1654,7 @@ export function ProductDetail({
                           <span className="moq-badge-pill">MOQ: 1 {moqUnit}</span>
                         </div>
                         <div className="price-card-main">
-                          {formatMoney(resellerPrice)} <span className="unit">/pc</span>
+                          {localizedReseller.formatted} <span className="unit">/pc</span>
                         </div>
                       </div>
                     )}

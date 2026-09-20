@@ -4,35 +4,30 @@
  * Purpose: Provides standard Indian Rupee (INR) formatting, weight formatting, and hybrid B2B pricing calculations.
  */
 import { priceForBuyer } from './buyerAccess.js';
+import {
+  formatCurrency,
+  roundCurrency,
+  getLocalizedPrice,
+  calculateLocalizedHybridProductPrice,
+  calculateLocalizedHybridCartTotals,
+} from '../services/pricingService.js';
 
-const inrFormatter = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 0,
-});
-
-const inrDecimalFormatter = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+export {
+  formatCurrency,
+  roundCurrency,
+  getLocalizedPrice,
+  calculateLocalizedHybridProductPrice,
+  calculateLocalizedHybridCartTotals,
+};
 
 export function formatMoney(value, options = {}) {
   if (value == null || Number.isNaN(value)) return 'On request';
-  const decimals = typeof options === 'number' ? options : (options?.fractionDigits ?? options?.decimals);
-  if (decimals === 2) {
-    return inrDecimalFormatter.format(Number(value));
-  }
-  if (decimals !== undefined) {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    }).format(Number(value));
-  }
-  return inrFormatter.format(Number(value));
+  
+  const currency = typeof options === 'object' && options?.currency
+    ? options.currency
+    : 'INR';
+
+  return formatCurrency(value, currency, options);
 }
 
 export function formatWeight(weightInKg) {

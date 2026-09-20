@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useStorefront } from '../store/useStorefront.js';
+import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections, resolveItemVariant } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
@@ -103,6 +104,11 @@ export function AppShell({ children }) {
       window.__appNavigate = navigate;
     }
   }, [navigate]);
+
+  // Initialize global country pricing & currency conversion
+  useEffect(() => {
+    useCountryCurrency.getState().initCountryCurrency();
+  }, []);
 
   // Traffic tracking
   useEffect(() => {
