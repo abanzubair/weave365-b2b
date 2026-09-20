@@ -55,7 +55,7 @@ export function useAppNavigate() {
         const q = params.toString();
         href = `/signup${q ? `?${q}` : ''}`;
       }
-    } else if (nextRoute === 'reseller-banarasi-sarees' || nextRoute === 'resell-sarees-online') {
+    } else if (nextRoute === 'reseller-banarasi-sarees' || nextRoute === 'resell-sarees-online' || nextRoute === 'resell') {
       href = '/resell-sarees-online';
     } else if (nextRoute === 'sellers' || nextRoute === 'sell-banarasi-sarees' || nextRoute === 'seller' || nextRoute === 'weaver-onboarding') {
       href = '/sell-banarasi-sarees';

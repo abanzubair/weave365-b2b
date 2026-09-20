@@ -14,6 +14,7 @@ export async function generateSitemapXml(request) {
     { url: `${siteUrl}/new-arrivals`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/custom-woven`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/resell-sarees-online`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${siteUrl}/resell`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/white-label`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/dropshipping`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/affiliate-program`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },

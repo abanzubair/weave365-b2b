@@ -14,6 +14,7 @@ export const ROUTE_FIRST_IMAGES = {
   '/custom-woven': '/banarasi_loom_detail.webp',
   '/dropshipping': '/reseller_premium_catalog_display.webp',
   '/resell-sarees-online': '/reseller_premium_catalog_display.webp',
+  '/resell': '/reseller_premium_catalog_display.webp',
   '/sell-banarasi-sarees': 'https://assets.weave365.com/assets/banner/sellersHero.webp',
   '/sellers': 'https://assets.weave365.com/assets/banner/sellersHero.webp',
   '/reviews': '/boutique-hero.webp',

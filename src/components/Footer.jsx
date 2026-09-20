@@ -72,34 +72,46 @@ export function Footer({ navigate }) {
           <div className="footer-contact-details">
             <div className="footer-contact-line">
               <Building2 size={14} className="contact-icon" />
-              <strong className="contact-label">Company Name:</strong>
-              <span className="contact-value">{storeConfig.companyName || 'Nexrize Ventures'}</span>
+              <div className="contact-text">
+                <strong className="contact-label">Company Name:</strong>{' '}
+                <span className="contact-value">{storeConfig.companyName || 'Nexrize Ventures'}</span>
+              </div>
             </div>
             <div className="footer-contact-line">
               <FileText size={14} className="contact-icon" />
-              <strong className="contact-label">GSTIN:</strong>
-              <span className="contact-value">{storeConfig.gstin || '09ADDPA8944K1ZA'}</span>
+              <div className="contact-text">
+                <strong className="contact-label">GSTIN:</strong>{' '}
+                <span className="contact-value">{storeConfig.gstin || '09ADDPA8944K1ZA'}</span>
+              </div>
             </div>
             <div className="footer-contact-line">
               <Tag size={14} className="contact-icon" />
-              <strong className="contact-label">Brand Name:</strong>
-              <span className="contact-value">{storeConfig.brandName || storeConfig.name || 'Weave 365'}</span>
+              <div className="contact-text">
+                <strong className="contact-label">Brand Name:</strong>{' '}
+                <span className="contact-value">{storeConfig.brandName || storeConfig.name || 'Weave 365'}</span>
+              </div>
             </div>
             <div className="footer-contact-line">
               <MapPin size={14} className="contact-icon" />
-              <strong className="contact-label">Registered Office:</strong>
-              <span className="contact-value">{storeConfig.registeredOffice || 'Varanasi, Uttar Pradesh, India'}</span>
+              <div className="contact-text">
+                <strong className="contact-label">Registered Office:</strong>{' '}
+                <span className="contact-value">{storeConfig.registeredOffice || 'Varanasi, Uttar Pradesh, India'}</span>
+              </div>
             </div>
             <div className="footer-contact-line">
               <Phone size={14} className="contact-icon" />
-              <strong className="contact-label">Support:</strong>
-              <a href="tel:+919919101369" className="contact-value contact-link">+91 9919101369</a>
+              <div className="contact-text">
+                <strong className="contact-label">Support:</strong>{' '}
+                <a href="tel:+919919101369" className="contact-value contact-link">+91 9919101369</a>
+              </div>
             </div>
             <div className="footer-contact-line">
               <Mail size={14} className="contact-icon" />
-              <strong className="contact-label">Email:</strong>
-              <a href={`mailto:${storeConfig.email || 'support@weave365.com'}`} className="contact-value contact-link">{storeConfig.email || 'support@weave365.com'}</a>,{' '}
-              <a href={`mailto:${storeConfig.salesEmail || 'sales@weave365.com'}`} className="contact-value contact-link">{storeConfig.salesEmail || 'sales@weave365.com'}</a>
+              <div className="contact-text">
+                <strong className="contact-label">Email:</strong>{' '}
+                <a href={`mailto:${storeConfig.email || 'support@weave365.com'}`} className="contact-value contact-link">{storeConfig.email || 'support@weave365.com'}</a>,{' '}
+                <a href={`mailto:${storeConfig.salesEmail || 'sales@weave365.com'}`} className="contact-value contact-link">{storeConfig.salesEmail || 'sales@weave365.com'}</a>
+              </div>
             </div>
           </div>
         </div>
@@ -146,45 +158,8 @@ export function Footer({ navigate }) {
             </ul>
           </div>
 
-          {/* Column 4: Social */}
-          <div className="footer-nav-col">
-            <h4 className="footer-col-heading">Social</h4>
-            <ul className="footer-link-list footer-social-list">
-              <li>
-                <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link">
-                  <Instagram size={15} className="social-icon" />
-                  <span>Instagram</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
-                  <Facebook size={15} className="social-icon" />
-                  <span>Facebook</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
-                  <Youtube size={15} className="social-icon" />
-                  <span>YouTube</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://in.pinterest.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link">
-                  <PinterestIcon size={15} className="social-icon" />
-                  <span>Pinterest</span>
-                </a>
-              </li>
-              <li>
-                <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer" className="footer-social-link">
-                  <LinkedInIcon size={15} className="social-icon" />
-                  <span>LinkedIn</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 5: My Account */}
-          <div className="footer-nav-col">
+          {/* Column 4: My Account */}
+          <div className="footer-nav-col footer-account-col">
             <h4 className="footer-col-heading">My Account</h4>
             <ul className="footer-link-list">
               <li><AppLink to="account" href="/account" navigate={navigate}>Dashboard</AppLink></li>
@@ -203,6 +178,24 @@ export function Footer({ navigate }) {
         <div className="footer-bottom">
           <p className="footer-copyright">&copy; {new Date().getFullYear()} {storeConfig.companyName || 'Nexrize Ventures'} ({storeConfig.name || 'Weave 365'}). All rights reserved.</p>
           <div className="footer-bottom-right">
+            <div className="footer-social-strip">
+              <a href="https://www.instagram.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="Instagram" title="Instagram">
+                <Instagram size={17} className="social-icon" />
+              </a>
+              <a href="https://www.facebook.com/weaves365" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="Facebook" title="Facebook">
+                <Facebook size={17} className="social-icon" />
+              </a>
+              <a href="https://www.youtube.com/@weaves365" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="YouTube" title="YouTube">
+                <Youtube size={17} className="social-icon" />
+              </a>
+              <a href="https://in.pinterest.com/weaves365/" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="Pinterest" title="Pinterest">
+                <PinterestIcon size={17} className="social-icon" />
+              </a>
+              <a href="https://www.linkedin.com/company/weaves365" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="LinkedIn" title="LinkedIn">
+                <LinkedInIcon size={17} className="social-icon" />
+              </a>
+            </div>
+            <span className="footer-bottom-divider" aria-hidden="true" />
             <button type="button" onClick={scrollToTop} className="footer-back-to-top">
               Back to Top &uarr;
             </button>
