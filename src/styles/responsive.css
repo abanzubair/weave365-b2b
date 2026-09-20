@@ -719,16 +719,16 @@
     }
 
     .footer-link-list {
-      gap: 4px !important;
+      gap: 3px !important;
     }
 
     .footer-link-list a {
-      min-height: 36px !important;
-      padding: 6px 0 !important;
+      min-height: 28px !important;
+      padding: 3px 0 !important;
       font-size: 13.5px !important;
       display: inline-flex !important;
       align-items: center !important;
-      line-height: 1.4 !important;
+      line-height: 1.35 !important;
     }
 
     .footer-bottom {
@@ -1810,23 +1810,53 @@
 
 /* --- Responsive Layout for Long Description Accordions Grid --- */
 @media (max-width: 991px) {
+  .product-long-details-section {
+    margin: 44px 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
   .long-details-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 36px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .editorial-col {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .editorial-sticky-card {
     position: relative !important;
     top: 0 !important;
-    padding: 28px 24px !important;
+    padding: 24px 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    word-break: break-word !important;
   }
 
-  .product-long-details-section {
-    margin: 44px 0 !important;
+  .editorial-copy {
+    word-break: break-word !important;
+  }
+
+  .saree-length-display {
+    white-space: normal !important;
+    word-break: break-word !important;
   }
 }
 
 @media (max-width: 480px) {
+  .editorial-sticky-card {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
   .accordion-header {
     padding: 16px 4px !important;
   }

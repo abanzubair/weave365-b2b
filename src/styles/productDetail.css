@@ -4621,6 +4621,8 @@
   padding: 44px 36px;
   box-shadow: 0 20px 40px rgba(36, 25, 18, 0.04);
   overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .editorial-sticky-card::before {

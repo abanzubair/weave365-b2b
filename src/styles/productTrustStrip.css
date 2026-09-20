@@ -1,74 +1,152 @@
-/*
- * ProductTrustStrip Scoped Stylesheet
- * Purpose: Styles the premium B2B verification trust strip, 
- * including flex grid parameters, gold assurance icons, typography, and responsive stacks.
- */
+/* ==================================================
+   PRODUCT TRUST STRIP
+   Aligned with Weave 365 design system & component ratios
+   ================================================== */
+
 .product-trust-strip {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0;
-  margin: 48px 0;
-  padding: 28px 24px;
-  background: rgba(255, 253, 249, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(183, 134, 70, 0.15);
-  border-radius: 14px;
-  box-shadow: 0 12px 36px rgba(36, 25, 18, 0.03);
+  width: 100%;
+  margin: 0 0 54px;
+  padding: 22px 24px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(36, 25, 18, 0.03);
+  box-sizing: border-box;
 }
 
-.product-trust-strip div {
+.trust-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.trust-item {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   padding: 0 20px;
-  border-right: 1px solid rgba(183, 134, 70, 0.15);
+  border-right: 1px solid var(--line);
+  box-sizing: border-box;
 }
 
-.product-trust-strip div:last-child {
+.trust-item:first-child {
+  padding-left: 6px;
+}
+
+.trust-item:last-child {
   border-right: 0;
+  padding-right: 6px;
 }
 
-.product-trust-strip svg {
-  width: 36px;
-  height: 36px;
+.trust-item-icon {
   color: var(--gold-dark);
-  flex: 0 0 auto;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
 }
 
-.product-trust-strip strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--brown-900);
-  font-family: var(--font-ui);
+.trust-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.product-trust-strip span {
-  color: var(--muted);
+.trust-item-title {
+  font-family: var(--font-ui, 'Manrope', sans-serif);
   font-size: 14px;
-  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ink, #1a1a1a);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-/* Mobile & Tablet Responsiveness */
-@media screen and (max-width: 991px) {
+.trust-item-subtitle {
+  font-family: var(--font-ui, 'Manrope', sans-serif);
+  font-size: 13px;
+  color: var(--muted, #666666);
+  line-height: 1.35;
+}
+
+/* Tablet: 2x2 grid */
+@media screen and (max-width: 1024px) {
   .product-trust-strip {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    padding: 18px 16px !important;
-    margin: 24px 0 !important;
+    margin: 0 0 40px;
+    padding: 20px;
   }
 
-  .product-trust-strip div {
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--line);
-    padding: 0 0 16px !important;
+  .trust-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 24px;
   }
 
-  .product-trust-strip div:last-child {
-    border-bottom: 0;
-    padding-bottom: 0 !important;
+  .trust-item {
+    border-right: 0;
+    padding: 0;
   }
+
+  .trust-item:first-child,
+  .trust-item:last-child {
+    padding: 0;
+  }
+}
+
+/* Mobile & Small Viewports (<= 640px, including 500px) */
+@media screen and (max-width: 640px) {
+  .product-trust-strip {
+    margin: 0 0 32px;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .trust-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 12px;
+  }
+
+  .trust-item {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0;
+  }
+
+  .trust-item-icon {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+  }
+
+  .trust-item-title {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .trust-item-subtitle {
+    font-size: 11.5px;
+    line-height: 1.3;
+  }
+}
+
+/* Dark Mode */
+.dark-mode .product-trust-strip {
+  background: #171513;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .trust-item {
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .trust-item-icon {
+  color: var(--gold-light, #bf9258);
+}
+
+.dark-mode .trust-item-title {
+  color: #f5f0eb;
+}
+
+.dark-mode .trust-item-subtitle {
+  color: #9c9288;
 }

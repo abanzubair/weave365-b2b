@@ -1911,7 +1911,7 @@ export function ProductDetail({
                 <p className="editorial-copy">
                   {product.description || `Enhance your boutique collections with our curated Banarasi products. Direct loom-to-store transparency ensures fair prices for artisans and pristine material quality for global buyers.`}
                   {String(product.category || '').toLowerCase() === 'saree' && (
-                    <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--brown-900)', whiteSpace: 'nowrap' }}>
+                    <span className="saree-length-display" style={{ display: 'block', marginTop: '12px', fontWeight: '600', color: 'var(--brown-900)' }}>
                       Saree Length: 6.3m (including 85cm Blouse piece)
                     </span>
                   )}

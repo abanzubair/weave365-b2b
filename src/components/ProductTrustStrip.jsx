@@ -1,30 +1,49 @@
 /**
  * ProductTrustStrip Component
- * Purpose: Renders standard high-fidelity trust symbols and assurances (shipping, wholesale rates, quality check).
- * Displays beneath details/catalogues to maximize B2B buyer conversion and reliability signals.
+ * Purpose: Minimal, distilled B2B trust signals for Varanasi handlooms.
+ * Sizing, typography, and ratios aligned with the site design system.
  */
+import React from 'react';
 import '../styles/productTrustStrip.css';
-import { Truck, Tag, ShieldCheck, Headphones } from './icons.jsx';
+import { Globe, IndianRupee, ShieldCheck, Headphones } from './icons.jsx';
 
-const productTrustItems = [
-  { icon: Truck, title: 'Pan India & Worldwide Delivery', copy: 'Secure shipping across India & overseas' },
-  { icon: Tag, title: 'Best Wholesale Prices', copy: 'Get the best prices on bulk orders' },
-  { icon: ShieldCheck, title: 'Quality Guaranteed', copy: 'Every piece is hand-inspected for perfection' },
-  { icon: Headphones, title: 'Dedicated Support', copy: "We're here to help you at every step" },
+const trustItems = [
+  {
+    icon: Globe,
+    title: 'Worldwide Delivery',
+    subtitle: 'Direct dispatch from Varanasi',
+  },
+  {
+    icon: IndianRupee,
+    title: 'Weaver Wholesale Rates',
+    subtitle: 'Loom-direct, zero middlemen',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Hand-Inspected Quality',
+    subtitle: '5-point artisan verification',
+  },
+  {
+    icon: Headphones,
+    title: 'Dedicated B2B Desk',
+    subtitle: 'Live WhatsApp assistance',
+  },
 ];
 
 export function ProductTrustStrip() {
   return (
-    <section className="product-trust-strip">
-      {productTrustItems.map(({ icon: Icon, title, copy }) => (
-        <div key={title}>
-          <Icon />
-          <span>
-            <strong>{title}</strong>
-            {copy}
-          </span>
-        </div>
-      ))}
+    <section className="product-trust-strip" aria-label="Purchase Assurances">
+      <div className="trust-strip-grid">
+        {trustItems.map(({ icon: Icon, title, subtitle }) => (
+          <div className="trust-item" key={title}>
+            <Icon className="trust-item-icon" size={24} />
+            <div className="trust-item-text">
+              <span className="trust-item-title">{title}</span>
+              <span className="trust-item-subtitle">{subtitle}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

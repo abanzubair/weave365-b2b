@@ -459,6 +459,16 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className="card-actions-new has-reseller-share">
+          <button type="button"
+            className="add-to-bag-btn buy-trigger-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSellPanel(false);
+              setShowBuyPanel(true);
+            }}
+          >
+            BUY NOW
+          </button>
           <button
             type="button"
             onClick={(e) => {
@@ -469,16 +479,6 @@ export const ProductCard = memo(function ProductCard({
             className="buy-card-btn sell-card-btn"
           >
             SELL THIS
-          </button>
-          <button type="button"
-            className="add-to-bag-btn buy-trigger-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowSellPanel(false);
-              setShowBuyPanel(true);
-            }}
-          >
-            BUY NOW
           </button>
         </div>
 
