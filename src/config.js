@@ -52,6 +52,7 @@ export const storeConfig = {
   registeredOffice: 'Varanasi, Uttar Pradesh, India',
   subtitle: process.env.NEXT_PUBLIC_STORE_SUBTITLE || 'WHOLESALE',
   email: process.env.NEXT_PUBLIC_STORE_EMAIL || 'support@weave365.com',
+  salesEmail: process.env.NEXT_PUBLIC_STORE_SALES_EMAIL || 'sales@weave365.com',
   phone: process.env.NEXT_PUBLIC_STORE_PHONE || '9919101369',
   whatsapp: process.env.NEXT_PUBLIC_STORE_WHATSAPP || '9919101369',
   whatsappCommunity: process.env.NEXT_PUBLIC_STORE_WHATSAPP_COMMUNITY || 'https://chat.whatsapp.com/J6DAhAYZDrC5JPguNLfrga',
