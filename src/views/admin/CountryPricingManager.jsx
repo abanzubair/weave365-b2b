@@ -402,7 +402,7 @@ export default function CountryPricingManager({ adminData }) {
             </span>
             <span className="cpa-meta-sep">·</span>
             <span className="cpa-meta-item">
-              <span>Base:</span> <strong className="cpa-meta-strong">1 INR (₹)</strong>
+              <span>Base Currency:</span> <strong className="cpa-meta-strong">INR (₹)</strong>
             </span>
             <span className="cpa-meta-sep">·</span>
             <span className="cpa-meta-item">
@@ -417,11 +417,12 @@ export default function CountryPricingManager({ adminData }) {
           <div className="cpa-rates-grid">
             {['USD', 'EUR', 'GBP', 'AED', 'SAR', 'QAR'].map((curr) => {
               const rate = exchangeRates?.[curr];
+              const reversedRate = typeof rate === 'number' && rate > 0 ? 1 / rate : null;
               return (
                 <div key={curr} className="cpa-rate-chip">
-                  <span className="cpa-rate-chip-pair">INR → {curr}</span>
+                  <span className="cpa-rate-chip-pair">{curr} → INR</span>
                   <span className="cpa-rate-chip-val">
-                    {typeof rate === 'number' ? rate.toFixed(4) : '—'}
+                    {typeof reversedRate === 'number' ? `₹${reversedRate.toFixed(2)}` : '—'}
                   </span>
                 </div>
               );
@@ -484,8 +485,18 @@ export default function CountryPricingManager({ adminData }) {
             </div>
 
             <div className="cpa-sim-row">
-              <span>Exchange Rate (1 INR)</span>
-              <span className="cpa-sim-val">{previewCalculation.exchangeRate} {previewCalculation.currency}</span>
+              <span>
+                Exchange Rate {previewCalculation.currency === 'INR' ? '(1 INR)' : `(1 ${previewCalculation.currency})`}
+              </span>
+              <span className="cpa-sim-val">
+                {previewCalculation.currency === 'INR' 
+                  ? '₹1.00' 
+                  : (typeof previewCalculation.exchangeRate === 'number' && previewCalculation.exchangeRate > 0
+                      ? `₹${(1 / previewCalculation.exchangeRate).toFixed(2)}`
+                      : '—'
+                    )
+                }
+              </span>
             </div>
 
             <div className="cpa-sim-total">
@@ -584,11 +595,18 @@ export default function CountryPricingManager({ adminData }) {
                     {/* Exchange Rate */}
                     <td>
                       <div className="cpa-fx-rate-cell">
-                        <span className="cpa-fx-rate-base">1 INR = </span>
-                        <span className="cpa-fx-rate-val">
-                          {typeof currentRate === 'number' ? currentRate.toFixed(4) : (currentRate || '—')}
-                        </span>
-                        <span className="cpa-fx-rate-base"> {country.currency}</span>
+                        {country.currency === 'INR' ? (
+                          <span className="cpa-fx-rate-val">Base (₹1.00)</span>
+                        ) : (
+                          <>
+                            <span className="cpa-fx-rate-base">1 {country.currency} = </span>
+                            <span className="cpa-fx-rate-val">
+                              {typeof currentRate === 'number' && currentRate > 0 
+                                ? `₹${(1 / currentRate).toFixed(2)}` 
+                                : '—'}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </td>
 
