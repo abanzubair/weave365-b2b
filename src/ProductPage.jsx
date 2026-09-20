@@ -1677,7 +1677,7 @@ export function ProductDetail({
                 </div>
                 <div className="delivery-time-info">
                   <span className="delivery-time-label">Delivery Time:</span>
-                  <span className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</span>
+                  <span className="delivery-time-value">Processing 2–3 Business Days · Transit 4–5 Business Days</span>
                 </div>
               </div>
 
@@ -1869,7 +1869,7 @@ export function ProductDetail({
 
                 <div className="product-quality-terms-note">
                   <ShieldCheck size={16} className="spec-icon" />
-                  <span>Quality &amp; Terms: <strong>
+                  <strong>
                     <a
                       href="https://weave365.com/disclaimer"
                       onClick={(e) => {
@@ -1884,7 +1884,24 @@ export function ProductDetail({
                     >
                       View Policy ↗
                     </a>
-                  </strong></span>
+                  </strong>
+                  <span className="note-sep">·</span>
+                  <strong>
+                    <a
+                      href="https://weave365.com/reseller-faqs"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (typeof navigate === 'function') {
+                          navigate('reseller-faqs');
+                        } else if (typeof window !== 'undefined') {
+                          window.location.href = '/reseller-faqs';
+                        }
+                      }}
+                      className="policy-link"
+                    >
+                      Reseller FAQ ↗
+                    </a>
+                  </strong>
                 </div>
               </div>
             </div>

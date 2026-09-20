@@ -1616,6 +1616,7 @@
 .product-quality-terms-note {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
   font-size: 14.5px;
@@ -1633,7 +1634,11 @@
 .product-quality-terms-note strong {
   color: #1c1917;
   font-weight: 600;
-  margin-left: 2px;
+}
+
+.product-quality-terms-note .note-sep {
+  color: #94a3b8;
+  font-weight: normal;
 }
 
 .product-quality-terms-note .policy-link {
