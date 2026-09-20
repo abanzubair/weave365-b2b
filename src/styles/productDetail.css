@@ -720,7 +720,7 @@
 }
 
 .price-card-sub {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: var(--muted);
   font-weight: 500;
   margin-top: 2px;
@@ -754,12 +754,13 @@
   box-shadow: 0 8px 24px rgba(183, 134, 70, 0.16);
 }
 
-/* Shipping / Logistics (Unboxed & Clean) */
+/* Shipping / Logistics (Distilled & Quieter, Unboxed) */
 .product-logistics-info {
-  margin: 0 0 16px 0;
+  margin: 12px 0 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
+  font-family: var(--font-ui, 'Manrope', system-ui, sans-serif);
 }
 
 .tax-shipping-line {
@@ -767,38 +768,36 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #292524;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
 }
 
-.tax-item {
-  color: var(--muted);
-  font-weight: 600;
+.logistics-sep {
+  color: #a8a29e;
+  user-select: none;
 }
 
 .delivery-time-info {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-family: inherit;
-  margin-top: 4px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
 }
 
 .delivery-time-label {
-  font-size: 14.5px;
   font-weight: 600;
-  color: var(--ink, #1a1a1a);
-  line-height: 1.4;
-  font-family: inherit;
+  color: #1c1917;
 }
 
 .delivery-time-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted, #4a4a4a);
-  line-height: 1.45;
-  font-family: inherit;
+  font-weight: 450;
+  color: #57534e;
 }
 
 .international-hint {
@@ -1185,7 +1184,7 @@
 }
 
 .active-color-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -1206,7 +1205,7 @@
   border-bottom: 1px solid currentColor;
   background: transparent;
   color: var(--gold-dark);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1477,7 +1476,7 @@
   color: #ffffff;
   border: 1px solid #171717;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1506,7 +1505,7 @@
   color: #171717;
   border: 1px solid #171717;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.01em;
   gap: 8px;
@@ -1546,10 +1545,10 @@
 }
 
 .reseller-callout-text {
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1f2937;
+  font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
   margin: 0 0 16px 0;
   max-width: 580px;
 }
@@ -1565,8 +1564,9 @@
   color: #111827;
   border: 1px solid #171717;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  gap: 8px;
   cursor: pointer;
   transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
 }
@@ -1585,7 +1585,7 @@
   color: #0f766e;
   border: 1px solid #a3e6d8;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   gap: 8px;
   cursor: pointer;
@@ -1611,6 +1611,41 @@
   bottom: calc(100% + 8px);
   left: 0;
   z-index: 1050;
+}
+
+.product-quality-terms-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14.5px;
+  color: #57534e;
+  font-family: var(--font-ui, 'Manrope', system-ui, sans-serif);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.product-quality-terms-note .spec-icon {
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}
+
+.product-quality-terms-note strong {
+  color: #1c1917;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.product-quality-terms-note .policy-link {
+  color: #1c1917;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.product-quality-terms-note .policy-link:hover {
+  color: var(--gold-dark);
 }
 
 @media (max-width: 480px) {
@@ -1988,10 +2023,10 @@
 }
 
 .product-summary-text {
-  font-family: var(--font-body);
-  font-size: clamp(14px, 1.05vw, 15px);
-  line-height: 1.65;
-  color: var(--ink);
+  font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
   margin: 0 0 10px 0;
 }
 
@@ -4811,9 +4846,7 @@
 }
 
 .accordions-section-title {
-
-  margin-top : 40px;
-
+  margin-top: 68px;
 }
 
 /* --- Related Collections & Similar Fabrics Exploration Network --- */

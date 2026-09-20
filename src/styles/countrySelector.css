@@ -14,10 +14,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: transparent;
+  border: 1.5px solid #9ca3af;
   border-radius: 9999px;
-  padding: 5px 11px;
+  padding: 5px 12px;
+  min-height: 32px;
+  box-sizing: border-box;
   font-family: var(--font-inter, 'Manrope', system-ui, sans-serif);
   font-size: 0.78rem;
   font-weight: 500;
@@ -30,14 +32,14 @@
 }
 
 .country-selector-trigger:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.03);
+  border-color: #4b5563;
   color: #0f172a;
 }
 
 .country-selector-trigger.is-open {
-  border-color: #94a3b8;
-  background: #ffffff;
+  border-color: #4b5563;
+  background: rgba(0, 0, 0, 0.03);
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.06);
   color: #0f172a;
 }

@@ -1535,6 +1535,7 @@ export function ProductDetail({
                   ['Weave', product.weave],
                   ['Purity', product.purity],
                   ['Type', product.type],
+                  ['Weight per piece', singleWeight ? formatWeight(singleWeight) : null],
                   [isSaree ? 'Saree Length' : 'Length', isSaree ? (product.sareeLength || product.length || '6.3m (including 85cm Blouse piece)') : (product.length || null)],
                 ].map(([label, value]) => value && (
                   <div key={label} className={`spec-item ${label.toLowerCase().includes('length') ? 'spec-item-wide' : ''}`}>
@@ -1643,7 +1644,7 @@ export function ProductDetail({
                             {localizedSetPrice.formatted} <span className="unit">/set</span>
                           </div>
                           <div className="price-card-sub">
-                            {totalColors} pcs · {localizedWholesale.formatted}/pc
+                            MOQ: {totalColors} pcs · {localizedWholesale.formatted}/pc
                           </div>
                         </div>
                       </>
@@ -1670,54 +1671,16 @@ export function ProductDetail({
             <div className={`product-middle-details ${showSellPanel ? 'blurred-details' : ''}`}>
               <div className="product-logistics-info">
                 <div className="tax-shipping-line">
-                  <span className="tax-item">GST Included</span>
-                  <span className="bullet-sep">•</span>
-                  <span className="tax-item">Free Shipping Across India</span>
+                  <span>GST Included</span>
+                  <span className="logistics-sep">·</span>
+                  <span>Free Shipping Across India</span>
                 </div>
                 <div className="delivery-time-info">
-                  <div className="delivery-time-label">Delivery Time</div>
-                  <div className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</div>
+                  <span className="delivery-time-label">Delivery Time:</span>
+                  <span className="delivery-time-value">Processing: 2–3 Business Days · Transit: 4–5 Business Days</span>
                 </div>
               </div>
-
-              <div className="product-specs-list">
-                {String(product.category || '').toLowerCase() !== 'under 999' && (
-                  <span className="spec-item-clean">
-                    <Layers size={18} className="spec-icon" />
-                    <span>Colors in set: <strong>{totalColors}</strong></span>
-                  </span>
-                )}
-                <span className="spec-item-clean">
-                  <ShoppingBag size={18} className="spec-icon" />
-                  <span>Weight per piece: <strong>{formatWeight(singleWeight)}</strong></span>
-                </span>
-                {product.weave && (
-                  <span className="spec-item-clean">
-                    <Sparkles size={18} className="spec-icon" />
-                    <span>Weave Technique: <strong>{product.weave}</strong></span>
-                  </span>
-                )}
-                <span className="spec-item-clean">
-                  <ShieldCheck size={18} className="spec-icon" />
-                  <span>Quality & Terms: <strong>
-                    <a
-                      href="https://weave365.com/disclaimer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (typeof navigate === 'function') {
-                          navigate('disclaimer');
-                        } else if (typeof window !== 'undefined') {
-                          window.location.href = '/disclaimer';
-                        }
-                      }}
-                      className="policy-link"
-                    >
-                      View Policy ↗
-                    </a>
-                  </strong></span>
-                </span>
-              </div>
-
+Right side mein jo card hai ise thoda sa niche khiskao. 
               {colorOptions.length > 0 && (
                 <section className="product-variation-card" aria-labelledby="product-variation-heading">
                   <div className="variation-card-head">
@@ -1810,7 +1773,8 @@ export function ProductDetail({
                         }
                       }}
                     >
-                      Sell This Product
+                      <TrendingUp size={18} strokeWidth={2} />
+                      <span>Sell This Product</span>
                     </button>
 
                     {showSellPanel && (
@@ -1901,6 +1865,26 @@ export function ProductDetail({
                     <WhatsappIcon size={18} className="reseller-whatsapp-icon" />
                     <span>Ask on WhatsApp</span>
                   </button>
+                </div>
+
+                <div className="product-quality-terms-note">
+                  <ShieldCheck size={16} className="spec-icon" />
+                  <span>Quality &amp; Terms: <strong>
+                    <a
+                      href="https://weave365.com/disclaimer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (typeof navigate === 'function') {
+                          navigate('disclaimer');
+                        } else if (typeof window !== 'undefined') {
+                          window.location.href = '/disclaimer';
+                        }
+                      }}
+                      className="policy-link"
+                    >
+                      View Policy ↗
+                    </a>
+                  </strong></span>
                 </div>
               </div>
             </div>
