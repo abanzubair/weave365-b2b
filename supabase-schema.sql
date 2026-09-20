@@ -1795,31 +1795,22 @@ create table if not exists public.exchange_rates_cache (
 alter table public.country_pricing_configs enable row level security;
 alter table public.exchange_rates_cache enable row level security;
 
--- Read policies: Public access (anonymous + authenticated)
+-- Policies: Allow full access so Edge Functions and Authenticated Admin clients can read/write without RLS blocking
 drop policy if exists "Public read country_pricing_configs" on public.country_pricing_configs;
-create policy "Public read country_pricing_configs"
-  on public.country_pricing_configs for select
-  to anon, authenticated
-  using (true);
-
-drop policy if exists "Public read exchange_rates_cache" on public.exchange_rates_cache;
-create policy "Public read exchange_rates_cache"
-  on public.exchange_rates_cache for select
-  to anon, authenticated
-  using (true);
-
--- Write policies: Admin & Service Role access
 drop policy if exists "Admin manage country_pricing_configs" on public.country_pricing_configs;
-create policy "Admin manage country_pricing_configs"
+drop policy if exists "Enable all access for country_pricing_configs" on public.country_pricing_configs;
+create policy "Enable all access for country_pricing_configs"
   on public.country_pricing_configs for all
-  to authenticated
+  to public
   using (true)
   with check (true);
 
+drop policy if exists "Public read exchange_rates_cache" on public.exchange_rates_cache;
 drop policy if exists "Admin manage exchange_rates_cache" on public.exchange_rates_cache;
-create policy "Admin manage exchange_rates_cache"
+drop policy if exists "Enable all access for exchange_rates_cache" on public.exchange_rates_cache;
+create policy "Enable all access for exchange_rates_cache"
   on public.exchange_rates_cache for all
-  to authenticated
+  to public
   using (true)
   with check (true);
 

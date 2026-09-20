@@ -4,7 +4,7 @@
  * Displays the curated premium navigation categories (NEW ARRIVALS, CATALOGUE, CATEGORIES,
  * PARTNERS, and ABOUT) and maintains the lower utility sections (My Account, Currency selection, and contact support).
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowRight,
   Headphones,
@@ -73,6 +73,21 @@ export function MobileMenu(props) {
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
   const isAdmin = props.isAdmin;
   const [openSection, setOpenSection] = useState(null);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
 
   const toggleSection = (section) => {
     setOpenSection((prev) => (prev === section ? null : section));
@@ -433,7 +448,6 @@ export function MobileMenu(props) {
         </nav>
 
         <div className="mobile-menu-bottom-section">
-          <div className="mobile-menu-divider" />
           {/* Country & Currency Selector */}
           <CountrySelector variant="mobile" onClose={onClose} />
           <DemoToggle user={user} isMobile={true} />

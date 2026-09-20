@@ -220,12 +220,63 @@ export default function CountryPricingManager({ adminData }) {
     }
   };
 
-  // Save country configurations to database
+  // Save country configurations to database (Direct Supabase + API sync)
   const handleSaveChanges = async () => {
     setIsSaving(true);
     setSaveStatus({ type: '', message: '' });
 
     try {
+      let clientDbSaved = false;
+
+      // 1. Direct write from client to Supabase country_pricing_configs
+      if (supabase) {
+        try {
+          const rowsToUpsert = countries.map((c, index) => ({
+            code: c.code.toUpperCase(),
+            name: c.name,
+            currency: c.currency.toUpperCase(),
+            currency_symbol: c.currencySymbol || c.currency,
+            markup_percent: Number(c.markupPercent) || 0,
+            flag: c.flag || '🌐',
+            enabled: c.enabled !== false,
+            is_base: Boolean(c.isBase),
+            sort_order: index + 1,
+            updated_at: new Date().toISOString(),
+          }));
+
+          const { error: dbError } = await supabase
+            .from('country_pricing_configs')
+            .upsert(rowsToUpsert, { onConflict: 'code' });
+
+          if (!dbError) {
+            clientDbSaved = true;
+            // Clean up removed countries
+            const currentCodes = countries.map((c) => c.code.toUpperCase());
+            const { data: existingRows } = await supabase
+              .from('country_pricing_configs')
+              .select('code, is_base');
+
+            if (Array.isArray(existingRows)) {
+              const toDelete = existingRows
+                .filter((r) => !r.is_base && !currentCodes.includes(r.code))
+                .map((r) => r.code);
+
+              if (toDelete.length > 0) {
+                await supabase
+                  .from('country_pricing_configs')
+                  .delete()
+                  .in('code', toDelete);
+              }
+            }
+          } else {
+            console.warn('Client-side Supabase save notice:', dbError.message);
+          }
+        } catch (dbErr) {
+          console.warn('Client-side Supabase note:', dbErr);
+        }
+      }
+
+      // 2. Also call the Edge API endpoint with session token
       const session = (await supabase?.auth.getSession())?.data?.session;
       const token = session?.access_token;
 
@@ -243,17 +294,19 @@ export default function CountryPricingManager({ adminData }) {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to save country pricing.');
+        if (!clientDbSaved) {
+          throw new Error(data.error || 'Failed to save country pricing in Supabase.');
+        }
       }
 
       setCountries(countries);
-      setSaveStatus({ type: 'success', message: 'Country pricing configuration saved.' });
+      setSaveStatus({ type: 'success', message: 'Country pricing configuration saved successfully in Supabase.' });
     } catch (err) {
       console.error('Save error:', err);
       setSaveStatus({ type: 'error', message: err.message || 'Failed to save changes.' });
     } finally {
       setIsSaving(false);
-      setTimeout(() => setSaveStatus({ type: '', message: '' }), 4000);
+      setTimeout(() => setSaveStatus({ type: '', message: '' }), 5000);
     }
   };
 

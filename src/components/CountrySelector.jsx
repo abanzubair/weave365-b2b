@@ -1,35 +1,24 @@
 /**
  * @file CountrySelector.jsx
- * @description Centralized Country & Currency selector for both Desktop Navbar and Mobile Hamburger Menu.
+ * @description Minimal Country & Currency selector for Desktop Navbar and Mobile Menu.
  * Synchronizes with useCountryCurrency store.
  */
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
-import { ChevronDown, Search, Check, X, Globe } from './icons.jsx';
+import { ChevronDown, Check, Globe } from './icons.jsx';
 import '../styles/countrySelector.css';
 
 export function CountrySelector({ variant = 'desktop', onClose = null }) {
   const { currentCountry, countries, setCountry, initCountryCurrency } = useCountryCurrency();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
-  const searchInputRef = useRef(null);
 
   // Initialize store on first mount
   useEffect(() => {
     initCountryCurrency();
   }, [initCountryCurrency]);
-
-  // Focus search input on open
-  useEffect(() => {
-    if (isOpen && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    } else {
-      setSearchQuery('');
-    }
-  }, [isOpen]);
 
   // Handle outside click for desktop
   useEffect(() => {
@@ -60,16 +49,15 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
     return countries.filter((c) => c.enabled !== false);
   }, [countries]);
 
-  const filteredCountries = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return enabledCountries;
-    return enabledCountries.filter((c) => {
-      const name = (c.name || '').toLowerCase();
-      const code = (c.code || '').toLowerCase();
-      const currency = (c.currency || '').toLowerCase();
-      return name.includes(q) || code.includes(q) || currency.includes(q);
-    });
-  }, [enabledCountries, searchQuery]);
+  const formatCurrencyDisplay = (c) => {
+    if (!c) return '';
+    const code = c.currency || '';
+    const symbol = c.currencySymbol || '';
+    if (!symbol || symbol === code) {
+      return code;
+    }
+    return `${code} (${symbol})`;
+  };
 
   const handleSelectCountry = (country) => {
     setCountry(country.code, true);
@@ -84,95 +72,63 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
   // ---------------------------------------------------------
   if (variant === 'mobile') {
     return (
-      <div className="mobile-country-selector">
+      <div className={`mobile-account-dropdown mobile-country-dropdown ${isOpen ? 'is-open' : ''}`} ref={dropdownRef}>
         <button
           type="button"
-          className={`mobile-country-trigger-btn ${isOpen ? 'is-open' : ''}`}
+          className="mobile-menu-item mobile-menu-account-trigger"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
           aria-label="Change country or currency"
         >
-          <div className="mobile-country-trigger-left">
-            <span className="mobile-country-trigger-icon">
-              <Globe size={18} />
+          <span className="mobile-menu-icon">
+            <Globe size={20} />
+          </span>
+          <span className="mobile-menu-label">
+            <span>Country &amp; Currency</span>
+            <span className="mobile-menu-curr-pill">
+              <span className="curr-pill-flag">{currentCountry?.flag || '🌐'}</span>
+              <span className="curr-pill-code">{currentCountry?.currency || 'INR'}</span>
+              {currentCountry?.currencySymbol && currentCountry.currencySymbol !== currentCountry.currency && (
+                <span className="curr-pill-sym">({currentCountry.currencySymbol})</span>
+              )}
             </span>
-            <div className="mobile-country-trigger-label">
-              <span className="mobile-country-title">Country &amp; Currency</span>
-              <span className="mobile-country-current">
-                <span className="mobile-country-current-flag">{currentCountry?.flag || '🌐'}</span>
-                <span>{currentCountry?.name || 'India'}</span>
-                <span style={{ color: 'var(--gold-dark, #805d31)', fontWeight: 600 }}>
-                  ({currentCountry?.currency} {currentCountry?.currencySymbol})
-                </span>
-              </span>
-            </div>
-          </div>
+          </span>
           <ChevronDown
-            size={16}
-            className={`country-trigger-chevron ${isOpen ? 'rotated' : ''}`}
+            size={18}
+            className={`mobile-menu-chevron ${isOpen ? 'rotated' : ''}`}
           />
         </button>
 
-        {isOpen && (
-          <div className="mobile-country-body">
-            <div className="country-search-input-wrapper">
-              <Search size={14} className="country-search-icon" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                className="country-search-input"
-                placeholder="Search country or currency..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
+        <div className="mobile-account-items">
+          <div className="mobile-account-items-inner">
+            {enabledCountries.map((country) => {
+              const isSelected = country.code === currentCountry?.code;
+              return (
                 <button
+                  key={country.code}
                   type="button"
-                  className="country-search-clear"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
+                  className={`mobile-account-subitem ${isSelected ? 'is-selected' : ''}`}
+                  onClick={() => handleSelectCountry(country)}
                 >
-                  <X size={14} />
+                  <span className="subitem-icon" style={{ fontSize: '18px' }}>
+                    {country.flag || '🌐'}
+                  </span>
+                  <span className="subitem-label">
+                    <span>{country.name}</span>
+                    <span className="country-subitem-curr">
+                      {formatCurrencyDisplay(country)}
+                    </span>
+                  </span>
+                  {isSelected && (
+                    <span className="country-subitem-check">
+                      <Check size={16} strokeWidth={2.4} />
+                    </span>
+                  )}
                 </button>
-              )}
-            </div>
-
-            <ul className="mobile-country-list">
-              {filteredCountries.length === 0 ? (
-                <li className="country-dropdown-empty">No matching countries found</li>
-              ) : (
-                filteredCountries.map((country) => {
-                  const isSelected = country.code === currentCountry?.code;
-                  return (
-                    <li key={country.code}>
-                      <button
-                        type="button"
-                        className={`country-dropdown-item ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => handleSelectCountry(country)}
-                      >
-                        <div className="country-item-left">
-                          <span className="country-item-flag">{country.flag || '🌐'}</span>
-                          <div className="country-item-details">
-                            <span className="country-item-name">{country.name}</span>
-                            <span className="country-item-currency">
-                              {country.currency} ({country.currencySymbol})
-                              {country.markupPercent > 0 ? ` · +${country.markupPercent}%` : ''}
-                            </span>
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <span className="country-item-check">
-                            <Check size={16} strokeWidth={2.5} />
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     );
   }
@@ -191,81 +147,49 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
         title="Switch Country / Currency"
       >
         <span className="country-flag-icon">{currentCountry?.flag || '🌐'}</span>
-        <span className="country-trigger-text">
-          <span>{currentCountry?.name || 'India'}</span>
-          <span>·</span>
-          <span className="country-trigger-code">
-            {currentCountry?.currency} {currentCountry?.currencySymbol}
-          </span>
+        <span className="country-trigger-code">
+          {currentCountry?.currency || 'INR'}
         </span>
         <ChevronDown
-          size={13}
+          size={12}
           className={`country-trigger-chevron ${isOpen ? 'rotated' : ''}`}
         />
       </button>
 
       {isOpen && (
         <div className="country-dropdown-menu" role="listbox">
-          <div className="country-dropdown-header">
-            <div className="country-search-input-wrapper">
-              <Search size={14} className="country-search-icon" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                className="country-search-input"
-                placeholder="Search country or currency..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="country-search-clear"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-          </div>
-
           <ul className="country-dropdown-list">
-            {filteredCountries.length === 0 ? (
-              <li className="country-dropdown-empty">No matching countries found</li>
-            ) : (
-              filteredCountries.map((country) => {
-                const isSelected = country.code === currentCountry?.code;
-                return (
-                  <li key={country.code} role="option" aria-selected={isSelected}>
-                    <button
-                      type="button"
-                      className={`country-dropdown-item ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => handleSelectCountry(country)}
-                    >
-                      <div className="country-item-left">
-                        <span className="country-item-flag">{country.flag || '🌐'}</span>
-                        <div className="country-item-details">
-                          <span className="country-item-name">{country.name}</span>
-                          <span className="country-item-currency">
-                            {country.currency} ({country.currencySymbol})
-                            {country.markupPercent > 0 ? ` · +${country.markupPercent}%` : ''}
-                          </span>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <span className="country-item-check">
-                          <Check size={16} strokeWidth={2.5} />
+            {enabledCountries.map((country) => {
+              const isSelected = country.code === currentCountry?.code;
+              return (
+                <li key={country.code} role="option" aria-selected={isSelected}>
+                  <button
+                    type="button"
+                    className={`country-dropdown-item ${isSelected ? 'is-selected' : ''}`}
+                    onClick={() => handleSelectCountry(country)}
+                  >
+                    <div className="country-item-left">
+                      <span className="country-item-flag">{country.flag || '🌐'}</span>
+                      <div className="country-item-details">
+                        <span className="country-item-name">{country.name}</span>
+                        <span className="country-item-currency">
+                          {formatCurrencyDisplay(country)}
                         </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })
-            )}
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <span className="country-item-check">
+                        <Check size={14} strokeWidth={2.2} />
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
     </div>
   );
 }
+

@@ -23,7 +23,7 @@
   box-shadow: inset 0 0 0 1px rgba(183, 134, 70, 0.15);
 }
 
-/* Animated Hamburger Button */
+/* Hamburger Button (Static, No Animation) */
 .hamburger-btn {
   display: flex;
   flex-direction: column;
@@ -36,7 +36,6 @@
   cursor: pointer;
   padding: 0;
   position: relative;
-  transition: all 0.3s ease;
   border-radius: 0;
 }
 
@@ -47,30 +46,10 @@
 .hamburger-svg {
   width: 24px;
   height: 24px;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hamburger-svg .line {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
-}
-
-/* 3-Bar Editorial Style */
-.hamburger-btn.is-active .hamburger-svg .line-top {
-  transform: translateY(5px) rotate(45deg);
-}
-
-.hamburger-btn.is-active .hamburger-svg .line-middle {
-  opacity: 0;
-  transform: scaleX(0);
-}
-
-.hamburger-btn.is-active .hamburger-svg .line-bottom {
-  transform: translateY(-5px) translateX(-2.5px) rotate(-45deg) scaleX(1.45);
-}
-
-.hamburger-btn:hover:not(.is-active) .line-bottom {
-  transform: translateX(-5px);
 }
 
 

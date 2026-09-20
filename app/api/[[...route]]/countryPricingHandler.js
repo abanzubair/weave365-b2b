@@ -28,12 +28,23 @@ function getCorsHeaders(request) {
 }
 
 let supabaseInstance = null;
-async function getSupabase() {
+async function getSupabase(token = null) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  const { createClient } = await import('@supabase/supabase-js');
+
+  if (token) {
+    return createClient(url, key, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+  }
+
   if (!supabaseInstance) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    const { createClient } = await import('@supabase/supabase-js');
     supabaseInstance = createClient(url, key);
   }
   return supabaseInstance;
@@ -163,7 +174,10 @@ export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const supabase = await getSupabase();
+    const authHeader = request.headers.get('Authorization') || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+    const supabase = await getSupabase(token);
     if (!supabase) {
       return new Response(JSON.stringify({ error: 'Database unconfigured' }), {
         status: 500,
@@ -172,9 +186,6 @@ export async function POST(request) {
     }
 
     // 1. Authorize Admin
-    const authHeader = request.headers.get('Authorization') || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-
     if (!token) {
       return new Response(JSON.stringify({ error: 'Missing authentication token.' }), {
         status: 401,
@@ -287,18 +298,30 @@ export async function POST(request) {
         .upsert(rowsToUpsert, { onConflict: 'code' });
 
       if (upsertError) {
-        console.warn('[CountryPricingHandler] country_pricing_configs upsert error (falling back to sheet_data):', upsertError.message);
-      } else {
-        // Remove deleted countries from database (except base country)
-        const currentCodes = validatedCountries.map((c) => c.code);
-        await supabase
-          .from('country_pricing_configs')
-          .delete()
-          .not('code', 'in', `(${currentCodes.map((c) => `'${c}'`).join(',')})`)
-          .eq('is_base', false);
+        console.error('[CountryPricingHandler] country_pricing_configs upsert error:', upsertError);
+        throw new Error(`Supabase table error: ${upsertError.message || JSON.stringify(upsertError)}`);
       }
 
-      // 2. Also keep sheet_data updated as a secondary sync
+      // 2. Remove deleted countries from database (except base country)
+      const currentCodes = validatedCountries.map((c) => c.code);
+      const { data: existingRows } = await supabase
+        .from('country_pricing_configs')
+        .select('code, is_base');
+
+      if (Array.isArray(existingRows)) {
+        const toDelete = existingRows
+          .filter((r) => !r.is_base && !currentCodes.includes(r.code))
+          .map((r) => r.code);
+
+        if (toDelete.length > 0) {
+          await supabase
+            .from('country_pricing_configs')
+            .delete()
+            .in('code', toDelete);
+        }
+      }
+
+      // 3. Also keep sheet_data updated as a secondary backup
       try {
         await supabase.from('sheet_data').upsert({
           id: 'country_pricing_config',
