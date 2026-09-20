@@ -643,9 +643,16 @@ export default function SeoSettings({
                   <img
                     src={pageSeoImageUrl.trim() || defaultPageImage}
                     alt="OG Preview"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    onLoad={(e) => {
+                      e.currentTarget.style.display = 'block';
+                    }}
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none';
+                      if (defaultPageImage && e.currentTarget.src !== defaultPageImage) {
+                        e.currentTarget.src = defaultPageImage;
+                      } else {
+                        e.currentTarget.style.display = 'none';
+                      }
                     }}
                   />
                 </div>
@@ -753,8 +760,13 @@ export default function SeoSettings({
                     src={pageSeoImageUrl.trim() || defaultPageImage}
                     alt="Social Preview"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    onLoad={(e) => {
+                      e.currentTarget.style.display = 'block';
+                    }}
                     onError={(e) => {
-                      e.currentTarget.src = defaultPageImage;
+                      if (defaultPageImage && e.currentTarget.src !== defaultPageImage) {
+                        e.currentTarget.src = defaultPageImage;
+                      }
                     }}
                   />
                 </div>
