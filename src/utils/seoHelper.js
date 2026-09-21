@@ -1,6 +1,7 @@
 import { fetchSupabasePageSeoSettings, fetchProducts } from '../productData.js';
 import { siteUrl, DEFAULT_OG_IMAGE, getCategoryFromSlug, storeConfig } from '../config.js';
 import { sortByStockDateDesc, getTopProductForCategory, getTopProductForCatalogue } from './sortProducts.js';
+import { getSocialOgImageUrl } from './imageOptimizer.js';
 
 /**
  * Featured first-image mapping for static marketing / guide / landing pages (Level 2 fallback).
@@ -203,9 +204,17 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
       path,
     });
 
+    // Optimize for social / WhatsApp crawlers:
+    // - Converts heavy master JPEGs and WebP images to lightweight edge-cached JPEGs (< 100 KB)
+    // - Preserves tiny PNGs like og-image.png without consuming Cloudflare transform quota
+    const finalOgUrl = getSocialOgImageUrl(resolvedImage.url);
+    const isTransformedJpeg = finalOgUrl.includes('format=jpeg');
+
     // Determine image format / MIME type
     const cleanUrl = resolvedImage.url.split('?')[0].toLowerCase();
-    const imageType = cleanUrl.endsWith('.png')
+    const imageType = isTransformedJpeg
+      ? 'image/jpeg'
+      : cleanUrl.endsWith('.png')
       ? 'image/png'
       : cleanUrl.endsWith('.webp')
       ? 'image/webp'
@@ -227,7 +236,15 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
     let imageWidth = callerImage?.width;
     let imageHeight = callerImage?.height;
 
-    if (!imageWidth || !imageHeight) {
+    if (isTransformedJpeg) {
+      if (isProductPhoto) {
+        imageWidth = 800;
+        imageHeight = 1067;
+      } else {
+        imageWidth = 800;
+        imageHeight = 418;
+      }
+    } else if (!imageWidth || !imageHeight) {
       if (isFavicon) {
         imageWidth = 512;
         imageHeight = 512;
@@ -258,8 +275,8 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         type: defaultMetadata.openGraph?.type || 'website',
         images: [
           {
-            url: resolvedImage.url,
-            secureUrl: resolvedImage.url,
+            url: finalOgUrl,
+            secureUrl: finalOgUrl,
             type: imageType,
             width: imageWidth,
             height: imageHeight,
@@ -272,7 +289,7 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
         card: 'summary_large_image',
         title: ogTitle,
         description: ogDescription,
-        images: [resolvedImage.url],
+        images: [finalOgUrl],
       },
     };
 

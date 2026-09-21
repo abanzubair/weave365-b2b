@@ -2,6 +2,7 @@ import React, { cache } from 'react';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { siteUrl, DEFAULT_OG_IMAGE } from '../../../src/config';
+import { getSocialOgImageUrl } from '../../../src/utils/imageOptimizer.js';
 
 export const runtime = 'edge';
 export const revalidate = 300; // Cache on CDN Edge for 5 minutes
@@ -79,6 +80,15 @@ export async function generateMetadata({ params }) {
   const canonicalUrl = `${siteUrl}/store/${encodeURIComponent(storeSlug)}`;
 
     const storeImage = storefront.logo_url || DEFAULT_OG_IMAGE;
+    const finalStoreOgUrl = getSocialOgImageUrl(storeImage);
+    const isTransformedJpeg = finalStoreOgUrl.includes('format=jpeg');
+    const storeImageType = isTransformedJpeg
+      ? 'image/jpeg'
+      : storeImage?.endsWith('.png')
+      ? 'image/png'
+      : storeImage?.endsWith('.webp')
+      ? 'image/webp'
+      : 'image/jpeg';
 
     return {
       title: storeTitle,
@@ -94,15 +104,11 @@ export async function generateMetadata({ params }) {
         siteName: storefront.store_name || 'Weave 365',
         images: [
           {
-            url: storeImage,
-            secureUrl: storeImage,
-            type: storeImage?.endsWith('.png')
-              ? 'image/png'
-              : storeImage?.endsWith('.webp')
-              ? 'image/webp'
-              : 'image/jpeg',
-            width: 1200,
-            height: 630,
+            url: finalStoreOgUrl,
+            secureUrl: finalStoreOgUrl,
+            type: storeImageType,
+            width: isTransformedJpeg ? 800 : 1200,
+            height: isTransformedJpeg ? 800 : 630,
             alt: storeTitle,
           },
         ],
@@ -111,7 +117,7 @@ export async function generateMetadata({ params }) {
         card: 'summary_large_image',
         title: storeTitle,
         description: storeDescription,
-        images: [storeImage],
+        images: [finalStoreOgUrl],
       },
     };
 }

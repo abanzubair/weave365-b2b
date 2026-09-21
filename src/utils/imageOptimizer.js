@@ -20,6 +20,7 @@ export const IMAGE_PRESETS = {
   listing: { width: 800, quality: 85, format: 'auto', fit: 'scale-down' },
   detail: { width: 1400, quality: 88, format: 'auto', fit: 'scale-down' },
   zoom: { width: 2400, quality: 90, format: 'auto', fit: 'scale-down' },
+  og: { width: 800, quality: 75, format: 'jpeg', fit: 'scale-down' },
 };
 
 /**
@@ -240,7 +241,29 @@ export function getOptimizedImageUrl(sourceUrl, presetOrOptions = 'listing') {
   const rawPath = extractImagePath(trimmed);
   if (!rawPath) return trimmed;
 
-  const baseUrl = getImageBaseUrl();
+  const defaultBaseUrl = getImageBaseUrl();
+  const configuredSiteUrl =
+    (typeof process !== 'undefined' && process.env && (
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.SITE_URL
+    )) || 'https://www.weave365.com';
+  const cleanSiteUrl = configuredSiteUrl.replace(/\/+$/, '');
+
+  // Determine base host domain:
+  // - If the original source was on the site origin (www.weave365.com) or starts with '/',
+  //   use siteUrl so Cloudflare fetches the local static asset from Next.js public directory, NOT R2.
+  // - Otherwise, default to R2 assets domain (https://assets.weave365.com).
+  let baseUrl = defaultBaseUrl;
+  if (
+    trimmed.startsWith('/') ||
+    trimmed.includes('www.weave365.com') ||
+    trimmed.startsWith(cleanSiteUrl)
+  ) {
+    if (!trimmed.includes('assets.weave365.com') && !trimmed.includes('images.weave365.in') && !trimmed.includes('r2.cloudflarestorage.com')) {
+      baseUrl = cleanSiteUrl;
+    }
+  }
+
   const optionsString = formatCloudflareOptions(options);
 
   // If the path is a full external URL (e.g. https://...), only transform if explicitly allowed
@@ -263,7 +286,7 @@ export function getOptimizedImageUrl(sourceUrl, presetOrOptions = 'listing') {
     return `${baseUrl}/cdn-cgi/image/${optionsString}/${rawPath}`;
   }
 
-  // Canonical transformed URL on the CDN domain
+  // Canonical transformed URL on the appropriate domain
   return `${baseUrl}/cdn-cgi/image/${optionsString}/${rawPath.replace(/^\/+/, '')}`;
 }
 
@@ -294,3 +317,45 @@ export function getImageSrcSet(sourceUrl, presetNames = ['thumbnail', 'listing']
 
   return entries.length > 0 ? entries.join(', ') : undefined;
 }
+
+/**
+ * Resolves an optimal, lightweight JPEG Open Graph image URL specifically
+ * designed for WhatsApp, Twitter, and Facebook link preview crawlers.
+ * 
+ * Strict constraints handled:
+ * 1. WhatsApp hard limit: image MUST be < 300 KB (target: 30KB - 80KB).
+ * 2. WhatsApp crawler compatibility: format MUST be JPEG or PNG (WebP is rejected/inconsistent).
+ * 3. Cloudflare transformation quota: skips images that are already tiny (e.g. og-image.png < 25KB),
+ *    and uses a single deterministic preset (width=800, quality=75, format=jpeg) so all results
+ *    are edge-cached on Cloudflare CDN, strictly preserving Free Tier limits.
+ * 
+ * @param {string} sourceUrl
+ * @returns {string} Transformed lightweight JPEG URL or original if already tiny/external
+ */
+export function getSocialOgImageUrl(sourceUrl) {
+  if (!sourceUrl || typeof sourceUrl !== 'string') return '';
+  const trimmed = sourceUrl.trim();
+  if (!trimmed) return '';
+
+  if (!isTransformableImage(trimmed)) return trimmed;
+
+  const cleanLower = trimmed.split('?')[0].toLowerCase();
+
+  // If it's already a tiny brand icon/logo (e.g. og-image.png or favicon), don't waste Cloudflare quota
+  if (
+    cleanLower.endsWith('og-image.png') ||
+    cleanLower.endsWith('favicon.png') ||
+    cleanLower.endsWith('favicon-32.png') ||
+    cleanLower.endsWith('apple-touch-icon.png')
+  ) {
+    return trimmed;
+  }
+
+  // If transformations are disabled in env, return canonical URL
+  if (!isTransformationEnabled()) {
+    return trimmed;
+  }
+
+  return getOptimizedImageUrl(trimmed, 'og');
+}
+

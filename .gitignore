@@ -51,3 +51,9 @@ supabase/.temp/
 client_secret_Google_Cloud.json
 
 Weave-Template/
+
+# LLM Wiki (Karpathy pattern)
+llm-wiki/
+raw/
+wiki/
+.obsidian/
