@@ -271,8 +271,12 @@ export function CheckoutPage({
   }, [items, shippingSpeed]);
 
 
-  const grossItemsTotal = useMemo(() => {
-    return items.reduce((sum, item) => {
+  const bulkDiscount = useMemo(() => {
+    // Only items in multi-piece categories that receive set-level pricing qualify for bulk discount
+    const eligibleItems = items.filter(item => String(item.product?.category || '').toLowerCase() !== 'under 999');
+    if (!eligibleItems.length) return 0;
+
+    const grossEligible = eligibleItems.reduce((sum, item) => {
       const baseSinglePrice = Number(
         item.variant?.prices?.b2r ||
         item.variant?.prices?.single ||
@@ -286,11 +290,22 @@ export function CheckoutPage({
       const locSingle = getLocalizedPrice(baseSinglePrice, currentCountry, exchangeRates);
       return sum + (locSingle.finalPrice * (Number(item.quantity) || 1));
     }, 0);
-  }, [items, currentCountry, exchangeRates]);
 
-  const bulkDiscount = useMemo(() => {
-    return Math.max(0, grossItemsTotal - (baseTotal || 0));
-  }, [grossItemsTotal, baseTotal]);
+    const baseEligible = eligibleItems.reduce((sum, item) => {
+      const pricing = productPricing[item.productGroupKey || item.product?.id];
+      if (pricing && pricing.totalQty > 0) {
+        const unitBase = pricing.totalPrice / pricing.totalQty;
+        return sum + (unitBase * (Number(item.quantity) || 1));
+      }
+      return sum;
+    }, 0);
+
+    return Math.max(0, Math.round(grossEligible - baseEligible));
+  }, [items, currentCountry, exchangeRates, productPricing]);
+
+  const grossItemsTotal = useMemo(() => {
+    return (baseTotal || 0) + bulkDiscount;
+  }, [baseTotal, bulkDiscount]);
 
   const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
 

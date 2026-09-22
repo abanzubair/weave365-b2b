@@ -200,7 +200,26 @@ export function calculateLocalizedHybridProductPrice(
 
   const currency = countryConfig?.currency || 'INR';
 
-  if (isUnder999 || setSize <= 1) {
+  if (isUnder999) {
+    const totalPrice = roundCurrency(totalQty * localizedReseller.finalPrice, currency);
+    return {
+      setSize: 1,
+      totalQty,
+      completeSets: 0,
+      extraPieces: totalQty,
+      wholesalePrice: localizedReseller.finalPrice,
+      resellerPrice: localizedReseller.finalPrice,
+      wholesaleTotal: 0,
+      resellerTotal: totalPrice,
+      totalPrice,
+      formattedTotalPrice: formatCurrency(totalPrice, currency),
+      localizedWholesale: localizedReseller,
+      localizedReseller,
+      currency,
+    };
+  }
+
+  if (setSize <= 1) {
     const totalPrice = roundCurrency(totalQty * localizedWholesale.finalPrice, currency);
     return {
       setSize: 1,

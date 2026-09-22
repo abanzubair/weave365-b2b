@@ -503,7 +503,7 @@ export function DeveloperDashboard({
   const [revealedKey, setRevealedKey] = useState(null); // only set right after generation/regeneration
   const [showKeySecret, setShowKeySecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
-  const [usageStats, setUsageStats] = useState({ usage: [], totalMonth: 0 });
+  const [usageStats, setUsageStats] = useState({ usage: [], totalMonth: initialKeyRecord?.monthTotal ?? 0 });
   const [activePlatformTab, setActivePlatformTab] = useState('woocommerce');
   
   // Test Console State
@@ -590,7 +590,7 @@ export function DeveloperDashboard({
         setCatalogMode(record.catalog_mode || 'all');
         setSelectedSkus(Array.isArray(record.selected_skus) ? record.selected_skus : []);
 
-        const stats = await developerService.getUsageStats(record.id, 14, user?.id);
+        const stats = await developerService.getUsageStats(record.id, 14, record.user_id || user?.id);
         setUsageStats(stats);
       }
     } catch (err) {
@@ -610,12 +610,17 @@ export function DeveloperDashboard({
       setAdminOrdersEnabled(Boolean(initialKeyRecord.orders_enabled));
       setCatalogMode(initialKeyRecord.catalog_mode || 'all');
       setSelectedSkus(Array.isArray(initialKeyRecord.selected_skus) ? initialKeyRecord.selected_skus : []);
-      void developerService.getUsageStats(initialKeyRecord.id, 14, user?.id).then(setUsageStats);
+      if (typeof initialKeyRecord.monthTotal === 'number') {
+        setUsageStats(prev => ({ ...prev, totalMonth: initialKeyRecord.monthTotal }));
+      }
+      void developerService.getUsageStats(initialKeyRecord.id, 14, initialKeyRecord.user_id || user?.id).then(setUsageStats);
     } else {
       void loadData();
     }
   }, [
     initialKeyRecord?.id,
+    initialKeyRecord?.user_id,
+    initialKeyRecord?.monthTotal,
     initialKeyRecord?.is_active,
     initialKeyRecord?.orders_enabled,
     initialKeyRecord?.tier,
@@ -889,7 +894,7 @@ export function DeveloperDashboard({
       setApiKey(keyRecord);
       setNewGeneratedSecret(rawSecretKey);
       setRevealedKey(rawSecretKey);
-      await developerService.getUsageStats(keyRecord.id, 14).then(setUsageStats);
+      await developerService.getUsageStats(keyRecord.id, 14, keyRecord.user_id || user?.id).then(setUsageStats);
     } catch (err) {
       alert('Failed to generate API Key: ' + err.message);
     } finally {
@@ -1007,7 +1012,7 @@ export function DeveloperDashboard({
         // Refresh usage metrics after request
         setTimeout(async () => {
           try {
-            const updatedStats = await developerService.getUsageStats(apiKey.id, 14, user?.id);
+            const updatedStats = await developerService.getUsageStats(apiKey.id, 14, apiKey.user_id || user?.id);
             setUsageStats(updatedStats);
           } catch (e) {
             console.warn('[DeveloperDashboard] Error refreshing usage stats:', e);
@@ -1295,6 +1300,55 @@ export function DeveloperDashboard({
               <span>{copiedField === 'new-secret' ? 'Copied' : 'Copy Key'}</span>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Quota Exceeded Banner */}
+      {currentMonthUsed >= monthlyQuota && apiKey?.is_active && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          padding: '1rem 1.25rem',
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '12px',
+          marginBottom: '1.25rem',
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <AlertTriangle size={20} color="#dc2626" style={{ marginTop: '2px', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 600, color: '#991b1b', fontSize: '0.95rem' }}>
+                Monthly API Quota Reached ({monthlyQuota.toLocaleString()} requests)
+              </div>
+              <p style={{ margin: '3px 0 0', fontSize: '0.85rem', color: '#7f1d1d', lineHeight: '1.4' }}>
+                Storefront API requests are currently paused and returning HTTP 429 rate limits. Quota resets in {daysInMonthLeft} {daysInMonthLeft === 1 ? 'day' : 'days'} (1st of next month), or upgrade to Growth Partner (20,000 req/mo) to resume immediately.
+              </p>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/919786541444?text=${encodeURIComponent(`Hi Weave365, I reached my monthly API quota (${monthlyQuota} req) for storefront ${apiKey.client_name || ''} and would like to increase my limit.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dev-action-chip"
+            style={{
+              background: '#25D366',
+              color: '#ffffff',
+              borderColor: '#25D366',
+              fontWeight: 600,
+              padding: '8px 14px',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <MessageCircle size={15} />
+            <span>Increase Limit on WhatsApp</span>
+          </a>
         </div>
       )}
 

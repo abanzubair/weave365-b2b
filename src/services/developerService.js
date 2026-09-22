@@ -37,6 +37,29 @@ export async function hashApiKey(rawKey) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * Format UTC YYYY-MM-01 string matching Supabase's current_date default for month boundaries
+ */
+export function getUtcMonthStartStr() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  return `${year}-${month}-01`;
+}
+
+/**
+ * Format UTC YYYY-MM-DD string for N days ago
+ */
+export function getUtcDaysAgoStr(days = 14) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - days);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+
 export const TIER_CONFIGS = {
   free: {
     name: 'Starter (Free)',
@@ -159,26 +182,38 @@ export const developerService = {
    * Get Daily API usage records for a specific key
    */
   async getUsageStats(keyId, days = 14, userId = null) {
-    if (!isSupabaseConfigured || !keyId) return { usage: [], totalMonth: 0 };
+    if (!isSupabaseConfigured || (!keyId && !userId)) return { usage: [], totalMonth: 0 };
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    const startDateStr = getUtcDaysAgoStr(days);
+    const monthStartStr = getUtcMonthStartStr();
 
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    const monthStartStr = monthStart.toISOString().split('T')[0];
+    // Query from whichever date is earlier so we NEVER miss the start of the current month
+    const queryEarliestDateStr = startDateStr < monthStartStr ? startDateStr : monthStartStr;
+
+    let targetUserId = userId;
+    if (!targetUserId && keyId) {
+      try {
+        const { data: keyRecord } = await supabase
+          .from('api_keys')
+          .select('user_id')
+          .eq('id', keyId)
+          .maybeSingle();
+        if (keyRecord?.user_id) targetUserId = keyRecord.user_id;
+      } catch (_) {}
+    }
 
     let query = supabase
       .from('api_usage_daily')
       .select('*')
-      .gte('usage_date', startDateStr)
+      .gte('usage_date', queryEarliestDateStr)
       .order('usage_date', { ascending: true });
 
-    if (userId) {
-      query = query.or(`api_key_id.eq.${keyId},user_id.eq.${userId}`);
-    } else {
+    if (keyId && targetUserId) {
+      query = query.or(`api_key_id.eq.${keyId},user_id.eq.${targetUserId}`);
+    } else if (keyId) {
       query = query.eq('api_key_id', keyId);
+    } else if (targetUserId) {
+      query = query.eq('user_id', targetUserId);
     }
 
     const { data, error } = await query;
@@ -188,8 +223,11 @@ export const developerService = {
       return { usage: [], totalMonth: 0 };
     }
 
-    const usage = data || [];
-    const totalMonth = usage
+    const allRows = data || [];
+    // 1. Chart daily usage: last `days` days
+    const usage = allRows.filter(r => r.usage_date >= startDateStr);
+    // 2. Monthly quota used: from 1st of current month to today
+    const totalMonth = allRows
       .filter(r => r.usage_date >= monthStartStr)
       .reduce((sum, r) => sum + (r.total_requests || 0), 0);
 
@@ -395,9 +433,7 @@ export const developerService = {
   async getAllApiKeys() {
     if (!isSupabaseConfigured) return { data: [], error: null };
 
-    const currentMonthStart = new Date();
-    currentMonthStart.setDate(1);
-    const monthStartStr = currentMonthStart.toISOString().split('T')[0];
+    const monthStartStr = getUtcMonthStartStr();
 
     let keys = null;
     let keysError = null;
@@ -446,25 +482,26 @@ export const developerService = {
     try {
       const uRes = await supabase
         .from('api_usage_daily')
-        .select('api_key_id, total_requests')
+        .select('id, api_key_id, user_id, total_requests')
         .gte('usage_date', monthStartStr);
       usageData = uRes.data || [];
     } catch (e) {
       console.warn('[developerService] usage data error:', e);
     }
 
-    const usageMap = {};
-    usageData.forEach(row => {
-      if (row.api_key_id) {
-        usageMap[row.api_key_id] = (usageMap[row.api_key_id] || 0) + (row.total_requests || 0);
-      }
+    const enriched = (keys || []).map(k => {
+      const matchingRows = usageData.filter(r =>
+        (r.api_key_id && r.api_key_id === k.id) ||
+        (k.user_id && r.user_id === k.user_id)
+      );
+      const monthTotal = matchingRows.reduce((sum, r) => sum + (r.total_requests || 0), 0);
+      const quota = k.monthly_quota || 1;
+      return sanitizeKeyRecord({
+        ...k,
+        monthTotal,
+        quotaPercent: Math.min(100, Math.round((monthTotal / quota) * 100)),
+      });
     });
-
-    const enriched = (keys || []).map(k => sanitizeKeyRecord({
-      ...k,
-      monthTotal: usageMap[k.id] || 0,
-      quotaPercent: Math.min(100, Math.round(((usageMap[k.id] || 0) / (k.monthly_quota || 1)) * 100)),
-    }));
 
     return { data: enriched, error: null };
   },

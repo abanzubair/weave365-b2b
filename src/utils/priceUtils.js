@@ -72,7 +72,22 @@ export function calculateHybridProductPrice(product, groupItemsOrQty = 1, custom
     ? groupItemsOrQty.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0)
     : Math.max(0, Number(groupItemsOrQty) || 0);
 
-  if (isUnder999 || setSize <= 1) {
+  if (isUnder999) {
+    const totalPrice = totalQty * resellerPrice;
+    return {
+      setSize: 1,
+      totalQty,
+      completeSets: 0,
+      extraPieces: totalQty,
+      wholesalePrice: resellerPrice,
+      resellerPrice,
+      wholesaleTotal: 0,
+      resellerTotal: totalPrice,
+      totalPrice,
+    };
+  }
+
+  if (setSize <= 1) {
     const totalPrice = totalQty * wholesalePrice;
     return {
       setSize: 1,

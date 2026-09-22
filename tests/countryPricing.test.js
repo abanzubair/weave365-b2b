@@ -188,5 +188,21 @@ describe('Country-Based Pricing & Currency System', () => {
     assert.strictEqual(result.currency, 'USD');
     assert.strictEqual(result.formatted, '$12.98');
   });
+
+  test('Requirement 22: Under 999 category is excluded from bulk/set discount', () => {
+    const under999Prod = {
+      id: 'under-1',
+      category: 'Under 999',
+      totalColors: 1,
+      variants: [{ code: 'U-1', prices: { mrp: 599, b2r: 699 } }],
+    };
+
+    // Customer buying 1 single piece of Under 999
+    const pricing = calculateLocalizedHybridProductPrice(under999Prod, 1, null, { code: 'IN', currency: 'INR', markupPercent: 0 }, { INR: 1 });
+    assert.strictEqual(pricing.totalPrice, 699, 'Single piece of Under 999 must charge single/reseller price (699)');
+    assert.strictEqual(pricing.completeSets, 0, 'Under 999 must have completeSets = 0 (no bulk set discount)');
+    assert.strictEqual(pricing.wholesaleTotal, 0, 'Under 999 must have wholesaleTotal = 0');
+    assert.strictEqual(pricing.resellerTotal, 699, 'Under 999 total must be under resellerTotal');
+  });
 });
 

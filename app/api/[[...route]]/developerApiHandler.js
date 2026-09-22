@@ -146,10 +146,11 @@ async function authenticateApiKey(request, supabase) {
     };
   }
 
-  // Calculate current month usage across user account (from 1st of current month)
-  const currentMonthStart = new Date();
-  currentMonthStart.setDate(1);
-  const dateStr = currentMonthStart.toISOString().split('T')[0];
+  // Calculate current month usage across user account (from 1st of current month in UTC)
+  const nowDate = new Date();
+  const year = nowDate.getUTCFullYear();
+  const month = String(nowDate.getUTCMonth() + 1).padStart(2, '0');
+  const dateStr = `${year}-${month}-01`;
 
   let usageQuery = supabase
     .from('api_usage_daily')
@@ -663,16 +664,26 @@ export async function handleDeveloperApiGet(request, pathSegments) {
     }
 
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
+    thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+    const year30 = thirtyDaysAgo.getUTCFullYear();
+    const month30 = String(thirtyDaysAgo.getUTCMonth() + 1).padStart(2, '0');
+    const day30 = String(thirtyDaysAgo.getUTCDate()).padStart(2, '0');
+    const dateStr = `${year30}-${month30}-${day30}`;
 
     // Expose only non-sensitive aggregation fields (no internal api_key_id or user_id)
-    const { data: usageHistory } = await supabase
+    let historyQuery = supabase
       .from('api_usage_daily')
       .select('usage_date, total_requests, successful_requests, rate_limited_requests')
-      .eq('api_key_id', auth.keyRecord.id)
       .gte('usage_date', dateStr)
       .order('usage_date', { ascending: true });
+
+    if (auth.keyRecord.user_id) {
+      historyQuery = historyQuery.or(`api_key_id.eq.${auth.keyRecord.id},user_id.eq.${auth.keyRecord.user_id}`);
+    } else {
+      historyQuery = historyQuery.eq('api_key_id', auth.keyRecord.id);
+    }
+
+    const { data: usageHistory } = await historyQuery;
 
     return Response.json({
       status: 'success',

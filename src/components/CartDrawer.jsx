@@ -270,7 +270,7 @@ export function CartDrawer(props) {
                     <div className="cart-variants-list">
                       {group.items.map((item) => {
                         const unitPrice =
-                          hybridInfo && group.totalQuantity >= hybridInfo.setSize
+                          !isUnder999 && hybridInfo && group.totalQuantity >= hybridInfo.setSize
                             ? hybridInfo.wholesalePrice
                             : hybridInfo?.resellerPrice || getLocalizedPrice(customerPrice(item.variant.prices, priceAccess), currentCountry, exchangeRates).finalPrice;
 
