@@ -38,6 +38,8 @@ import {
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { getStorefrontSupabase } from '../services/boutiqueSyncService.js';
+import { clearProductDataCache, fetchProducts } from '../productData.js';
+import { useStorefront } from '../store/useStorefront.js';
 import { blogPosts } from '../data/blogPosts.js';
 import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
@@ -316,7 +318,16 @@ export function Admin({
       if (!response.ok) {
         throw new Error(data.error || 'Server sync request failed.');
       }
-      alert('Successfully synced Google Sheets to Supabase!');
+      clearProductDataCache();
+      try {
+        const freshProducts = await fetchProducts();
+        if (Array.isArray(freshProducts) && freshProducts.length > 0) {
+          useStorefront.getState().setProducts(freshProducts);
+        }
+      } catch (e) {
+        // Non-blocking storefront refresh
+      }
+      alert('Successfully synced Google Sheets to Supabase and refreshed catalog cache!');
       await loadAdminData();
     } catch (err) {
       alert('Sync failed: ' + err.message);

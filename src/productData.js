@@ -28,7 +28,7 @@ const moneyColumns = {
 const memoryCache = new Map();
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const BROWSER_CACHE_PREFIX = 'weave_cache_';
-const BROWSER_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const BROWSER_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (aligned with edge cache)
 
 function getBrowserStorageCache(key) {
   if (typeof window === 'undefined') return null;
@@ -990,8 +990,15 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
   
   try {
     const Papa = (await import('papaparse')).default;
+    const appendCacheBuster = (rawUrl) => {
+      if (!rawUrl) return rawUrl;
+      const separator = rawUrl.includes('?') ? '&' : '?';
+      return `${rawUrl}${separator}_t=${Date.now()}`;
+    };
+
     const fetchText = async (url) => {
-      const res = await fetch(url, { cache: 'no-store' });
+      const targetUrl = appendCacheBuster(url);
+      const res = await fetch(targetUrl, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Fetch failed for ${url}`);
       return res.text();
     };
@@ -999,7 +1006,8 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     // Gracefully handle hero sheet fetch failure so the entire sync doesn't abort
     const fetchHeroText = async (url) => {
       try {
-        const res = await fetch(url, { cache: 'no-store' });
+        const targetUrl = appendCacheBuster(url);
+        const res = await fetch(targetUrl, { cache: 'no-store' });
         if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
         return await res.text();
       } catch (err) {

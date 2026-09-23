@@ -21,12 +21,12 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
   } = useStorefront();
 
   useEffect(() => {
-    if (initialProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialProducts.length)) {
+    if (initialProducts.length > 0) {
       setProducts(initialProducts);
     }
-  }, [initialProducts, storeProducts.length, setProducts]);
+  }, [initialProducts, setProducts]);
 
-  const allProducts = (storeProducts.length >= initialProducts.length && storeProducts.length > 0) ? storeProducts : initialProducts;
+  const allProducts = initialProducts.length > 0 ? initialProducts : storeProducts;
 
   const priceAccess = useMemo(() => {
     return getBuyerAccess(user, buyerProfile);

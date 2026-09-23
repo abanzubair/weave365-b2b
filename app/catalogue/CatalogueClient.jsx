@@ -35,17 +35,15 @@ export default function CatalogueClient({
   } = useStorefront();
 
   useEffect(() => {
-    if (initialProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialProducts.length)) {
+    if (initialProducts.length > 0) {
       setProducts(initialProducts);
     }
-    if (initialConfigOptions && (!storeConfigOptions?.categories || storeConfigOptions.categories.length === 0)) {
+    if (initialConfigOptions) {
       setConfigOptions(initialConfigOptions);
     }
-  }, [initialProducts, initialConfigOptions, storeProducts.length, storeConfigOptions, setProducts, setConfigOptions]);
+  }, [initialProducts, initialConfigOptions, setProducts, setConfigOptions]);
 
-  const rawProducts = (storeProducts.length >= initialProducts.length && storeProducts.length > 0)
-    ? storeProducts
-    : initialProducts;
+  const rawProducts = initialProducts.length > 0 ? initialProducts : storeProducts;
   const config = (storeConfigOptions?.categories?.length > 0 ? storeConfigOptions : initialConfigOptions) || {
     categories: [],
     fabrics: [],

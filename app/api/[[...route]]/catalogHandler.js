@@ -26,9 +26,9 @@ const corsHeaders = {
 
 const cdnCacheHeaders = {
   'Content-Type': 'application/json',
-  'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
-  'CDN-Cache-Control': 'max-age=3600',
-  'Cloudflare-CDN-Cache-Control': 'max-age=3600',
+  'Cache-Control': 'public, max-age=120, s-maxage=300, stale-while-revalidate=600',
+  'CDN-Cache-Control': 'max-age=300',
+  'Cloudflare-CDN-Cache-Control': 'max-age=300',
   ...corsHeaders,
 };
 

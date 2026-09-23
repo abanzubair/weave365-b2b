@@ -7,7 +7,7 @@ import { getTopProductForCategory } from '../../src/utils/sortProducts.js';
 import CatalogueClient from '../catalogue/CatalogueClient.jsx';
 import SeoLandingPageClient from './SeoLandingPageClient.jsx';
 
-export const revalidate = 3600;
+export const revalidate = 300;
 export const runtime = 'edge';
 
 function getStaticLandingPagesFallback() {

@@ -3,7 +3,8 @@ import { getSeoMetadata } from '../src/utils/seoHelper.js';
 import { siteUrl } from '../src/config.js';
 import HomeRouteClient from './HomeRouteClient.jsx';
 
-export const revalidate = 3600; // Cache and revalidate every hour
+export const revalidate = 300; // Cache and revalidate every 5 minutes
+export const runtime = 'edge';
 
 export async function generateMetadata() {
   const heroSlides = await fetchHeroData().catch(() => []);

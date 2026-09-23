@@ -7,7 +7,7 @@ import { siteUrl, getCategorySlug } from '../../src/config.js';
 import CatalogPageSkeleton from '../../src/components/CatalogPageSkeleton.jsx';
 import CatalogueClient from './CatalogueClient.jsx';
 
-export const revalidate = 3600;
+export const revalidate = 300;
 export const runtime = 'edge';
 
 export async function generateMetadata({ searchParams }) {

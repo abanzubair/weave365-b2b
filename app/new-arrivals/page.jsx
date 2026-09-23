@@ -4,7 +4,8 @@ import { getTopProductForCatalogue } from '../../src/utils/sortProducts.js';
 import { siteUrl } from '../../src/config.js';
 import NewArrivalsClient from './NewArrivalsClient.jsx';
 
-export const revalidate = 3600;
+export const revalidate = 300;
+export const runtime = 'edge';
 
 export async function generateMetadata() {
   const products = await fetchProducts().catch(() => []);
