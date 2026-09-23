@@ -229,9 +229,14 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
       cleanUrl.includes('deskh');
     const isProductPhoto =
       !isBanner &&
+      !isFavicon &&
       (cleanUrl.includes('/suit/') ||
         cleanUrl.includes('/saree/') ||
-        resolvedImage.source?.includes('product'));
+        cleanUrl.includes('/06/') ||
+        /\/[0-9]{2,6}\//.test(cleanUrl) ||
+        resolvedImage.source?.includes('product') ||
+        resolvedImage.source?.includes('page_image') ||
+        Boolean(defaultMetadata?.firstImage));
 
     let imageWidth = callerImage?.width;
     let imageHeight = callerImage?.height;
