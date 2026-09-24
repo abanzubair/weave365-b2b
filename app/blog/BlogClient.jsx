@@ -10,7 +10,7 @@ export default function BlogClient({ initialBlogs = [] }) {
   const { blogs, setBlogs } = useStorefront();
 
   useEffect(() => {
-    if (initialBlogs.length > 0 && blogs.length === 0) {
+    if (initialBlogs.length > blogs.length) {
       setBlogs(initialBlogs);
     } else if (blogs.length === 0) {
       import('../../src/productData.js')
@@ -20,7 +20,8 @@ export default function BlogClient({ initialBlogs = [] }) {
     }
   }, [initialBlogs, blogs.length, setBlogs]);
 
-  const activeBlogs = blogs.length > 0 ? blogs : initialBlogs;
+  const activeBlogs = initialBlogs.length >= blogs.length ? initialBlogs : blogs;
 
   return <BlogList navigate={navigate} blogs={activeBlogs} />;
 }
+

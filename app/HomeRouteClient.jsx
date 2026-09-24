@@ -34,9 +34,6 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
     if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
       setHeroSlides(initialHeroSlides);
     }
-    if (initialBlogs.length > 0 && state.blogs.length === 0) {
-      setBlogs(initialBlogs);
-    }
 
     // Hydrate full catalog strictly during idle time after initial paint and vitals window
     let idleId;
@@ -65,7 +62,7 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
         window.cancelIdleCallback(idleId);
       }
     };
-  }, [initialProducts, initialHeroSlides, initialBlogs, setProducts, setHeroSlides, setBlogs]);
+  }, [initialProducts, initialHeroSlides, setProducts, setHeroSlides]);
 
   const activeProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
   const activeHeroSlides = storeHeroSlides.length > 0 ? storeHeroSlides : initialHeroSlides;

@@ -19,6 +19,7 @@ import { AppLink } from '../components/AppLink.jsx';
 import { siteUrl } from '../config.js';
 import { getStoredReferralCode, getOwnAffiliateCode } from '../utils/influencerHelpers.js';
 import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';
+import { blogPosts as fallbackStaticBlogs } from '../data/blogPosts.js';
 import '../styles/blog.css';
 
 const slugifyCategory = (cat) => {
@@ -83,7 +84,13 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
   }, [postSlug]);
 
   const post = useMemo(() => {
-    return blogs.find((p) => p.slug === postSlug) || null;
+    const found = blogs.find((p) => p.slug === postSlug);
+    if (found && found.content) return found;
+    const staticFound = fallbackStaticBlogs.find((p) => p.slug === postSlug);
+    if (staticFound && staticFound.content) {
+      return { ...found, ...staticFound };
+    }
+    return found || staticFound || null;
   }, [blogs, postSlug]);
 
   const relatedPosts = useMemo(() => {
