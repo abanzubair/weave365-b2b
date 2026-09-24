@@ -1315,19 +1315,23 @@ export function ProductDetail({
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  // Auto-scroll active thumbnail into view smoothly
+  // Auto-scroll active thumbnail into view smoothly within thumbnail container
   useEffect(() => {
     if (!thumbsRef.current) return;
     const timer = setTimeout(() => {
-      const activeThumb = thumbsRef.current?.querySelector('button.active');
+      const container = thumbsRef.current;
+      if (!container) return;
+      const activeThumb = container.querySelector('button.active');
       if (activeThumb) {
-        activeThumb.scrollIntoView({
+        const scrollLeft = activeThumb.offsetLeft - (container.clientWidth / 2) + (activeThumb.offsetWidth / 2);
+        const scrollTop = activeThumb.offsetTop - (container.clientHeight / 2) + (activeThumb.offsetHeight / 2);
+        container.scrollTo({
+          left: scrollLeft,
+          top: scrollTop,
           behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
         });
       }
-    }, 250);
+    }, 100);
     return () => clearTimeout(timer);
   }, [selectedImage]);
 
@@ -1498,8 +1502,8 @@ export function ProductDetail({
                     src={
                       selectedImage === image
                         ? (getOptimizedImageUrl(image, 'card') || fallbackProductImage)
-                        : (mounted && heroLoaded)
-                        ? getOptimizedImageUrl(image, 'thumbnail')
+                        : (index < 5 || (mounted && heroLoaded))
+                        ? (getOptimizedImageUrl(image, 'thumbnail') || fallbackProductImage)
                         : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 85"%3E%3C/svg%3E'
                     }
                     alt={`${product.title} view ${index + 1}`}

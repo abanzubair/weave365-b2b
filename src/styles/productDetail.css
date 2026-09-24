@@ -4447,11 +4447,29 @@
 
 /* --- UI/UX Pro Max Showcase Responsiveness --- */
 @media screen and (max-width: 1024px) {
+  .product-hero-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    gap: 24px !important;
+    margin-bottom: 32px !important;
+  }
+
   .product-media {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .product-info-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .product-media .catalog-main-image {
@@ -4479,18 +4497,24 @@
     overflow-x: auto !important;
     overflow-y: hidden !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     height: auto !important;
     max-height: none !important;
     padding: 6px 2px 12px !important;
     gap: 10px !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(183, 134, 70, 0.4) transparent !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x pan-y !important;
     overscroll-behavior-x: contain !important;
     overscroll-behavior-y: auto !important;
     scroll-behavior: smooth;
     cursor: grab;
+  }
+
+  .vertical-thumbs::-webkit-scrollbar {
+    display: none !important;
   }
 
   .vertical-thumbs:active {

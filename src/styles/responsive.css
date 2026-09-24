@@ -1365,7 +1365,7 @@
    PRODUCT PAGE — Tablet & Mobile Optimization (UI/UX Pro Max)
    Touch targets ≥ 44px · Fluid grid scaling · Premium spacing
    ═══════════════════════════════════════════════════════════════ */
-@media screen and (max-width: 1023px) {
+@media screen and (max-width: 1024px) {
   .product-view {
     width: 100% !important;
     padding: 0 var(--site-padding) 40px !important;
@@ -1373,14 +1373,21 @@
   }
 
   .product-hero-grid {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     gap: 24px !important;
   }
 
   .product-media {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 12px !important;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
 
   .catalog-main-image {
@@ -1410,12 +1417,14 @@
     overflow-x: auto !important;
     overflow-y: hidden !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
     height: auto !important;
     max-height: none !important;
     padding: 6px 2px 12px !important;
     gap: 10px !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(183, 134, 70, 0.4) transparent !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-x pan-y !important;
     overscroll-behavior-x: contain !important;
@@ -1429,18 +1438,7 @@
   }
 
   .vertical-thumbs::-webkit-scrollbar {
-    display: block !important;
-    height: 4px !important;
-  }
-
-  .vertical-thumbs::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.04) !important;
-    border-radius: 4px !important;
-  }
-
-  .vertical-thumbs::-webkit-scrollbar-thumb {
-    background: rgba(183, 134, 70, 0.4) !important;
-    border-radius: 4px !important;
+    display: none !important;
   }
 
   .vertical-thumbs button {
