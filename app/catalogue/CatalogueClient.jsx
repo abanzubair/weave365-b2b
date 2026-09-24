@@ -9,7 +9,7 @@ import { getBuyerAccess } from '../../src/utils/buyerAccess.js';
 import { checkProductPriceInRange } from '../../src/storefrontShared.jsx';
 import { sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import { upsertCart, persistCart, persistFavorites } from '../../src/utils/cartHelpers.js';
-import { homeCategoryNames } from '../../src/views/Home.jsx';
+const defaultCategoryNames = ['Saree', 'Suit', 'Dupatta', 'Lehenga', 'Under 999'];
 import { getCategorySlug } from '../../src/config.js';
 
 export default function CatalogueClient({
@@ -59,7 +59,7 @@ export default function CatalogueClient({
   const categories = useMemo(() => {
     const list = config.categories?.length > 0
       ? ['All', ...config.categories]
-      : ['All', ...homeCategoryNames];
+      : ['All', ...defaultCategoryNames];
     return list.filter(
       (c) => c && c.toLowerCase().trim() !== 'fabric' && c.toLowerCase().trim() !== 'fabrics'
     );
@@ -189,6 +189,7 @@ export default function CatalogueClient({
       const colorOptionNames = (product.colorOptions || []).map((c) => c.name);
       const variantColors = (product.variants || []).map((v) => v.color);
       const csvColors = [
+        ...(Array.isArray(product.csvColors) ? product.csvColors : []),
         product.raw?.Color,
         product.raw?.Col,
         product.raw?.Colors,

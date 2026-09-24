@@ -4,7 +4,6 @@
  * Sizing, typography, and ratios aligned with the site design system.
  */
 import React from 'react';
-import '../styles/productTrustStrip.css';
 import { Globe, IndianRupee, ShieldCheck, Headphones } from './icons.jsx';
 
 const trustItems = [

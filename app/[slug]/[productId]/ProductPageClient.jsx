@@ -15,6 +15,7 @@ export default function ProductPageClient({
   initialAllProducts = [],
   initialColorName = null,
   initialVariantCode = null,
+  initialReviews = [],
 }) {
   const navigate = useAppNavigate();
   const {
@@ -141,6 +142,7 @@ export default function ProductPageClient({
     <ProductDetailWrapper
       productId={productId}
       initialProduct={initialProduct}
+      initialReviews={initialReviews}
       products={allProducts}
       productsById={productsById}
       navigate={navigate}

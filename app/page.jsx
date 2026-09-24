@@ -58,29 +58,31 @@ export default async function HomePage() {
       const v = p.variants?.[0];
       return v?.prices?.mrp && v?.prices?.offer && v.prices.offer < v.prices.mrp;
     })
-    .slice(0, 6)
+    .slice(0, 4)
     .forEach((p) => homeProductMap.set(p.id, p));
 
   // 2. Bestsellers
   unarchived
     .filter((p) => p.isTopSeller)
-    .slice(0, 12)
+    .slice(0, 6)
     .forEach((p) => homeProductMap.set(p.id, p));
 
   // 3. New arrivals
   unarchived
     .filter((p) => p.isNew)
-    .slice(0, 12)
-    .forEach((p) => homeProductMap.set(p.id, p));
+    .slice(0, 6)
+    .forEach((p) => {
+      if (homeProductMap.size < 12) homeProductMap.set(p.id, p);
+    });
 
-  // 4. Fill up to 24 products for category preview samples if needed
-  unarchived.slice(0, 24).forEach((p) => {
-    if (homeProductMap.size < 24) homeProductMap.set(p.id, p);
+  // 4. Fill up to 12 products for category preview samples if needed
+  unarchived.slice(0, 12).forEach((p) => {
+    if (homeProductMap.size < 12) homeProductMap.set(p.id, p);
   });
 
-  const rawProducts = homeProductMap.size > 0 ? Array.from(homeProductMap.values()) : allProducts.slice(0, 24);
+  const rawProducts = homeProductMap.size > 0 ? Array.from(homeProductMap.values()) : allProducts.slice(0, 12);
 
-  // Trim heavy unneeded raw and description fields to keep homepage SSR payload lightweight while preserving complete images and variants
+  // Trim heavy unneeded raw, extra images, and variant fields to keep homepage SSR payload minimal
   const products = rawProducts.map((p) => ({
     id: p.id,
     title: p.title,
@@ -88,15 +90,14 @@ export default async function HomePage() {
     purity: p.purity || '',
     fabric: p.fabric || '',
     work: p.work || '',
-    images: Array.isArray(p.images) ? p.images : [],
-    variants: (p.variants || []).map((v) => ({
+    images: Array.isArray(p.images) && p.images[0] ? [p.images[0]] : [],
+    variants: (p.variants || []).slice(0, 1).map((v) => ({
       code: v.code || '',
       color: v.color || '',
       prices: v.prices || {},
       stock: v.stock,
-      images: Array.isArray(v.images) ? v.images : [],
     })),
-    colorOptions: p.colorOptions || [],
+    colorOptions: (p.colorOptions || []).slice(0, 1),
     totalColors: p.totalColors || p.variants?.length || 1,
     statusTags: p.statusTags || [],
     isNew: Boolean(p.isNew),
@@ -120,11 +121,39 @@ export default async function HomePage() {
     readTime: b.readTime || '',
   }));
 
+  // Trim hero slides to card-only fields
+  const trimmedHeroSlides = (heroSlides || []).slice(0, 4).map((s) => ({
+    type: s.type || '',
+    image: s.image || '',
+    video: s.video || '',
+    title: s.title || '',
+    subtitle: s.subtitle || '',
+    link: s.link || '',
+  }));
+
   return (
-    <HomeRouteClient
-      initialProducts={products}
-      initialHeroSlides={heroSlides}
-      initialBlogs={trimmedBlogs}
-    />
+    <>
+      <link
+        rel="preload"
+        as="image"
+        type="image/webp"
+        href="/assets/banner/heroFreeWebsite-400.webp"
+        media="(max-width: 640px)"
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
+        as="image"
+        type="image/avif"
+        href="/assets/banner/heroFreeWebsite-600.avif"
+        media="(min-width: 641px)"
+        fetchPriority="high"
+      />
+      <HomeRouteClient
+        initialProducts={products}
+        initialHeroSlides={trimmedHeroSlides}
+        initialBlogs={trimmedBlogs}
+      />
+    </>
   );
 }

@@ -3,7 +3,6 @@
  * Purpose: Editorial, non-card, full-width (1600px) layout for WhatsApp updates and weaver reviews.
  */
 import React from 'react';
-import '../styles/newsletter.css';
 import { Star, ArrowRight } from './icons.jsx';
 import { useRouter } from 'next/navigation';
 import { WhatsappIcon } from './WhatsappIcon.jsx';

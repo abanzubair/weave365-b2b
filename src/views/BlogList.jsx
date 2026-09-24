@@ -206,7 +206,7 @@ export function BlogList({ navigate, blogs = [] }) {
         <div className="blog-list-content-column">
           {remainingPosts.length > 0 ? (
             <section className="blog-grid" style={{ marginBottom: 0 }}>
-              {remainingPosts.map((post) => (
+              {remainingPosts.map((post, idx) => (
                 <AppLink 
                   key={post.slug} 
                   to="blog"
@@ -222,6 +222,7 @@ export function BlogList({ navigate, blogs = [] }) {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
                       alt={post.title} 
                       loading="lazy"
+                      fetchPriority="low"
                       decoding="async"
                       width={382}
                       height={200}
@@ -247,7 +248,7 @@ export function BlogList({ navigate, blogs = [] }) {
                       </span>
                     </div>
 
-                    <h3>{post.title}</h3>
+                    <h2>{post.title}</h2>
                     <p>{post.intro}</p>
 
                     <span 
@@ -262,7 +263,7 @@ export function BlogList({ navigate, blogs = [] }) {
             </section>
           ) : (
             <div className="blog-empty-state">
-              <h3>No articles found</h3>
+              <h2>No articles found</h2>
               {searchQuery ? (
                 <>
                   <p>No results matched your search for "{searchQuery}". Try using different keywords or resetting the filters.</p>
@@ -325,9 +326,9 @@ export function BlogList({ navigate, blogs = [] }) {
             
             {/* Premium Sourcing CTA Widget */}
             <div className="sidebar-widget sidebar-cta-widget" style={{ marginTop: '2.5rem', padding: '2rem' }}>
-              <h3 style={{ fontSize: 'var(--h5-size)', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+              <h2 style={{ fontSize: 'var(--h5-size)', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                 B2B Sourcing Portal
-              </h3>
+              </h2>
               <p style={{ fontSize: 'var(--body-size)', lineHeight: '1.5', opacity: 0.85, marginBottom: '1.5rem', fontWeight: 400 }}>
                 Source authentic Banarasi sarees and suits direct from Varanasi weavers with low MOQs and reliable global shipping.
               </p>

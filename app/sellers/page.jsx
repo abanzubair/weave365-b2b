@@ -22,9 +22,5 @@ export async function generateMetadata() {
 }
 
 export default function SellersAliasRoute() {
-  return (
-    <Suspense fallback={null}>
-      <SellerPageClient />
-    </Suspense>
-  );
+  return <SellerPageClient />;
 }

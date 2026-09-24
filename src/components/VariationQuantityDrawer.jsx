@@ -4,7 +4,6 @@
  * Enables selecting multiple colors, setting design-specific wholesale quantities, and calculating subtotals.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import '../styles/variationQuantityDrawer.css';
 import { Minus, Plus, ShoppingBag, X, Check, Info } from './icons.jsx';
 import {
   calculateLocalizedHybridProductPrice,

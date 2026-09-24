@@ -4,6 +4,8 @@ import { seoCategoryRoutes, seoCategoryMap, getCategorySlug, siteUrl } from '../
 import { seoLandingPages } from '../../src/data/seoLandingPages.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
 import { getTopProductForCategory } from '../../src/utils/sortProducts.js';
+import { getOptimizedImageUrl, getImageSrcSet } from '../../src/utils/imageOptimizer.js';
+import { sanitizeCatalogProducts } from '../../src/utils/catalogSanitizer.js';
 import CatalogueClient from '../catalogue/CatalogueClient.jsx';
 import SeoLandingPageClient from './SeoLandingPageClient.jsx';
 
@@ -108,13 +110,29 @@ export default async function SlugPage({ params, searchParams }) {
       fetchConfigOptions().catch(() => null),
     ]);
 
+    const cleaned = sanitizeCatalogProducts(products);
+    const topProduct = getTopProductForCategory(products, categoryName);
+    const firstImage = topProduct?.images?.[0] || cleaned[0]?.images?.[0] || null;
+
     return (
-      <CatalogueClient
-        initialProducts={products}
-        initialConfigOptions={configOptions}
-        initialCategory={categoryName}
-        categorySlug={canonicalSlug}
-      />
+      <>
+        {firstImage && (
+          <link
+            rel="preload"
+            as="image"
+            href={getOptimizedImageUrl(firstImage, 'card')}
+            imageSrcSet={getImageSrcSet(firstImage, ['card', 'listing'])}
+            imageSizes="(max-width: 820px) 50vw, 300px"
+            fetchPriority="high"
+          />
+        )}
+        <CatalogueClient
+          initialProducts={cleaned}
+          initialConfigOptions={configOptions}
+          initialCategory={categoryName}
+          categorySlug={canonicalSlug}
+        />
+      </>
     );
   }
 
@@ -160,7 +178,7 @@ export default async function SlugPage({ params, searchParams }) {
       <SeoLandingPageClient
         slug={slug}
         pageData={pageData}
-        initialProducts={products}
+        initialProducts={sanitizeCatalogProducts(products)}
         initialLandingPages={allLandingPages}
       />
     </>

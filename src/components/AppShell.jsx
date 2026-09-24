@@ -144,9 +144,11 @@ export function AppShell({ children }) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Lazy-load products & config options only when needed
+  // Lazy-load products & config options strictly during idle or when shell features require them
   useEffect(() => {
-    // Skip eager product fetch on homepage and purely static text/policy pages
+    // Pages that already have their own SSR product data or don't need products
+    const isCategoryOrCatalogue = pathname === '/catalogue' || pathname === '/wholesale-catalogue' || pathname === '/new-arrivals';
+    const isProductPage = /^\/[^/]+\/[^/]+/.test(pathname);
     const skipProductFetchPages = [
       '/',
       '/privacy-security',
@@ -156,18 +158,40 @@ export function AppShell({ children }) {
       '/returns-cancellation',
       '/about',
       '/contact',
+      '/bulk-inquiry',
+      '/reviews',
+      '/faq',
+      '/reseller-faqs',
     ];
 
-    if (skipProductFetchPages.includes(pathname)) {
+    if (skipProductFetchPages.includes(pathname) || isCategoryOrCatalogue || isProductPage) {
       return;
     }
 
-    if (!products || products.length === 0) {
-      import('../productData.js').then((m) => m.fetchProducts()).then(setProducts).catch(console.error);
-    }
-    if (!configOptions || Object.keys(configOptions).length === 0) {
-      import('../productData.js').then((m) => m.fetchConfigOptions()).then(setConfigOptions).catch(console.error);
-    }
+    let idleId;
+    const timer = setTimeout(() => {
+      const runFetch = () => {
+        if (!products || products.length === 0) {
+          import('../productData.js').then((m) => m.fetchProducts()).then(setProducts).catch(() => {});
+        }
+        if (!configOptions || Object.keys(configOptions).length === 0) {
+          import('../productData.js').then((m) => m.fetchConfigOptions()).then(setConfigOptions).catch(() => {});
+        }
+      };
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(runFetch, { timeout: 15000 });
+      } else {
+        runFetch();
+      }
+    }, 6000);
+
+    return () => {
+      clearTimeout(timer);
+      if (idleId && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+    };
   }, [pathname, products, configOptions, setProducts, setConfigOptions]);
 
   // Listen for vendor stock real-time sync events from developer panel

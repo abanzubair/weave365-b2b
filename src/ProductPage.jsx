@@ -36,8 +36,24 @@ import {
 } from './components/icons.jsx';
 import { storeConfig, getProductCategorySlug, getCategorySlug, siteUrl } from './config.js';
 import './styles/productDetail.css';
-import { VariationQuantityDrawer } from './components/VariationQuantityDrawer.jsx';
-import { ResellerShareModal } from './components/ResellerShareModal.jsx';
+import dynamic from 'next/dynamic';
+
+const VariationQuantityDrawer = dynamic(
+  () => import('./components/VariationQuantityDrawer.jsx').then((m) => m.VariationQuantityDrawer),
+  { ssr: false }
+);
+const ResellerShareModal = dynamic(
+  () => import('./components/ResellerShareModal.jsx').then((m) => m.ResellerShareModal),
+  { ssr: false }
+);
+const EnquiryPopup = dynamic(
+  () => import('./components/EnquiryPopup.jsx').then((m) => m.EnquiryPopup),
+  { ssr: false }
+);
+const SliderCaptcha = dynamic(
+  () => import('./components/SliderCaptcha.jsx'),
+  { ssr: false }
+);
 import {
   buildSingleProductWhatsappUrl,
   customerPrice,
@@ -49,27 +65,35 @@ import {
   roundCurrency,
 } from './storefrontShared.jsx';
 import { useCountryCurrency } from './store/useCountryCurrency.js';
-import { Newsletter } from './components/Newsletter.jsx';
+const Newsletter = dynamic(
+  () => import('./components/Newsletter.jsx').then((m) => m.Newsletter),
+  { ssr: false }
+);
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
-import { ProductCard } from './components/ProductCard.jsx';
-import { ResellerWhatsappShare } from './components/ResellerWhatsappShare.jsx';
+const ProductCard = dynamic(
+  () => import('./components/ProductCard.jsx').then((m) => m.ProductCard),
+  { ssr: false }
+);
+const ResellerWhatsappShare = dynamic(
+  () => import('./components/ResellerWhatsappShare.jsx').then((m) => m.ResellerWhatsappShare),
+  { ssr: false }
+);
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
-import { EnquiryPopup } from './components/EnquiryPopup.jsx';
 import { priceNoticeForAccess } from './utils/buyerAccess.js';
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
   getOriginalImageUrl
 } from './utils/imageOptimizer.js';
-import { isSupabaseConfigured, supabase } from './supabaseClient.js';
 import { usePageSeo } from './hooks/usePageSeo.js';
 import { getStoredReferralCode, getOwnAffiliateCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
-import SliderCaptcha from './components/SliderCaptcha.jsx';
-import { SharpStar } from './views/ReviewsPage.jsx';
-import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
-import './styles/resellerTools.css';
+import { SharpStar } from './components/icons.jsx';
+const ProductPageSkeleton = dynamic(
+  () => import('./components/ProductPageSkeleton.jsx'),
+  { ssr: false }
+);
 
 export function ProductDetailWrapper(props) {
   let product = props.productsById?.get(props.productId);
@@ -147,6 +171,7 @@ export function ProductDetail({
   onReady,
   initialColorName = null,
   initialVariantCode = null,
+  initialReviews = [],
 }) {
   const resolvedInitial = useMemo(() => {
     let colorQuery = initialColorName;
@@ -213,6 +238,27 @@ export function ProductDetail({
   const [enquiryState, setEnquiryState] = useState('idle');
   const [enquiryPopupOpen, setEnquiryPopupOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const [showRelated, setShowRelated] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const handleIdle = () => {
+        setHeroLoaded(true);
+        setShowRelated(true);
+      };
+      // Defer background thumbnails and below-fold rails after the critical vitals window
+      const timer = setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(handleIdle, { timeout: 4000 });
+        } else {
+          handleIdle();
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [whatsappShareOpen, setWhatsappShareOpen] = useState(false);
@@ -276,7 +322,7 @@ export function ProductDetail({
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !window.location.hash) {
+    if (typeof window !== 'undefined' && window.scrollY > 0 && !window.location.hash) {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   }, [product?.id]);
@@ -337,8 +383,8 @@ export function ProductDetail({
   const mainImageRef = useRef(null);
 
   // Product Reviews states
-  const [dbReviews, setDbReviews] = useState([]);
-  const [reviewsStatus, setReviewsStatus] = useState('loading');
+  const [dbReviews, setDbReviews] = useState(initialReviews);
+  const [reviewsStatus, setReviewsStatus] = useState('ready');
   const [reviewsError, setReviewsError] = useState('');
 
   // Submit Form states
@@ -356,49 +402,6 @@ export function ProductDetail({
   const [reviewSubmitSuccess, setReviewSubmitSuccess] = useState(false);
   const [reviewSubmitError, setReviewSubmitError] = useState('');
   const [hoveredRating, setHoveredRating] = useState(0);
-
-  // Fetch product-specific reviews
-  useEffect(() => {
-    let active = true;
-    async function loadReviews() {
-      if (!product?.id) return;
-      setReviewsStatus('loading');
-      setReviewsError('');
-      try {
-        if (isSupabaseConfigured) {
-          const { data, error: dbError } = await supabase
-            .from('product_reviews')
-            .select('*')
-            .eq('product_id', product.id)
-            .eq('status', 'approved')
-            .order('created_at', { ascending: false });
-
-          if (dbError) throw dbError;
-          if (active) {
-            setDbReviews(data || []);
-            setReviewsStatus('ready');
-          }
-        } else {
-          // Local storage fallback
-          const localStr = localStorage.getItem(`weave365_local_product_reviews_${product.id}`);
-          const localReviews = localStr ? JSON.parse(localStr) : [];
-          if (active) {
-            setDbReviews(localReviews);
-            setReviewsStatus('ready');
-          }
-        }
-      } catch (err) {
-        console.error('Error loading product reviews:', err.message || err);
-        if (active) {
-          setDbReviews([]);
-          setReviewsStatus('ready'); // fallback to seeds gracefully
-        }
-      }
-    }
-
-    void loadReviews();
-    return () => { active = false; };
-  }, [product?.id]);
 
   // Pre-fill reviewer name inline during render if user/priceAccess changes
   const userObj = user || (priceAccess?.userId ? { id: priceAccess.userId, user_metadata: { full_name: priceAccess.userFullName || '', business_name: priceAccess.businessName || '' } } : null);
@@ -534,7 +537,8 @@ export function ProductDetail({
     }
 
     try {
-      if (isSupabaseConfigured) {
+      const { supabase, isSupabaseConfigured } = await import('./supabaseClient.js');
+      if (isSupabaseConfigured && supabase) {
         let query = supabase
           .from('product_reviews')
           .insert([newReview]);
@@ -1032,7 +1036,8 @@ export function ProductDetail({
       setIsDownloading(true);
 
       // 2. Try Database Insert FIRST to act as a lock
-      if (isSupabaseConfigured) {
+      const { supabase, isSupabaseConfigured } = await import('./supabaseClient.js');
+      if (isSupabaseConfigured && supabase) {
         const { error } = await supabase.from('download_logs').insert({
           user_id: userId,
           product_id: productId
@@ -1217,6 +1222,8 @@ export function ProductDetail({
   }
 
   useEffect(() => {
+    // Gallery height matching is desktop-only (>1024px) where vertical-thumbs is scrollable alongside the main image
+    if (typeof window === 'undefined' || window.innerWidth <= 1024) return undefined;
     const mainImageElement = mainImageRef.current;
     if (!mainImageElement || typeof ResizeObserver === 'undefined') return undefined;
 
@@ -1225,7 +1232,10 @@ export function ProductDetail({
       setGalleryHeight((currentHeight) => (currentHeight === nextHeight ? currentHeight : nextHeight));
     };
 
-    syncGalleryHeight(mainImageElement.getBoundingClientRect().height);
+    // Defer measurement to avoid synchronous reflow during initial hydration
+    const timer = setTimeout(() => {
+      if (mainImageElement) syncGalleryHeight(mainImageElement.getBoundingClientRect().height);
+    }, 150);
 
     const observer = new ResizeObserver((entries) => {
       const [entry] = entries;
@@ -1237,6 +1247,7 @@ export function ProductDetail({
     observer.observe(mainImageElement);
 
     return () => {
+      clearTimeout(timer);
       observer.disconnect();
     };
   }, [product.id]);
@@ -1307,14 +1318,17 @@ export function ProductDetail({
   // Auto-scroll active thumbnail into view smoothly
   useEffect(() => {
     if (!thumbsRef.current) return;
-    const activeThumb = thumbsRef.current.querySelector('button.active');
-    if (activeThumb) {
-      activeThumb.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
-    }
+    const timer = setTimeout(() => {
+      const activeThumb = thumbsRef.current?.querySelector('button.active');
+      if (activeThumb) {
+        activeThumb.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      }
+    }, 250);
+    return () => clearTimeout(timer);
   }, [selectedImage]);
 
   const goToNextImage = useCallback(() => {
@@ -1387,68 +1401,6 @@ export function ProductDetail({
         <div className="product-hero-grid">
           <div className="product-media">
             <div
-              className="vertical-thumbs"
-              ref={thumbsRef}
-              style={galleryStyle}
-              onMouseDown={handleThumbsMouseDown}
-              onMouseMove={handleThumbsMouseMove}
-              onMouseUp={handleThumbsMouseUp}
-              onMouseLeave={handleThumbsMouseUp}
-            >
-              {product.images.map((image, index) => (
-                <button type="button"
-                  key={image}
-                  className={selectedImage === image ? 'active' : ''}
-                  onClick={() => {
-                    if (hasDraggedThumbs.current) return;
-                    handleImageChange(image);
-                  }}
-                >
-                  <img
-                    src={getOptimizedImageUrl(image, 'thumbnail')}
-                    alt={`${product.title} view ${index + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    width={64}
-                    height={85}
-                    onError={(e) => {
-                      const raw = getOriginalImageUrl(image);
-                      if (e.target.src !== raw && raw) {
-                        e.target.src = raw;
-                      } else {
-                        e.target.style.opacity = '0';
-                      }
-                    }}
-                  />
-                </button>
-              ))}
-              {product.video && (
-                <button type="button"
-                  className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
-                  onClick={() => {
-                    if (hasDraggedThumbs.current) return;
-                    setSelectedImage(product.video);
-                  }}
-                >
-                  <div className="video-thumb-container">
-                    <img
-                      src={`https://img.youtube.com/vi/${product.video.split('/').pop().split('?')[0]}/mqdefault.jpg`}
-                      alt="Product Video Thumbnail"
-                      loading="lazy"
-                      width={64}
-                      height={85}
-                    />
-                    <div className="play-overlay">
-                      <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </button>
-              )}
-            </div>
-
-            <div
               className="catalog-main-image"
               ref={mainImageRef}
               onTouchStart={handleMainTouchStart}
@@ -1467,12 +1419,13 @@ export function ProductDetail({
               ) : (
                 <>
                   <img
-                    src={getOptimizedImageUrl(selectedImage || product.images[0], 'detail') || fallbackProductImage}
-                    srcSet={getImageSrcSet(selectedImage || product.images[0], ['listing', 'detail'])}
-                    sizes="(max-width: 768px) 100vw, 600px"
+                    src={getOptimizedImageUrl(selectedImage || product.images[0], 'card') || fallbackProductImage}
+                    srcSet={getImageSrcSet(selectedImage || product.images[0], ['card', 'listing', 'detail'])}
+                    sizes="(max-width: 640px) 120px, 600px"
                     alt={product.title}
+                    loading="eager"
                     fetchPriority="high"
-                    decoding="async"
+                    decoding="sync"
                     width={600}
                     height={800}
                     onError={(e) => {
@@ -1518,6 +1471,77 @@ export function ProductDetail({
                     <ZoomIn size={18} />
                   </button>
                 </>
+              )}
+            </div>
+
+            <div
+              className="vertical-thumbs"
+              ref={thumbsRef}
+              style={galleryStyle}
+              onMouseEnter={() => setHeroLoaded(true)}
+              onTouchStart={() => setHeroLoaded(true)}
+              onMouseDown={handleThumbsMouseDown}
+              onMouseMove={handleThumbsMouseMove}
+              onMouseUp={handleThumbsMouseUp}
+              onMouseLeave={handleThumbsMouseUp}
+            >
+              {product.images.map((image, index) => (
+                <button type="button"
+                  key={image}
+                  className={selectedImage === image ? 'active' : ''}
+                  onClick={() => {
+                    if (hasDraggedThumbs.current) return;
+                    handleImageChange(image);
+                  }}
+                >
+                  <img
+                    src={
+                      selectedImage === image
+                        ? (getOptimizedImageUrl(image, 'card') || fallbackProductImage)
+                        : (mounted && heroLoaded)
+                        ? getOptimizedImageUrl(image, 'thumbnail')
+                        : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 85"%3E%3C/svg%3E'
+                    }
+                    alt={`${product.title} view ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
+                    width={64}
+                    height={85}
+                    onError={(e) => {
+                      const raw = getOriginalImageUrl(image);
+                      if (e.target.src !== raw && raw) {
+                        e.target.src = raw;
+                      } else {
+                        e.target.style.opacity = '0';
+                      }
+                    }}
+                  />
+                </button>
+              ))}
+              {product.video && (
+                <button type="button"
+                  className={selectedImage === product.video ? 'active video-thumb' : 'video-thumb'}
+                  onClick={() => {
+                    if (hasDraggedThumbs.current) return;
+                    setSelectedImage(product.video);
+                  }}
+                >
+                  <div className="video-thumb-container">
+                    <img
+                      src={`https://img.youtube.com/vi/${product.video.split('/').pop().split('?')[0]}/mqdefault.jpg`}
+                      alt="Product Video Thumbnail"
+                      loading="lazy"
+                      width={64}
+                      height={85}
+                    />
+                    <div className="play-overlay">
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
               )}
             </div>
 
@@ -1693,7 +1717,7 @@ export function ProductDetail({
                       View Color Grid ↗
                     </button>
                   </div>
-                  <div className="color-swatch-row clean-scroll" role="list" aria-label="Available colors">
+                  <div className="color-swatch-row clean-scroll" role="group" aria-label="Available colors">
                     {colorOptions.map((option, index) => {
                       const optionName = option.name || `Color ${index + 1}`;
                       const isSelected = selectedColorName === option.name || selectedImage === option.image;
@@ -1712,6 +1736,7 @@ export function ProductDetail({
                             alt={optionName}
                             loading="lazy"
                             decoding="async"
+                            fetchPriority="low"
                             width={48}
                             height={48}
                             onError={(e) => {
@@ -2364,19 +2389,23 @@ export function ProductDetail({
             </button>
 
             <div className="product-row scrollable-row" id="recommendations-row">
-              {recommendationItems.slice(0, 10).map((item, index) => (
-                <ProductCard
-                  key={`${item.id}-${index}`}
-                  product={item}
-                  variant={item.variants[0]}
-                  navigate={navigate}
-                  addToCart={addToCart}
-                  toggleFavorite={toggleFavorite}
-                  isFavorite={favoriteKeys.has(item.id)}
-                  priceAccess={priceAccess}
-                  openAuth={openAuth}
-                />
-              ))}
+              {showRelated ? (
+                recommendationItems.slice(0, 10).map((item, index) => (
+                  <ProductCard
+                    key={`${item.id}-${index}`}
+                    product={item}
+                    variant={item.variants[0]}
+                    navigate={navigate}
+                    addToCart={addToCart}
+                    toggleFavorite={toggleFavorite}
+                    isFavorite={favoriteKeys.has(item.id)}
+                    priceAccess={priceAccess}
+                    openAuth={openAuth}
+                  />
+                ))
+              ) : (
+                <div style={{ minHeight: '360px', width: '100%' }} />
+              )}
             </div>
 
             <button type="button"

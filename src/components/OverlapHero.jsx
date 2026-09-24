@@ -87,32 +87,25 @@ export function OverlapHero({ navigate }) {
           <div className="overlap-hero-card">
             <picture className="overlap-hero-picture">
               <source
+                media="(min-width: 641px)"
                 type="image/avif"
-                srcSet={`${getOptimizedImageUrl(CDN_HERO_URL, 'card')} 450w, ${getOptimizedImageUrl(CDN_HERO_URL, 'listing')} 800w, ${getOptimizedImageUrl(CDN_HERO_URL, 'detail')} 1400w`}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+                srcSet="/assets/banner/heroFreeWebsite-600.avif"
               />
               <source
+                media="(min-width: 641px)"
                 type="image/webp"
-                srcSet={`${getOptimizedImageUrl(CDN_HERO_URL, 'card')} 450w, ${getOptimizedImageUrl(CDN_HERO_URL, 'listing')} 800w, ${getOptimizedImageUrl(CDN_HERO_URL, 'detail')} 1400w`}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+                srcSet="/assets/banner/heroFreeWebsite-600.webp"
               />
               <img
-                src={getOptimizedImageUrl(CDN_HERO_URL, 'listing')}
-                srcSet={`${getOptimizedImageUrl(CDN_HERO_URL, 'card')} 450w, ${getOptimizedImageUrl(CDN_HERO_URL, 'listing')} 800w, ${getOptimizedImageUrl(CDN_HERO_URL, 'detail')} 1400w`}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+                src="/assets/banner/heroFreeWebsite-400.webp"
                 alt="Source Banarasi sarees and suits from Varanasi"
                 className="overlap-hero-img"
                 draggable="false"
+                loading="eager"
                 fetchPriority="high"
                 decoding="sync"
                 width={600}
                 height={450}
-                onError={(e) => {
-                  if (e.currentTarget.src !== HERO_IMAGE_URL) {
-                    e.currentTarget.src = HERO_IMAGE_URL;
-                    e.currentTarget.removeAttribute('srcset');
-                  }
-                }}
               />
             </picture>
           </div>

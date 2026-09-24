@@ -7,7 +7,7 @@
  */
 
 import { create } from 'zustand';
-import { DEFAULT_BASELINE_RATES } from '../services/exchangeRateService.js';
+import { DEFAULT_BASELINE_RATES } from '../constants/currencyRates.js';
 import { getLocalizedPrice, calculateLocalizedHybridProductPrice, calculateLocalizedHybridCartTotals, formatCurrency } from '../services/pricingService.js';
 
 export const INITIAL_COUNTRIES = [

@@ -214,7 +214,7 @@
 }
 
 .flow-tab-btn.active {
-  background-color: var(--gold);
+  background-color: var(--gold-dark);
   color: var(--white);
 }
 
@@ -283,7 +283,8 @@
   margin-bottom: 0.75rem;
 }
 
-.flow-node h4 {
+.flow-node h4,
+.flow-node h3 {
   font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 600;
@@ -684,7 +685,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--gold);
+  background-color: var(--gold-dark);
   color: var(--white);
   text-decoration: none;
   font-family: var(--font-ui);
@@ -698,7 +699,7 @@
 }
 
 .cta-btn-primary:hover {
-  background-color: var(--gold-dark);
+  background-color: #6d4e28;
 }
 
 .cta-btn-whatsapp {

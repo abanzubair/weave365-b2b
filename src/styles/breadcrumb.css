@@ -45,8 +45,8 @@
 
 .breadcrumb-link,
 .breadcrumb-link-btn {
-  color: var(--muted, #6d5946);
-  opacity: 0.72;
+  color: #594636;
+  opacity: 1;
   text-decoration: none;
   background: none;
   border: none;
@@ -73,8 +73,8 @@
 }
 
 .breadcrumb-text {
-  color: var(--muted, #6d5946);
-  opacity: 0.72;
+  color: #594636;
+  opacity: 1;
 }
 
 .breadcrumb-separator {

@@ -25,38 +25,46 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
     setCartOpen,
   } = useStorefront();
 
-  // Sync initial SSR data to store in background after initial render settles
+  // Sync initial SSR data to store immediately, defer background catalog hydration to idle time
   useEffect(() => {
-    const timer = setTimeout(() => {
-      // Hydrate full catalog in background so subsequent client navigations have all products and images
-      import('../src/productData.js')
-        .then((m) => m.fetchProducts())
-        .then((all) => {
-          if (all && all.length > 0) {
-            setProducts(all);
-          } else {
-            const state = useStorefront.getState();
-            if (initialProducts.length > 0 && state.products.length === 0) {
-              setProducts(initialProducts);
-            }
-          }
-        })
-        .catch(() => {
-          const state = useStorefront.getState();
-          if (initialProducts.length > 0 && state.products.length === 0) {
-            setProducts(initialProducts);
-          }
-        });
+    const state = useStorefront.getState();
+    if (initialProducts.length > 0 && state.products.length === 0) {
+      setProducts(initialProducts);
+    }
+    if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
+      setHeroSlides(initialHeroSlides);
+    }
+    if (initialBlogs.length > 0 && state.blogs.length === 0) {
+      setBlogs(initialBlogs);
+    }
 
-      const state = useStorefront.getState();
-      if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
-        setHeroSlides(initialHeroSlides);
+    // Hydrate full catalog strictly during idle time after initial paint and vitals window
+    let idleId;
+    const timer = setTimeout(() => {
+      const runHydration = () => {
+        import('../src/productData.js')
+          .then((m) => m.fetchProducts())
+          .then((all) => {
+            if (all && all.length > 0) {
+              setProducts(all);
+            }
+          })
+          .catch(() => {});
+      };
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(runHydration, { timeout: 15000 });
+      } else {
+        runHydration();
       }
-      if (initialBlogs.length > 0 && state.blogs.length === 0) {
-        setBlogs(initialBlogs);
+    }, 8000);
+
+    return () => {
+      clearTimeout(timer);
+      if (idleId && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
       }
-    }, 1500);
-    return () => clearTimeout(timer);
+    };
   }, [initialProducts, initialHeroSlides, initialBlogs, setProducts, setHeroSlides, setBlogs]);
 
   const activeProducts = storeProducts.length > 0 ? storeProducts : initialProducts;

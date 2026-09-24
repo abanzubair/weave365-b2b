@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { BlogList } from '../../src/views/BlogList.jsx';
 import { useStorefront } from '../../src/store/useStorefront.js';
 import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
-import { fetchSupabaseBlogPosts } from '../../src/productData.js';
 
 export default function BlogClient({ initialBlogs = [] }) {
   const navigate = useAppNavigate();
@@ -14,7 +13,10 @@ export default function BlogClient({ initialBlogs = [] }) {
     if (initialBlogs.length > 0 && blogs.length === 0) {
       setBlogs(initialBlogs);
     } else if (blogs.length === 0) {
-      fetchSupabaseBlogPosts().then(setBlogs).catch(console.error);
+      import('../../src/productData.js')
+        .then((m) => m.fetchSupabaseBlogPosts())
+        .then(setBlogs)
+        .catch(console.error);
     }
   }, [initialBlogs, blogs.length, setBlogs]);
 

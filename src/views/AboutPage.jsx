@@ -238,7 +238,7 @@ export function AboutPage({ navigate }) {
             <div className="flow-nodes-container direct-flow-layout">
               <div className="flow-node">
                 <div className="node-icon-wrapper"><Layers size={20} /></div>
-                <h4>Varanasi Weavers</h4>
+                <h3>Varanasi Weavers</h3>
                 <p>Artisans produce sarees based on direct order commitments, ensuring standard wages.</p>
                 <span className="node-stat">Standard Rates</span>
               </div>
@@ -247,7 +247,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node highlight-node">
                 <div className="node-icon-wrapper"><ShieldCheck size={20} /></div>
-                <h4>Weave 365 Platform</h4>
+                <h3>Weave 365 Platform</h3>
                 <p>Sourcing hub handles order collection, sorting, standard quality checks, and logistics packaging.</p>
                 <span className="node-stat">Flat Sourcing Cost</span>
               </div>
@@ -256,7 +256,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node">
                 <div className="node-icon-wrapper"><Globe size={20} /></div>
-                <h4>Boutique / Reseller</h4>
+                <h3>Boutique / Reseller</h3>
                 <p>Receives products matching order specifications and chosen fabric grades.</p>
                 <span className="node-stat">Direct Sourcing Cost</span>
               </div>
@@ -265,7 +265,7 @@ export function AboutPage({ navigate }) {
             <div className="flow-nodes-container traditional-flow-layout">
               <div className="flow-node border-error">
                 <div className="node-icon-wrapper"><Layers size={20} /></div>
-                <h4>Varanasi Weavers</h4>
+                <h3>Varanasi Weavers</h3>
                 <p>Weavers sell to local brokers based on immediate cash requirements.</p>
                 <span className="node-stat text-error">Market Pricing</span>
               </div>
@@ -274,7 +274,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node border-error">
                 <div className="node-icon-wrapper"><TrendingUp size={20} /></div>
-                <h4>Local Broker (Arhatia)</h4>
+                <h3>Local Broker (Arhatia)</h3>
                 <p>Collects finished sarees and coordinates deals with agents.</p>
                 <span className="node-stat text-error">Broker Commission</span>
               </div>
@@ -283,7 +283,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node border-error">
                 <div className="node-icon-wrapper"><TrendingUp size={20} /></div>
-                <h4>Commission Agent</h4>
+                <h3>Commission Agent</h3>
                 <p>Markets products to regional wholesalers and merchant warehouses.</p>
                 <span className="node-stat text-error">Agent Fee</span>
               </div>
@@ -292,7 +292,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node border-error">
                 <div className="node-icon-wrapper"><TrendingUp size={20} /></div>
-                <h4>Regional Wholesaler</h4>
+                <h3>Regional Wholesaler</h3>
                 <p>Stocks and sells bulk inventories to retail outlets.</p>
                 <span className="node-stat text-error">Wholesale Markup</span>
               </div>
@@ -301,7 +301,7 @@ export function AboutPage({ navigate }) {
 
               <div className="flow-node border-error">
                 <div className="node-icon-wrapper"><AlertCircle size={20} /></div>
-                <h4>Boutique Owner</h4>
+                <h3>Boutique Owner</h3>
                 <p>Purchases from regional wholesalers with multi-tier costs.</p>
                 <span className="node-stat text-error">Retailer Sourcing Cost</span>
               </div>

@@ -16,7 +16,6 @@ import {
   calculateCustomerPrice,
   buildCustomerProductMessage
 } from '../storefrontShared.jsx';
-import '../styles/resellerWhatsappShare.css';
 
 export function ResellerWhatsappShare({
   product,

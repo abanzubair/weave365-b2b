@@ -13,9 +13,5 @@ export async function generateMetadata() {
 }
 
 export default function ReviewsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ReviewsClient />
-    </Suspense>
-  );
+  return <ReviewsClient />;
 }

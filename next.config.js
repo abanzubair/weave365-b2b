@@ -175,6 +175,14 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/cdn-cgi/image/:path*',
+        destination: 'https://assets.weave365.com/cdn-cgi/image/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

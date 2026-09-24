@@ -15,11 +15,11 @@
 
 // 1. Standard transformation presets (Deterministic & Edge-Cached)
 export const IMAGE_PRESETS = {
-  thumbnail: { width: 240, quality: 75, format: 'auto', fit: 'scale-down' },
-  card: { width: 450, quality: 80, format: 'auto', fit: 'scale-down' },
-  listing: { width: 800, quality: 85, format: 'auto', fit: 'scale-down' },
-  detail: { width: 1400, quality: 88, format: 'auto', fit: 'scale-down' },
-  zoom: { width: 2400, quality: 90, format: 'auto', fit: 'scale-down' },
+  thumbnail: { width: 120, quality: 70, format: 'auto', fit: 'scale-down' },
+  card: { width: 320, quality: 70, format: 'auto', fit: 'scale-down' },
+  listing: { width: 700, quality: 70, format: 'auto', fit: 'scale-down' },
+  detail: { width: 1200, quality: 78, format: 'auto', fit: 'scale-down' },
+  zoom: { width: 2400, quality: 85, format: 'auto', fit: 'scale-down' },
   og: { width: 800, quality: 75, format: 'jpeg', fit: 'scale-down' },
 };
 
@@ -28,13 +28,16 @@ export const IMAGE_PRESETS = {
  * Defaults to NEXT_PUBLIC_R2_URL or 'https://assets.weave365.com'.
  */
 export function getImageBaseUrl() {
-  const url =
+  const envVal =
     (typeof process !== 'undefined' && process.env && (
       process.env.NEXT_PUBLIC_CLOUDFLARE_IMAGE_BASE_URL ||
       process.env.CLOUDFLARE_IMAGE_BASE_URL ||
       process.env.NEXT_PUBLIC_R2_URL
-    )) || 'https://assets.weave365.com';
-  return url.replace(/\/+$/, '');
+    ));
+  if (typeof envVal === 'string' && envVal.trim() !== '') {
+    return envVal.trim().replace(/\/+$/, '');
+  }
+  return 'https://assets.weave365.com';
 }
 
 /**
@@ -132,9 +135,11 @@ export function extractImagePath(sourceUrl) {
     try {
       const parsed = new URL(val);
       const configuredBase = getImageBaseUrl();
-      const configuredHost = new URL(configuredBase).host;
-      if (parsed.host === configuredHost) {
-        return parsed.pathname.replace(/^\/+/, '') + parsed.search;
+      if (configuredBase) {
+        const configuredHost = new URL(configuredBase).host;
+        if (parsed.host === configuredHost) {
+          return parsed.pathname.replace(/^\/+/, '') + parsed.search;
+        }
       }
       // External origin - return as-is
       return val;
@@ -165,7 +170,7 @@ export function getOriginalImageUrl(url) {
   // If path is still a full external URL, return it
   if (/^https?:\/\//i.test(path)) return path;
 
-  const baseUrl = getImageBaseUrl();
+  const baseUrl = getImageBaseUrl() || 'https://assets.weave365.com';
   return `${baseUrl}/${path.replace(/^\/+/, '')}`;
 }
 
@@ -270,8 +275,8 @@ export function getOptimizedImageUrl(sourceUrl, presetOrOptions = 'listing') {
   if (/^https?:\/\//i.test(rawPath)) {
     try {
       const parsed = new URL(rawPath);
-      const baseHost = new URL(baseUrl).host;
-      if (parsed.host === baseHost) {
+      const baseHost = baseUrl ? new URL(baseUrl).host : 'assets.weave365.com';
+      if (parsed.host === baseHost || parsed.host === 'assets.weave365.com' || parsed.host.includes('weave365.com')) {
         // Path on the CDN domain
         const cleanInner = parsed.pathname.replace(/^\/+/, '') + parsed.search;
         return `${baseUrl}/cdn-cgi/image/${optionsString}/${cleanInner}`;
@@ -356,6 +361,10 @@ export function getSocialOgImageUrl(sourceUrl) {
     return trimmed;
   }
 
-  return getOptimizedImageUrl(trimmed, 'og');
+  const opt = getOptimizedImageUrl(trimmed, 'og');
+  if (opt.startsWith('/')) {
+    return `https://assets.weave365.com${opt}`;
+  }
+  return opt;
 }
 

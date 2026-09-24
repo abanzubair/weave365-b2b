@@ -16,7 +16,8 @@
 export function sortByStockDateDesc(products) {
   if (!Array.isArray(products) || products.length <= 1) return products || [];
 
-  return [...products].sort((a, b) => {
+  const withIdx = products.map((p, idx) => (p._originalIndex !== undefined ? p : { ...p, _originalIndex: idx }));
+  return [...withIdx].sort((a, b) => {
     const dateA =
       a._stockTimestamp !== undefined
         ? a._stockTimestamp

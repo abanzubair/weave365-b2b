@@ -78,23 +78,28 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <head>
-        <SchemaMarkup />
+        <link
+          rel="preload"
+          href="/fonts/manrope-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/cormorant-garamond-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link rel="preconnect" href="https://assets.weave365.com" />
         <link rel="dns-prefetch" href="https://assets.weave365.com" />
-        {/* Preload critical LCP hero image for mobile and desktop FIRST */}
-        <link
-          rel="preload"
-          as="image"
-          href="/assets/banner/heroFreeWebsite-400.webp"
-          media="(max-width: 640px)"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/assets/banner/heroFreeWebsite-600.webp"
-          media="(min-width: 641px)"
-          fetchPriority="high"
-        />
+        <SchemaMarkup />
+      </head>
+      <body suppressHydrationWarning>
+        <AppShell>
+          {children}
+        </AppShell>
         {/* Google tag (gtag.js) */}
         <Script id="google-analytics" strategy="lazyOnload">
           {`
@@ -110,14 +115,6 @@ export default function RootLayout({ children }) {
             }
           `}
         </Script>
-        {process.env.NEXT_PUBLIC_R2_URL && (
-          <link rel="preconnect" href={process.env.NEXT_PUBLIC_R2_URL} />
-        )}
-      </head>
-      <body suppressHydrationWarning>
-        <AppShell>
-          {children}
-        </AppShell>
       </body>
     </html>
   );

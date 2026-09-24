@@ -9,8 +9,12 @@ import { ProductCard } from './components/ProductCard.jsx';
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { StateMessage } from './components/StateMessage.jsx';
 import CatalogPageSkeleton from './components/CatalogPageSkeleton.jsx';
+import dynamic from 'next/dynamic';
 import Breadcrumb from './components/Breadcrumb.jsx';
-import EmptyCategorySourcing from './components/EmptyCategorySourcing.jsx';
+const EmptyCategorySourcing = dynamic(
+  () => import('./components/EmptyCategorySourcing.jsx'),
+  { ssr: false }
+);
 import { usePageSeo } from './hooks/usePageSeo.js';
 import { seoCategoryMap, getCategorySlug } from './config.js';
 import './styles/catalogPage.css';
@@ -48,12 +52,12 @@ export function Catalog({
 }) {
   const getPageSize = () => {
     if (typeof window !== 'undefined' && window.innerWidth <= 820) {
-      return 26;
+      return 12;
     }
-    return 25;
+    return 16;
   };
 
-  const [visibleCount, setVisibleCount] = useState(25);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -422,7 +426,7 @@ export function Catalog({
         {status === 'loading' || isTransitioning ? (
           <CatalogPageSkeleton count={12} wrap={false} />
         ) : (
-          products.slice(0, visibleCount).map((product) => (
+          products.slice(0, visibleCount).map((product, idx) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -433,6 +437,8 @@ export function Catalog({
               isFavorite={favoriteKeys.has(product.id)}
               priceAccess={priceAccess}
               openAuth={openAuth}
+              priority={idx === 0}
+              inInitialViewport={idx < 2}
             />
           ))
         )}

@@ -3,8 +3,7 @@
 @import './styles/layout.css';
 @import './styles/components.css';
 @import './styles/pages.css';
-@import './styles/customerSegmentation.css';
-@import './styles/catalogPage.css';
+@import './styles/internalLinkNetwork.css';
 @import './styles/responsive.css';
 
 
@@ -234,11 +233,6 @@ a:active {
 .home-blog-section {
   content-visibility: auto;
   contain-intrinsic-size: 1px 500px;
-}
-
-.internal-link-network {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 950px;
 }
 
 .site-footer {

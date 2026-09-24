@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { fetchProducts, fetchConfigOptions } from '../../src/productData.js';
 import { getSeoMetadata } from '../../src/utils/seoHelper.js';
 import { getTopProductForCategory, getTopProductForCatalogue, sortByStockDateDesc } from '../../src/utils/sortProducts.js';
 import { siteUrl, getCategorySlug } from '../../src/config.js';
-import CatalogPageSkeleton from '../../src/components/CatalogPageSkeleton.jsx';
+import { getOptimizedImageUrl, getImageSrcSet } from '../../src/utils/imageOptimizer.js';
+import { sanitizeCatalogProducts } from '../../src/utils/catalogSanitizer.js';
 import CatalogueClient from './CatalogueClient.jsx';
 
 export const revalidate = 300;
@@ -89,12 +89,29 @@ export default async function CataloguePage({ searchParams }) {
     fetchConfigOptions().catch(() => null),
   ]);
 
+  const cleanProducts = sanitizeCatalogProducts(products);
+  const firstProduct = sortByStockDateDesc(
+    cleanProducts.map((p, idx) => ({ ...p, _originalIndex: idx }))
+  )[0] || cleanProducts[0] || null;
+  const firstImage = firstProduct?.images?.[0] || null;
+
   return (
-    <Suspense fallback={<CatalogPageSkeleton count={12} wrap={true} />}>
+    <>
+      <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="" />
+      {firstImage && (
+        <link
+          rel="preload"
+          as="image"
+          href={getOptimizedImageUrl(firstImage, 'card')}
+          imageSrcSet={getImageSrcSet(firstImage, ['thumbnail', 'card', 'listing'])}
+          imageSizes="(max-width: 640px) 130px, (max-width: 1024px) 280px, 320px"
+          fetchPriority="high"
+        />
+      )}
       <CatalogueClient
-        initialProducts={products}
+        initialProducts={cleanProducts}
         initialConfigOptions={configOptions}
       />
-    </Suspense>
+    </>
   );
 }

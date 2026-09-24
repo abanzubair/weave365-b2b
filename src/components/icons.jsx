@@ -513,3 +513,21 @@ export const UserIcon = wrapIcon(Hero_UserIcon, 'UserIcon');
 export const UserPlusIcon = wrapIcon(Hero_UserPlusIcon, 'UserPlusIcon');
 export const UsersIcon = wrapIcon(Hero_UsersIcon, 'UsersIcon');
 export const XMarkIcon = wrapIcon(Hero_XMarkIcon, 'XMarkIcon');
+
+export function SharpStar({ size = 24, fill = 'none', stroke = 'currentColor', strokeWidth = 2, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
+      className={className}
+    >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}

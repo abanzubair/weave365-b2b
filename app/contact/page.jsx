@@ -13,9 +13,5 @@ export async function generateMetadata() {
 }
 
 export default function ContactPage() {
-  return (
-    <Suspense fallback={null}>
-      <ContactClient />
-    </Suspense>
-  );
+  return <ContactClient />;
 }

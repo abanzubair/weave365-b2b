@@ -22,9 +22,5 @@ export async function generateMetadata() {
 }
 
 export default function ResellAliasRoute() {
-  return (
-    <Suspense fallback={null}>
-      <ResellerFeaturesClient />
-    </Suspense>
-  );
+  return <ResellerFeaturesClient />;
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { siteUrl } from '../config.js';
 
 /**
  * usePageSeo Hook
@@ -16,13 +17,20 @@ export function usePageSeo({ title, description, canonical }) {
       document.title = title;
     }
 
-    let metaDesc = document.querySelector('meta[name="description"]');
+    let metaDesc = document.querySelector('head meta[name="description"]');
+    if (!metaDesc) {
+      const anyDesc = document.querySelector('meta[name="description"]');
+      if (anyDesc && document.head) {
+        document.head.appendChild(anyDesc);
+        metaDesc = anyDesc;
+      }
+    }
     const originalDesc = metaDesc ? metaDesc.getAttribute('content') : '';
 
     if (description) {
       if (metaDesc) {
         metaDesc.setAttribute('content', description);
-      } else {
+      } else if (document.head) {
         metaDesc = document.createElement('meta');
         metaDesc.name = 'description';
         metaDesc.content = description;
@@ -30,37 +38,40 @@ export function usePageSeo({ title, description, canonical }) {
       }
     }
 
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    let canonicalLink = document.querySelector('head link[rel="canonical"]');
+    if (!canonicalLink) {
+      const anyCanonical = document.querySelector('link[rel="canonical"]');
+      if (anyCanonical && document.head) {
+        document.head.appendChild(anyCanonical);
+        canonicalLink = anyCanonical;
+      }
+    }
     const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : '';
 
     if (canonical) {
+      const absoluteCanonical = canonical.startsWith('http')
+        ? canonical
+        : `${siteUrl}${canonical.startsWith('/') ? canonical : `/${canonical}`}`;
+
       if (canonicalLink) {
-        canonicalLink.setAttribute('href', canonical);
-      } else {
+        canonicalLink.setAttribute('href', absoluteCanonical);
+      } else if (document.head) {
         canonicalLink = document.createElement('link');
         canonicalLink.rel = 'canonical';
-        canonicalLink.href = canonical;
+        canonicalLink.href = absoluteCanonical;
         document.head.appendChild(canonicalLink);
       }
     }
 
     return () => {
-      if (title) document.title = originalTitle;
-      
-      if (description && metaDesc) {
-        if (originalDesc) {
-          metaDesc.setAttribute('content', originalDesc);
-        } else {
-          metaDesc.remove();
-        }
+      if (title && originalTitle) {
+        document.title = originalTitle;
       }
-      
-      if (canonical && canonicalLink) {
-        if (originalCanonical) {
-          canonicalLink.setAttribute('href', originalCanonical);
-        } else {
-          canonicalLink.remove();
-        }
+      if (originalDesc && metaDesc) {
+        metaDesc.setAttribute('content', originalDesc);
+      }
+      if (originalCanonical && canonicalLink) {
+        canonicalLink.setAttribute('href', originalCanonical);
       }
     };
   }, [title, description, canonical]);

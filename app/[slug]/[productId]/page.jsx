@@ -3,6 +3,7 @@ import { fetchProducts } from '../../../src/productData.js';
 import { getProductCategorySlug, siteUrl, storeConfig } from '../../../src/config.js';
 import { isSupabaseConfigured, supabase } from '../../../src/supabaseClient.js';
 import { getSeoMetadata } from '../../../src/utils/seoHelper.js';
+import { getOptimizedImageUrl, getImageSrcSet } from '../../../src/utils/imageOptimizer.js';
 import ProductPageClient from './ProductPageClient.jsx';
 
 export const revalidate = 3600;
@@ -314,8 +315,66 @@ export default async function ProductPage({ params, searchParams }) {
 
   const schemas = generateProductSchemas(product, activeReviews, initialColorName);
 
+  // Trim related products to avoid serializing heavy database records into initial SSR HTML
+  const trimmedRelated = products
+    .filter((p) => p.id !== product.id && !p.isArchived)
+    .slice(0, 4)
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category || '',
+      fabric: p.fabric || '',
+      work: p.work || '',
+      pattern: p.pattern || '',
+      purity: p.purity || '',
+      images: Array.isArray(p.images) && p.images[0] ? [p.images[0]] : [],
+      variants: (p.variants || []).slice(0, 1).map((v) => ({
+        code: v.code || '',
+        color: v.color || '',
+        prices: {
+          mrp: v.prices?.mrp || 0,
+          b2r: v.prices?.b2r || 0,
+          offer: v.prices?.offer || 0,
+          single: v.prices?.single || 0,
+        },
+        stock: v.stock,
+      })),
+      colorOptions: p.colorOptions?.[0]?.name ? [{ name: p.colorOptions[0].name }] : [],
+      totalColors: p.totalColors || p.variants?.length || 1,
+      statusTags: p.statusTags || [],
+      isNew: Boolean(p.isNew),
+      isTopSeller: Boolean(p.isTopSeller),
+      isOutOfStock: Boolean(p.isOutOfStock),
+      stockStatusOverride: p.stockStatusOverride || '',
+      isArchived: Boolean(p.isArchived),
+    }));
+
+  const { raw, ...cleanProduct } = product;
+  if (raw?.['Pc / Set']) {
+    cleanProduct.raw = { 'Pc / Set': raw['Pc / Set'] };
+  }
+
+  let primaryHeroImage = product.images?.[0] || '';
+  if (initialColorName) {
+    const matchedV = (product.variants || []).find(
+      (v) => String(v.color || '').toLowerCase() === String(initialColorName).toLowerCase()
+    );
+    if (matchedV?.image) primaryHeroImage = matchedV.image;
+  }
+
   return (
     <>
+      <link rel="preconnect" href="https://assets.weave365.com" crossOrigin="" />
+      {primaryHeroImage && (
+        <link
+          rel="preload"
+          as="image"
+          href={getOptimizedImageUrl(primaryHeroImage, 'card')}
+          imageSrcSet={getImageSrcSet(primaryHeroImage, ['card', 'listing', 'detail'])}
+          imageSizes="(max-width: 640px) 120px, 600px"
+          fetchPriority="high"
+        />
+      )}
       {schemas?.breadcrumbSchema && (
         <script
           type="application/ld+json"
@@ -341,11 +400,12 @@ export default async function ProductPage({ params, searchParams }) {
         />
       )}
       <ProductPageClient
-        productId={product.id}
-        initialProduct={product}
-        initialAllProducts={products}
+        productId={cleanProduct.id}
+        initialProduct={cleanProduct}
+        initialAllProducts={[cleanProduct, ...trimmedRelated]}
         initialColorName={initialColorName}
         initialVariantCode={initialVariantCode}
+        initialReviews={activeReviews}
       />
     </>
   );

@@ -5,7 +5,6 @@
  * and links to bulk enquiry or reseller markup WhatsApp share modals.
  */
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
-import '../styles/productCard.css';
 
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
@@ -22,7 +21,6 @@ import {
   Store,
   X,
 } from './icons.jsx';
-import { supabase, isSupabaseConfigured } from '../supabaseClient.js';
 import { AppLink } from './AppLink.jsx';
 import {
   fallbackProductImage,
@@ -59,12 +57,14 @@ export const ProductCard = memo(function ProductCard({
   isFavorite,
   priceAccess,
   openAuth,
+  priority = false,
+  inInitialViewport = false,
 }) {
   const selectedVariant = variant || product.variants[0];
   const { currentCountry, exchangeRates } = useCountryCurrency();
   const rawImage = product.images[0] || fallbackProductImage;
   const optimizedImage = useMemo(() => getOptimizedImageUrl(rawImage, 'card'), [rawImage]);
-  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['card', 'listing']), [rawImage]);
+  const cardSrcSet = useMemo(() => getImageSrcSet(rawImage, ['thumbnail', 'card', 'listing']), [rawImage]);
   const image = optimizedImage;
   const wholesalePrice = Number(selectedVariant?.prices?.mrp || selectedVariant?.prices?.offer || 0);
   const resellerPrice = Number(selectedVariant?.prices?.b2r || selectedVariant?.prices?.single || wholesalePrice);
@@ -142,6 +142,31 @@ export const ProductCard = memo(function ProductCard({
 
   const cardRef = useRef(null);
   const sheetRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(priority || inInitialViewport);
+
+  useEffect(() => {
+    if (priority || inInitialViewport || isVisible) return;
+    const el = cardRef.current;
+    if (!el) return;
+
+    if (!('IntersectionObserver' in window)) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [priority, inInitialViewport, isVisible]);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -217,7 +242,8 @@ export const ProductCard = memo(function ProductCard({
     try {
       setIsDownloading(true);
 
-      if (isSupabaseConfigured) {
+      const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
+      if (isSupabaseConfigured && supabase) {
         const { error } = await supabase.from('download_logs').insert({
           user_id: userId,
           product_id: productId
@@ -399,25 +425,45 @@ export const ProductCard = memo(function ProductCard({
           className="image-button"
           aria-label={`View details for ${product.title}`}
         >
-          <img
-            src={optimizedImage}
-            srcSet={cardSrcSet}
-            sizes="(max-width: 640px) 260px, (max-width: 1024px) 280px, 320px"
-            alt={descriptiveAlt}
-            loading="lazy"
-            decoding="async"
-            width={300}
-            height={400}
-            onError={(e) => {
-              const fallback = getOriginalImageUrl(rawImage);
-              if (e.currentTarget.src !== fallback && fallback) {
-                e.currentTarget.src = fallback;
-                e.currentTarget.removeAttribute('srcset');
-              } else {
-                e.currentTarget.src = fallbackProductImage;
-              }
-            }}
-          />
+          {isVisible ? (
+            <img
+              src={optimizedImage}
+              srcSet={cardSrcSet}
+              sizes="(max-width: 640px) 130px, (max-width: 1024px) 280px, 320px"
+              alt={descriptiveAlt}
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'low'}
+              decoding={priority ? 'sync' : 'async'}
+              width={300}
+              height={400}
+              onError={(e) => {
+                const fallback = getOriginalImageUrl(rawImage);
+                if (e.currentTarget.src !== fallback && fallback) {
+                  e.currentTarget.src = fallback;
+                  e.currentTarget.removeAttribute('srcset');
+                } else {
+                  e.currentTarget.src = fallbackProductImage;
+                }
+              }}
+            />
+          ) : (
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'%3E%3C/svg%3E"
+              alt={descriptiveAlt}
+              loading="lazy"
+              decoding="async"
+              width={300}
+              height={400}
+            />
+          )}
+          <noscript>
+            <img
+              src={optimizedImage}
+              alt={descriptiveAlt}
+              width={300}
+              height={400}
+            />
+          </noscript>
         </AppLink>
 
         {filteredStatusTags.length > 0 && (

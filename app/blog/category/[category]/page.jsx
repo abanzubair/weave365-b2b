@@ -3,6 +3,7 @@ import { siteUrl } from '../../../../src/config.js';
 import { getSeoMetadata } from '../../../../src/utils/seoHelper.js';
 import { fetchSupabaseBlogPosts } from '../../../../src/productData.js';
 import BlogClient from '../../BlogClient.jsx';
+import BlogListSkeleton from '../../../../src/components/BlogListSkeleton.jsx';
 
 export const revalidate = 3600;
 export const runtime = 'edge';
@@ -39,9 +40,16 @@ export async function generateMetadata({ params }) {
 export default async function BlogCategoryPage() {
   const blogs = await fetchSupabaseBlogPosts().catch(() => []);
 
-  return (
-    <Suspense fallback={null}>
-      <BlogClient initialBlogs={blogs} />
-    </Suspense>
-  );
+  const trimmedBlogs = (blogs || []).map((b) => ({
+    id: b.id,
+    slug: b.slug,
+    title: b.title,
+    intro: b.intro || '',
+    image: b.image || '',
+    category: b.category || '',
+    date: b.date || '',
+    readTime: b.readTime || '',
+  }));
+
+  return <BlogClient initialBlogs={trimmedBlogs} />;
 }
