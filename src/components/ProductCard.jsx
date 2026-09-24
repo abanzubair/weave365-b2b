@@ -5,6 +5,7 @@
  * and links to bulk enquiry or reseller markup WhatsApp share modals.
  */
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
+import '../styles/productCard.css';
 
 import Image from 'next/image';
 import { createPortal } from 'react-dom';

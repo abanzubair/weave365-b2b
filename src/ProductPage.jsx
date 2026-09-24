@@ -2193,8 +2193,14 @@ export function ProductDetail({
 
           <div className="reviews-minimal-header">
             <div className="reviews-minimal-summary">
-              <span className="reviews-average-score">{stats.avg} ★</span>
-              <span className="reviews-count-label">Based on {stats.count} verified B2B reviews</span>
+              <div className="reviews-average-group">
+                <span className="reviews-average-score">{stats.avg}</span>
+                <SharpStar size={18} fill="var(--gold)" stroke="var(--gold)" className="reviews-header-star" />
+              </div>
+              <span className="reviews-summary-divider" aria-hidden="true">•</span>
+              <span className="reviews-count-label">
+                Based on {stats.count} verified B2B review{stats.count === 1 ? '' : 's'}
+              </span>
             </div>
 
             <button
@@ -2314,6 +2320,15 @@ export function ProductDetail({
                   </form>
                 </>
               )}
+            </div>
+          )}
+
+          {activeReviews.length === 0 && !showReviewForm && (
+            <div className="reviews-empty-state-minimal">
+              <p className="reviews-empty-title">No client reviews yet for this design</p>
+              <p className="reviews-empty-desc">
+                Be the first boutique partner to share feedback on weave density, zari lustre, and customer reception.
+              </p>
             </div>
           )}
 
