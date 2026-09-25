@@ -31,7 +31,7 @@ export const HomeProductRails = memo(function HomeProductRails({
         <div className="section-heading-row">
           <SectionTitle title="New Arrivals" align="left" />
           <AppLink
-            to="catalogue"
+            to="new-arrivals"
             className="text-button"
             navigate={navigate}
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
