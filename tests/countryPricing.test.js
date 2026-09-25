@@ -204,5 +204,63 @@ describe('Country-Based Pricing & Currency System', () => {
     assert.strictEqual(pricing.wholesaleTotal, 0, 'Under 999 must have wholesaleTotal = 0');
     assert.strictEqual(pricing.resellerTotal, 699, 'Under 999 total must be under resellerTotal');
   });
+
+  test('Requirement 23: Buying 1 piece does NOT trigger bulk discount (only full sets qualify)', () => {
+    const multiColorSaree = {
+      id: '106005',
+      title: 'Mashru Silk Resham and Zari Saree',
+      category: 'Saree',
+      totalColors: 3,
+      variants: [
+        { code: '106005-1', prices: { mrp: 3570, b2r: 3885, single: 4360 } },
+        { code: '106005-2', prices: { mrp: 3570, b2r: 3885, single: 4360 } },
+        { code: '106005-3', prices: { mrp: 3570, b2r: 3885, single: 4360 } },
+      ],
+    };
+
+    const countryIN = { code: 'IN', name: 'India', currency: 'INR', currencySymbol: '₹', markupPercent: 0 };
+    const rates = { INR: 1 };
+
+    // 1. Buying ONLY 1 piece: must NOT have completeSets, must charge reseller single price (3885)
+    const singlePiecePricing = calculateLocalizedHybridProductPrice(multiColorSaree, 1, null, countryIN, rates);
+    assert.strictEqual(singlePiecePricing.completeSets, 0, '1 piece out of 3 must have completeSets = 0');
+    assert.strictEqual(singlePiecePricing.extraPieces, 1, '1 piece out of 3 must have extraPieces = 1');
+    assert.strictEqual(singlePiecePricing.totalPrice, 3885, 'Total price must be single piece rate 3885');
+    assert.strictEqual(singlePiecePricing.wholesaleTotal, 0, 'wholesaleTotal must be 0 for single piece');
+    assert.strictEqual(singlePiecePricing.resellerTotal, 3885, 'resellerTotal must equal 3885');
+
+    // Cart totals for 1 piece
+    const cartItemsSingle = [
+      {
+        productGroupKey: '106005',
+        product: multiColorSaree,
+        variant: multiColorSaree.variants[0],
+        quantity: 1,
+      },
+    ];
+    const cartTotalsSingle = calculateLocalizedHybridCartTotals(cartItemsSingle, null, countryIN, rates);
+    assert.strictEqual(cartTotalsSingle.total, 3885, 'Cart total for 1 piece must be 3885');
+    assert.ok(cartTotalsSingle.productPricing['106005'], 'productPricing must be included in cart totals');
+    assert.strictEqual(cartTotalsSingle.productPricing['106005'].completeSets, 0, 'completeSets must be 0');
+
+    // 2. Buying FULL SET of 3 pcs: must qualify for completeSets = 1 and wholesale price (3570 /pc)
+    const fullSetPricing = calculateLocalizedHybridProductPrice(multiColorSaree, 3, null, countryIN, rates);
+    assert.strictEqual(fullSetPricing.completeSets, 1, '3 pieces out of 3 must have completeSets = 1');
+    assert.strictEqual(fullSetPricing.extraPieces, 0, '3 pieces out of 3 must have extraPieces = 0');
+    assert.strictEqual(fullSetPricing.wholesaleTotal, 10710, 'Full set wholesale total must be 3 * 3570 = 10710');
+    assert.strictEqual(fullSetPricing.totalPrice, 10710, 'Total price must be wholesale set price 10710');
+
+    // 3. Buying single piece of single-color saree (totalColors: 1): must also NOT trigger completeSets
+    const singleColorSaree = {
+      id: 'single-col-1',
+      title: 'Single Color Saree',
+      category: 'Saree',
+      totalColors: 1,
+      variants: [{ code: 'SC-1', prices: { mrp: 2000, b2r: 2500 } }],
+    };
+    const scPricing = calculateLocalizedHybridProductPrice(singleColorSaree, 1, null, countryIN, rates);
+    assert.strictEqual(scPricing.completeSets, 0, 'Single color item buying 1 piece must have completeSets = 0');
+    assert.strictEqual(scPricing.totalPrice, 2500, 'Must be single piece reseller price (2500)');
+  });
 });
 

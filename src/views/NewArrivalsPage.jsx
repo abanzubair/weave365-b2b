@@ -26,6 +26,7 @@ import { StateMessage } from '../components/StateMessage.jsx';
 import CatalogPageSkeleton from '../components/CatalogPageSkeleton.jsx';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import { checkProductPriceInRange } from '../storefrontShared.jsx';
+import '../styles/catalogPage.css';
 import '../styles/newArrivals.css';
 
 export function NewArrivalsPage({

@@ -72,10 +72,10 @@ export function calculateHybridProductPrice(product, groupItemsOrQty = 1, custom
     ? groupItemsOrQty.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0)
     : Math.max(0, Number(groupItemsOrQty) || 0);
 
-  if (isUnder999) {
+  if (isUnder999 || setSize <= 1) {
     const totalPrice = totalQty * resellerPrice;
     return {
-      setSize: 1,
+      setSize: Math.max(1, setSize),
       totalQty,
       completeSets: 0,
       extraPieces: totalQty,
@@ -83,21 +83,6 @@ export function calculateHybridProductPrice(product, groupItemsOrQty = 1, custom
       resellerPrice,
       wholesaleTotal: 0,
       resellerTotal: totalPrice,
-      totalPrice,
-    };
-  }
-
-  if (setSize <= 1) {
-    const totalPrice = totalQty * wholesalePrice;
-    return {
-      setSize: 1,
-      totalQty,
-      completeSets: totalQty,
-      extraPieces: 0,
-      wholesalePrice,
-      resellerPrice,
-      wholesaleTotal: totalPrice,
-      resellerTotal: 0,
       totalPrice,
     };
   }
@@ -123,7 +108,7 @@ export function calculateHybridProductPrice(product, groupItemsOrQty = 1, custom
 
 export function calculateHybridCartTotals(items = [], priceAccess) {
   if (!items || !items.length) {
-    return { subtotal: 0, discount: 0, total: 0, groups: [] };
+    return { subtotal: 0, discount: 0, total: 0, groups: [], productPricing: {} };
   }
 
   const groupMap = new Map();
@@ -142,14 +127,19 @@ export function calculateHybridCartTotals(items = [], priceAccess) {
 
   let subtotal = 0;
   const groups = [];
+  const productPricing = {};
 
-  groupMap.forEach((group) => {
+  groupMap.forEach((group, key) => {
     const pricing = calculateHybridProductPrice(group.product, group.items);
     subtotal += pricing.totalPrice;
     groups.push({
       ...group,
       pricing,
     });
+    productPricing[key] = pricing;
+    if (group.product?.id) {
+      productPricing[group.product.id] = pricing;
+    }
   });
 
   const roundedSubtotal = Math.round(subtotal);
@@ -158,6 +148,7 @@ export function calculateHybridCartTotals(items = [], priceAccess) {
     discount: 0,
     total: roundedSubtotal,
     groups,
+    productPricing,
   };
 }
 

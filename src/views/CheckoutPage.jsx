@@ -230,11 +230,20 @@ export function CheckoutPage({
       return { subtotal: 0, discount: 0, baseTotal: 0, productPricing: {} };
     }
     const totals = calculateLocalizedHybridCartTotals(items, priceAccess, currentCountry, exchangeRates);
+    const pricingMap = { ...(totals.productPricing || {}) };
+    if (totals.groups) {
+      totals.groups.forEach((g) => {
+        if (g.pricing) {
+          if (g.key) pricingMap[g.key] = g.pricing;
+          if (g.product?.id) pricingMap[g.product.id] = g.pricing;
+        }
+      });
+    }
     return {
       subtotal: totals.subtotal,
       discount: totals.discount,
       baseTotal: totals.total,
-      productPricing: totals.productPricing || {},
+      productPricing: pricingMap,
     };
   }, [canViewPrices, items, priceAccess, currentCountry, exchangeRates]);
 
@@ -272,36 +281,26 @@ export function CheckoutPage({
 
 
   const bulkDiscount = useMemo(() => {
-    // Only items in multi-piece categories that receive set-level pricing qualify for bulk discount
-    const eligibleItems = items.filter(item => String(item.product?.category || '').toLowerCase() !== 'under 999');
-    if (!eligibleItems.length) return 0;
+    if (!items || !items.length) return 0;
 
-    const grossEligible = eligibleItems.reduce((sum, item) => {
-      const baseSinglePrice = Number(
-        item.variant?.prices?.b2r ||
-        item.variant?.prices?.single ||
-        item.variant?.prices?.reseller ||
-        item.variant?.prices?.mrp ||
-        item.variant?.prices?.offer ||
-        item.product?.resellerPrice ||
-        item.product?.price ||
-        0
-      );
-      const locSingle = getLocalizedPrice(baseSinglePrice, currentCountry, exchangeRates);
-      return sum + (locSingle.finalPrice * (Number(item.quantity) || 1));
-    }, 0);
+    // A bulk discount ONLY applies when someone bought at least one complete set (completeSets > 0)
+    // for multi-piece categories (setSize > 1 and not under 999).
+    const groupPricings = Object.values(productPricing || {});
+    if (!groupPricings.length) return 0;
 
-    const baseEligible = eligibleItems.reduce((sum, item) => {
-      const pricing = productPricing[item.productGroupKey || item.product?.id];
-      if (pricing && pricing.totalQty > 0) {
-        const unitBase = pricing.totalPrice / pricing.totalQty;
-        return sum + (unitBase * (Number(item.quantity) || 1));
+    const uniquePricings = Array.from(new Set(groupPricings));
+
+    let totalBulkDiscount = 0;
+    uniquePricings.forEach((pricing) => {
+      if (pricing && pricing.completeSets > 0 && pricing.setSize > 1) {
+        const setDiscountPerPiece = Math.max(0, (pricing.resellerPrice || 0) - (pricing.wholesalePrice || 0));
+        const piecesInSets = pricing.completeSets * pricing.setSize;
+        totalBulkDiscount += setDiscountPerPiece * piecesInSets;
       }
-      return sum;
-    }, 0);
+    });
 
-    return Math.max(0, Math.round(grossEligible - baseEligible));
-  }, [items, currentCountry, exchangeRates, productPricing]);
+    return Math.max(0, Math.round(totalBulkDiscount));
+  }, [items, productPricing]);
 
   const grossItemsTotal = useMemo(() => {
     return (baseTotal || 0) + bulkDiscount;

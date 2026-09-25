@@ -200,10 +200,10 @@ export function calculateLocalizedHybridProductPrice(
 
   const currency = countryConfig?.currency || 'INR';
 
-  if (isUnder999) {
+  if (isUnder999 || setSize <= 1) {
     const totalPrice = roundCurrency(totalQty * localizedReseller.finalPrice, currency);
     return {
-      setSize: 1,
+      setSize: Math.max(1, setSize),
       totalQty,
       completeSets: 0,
       extraPieces: totalQty,
@@ -214,25 +214,6 @@ export function calculateLocalizedHybridProductPrice(
       totalPrice,
       formattedTotalPrice: formatCurrency(totalPrice, currency),
       localizedWholesale: localizedReseller,
-      localizedReseller,
-      currency,
-    };
-  }
-
-  if (setSize <= 1) {
-    const totalPrice = roundCurrency(totalQty * localizedWholesale.finalPrice, currency);
-    return {
-      setSize: 1,
-      totalQty,
-      completeSets: totalQty,
-      extraPieces: 0,
-      wholesalePrice: localizedWholesale.finalPrice,
-      resellerPrice: localizedReseller.finalPrice,
-      wholesaleTotal: totalPrice,
-      resellerTotal: 0,
-      totalPrice,
-      formattedTotalPrice: formatCurrency(totalPrice, currency),
-      localizedWholesale,
       localizedReseller,
       currency,
     };
@@ -294,8 +275,9 @@ export function calculateLocalizedHybridCartTotals(items = [], priceAccess = nul
 
   let subtotal = 0;
   const groups = [];
+  const productPricing = {};
 
-  groupMap.forEach((group) => {
+  groupMap.forEach((group, key) => {
     const pricing = calculateLocalizedHybridProductPrice(
       group.product,
       group.items,
@@ -308,6 +290,10 @@ export function calculateLocalizedHybridCartTotals(items = [], priceAccess = nul
       ...group,
       pricing,
     });
+    productPricing[key] = pricing;
+    if (group.product?.id) {
+      productPricing[group.product.id] = pricing;
+    }
   });
 
   const roundedSubtotal = roundCurrency(subtotal, currency);
@@ -317,6 +303,7 @@ export function calculateLocalizedHybridCartTotals(items = [], priceAccess = nul
     discount: 0,
     total: roundedSubtotal,
     groups,
+    productPricing,
     currency,
     formattedSubtotal: formatCurrency(roundedSubtotal, currency),
     formattedTotal: formatCurrency(roundedSubtotal, currency),
