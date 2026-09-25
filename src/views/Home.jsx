@@ -12,10 +12,7 @@ import { SectionTitle } from '../components/SectionTitle.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import dynamic from 'next/dynamic';
 
-const HomeProductRails = dynamic(
-  () => import('../components/HomeProductRails.jsx').then((m) => m.HomeProductRails),
-  { ssr: false }
-);
+import { HomeProductRails } from '../components/HomeProductRails.jsx';
 
 const WholesalePartnership = dynamic(
   () => import('../components/WholesalePartnership.jsx').then((m) => m.WholesalePartnership),
@@ -446,7 +443,10 @@ export function Home({
   });
 
   const bestsellers = useMemo(() => {
-    const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    const productsWithIndex = products.map((p, idx) => ({
+      ...p,
+      _originalIndex: p._originalIndex !== undefined ? p._originalIndex : idx,
+    }));
     const filtered = productsWithIndex.filter((p) => p.isTopSeller && !p.isArchived);
     
     const sorted = sortByStockDateDesc(filtered);
@@ -459,7 +459,10 @@ export function Home({
   }, [products, fallbackHeroImage]);
 
   const arrivals = useMemo(() => {
-    const productsWithIndex = products.map((p, idx) => ({ ...p, _originalIndex: idx }));
+    const productsWithIndex = products.map((p, idx) => ({
+      ...p,
+      _originalIndex: p._originalIndex !== undefined ? p._originalIndex : idx,
+    }));
     let filtered = productsWithIndex.filter(p => p.isNew && !p.isArchived);
     if (filtered.length === 0) {
       filtered = productsWithIndex.filter(p => !p.isArchived);
@@ -850,21 +853,19 @@ export function Home({
           View All Categories
         </AppLink>
       </section>
-      <DeferredSection minHeight="700px">
-        <HomeProductRails
-          arrivals={arrivals}
-          bestsellers={bestsellers}
-          status={status}
-          error={error}
-          scrollProductRail={scrollProductRail}
-          navigate={navigate}
-          addToCart={addToCart}
-          toggleFavorite={toggleFavorite}
-          favoriteKeys={favoriteKeys}
-          priceAccess={priceAccess}
-          openAuth={openAuth}
-        />
-      </DeferredSection>
+      <HomeProductRails
+        arrivals={arrivals}
+        bestsellers={bestsellers}
+        status={status}
+        error={error}
+        scrollProductRail={scrollProductRail}
+        navigate={navigate}
+        addToCart={addToCart}
+        toggleFavorite={toggleFavorite}
+        favoriteKeys={favoriteKeys}
+        priceAccess={priceAccess}
+        openAuth={openAuth}
+      />
 
       <DeferredSection minHeight="500px">
         <WholesalePartnership imageUrl={resellerSectionImage} navigate={navigate} />

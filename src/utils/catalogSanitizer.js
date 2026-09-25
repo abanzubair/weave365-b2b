@@ -41,10 +41,12 @@ export function sanitizeCatalogProducts(products) {
       if (p.statusTags?.length) o.statusTags = p.statusTags;
       if (p.isNew) o.isNew = true;
       if (p.isTopSeller) o.isTopSeller = true;
+      if (p.isDealOfDay) o.isDealOfDay = true;
       if (p.isOutOfStock) o.isOutOfStock = true;
       if (p.stockStatusOverride) o.stockStatusOverride = p.stockStatusOverride;
       if (p.stockInDate) o.stockInDate = p.stockInDate;
       if (p._stockTimestamp) o._stockTimestamp = p._stockTimestamp;
+      o._originalIndex = p._originalIndex !== undefined ? p._originalIndex : idx;
 
       o.images = Array.isArray(p.images) && p.images[0] ? [p.images[0]] : [];
       o.colorOptions = p.colorOptions?.[0]?.name ? [{ name: p.colorOptions[0].name }] : [];
