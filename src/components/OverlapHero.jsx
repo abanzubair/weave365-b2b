@@ -103,9 +103,9 @@ export function OverlapHero({ navigate }) {
                 draggable="false"
                 loading="eager"
                 fetchPriority="high"
-                decoding="sync"
-                width={600}
-                height={450}
+                decoding="async"
+                width={400}
+                height={300}
               />
             </picture>
           </div>

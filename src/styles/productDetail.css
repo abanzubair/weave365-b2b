@@ -1,4 +1,6 @@
 /* Scoped styles for Product Detail Page */
+@import './resellerWhatsappShare.css';
+
 .product-view {
   width: min(1600px, calc(100% - var(--site-padding) * 2));
   margin: 0 auto;

@@ -9,7 +9,7 @@ export function sanitizeCatalogProducts(products) {
 
   return products
     .filter((p) => !p?.isArchived)
-    .map((p) => {
+    .map((p, idx) => {
       const csvColors = [
         p.raw?.Color,
         p.raw?.Col,

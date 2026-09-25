@@ -2,6 +2,7 @@ import { fetchHeroData, fetchProducts, fetchSupabaseBlogPosts } from '../src/pro
 import { getSeoMetadata } from '../src/utils/seoHelper.js';
 import { siteUrl } from '../src/config.js';
 import { sanitizeCatalogProducts } from '../src/utils/catalogSanitizer.js';
+import { sortByStockDateDesc } from '../src/utils/sortProducts.js';
 import HomeRouteClient from './HomeRouteClient.jsx';
 
 export const revalidate = 300; // Cache and revalidate every 5 minutes
@@ -48,7 +49,37 @@ export default async function HomePage() {
     fetchSupabaseBlogPosts().catch(() => []),
   ]);
 
-  const cleanProducts = sanitizeCatalogProducts(allProducts);
+  const unarchived = allProducts.filter((p) => !p.isArchived);
+
+  // Exact top 8 arrivals sorted by stockInDate
+  const topArrivals = sortByStockDateDesc(
+    unarchived.filter((p) => p.isNew)
+  ).slice(0, 8);
+
+  // Exact top 8 bestsellers sorted by stockInDate
+  const topBestsellers = sortByStockDateDesc(
+    unarchived.filter((p) => p.isTopSeller)
+  ).slice(0, 8);
+
+  // Top deals of the day
+  const topDeals = unarchived
+    .filter((p) => {
+      const v = p.variants?.[0];
+      return v?.prices?.mrp && v?.prices?.offer && v.prices.offer < v.prices.mrp;
+    })
+    .slice(0, 4);
+
+  // Category preview samples for each homepage category
+  const catSamples = ['saree', 'suit', 'dupatta', 'lehenga', 'under 999']
+    .map((cat) => unarchived.find((p) => String(p.category || '').toLowerCase().trim() === cat))
+    .filter(Boolean);
+
+  const homeProductMap = new Map();
+  [...topArrivals, ...topBestsellers, ...topDeals, ...catSamples].forEach((p) => {
+    homeProductMap.set(p.id, p);
+  });
+
+  const cleanProducts = sanitizeCatalogProducts(Array.from(homeProductMap.values()));
 
   // Trim blog posts to card-only fields for the home page (only 4 are rendered, saves ~110KB)
   const trimmedBlogs = (blogs || []).slice(0, 4).map((b) => ({

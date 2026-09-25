@@ -66,6 +66,24 @@ const nextConfig = {
         ],
       },
       {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/assets/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      {
         source: '/api/v1/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },

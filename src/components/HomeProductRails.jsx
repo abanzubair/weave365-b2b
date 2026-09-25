@@ -65,7 +65,7 @@ export const HomeProductRails = memo(function HomeProductRails({
                   isFavorite={favoriteKeys.has(product.id)}
                   priceAccess={priceAccess}
                   openAuth={openAuth}
-                  priority={index < 2}
+                  priority={false}
                 />
               ))
             )}

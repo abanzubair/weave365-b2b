@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import '../styles/resellerWhatsappShare.css';
 import { X, Share2 } from './icons.jsx';
 import {
   formatMoney,
@@ -201,7 +202,7 @@ export function ResellerWhatsappShare({
   }
 
   const modal = open ? (
-    <div className="modal-backdrop" onClick={handleClose}>
+    <div className="modal-backdrop reseller-whatsapp-backdrop" onClick={handleClose}>
       <div className="reseller-share-modal" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="icon-button modal-close" onClick={handleClose} aria-label="Close reseller share">
           <X size={18} />
@@ -229,17 +230,19 @@ export function ResellerWhatsappShare({
         </div>
 
         <div className="reseller-share-controls">
-          <label>
-            Markup type
+          <div className="reseller-control-group">
+            <span className="reseller-control-label">Markup type</span>
             <div className="reseller-markup-tabs">
               <button type="button" className={mode === 'percentage' ? 'active' : ''} onClick={() => setMode('percentage')}>%</button>
               <button type="button" className={mode === 'amount' ? 'active' : ''} onClick={() => setMode('amount')}>+ Amount</button>
               <button type="button" className={mode === 'final' ? 'active' : ''} onClick={() => setMode('final')}>Final</button>
             </div>
-          </label>
+          </div>
 
-          <label>
-            {mode === 'percentage' ? 'Markup percentage' : mode === 'final' ? 'Final customer price' : 'Markup amount'}
+          <div className="reseller-control-group">
+            <span className="reseller-control-label">
+              {mode === 'percentage' ? 'Markup percentage' : mode === 'final' ? 'Final customer price' : 'Markup amount'}
+            </span>
             <input
               type="number"
               min="0"
@@ -247,26 +250,23 @@ export function ResellerWhatsappShare({
               value={markupValue}
               onChange={(event) => setMarkupValue(event.target.value)}
             />
-          </label>
+          </div>
         </div>
 
         <label className="reseller-message-preview">
-          WhatsApp message preview
+          <span className="reseller-control-label">WhatsApp message preview</span>
           <textarea readOnly rows={10} value={message} />
         </label>
 
-        <div className="reseller-share-actions" style={{ display: 'flex', gap: '12px', marginTop: '1.5rem' }}>
-          <button type="button" className="secondary-button" style={{ flex: 1 }} onClick={copyMessage}>
+        <div className="reseller-share-actions">
+          <button type="button" className="secondary-button" onClick={copyMessage}>
             {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Description'}
           </button>
           <button 
             type="button" 
             className="primary-button" 
             style={{ 
-              flex: 1.5, 
-              background: isPreparingImages ? '#6b7280' : 'var(--reseller-primary, #1C1917)',
-              color: 'white',
-              border: 'none'
+              background: isPreparingImages ? '#6b7280' : undefined
             }}
             onClick={shareImageAndMessage} 
             disabled={imageShareState === 'preparing' || (isPreparingImages && preparedFiles.length === 0)}

@@ -92,7 +92,6 @@ export default function RootLayout({ children }) {
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        <link rel="preconnect" href="https://assets.weave365.com" />
         <link rel="dns-prefetch" href="https://assets.weave365.com" />
         <SchemaMarkup />
       </head>

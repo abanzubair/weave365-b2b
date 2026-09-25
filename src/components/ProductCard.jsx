@@ -162,12 +162,13 @@ export const ProductCard = memo(function ProductCard({
           observer.disconnect();
         }
       },
-      { rootMargin: '100px' }
+      { rootMargin: '300px' }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
   }, [priority, inInitialViewport, isVisible]);
+
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 820px)');
@@ -434,7 +435,7 @@ export const ProductCard = memo(function ProductCard({
               alt={descriptiveAlt}
               loading={priority ? 'eager' : 'lazy'}
               fetchPriority={priority ? 'high' : 'low'}
-              decoding={priority ? 'sync' : 'async'}
+              decoding="async"
               width={300}
               height={400}
               onError={(e) => {
