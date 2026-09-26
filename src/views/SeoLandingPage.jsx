@@ -214,7 +214,12 @@ export function SeoLandingPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Breadcrumb items={breadcrumbItems} navigate={navigate} />
+      <Breadcrumb 
+        items={breadcrumbItems} 
+        navigate={navigate} 
+        contained={true} 
+        className="seo-landing-breadcrumb"
+      />
 
       {/* Premium UI/UX Pro Max Hero Header */}
       <header className="seo-landing-hero">

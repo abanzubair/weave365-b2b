@@ -82,7 +82,7 @@ export function InternalLinkNetwork({ navigate, setCategory, initialConfig }) {
       } else {
         runFetch();
       }
-    }, 12000);
+    }, 1000);
 
     return () => clearTimeout(timer);
 

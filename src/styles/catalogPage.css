@@ -91,9 +91,13 @@
 
 /* Premium Filter-matched Desktop Reset Button */
 .reset-filters-trigger {
+  width: auto !important;
+  min-width: 130px;
+  max-width: 160px;
+  flex: 0 0 auto;
+  gap: 12px;
   border: 1px dashed rgba(183, 134, 70, 0.4) !important;
   background: rgba(255, 253, 249, 0.4) !important;
-  min-width: 140px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }

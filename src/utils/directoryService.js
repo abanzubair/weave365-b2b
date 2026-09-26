@@ -8,58 +8,67 @@
 // Note: supabaseClient is dynamically imported inside fetchDirectoryConfigRemote and saveDirectoryConfig
 // to avoid bundling @supabase/supabase-js into the critical layout bundle.
 
-export const DIRECTORY_STORAGE_KEY = 'weave365_directory_config';
+export const DIRECTORY_STORAGE_KEY = 'weave365_directory_config_v2';
 export const DIRECTORY_UPDATED_EVENT = 'directory-config-updated';
 
 export const DEFAULT_DIRECTORY_CONFIG = {
-  kicker: 'WEAVE365 DIRECTORY',
-  title: 'Sourcing & Craft Heritage Network',
+  kicker: 'HOW WEAVE 365 WORKS FOR YOU',
+  title: 'Explore the World of Banarasi, Your Way',
   columns: [
     {
-      id: 'col_collections',
-      title: 'Premium Collections',
-      icon: 'Compass',
-      links: [
-        { label: 'Banarasi Sarees', type: 'route', target: 'banarasi-sarees', path: '/banarasi-sarees' },
-        { label: 'Pure Katan Silk Sarees', type: 'route', target: 'katan-silk-sarees', path: '/katan-silk-sarees' },
-        { label: 'Organza Banarasi Sarees', type: 'route', target: 'organza-banarasi-sarees', path: '/organza-banarasi-sarees' },
-        { label: 'Bridal Banarasi Sarees', type: 'route', target: 'bridal-banarasi-sarees', path: '/bridal-banarasi-sarees' },
-        { label: 'Banarasi Meenakari Sarees', type: 'route', target: 'meenakari-sarees', path: '/meenakari-sarees' },
-        { label: 'Soft Silk Banarasi Sarees', type: 'route', target: 'soft-silk-sarees', path: '/soft-silk-sarees' },
-        { label: 'Wholesale Saree Supplier India', type: 'route', target: 'wholesale-saree-supplier-india', path: '/wholesale-saree-supplier-india' }
-      ]
-    },
-    {
-      id: 'col_categories',
-      title: 'Product Categories',
-      icon: 'Grid',
-      links: [
-        { label: 'Wholesale Saree Catalog', type: 'category', target: 'Saree', path: '/sarees' },
-        { label: 'Wholesale Suit Catalog', type: 'category', target: 'Suit', path: '/suits' },
-        { label: 'Wholesale Silk Dupattas', type: 'category', target: 'Dupatta', path: '/dupattas' },
-        { label: 'Designer Banarasi Lehengas', type: 'category', target: 'Lehenga', path: '/lehengas' },
-        { label: 'Under 999', type: 'category', target: 'Under 999', path: '/under-999' }
-      ]
-    },
-    {
-      id: 'col_guides',
-      title: 'Educational Guides',
-      icon: 'BookOpen',
-      links: [
-        { label: 'Fabric Guide: Katan vs Organza', type: 'blog-guide', target: 'difference-katan-silk-and-organza-saree', path: '/blog/difference-katan-silk-and-organza-saree' },
-        { label: 'Saree Reselling Business Blueprint', type: 'blog-guide', target: 'how-to-start-saree-reselling-business', path: '/blog/how-to-start-saree-reselling-business' },
-        { label: 'Boutique Wholesale Sourcing Guide', type: 'blog-guide', target: 'wholesale-saree-buying-guide-boutiques', path: '/blog/wholesale-saree-buying-guide-boutiques' }
-      ]
-    },
-    {
-      id: 'col_hubs',
-      title: 'Sourcing Hubs',
+      id: 'col_b2b',
+      title: 'B2B Sourcing & Wholesale',
       icon: 'Briefcase',
       links: [
-        { label: 'Sell Banarasi Sarees (Seller Program)', type: 'route', target: 'sell-banarasi-sarees', path: '/sell-banarasi-sarees' },
-        { label: 'Bulk Sourcing & Custom Catalog', type: 'route', target: 'bulk-inquiry', path: '/bulk-inquiry' },
-        { label: 'Varanasi Brand Story & Heritage', type: 'route', target: 'about', path: '/about' },
-        { label: 'Insights & Sourcing Blog', type: 'route', target: 'blog', path: '/blog' }
+        { label: 'Wholesale Banarasi Sarees', type: 'route', target: 'wholesale-saree-supplier-india', path: '/wholesale-saree-supplier-india' },
+        { label: 'Wholesale Saree Catalog', type: 'category', target: 'Saree', path: '/sarees' },
+        { label: 'Unstitched Banarasi Suits Wholesale', type: 'category', target: 'Suit', path: '/suits' },
+        { label: 'Pure Silk Dupattas in Bulk', type: 'category', target: 'Dupatta', path: '/dupattas' },
+        { label: 'Bulk Sourcing & Export Inquiries', type: 'route', target: 'bulk-inquiry', path: '/bulk-inquiry' },
+        { label: 'B2B Sourcing Partners Program', type: 'route', target: 'sourcing-partners', path: '/sourcing-partners' },
+        { label: 'Wholesale Saree Buying Guide', type: 'blog-guide', target: 'the-ultimate-wholesale-banarasi-saree-buying-guide-for-wholesalers-and-resellers', path: '/blog/the-ultimate-wholesale-banarasi-saree-buying-guide-for-wholesalers-and-resellers' }
+      ]
+    },
+    {
+      id: 'col_whitelabel',
+      title: 'White Label & Custom Branding',
+      icon: 'BookOpen',
+      links: [
+        { label: 'White Label Banarasi Sarees for Boutiques', type: 'route', target: 'white-label-banarasi-sarees-for-boutiques', path: '/white-label-banarasi-sarees-for-boutiques' },
+        { label: 'Private Label Saree Catalog Varanasi', type: 'route', target: 'private-label-saree-catalog-varanasi-india', path: '/private-label-saree-catalog-varanasi-india' },
+        { label: 'Custom Packaging & Tagging', type: 'route', target: 'private-label-sarees-with-custom-packaging', path: '/private-label-sarees-with-custom-packaging' },
+        { label: 'White Label Sarees for Online Stores', type: 'route', target: 'white-label-sarees-for-online-stores', path: '/white-label-sarees-for-online-stores' },
+        { label: 'Catalog Sharing via WhatsApp & Social', type: 'route', target: 'white-label-catalog-for-whatsapp-social-media', path: '/white-label-catalog-for-whatsapp-social-media' },
+        { label: 'Custom Weaving for Fashion Designers', type: 'route', target: 'custom-banarasi-saree-weaving-for-fashion-designers', path: '/custom-banarasi-saree-weaving-for-fashion-designers' },
+        { label: 'How White Label Catalogs Work', type: 'route', target: 'how-white-label-catalogs-work', path: '/how-white-label-catalogs-work' }
+      ]
+    },
+    {
+      id: 'col_reseller',
+      title: 'Reseller & Dropshipping Hub',
+      icon: 'Sparkles',
+      links: [
+        { label: 'Saree Reselling from Home', type: 'route', target: 'resell-sarees-online', path: '/resell-sarees-online' },
+        { label: 'Start Saree Business from Home', type: 'blog-guide', target: 'how-to-start-a-saree-reselling-business-from-home-in-india', path: '/blog/how-to-start-a-saree-reselling-business-from-home-in-india' },
+        { label: 'Low MOQ Dropshipping for Resellers', type: 'route', target: 'dropshipping-white-label-low-moq-banarasi-sarees', path: '/dropshipping-white-label-low-moq-banarasi-sarees' },
+        { label: 'Banarasi Saree Dropshipping Services', type: 'route', target: 'dropshipping', path: '/dropshipping' },
+        { label: 'Zero-Investment Reselling Blueprint', type: 'blog-guide', target: 'how-to-start-a-banarasi-saree-and-suit-reselling-business-with-zero-investment', path: '/blog/how-to-start-a-banarasi-saree-and-suit-reselling-business-with-zero-investment' },
+        { label: 'Reseller Pricing & FAQs Guide', type: 'route', target: 'reseller-faqs', path: '/reseller-faqs' },
+        { label: 'Sell on Weave 365 (Artisan Network)', type: 'route', target: 'sell-banarasi-sarees', path: '/sell-banarasi-sarees' }
+      ]
+    },
+    {
+      id: 'col_craft',
+      title: 'Pure Silk & Heritage Weaves',
+      icon: 'ShoppingBag',
+      links: [
+        { label: 'Pure Handloom Banarasi Silk Sarees', type: 'route', target: 'pure-handloom-banarasi-silk-sarees', path: '/pure-handloom-banarasi-silk-sarees' },
+        { label: 'Pure Katan Silk Sarees for Wedding', type: 'route', target: 'banarasi-katan-silk-saree-for-wedding', path: '/banarasi-katan-silk-saree-for-wedding' },
+        { label: 'Handloom Kora Organza Sarees', type: 'route', target: 'organza-banarasi-sarees', path: '/organza-banarasi-sarees' },
+        { label: 'Bridal Banarasi Sarees Online India', type: 'route', target: 'bridal-banarasi-sarees-online-india', path: '/bridal-banarasi-sarees-online-india' },
+        { label: 'Semi Handloom Banarasi Silk Sarees', type: 'route', target: 'semi-handloom-banarasi-silk-saree', path: '/semi-handloom-banarasi-silk-saree' },
+        { label: 'Handloom vs Powerloom Fabric Guide', type: 'route', target: 'handloom-vs-powerloom-guide', path: '/handloom-vs-powerloom-guide' },
+        { label: 'Banarasi Meenakari Sarees', type: 'route', target: 'meenakari-sarees', path: '/meenakari-sarees' }
       ]
     }
   ]
@@ -109,9 +118,6 @@ export function getDirectoryConfigLocal() {
  * Fetches directory configuration from Supabase and syncs with local cache.
  */
 export async function fetchDirectoryConfigRemote(force = false) {
-  if (!force && inMemoryConfig && Array.isArray(inMemoryConfig.columns)) {
-    return inMemoryConfig;
-  }
   if (!force && inFlightFetch) {
     return inFlightFetch;
   }

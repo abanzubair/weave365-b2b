@@ -18,6 +18,36 @@
   overflow-x: hidden;
 }
 
+/* -------------------------------------------------------------
+   Breadcrumbs Positioning & Grid Alignment
+------------------------------------------------------------- */
+.seo-landing-page .premium-breadcrumb,
+.seo-landing-page .seo-landing-breadcrumb {
+  width: min(1600px, calc(100% - var(--site-padding, 48px) * 2));
+  max-width: 1600px;
+  margin: 0 auto 0.75rem auto;
+  padding: 1.25rem 0 0.25rem 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .seo-landing-page .premium-breadcrumb,
+  .seo-landing-page .seo-landing-breadcrumb {
+    width: calc(100% - var(--site-padding, 24px) * 2);
+    padding: 1rem 0 0.25rem 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .seo-landing-page .premium-breadcrumb,
+  .seo-landing-page .seo-landing-breadcrumb {
+    width: calc(100% - var(--site-padding, 16px) * 2);
+    padding: 0.85rem 0 0.15rem 0;
+    margin-bottom: 0.25rem;
+  }
+}
+
 /* Hero Section */
 .seo-landing-hero {
   max-width: 1200px;
