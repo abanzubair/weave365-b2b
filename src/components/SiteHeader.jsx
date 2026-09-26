@@ -34,7 +34,6 @@ export function SiteHeader(props) {
   const internalCategoriesRef = useRef(null);
   const internalCompanyRef = useRef(null);
   const internalProfileRef = useRef(null);
-  const internalGetStartedRef = useRef(null);
 
   const [internalScrolled, setInternalScrolled] = useState(false);
   const [internalPastHero, setInternalPastHero] = useState(false);
@@ -99,7 +98,6 @@ export function SiteHeader(props) {
   const searchActive = props.searchActive ?? store.searchActive;
   const setSearchActive = props.setSearchActive ?? store.setSearchActive;
   const profileRef = props.profileRef || internalProfileRef;
-  const getStartedRef = props.getStartedRef || internalGetStartedRef;
   const user = props.user ?? store.user;
   const buyerProfile = props.buyerProfile ?? store.buyerProfile;
   const userDisplayName = user
@@ -409,11 +407,6 @@ export function SiteHeader(props) {
       </button>
 
       <div className="header-actions-premium">
-        {/* Country & Currency Selector */}
-        <div className="desktop-only-action">
-          <CountrySelector variant="desktop" />
-        </div>
-
         <button 
           className={`premium-search-trigger ${searchActive ? 'active' : ''}`}
           type="button" 
@@ -520,61 +513,9 @@ export function SiteHeader(props) {
           )}
         </div>
 
-        {/* 2. Get Started Dropdown Button */}
-        <div className="nav-item-dropdown get-started-dropdown-container desktop-only-action" ref={getStartedRef}>
-          <button
-            type="button"
-            className="nav-account-pill-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDropdownOpen(dropdownOpen === 'get-started' ? null : 'get-started');
-            }}
-          >
-            <span>Get Started</span>
-          </button>
-
-          <DropdownPortal anchorRef={getStartedRef} isOpen={dropdownOpen === 'get-started'}>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('catalogue');
-                else window.location.href = '/catalogue';
-                setDropdownOpen(null);
-              }}
-            >
-              Shop Wholesale
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('resell-sarees-online');
-                else window.location.href = '/resell-sarees-online';
-                setDropdownOpen(null);
-              }}
-            >
-              Sell Without Inventory
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('bulk-inquiry');
-                else window.location.href = '/bulk-inquiry';
-                setDropdownOpen(null);
-              }}
-            >
-              Bulk Sourcing &amp; MOQ
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigate) navigate('custom-woven');
-                else window.location.href = '/custom-woven';
-                setDropdownOpen(null);
-              }}
-            >
-              Custom Woven Sourcing
-            </button>
-          </DropdownPortal>
+        {/* Country & Currency Selector */}
+        <div className="desktop-only-action">
+          <CountrySelector variant="desktop" />
         </div>
 
         <button 

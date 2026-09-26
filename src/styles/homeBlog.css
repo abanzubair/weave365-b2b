@@ -49,6 +49,49 @@
   align-items: center;
 }
 
+/* Read All Insights CTA Button */
+.home-blog-header-right .blog-filter-btn {
+  font-family: var(--font-hero-body, 'Inter', sans-serif);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--blog-gold-dark, #805d31);
+  border: 1px solid var(--blog-gold-dark, #805d31);
+  padding: 0.75rem 1.75rem;
+  font-size: var(--button-size, 0.85rem);
+  font-weight: var(--button-weight, 600);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff !important;
+  cursor: pointer;
+  border-radius: 6px;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(128, 93, 49, 0.2);
+  transition: var(--blog-transition, all 0.3s cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.home-blog-header-right .blog-filter-btn:hover {
+  background: var(--blog-gold, #b78646);
+  border-color: var(--blog-gold, #b78646);
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(128, 93, 49, 0.3);
+}
+
+.home-blog-header-right .blog-filter-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(128, 93, 49, 0.2);
+}
+
+.home-blog-header-right .blog-filter-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.home-blog-header-right .blog-filter-btn:hover svg {
+  transform: translateX(3px);
+}
+
 .home-blog-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -52,9 +52,6 @@ export function OccasionShowcase({ imageUrl, navigate }) {
         {/* Right Column: Editorial Occasion Content */}
         <div className="occasion-showcase-content-side">
           <div className="occasion-content-wrapper">
-            
-            <span className="occasion-eyebrow">Banarasi for Every Occasion</span>
-
             <h2 id="occasion-showcase-heading" className="occasion-showcase-title">
               Discover Banarasi,<br />
               Made for Your Moments.

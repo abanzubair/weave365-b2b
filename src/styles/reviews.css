@@ -1045,9 +1045,16 @@
   max-height: 720px;
   overflow: hidden;
   position: relative;
-  /* Top and bottom gradient mask to fade out moving reviews */
-  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  padding: 0 10px;
+  /* Top, bottom, left and right gradient mask to seamlessly blend moving reviews with the page background */
+  mask-image: 
+    linear-gradient(to bottom, transparent, black 12%, black 88%, transparent),
+    linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: 
+    linear-gradient(to bottom, transparent, black 12%, black 88%, transparent),
+    linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 }
 
 @media (min-width: 768px) {

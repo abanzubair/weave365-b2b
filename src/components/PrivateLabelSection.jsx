@@ -31,9 +31,6 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
         {/* Left Column: Editorial Private Label Content */}
         <div className="private-label-content-side">
           <div className="private-label-content-wrapper">
-
-            <span className="private-label-eyebrow">Your Label. Your Collection.</span>
-
             <h2 id="private-label-heading" className="private-label-title">
               Create Premium Banarasi Collections,<br />
               Made for Your Brand.

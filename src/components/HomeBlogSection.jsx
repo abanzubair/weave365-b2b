@@ -16,9 +16,9 @@ export function HomeBlogSection({ blogs = [], navigate, scrollProductRail, isMou
             to="blog"
             className="blog-filter-btn active"
             navigate={navigate}
-            style={{ padding: '0.75rem 2rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            Read All Insights
+            <span>Read All Insights</span>
+            <ArrowRight size={15} />
           </AppLink>
         </div>
       </div>
