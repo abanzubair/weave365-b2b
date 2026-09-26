@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Award, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Globe, Gem, MapPin, Calendar, Clock } from '../components/icons.jsx';
+import { ArrowRight, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePercent, ArrowDown, Calendar, Clock } from '../components/icons.jsx';
 import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
@@ -898,53 +898,66 @@ export function Home({
       {/* Partner Reviews Marquee */}
       <HomeReviewsSlider reviews={reviews} navigate={navigate} />
 
-      <section className="seo-compact-section">
-        <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>
-          <div className="seo-compact-left">
-            <h2>Trusted Banarasi Saree Supplier</h2>
-            <p>Weave 365 is India's most reliable platform for sourcing premium Banarasi collections, supporting direct <AppLink to="bulk-inquiry" navigate={navigate} className="seo-inline-link">bulk buyers</AppLink>, sourcing partners, and white label brands. Our portal is designed specifically to supply <AppLink to="sarees" navigate={navigate} className="seo-inline-link">wholesale Banarasi sarees</AppLink> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, global shipping, and <AppLink to="dropshipping" navigate={navigate} className="seo-inline-link">reliable dropshipping support</AppLink>.</p>
+      <section className="seo-compact-section" aria-labelledby="sourcing-authority-title">
+        <div className="seo-compact-container">
+          <div className="seo-compact-header">
+            <span className="seo-compact-kicker">Direct Weaver Heritage</span>
+            <h2 id="sourcing-authority-title" className="seo-compact-title">Trusted Banarasi Saree Supplier</h2>
+            <p className="seo-compact-lead">
+              Weave 365 is India's sourcing platform for authentic Banarasi handlooms, supporting direct <AppLink to="bulk-inquiry" navigate={navigate} className="seo-inline-link">bulk buyers</AppLink>, sourcing partners, and white label brands. Supplying wholesale <AppLink to="sarees" navigate={navigate} className="seo-inline-link">Banarasi sarees</AppLink> and suits to boutiques, retailers, and showrooms globally with a flexible MOQ, worldwide shipping, and dedicated <AppLink to="dropshipping" navigate={navigate} className="seo-inline-link">dropshipping support</AppLink>.
+            </p>
             <button
               type="button"
               className="seo-expand-trigger"
               onClick={() => setSeoExpanded(!seoExpanded)}
               aria-expanded={seoExpanded}
             >
-              {seoExpanded ? 'Show Less' : 'Read Wholesale Sourcing Guide'}
-              <ArrowDown size={14} style={{ transform: seoExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
+              <span>{seoExpanded ? 'Hide Sourcing Guide' : 'Read Wholesale Sourcing Guide'}</span>
+              <ArrowDown size={14} className={`seo-trigger-arrow ${seoExpanded ? 'open' : ''}`} />
             </button>
           </div>
 
-          <div className="seo-compact-right">
-            <div className="seo-compact-card">
-              <div className="seo-card-title-row">
-                <Gem size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Explore Wholesale Saree Collections</h2>
-              </div>
-              <p>Discover our extensive <a href="/catalogue" onClick={(e) => handleLinkClick(e, 'catalogue')} className="seo-inline-link">live catalogue</a> featuring <a href="/katan-silk-sarees" onClick={(e) => handleLinkClick(e, 'katan-silk-sarees')} className="seo-inline-link">Pure Katan Silk</a>, <a href="/organza-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'organza-banarasi-sarees')} className="seo-inline-link">Organza</a>, Georgette, and intricately woven tissue sarees. From traditional bridal wear to contemporary designs, our <a href="/catalogue" onClick={(e) => handleLinkClick(e, 'catalogue')} className="seo-inline-link">wholesale banarasi sarees and suits</a> are crafted to elevate your retail offerings.</p>
-            </div>
+          <div className={`seo-compact-drawer ${seoExpanded ? 'expanded' : 'collapsed'}`}>
+            <div className="seo-compact-grid">
+              <article className="seo-compact-pillar">
+                <div className="seo-pillar-header">
+                  <span className="seo-pillar-idx">01</span>
+                  <h3 className="seo-pillar-title">Pure Silk Collections</h3>
+                </div>
+                <p className="seo-pillar-text">
+                  Discover our <AppLink to="catalogue" navigate={navigate} className="seo-inline-link">live catalogue</AppLink> of certified <AppLink to="katan-silk-sarees" navigate={navigate} className="seo-inline-link">Pure Katan Silk</AppLink>, <AppLink to="organza-banarasi-sarees" navigate={navigate} className="seo-inline-link">Organza</AppLink>, Georgette, and tissue weaves crafted for curated boutique collections.
+                </p>
+              </article>
 
-            <div className="seo-compact-card">
-              <div className="seo-card-title-row">
-                <Award size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Why Retailers Choose Weave 365</h2>
-              </div>
-              <p>Our platform ensures seamless <a href="/bulk-inquiry" onClick={(e) => handleLinkClick(e, 'bulk-inquiry')} className="seo-inline-link">bulk purchasing</a> with transparent pricing, guaranteed quality checks, and real-time inventory updates. We bridge the gap between traditional weaving techniques and modern commerce.</p>
-            </div>
+              <article className="seo-compact-pillar">
+                <div className="seo-pillar-header">
+                  <span className="seo-pillar-idx">02</span>
+                  <h3 className="seo-pillar-title">Direct from Varanasi</h3>
+                </div>
+                <p className="seo-pillar-text">
+                  Partnering directly with <AppLink to="sell-banarasi-sarees" navigate={navigate} className="seo-inline-link">master weavers in Varanasi</AppLink> to bring genuine handloom craftsmanship straight to your storefront without intermediary markups.
+                </p>
+              </article>
 
-            <div className="seo-compact-card">
-              <div className="seo-card-title-row">
-                <MapPin size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Banarasi Sarees Direct from Varanasi</h2>
-              </div>
-              <p>By partnering directly with <a href="/sell-banarasi-sarees" onClick={(e) => handleLinkClick(e, 'sell-banarasi-sarees')} className="seo-inline-link">master artisans and weavers in Varanasi</a>, we bring the loom directly to your storefront. This direct-to-retail model ensures you receive authentic Banarasi craftsmanship at the most competitive wholesale prices.</p>
-            </div>
+              <article className="seo-compact-pillar">
+                <div className="seo-pillar-header">
+                  <span className="seo-pillar-idx">03</span>
+                  <h3 className="seo-pillar-title">Retailer Assurance</h3>
+                </div>
+                <p className="seo-pillar-text">
+                  Seamless <AppLink to="bulk-inquiry" navigate={navigate} className="seo-inline-link">bulk purchasing</AppLink> with transparent tiered pricing, strict fabric quality checks, and real-time inventory updates tailored for trade buyers.
+                </p>
+              </article>
 
-            <div className="seo-compact-card">
-              <div className="seo-card-title-row">
-                <Globe size={30} strokeWidth={1.5} className="seo-card-icon" />
-                <h2>Flexible MOQ for Wholesale, Export and Dropshipping</h2>
-              </div>
-              <p>We understand that every business scales differently. That's why we offer flexible Minimum Order Quantities (MOQ), supporting small boutique <a href="/dropshipping" onClick={(e) => handleLinkClick(e, 'dropshipping')} className="seo-inline-link">saree &amp; suit dropshipping</a>, large-scale domestic retail, and international export orders worldwide. Learn how to launch your business with our expert <a href="/blog/how-to-start-saree-reselling-business" onClick={(e) => handleLinkClick(e, 'blog', 'how-to-start-saree-reselling-business')} className="seo-inline-link">saree reselling business blueprint</a>.</p>
+              <article className="seo-compact-pillar">
+                <div className="seo-pillar-header">
+                  <span className="seo-pillar-idx">04</span>
+                  <h3 className="seo-pillar-title">Flexible MOQ &amp; Export</h3>
+                </div>
+                <p className="seo-pillar-text">
+                  Supporting boutique <AppLink to="dropshipping" navigate={navigate} className="seo-inline-link">saree dropshipping</AppLink>, domestic retail volumes, and worldwide export. Review our <AppLink to="blog" productId="how-to-start-saree-reselling-business" navigate={navigate} className="seo-inline-link">reselling blueprint</AppLink> for volume details.
+                </p>
+              </article>
             </div>
           </div>
         </div>

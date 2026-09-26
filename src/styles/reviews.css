@@ -1320,10 +1320,16 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 0 var(--site-padding);
+  padding: 0;
   margin-bottom: 2rem;
   gap: 1.5rem;
   flex-wrap: wrap;
+}
+
+@media screen and (max-width: 1600px) {
+  .home-reviews-header-subtle {
+    padding: 0 var(--site-padding);
+  }
 }
 
 .home-reviews-title-wrap {
@@ -1518,6 +1524,7 @@
   }
 
   .home-reviews-header-subtle {
+    padding: 0 var(--site-padding);
     margin-bottom: 1.5rem;
   }
 
