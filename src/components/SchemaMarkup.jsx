@@ -1,6 +1,8 @@
 import { siteUrl } from '../config.js';
+import { getReviewStats } from '../data/reviewsData.js';
 
 export default function SchemaMarkup() {
+  const reviewStats = getReviewStats();
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -80,6 +82,13 @@ export default function SchemaMarkup() {
           addressLocality: "Varanasi",
           addressRegion: "Uttar Pradesh",
           addressCountry: "IN",
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: reviewStats.avgRating,
+          reviewCount: String(reviewStats.verifiedCount),
+          bestRating: "5",
+          worstRating: "1",
         },
         hasOfferCatalog: {
           "@type": "OfferCatalog",

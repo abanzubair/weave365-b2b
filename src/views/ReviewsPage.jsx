@@ -16,46 +16,8 @@ import { Testimonials } from '../components/ui/testimonials-columns-1.jsx';
 import '../styles/reviews.css';
 
 import { SharpStar } from '../components/icons.jsx';
-export { SharpStar };
-
-const SEED_REVIEWS = [
-  {
-    id: 'seed-1',
-    reviewer_name: 'Rajesh Reddy',
-    business_name: 'Varun Tex, Hyderabad',
-    rating: 5,
-    title: 'Real Katan Silk Sourcing',
-    comment: 'Real katan silk is easy to spot. The weight and gold zari work on these pieces hold up under close scrutiny. Our customers love the quality, and our sales have steadily grown since sourcing direct from Varanasi weavers.',
-    created_at: '2026-05-10T12:00:00Z',
-  },
-  {
-    id: 'seed-2',
-    reviewer_name: 'Priyanka Sen',
-    business_name: 'The Silk Route, Bangalore',
-    rating: 5,
-    title: 'Straightforward Wholesale Pricing',
-    comment: "We've been using Weave365 as our main source. The tiered pricing is transparent, and the WhatsApp checkout flow works cleanly without any back and forth over quantities.",
-    created_at: '2026-04-28T09:30:00Z',
-  },
-  {
-    id: 'seed-3',
-    reviewer_name: 'Ketan Patel',
-    business_name: 'Kiran Fashions, Surat',
-    rating: 5,
-    title: 'Secure Transit & Packaging',
-    comment: "Transit damage used to be a real headache. Weave365 packs everything securely, and deliveries have been consistently on time. Highly recommend their wholesale channel.",
-    created_at: '2026-04-15T15:45:00Z',
-  },
-  {
-    id: 'seed-4',
-    reviewer_name: 'Aditi Sharma',
-    business_name: 'Meenakshi Sarees, Delhi',
-    rating: 5,
-    title: 'Efficient Catalog Downloader',
-    comment: "Downloading high-res photos for our resellers takes minutes. Support responds quickly on WhatsApp, which is crucial when confirming client orders.",
-    created_at: '2026-03-22T11:15:00Z',
-  }
-];
+import { SEED_REVIEWS } from '../data/reviewsData.js';
+export { SharpStar, SEED_REVIEWS };
 
 export function ReviewsSection({ navigate, user }) {
   const [reviews, setReviews] = useState([]);

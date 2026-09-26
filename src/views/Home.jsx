@@ -13,6 +13,7 @@ import { priceNoticeForAccess } from '../utils/buyerAccess.js';
 import dynamic from 'next/dynamic';
 
 import { HomeProductRails } from '../components/HomeProductRails.jsx';
+import { HomeReviewsSlider } from '../components/HomeReviewsSlider.jsx';
 
 const WholesalePartnership = dynamic(
   () => import('../components/WholesalePartnership.jsx').then((m) => m.WholesalePartnership),
@@ -270,6 +271,7 @@ export function Home({
   favoriteKeys,
   priceAccess,
   blogs = [],
+  reviews = [],
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const handleLinkClick = (e, to, productId = null, shopName = null) => {
@@ -892,6 +894,9 @@ export function Home({
           isMounted={isMounted}
         />
       </DeferredSection>
+
+      {/* Partner Reviews Marquee */}
+      <HomeReviewsSlider reviews={reviews} navigate={navigate} />
 
       <section className="seo-compact-section">
         <div className={`seo-compact-container ${seoExpanded ? 'expanded' : 'collapsed'}`}>

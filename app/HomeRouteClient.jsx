@@ -8,7 +8,12 @@ import { getBuyerAccess } from '../src/utils/buyerAccess.js';
 import { fallbackProductImage } from '../src/storefrontShared.jsx';
 import { upsertCart, upsertCartSelections, persistCart, persistFavorites } from '../src/utils/cartHelpers.js';
 
-export default function HomeRouteClient({ initialProducts = [], initialHeroSlides = [], initialBlogs = [] }) {
+export default function HomeRouteClient({
+  initialProducts = [],
+  initialHeroSlides = [],
+  initialBlogs = [],
+  initialReviews = [],
+}) {
   const navigate = useAppNavigate();
   const {
     user,
@@ -144,6 +149,7 @@ export default function HomeRouteClient({ initialProducts = [], initialHeroSlide
       favoriteKeys={favoriteKeySet}
       priceAccess={priceAccess}
       blogs={activeBlogs}
+      reviews={initialReviews}
     />
   );
 }

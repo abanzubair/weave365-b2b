@@ -1282,3 +1282,310 @@
     justify-content: center;
   }
 }
+
+
+/* ==========================================
+   Homepage Distilled Reviews Marquee
+   Impeccable Distill: Quiet, subtle, continuous marquee
+   ========================================== */
+.home-reviews-distill {
+  width: 100%;
+  padding: 4rem 0 3.5rem 0;
+  background: #faf8f5;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-reviews-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: normal;
+  border: 0;
+}
+
+.home-reviews-distill-inner {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.home-reviews-header-subtle {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 var(--site-padding);
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.home-reviews-title-wrap {
+  max-width: 600px;
+}
+
+.home-reviews-heading {
+  font-family: var(--font-hero-heading, 'Marcellus', 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.01em;
+}
+
+.home-reviews-lead {
+  font-family: var(--font-body);
+  font-size: clamp(13px, 1.1vw, 14.5px);
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.home-reviews-actions-subtle {
+  display: flex;
+  align-items: center;
+}
+
+.home-reviews-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-modern-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.home-reviews-text-link:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.home-reviews-link-arrow {
+  transition: transform 0.2s ease;
+}
+
+.home-reviews-text-link:hover .home-reviews-link-arrow {
+  transform: translateX(3px);
+}
+
+/* Continuous Horizontal Marquee Track */
+.home-reviews-marquee-wrap {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 8px 0;
+  /* Smooth edge fade gradient mask */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 48px,
+    black calc(100% - 48px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 48px,
+    black calc(100% - 48px),
+    transparent 100%
+  );
+}
+
+.home-reviews-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: homeReviewsMarqueeScroll 120s linear infinite;
+}
+
+/* Pause marquee scrolling on hover (cards stay flat without pop-up or highlight) */
+.home-reviews-marquee-wrap:hover .home-reviews-marquee-track {
+  animation-play-state: paused;
+}
+
+.home-reviews-marquee-group {
+  display: flex;
+  gap: 20px;
+  padding-right: 20px;
+  flex-shrink: 0;
+}
+
+@keyframes homeReviewsMarqueeScroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Review Card under Impeccable Distill */
+.home-review-card-distill {
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  padding: 22px 22px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: default;
+}
+
+.home-review-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-review-stars-row {
+  display: flex;
+  gap: 2px;
+}
+
+.home-review-star-icon {
+  flex-shrink: 0;
+}
+
+.home-review-card-title {
+  font-family: var(--font-hero-heading, 'Marcellus', 'Cormorant Garamond', Georgia, serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.home-review-card-quote {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ink);
+  opacity: 0.85;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  quotes: none;
+  flex-grow: 1;
+}
+
+.home-review-card-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: auto;
+}
+
+.home-review-author-name {
+  font-family: var(--font-modern-heading);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.home-review-author-business {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+@media screen and (max-width: 680px) {
+  .home-reviews-distill {
+    padding: 3rem 0 2.5rem 0;
+  }
+
+  .home-reviews-header-subtle {
+    margin-bottom: 1.5rem;
+  }
+
+  .home-review-card-distill {
+    width: 290px;
+    min-width: 290px;
+    max-width: 290px;
+    padding: 18px 18px 16px 18px;
+    gap: 10px;
+  }
+
+  .home-reviews-marquee-wrap {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 24px,
+      black calc(100% - 24px),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 24px,
+      black calc(100% - 24px),
+      transparent 100%
+    );
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .home-review-card-distill {
+    width: calc(100vw - 44px);
+    min-width: calc(100vw - 44px);
+    max-width: 280px;
+    padding: 16px 14px 14px 14px;
+  }
+
+  .home-reviews-marquee-wrap {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 14px,
+      black calc(100% - 14px),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 14px,
+      black calc(100% - 14px),
+      transparent 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reviews-marquee-track {
+    animation: none;
+    overflow-x: auto;
+    width: 100%;
+    scrollbar-width: thin;
+  }
+
+  .home-reviews-marquee-group[aria-hidden="true"] {
+    display: none;
+  }
+
+  .home-reviews-marquee-wrap {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}

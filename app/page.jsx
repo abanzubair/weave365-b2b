@@ -1,4 +1,5 @@
 import { fetchHeroData, fetchProducts, fetchSupabaseBlogPosts } from '../src/productData.js';
+import { fetchServiceReviews, generateReviewsJsonLd } from '../src/data/reviewsData.js';
 import { getSeoMetadata } from '../src/utils/seoHelper.js';
 import { siteUrl } from '../src/config.js';
 import { sanitizeCatalogProducts } from '../src/utils/catalogSanitizer.js';
@@ -43,10 +44,11 @@ export async function generateMetadata() {
 }
 
 export default async function HomePage() {
-  const [heroSlides, allProducts, blogs] = await Promise.all([
+  const [heroSlides, allProducts, blogs, reviews] = await Promise.all([
     fetchHeroData().catch(() => []),
     fetchProducts().catch(() => []),
     fetchSupabaseBlogPosts().catch(() => []),
+    fetchServiceReviews().catch(() => []),
   ]);
 
   const unarchived = allProducts.filter((p) => !p.isArchived);
@@ -103,6 +105,9 @@ export default async function HomePage() {
     link: s.link || '',
   }));
 
+  // Generate structured reviews & AggregateRating schema for search engines & LLMs
+  const reviewsJsonLd = generateReviewsJsonLd(reviews, siteUrl);
+
   return (
     <>
       <link
@@ -121,10 +126,15 @@ export default async function HomePage() {
         media="(min-width: 641px)"
         fetchPriority="high"
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsJsonLd) }}
+      />
       <HomeRouteClient
         initialProducts={cleanProducts}
         initialHeroSlides={trimmedHeroSlides}
         initialBlogs={trimmedBlogs}
+        initialReviews={reviews}
       />
     </>
   );
