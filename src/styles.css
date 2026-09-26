@@ -234,11 +234,11 @@ a:active {
 .newsletter-section,
 .home-blog-section {
   content-visibility: auto;
-  contain-intrinsic-size: 1px 500px;
+  contain-intrinsic-size: auto 1px auto 850px;
 }
 
 .site-footer {
   content-visibility: auto;
-  contain-intrinsic-size: 1px 850px;
+  contain-intrinsic-size: auto 1px auto 850px;
 }
 

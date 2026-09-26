@@ -1386,6 +1386,7 @@
 .home-reviews-marquee-wrap {
   width: 100%;
   overflow: hidden;
+  overflow-anchor: none;
   position: relative;
   padding: 8px 0;
   /* Smooth edge fade gradient mask */
