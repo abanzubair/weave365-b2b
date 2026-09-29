@@ -1,17 +1,20 @@
 /* ==========================================================================
    Weave365 Developer API Documentation Stylesheet
-   Theme: Minimalist Developer Docs (Stripe / Cloudflare Inspired)
+   Theme: Minimalist Developer Docs (Stripe / Cloudflare / Vercel Inspired)
+   Mobile-Optimized & Production-Grade Craft
    ========================================================================== */
 
 .api-docs-page {
   background: #ffffff;
   color: #0f172a;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif) !important;
   line-height: 1.6;
   min-height: 100vh;
+  position: relative;
+  overflow-x: clip;
 }
 
-/* Enforce modern crisp developer typography on all sub-elements (never Cormorant Garamond) */
+/* Enforce crisp developer typography across all nested elements */
 .api-docs-page h1,
 .api-docs-page h2,
 .api-docs-page h3,
@@ -29,7 +32,7 @@
 .api-docs-page td,
 .api-docs-page li,
 .api-docs-page label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif) !important;
 }
 
 .api-docs-page code,
@@ -37,28 +40,76 @@
 .api-docs-page kbd,
 .api-docs-page .api-code-pre,
 .api-docs-page .api-endpoint-route,
-.api-docs-page .api-param-name {
+.api-docs-page .api-param-name,
+.api-docs-page .api-metric-value {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
 }
 
-/* Main Layout (Sidebar + Content) */
+/* Custom Text Selection & Focus Rings */
+.api-docs-page ::selection {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.api-docs-page button:focus-visible,
+.api-docs-page a:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}
+
+/* Smooth code block scrollbars */
+.api-code-pre::-webkit-scrollbar,
+.api-table-wrapper::-webkit-scrollbar,
+.api-platform-tabs-nav::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.api-code-pre::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.api-code-pre::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.api-code-pre::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.api-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.api-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Main Grid Layout (Sidebar + Content)
+   ========================================================================== */
 .api-docs-container {
-  max-width: 1600px;
+  max-width: 1480px;
   margin: 0 auto;
   padding: 3rem 2rem 5rem 2rem;
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: 4rem;
+  gap: 3.5rem;
   box-sizing: border-box;
 }
 
-/* Sidebar Navigation */
+/* ==========================================================================
+   Desktop Sticky Sidebar Navigation
+   ========================================================================== */
 .api-docs-sidebar {
   position: sticky;
-  top: 90px;
+  top: 84px;
   height: fit-content;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .api-docs-nav-group {
@@ -66,8 +117,8 @@
 }
 
 .api-docs-nav-title {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #94a3b8;
@@ -80,19 +131,21 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .api-docs-nav-link {
-  display: block;
-  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
   border-radius: 6px;
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #64748b;
   text-decoration: none !important;
   transition: all 0.15s ease;
-  border-left: 2px solid transparent;
+  border-left: 2.5px solid transparent;
 }
 
 .api-docs-nav-link:hover {
@@ -104,24 +157,181 @@
   background: #f1f5f9;
   color: #0f172a !important;
   font-weight: 600;
-  border-left: 2.5px solid #0f172a;
+  border-left-color: #0f172a;
 }
 
-/* 3. Main Content Sections */
+.api-sidebar-footer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.api-sidebar-portal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+}
+
+.api-sidebar-portal-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline !important;
+}
+
+/* ==========================================================================
+   Mobile Sticky Table of Contents & Quick Pill Navigation Bar
+   (Hidden on desktop, active on <= 900px)
+   ========================================================================== */
+.api-mobile-toc-bar {
+  display: none;
+}
+
+.api-scroll-top-btn {
+  display: none;
+}
+
+/* ==========================================================================
+   Content Area & Typography
+   ========================================================================== */
 .api-docs-content {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3.25rem;
+  gap: 3rem;
 }
 
+/* Documentation Hero Header */
+.api-docs-hero {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 2rem;
+}
+
+.api-docs-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.api-docs-breadcrumbs a {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.api-docs-breadcrumbs a:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+.api-breadcrumb-sep {
+  color: #cbd5e1;
+}
+
+.api-breadcrumb-current {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.api-docs-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.api-docs-main-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.api-docs-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.api-version-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+}
+
+.api-docs-lead {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0 0 1.5rem 0;
+  max-width: 72ch;
+}
+
+.api-docs-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.api-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 38px;
+}
+
+.api-hero-btn.primary {
+  background: #0f172a;
+  color: #ffffff !important;
+  border: 1px solid #0f172a;
+}
+
+.api-hero-btn.primary:hover {
+  background: #1e293b;
+}
+
+.api-hero-btn.secondary {
+  background: #ffffff;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0;
+}
+
+.api-hero-btn.secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Documentation Sections */
 .api-docs-section {
-  scroll-margin-top: 100px;
+  scroll-margin-top: 110px;
 }
 
 .api-docs-section h2 {
   font-size: 1.375rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 0.875rem 0;
   letter-spacing: -0.015em;
@@ -141,37 +351,114 @@
   color: #475569;
   font-size: 0.9375rem;
   margin: 0 0 1rem 0;
+  line-height: 1.6;
 }
 
-.api-docs-callout {
+.api-docs-section p a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.api-docs-section p a:hover {
+  color: #1d4ed8;
+}
+
+.api-endpoint-note {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0 0 0.625rem 0;
+  line-height: 1.55;
+}
+
+.api-meta-note {
+  font-size: 0.875rem !important;
+  color: #64748b !important;
+  margin-top: 0.75rem !important;
+}
+
+/* Overview Key Metrics Grid */
+.api-key-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.api-metric-card {
   background: #f8fafc;
-  border-left: 4px solid #3b82f6;
-  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.api-metric-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.api-metric-value {
+  font-size: 0.875rem;
+  color: #0f172a;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+/* Security Callout Box */
+.api-security-callout {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   padding: 1rem 1.25rem;
   margin: 1.25rem 0;
   font-size: 0.875rem;
-  color: #334155;
+  color: #475569;
+  line-height: 1.6;
 }
 
-.api-docs-callout.warning {
-  background: #fffbeb;
-  border-left-color: #f59e0b;
-  color: #92400e;
+.api-security-callout-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #0f172a;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
-.api-docs-callout.success {
-  background: #f0fdf4;
-  border-left-color: #10b981;
-  color: #166534;
+.api-security-icon {
+  color: #2563eb;
+  flex-shrink: 0;
 }
 
-/* 4. Endpoint Reference Card */
+.api-security-callout p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.api-security-callout a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Endpoint Reference Cards
+   ========================================================================== */
 .api-endpoint-card {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   overflow: hidden;
   margin: 1.75rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .api-endpoint-header {
@@ -189,17 +476,37 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: Consolas, Monaco, monospace;
+  font-family: ui-monospace, Consolas, Monaco, monospace;
   font-size: 0.9375rem;
   font-weight: 600;
+  color: #0f172a;
+  word-break: break-word;
 }
 
+.api-endpoint-tag {
+  font-size: 0.8125rem;
+  color: #64748b;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.api-endpoint-body {
+  padding: 1.5rem;
+}
+
+/* Method Badges */
 .api-method-badge {
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: 6px;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  display: inline-block;
 }
 
 .api-method-badge.get {
@@ -214,39 +521,105 @@
   border: 1px solid #bfdbfe;
 }
 
-.api-endpoint-body {
-  padding: 1.5rem;
+.api-method-badge.mini {
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-/* Parameters Table */
+/* Response Header and Status Badges */
+.api-response-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 1.25rem 0 0.5rem 0;
+}
+
+.api-response-title {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.api-status-code-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.api-status-code-badge.success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.api-status-code-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.api-status-code-badge.error,
+.api-status-code-badge.forbidden {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* ==========================================================================
+   Responsive Tables & Table Wrappers
+   ========================================================================== */
+.api-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0.875rem 0 1.25rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
 .api-params-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0 1.5rem 0;
   font-size: 0.875rem;
+  min-width: 520px;
 }
 
 .api-params-table th {
   background: #f8fafc;
   text-align: left;
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   color: #64748b;
+  letter-spacing: 0.05em;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .api-params-table td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.api-params-table tr:last-child td {
+  border-bottom: none;
 }
 
 .api-param-name {
-  font-family: monospace;
   font-weight: 700;
   color: #0f172a;
+  font-size: 0.875rem;
 }
 
 .api-param-type {
@@ -254,15 +627,27 @@
   color: #64748b;
   font-style: italic;
   display: block;
+  margin-top: 2px;
 }
 
-/* Code Snippets & Syntax Boxes */
+.api-table-scroll-hint {
+  display: none;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: -0.5rem 0 0.75rem 0;
+  text-align: right;
+}
+
+/* ==========================================================================
+   Code Snippets & Syntax Containers
+   ========================================================================== */
 .api-code-wrapper {
   background: #0f172a;
   border-radius: 10px;
   position: relative;
   margin: 1rem 0;
   overflow: hidden;
+  border: 1px solid #1e293b;
 }
 
 .api-code-header {
@@ -271,55 +656,78 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.75rem;
+  gap: 8px;
+  font-size: 0.8125rem;
   color: #94a3b8;
   font-weight: 600;
   border-bottom: 1px solid #334155;
 }
 
+.api-code-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .api-code-copy-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #f8fafc;
   border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 0.75rem;
+  padding: 5px 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   transition: all 0.15s ease;
+  min-height: 28px;
+  flex-shrink: 0;
 }
 
 .api-code-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.api-code-copy-btn:active {
+  transform: scale(0.97);
 }
 
 .api-code-pre {
   margin: 0;
   padding: 1.25rem;
   color: #f8fafc;
-  font-family: Consolas, Monaco, 'Courier New', monospace;
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.6;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre;
 }
 
-/* 5. Platform Tabs */
+/* ==========================================================================
+   Platform Integration Tabs
+   ========================================================================== */
 .api-platform-tabs-nav {
   display: flex;
   gap: 8px;
   margin-bottom: 1rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+
+.api-platform-tabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .api-platform-tab-btn {
-  background: none;
-  border: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
   color: #64748b;
@@ -327,7 +735,10 @@
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 40px;
 }
 
 .api-platform-tab-btn:hover {
@@ -337,13 +748,16 @@
 
 .api-platform-tab-btn.active {
   background: #0f172a;
+  border-color: #0f172a;
   color: #ffffff;
 }
 
-/* 6. Pricing & Tiers Table — Minimalist & Refined */
+/* ==========================================================================
+   Pricing & Tiers
+   ========================================================================== */
 .api-pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.25rem;
   margin: 1.75rem 0;
   align-items: stretch;
@@ -368,7 +782,6 @@
 
 .api-pricing-card.featured {
   border: 1px solid #0f172a;
-  background: #ffffff;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
 }
 
@@ -382,33 +795,15 @@
   margin-bottom: 0.875rem;
 }
 
-.api-pricing-name-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .api-pricing-name {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.0625rem;
+  font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.01em;
 }
 
-.api-pricing-badge {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: #047857;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  letter-spacing: 0.01em;
-}
-
 .api-pricing-desc {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: #64748b;
   margin: 3px 0 0 0;
   line-height: 1.4;
@@ -430,7 +825,7 @@
 }
 
 .api-pricing-period {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #94a3b8;
 }
@@ -448,7 +843,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #334155;
   flex: 1;
 }
@@ -483,16 +878,15 @@
   font-weight: 600;
 }
 
-/* Pricing Action Buttons */
 .api-pricing-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 38px;
+  min-height: 42px;
   padding: 0 16px;
   border-radius: 8px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none !important;
   transition: all 0.15s ease;
@@ -522,22 +916,301 @@
   border-color: #94a3b8;
 }
 
-/* Responsive */
+/* ==========================================================================
+   Dashboard Management Section
+   ========================================================================== */
+.api-dashboard-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.api-dashboard-feature-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: #f8fafc;
+}
+
+.api-dashboard-feature-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.api-dashboard-feature-icon-wrap.blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.api-dashboard-feature-icon-wrap.green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.api-dashboard-feature-icon-wrap.pink {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.api-dashboard-feature-card h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.api-dashboard-feature-card p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.api-dashboard-cta-wrap {
+  margin-top: 1.5rem;
+}
+
+.api-dashboard-cta {
+  width: fit-content;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+/* ==========================================================================
+   RESPONSIVE OPTIMIZATIONS (Tablet & Mobile)
+   ========================================================================== */
 @media (max-width: 900px) {
+  /* Layout: single column, reduced padding */
   .api-docs-container {
     grid-template-columns: 1fr;
+    padding: 1.5rem var(--site-padding, 1rem) 3.5rem var(--site-padding, 1rem);
     gap: 2rem;
   }
 
+  /* Hide the static desktop sidebar that cluttered the top of the mobile page */
   .api-docs-sidebar {
-    position: static;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 1.5rem;
+    display: none;
   }
 
-  .api-docs-nav-list {
-    flex-direction: row;
-    flex-wrap: wrap;
+  /* Ultra-Minimal Mobile Sticky Section Selector Bar */
+  .api-mobile-toc-bar {
+    display: block;
+    position: sticky;
+    top: 64px;
+    z-index: 850;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e2e8f0;
+    margin: 0;
+    padding: 0.45rem var(--site-padding, 1rem);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .api-mobile-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 38px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .api-mobile-select-wrapper:focus-within {
+    border-color: #0f172a;
+    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+  }
+
+  .api-mobile-select-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .api-mobile-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    padding: 0 22px 0 0;
+    cursor: pointer;
+    outline: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: normal;
+  }
+
+  .api-mobile-select optgroup {
+    font-weight: 700;
+    color: #475569;
+  }
+
+  .api-mobile-select option {
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .api-mobile-select-chevron {
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  /* Floating Scroll-to-Top Button */
+  .api-scroll-top-btn {
+    display: flex;
+    align-items: center;
     gap: 6px;
+    position: fixed;
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    right: 1.25rem;
+    z-index: 800;
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+    border-radius: 9999px;
+    padding: 8px 14px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .api-scroll-top-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Content Refinements on Mobile */
+  .api-docs-content {
+    gap: 2.5rem;
+  }
+
+  .api-docs-main-title {
+    font-size: 1.625rem;
+  }
+
+  .api-docs-lead {
+    font-size: 0.9375rem;
+  }
+
+  .api-docs-section h2 {
+    font-size: 1.25rem;
+  }
+
+  .api-endpoint-card {
+    border-radius: 12px;
+    margin: 1.25rem 0;
+  }
+
+  .api-endpoint-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .api-endpoint-body {
+    padding: 1rem;
+  }
+
+  .api-table-scroll-hint {
+    display: block;
+  }
+
+  .api-code-copy-btn {
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .api-code-pre {
+    padding: 1rem;
+    font-size: 0.84375rem;
+    line-height: 1.6;
+  }
+
+  .api-pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .api-dashboard-features-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .api-dashboard-cta {
+    width: 100%;
+  }
+}
+
+/* Extra-small screens (< 480px) */
+@media (max-width: 480px) {
+  .api-docs-container {
+    padding: 1.25rem var(--site-padding, 0.875rem) 3.5rem var(--site-padding, 0.875rem);
+  }
+
+  .api-mobile-toc-bar {
+    margin: 0;
+    padding: 0.4rem var(--site-padding, 0.875rem);
+  }
+
+  .api-docs-main-title {
+    font-size: 1.45rem;
+  }
+
+  .api-hero-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .api-endpoint-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .api-endpoint-route {
+    font-size: 0.875rem;
+  }
+
+  .api-code-header {
+    padding: 8px 10px;
+  }
+
+  .api-code-pre {
+    padding: 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .api-pricing-card {
+    padding: 1.25rem;
+  }
+
+  .api-pricing-amount {
+    font-size: 1.625rem;
   }
 }

@@ -2,6 +2,7 @@
  * @file DeveloperApiDocPage.jsx
  * @description Comprehensive Developer API Documentation & Platform Integration Guide
  * Minimalist, high-performance developer documentation for Weave365 B2B Resellers.
+ * Mobile-optimized & responsive architecture.
  * 
  * @module views/DeveloperApiDocPage
  */
@@ -20,6 +21,7 @@ import {
   Globe,
   Layers,
   ArrowRight,
+  ArrowUpIcon,
   ExternalLink,
   Package,
   Truck,
@@ -31,41 +33,76 @@ import {
   HelpCircle,
   FileCode2,
   Server,
-  Sparkles
+  Sparkles,
+  BookOpen,
+  ChevronDown
 } from '../components/icons.jsx';
 import '../styles/developerApiDoc.css';
+
+const NAV_GROUPS = [
+  {
+    title: 'Getting Started',
+    items: [
+      { id: 'overview', label: 'Overview', icon: BookOpen },
+      { id: 'authentication', label: 'Authentication', icon: KeyRound },
+      { id: 'platforms', label: 'Supported Platforms', icon: Layers },
+      { id: 'curated-catalog', label: 'Curated Catalog Sync', icon: Sparkles },
+    ],
+  },
+  {
+    title: 'API Endpoints',
+    items: [
+      { id: 'endpoint-catalog', label: 'GET /catalog', method: 'GET', desc: 'Reseller Catalog' },
+      { id: 'endpoint-stock', label: 'GET /stock-status', method: 'GET', desc: 'Stock Map' },
+      { id: 'endpoint-product', label: 'GET /products/:sku', method: 'GET', desc: 'Product Lookup' },
+      { id: 'endpoint-order', label: 'POST /orders', method: 'POST', desc: 'Forward Dropship' },
+      { id: 'endpoint-get-orders', label: 'GET /orders', method: 'GET', desc: 'Tracking & History' },
+      { id: 'endpoint-me', label: 'GET /me', method: 'GET', desc: 'Quota & Metrics' },
+    ],
+  },
+  {
+    title: 'Tiers & Limits',
+    items: [
+      { id: 'rate-limits', label: 'Rate Limits & Quota', icon: Zap },
+      { id: 'pricing', label: 'Pricing Tiers', icon: DollarSign },
+      { id: 'dashboard-guide', label: 'Managing Your Key', icon: Sliders },
+    ],
+  },
+];
+
+const SECTION_IDS = [
+  'overview',
+  'authentication',
+  'platforms',
+  'curated-catalog',
+  'endpoint-catalog',
+  'endpoint-stock',
+  'endpoint-product',
+  'endpoint-order',
+  'endpoint-get-orders',
+  'endpoint-me',
+  'rate-limits',
+  'pricing',
+  'dashboard-guide',
+];
 
 export default function DeveloperApiDocPage() {
   const [copiedSection, setCopiedSection] = useState(null);
   const [activePlatformTab, setActivePlatformTab] = useState('shopify');
-  const [activeEndpointTab, setActiveEndpointTab] = useState('catalog');
   const [activeSection, setActiveSection] = useState('overview');
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    const sectionIds = [
-      'overview',
-      'authentication',
-      'platforms',
-      'endpoint-catalog',
-      'endpoint-stock',
-      'endpoint-product',
-      'endpoint-order',
-      'endpoint-get-orders',
-      'endpoint-me',
-      'rate-limits',
-      'pricing',
-      'dashboard-guide',
-    ];
-
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 140;
+      const scrollPosition = window.scrollY + 130;
+      setShowScrollTop(window.scrollY > 400);
 
-      for (let i = sectionIds.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sectionIds[i]);
+      for (let i = SECTION_IDS.length - 1; i >= 0; i--) {
+        const el = document.getElementById(SECTION_IDS[i]);
         if (el) {
           const top = el.offsetTop;
           if (scrollPosition >= top) {
-            setActiveSection(sectionIds[i]);
+            setActiveSection(SECTION_IDS[i]);
             return;
           }
         }
@@ -82,8 +119,17 @@ export default function DeveloperApiDocPage() {
     setActiveSection(id);
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = window.innerWidth <= 900 ? 112 : 80;
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: Math.max(0, elementPosition - navOffset),
+        behavior: 'smooth',
+      });
     }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const copyToClipboard = (text, id) => {
@@ -173,7 +219,7 @@ class Weave365Connector {
         $ch = curl_init($this->endpoint);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'x-api-key: ' . $this->apiKey,
-            'Accept: application/json'
+            'Accept'    => 'application/json'
         ]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
@@ -287,154 +333,129 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
 
   return (
     <div className="api-docs-page">
-      {/* Main Documentation Body */}
+      {/* Ultra-Minimal Mobile Sticky Section Selector */}
+      <div className="api-mobile-toc-bar">
+        <div className="api-mobile-select-wrapper">
+          <label htmlFor="api-mobile-nav-select" className="api-mobile-select-label">
+            Section:
+          </label>
+          <select
+            id="api-mobile-nav-select"
+            className="api-mobile-select"
+            value={activeSection}
+            onChange={(e) => scrollToSection(e.target.value)}
+            aria-label="Select documentation section"
+          >
+            {NAV_GROUPS.map((group) => (
+              <optgroup key={group.title} label={group.title}>
+                {group.items.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <ChevronDown size={14} className="api-mobile-select-chevron" />
+        </div>
+      </div>
+
+      {/* Main Documentation Container */}
       <div className="api-docs-container">
-        {/* Sticky Table of Contents Sidebar with Dynamic Scrollspy */}
-        <aside className="api-docs-sidebar">
-          <div className="api-docs-nav-group">
-            <div className="api-docs-nav-title">Getting Started</div>
-            <ul className="api-docs-nav-list">
-              <li>
-                <a
-                  href="#overview"
-                  className={`api-docs-nav-link ${activeSection === 'overview' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('overview'); }}
-                >
-                  Overview
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#authentication"
-                  className={`api-docs-nav-link ${activeSection === 'authentication' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('authentication'); }}
-                >
-                  Authentication
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#platforms"
-                  className={`api-docs-nav-link ${activeSection === 'platforms' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('platforms'); }}
-                >
-                  Supported Platforms
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#curated-catalog"
-                  className={`api-docs-nav-link ${activeSection === 'curated-catalog' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('curated-catalog'); }}
-                >
-                  Curated Catalog Sync
-                </a>
-              </li>
-            </ul>
-          </div>
+        {/* Desktop Sticky Table of Contents Sidebar */}
+        <aside className="api-docs-sidebar" aria-label="Documentation Navigation">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.title} className="api-docs-nav-group">
+              <div className="api-docs-nav-title">{group.title}</div>
+              <ul className="api-docs-nav-list">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={`#${item.id}`}
+                      className={`api-docs-nav-link ${activeSection === item.id ? 'active' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(item.id);
+                      }}
+                    >
+                      {item.method ? (
+                        <span className={`api-method-badge mini ${item.method.toLowerCase()}`}>
+                          {item.method}
+                        </span>
+                      ) : null}
+                      <span>{item.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-          <div className="api-docs-nav-group">
-            <div className="api-docs-nav-title">API Endpoints</div>
-            <ul className="api-docs-nav-list">
-              <li>
-                <a
-                  href="#endpoint-catalog"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-catalog' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-catalog'); }}
-                >
-                  GET /catalog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#endpoint-stock"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-stock' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-stock'); }}
-                >
-                  GET /stock-status
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#endpoint-product"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-product' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-product'); }}
-                >
-                  GET /products/:sku
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#endpoint-order"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-order' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-order'); }}
-                >
-                  POST /orders
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#endpoint-get-orders"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-get-orders' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-get-orders'); }}
-                >
-                  GET /orders
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#endpoint-me"
-                  className={`api-docs-nav-link ${activeSection === 'endpoint-me' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('endpoint-me'); }}
-                >
-                  GET /me
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="api-docs-nav-group">
-            <div className="api-docs-nav-title">Tiers & Limits</div>
-            <ul className="api-docs-nav-list">
-              <li>
-                <a
-                  href="#rate-limits"
-                  className={`api-docs-nav-link ${activeSection === 'rate-limits' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('rate-limits'); }}
-                >
-                  Rate Limits & Quota Reset
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#pricing"
-                  className={`api-docs-nav-link ${activeSection === 'pricing' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('pricing'); }}
-                >
-                  Pricing Tiers
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#dashboard-guide"
-                  className={`api-docs-nav-link ${activeSection === 'dashboard-guide' ? 'active' : ''}`}
-                  onClick={(e) => { e.preventDefault(); scrollToSection('dashboard-guide'); }}
-                >
-                  Managing Your Key
-                </a>
-              </li>
-            </ul>
+          <div className="api-sidebar-footer">
+            <a href="/account?tab=developer" className="api-sidebar-portal-link">
+              <KeyRound size={14} /> Developer Dashboard &rarr;
+            </a>
           </div>
         </aside>
 
         {/* Content Flow */}
         <main className="api-docs-content">
+          {/* Documentation Hero Header */}
+          <header className="api-docs-hero">
+            <div className="api-docs-breadcrumbs">
+              <a href="/catalogue">Store</a>
+              <span className="api-breadcrumb-sep">/</span>
+              <a href="/account?tab=developer">Developer</a>
+              <span className="api-breadcrumb-sep">/</span>
+              <span className="api-breadcrumb-current">REST API Reference</span>
+            </div>
+
+            <div className="api-docs-title-row">
+              <h1 className="api-docs-main-title">Developer API Reference</h1>
+              <div className="api-docs-badges">
+                <span className="api-version-pill">v1.0 REST</span>
+              </div>
+            </div>
+
+            <p className="api-docs-lead">
+              High-performance REST API for B2B resellers and automated storefronts. Synchronize wholesale catalogs, verify real-time handloom stock, and submit blind dropship fulfillment orders directly with Varanasi weavers.
+            </p>
+
+            <div className="api-docs-hero-actions">
+              <a href="/account?tab=developer" className="api-hero-btn primary">
+                <KeyRound size={15} /> Get API Key
+              </a>
+              <button
+                type="button"
+                className="api-hero-btn secondary"
+                onClick={() => scrollToSection('platforms')}
+              >
+                <Terminal size={15} /> Integration SDKs
+              </button>
+            </div>
+          </header>
+
           {/* Section: Overview */}
           <section id="overview" className="api-docs-section">
             <h2>Overview</h2>
             <p>
               The Weave365 REST API allows B2B resellers and eCommerce storefronts to query live catalog pricing, verify real-time inventory availability, and automate dropship order fulfillment directly with weavers in Varanasi.
             </p>
+
+            <div className="api-key-metrics-grid">
+              <div className="api-metric-card">
+                <span className="api-metric-label">Base URL</span>
+                <code className="api-metric-value">https://www.weave365.com/api/v1</code>
+              </div>
+              <div className="api-metric-card">
+                <span className="api-metric-label">Authentication</span>
+                <code className="api-metric-value">Header x-api-key or Bearer</code>
+              </div>
+              <div className="api-metric-card">
+                <span className="api-metric-label">Payload Format</span>
+                <code className="api-metric-value">JSON / UTF-8</code>
+              </div>
+            </div>
           </section>
 
           {/* Section: Authentication */}
@@ -446,13 +467,15 @@ curl -X GET "https://www.weave365.com/api/v1/orders" \\
 
             <div className="api-code-wrapper">
               <div className="api-code-header">
-                <span>HTTP Request Headers</span>
+                <span className="api-code-title">HTTP Request Headers</span>
                 <button
                   type="button"
                   className="api-code-copy-btn"
                   onClick={() => copyToClipboard('x-api-key: w365_live_YOUR_SECRET_KEY\nAuthorization: Bearer w365_live_YOUR_SECRET_KEY', 'auth')}
+                  aria-label="Copy HTTP headers snippet"
                 >
-                  {copiedSection === 'auth' ? <Check size={12} /> : <Copy size={12} />} Copy
+                  {copiedSection === 'auth' ? <Check size={13} /> : <Copy size={13} />}
+                  <span>{copiedSection === 'auth' ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
               <pre className="api-code-pre">
@@ -461,34 +484,42 @@ x-api-key: w365_live_9a7f8e1b4c3d2e...
 Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             </div>
 
-            <div style={{ margin: '1rem 0', padding: '0.875rem 1rem', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '0.8125rem', color: '#475569', lineHeight: 1.5 }}>
-              <strong style={{ color: '#0f172a', display: 'block', marginBottom: '2px' }}>Zero Plaintext Secret Storage:</strong>
-              For security, Weave365 stores your API key as a salted SHA-256 cryptographic hash. Your full raw secret key is presented <strong>only once</strong> upon creation or regeneration. Please store it securely in your <code>.env</code> file or server vault. If lost, you can rotate and regenerate a new key anytime from your <a href="/account?tab=developer" style={{ color: '#2563eb', fontWeight: 600 }}>Developer Dashboard</a>.
+            <div className="api-security-callout">
+              <div className="api-security-callout-header">
+                <Shield size={16} className="api-security-icon" />
+                <span>Zero Plaintext Secret Storage</span>
+              </div>
+              <p>
+                For security, Weave365 stores your API key as a salted SHA-256 cryptographic hash. Your full raw secret key is presented <strong>only once</strong> upon creation or regeneration. Please store it securely in your <code>.env</code> file or server vault. If lost, you can rotate and regenerate a new key anytime from your <a href="/account?tab=developer">Developer Dashboard</a>.
+              </p>
             </div>
 
-            <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-              You can generate and manage your API keys in your <a href="/account?tab=developer" style={{ color: '#2563eb', fontWeight: 600 }}>Account Developer Dashboard</a>.
+            <p className="api-meta-note">
+              You can generate and manage your API keys in your <a href="/account?tab=developer">Account Developer Dashboard</a>.
             </p>
           </section>
 
           {/* Section: Platform Integrations */}
           <section id="platforms" className="api-docs-section">
-            <h2>Supported Platforms & Integration Guides</h2>
+            <h2>Supported Platforms &amp; Integration Guides</h2>
             <p>
               Whether you run a Shopify store, WooCommerce, PrestaShop, or a custom Next.js/Node.js web application, Weave365 provides native support:
             </p>
 
-            <div className="api-platform-tabs-nav">
+            <div className="api-platform-tabs-nav" role="tablist" aria-label="SDK Integration options">
               {platforms.map((p) => {
                 const Icon = p.icon;
                 return (
                   <button
                     key={p.id}
                     type="button"
+                    role="tab"
+                    aria-selected={activePlatformTab === p.id}
                     className={`api-platform-tab-btn ${activePlatformTab === p.id ? 'active' : ''}`}
                     onClick={() => setActivePlatformTab(p.id)}
                   >
-                    <Icon size={15} /> {p.name}
+                    <Icon size={15} />
+                    <span>{p.name}</span>
                   </button>
                 );
               })}
@@ -496,13 +527,15 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
             <div className="api-code-wrapper">
               <div className="api-code-header">
-                <span>{platforms.find((p) => p.id === activePlatformTab)?.name} Integration Code</span>
+                <span className="api-code-title">{platforms.find((p) => p.id === activePlatformTab)?.name} Integration Code</span>
                 <button
                   type="button"
                   className="api-code-copy-btn"
                   onClick={() => copyToClipboard(codeSnippets[activePlatformTab], 'platform-code')}
+                  aria-label="Copy platform integration code snippet"
                 >
-                  {copiedSection === 'platform-code' ? <Check size={12} /> : <Copy size={12} />} Copy Code
+                  {copiedSection === 'platform-code' ? <Check size={13} /> : <Copy size={13} />}
+                  <span>{copiedSection === 'platform-code' ? 'Copied' : 'Copy Code'}</span>
                 </button>
               </div>
               <pre className="api-code-pre">{codeSnippets[activePlatformTab]}</pre>
@@ -516,27 +549,30 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
               Weave365 is a curated B2B procurement network. To maintain your storefront&apos;s focus, the API only delivers the exact products you choose to list on your store.
             </p>
 
-            <table className="api-params-table" style={{ marginTop: '0.75rem' }}>
-              <thead>
-                <tr>
-                  <th>Method</th>
-                  <th>Configuration</th>
-                  <th>API Feed Output</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Dashboard Selection</strong></td>
-                  <td>Checkmark products in <em>Account &rarr; Developer API</em> and click <em>Save Selection</em></td>
-                  <td><code>/api/v1/catalog</code> and <code>/api/v1/stock-status</code> automatically output strictly your chosen products.</td>
-                </tr>
-                <tr>
-                  <td><strong>URL Parameter Override</strong></td>
-                  <td>Pass <code>?skus=100001,100005</code> in the API request URL</td>
-                  <td>Explicit URL query parameters filter the feed directly on demand.</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="api-table-wrapper">
+              <table className="api-params-table">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Configuration</th>
+                    <th>API Feed Output</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Dashboard Selection</strong></td>
+                    <td>Checkmark products in <em>Account &rarr; Developer API</em> and click <em>Save Selection</em></td>
+                    <td><code>/api/v1/catalog</code> and <code>/api/v1/stock-status</code> automatically output strictly your chosen products.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>URL Parameter Override</strong></td>
+                    <td>Pass <code>?skus=100001,100005</code> in the API request URL</td>
+                    <td>Explicit URL query parameters filter the feed directly on demand.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="api-table-scroll-hint">Swipe horizontally to see all columns &rarr;</div>
           </section>
 
           {/* Section: Endpoints Reference */}
@@ -550,41 +586,59 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge get">GET</span>
                   <span>/api/v1/catalog</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Catalog & Reseller Price</span>
+                <span className="api-endpoint-tag">Catalog &amp; Reseller Price</span>
               </div>
               <div className="api-endpoint-body">
                 <p>Fetches the live Weave365 catalog with high-resolution imagery and strictly the Reseller Procurement Price.</p>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Query Parameters</h4>
-                <table className="api-params-table">
-                  <thead>
-                    <tr>
-                      <th>Parameter</th>
-                      <th>Type</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><span className="api-param-name">category</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter by category (e.g. <code>Kanchipuram Silk</code>, <code>Banarasi Katan</code>).</td>
-                    </tr>
-                    <tr>
-                      <td><span className="api-param-name">skus</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter by specific selected SKUs (comma-separated, e.g. <code>100001,100005,100012</code>). Ideal when only curating selected products.</td>
-                    </tr>
-                    <tr>
-                      <td><span className="api-param-name">format</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Set to <code>shopify</code> to format directly for Shopify Matrixify or automated sync apps.</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="api-response-header">
+                  <span className="api-response-title">Query Parameters</span>
+                </div>
+                <div className="api-table-wrapper">
+                  <table className="api-params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span className="api-param-name">category</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter by category (e.g. <code>Kanchipuram Silk</code>, <code>Banarasi Katan</code>).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">skus</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter by specific selected SKUs (comma-separated, e.g. <code>100001,100005,100012</code>). Ideal when only curating selected products.</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">format</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Set to <code>shopify</code> to format directly for Shopify Matrixify or automated sync apps.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Response (JSON)</h4>
+                <div className="api-response-header">
+                  <span className="api-response-title">Response (JSON)</span>
+                  <span className="api-status-code-badge success">HTTP 200 OK</span>
+                </div>
                 <div className="api-code-wrapper">
+                  <div className="api-code-header">
+                    <span className="api-code-title">200 OK Response Payload</span>
+                    <button
+                      type="button"
+                      className="api-code-copy-btn"
+                      onClick={() => copyToClipboard(`{\n  "status": "success",\n  "tier": "growth",\n  "client_name": "My Reseller Store",\n  "catalog_mode": "curated",\n  "total_products": 24,\n  "last_synced_at": "2026-08-27T12:00:00Z",\n  "products": []\n}`, 'catalog-res')}
+                    >
+                      {copiedSection === 'catalog-res' ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copiedSection === 'catalog-res' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
                   <pre className="api-code-pre">{`{
   "status": "success",
   "tier": "growth",
@@ -622,7 +676,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge get">GET</span>
                   <span>/api/v1/stock-status</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Ultra-Lightweight Stock Map</span>
+                <span className="api-endpoint-tag">Ultra-Lightweight Stock Map</span>
               </div>
               <div className="api-endpoint-body">
                 <p>
@@ -630,24 +684,32 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   Ideal for frequent (every 5-15 minute) inventory polling without consuming bandwidth or heavy payloads.
                 </p>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Query Parameters</h4>
-                <table className="api-params-table">
-                  <thead>
-                    <tr>
-                      <th>Parameter</th>
-                      <th>Type</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><span className="api-param-name">skus</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter stock verification to only specific selected SKUs (comma-separated, e.g. <code>100001,100005</code>).</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="api-response-header">
+                  <span className="api-response-title">Query Parameters</span>
+                </div>
+                <div className="api-table-wrapper">
+                  <table className="api-params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span className="api-param-name">skus</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter stock verification to only specific selected SKUs (comma-separated, e.g. <code>100001,100005</code>).</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
+                <div className="api-response-header">
+                  <span className="api-response-title">Response (JSON)</span>
+                  <span className="api-status-code-badge success">HTTP 200 OK</span>
+                </div>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
@@ -681,7 +743,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge get">GET</span>
                   <span>/api/v1/products/:sku</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Single Product Lookup</span>
+                <span className="api-endpoint-tag">Single Product Lookup</span>
               </div>
               <div className="api-endpoint-body">
                 <p>Retrieves real-time details, high-resolution imagery, and live stock availability for a specific product design code / SKU.</p>
@@ -704,8 +766,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 }`}</pre>
                 </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Curated Feed Error Response (HTTP 404)</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                <div className="api-response-header">
+                  <span className="api-response-title">Curated Feed Error Response</span>
+                  <span className="api-status-code-badge error">HTTP 404 Not Found</span>
+                </div>
+                <p className="api-endpoint-note">
                   If your API key is in curated catalog mode and the requested SKU is not in your selected products list:
                 </p>
                 <div className="api-code-wrapper">
@@ -725,7 +790,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge post">POST</span>
                   <span>/api/v1/orders</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Forward Dropship Order</span>
+                <span className="api-endpoint-tag">Forward Dropship Order</span>
               </div>
               <div className="api-endpoint-body">
                 <p>
@@ -733,7 +798,9 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   All parcels are dispatched under <strong>Blind Packaging</strong> (your store name as the sender, zero supplier branding or invoices).
                 </p>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Request Body (JSON)</h4>
+                <div className="api-response-header">
+                  <span className="api-response-title">Request Body (JSON)</span>
+                </div>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "reseller_order_id": "RESELLER-ORD-1092",
@@ -756,7 +823,10 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 }`}</pre>
                 </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Response (HTTP 201 Created)</h4>
+                <div className="api-response-header">
+                  <span className="api-response-title">Success Response</span>
+                  <span className="api-status-code-badge success">HTTP 201 Created</span>
+                </div>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
@@ -768,8 +838,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 }`}</pre>
                 </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Order API Permission Requirement (HTTP 403)</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                <div className="api-response-header">
+                  <span className="api-response-title">Order API Permission Requirement</span>
+                  <span className="api-status-code-badge forbidden">HTTP 403 Forbidden</span>
+                </div>
+                <p className="api-endpoint-note">
                   Dropship ordering requires active Order API permissions (enabled by default on Growth tier or upon partner onboarding approval):
                 </p>
                 <div className="api-code-wrapper">
@@ -789,47 +862,54 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge get">GET</span>
                   <span>/api/v1/orders</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Fetch Orders & Live Tracking</span>
+                <span className="api-endpoint-tag">Fetch Orders &amp; Live Tracking</span>
               </div>
               <div className="api-endpoint-body">
                 <p>
                   Retrieve orders placed by your account along with live fulfillment stages, courier carrier, and tracking details.
                 </p>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Query Parameters</h4>
-                <table className="api-params-table">
-                  <thead>
-                    <tr>
-                      <th>Parameter</th>
-                      <th>Type</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><span className="api-param-name">id</span> or <span className="api-param-name">order_id</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter by specific Weave365 Order ID (or pass as path: <code>/api/v1/orders/:order_id</code>).</td>
-                    </tr>
-                    <tr>
-                      <td><span className="api-param-name">reseller_order_id</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter by your storefront&apos;s custom order number (e.g. <code>RESELLER-ORD-1092</code>).</td>
-                    </tr>
-                    <tr>
-                      <td><span className="api-param-name">status</span></td>
-                      <td><span className="api-param-type">string (optional)</span></td>
-                      <td>Filter by order status (<code>new</code>, <code>verified</code>, <code>processing</code>, <code>dispatched</code>, <code>delivered</code>, <code>cancelled</code>).</td>
-                    </tr>
-                    <tr>
-                      <td><span className="api-param-name">limit</span></td>
-                      <td><span className="api-param-type">number (optional)</span></td>
-                      <td>Number of orders to retrieve (default: <code>50</code>, max: <code>100</code>).</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="api-response-header">
+                  <span className="api-response-title">Query Parameters</span>
+                </div>
+                <div className="api-table-wrapper">
+                  <table className="api-params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span className="api-param-name">id</span> / <span className="api-param-name">order_id</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter by specific Weave365 Order ID (or pass as path: <code>/api/v1/orders/:order_id</code>).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">reseller_order_id</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter by your storefront&apos;s custom order number (e.g. <code>RESELLER-ORD-1092</code>).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">status</span></td>
+                        <td><span className="api-param-type">string (optional)</span></td>
+                        <td>Filter by order status (<code>new</code>, <code>verified</code>, <code>processing</code>, <code>dispatched</code>, <code>delivered</code>, <code>cancelled</code>).</td>
+                      </tr>
+                      <tr>
+                        <td><span className="api-param-name">limit</span></td>
+                        <td><span className="api-param-type">number (optional)</span></td>
+                        <td>Number of orders to retrieve (default: <code>50</code>, max: <code>100</code>).</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Response (HTTP 200 OK)</h4>
+                <div className="api-response-header">
+                  <span className="api-response-title">Response</span>
+                  <span className="api-status-code-badge success">HTTP 200 OK</span>
+                </div>
                 <div className="api-code-wrapper">
                   <pre className="api-code-pre">{`{
   "status": "success",
@@ -870,8 +950,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 }`}</pre>
                 </div>
 
-                <h4 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', color: '#64748b', margin: '1rem 0 0.5rem 0' }}>Order API Permission Requirement (HTTP 403)</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: '0 0 0.5rem 0' }}>
+                <div className="api-response-header">
+                  <span className="api-response-title">Order API Permission Requirement</span>
+                  <span className="api-status-code-badge forbidden">HTTP 403 Forbidden</span>
+                </div>
+                <p className="api-endpoint-note">
                   If Order API permissions are disabled for your key, this endpoint responds with:
                 </p>
                 <div className="api-code-wrapper">
@@ -891,7 +974,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <span className="api-method-badge get">GET</span>
                   <span>/api/v1/me</span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Account & Live Quota Metrics</span>
+                <span className="api-endpoint-tag">Account &amp; Live Quota Metrics</span>
               </div>
               <div className="api-endpoint-body">
                 <p>Inspect your current API key details, catalog sync mode, remaining monthly quota, rate limits, active permissions, and live usage statistics.</p>
@@ -923,42 +1006,44 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
           {/* Section: Rate Limits & Quotas */}
           <section id="rate-limits" className="api-docs-section">
-            <h2>Rate Limits & Quotas</h2>
+            <h2>Rate Limits &amp; Quotas</h2>
             <p>
               Request quotas are allocated per calendar month and reset automatically on the 1st of every month at 00:00 UTC. Choose an inventory polling frequency suited to your plan:
             </p>
 
-            <table className="api-params-table" style={{ margin: '1rem 0 1.5rem 0' }}>
-              <thead>
-                <tr>
-                  <th>Sync Frequency</th>
-                  <th>Monthly Requests</th>
-                  <th>Recommended Tier</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Every 2 Hours</strong></td>
-                  <td>~360 req / month</td>
-                  <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Runs smoothly all 30 days</td>
-                </tr>
-                <tr>
-                  <td><strong>Every 1 Hour</strong></td>
-                  <td>~720 req / month</td>
-                  <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Fits within 2,000 quota</td>
-                </tr>
-                <tr>
-                  <td><strong>Every 15 Minutes</strong></td>
-                  <td>~2,880 req / month</td>
-                  <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Continuous 24/7 sync</td>
-                </tr>
-                <tr>
-                  <td><strong>Every 5 Minutes</strong></td>
-                  <td>~8,640 req / month</td>
-                  <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Near real-time sync</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="api-table-wrapper">
+              <table className="api-params-table">
+                <thead>
+                  <tr>
+                    <th>Sync Frequency</th>
+                    <th>Monthly Requests</th>
+                    <th>Recommended Tier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Every 2 Hours</strong></td>
+                    <td>~360 req / month</td>
+                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Runs smoothly all 30 days</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Every 1 Hour</strong></td>
+                    <td>~720 req / month</td>
+                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Fits within 2,000 quota</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Every 15 Minutes</strong></td>
+                    <td>~2,880 req / month</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Continuous 24/7 sync</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Every 5 Minutes</strong></td>
+                    <td>~8,640 req / month</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Near real-time sync</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <h3>Quota Safety Guard</h3>
             <p>
@@ -967,7 +1052,8 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
 
             <div className="api-code-wrapper">
               <div className="api-code-header">
-                <span>Quota Exceeded Error Response (HTTP 429)</span>
+                <span className="api-code-title">Quota Exceeded Error Response</span>
+                <span className="api-status-code-badge warning">HTTP 429 Too Many Requests</span>
               </div>
               <pre className="api-code-pre">{`{
   "status": "error",
@@ -1136,32 +1222,54 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
               Every registered reseller has full access to the self-service Developer Portal inside their account area:
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', margin: '1.5rem 0' }}>
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', background: '#f8fafc' }}>
-                <KeyRound size={20} style={{ color: '#2563eb', marginBottom: '8px' }} />
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', fontWeight: 600 }}>Key Provisioning</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: 0 }}>Generate, reveal, copy, or refresh secret API tokens securely.</p>
+            <div className="api-dashboard-features-grid">
+              <div className="api-dashboard-feature-card">
+                <div className="api-dashboard-feature-icon-wrap blue">
+                  <KeyRound size={20} />
+                </div>
+                <h4>Key Provisioning</h4>
+                <p>Generate, reveal, copy, or refresh secret API tokens securely with salted SHA-256 storage.</p>
               </div>
 
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', background: '#f8fafc' }}>
-                <Sliders size={20} style={{ color: '#16a34a', marginBottom: '8px' }} />
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', fontWeight: 600 }}>Live Usage Gauges</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: 0 }}>Track remaining monthly requests and daily request histograms in real time.</p>
+              <div className="api-dashboard-feature-card">
+                <div className="api-dashboard-feature-icon-wrap green">
+                  <Sliders size={20} />
+                </div>
+                <h4>Live Usage Gauges</h4>
+                <p>Track remaining monthly requests and daily request histograms in real time.</p>
               </div>
 
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', background: '#f8fafc' }}>
-                <Terminal size={20} style={{ color: '#db2777', marginBottom: '8px' }} />
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', fontWeight: 600 }}>In-Browser Test Console</h4>
-                <p style={{ fontSize: '0.8125rem', color: '#64748b', margin: 0 }}>Send live test queries and view response headers directly in the browser.</p>
+              <div className="api-dashboard-feature-card">
+                <div className="api-dashboard-feature-icon-wrap pink">
+                  <Terminal size={20} />
+                </div>
+                <h4>In-Browser Test Console</h4>
+                <p>Send live test queries and view response headers directly in the browser.</p>
               </div>
             </div>
 
-            <a href="/account?tab=developer" className="api-pricing-btn api-pricing-btn-primary" style={{ width: 'fit-content' }}>
-              Launch Developer Dashboard <ArrowRight size={16} />
-            </a>
+            <div className="api-dashboard-cta-wrap">
+              <a href="/account?tab=developer" className="api-pricing-btn primary api-dashboard-cta">
+                Launch Developer Dashboard <ArrowRight size={16} />
+              </a>
+            </div>
           </section>
         </main>
       </div>
+
+      {/* Floating Scroll-to-Top Button for Mobile */}
+      {showScrollTop && (
+        <button
+          type="button"
+          className="api-scroll-top-btn"
+          onClick={scrollToTop}
+          aria-label="Scroll back to top"
+          title="Back to top"
+        >
+          <ArrowUpIcon size={14} />
+          <span>Top</span>
+        </button>
+      )}
     </div>
   );
 }
