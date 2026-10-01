@@ -248,20 +248,20 @@ export function MobileMenu(props) {
             </div>
           </div>
 
-          {/* 3. CUSTOM WOVEN */}
+          {/* 3. CUSTOM WEAVING */}
           <div className={`mobile-account-dropdown ${customWovenOpen ? 'is-open' : ''}`}>
             <button type="button" 
               className="mobile-menu-item mobile-menu-account-trigger" 
               onClick={() => toggleSection('custom-woven')}
             >
               <span className="mobile-menu-icon"><Sparkles size={20} /></span>
-              <span className="mobile-menu-label">CUSTOM WOVEN</span>
+              <span className="mobile-menu-label">CUSTOM WEAVING</span>
               <ChevronDown size={18} className={`mobile-menu-chevron ${customWovenOpen ? 'rotated' : ''}`} />
             </button>
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
                 <AppLink to="custom-woven" href="/custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Woven Sarees</span>
+                  <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Weaving Sarees</span>
                 </AppLink>
                 <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Private Label Manufacturing</span>

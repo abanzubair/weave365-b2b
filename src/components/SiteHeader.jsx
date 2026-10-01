@@ -226,7 +226,7 @@ export function SiteHeader(props) {
           </DropdownPortal>
         </div>
 
-        {/* 3. CUSTOM WOVEN */}
+        {/* 3. CUSTOM WEAVING */}
         <div className="nav-item-dropdown" ref={customWovenRef}>
           <button
             type="button"
@@ -236,11 +236,11 @@ export function SiteHeader(props) {
               setDropdownOpen(dropdownOpen === 'custom-woven' ? null : 'custom-woven');
             }}
           >
-            CUSTOM WOVEN <ChevronDown size={14} className={dropdownOpen === 'custom-woven' ? 'rotate' : ''} />
+            CUSTOM WEAVING <ChevronDown size={14} className={dropdownOpen === 'custom-woven' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={customWovenRef} isOpen={dropdownOpen === 'custom-woven'} className="dropdown-menu nav-standard-dropdown">
             <AppLink to="custom-woven" href="/custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Custom Woven Sarees
+              Custom Weaving Sarees
             </AppLink>
             <AppLink to="white-label" href="/white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Private Label Manufacturing
