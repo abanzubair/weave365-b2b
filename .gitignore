@@ -27,6 +27,7 @@ qa-*.png
 qa-playwright.cjs
 split_css.cjs
 CLAUDE.md
+lighthouse-*.json
 
 skills/*
 .agents/
