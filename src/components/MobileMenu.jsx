@@ -260,7 +260,7 @@ export function MobileMenu(props) {
             </button>
             <div className="mobile-account-items">
               <div className="mobile-account-items-inner">
-                <AppLink to="custom-woven" href="/custom-woven" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
+                <AppLink to="custom-weaving" href="/custom-weaving" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom Weaving Sarees</span>
                 </AppLink>
                 <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
@@ -270,8 +270,8 @@ export function MobileMenu(props) {
                   <span className="subitem-label" style={{ paddingLeft: '8px' }}>Custom / Bulk Requirement</span>
                 </AppLink>
                 <AppLink 
-                  to="custom-woven#weaving-techniques" 
-                  href="/custom-woven#weaving-techniques"
+                  to="custom-weaving#weaving-techniques" 
+                  href="/custom-weaving#weaving-techniques"
                   navigate={navigate} 
                   className="mobile-account-subitem" 
                   onClick={(e) => {

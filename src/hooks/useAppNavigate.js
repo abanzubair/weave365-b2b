@@ -57,6 +57,8 @@ export function useAppNavigate() {
       }
     } else if (nextRoute === 'reseller-banarasi-sarees' || nextRoute === 'resell-sarees-online' || nextRoute === 'resell') {
       href = '/resell-sarees-online';
+    } else if (nextRoute === 'custom-woven') {
+      href = '/custom-weaving';
     } else if (nextRoute === 'sellers' || nextRoute === 'sell-banarasi-sarees' || nextRoute === 'seller' || nextRoute === 'weaver-onboarding') {
       href = '/sell-banarasi-sarees';
     } else if (nextRoute === 'wholesale-catalogue' || nextRoute === 'catalogue' || nextRoute === 'wholesale-banarasi-sarees') {

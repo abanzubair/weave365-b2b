@@ -166,6 +166,7 @@ export const NON_PRODUCT_ROUTES = new Set([
   'resell-sarees-online',
   'handloom-vs-powerloom-guide',
   'custom-woven',
+  'custom-weaving',
   'checkout',
   'sarees',
   'suits',

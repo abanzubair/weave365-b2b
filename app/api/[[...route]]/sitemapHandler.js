@@ -12,7 +12,7 @@ export async function generateSitemapXml(request) {
     { url: siteUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/catalogue`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${siteUrl}/new-arrivals`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${siteUrl}/custom-woven`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${siteUrl}/custom-weaving`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/resell-sarees-online`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
     { url: `${siteUrl}/resell`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${siteUrl}/white-label`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },

@@ -521,7 +521,7 @@ export function VisualPageEditor({ user, navigate = () => {} }) {
 
   const PAGE_OPTIONS = [
     { id: 'home', label: 'Homepage', path: '/' },
-    { id: 'custom-woven', label: 'Custom Woven Sarees', path: '/custom-woven' },
+    { id: 'custom-woven', label: 'Custom Woven Sarees', path: '/custom-weaving' },
     { id: 'partner', label: 'Partner & Reseller Program', path: '/partner' },
     { id: 'dropshipping', label: 'Dropshipping Program', path: '/dropshipping' },
     { id: 'affiliate-program', label: 'Affiliate Program', path: '/affiliate-program' },

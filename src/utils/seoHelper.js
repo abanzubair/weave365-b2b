@@ -13,6 +13,7 @@ export const ROUTE_FIRST_IMAGES = {
   '/sourcing-partners': '/artisan_at_loom_premium.webp',
   '/white-label': '/boutique-hero.webp',
   '/custom-woven': '/banarasi_loom_detail.webp',
+  '/custom-weaving': '/banarasi_loom_detail.webp',
   '/dropshipping': '/reseller_premium_catalog_display.webp',
   '/resell-sarees-online': '/reseller_premium_catalog_display.webp',
   '/resell': '/reseller_premium_catalog_display.webp',
@@ -37,7 +38,15 @@ export function normalizeSeoPath(path) {
 export function seoOverrideForPath(pageSeoSettings, canonicalPath) {
   if (!Array.isArray(pageSeoSettings)) return null;
   const normalized = normalizeSeoPath(canonicalPath);
-  return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === normalized);
+  const directMatch = pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === normalized);
+  if (directMatch) return directMatch;
+  if (normalized === '/custom-weaving') {
+    return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === '/custom-woven');
+  }
+  if (normalized === '/custom-woven') {
+    return pageSeoSettings.find((setting) => normalizeSeoPath(setting.path) === '/custom-weaving');
+  }
+  return null;
 }
 
 export function isValidImageUrl(url) {
@@ -188,7 +197,10 @@ export async function getSeoMetadata(path, defaultMetadata = {}, options = {}) {
 
     const title = override?.metaTitle || defaultMetadata.title || storeConfig.name || 'Weave 365';
     const description = override?.metaDescription || defaultMetadata.description || '';
-    const canonical = override?.canonicalPath || defaultMetadata.alternates?.canonical || path;
+    let canonical = override?.canonicalPath || defaultMetadata.alternates?.canonical || path;
+    if (typeof canonical === 'string' && (canonical.endsWith('/custom-woven') || normalizeSeoPath(canonical) === '/custom-woven')) {
+      canonical = canonical.replace(/\/custom-woven$/, '/custom-weaving');
+    }
     const canonicalUrl = canonical.startsWith('http')
       ? canonical
       : `${siteUrl}${canonical === '/' ? '' : canonical.startsWith('/') ? canonical : `/${canonical}`}`;

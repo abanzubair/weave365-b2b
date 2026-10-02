@@ -112,6 +112,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/custom-woven',
+        destination: '/custom-weaving',
+        permanent: true,
+      },
+      {
         source: '/weaver-onboarding',
         destination: '/sell-banarasi-sarees',
         permanent: true,

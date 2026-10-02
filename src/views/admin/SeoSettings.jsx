@@ -160,7 +160,7 @@ const staticSeoDefaults = [
     metaDescription: 'Start your free Banarasi saree & suit dropshipping business in India. Sourced directly from Varanasi weavers with WhatsApp sharing, catalog downloads, and white-label website tools.',
   },
   {
-    path: '/custom-woven',
+    path: '/custom-weaving',
     label: 'Custom Woven Sarees',
     metaTitle: 'Custom Woven Sarees & Custom Textile Weaving | Weave 365',
     metaDescription: 'Order custom woven Banarasi sarees, bespoke patterns, and customized fabric lengths direct from Varanasi master weavers. Minimum order quantities apply.',

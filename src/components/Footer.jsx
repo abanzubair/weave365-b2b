@@ -152,7 +152,7 @@ export function Footer({ navigate }) {
             <ul className="footer-link-list">
               <li><AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate}>Reseller Guides</AppLink></li>
               <li><AppLink to="wholesale-catalogue" href="/wholesale-catalogue" navigate={navigate}>Wholesale Guides</AppLink></li>
-              <li><AppLink to="custom-woven" href="/custom-woven" navigate={navigate}>Fabric &amp; Weave</AppLink></li>
+              <li><AppLink to="custom-weaving" href="/custom-weaving" navigate={navigate}>Fabric &amp; Weave</AppLink></li>
               <li><AppLink to="collaboration" href="/collaboration" navigate={navigate}>Business Growth</AppLink></li>
               <li><AppLink to="blog" href="/blog" navigate={navigate}>Banarasi Insights</AppLink></li>
             </ul>

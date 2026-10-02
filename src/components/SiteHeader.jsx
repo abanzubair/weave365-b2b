@@ -122,7 +122,7 @@ export function SiteHeader(props) {
 
   const isWholesaleActive = ['catalogue', 'wholesale-catalogue', 'sarees', 'suits', 'bulk-inquiry', 'sourcing-partners', 'wholesale-banarasi-sarees'].includes(route);
   const isResellActive = ['resell-sarees-online', 'dropshipping', 'white-label', 'reseller-faqs', 'affiliate-program', 'reseller-dashboard'].includes(route);
-  const isCustomWovenActive = ['custom-woven', 'handloom-vs-powerloom-guide'].includes(route);
+  const isCustomWovenActive = ['custom-weaving', 'custom-woven', 'handloom-vs-powerloom-guide'].includes(route);
   const isCollectionsActive = ['new-arrivals', 'lehengas', 'dupattas', 'under-999'].includes(route);
   const isCompanyActive = ['about', 'contact', 'shipping-delivery', 'returns-cancellation', 'payment-policy', 'collaboration', 'sell-banarasi-sarees'].includes(route);
 
@@ -239,7 +239,7 @@ export function SiteHeader(props) {
             CUSTOM WEAVING <ChevronDown size={14} className={dropdownOpen === 'custom-woven' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={customWovenRef} isOpen={dropdownOpen === 'custom-woven'} className="dropdown-menu nav-standard-dropdown">
-            <AppLink to="custom-woven" href="/custom-woven" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+            <AppLink to="custom-weaving" href="/custom-weaving" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Custom Weaving Sarees
             </AppLink>
             <AppLink to="white-label" href="/white-label" navigate={navigate} onClick={() => setDropdownOpen(null)}>
@@ -249,8 +249,8 @@ export function SiteHeader(props) {
               Custom / Bulk Requirement
             </AppLink>
             <AppLink
-              to="custom-woven#weaving-techniques"
-              href="/custom-woven#weaving-techniques"
+              to="custom-weaving#weaving-techniques"
+              href="/custom-weaving#weaving-techniques"
               navigate={navigate}
               onClick={(e) => {
                 setDropdownOpen(null);

@@ -67,8 +67,8 @@ export function PrivateLabelSection({ imageUrl, navigate }) {
               </AppLink>
 
               <AppLink
-                to="custom-woven"
-                href="/custom-woven"
+                to="custom-weaving"
+                href="/custom-weaving"
                 className="private-label-cta-link secondary-cta"
                 navigate={navigate}
                 aria-label="Create custom woven Banarasi sarees"
