@@ -17,21 +17,20 @@
   width: 240px;
   background-color: #ffffff;
   border-right: 1px solid #e5e7eb;
-  padding: 24px 16px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
   flex-shrink: 0;
   height: 100vh;
   position: sticky;
   top: 0;
-  overflow-y: auto;
+  overflow: hidden;
   transition: width 0.3s ease, padding 0.3s ease;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
 }
 
 /* Slim modern scrollbars across Admin elements */
+.admin-sidebar-menu-wrapper,
 .admin-sidebar-nav,
 .admin-main-viewport,
 .admin-page-scrollable-content,
@@ -41,6 +40,7 @@
   scrollbar-color: #cbd5e1 transparent;
 }
 
+.admin-sidebar-menu-wrapper::-webkit-scrollbar,
 .admin-sidebar-nav::-webkit-scrollbar,
 .admin-main-viewport::-webkit-scrollbar,
 .admin-page-scrollable-content::-webkit-scrollbar,
@@ -50,6 +50,7 @@
   height: 5px;
 }
 
+.admin-sidebar-menu-wrapper::-webkit-scrollbar-track,
 .admin-sidebar-nav::-webkit-scrollbar-track,
 .admin-main-viewport::-webkit-scrollbar-track,
 .admin-page-scrollable-content::-webkit-scrollbar-track,
@@ -58,6 +59,7 @@
   background: transparent;
 }
 
+.admin-sidebar-menu-wrapper::-webkit-scrollbar-thumb,
 .admin-sidebar-nav::-webkit-scrollbar-thumb,
 .admin-main-viewport::-webkit-scrollbar-thumb,
 .admin-page-scrollable-content::-webkit-scrollbar-thumb,
@@ -67,6 +69,7 @@
   border-radius: 9999px;
 }
 
+.admin-sidebar-menu-wrapper::-webkit-scrollbar-thumb:hover,
 .admin-sidebar-nav::-webkit-scrollbar-thumb:hover,
 .admin-main-viewport::-webkit-scrollbar-thumb:hover,
 .admin-page-scrollable-content::-webkit-scrollbar-thumb:hover,
@@ -89,23 +92,25 @@
 
 .admin-sidebar-nav.closed {
   width: 0;
-  padding: 24px 0;
+  padding: 0;
   overflow: hidden;
   border-right: none;
 }
 
 .admin-sidebar-nav.minimized {
   width: 72px;
-  padding: 20px 10px;
+  padding: 0;
 }
 
 .admin-sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px 12px 4px;
+  padding: 20px 16px 14px 16px;
   border-bottom: 1px solid #f3f4f6;
-  margin-bottom: 4px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  z-index: 10;
 }
 
 .admin-sidebar-brand-text {
@@ -154,7 +159,7 @@
 
 .admin-sidebar-nav.minimized .admin-sidebar-header {
   justify-content: center;
-  padding: 0 0 12px 0;
+  padding: 20px 8px 14px 8px;
 }
 
 .admin-sidebar-nav.minimized .sidebar-toggle-btn {
@@ -203,6 +208,14 @@
   flex-direction: column;
   gap: 18px;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 24px 16px;
+}
+
+.admin-sidebar-nav.minimized .admin-sidebar-menu-wrapper {
+  padding: 12px 8px 20px 8px;
 }
 
 .sidebar-group-section {
@@ -1399,7 +1412,7 @@
   min-height: 0;
 }
 .pipeline-table {
-  min-width: 980px;
+  min-width: 1120px;
 }
 
 .pipeline-table .pipeline-col-sno {
@@ -1411,12 +1424,16 @@
   min-width: 105px;
 }
 .pipeline-table .pipeline-col-buyer {
-  width: 210px;
-  max-width: 225px;
+  width: 200px;
+  max-width: 215px;
+}
+.pipeline-table .pipeline-col-acquisition {
+  width: 145px;
+  min-width: 130px;
 }
 .pipeline-table .pipeline-col-type {
-  width: 125px;
-  min-width: 105px;
+  width: 115px;
+  min-width: 95px;
 }
 .pipeline-table .pipeline-col-items {
   width: 120px;
@@ -1785,6 +1802,82 @@
   font-size: 14px;
   font-weight: 500;
   padding-left: 2px;
+}
+
+/* Marketing Acquisition Badges in Accounts Pipeline */
+.pipeline-acquisition-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  max-width: 145px;
+}
+
+.acquisition-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2.5px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.acquisition-badge .attr-icon {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.acquisition-badge .attr-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge-attr-ai {
+  background: #f5f3ff;
+  color: #6b21a8;
+  border: 1px solid #ddd6fe;
+}
+
+.badge-attr-search {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-attr-social {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.badge-attr-referral {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-attr-direct {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.acquisition-landing-path {
+  font-size: 10.5px;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 135px;
 }
 
 /* ==========================================================================
@@ -8144,6 +8237,54 @@
   border-color: #93c5fd;
 }
 
+/* Acquisition Attribution Strip in Activity Drawer */
+.drawer-acquisition-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid #8b5cf6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.drawer-acquisition-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acquisition-route {
+  font-size: 11.5px;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+}
+
+.acquisition-route strong {
+  color: #0f172a;
+}
+
+.acquisition-narrative {
+  font-size: 11.5px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.acquisition-time {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: auto;
+}
+
 .timeline-items-list {
   display: flex;
   flex-direction: column;
@@ -9969,10 +10110,11 @@
     transform: translateX(-100%);
     transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.26s;
     visibility: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
     border-right: 1px solid #e5e7eb;
-    padding: 20px 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .admin-sidebar-nav.mobile-open {
@@ -9980,14 +10122,24 @@
     visibility: visible;
   }
 
-  .admin-sidebar-nav.minimized {
-    width: 280px;
-    padding: 20px 16px;
-  }
-
+  .admin-sidebar-nav .admin-sidebar-header,
   .admin-sidebar-nav.minimized .admin-sidebar-header {
     justify-content: space-between;
-    padding: 0 4px 12px 4px;
+    padding: 18px 16px 12px 16px;
+    flex-shrink: 0;
+  }
+
+  .admin-sidebar-nav .admin-sidebar-menu-wrapper,
+  .admin-sidebar-nav.minimized .admin-sidebar-menu-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 16px 24px 16px;
+  }
+
+  .admin-sidebar-nav.minimized {
+    width: 280px;
+    padding: 0;
   }
 
   .admin-sidebar-nav.minimized .admin-sidebar-item {

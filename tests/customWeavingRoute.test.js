@@ -56,12 +56,8 @@ describe('Custom Weaving Route Migration & 301/308 Permanent Redirect', () => {
     assert(!sitemapContent.includes('/custom-woven'), 'sitemapHandler must not include /custom-woven');
   });
 
-  test('Requirement 7: VisualPageEditor keeps id: custom-woven and updates path to /custom-weaving', () => {
-    const editorContent = fs.readFileSync(path.resolve('src/components/admin/VisualPageEditor.jsx'), 'utf8');
-    assert(
-      editorContent.includes("{ id: 'custom-woven', label: 'Custom Woven Sarees', path: '/custom-weaving' }"),
-      'VisualPageEditor must keep id custom-woven and point path to /custom-weaving'
-    );
+  test('Requirement 7: Deprecated VisualPageEditor is removed from the codebase', () => {
+    assert(!fs.existsSync(path.resolve('src/components/admin/VisualPageEditor.jsx')), 'VisualPageEditor should be cleanly deleted');
   });
 
   test('Requirement 8: Navigation components and pages link to /custom-weaving', () => {

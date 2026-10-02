@@ -9,7 +9,6 @@ import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVari
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
-import { applyCustomTheme } from '../utils/themeEngine.js';
 import {
   clearStoredReferralCode,
   setStoredReferralCode,
@@ -128,21 +127,6 @@ export function AppShell({ children }) {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   }, [pathname]);
-
-  // Customizer theme (deferred to avoid network competition during page start)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      import('../productData.js')
-        .then((m) => m.fetchSiteCustomizer())
-        .then((customizer) => {
-          if (customizer) {
-            applyCustomTheme(customizer);
-          }
-        })
-        .catch((err) => console.error('Error loading custom theme:', err));
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Lazy-load products & config options strictly during idle or when shell features require them
   useEffect(() => {

@@ -87,7 +87,6 @@ export async function GET(request) {
       products: 'products_json',
       config: 'config_json',
       hero: 'hero_json',
-      customizer: 'site_customizer_json',
     };
 
     if (type === 'all') {
@@ -95,7 +94,7 @@ export async function GET(request) {
         supabase
           .from('sheet_data')
           .select('id, csv_data')
-          .in('id', ['products_json', 'config_json', 'hero_json', 'site_customizer_json']),
+          .in('id', ['products_json', 'config_json', 'hero_json']),
         supabase
           .from('vendor_product_stock')
           .select('*'),
@@ -112,7 +111,6 @@ export async function GET(request) {
         products: [],
         config: { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] },
         hero: [],
-        customizer: null,
       };
 
       (data || []).forEach((row) => {
@@ -125,7 +123,6 @@ export async function GET(request) {
           }
           if (row.id === 'config_json' && row.csv_data) result.config = JSON.parse(row.csv_data);
           if (row.id === 'hero_json' && row.csv_data) result.hero = JSON.parse(row.csv_data);
-          if (row.id === 'site_customizer_json' && row.csv_data) result.customizer = JSON.parse(row.csv_data);
         } catch (e) {
           console.warn(`[Catalog API] JSON parse error on ${row.id}:`, e.message);
         }

@@ -48,6 +48,7 @@ alter table public.profiles add column if not exists approval_status text defaul
 alter table public.profiles add column if not exists role text default 'customer';
 alter table public.profiles add column if not exists vendor_code text;
 alter table public.profiles add column if not exists partner_name text;
+alter table public.profiles add column if not exists acquisition jsonb default '{}'::jsonb;
 alter table public.profiles add column if not exists created_at timestamptz default now();
 alter table public.profiles add column if not exists updated_at timestamptz default now();
 

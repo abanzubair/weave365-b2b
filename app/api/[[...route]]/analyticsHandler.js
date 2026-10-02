@@ -5,102 +5,8 @@
  * social media networks, and device metrics with zero dependency overhead.
  */
 
-export const runtime = 'edge';
+import { classifyTraffic } from '../../../src/utils/universalClassifier.js';
 
-/**
- * Classifies traffic source into Category & Friendly Name
- * Inspects HTTP Referrer, URL Query Params (UTM / ChatGPT tags), Full URL, and UserAgent.
- */
-function classifyTrafficSource(referrer, searchParams, fullUrl, rawUserAgent) {
-  const ref = (referrer || '').toLowerCase().trim();
-  const search = (searchParams || '').toLowerCase().trim();
-  const url = (fullUrl || '').toLowerCase().trim();
-  const ua = (rawUserAgent || '').toLowerCase().trim();
-
-  const combined = `${ref} ${search} ${url} ${ua}`;
-
-  // 1. AI Assistants (Matches Referrer, URL parameters like ?utm_source=claude, AND User-Agent tags)
-  if (combined.includes('chatgpt') || combined.includes('openai') || combined.includes('gptbot')) {
-    return { category: 'AI Assistant', name: 'ChatGPT' };
-  }
-  if (combined.includes('claude') || combined.includes('anthropic') || combined.includes('claudebot')) {
-    return { category: 'AI Assistant', name: 'Claude AI' };
-  }
-  if (combined.includes('gemini') || combined.includes('bard.google') || combined.includes('geminibot')) {
-    return { category: 'AI Assistant', name: 'Google Gemini' };
-  }
-  if (combined.includes('perplexity') || combined.includes('perplexitybot')) {
-    return { category: 'AI Assistant', name: 'Perplexity AI' };
-  }
-  if (combined.includes('copilot') || combined.includes('bing.com/chat') || combined.includes('bingchat')) {
-    return { category: 'AI Assistant', name: 'Microsoft Copilot' };
-  }
-  if (combined.includes('deepseek') || combined.includes('deepseekbot')) {
-    return { category: 'AI Assistant', name: 'DeepSeek' };
-  }
-  if (combined.includes('grok') || combined.includes('x.ai')) {
-    return { category: 'AI Assistant', name: 'Grok AI' };
-  }
-  if (combined.includes('poe.com') || combined.includes('poe')) {
-    return { category: 'AI Assistant', name: 'Poe AI' };
-  }
-  if (combined.includes('mistral') || combined.includes('lechat')) {
-    return { category: 'AI Assistant', name: 'Mistral AI' };
-  }
-  if (combined.includes('phind')) {
-    return { category: 'AI Assistant', name: 'Phind AI' };
-  }
-
-  // 2. Social Media
-  if (combined.includes('instagram') || combined.includes('ig.me')) {
-    return { category: 'Social Media', name: 'Instagram' };
-  }
-  if (combined.includes('facebook') || combined.includes('fb.com')) {
-    return { category: 'Social Media', name: 'Facebook' };
-  }
-  if (combined.includes('youtube') || combined.includes('youtu.be')) {
-    return { category: 'Social Media', name: 'YouTube' };
-  }
-  if (combined.includes('t.co') || combined.includes('twitter') || combined.includes('x.com')) {
-    return { category: 'Social Media', name: 'X (Twitter)' };
-  }
-  if (combined.includes('whatsapp') || combined.includes('wa.me')) {
-    return { category: 'Social Media', name: 'WhatsApp' };
-  }
-  if (combined.includes('linkedin')) {
-    return { category: 'Social Media', name: 'LinkedIn' };
-  }
-  if (combined.includes('pinterest')) {
-    return { category: 'Social Media', name: 'Pinterest' };
-  }
-
-  // 3. Search Engines
-  if (combined.includes('google.com') || combined.includes('google.co.in')) {
-    return { category: 'Search Engine', name: 'Google Search' };
-  }
-  if (combined.includes('bing.com')) {
-    return { category: 'Search Engine', name: 'Bing Search' };
-  }
-  if (combined.includes('duckduckgo')) {
-    return { category: 'Search Engine', name: 'DuckDuckGo' };
-  }
-  if (combined.includes('yahoo')) {
-    return { category: 'Search Engine', name: 'Yahoo Search' };
-  }
-
-  // 4. Other Website Referrals
-  if (ref && ref !== 'null' && ref !== 'undefined') {
-    try {
-      const urlObj = new URL(referrer);
-      const domain = urlObj.hostname.replace(/^www\./, '');
-      return { category: 'Referral Website', name: domain };
-    } catch (e) {
-      return { category: 'Referral Link', name: 'External Link' };
-    }
-  }
-
-  return { category: 'Direct / App', name: 'Direct Visit' };
-}
 
 /**
  * Parses User-Agent header for Device & Operating System
@@ -180,7 +86,13 @@ export async function POST(request) {
 
     // 2. Classify Referrer & Device Specs securely
     const rawUA = userAgent || request.headers.get('user-agent') || '';
-    const trafficSource = classifyTrafficSource(referrer, searchParams, fullUrl, rawUA);
+    const trafficSource = classifyTraffic({
+      referrer,
+      searchParams,
+      fullUrl,
+      userAgent: rawUA,
+      path: path || '/'
+    });
     const deviceSpecs = parseDeviceDetails(rawUA);
 
     // 3. Security Sanitize strings

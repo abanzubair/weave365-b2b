@@ -1,16 +1,43 @@
 /**
  * @file trafficTracker.js
- * Client-side non-blocking traffic tracker.
+ * Client-side non-blocking universal traffic tracker and acquisition persistence.
  * Features:
  * - Excludes /admin pages, localhost, and local dev network visits
- * - Captures referrer, full URL, query params (UTM / ChatGPT tags), and device UserAgent
- * - Session-Deduplicated per browsing session
+ * - Universally classifies traffic (AI assistants, search, social, direct deep-links)
+ * - Captures and preserves first-touch & last-touch attribution in localStorage (survives OAuth redirects)
+ * - Exposes helper getStoredAttribution() for profile sync / signup forms
  * - Universally compatible with Mobile iOS, Android, and in-app webviews
  * - Completely silent and crash-proof
  */
 
-let isTrackedInSession = false;
+import { classifyTraffic } from './universalClassifier.js';
 
+let isTrackedInCurrentNav = false;
+
+/**
+ * Retrieves the stored visitor acquisition attribution (first-touch preferred, fallback to last-touch).
+ * @returns {Object|null} The stored attribution object or null
+ */
+export function getStoredAttribution() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const firstTouch = localStorage.getItem('weave_first_touch_attribution');
+    if (firstTouch) return JSON.parse(firstTouch);
+
+    const lastTouch = localStorage.getItem('weave_last_touch_attribution');
+    if (lastTouch) return JSON.parse(lastTouch);
+
+    const sessionAttr = sessionStorage.getItem('weave_session_attribution');
+    if (sessionAttr) return JSON.parse(sessionAttr);
+  } catch (e) {
+    console.warn('[Traffic Tracker] Error reading stored attribution:', e);
+  }
+  return null;
+}
+
+/**
+ * Core tracker: fires on initial page mount and route transitions.
+ */
 export function trackSiteTraffic() {
   if (typeof window === 'undefined') return;
 
@@ -34,32 +61,71 @@ export function trackSiteTraffic() {
       return;
     }
 
-    // 1. Session Deduplication Check (Logs 1 visit per browsing session)
+    // 1. Session & Navigation Deduplication
+    // Check if new external referrer or campaign query parameter arrived
+    const search = window.location.search || '';
+    const referrer = document.referrer || '';
+    const isExternalReferrer = referrer && !referrer.includes(window.location.hostname);
+    const hasCampaignParams = /[?&](utm_|ref|source|via|origin|gclid|fbclid)/i.test(search);
+
     const sessionKey = 'weave_analytics_session_active';
-    if (sessionStorage.getItem(sessionKey) || isTrackedInSession) {
+    const isFirstInSession = !sessionStorage.getItem(sessionKey);
+
+    // Only track if first visit in session OR new external campaign/referrer arrived
+    if (!isFirstInSession && !isExternalReferrer && !hasCampaignParams && isTrackedInCurrentNav) {
       return;
     }
 
-    isTrackedInSession = true;
+    isTrackedInCurrentNav = true;
     sessionStorage.setItem(sessionKey, '1');
 
-    // 2. Generate or retrieve lightweight session identifier
+    // 2. Generate or retrieve persistent session identifier
     let sessionId = sessionStorage.getItem('weave_analytics_sid');
     if (!sessionId) {
       sessionId = 's_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
       sessionStorage.setItem('weave_analytics_sid', sessionId);
     }
 
-    const payload = JSON.stringify({
-      path: window.location.pathname || '/',
-      referrer: document.referrer || '',
-      searchParams: window.location.search || '',
+    // 3. Classify traffic universally (client-side)
+    const currentPath = window.location.pathname || '/';
+    const classified = classifyTraffic({
+      referrer,
+      searchParams: search,
       fullUrl: window.location.href || '',
       userAgent: navigator.userAgent || '',
-      sessionId: sessionId
+      path: currentPath
     });
 
-    // 3. Reliable fetch with keepalive: true (Works across mobile Safari, Chrome, and In-App browsers)
+    const attributionRecord = {
+      ...classified,
+      session_id: sessionId,
+      referrer: referrer || null,
+      search_params: search || null,
+      timestamp: new Date().toISOString()
+    };
+
+    // 4. Persist First-Touch (Never overwritten once set) and Last-Touch (Updated on new visits)
+    try {
+      if (!localStorage.getItem('weave_first_touch_attribution')) {
+        localStorage.setItem('weave_first_touch_attribution', JSON.stringify(attributionRecord));
+      }
+      localStorage.setItem('weave_last_touch_attribution', JSON.stringify(attributionRecord));
+      sessionStorage.setItem('weave_session_attribution', JSON.stringify(attributionRecord));
+    } catch {
+      // QuotaExceeded or privacy mode
+    }
+
+    // 5. Transmit to Edge Analytics Endpoint
+    const payload = JSON.stringify({
+      path: currentPath,
+      referrer: referrer || '',
+      searchParams: search,
+      fullUrl: window.location.href || '',
+      userAgent: navigator.userAgent || '',
+      sessionId: sessionId,
+      attribution: classified
+    });
+
     void fetch('/api/analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

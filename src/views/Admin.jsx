@@ -29,7 +29,6 @@ import {
   UserPlus,
   Activity,
   Printer,
-  Palette,
   Box,
   Code2,
   X,
@@ -41,7 +40,6 @@ import { getStorefrontSupabase } from '../services/boutiqueSyncService.js';
 import { clearProductDataCache, fetchProducts } from '../productData.js';
 import { useStorefront } from '../store/useStorefront.js';
 import { blogPosts } from '../data/blogPosts.js';
-import { SiteCustomizerTab } from '../components/admin/SiteCustomizerTab.jsx';
 
 // Import split sub-components
 import DashboardOverview from './admin/DashboardOverview.jsx';
@@ -82,6 +80,7 @@ const optionalTables = [
   { key: 'orders', label: 'Orders' },
   { key: 'api_orders', label: 'API Orders' },
   { key: 'download_logs', label: 'Download Logs' },
+  { key: 'site_analytics', label: 'Site Analytics' },
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
   { key: 'influencer_profiles', label: 'Influencer Profiles' },
@@ -572,7 +571,6 @@ export function Admin({
         { key: 'builder', label: 'Page Builder', icon: Layers, badge: null },
         { key: 'directory', label: 'Internal Link', icon: Compass, badge: null },
         { key: 'seo', label: 'SEO Setting', icon: Search, badge: null },
-        { key: 'customizer', label: 'Appearance', icon: Palette, badge: null },
         { key: 'api-manager', label: 'Developer API', icon: Code2, badge: null },
       ],
     },
@@ -795,10 +793,6 @@ export function Admin({
               adminData={adminData}
               loadAdminData={loadAdminData}
             />
-          )}
-
-          {activeTab === 'customizer' && (
-            <SiteCustomizerTab user={activeUser} navigate={navigate} />
           )}
 
           {activeTab === 'seo' && (

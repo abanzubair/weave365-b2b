@@ -18,6 +18,7 @@ import {
   joinByUser,
   isAdminUser,
 } from './AdminShared.jsx';
+import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
 
 function getSocialInfo(rawHandle) {
   if (!rawHandle || typeof rawHandle !== 'string') return null;
@@ -88,6 +89,7 @@ export default function BuyerPipeline({
 }) {
   // Local state for filters and sorting
   const [userTypeFilter, setUserTypeFilter] = useState('customer');
+  const [acquisitionFilter, setAcquisitionFilter] = useState('all');
   const [userPageLimit, setUserPageLimit] = useState('10');
   const [userSortField, setUserSortField] = useState('date');
   const [userSortOrder, setUserSortOrder] = useState('desc');
@@ -97,6 +99,15 @@ export default function BuyerPipeline({
 
   const userCartMap = useMemo(() => joinByUser(adminData.cartItems), [adminData.cartItems]);
   const userFavoriteMap = useMemo(() => joinByUser(adminData.favorites), [adminData.favorites]);
+
+  const siteAnalyticsList = adminData?.optional?.site_analytics || [];
+  const acquisitionMap = useMemo(() => {
+    const map = new Map();
+    (adminData.profiles || []).forEach((p) => {
+      map.set(p.id, resolveBuyerAcquisition(p, siteAnalyticsList));
+    });
+    return map;
+  }, [adminData.profiles, siteAnalyticsList]);
 
   const storefrontsByReseller = useMemo(() => {
     const list = adminData?.optional?.boutique_tenants || adminData?.optional?.reseller_storefronts || [];
@@ -131,6 +142,15 @@ export default function BuyerPipeline({
       // 'all' -> Default view: verified buyers and vendors with completed details
       profiles = profiles.filter((p) => !isIncomplete(p));
     }
+
+    // Filter by marketing acquisition channel
+    if (acquisitionFilter !== 'all') {
+      profiles = profiles.filter((p) => {
+        const attr = acquisitionMap.get(p.id);
+        return attr && attr.type === acquisitionFilter;
+      });
+    }
+
     // Apply search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -140,7 +160,9 @@ export default function BuyerPipeline({
         const phone = String(p.whatsapp || '').toLowerCase();
         const social = String(p.social_handle || p.socialHandle || '').toLowerCase();
         const website = String(p.website || p.client_website || '').toLowerCase();
-        return name.includes(q) || email.includes(q) || phone.includes(q) || social.includes(q) || website.includes(q);
+        const attr = acquisitionMap.get(p.id);
+        const attrText = attr ? `${attr.cleanName} ${attr.landingPath} ${attr.category}`.toLowerCase() : '';
+        return name.includes(q) || email.includes(q) || phone.includes(q) || social.includes(q) || website.includes(q) || attrText.includes(q);
       });
     }
     return [...profiles].sort((a, b) => {
@@ -167,7 +189,7 @@ export default function BuyerPipeline({
       if (valA > valB) return userSortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter, searchQuery]);
+  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter, acquisitionFilter, acquisitionMap, searchQuery]);
 
   const displayedProfiles = useMemo(() => {
     if (userPageLimit === 'all') return sortedProfiles;
@@ -205,6 +227,7 @@ export default function BuyerPipeline({
     const categoriesStr = Array.isArray(profile.interested_categories)
       ? profile.interested_categories.join(', ')
       : '';
+    const attr = acquisitionMap.get(profile.id);
 
     const row = [
       toTitleCase(profile.full_name),
@@ -212,6 +235,7 @@ export default function BuyerPipeline({
       `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
       profile.email || '',
       profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+      attr ? `${attr.cleanName} (↳ ${attr.landingPath})` : 'Direct',
       profile.social_handle || profile.socialHandle || '',
       profile.website || profile.client_website || '',
       categoriesStr,
@@ -237,12 +261,15 @@ export default function BuyerPipeline({
       const categoriesStr = Array.isArray(profile.interested_categories)
         ? profile.interested_categories.join(', ')
         : '';
+      const attr = acquisitionMap.get(profile.id);
+
       return [
         toTitleCase(profile.full_name),
         toTitleCase(profile.business_name),
         `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        attr ? `${attr.cleanName} (↳ ${attr.landingPath})` : 'Direct',
         profile.social_handle || profile.socialHandle || '',
         profile.website || profile.client_website || '',
         categoriesStr,
@@ -343,6 +370,20 @@ export default function BuyerPipeline({
           </select>
 
           <select
+            value={acquisitionFilter}
+            onChange={(e) => setAcquisitionFilter(e.target.value)}
+            className="pipeline-filter-select"
+            title="Filter leads by acquisition source"
+          >
+            <option value="all">All Channels</option>
+            <option value="ai">🤖 AI Assistants</option>
+            <option value="search">🔍 Search Engines</option>
+            <option value="social">📱 Social Media</option>
+            <option value="referral">🌐 Referral Sites</option>
+            <option value="direct">🧭 Direct / App Links</option>
+          </select>
+
+          <select
             value={userSortField}
             onChange={(e) => setUserSortField(e.target.value)}
             className="pipeline-filter-select"
@@ -381,6 +422,7 @@ export default function BuyerPipeline({
                 <th className="pipeline-col-sno">S.No.</th>
                 <th className="pipeline-col-registered">Registered</th>
                 <th className="pipeline-col-buyer">Buyer</th>
+                <th className="pipeline-col-acquisition">Acquisition</th>
                 <th className="pipeline-col-type">Type</th>
                 <th className="pipeline-col-items">Cart & Fav</th>
                 <th className="pipeline-col-social">Social & Web</th>
@@ -460,6 +502,25 @@ export default function BuyerPipeline({
                           </a>
                         )}
                       </div>
+                    </td>
+                    <td className="pipeline-col-acquisition">
+                      {(() => {
+                        const attr = acquisitionMap.get(profile.id);
+                        if (!attr) return <span className="pipeline-text-muted">—</span>;
+                        return (
+                          <div className="pipeline-acquisition-cell" title={attr.tooltip}>
+                            <span className={`acquisition-badge ${attr.badgeClass}`}>
+                              <span className="attr-icon">{attr.icon}</span>
+                              <span className="attr-name">{attr.cleanName}</span>
+                            </span>
+                            {attr.landingPath && (
+                              <span className="acquisition-landing-path" title={`Landing route: ${attr.landingPath}`}>
+                                ↳ {attr.landingPath}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="pipeline-col-type">
                       <span className="pipeline-type-label">

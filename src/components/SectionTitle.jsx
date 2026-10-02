@@ -5,11 +5,10 @@
  * Inlined styles to eliminate external render-blocking stylesheet request on critical path.
  */
 
-export function SectionTitle({ title, align = 'center', elementKey }) {
-  const key = elementKey || `title_${String(title).toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+export function SectionTitle({ title, align = 'center' }) {
   return (
     <div className={`section-title ${align}`}>
-      <h2 data-editable-key={key}>{title}</h2>
+      <h2>{title}</h2>
       <span />
     </div>
   );

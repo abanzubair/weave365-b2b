@@ -27,6 +27,7 @@ import {
 } from '../../components/icons.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
+import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
 
 /**
  * Helper to get badge styling & icons for traffic sources
@@ -185,6 +186,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       email: bEmail,
       phone: bPhone,
       type: formattedType,
+      profile: profile || null,
     };
   };
 
@@ -1107,6 +1109,35 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                     )}
                                   </div>
                                 </div>
+
+                                {(() => {
+                                  const buyerProfile = b.profile || (b.email ? profileMap.get(b.email.toLowerCase()) : null);
+                                  const analyticsList = siteAnalytics.length > 0 ? siteAnalytics : (adminData.optional?.site_analytics || []);
+                                  const attr = resolveBuyerAcquisition(buyerProfile, analyticsList);
+                                  if (!attr) return null;
+
+                                  return (
+                                    <div className="drawer-acquisition-strip" title={attr.tooltip}>
+                                      <div className="drawer-acquisition-main">
+                                        <span className={`acquisition-badge ${attr.badgeClass}`}>
+                                          <span className="attr-icon">{attr.icon}</span>
+                                          <span className="attr-name">{attr.cleanName}</span>
+                                        </span>
+                                        {attr.landingPath && (
+                                          <span className="acquisition-route">
+                                            Entry: <strong>{attr.landingPath}</strong>
+                                          </span>
+                                        )}
+                                        <span className="acquisition-narrative">{attr.narrative}</span>
+                                      </div>
+                                      {attr.timestamp && (
+                                        <span className="acquisition-time">
+                                          Arrival: {new Date(attr.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
 
                                 <div className="timeline-items-list">
                                   {group.activities.map((act) => (

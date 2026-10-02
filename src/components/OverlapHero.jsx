@@ -25,12 +25,12 @@ export function OverlapHero({ navigate }) {
         {/* Left: Editorial Content Panel */}
         <div className="overlap-hero-content-layer">
           <div className="overlap-hero-content-left">
-            <h1 className="overlap-hero-tagline" data-editable-key="hero_title">
+            <h1 className="overlap-hero-tagline">
               <span className="hero-title-line line-1">Source Banarasi Sarees &amp; Suits</span>{' '}
               <span className="hero-title-line line-2">for Your Business</span>
             </h1>
 
-            <p className="overlap-hero-description" data-editable-key="hero_subtitle">
+            <p className="overlap-hero-description">
               Wholesale sourcing from Banaras for retailers, boutiques and online sellers, with flexible MOQ, single-piece sourcing and fulfilment support.
             </p>
 

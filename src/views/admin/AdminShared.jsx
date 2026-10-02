@@ -17,7 +17,13 @@ export function isAdminUser(user) {
 }
 
 export async function safeSelect(table, query = '*') {
-  const { data, error } = await supabase.from(table).select(query).limit(500);
+  let req = supabase.from(table).select(query);
+  if (table === 'site_analytics') {
+    req = req.order('created_at', { ascending: false }).limit(1500);
+  } else {
+    req = req.limit(500);
+  }
+  const { data, error } = await req;
   if (error) return { data: [], error };
   return { data: data || [], error: null };
 }
