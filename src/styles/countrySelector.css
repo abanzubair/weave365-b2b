@@ -199,18 +199,22 @@
 }
 
 .mobile-country-dropdown.is-open .mobile-account-items {
-  max-height: 175px !important;
-  overflow-y: auto !important;
+  max-height: none !important;
+}
+
+.mobile-country-dropdown.is-open .mobile-account-items-inner {
+  max-height: 180px;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-.mobile-country-dropdown .mobile-account-items::-webkit-scrollbar {
+.mobile-country-dropdown .mobile-account-items-inner::-webkit-scrollbar {
   width: 4px;
 }
 
-.mobile-country-dropdown .mobile-account-items::-webkit-scrollbar-thumb {
+.mobile-country-dropdown .mobile-account-items-inner::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }

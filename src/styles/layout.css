@@ -1302,7 +1302,7 @@
 
 
 
-/* My Account Dropdown */
+/* Mobile Accordion Dropdowns */
 .mobile-account-dropdown {
   display: flex;
   flex-direction: column;
@@ -1310,7 +1310,7 @@
 
 .mobile-menu-chevron {
   margin-left: auto;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
   color: var(--muted);
 }
 
@@ -1319,27 +1319,50 @@
 }
 
 .mobile-account-items {
-  max-height: 0;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.32s ease;
   overflow: hidden;
-  padding: 0;
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
+  will-change: grid-template-rows, opacity;
 }
 
-.mobile-account-dropdown.is-open .mobile-account-items {
-  max-height: 1000px; /* Sufficient for long lists */
+.mobile-account-dropdown.is-open > .mobile-account-items {
+  grid-template-rows: 1fr;
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
 }
-
 
 .mobile-account-items-inner {
   min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 16px 12px;
+  padding: 2px 16px 14px;
+  transform: translateY(-8px);
+  opacity: 0.8;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.mobile-account-dropdown.is-open > .mobile-account-items > .mobile-account-items-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.mobile-account-dropdown.is-open > .mobile-menu-account-trigger {
+  color: var(--gold-dark);
+}
+
+.mobile-account-dropdown.is-open > .mobile-menu-account-trigger .mobile-menu-chevron {
+  color: var(--gold-dark);
 }
 
 
