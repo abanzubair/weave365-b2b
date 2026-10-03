@@ -665,7 +665,6 @@ export function AppShell({ children }) {
           isAdmin={isAdmin}
           priceAccess={priceAccess}
           openAuth={() => navigate('signup')}
-          visibleProducts={products}
           setCartOpen={setCartOpen}
           cartCount={cartCount}
           favoritesCount={favoritesCount}
