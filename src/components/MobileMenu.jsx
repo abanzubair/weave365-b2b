@@ -49,37 +49,9 @@ const defaultCategoryNames = ['All', 'Saree', 'Suit', 'Dupatta', 'Lehenga', 'Und
 import { useStorefront } from '../store/useStorefront.js';
 
 function AccordionPanel({ isOpen, children }) {
-  const contentRef = useRef(null);
-  const [maxHeight, setMaxHeight] = useState('0px');
-
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    if (isOpen) {
-      const scrollHeight = el.scrollHeight;
-      setMaxHeight(`${scrollHeight}px`);
-
-      if (typeof ResizeObserver !== 'undefined') {
-        const ro = new ResizeObserver(() => {
-          if (el.scrollHeight > 0) {
-            setMaxHeight(`${el.scrollHeight}px`);
-          }
-        });
-        ro.observe(el);
-        return () => ro.disconnect();
-      }
-    } else {
-      setMaxHeight('0px');
-    }
-  }, [isOpen]);
-
   return (
-    <div 
-      className={`mobile-account-items ${isOpen ? 'is-open' : ''}`} 
-      style={{ maxHeight }}
-    >
-      <div ref={contentRef} className="mobile-account-items-inner">
+    <div className={`mobile-account-items ${isOpen ? 'is-open' : ''}`}>
+      <div className="mobile-account-items-inner">
         {children}
       </div>
     </div>

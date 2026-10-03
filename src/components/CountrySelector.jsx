@@ -101,7 +101,6 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
 
         <div 
           className={`mobile-account-items ${isOpen ? 'is-open' : ''}`}
-          style={{ maxHeight: isOpen ? '220px' : '0px' }}
         >
           <div className="mobile-account-items-inner">
             {enabledCountries.map((country) => {

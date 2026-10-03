@@ -1147,7 +1147,6 @@
   box-shadow: none;
   animation: slideInMenu 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow: hidden;
-  will-change: transform, opacity;
 }
 
 .mobile-menu.is-closing {
@@ -1343,31 +1342,31 @@
 
 .mobile-menu-chevron {
   margin-left: auto;
-  transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1), color 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--muted);
 }
 
 .mobile-menu-chevron.rotated {
   transform: rotate(180deg);
+  color: var(--gold-dark);
 }
 
 .mobile-account-items {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.28s cubic-bezier(0.2, 0, 0, 1), opacity 0.22s ease;
-  opacity: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
-  contain: paint;
-  transform: translateZ(0);
 }
 
 .mobile-account-items.is-open,
 .mobile-account-dropdown.is-open > .mobile-account-items {
-  opacity: 1;
+  grid-template-rows: 1fr;
   pointer-events: auto;
 }
 
 .mobile-account-items-inner {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 2px;
