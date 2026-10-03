@@ -65,19 +65,8 @@
   transform: translateX(2.5px) scaleX(0.6875);
 }
 
-/* Active State: Morphs smoothly into a proportional, balanced X matching other navbar SVGs */
-.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-top {
-  transform: translateY(5.25px) rotate(45deg) scaleX(1.38);
-}
+/* Active state cross rendered directly via icon pack (<X />) */
 
-.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-middle {
-  opacity: 0;
-  transform: scaleX(0);
-}
-
-.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-bottom {
-  transform: translateY(-4.75px) rotate(-45deg) scaleX(1.38);
-}
 
 
 .mobile-search-button {
