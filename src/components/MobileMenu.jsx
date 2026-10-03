@@ -310,11 +310,11 @@ export function MobileMenu(props) {
           <>
             {accountItems.map((item, idx) => (
               <button type="button" key={idx} className="mobile-subpanel-link" onClick={item.action}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: 'var(--gold-dark)', display: 'grid', placeItems: 'center' }}>{item.icon}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ color: 'var(--gold-dark)', display: 'grid', placeItems: 'center', width: '22px', height: '22px', flexShrink: 0 }}>{item.icon}</span>
                   <span>{item.label}</span>
                 </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   {item.badge > 0 && <span className="mobile-menu-badge mini">{item.badge}</span>}
                   <ChevronRight size={16} className="mobile-subpanel-arrow" />
                 </span>

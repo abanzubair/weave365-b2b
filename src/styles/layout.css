@@ -1343,13 +1343,18 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 48px;
+  min-height: 52px;
   padding: 12px 20px;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background: transparent;
   color: var(--ink, #1f2937);
+  font-family: inherit;
   font-size: 15px;
   font-weight: 500;
+  text-align: left;
   text-decoration: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.035);
+  cursor: pointer;
   transition: background 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
@@ -1357,7 +1362,7 @@
 
 .mobile-subpanel-link:hover,
 .mobile-subpanel-link:active {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.025);
 }
 
 .mobile-subpanel-arrow {
