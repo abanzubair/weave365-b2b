@@ -353,7 +353,7 @@ export function MobileMenu(props) {
           <div className={`mobile-panels-track ${activeSubpanel ? 'is-subpanel' : ''}`}>
             
             {/* PANEL 1: Root Menu */}
-            <div className="mobile-panel mobile-panel-root">
+            <div className="mobile-panel mobile-panel-root" aria-hidden={activeSubpanel !== null}>
               <nav className="mobile-menu-nav">
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('wholesale')}>
                   <span className="mobile-menu-icon"><Briefcase size={20} /></span>
@@ -438,7 +438,7 @@ export function MobileMenu(props) {
             </div>
 
             {/* PANEL 2: Sub-Panel (Slides in with GPU transform) */}
-            <div className="mobile-panel mobile-panel-sub">
+            <div className="mobile-panel mobile-panel-sub" aria-hidden={activeSubpanel === null}>
               <div className="mobile-subpanel-head">
                 <button 
                   type="button" 

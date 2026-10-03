@@ -11,9 +11,11 @@ const rootDir = path.resolve(__dirname, '..');
 describe('MobileMenu Icon Imports & Regression Tests', () => {
   const mobileMenuPath = path.join(rootDir, 'src/components/MobileMenu.jsx');
   const iconsPath = path.join(rootDir, 'src/components/icons.jsx');
+  const layoutCssPath = path.join(rootDir, 'src/styles/layout.css');
 
   const mobileMenuContent = fs.readFileSync(mobileMenuPath, 'utf8');
   const iconsContent = fs.readFileSync(iconsPath, 'utf8');
+  const layoutCssContent = fs.readFileSync(layoutCssPath, 'utf8');
 
   test('Requirement 1: LogOut is imported from ./icons.jsx in MobileMenu.jsx', () => {
     const importMatch = mobileMenuContent.match(/import\s*\{([^}]+)\}\s*from\s*['"]\.\/icons(?:\.jsx)?['"]/);
@@ -102,5 +104,40 @@ describe('MobileMenu Icon Imports & Regression Tests', () => {
     assert(authBranch.includes('LogOut'), 'Authenticated branch must contain LogOut');
     assert(authBranch.includes('Account Details'), 'Authenticated branch must contain Account Details');
     assert(guestBranch.includes('Login / Register'), 'Guest branch must contain Login / Register');
+  });
+
+  test('Requirement 5: Sliding drill-down track is absolutely positioned and immune to flex shrinkage', () => {
+    // Check .mobile-panels-viewport
+    const viewportMatch = layoutCssContent.match(/\.mobile-panels-viewport\s*\{([^}]+)\}/);
+    assert(viewportMatch, '.mobile-panels-viewport rule must exist in layout.css');
+    const viewportRules = viewportMatch[1];
+    assert(!viewportRules.includes('display: flex'), '.mobile-panels-viewport must NOT be display: flex to prevent flexbox shrinking');
+    assert(viewportRules.includes('overflow: hidden'), '.mobile-panels-viewport must have overflow: hidden');
+    assert(viewportRules.includes('position: relative'), '.mobile-panels-viewport must have position: relative');
+
+    // Check .mobile-panels-track
+    const trackMatch = layoutCssContent.match(/\.mobile-panels-track\s*\{([^}]+)\}/);
+    assert(trackMatch, '.mobile-panels-track rule must exist in layout.css');
+    const trackRules = trackMatch[1];
+    assert(trackRules.includes('position: absolute'), '.mobile-panels-track must be position: absolute');
+    assert(trackRules.includes('width: 200%'), '.mobile-panels-track must have width: 200%');
+    assert(trackRules.includes('transform: translate3d(0, 0, 0)'), '.mobile-panels-track must use GPU translate3d');
+
+    // Check .mobile-panel width
+    const panelMatch = layoutCssContent.match(/\.mobile-panel\s*\{([^}]+)\}/);
+    assert(panelMatch, '.mobile-panel rule must exist in layout.css');
+    const panelRules = panelMatch[1];
+    assert(panelRules.includes('flex: 0 0 50%') || panelRules.includes('width: 50%'), '.mobile-panel must occupy 50% of the 200% track (100vw)');
+  });
+
+  test('Requirement 6: MobileMenu panels have proper aria-hidden accessibility toggles', () => {
+    assert(
+      mobileMenuContent.includes('className="mobile-panel mobile-panel-root" aria-hidden={activeSubpanel !== null}'),
+      'Root panel must have aria-hidden={activeSubpanel !== null}'
+    );
+    assert(
+      mobileMenuContent.includes('className="mobile-panel mobile-panel-sub" aria-hidden={activeSubpanel === null}'),
+      'Subpanel must have aria-hidden={activeSubpanel === null}'
+    );
   });
 });
