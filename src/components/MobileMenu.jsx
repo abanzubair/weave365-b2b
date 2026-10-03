@@ -21,12 +21,9 @@ import {
   Briefcase,
   Info,
   Shield,
-  X,
 } from './icons.jsx';
 
 import { storeConfig } from '../config.js';
-import brandLogo from '../../assets/Weave365.svg';
-import { assetSrc } from '../utils/assetSrc.js';
 import { DemoToggle } from '../utils/demoHelper.js';
 import { AppLink } from './AppLink.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
@@ -333,31 +330,6 @@ export function MobileMenu(props) {
     <>
       <div className={`mobile-menu-backdrop ${isClosing ? 'is-closing' : ''}`} onClick={onClose} />
       <aside className={`mobile-menu ${isClosing ? 'is-closing' : ''}`}>
-        {/* Sticky Header: Locked 64px, brand logo strictly on left, close button strictly on right */}
-        <div className="mobile-menu-head">
-          <a
-            href="/"
-            className="brand mobile-menu-brand"
-            onClick={(e) => {
-              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
-                e.preventDefault();
-                onClose();
-                if (navigate) navigate('home');
-              }
-            }}
-          >
-            <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo" width={151} height={28} />
-          </a>
-          <button 
-            type="button" 
-            className="mobile-menu-close-btn" 
-            onClick={onClose} 
-            aria-label="Close menu"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
         {/* 100% GPU-Composited Drill-Down Panels Slider */}
         <div className="mobile-panels-viewport">
           <div className={`mobile-panels-track ${activeSubpanel ? 'is-subpanel' : ''}`}>

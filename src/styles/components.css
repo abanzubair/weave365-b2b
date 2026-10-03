@@ -65,7 +65,19 @@
   transform: translateX(2.5px) scaleX(0.6875);
 }
 
-/* Hamburger button remains static icon without morphing to cross */
+/* Active State: Morphs smoothly into an X */
+.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-top {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-middle {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-btn.is-active:not(.is-closing) .hamburger-svg .line-bottom {
+  transform: translateY(-5px) rotate(-45deg);
+}
 
 
 .mobile-search-button {

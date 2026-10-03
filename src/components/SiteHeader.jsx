@@ -127,7 +127,7 @@ export function SiteHeader(props) {
   const isCompanyActive = ['about', 'contact', 'shipping-delivery', 'returns-cancellation', 'payment-policy', 'collaboration', 'sell-banarasi-sarees'].includes(route);
 
   return (
-    <header className={`site-header ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''}`}>
+    <header className={`site-header ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''} ${menuOpen ? 'menu-open' : ''}`}>
       <a
         href="/"
         className="brand"
@@ -519,7 +519,7 @@ export function SiteHeader(props) {
         </div>
 
         <button 
-          className="hamburger-btn" 
+          className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
           type="button" 
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
