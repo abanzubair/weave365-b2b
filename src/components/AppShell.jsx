@@ -97,6 +97,37 @@ export function AppShell({ children }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Smooth mobile menu mount and unmount animation state
+  const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
+  const [mobileMenuClosing, setMobileMenuClosing] = useState(false);
+  const menuCloseTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (menuOpen) {
+      if (menuCloseTimerRef.current) {
+        clearTimeout(menuCloseTimerRef.current);
+        menuCloseTimerRef.current = null;
+      }
+      setMobileMenuMounted(true);
+      setMobileMenuClosing(false);
+    } else if (mobileMenuMounted && !mobileMenuClosing) {
+      setMobileMenuClosing(true);
+      menuCloseTimerRef.current = setTimeout(() => {
+        setMobileMenuMounted(false);
+        setMobileMenuClosing(false);
+        menuCloseTimerRef.current = null;
+      }, 280);
+    }
+  }, [menuOpen, mobileMenuMounted, mobileMenuClosing]);
+
+  useEffect(() => {
+    return () => {
+      if (menuCloseTimerRef.current) {
+        clearTimeout(menuCloseTimerRef.current);
+      }
+    };
+  }, []);
+
   // Expose global navigate for legacy AppLink / window clicks
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -625,8 +656,9 @@ export function AppShell({ children }) {
         />
       )}
 
-      {menuOpen && !hideShellSections && (
+      {mobileMenuMounted && !hideShellSections && (
         <MobileMenu
+          isClosing={mobileMenuClosing}
           onClose={() => setMenuOpen(false)}
           navigate={navigate}
           user={user}

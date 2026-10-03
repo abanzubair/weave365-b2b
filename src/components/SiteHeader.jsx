@@ -527,7 +527,7 @@ export function SiteHeader(props) {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
             <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
             <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
-            <rect className="line line-bottom" x="9" y="16" width="11" height="1.5" rx="0.75" fill="currentColor" />
+            <rect className="line line-bottom" x="4" y="16" width="16" height="1.5" rx="0.75" fill="currentColor" />
           </svg>
         </button>
       </div>

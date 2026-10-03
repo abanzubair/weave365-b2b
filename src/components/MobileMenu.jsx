@@ -51,6 +51,7 @@ import { useStorefront } from '../store/useStorefront.js';
 export function MobileMenu(props) {
   const store = useStorefront();
 
+  const isClosing = props.isClosing || false;
   const onClose = props.onClose || (() => store.setMenuOpen(false));
   const navigate = props.navigate;
   const setCategory = props.setCategory;
@@ -155,12 +156,33 @@ export function MobileMenu(props) {
 
   return (
     <>
-      <div className="mobile-menu-backdrop" onClick={onClose} />
-      <aside className="mobile-menu">
+      <div className={`mobile-menu-backdrop ${isClosing ? 'is-closing' : ''}`} onClick={onClose} />
+      <aside className={`mobile-menu ${isClosing ? 'is-closing' : ''}`}>
         <div className="mobile-menu-head">
-          <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo" style={{ height: 36 }} />
-          <button type="button" className="icon-button" onClick={onClose} aria-label="Close menu">
-            <X size={22} />
+          <a
+            href="/"
+            className="brand"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                e.preventDefault();
+                onClose();
+                if (navigate) navigate('home');
+              }
+            }}
+          >
+            <img src={assetSrc(brandLogo)} alt={storeConfig.name} className="brand-logo" width={151} height={28} />
+          </a>
+          <button 
+            type="button" 
+            className={`hamburger-btn ${isClosing ? '' : 'is-active'}`} 
+            onClick={onClose} 
+            aria-label="Close menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
+              <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
+              <rect className="line line-bottom" x="4" y="16" width="16" height="1.5" rx="0.75" fill="currentColor" />
+            </svg>
           </button>
         </div>
 
