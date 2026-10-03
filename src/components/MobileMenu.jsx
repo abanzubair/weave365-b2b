@@ -21,6 +21,7 @@ import {
   Briefcase,
   Info,
   Shield,
+  X,
 } from './icons.jsx';
 
 import { storeConfig } from '../config.js';
@@ -349,15 +350,11 @@ export function MobileMenu(props) {
           </a>
           <button 
             type="button" 
-            className={`hamburger-btn mobile-menu-close-btn ${isClosing ? 'is-closing' : 'is-active'}`} 
+            className="mobile-menu-close-btn" 
             onClick={onClose} 
             aria-label="Close menu"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
-              <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-bottom" x="4" y="16" width="16" height="1.5" rx="0.75" fill="currentColor" />
-            </svg>
+            <X size={20} />
           </button>
         </div>
 

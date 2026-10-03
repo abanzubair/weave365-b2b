@@ -519,7 +519,7 @@ export function SiteHeader(props) {
         </div>
 
         <button 
-          className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 
+          className="hamburger-btn" 
           type="button" 
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
