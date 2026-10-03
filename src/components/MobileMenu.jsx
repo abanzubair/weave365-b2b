@@ -7,12 +7,12 @@
 import { useState, useEffect } from 'react';
 import {
   ArrowRight,
-  Headphones,
+  Phone,
   Layers,
   Sparkles,
   Store,
   User,
-  MessageCircle,
+  Mail,
   Bookmark,
   ShoppingBag,
   ChevronRight,
@@ -140,28 +140,27 @@ export function MobileMenu(props) {
       case 'wholesale':
         return (
           <>
-            <AppLink to="sarees" href="/sarees" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Wholesale Banarasi Sarees</span>
+            <AppLink to="sarees" href="/sarees" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Wholesale Banarasi Sarees</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="suits" href="/suits" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Wholesale Banarasi Suits</span>
+            <AppLink to="suits" href="/suits" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Wholesale Banarasi Suits</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="catalogue" href="/catalogue" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Wholesale Catalog</span>
+            <AppLink to="catalogue" href="/catalogue" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Wholesale Catalog</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Bulk Enquiry &amp; MOQ</span>
+            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Bulk Enquiry &amp; MOQ</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Retailer / Boutique Sourcing</span>
+            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Retailer / Boutique Sourcing</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <a
-              href={wholesaleWaLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mobile-contextual-action"
-              onClick={onClose}
-            >
+            <a href={wholesaleWaLink} target="_blank" rel="noopener noreferrer" className="mobile-subpanel-wa" onClick={onClose}>
               <WhatsappIcon size={16} />
               <span>Talk to Wholesale Team</span>
             </a>
@@ -171,29 +170,27 @@ export function MobileMenu(props) {
       case 'resell':
         return (
           <>
-            <span className="mobile-tagline">Sell Without Inventory</span>
-            <AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Sell Without Inventory</span>
+            <AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Sell Without Inventory</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Dropshipping</span>
+            <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Dropshipping Program</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">White-Label Fulfilment</span>
+            <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>White-Label Fulfilment</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">How Reselling Works</span>
+            <AppLink to="dropshipping" href="/dropshipping" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>How Reselling Works</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Reseller FAQs</span>
+            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Reseller FAQs</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <a
-              href={resellWaLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mobile-contextual-action"
-              onClick={onClose}
-            >
+            <a href={resellWaLink} target="_blank" rel="noopener noreferrer" className="mobile-subpanel-wa" onClick={onClose}>
               <WhatsappIcon size={16} />
               <span>Talk to Reseller Support</span>
             </a>
@@ -203,38 +200,37 @@ export function MobileMenu(props) {
       case 'custom-weaving':
         return (
           <>
-            <AppLink to="custom-weaving" href="/custom-weaving" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Custom Weaving Sarees</span>
+            <AppLink to="custom-weaving" href="/custom-weaving" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Custom Weaving Sarees</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Private Label Manufacturing</span>
+            <AppLink to="white-label" href="/white-label" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Private Label Manufacturing</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Custom / Bulk Requirement</span>
+            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Custom / Bulk Requirement</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
             <AppLink 
               to="custom-weaving#weaving-techniques" 
               href="/custom-weaving#weaving-techniques"
               navigate={navigate} 
-              className="mobile-account-subitem" 
+              className="mobile-subpanel-link" 
               onClick={(e) => {
                 onClose(e);
                 const el = document.getElementById('weaving-techniques');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             >
-              <span className="subitem-label">Weaving Techniques</span>
+              <span>Weaving Techniques</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="handloom-vs-powerloom-guide" href="/handloom-vs-powerloom-guide" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Handloom vs Powerloom Guide</span>
+            <AppLink to="handloom-vs-powerloom-guide" href="/handloom-vs-powerloom-guide" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Handloom vs Powerloom Guide</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <a
-              href={customWovenWaLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mobile-contextual-action"
-              onClick={onClose}
-            >
+            <a href={customWovenWaLink} target="_blank" rel="noopener noreferrer" className="mobile-subpanel-wa" onClick={onClose}>
               <WhatsappIcon size={16} />
               <span>Discuss Your Requirement</span>
             </a>
@@ -244,26 +240,33 @@ export function MobileMenu(props) {
       case 'collections':
         return (
           <>
-            <AppLink to="catalogue" href="/catalogue" className="mobile-account-subitem" navigate={navigate} onClick={onClose}>
-              <span className="subitem-label">All Collections</span>
+            <AppLink to="catalogue" href="/catalogue" className="mobile-subpanel-link" navigate={navigate} onClick={onClose}>
+              <span>All Collections</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="new-arrivals" href="/new-arrivals" className="mobile-account-subitem" navigate={navigate} onClick={onClose}>
-              <span className="subitem-label">New Arrivals</span>
+            <AppLink to="new-arrivals" href="/new-arrivals" className="mobile-subpanel-link" navigate={navigate} onClick={onClose}>
+              <span>New Arrivals</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="sarees" href="/sarees" className="mobile-account-subitem" navigate={navigate} onClick={() => { if (setCategory) setCategory('Saree'); onClose(); }}>
-              <span className="subitem-label">Sarees</span>
+            <AppLink to="sarees" href="/sarees" className="mobile-subpanel-link" navigate={navigate} onClick={() => { if (setCategory) setCategory('Saree'); onClose(); }}>
+              <span>Banarasi Sarees</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="suits" href="/suits" className="mobile-account-subitem" navigate={navigate} onClick={() => { if (setCategory) setCategory('Suit'); onClose(); }}>
-              <span className="subitem-label">Suits</span>
+            <AppLink to="suits" href="/suits" className="mobile-subpanel-link" navigate={navigate} onClick={() => { if (setCategory) setCategory('Suit'); onClose(); }}>
+              <span>Banarasi Suits</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="lehengas" href="/lehengas" className="mobile-account-subitem" navigate={navigate} onClick={() => { if (setCategory) setCategory('Lehenga'); onClose(); }}>
-              <span className="subitem-label">Lehengas</span>
+            <AppLink to="lehengas" href="/lehengas" className="mobile-subpanel-link" navigate={navigate} onClick={() => { if (setCategory) setCategory('Lehenga'); onClose(); }}>
+              <span>Banarasi Lehengas</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="dupattas" href="/dupattas" className="mobile-account-subitem" navigate={navigate} onClick={() => { if (setCategory) setCategory('Dupatta'); onClose(); }}>
-              <span className="subitem-label">Dupattas</span>
+            <AppLink to="dupattas" href="/dupattas" className="mobile-subpanel-link" navigate={navigate} onClick={() => { if (setCategory) setCategory('Dupatta'); onClose(); }}>
+              <span>Statement Dupattas</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="under-999" href="/under-999" className="mobile-account-subitem" navigate={navigate} onClick={() => { if (setCategory) setCategory('Under 999'); onClose(); }}>
-              <span className="subitem-label">Under ₹999</span>
+            <AppLink to="under-999" href="/under-999" className="mobile-subpanel-link" navigate={navigate} onClick={() => { if (setCategory) setCategory('Under 999'); onClose(); }}>
+              <span>Under ₹999</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
           </>
         );
@@ -271,26 +274,33 @@ export function MobileMenu(props) {
       case 'company':
         return (
           <>
-            <AppLink to="about" href="/about" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">About Weave 365</span>
+            <AppLink to="about" href="/about" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>About Weave 365</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="collaboration" href="/collaboration" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Our Banaras Network</span>
+            <AppLink to="collaboration" href="/collaboration" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Our Banaras Network</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="contact" href="/contact" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Contact Us</span>
+            <AppLink to="contact" href="/contact" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Contact Us</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Shipping &amp; Delivery</span>
+            <AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Shipping &amp; Delivery</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Returns &amp; Cancellation</span>
+            <AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Returns &amp; Cancellation</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="payment-policy" href="/payment-policy" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Payment Policy</span>
+            <AppLink to="payment-policy" href="/payment-policy" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Payment Policy</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} className="mobile-account-subitem" onClick={onClose}>
-              <span className="subitem-label">Reseller FAQs</span>
+            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Reseller FAQs</span>
+              <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
           </>
         );
@@ -299,11 +309,14 @@ export function MobileMenu(props) {
         return (
           <>
             {accountItems.map((item, idx) => (
-              <button type="button" key={idx} className="mobile-account-subitem" onClick={item.action}>
-                <span className="subitem-icon">{item.icon}</span>
-                <span className="subitem-label">
-                  {item.label}
+              <button type="button" key={idx} className="mobile-subpanel-link" onClick={item.action}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ color: 'var(--gold-dark)', display: 'grid', placeItems: 'center' }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   {item.badge > 0 && <span className="mobile-menu-badge mini">{item.badge}</span>}
+                  <ChevronRight size={16} className="mobile-subpanel-arrow" />
                 </span>
               </button>
             ))}
@@ -356,37 +369,38 @@ export function MobileMenu(props) {
             <div className="mobile-panel mobile-panel-root" aria-hidden={activeSubpanel !== null}>
               <nav className="mobile-menu-nav">
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('wholesale')}>
-                  <span className="mobile-menu-icon"><Briefcase size={20} /></span>
+                  <span className="mobile-menu-icon"><Briefcase size={18} /></span>
                   <span className="mobile-menu-label">WHOLESALE</span>
                   <ChevronRight size={18} className="mobile-menu-arrow" />
                 </button>
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('resell')}>
-                  <span className="mobile-menu-icon"><Store size={20} /></span>
+                  <span className="mobile-menu-icon"><Store size={18} /></span>
                   <span className="mobile-menu-label">RESELL</span>
                   <ChevronRight size={18} className="mobile-menu-arrow" />
                 </button>
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('custom-weaving')}>
-                  <span className="mobile-menu-icon"><Sparkles size={20} /></span>
+                  <span className="mobile-menu-icon"><Sparkles size={18} /></span>
                   <span className="mobile-menu-label">CUSTOM WEAVING</span>
                   <ChevronRight size={18} className="mobile-menu-arrow" />
                 </button>
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('collections')}>
-                  <span className="mobile-menu-icon"><Layers size={20} /></span>
+                  <span className="mobile-menu-icon"><Layers size={18} /></span>
                   <span className="mobile-menu-label">COLLECTIONS</span>
                   <ChevronRight size={18} className="mobile-menu-arrow" />
                 </button>
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('company')}>
-                  <span className="mobile-menu-icon"><Info size={20} /></span>
+                  <span className="mobile-menu-icon"><Info size={18} /></span>
                   <span className="mobile-menu-label">COMPANY</span>
                   <ChevronRight size={18} className="mobile-menu-arrow" />
                 </button>
 
                 {isAdmin && (
-                  <button type="button" 
+                  <button 
+                    type="button" 
                     className="mobile-menu-item" 
                     onClick={() => {
                       window.open('/admin', '_blank');
@@ -394,7 +408,7 @@ export function MobileMenu(props) {
                     }}
                     style={{ borderLeft: '3px solid var(--gold-mid)' }}
                   >
-                    <span className="mobile-menu-icon"><Shield size={20} style={{ color: 'var(--gold-mid)' }} /></span>
+                    <span className="mobile-menu-icon"><Shield size={18} style={{ color: 'var(--gold-mid)' }} /></span>
                     <span className="mobile-menu-label" style={{ color: 'var(--gold-dark)', fontWeight: '700' }}>ADMIN PANEL</span>
                     <ArrowRight size={16} className="mobile-menu-arrow" />
                   </button>
@@ -406,7 +420,7 @@ export function MobileMenu(props) {
                 <DemoToggle user={user} isMobile={true} />
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('account')}>
-                  <span className="mobile-menu-icon"><User size={20} /></span>
+                  <span className="mobile-menu-icon"><User size={18} /></span>
                   <span className="mobile-menu-label">
                     <span>My Account</span>
                     {favoritesCount + cartCount > 0 && (
@@ -418,7 +432,7 @@ export function MobileMenu(props) {
 
                 <div className="mobile-menu-footer">
                   <a href={storeConfig.phone.startsWith('+') ? `tel:${storeConfig.phone}` : `tel:+91${storeConfig.phone}`}>
-                    <Headphones size={16} />
+                    <Phone size={15} />
                     <span>
                       {storeConfig.phone === '9919101369' 
                         ? '+91 9919 101369' 
@@ -430,7 +444,7 @@ export function MobileMenu(props) {
                     </span>
                   </a>
                   <a href={`mailto:${storeConfig.email || 'support@weave365.com'}`}>
-                    <MessageCircle size={16} />
+                    <Mail size={15} />
                     <span>{storeConfig.email || 'support@weave365.com'}</span>
                   </a>
                 </div>
@@ -446,8 +460,8 @@ export function MobileMenu(props) {
                   onClick={() => setActiveSubpanel(null)}
                   aria-label="Back to main menu"
                 >
-                  <ChevronLeft size={18} />
-                  <span>Main Menu</span>
+                  <ChevronLeft size={16} />
+                  <span>Back</span>
                 </button>
                 <span className="mobile-subpanel-title">{subpanelTitles[activeSubpanel] || ''}</span>
               </div>

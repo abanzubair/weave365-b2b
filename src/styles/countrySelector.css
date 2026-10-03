@@ -198,6 +198,15 @@
   flex-direction: column;
 }
 
+.mobile-country-dropdown .mobile-account-items {
+  overflow: hidden;
+}
+
+.mobile-country-dropdown:not(.is-open) .mobile-account-items-inner {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .mobile-country-dropdown.is-open .mobile-account-items {
   grid-template-rows: 1fr;
   pointer-events: auto;

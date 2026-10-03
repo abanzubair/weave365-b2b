@@ -140,4 +140,18 @@ describe('MobileMenu Icon Imports & Regression Tests', () => {
       'Subpanel must have aria-hidden={activeSubpanel === null}'
     );
   });
+
+  test('Requirement 7: Mobile account and country dropdown has strict overflow and visibility clipping when closed', () => {
+    const accountItemsMatch = layoutCssContent.match(/\.mobile-account-items\s*\{([^}]+)\}/);
+    assert(accountItemsMatch, '.mobile-account-items rule must exist in layout.css');
+    const rules = accountItemsMatch[1];
+    assert(rules.includes('overflow: hidden'), '.mobile-account-items must have overflow: hidden to prevent content leakage');
+    assert(rules.includes('visibility: hidden'), '.mobile-account-items must have visibility: hidden when collapsed');
+  });
+
+  test('Requirement 8: Mobile menu footer uses Phone and Mail icons for contact links', () => {
+    assert(mobileMenuContent.includes('<Phone size={15} />'), 'Footer phone link must use <Phone /> icon');
+    assert(mobileMenuContent.includes('<Mail size={15} />'), 'Footer email link must use <Mail /> icon');
+  });
 });
+
