@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   ChevronRight,
   ChevronLeft,
+  LogOut,
   Briefcase,
   Info,
   Shield,
@@ -119,7 +120,7 @@ export function MobileMenu(props) {
     ] : []),
     ...(user ? [
       { icon: <User size={18} />, label: 'Account Details', action: () => { navigate('account'); onClose(); } },
-      { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut(); onClose(); } },
+      { icon: <LogOut size={18} />, label: 'Logout', action: () => { onSignOut?.(); onClose(); } },
     ] : [
       { icon: <User size={18} />, label: 'Login / Register', action: () => { navigate('signup'); onClose(); } },
     ]),

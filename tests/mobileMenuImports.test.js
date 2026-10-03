@@ -1,0 +1,106 @@
+import { test, describe } from 'node:test';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
+
+describe('MobileMenu Icon Imports & Regression Tests', () => {
+  const mobileMenuPath = path.join(rootDir, 'src/components/MobileMenu.jsx');
+  const iconsPath = path.join(rootDir, 'src/components/icons.jsx');
+
+  const mobileMenuContent = fs.readFileSync(mobileMenuPath, 'utf8');
+  const iconsContent = fs.readFileSync(iconsPath, 'utf8');
+
+  test('Requirement 1: LogOut is imported from ./icons.jsx in MobileMenu.jsx', () => {
+    const importMatch = mobileMenuContent.match(/import\s*\{([^}]+)\}\s*from\s*['"]\.\/icons(?:\.jsx)?['"]/);
+    assert(importMatch, 'MobileMenu.jsx must import icons from ./icons.jsx');
+    
+    const importedIcons = importMatch[1]
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    assert(importedIcons.includes('LogOut'), 'LogOut must be imported from ./icons.jsx');
+  });
+
+  test('Requirement 2: All icons imported in MobileMenu.jsx are exported by icons.jsx', () => {
+    const importMatch = mobileMenuContent.match(/import\s*\{([^}]+)\}\s*from\s*['"]\.\/icons(?:\.jsx)?['"]/);
+    assert(importMatch, 'MobileMenu.jsx must import icons from ./icons.jsx');
+
+    const importedIcons = importMatch[1]
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const exportRegex = /export\s+const\s+([A-Za-z0-9_]+)\s*=/g;
+    const exportedIcons = new Set();
+    let match;
+    while ((match = exportRegex.exec(iconsContent)) !== null) {
+      exportedIcons.add(match[1]);
+    }
+
+    for (const icon of importedIcons) {
+      assert(
+        exportedIcons.has(icon),
+        `Icon "${icon}" imported in MobileMenu.jsx is not exported by icons.jsx`
+      );
+    }
+  });
+
+  test('Requirement 3: Every JSX component used in MobileMenu.jsx has a corresponding import', () => {
+    // Find all JSX tags starting with an uppercase letter
+    const jsxTagRegex = /<([A-Z][A-Za-z0-9]+)/g;
+    const usedComponents = new Set();
+    let match;
+    while ((match = jsxTagRegex.exec(mobileMenuContent)) !== null) {
+      usedComponents.add(match[1]);
+    }
+
+    // Find all imported identifiers in MobileMenu.jsx
+    const importedIdentifiers = new Set();
+
+    // Default imports: import Foo from '...'
+    const defaultImportRegex = /import\s+([A-Za-z0-9_]+)\s+from/g;
+    while ((match = defaultImportRegex.exec(mobileMenuContent)) !== null) {
+      importedIdentifiers.add(match[1]);
+    }
+
+    // Named imports: import { Foo, Bar as Baz } from '...'
+    const namedImportBlockRegex = /import\s*\{([^}]+)\}\s*from/g;
+    while ((match = namedImportBlockRegex.exec(mobileMenuContent)) !== null) {
+      const names = match[1].split(',').map(s => s.trim()).filter(Boolean);
+      for (const name of names) {
+        const parts = name.split(/\s+as\s+/);
+        const importedAs = (parts[1] || parts[0]).trim();
+        importedIdentifiers.add(importedAs);
+      }
+    }
+
+    // Ensure every used component is in importedIdentifiers or defined locally in MobileMenu.jsx
+    for (const component of usedComponents) {
+      const isImported = importedIdentifiers.has(component);
+      const isLocallyDefined = new RegExp(`(?:function|const|let|var|class)\\s+${component}\\b`).test(mobileMenuContent);
+      assert(
+        isImported || isLocallyDefined,
+        `Component <${component}> is used in MobileMenu.jsx but neither imported nor locally defined!`
+      );
+    }
+  });
+
+  test('Requirement 4: Authenticated user menu branch references LogOut without undefined reference', () => {
+    // Ensure the authenticated ternary branch contains LogOut
+    const userBranchMatch = mobileMenuContent.match(/user\s*\?\s*\[([\s\S]*?)\]\s*:\s*\[([\s\S]*?)\]/);
+    assert(userBranchMatch, 'MobileMenu.jsx should have user ? [...] : [...] branch for account menu');
+
+    const authBranch = userBranchMatch[1];
+    const guestBranch = userBranchMatch[2];
+
+    assert(authBranch.includes('LogOut'), 'Authenticated branch must contain LogOut');
+    assert(authBranch.includes('Account Details'), 'Authenticated branch must contain Account Details');
+    assert(guestBranch.includes('Login / Register'), 'Guest branch must contain Login / Register');
+  });
+});
