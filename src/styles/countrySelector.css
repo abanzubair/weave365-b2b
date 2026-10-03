@@ -199,7 +199,8 @@
 }
 
 .mobile-country-dropdown.is-open .mobile-account-items {
-  max-height: none !important;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mobile-country-dropdown.is-open .mobile-account-items-inner {

@@ -282,6 +282,24 @@
     flex-shrink: 0 !important;
   }
 
+  .mobile-menu-head > a,
+  .mobile-menu-head .brand,
+  .mobile-menu-head .mobile-menu-brand {
+    order: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-right: auto !important;
+    margin-left: 0 !important;
+  }
+
+  .mobile-menu-head > button,
+  .mobile-menu-head .mobile-menu-close-btn,
+  .mobile-menu-head .hamburger-btn {
+    order: 2 !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+
   .brand {
     order: 1 !important;
     display: flex !important;

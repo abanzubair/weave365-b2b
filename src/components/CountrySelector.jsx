@@ -99,7 +99,10 @@ export function CountrySelector({ variant = 'desktop', onClose = null }) {
           />
         </button>
 
-        <div className="mobile-account-items">
+        <div 
+          className={`mobile-account-items ${isOpen ? 'is-open' : ''}`}
+          style={{ maxHeight: isOpen ? '220px' : '0px' }}
+        >
           <div className="mobile-account-items-inner">
             {enabledCountries.map((country) => {
               const isSelected = country.code === currentCountry?.code;
