@@ -9,9 +9,8 @@ import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVari
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
 import { getCachedAuth, clearCachedAuth } from '../utils/authCache.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
-import { trackSiteTraffic } from '../utils/trafficTracker.js';
+import { trackSiteTraffic, getStoredAttribution } from '../utils/trafficTracker.js';
 import {
-  clearStoredReferralCode,
   setStoredReferralCode,
   handleIncomingReferral,
   setOwnAffiliateCode,
@@ -58,6 +57,10 @@ export function AppShell({ children }) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const navigate = useAppNavigate();
+  const navigateRef = useRef(navigate);
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   const {
     user,
@@ -272,79 +275,86 @@ export function AppShell({ children }) {
 
     // Immediately restore cached local session if present so user sees their state with zero latency (0ms)
     const { user: cachedUser, buyerProfile: cachedProfile } = getCachedAuth();
-    if (cachedUser) {
-      if (!user) setUser(cachedUser);
-      if (cachedProfile && !buyerProfile) setBuyerProfile(cachedProfile);
+    const current = useStorefront.getState();
+    if (cachedUser && !current.user) {
+      setUser(cachedUser);
+    }
+    if (cachedProfile && !current.buyerProfile) {
+      setBuyerProfile(cachedProfile);
     }
     setIsProfileHydrated(true);
 
-    // Resolve live Supabase session immediately (0ms deferral allows first paint frame, zero blocking delay)
-    const timer = setTimeout(() => {
-      import('../supabaseClient.js').then(({ isSupabaseConfigured, supabase }) => {
-        if (!isMounted) return;
-        if (!isSupabaseConfigured || !supabase) {
-          return;
-        }
-
-        supabase.auth.getSession().then(({ data }) => {
-          if (!isMounted) return;
-          const sessionUser = data.session?.user || null;
-          setUser(sessionUser);
-          if (!sessionUser && cachedUser) {
-            clearCachedAuth();
-            setBuyerProfile(null);
-          }
-        });
-
-        const { data } = supabase.auth.onAuthStateChange((event, session) => {
-          if (!isMounted) return;
-          const sessionUser = session?.user || null;
-          setUser(sessionUser);
-          if (!sessionUser) {
-            clearCachedAuth();
-            setBuyerProfile(null);
-          }
-          if (event === 'PASSWORD_RECOVERY') {
-            navigate('signup', null, null, { mode: 'reset-password' });
-          }
-        });
-
-        authUnsubscribe = () => data?.subscription?.unsubscribe();
-      }).catch((err) => {
-        console.error('Error loading Supabase auth:', err);
-      });
-    }, 0);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-      if (authUnsubscribe) authUnsubscribe();
-    };
-  }, [user, buyerProfile, setUser, setBuyerProfile, navigate, setIsProfileHydrated]);
-
-  // Hydrate User Profile & Influencer Referral
-  useEffect(() => {
-    let isActive = true;
-
-    async function hydrateProfile() {
-      if (!user) {
-        setBuyerProfile(null);
-        setVendorOnboarding(null);
-        clearOwnAffiliateCode();
-        setIsProfileHydrated(true);
+    import('../supabaseClient.js').then(({ isSupabaseConfigured, supabase }) => {
+      if (!isMounted) return;
+      if (!isSupabaseConfigured || !supabase) {
         return;
       }
 
+      const syncSession = (sessionUser) => {
+        if (!isMounted) return;
+        const curUser = useStorefront.getState().user;
+        if (!sessionUser) {
+          if (curUser) {
+            clearCachedAuth();
+            setUser(null);
+            setBuyerProfile(null);
+          }
+          return;
+        }
+        if (curUser?.id !== sessionUser.id) {
+          setUser(sessionUser);
+        }
+      };
+
+      supabase.auth.getSession().then(({ data }) => {
+        syncSession(data.session?.user || null);
+      });
+
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        syncSession(session?.user || null);
+        if (event === 'PASSWORD_RECOVERY') {
+          navigateRef.current?.('signup', null, null, { mode: 'reset-password' });
+        }
+      });
+
+      authUnsubscribe = () => data?.subscription?.unsubscribe();
+    }).catch((err) => {
+      console.error('Error loading Supabase auth:', err);
+    });
+
+    return () => {
+      isMounted = false;
+      if (authUnsubscribe) authUnsubscribe();
+    };
+  }, [setUser, setBuyerProfile, setIsProfileHydrated]);
+
+  // Hydrate User Profile & Influencer Referral
+  const currentUserId = user?.id;
+  useEffect(() => {
+    let isActive = true;
+
+    if (!currentUserId) {
+      setBuyerProfile(null);
+      setVendorOnboarding(null);
+      clearOwnAffiliateCode();
+      setIsProfileHydrated(true);
+      return;
+    }
+
+    async function hydrateProfile() {
       try {
+        const currentUser = useStorefront.getState().user;
+        if (!currentUser) return;
+
         // Fast DB profile fetch (read-only, does not block on write)
-        const { profile } = await loadProfileForUser(user);
+        const { profile } = await loadProfileForUser(currentUser);
         if (isActive) {
           if (profile) {
             setBuyerProfile(profile);
           } else {
             // Only sync/upsert to DB if profile row doesn't exist yet
-            await syncProfileFromUser(user);
-            const { profile: createdProfile } = await loadProfileForUser(user);
+            await syncProfileFromUser(currentUser);
+            const { profile: createdProfile } = await loadProfileForUser(currentUser);
             if (isActive && createdProfile) {
               setBuyerProfile(createdProfile);
             }
@@ -352,13 +362,13 @@ export function AppShell({ children }) {
 
           // Asynchronously sync attribution in background if missing, without blocking profile hydration
           const storedAttr = getStoredAttribution();
-          if (storedAttr && !user.user_metadata?.acquisition) {
-            void syncProfileFromUser(user).catch(() => {});
+          if (storedAttr && !currentUser.user_metadata?.acquisition) {
+            void syncProfileFromUser(currentUser).catch(() => {});
           }
 
           const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
           if (isSupabaseConfigured && supabase && isActive) {
-            const targetProfile = profile || user.user_metadata?.buyer_profile || user.buyer_profile;
+            const targetProfile = profile || currentUser.user_metadata?.buyer_profile || currentUser.buyer_profile;
             const cleanWhatsapp = targetProfile?.whatsapp_number
               ? String(targetProfile.whatsapp_number).replace(/\D/g, '').slice(-10)
               : '';
@@ -367,7 +377,7 @@ export function AppShell({ children }) {
               supabase
                 .from('influencer_profiles')
                 .select('referral_code, is_approved')
-                .eq('id', user.id)
+                .eq('id', currentUserId)
                 .maybeSingle()
                 .then(({ data }) => {
                   if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
@@ -404,11 +414,11 @@ export function AppShell({ children }) {
     return () => {
       isActive = false;
     };
-  }, [user, setBuyerProfile, setVendorOnboarding, setIsProfileHydrated]);
+  }, [currentUserId, setBuyerProfile, setVendorOnboarding, setIsProfileHydrated]);
 
   // Load Saved Cart & Favorites on User Change
   useEffect(() => {
-    if (!user) {
+    if (!currentUserId) {
       setCart(readLocal('cart_guest'));
       setFavorites(readLocal('favorites_guest'));
       return;
@@ -416,19 +426,19 @@ export function AppShell({ children }) {
 
     import('../supabaseClient.js').then(({ isSupabaseConfigured }) => {
       if (isSupabaseConfigured) {
-        loadSavedState(user.id).then(({ savedCart, savedFavorites }) => {
+        loadSavedState(currentUserId).then(({ savedCart, savedFavorites }) => {
           setCart(savedCart);
           setFavorites(savedFavorites);
         });
       } else {
-        setCart(readLocal(`cart_${user.id}`));
-        setFavorites(readLocal(`favorites_${user.id}`));
+        setCart(readLocal(`cart_${currentUserId}`));
+        setFavorites(readLocal(`favorites_${currentUserId}`));
       }
     }).catch(() => {
-      setCart(readLocal(`cart_${user.id}`));
-      setFavorites(readLocal(`favorites_${user.id}`));
+      setCart(readLocal(`cart_${currentUserId}`));
+      setFavorites(readLocal(`favorites_${currentUserId}`));
     });
-  }, [user, setCart, setFavorites]);
+  }, [currentUserId, setCart, setFavorites]);
 
   // Search lock scroll
   useEffect(() => {

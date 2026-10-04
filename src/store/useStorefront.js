@@ -17,6 +17,10 @@ export const useStorefront = create((set) => ({
   vendorOnboarding: null,
   isProfileHydrated: Boolean(initialAuth.user),
   setUser: (user) => {
+    const current = useStorefront.getState?.()?.user;
+    if (user === current || (user?.id && current?.id && user.id === current.id && user.updated_at === current.updated_at)) {
+      return;
+    }
     if (user) {
       saveCachedUser(user);
     } else {
@@ -25,6 +29,10 @@ export const useStorefront = create((set) => ({
     set({ user });
   },
   setBuyerProfile: (buyerProfile) => {
+    const current = useStorefront.getState?.()?.buyerProfile;
+    if (buyerProfile === current || (buyerProfile?.id && current?.id && buyerProfile.id === current.id && buyerProfile.updated_at === current.updated_at)) {
+      return;
+    }
     saveCachedProfile(buyerProfile);
     set({ buyerProfile });
   },
