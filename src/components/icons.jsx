@@ -251,6 +251,7 @@ export const AlignRight = wrapIcon(Hero_Bars3BottomRightIcon, 'AlignRight');
 export const ArrowDown = wrapIcon(Hero_ArrowDownIcon, 'ArrowDown');
 export const ArrowLeft = wrapIcon(Hero_ArrowLeftIcon, 'ArrowLeft');
 export const ArrowRight = wrapIcon(Hero_ArrowRightIcon, 'ArrowRight');
+export const ArrowUp = wrapIcon(Hero_ArrowUpIcon, 'ArrowUp');
 export const ArrowUpDown = wrapIcon(Hero_ArrowsUpDownIcon, 'ArrowUpDown');
 export const ArrowUpRight = wrapIcon(Hero_ArrowUpRightIcon, 'ArrowUpRight');
 export const Award = wrapIcon(Hero_TrophyIcon, 'Award');

@@ -34,7 +34,9 @@ import {
   Sparkles,
   MessageCircle,
   HelpCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  ArrowDown,
+  ArrowUp
 } from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
@@ -164,6 +166,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('new'); // Defaults to 'new' (Needs Attention)
   const [typeFilter, setTypeFilter] = useState('orders'); // 'orders' | 'dropship' | 'all'
+  const [dateSortOrder, setDateSortOrder] = useState('desc'); // 'desc' = latest at top, 'asc' = oldest at top
   const [actionLoading, setActionLoading] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState({});
 
@@ -698,8 +701,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       );
     }
 
-    return { filteredInquiries: result, orderStats: stats, channelCounts: chCounts };
-  }, [inquiries, searchQuery, statusFilter, typeFilter]);
+    // Sort by date latest at top (descending) by default, or ascending if toggled
+    const sortedResult = [...result].sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateSortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+    });
+
+    return { filteredInquiries: sortedResult, orderStats: stats, channelCounts: chCounts };
+  }, [inquiries, searchQuery, statusFilter, typeFilter, dateSortOrder]);
 
   // Quick carrier suggestions
   const carrierSuggestions = ['Delhivery', 'BlueDart', 'DTDC', 'DHL Express', 'India Post Speed Post', 'Shadowfax', 'Trackon'];
@@ -847,7 +857,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             )}
           </div>
 
-          {(statusFilter !== 'new' || searchQuery || typeFilter !== 'orders') && (
+          {(statusFilter !== 'new' || searchQuery || typeFilter !== 'orders' || dateSortOrder !== 'desc') && (
             <button 
               type="button"
               className="admin-btn-reset-filters"
@@ -855,6 +865,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 setStatusFilter('new');
                 setSearchQuery('');
                 setTypeFilter('orders');
+                setDateSortOrder('desc');
               }}
               title="Reset to Needs Attention"
             >
@@ -870,7 +881,20 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           <table className="admin-orders-table">
             <thead>
               <tr>
-                <th style={{ width: '130px' }}>Date & Source</th>
+                <th 
+                  style={{ width: '135px', cursor: 'pointer', userSelect: 'none' }}
+                  onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                  title={`Sort by Date: currently ${dateSortOrder === 'desc' ? 'Latest at top (newest first)' : 'Oldest first'}. Click to toggle.`}
+                >
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <span>Date & Source</span>
+                    {dateSortOrder === 'desc' ? (
+                      <ArrowDown size={12} style={{ color: '#4f46e5' }} />
+                    ) : (
+                      <ArrowUp size={12} style={{ color: '#4f46e5' }} />
+                    )}
+                  </div>
+                </th>
                 <th style={{ width: '150px' }}>Order ID</th>
                 <th>Recipient & Destination</th>
                 <th>Ordered Items</th>

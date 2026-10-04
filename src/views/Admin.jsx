@@ -516,7 +516,13 @@ export function Admin({
       message: a.shipping_notes || a.message,
     }));
 
-    return [...rawInquiries, ...rawOrders, ...rawApiOrders];
+    const combined = [...rawInquiries, ...rawOrders, ...rawApiOrders];
+    combined.sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return timeB - timeA;
+    });
+    return combined;
   }, [adminData.optional.inquiries, adminData.optional.orders, adminData.optional.api_orders]);
 
   const newOrdersCount = useMemo(() => {

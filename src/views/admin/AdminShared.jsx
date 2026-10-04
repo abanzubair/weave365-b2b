@@ -18,8 +18,12 @@ export function isAdminUser(user) {
 
 export async function safeSelect(table, query = '*') {
   let req = supabase.from(table).select(query);
+  const tablesWithCreatedAt = ['site_analytics', 'inquiries', 'orders', 'api_orders', 'download_logs'];
+  if (tablesWithCreatedAt.includes(table)) {
+    req = req.order('created_at', { ascending: false });
+  }
   if (table === 'site_analytics') {
-    req = req.order('created_at', { ascending: false }).limit(1500);
+    req = req.limit(1500);
   } else {
     req = req.limit(500);
   }
