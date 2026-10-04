@@ -331,13 +331,22 @@ export function CheckoutPage({
 
   const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
 
-  const baseInrTotal = useMemo(() => {
+  // Marked-up INR total preserving the selected country's custom markup for gateways/fallbacks
+  const markedUpInrTotal = useMemo(() => {
     if (!items || !items.length) return 0;
-    const inrConfig = { code: 'IN', name: 'India', currency: 'INR', currencySymbol: '₹', markupPercent: 0 };
-    const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, inrConfig, exchangeRates);
+    const countryMarkup = Number(currentCountry?.markupPercent || 0);
+    const countryInrConfig = {
+      code: currentCountry?.code || 'IN',
+      name: currentCountry?.name || 'India',
+      currency: 'INR',
+      currencySymbol: '₹',
+      markupPercent: countryMarkup,
+    };
+    const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, countryInrConfig, exchangeRates);
     const inrShipping = shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0;
-    return Math.max(0, (inrTotals.total || 0) - (discount || 0)) + inrShipping;
-  }, [items, priceAccess, exchangeRates, shippingSpeed, billedWeightKg, discount]);
+    return Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0)) + inrShipping;
+  }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg]);
+
 
   const { baseAmount, gstAmount } = useMemo(() => {
     const netItems = Math.max(0, (baseTotal || 0) - (discount || 0));
@@ -439,13 +448,17 @@ export function CheckoutPage({
               color: item.selectedColorName || 'Standard',
               quantity: item.quantity,
               price: locPrice.finalPrice,
-              base_inr_price: rawPrice,
+              base_inr_price: locPrice.markedUpBasePrice || rawPrice,
+              original_inr_price: rawPrice,
             };
           }),
           total_amount: total,
           currency: (currentCountry?.currency || 'INR').toUpperCase(),
           currency_symbol: currentCountry?.currencySymbol || '₹',
-          base_inr_total: baseInrTotal,
+          base_inr_total: markedUpInrTotal,
+          country_code: currentCountry?.code || 'IN',
+          country_name: currentCountry?.name || 'India',
+          markup_percent: Number(currentCountry?.markupPercent || 0),
           notes: dropshipNotes,
         }),
       });
@@ -502,7 +515,7 @@ export function CheckoutPage({
           orderNumber: (data.db_order_id || '').slice(0, 8).toUpperCase(),
           total: verifyData.order_amount || data.order_amount || total,
           currency: verifyData.order_currency || data.order_currency || currentCountry?.currency || 'INR',
-          currencySymbol: currentCountry?.currencySymbol || '₹',
+          currencySymbol: (verifyData.order_currency || data.order_currency) === 'INR' ? '₹' : (currentCountry?.currencySymbol || '₹'),
           paymentMethod: 'cashfree',
           deliveryDetails,
           cfOrderId: data.order_id,

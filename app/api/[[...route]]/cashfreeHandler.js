@@ -124,6 +124,9 @@ export async function handleCreateOrder(request) {
       currency = 'INR',
       currency_symbol = '',
       base_inr_total = 0,
+      country_code = 'IN',
+      country_name = 'India',
+      markup_percent = 0,
       shipping_mode = 'standard',
       shipping_speed = 'standard',
       notes = '',
@@ -197,6 +200,7 @@ export async function handleCreateOrder(request) {
         quantity: Number(item.quantity) || 1,
         price: Number(item.price) || 0,
         currency: orderCurrency,
+        base_inr_price: Number(item.base_inr_price) || Number(item.price) || 0,
       })),
     };
 
@@ -278,12 +282,12 @@ export async function handleCreateOrder(request) {
 
     let cfData = await cfResponse.json();
 
-    // If the currency is not enabled on the merchant account, fallback gracefully to base INR amount
+    // If the currency is not enabled on the merchant account, fallback gracefully to marked-up INR amount
     let finalCurrency = orderCurrency;
     let finalAmount = requestedAmount;
 
     if (!cfResponse.ok && orderCurrency !== 'INR' && cfData.message && cfData.message.toLowerCase().includes('currency')) {
-      console.warn(`[Cashfree createOrder] Gateway rejected currency ${orderCurrency} (${cfData.message}). Falling back to INR amount (₹${fallbackInrAmount})...`);
+      console.warn(`[Cashfree createOrder] Gateway rejected currency ${orderCurrency} (${cfData.message}). Falling back to marked-up INR amount (₹${fallbackInrAmount})...`);
       finalCurrency = 'INR';
       finalAmount = fallbackInrAmount;
 
@@ -291,7 +295,7 @@ export async function handleCreateOrder(request) {
         ...cfReqBody,
         order_amount: fallbackInrAmount,
         order_currency: 'INR',
-        order_note: `Weave365 Order #${dbOrderId.slice(0, 8)} (INR ${fallbackInrAmount} fallback from ${orderCurrency} ${requestedAmount})`,
+        order_note: `Weave365 Order #${dbOrderId.slice(0, 8)}`,
       };
 
       cfResponse = await fetch(`${cf.baseUrl}/orders`, {
@@ -321,12 +325,16 @@ export async function handleCreateOrder(request) {
     }
 
     // 3. Update Supabase with cf_order_id & session
+    const noteSuffix = finalCurrency !== orderCurrency
+      ? `\n[Admin Note]: Gateway processed in INR (₹${finalAmount}) for ${orderCurrency} ${requestedAmount}`
+      : '';
+
     await supabase
       .from('orders')
       .update({
         cf_order_id: cfOrderId,
         total_amount: finalAmount,
-        message: `${orderPayload.message}\nCashfree Order ID: ${cfOrderId}\nSession: ${cfData.payment_session_id}`,
+        message: `${orderPayload.message}${noteSuffix}\nCashfree Order ID: ${cfOrderId}\nSession: ${cfData.payment_session_id}`,
       })
       .eq('id', dbOrderId);
 
