@@ -8,6 +8,7 @@ import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
 import { getBuyerAccess } from '../../src/utils/buyerAccess.js';
 import { isSupabaseConfigured, supabase } from '../../src/supabaseClient.js';
 import { clearStoredReferralCode } from '../../src/utils/influencerHelpers.js';
+import { clearCachedAuth } from '../../src/utils/authCache.js';
 import { parseCartVariantCode, upsertCart, persistCart } from '../../src/utils/cartHelpers.js';
 
 export default function AccountClient() {
@@ -118,15 +119,19 @@ export default function AccountClient() {
   );
 
   const handleSignOut = useCallback(async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    } else {
-      localStorage.removeItem('sareeva_user');
-      setUser(null);
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('Sign out error:', e);
+      }
     }
+    clearCachedAuth();
+    setUser(null);
+    setBuyerProfile(null);
     clearStoredReferralCode();
     navigate('home');
-  }, [navigate, setUser]);
+  }, [navigate, setUser, setBuyerProfile]);
 
   return (
     <Account

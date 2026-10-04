@@ -87,7 +87,7 @@ async function sendNotificationEmail(reviewData) {
   }
 
   // Fallback to onboarding@resend.dev (Resend's default sandbox domain sender) if no custom verified sender is supplied
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+  const fromEmail = process.env.RESEND_NOTIFICATIONS_FROM_EMAIL || process.env.RESEND_DEFAULT_FROM_EMAIL || 'notifications@updates.weave365.com';
   const targetEmail = 'weave365@gmail.com';
 
   const emailBody = {

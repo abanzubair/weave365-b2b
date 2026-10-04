@@ -24,7 +24,6 @@ import {
 } from './icons.jsx';
 
 import { storeConfig } from '../config.js';
-import { DemoToggle } from '../utils/demoHelper.js';
 import { AppLink } from './AppLink.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { CountrySelector } from './CountrySelector.jsx';
@@ -386,7 +385,6 @@ export function MobileMenu(props) {
 
               <div className="mobile-menu-bottom-section">
                 <CountrySelector variant="mobile" onClose={onClose} />
-                <DemoToggle user={user} isMobile={true} />
 
                 <button type="button" className="mobile-menu-item" onClick={() => setActiveSubpanel('account')}>
                   <span className="mobile-menu-icon"><User size={18} /></span>

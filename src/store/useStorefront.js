@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getVendorStockLocal, applyStockOverridesToProducts } from '../utils/vendorStockService.js';
+import { getCachedAuth, saveCachedUser, saveCachedProfile, clearCachedAuth } from '../utils/authCache.js';
 
 const resolveArrayUpdate = (nextValue, currentValue) => {
   const currentArray = Array.isArray(currentValue) ? currentValue : [];
@@ -7,14 +8,26 @@ const resolveArrayUpdate = (nextValue, currentValue) => {
   return Array.isArray(resolved) ? resolved : [];
 };
 
+const initialAuth = typeof window !== 'undefined' ? getCachedAuth() : { user: null, buyerProfile: null };
+
 export const useStorefront = create((set) => ({
   // Auth & Profile State
-  user: null,
-  buyerProfile: null,
+  user: initialAuth.user,
+  buyerProfile: initialAuth.buyerProfile,
   vendorOnboarding: null,
-  isProfileHydrated: false,
-  setUser: (user) => set({ user }),
-  setBuyerProfile: (buyerProfile) => set({ buyerProfile }),
+  isProfileHydrated: Boolean(initialAuth.user),
+  setUser: (user) => {
+    if (user) {
+      saveCachedUser(user);
+    } else {
+      clearCachedAuth();
+    }
+    set({ user });
+  },
+  setBuyerProfile: (buyerProfile) => {
+    saveCachedProfile(buyerProfile);
+    set({ buyerProfile });
+  },
   setVendorOnboarding: (vendorOnboarding) => set({ vendorOnboarding }),
   setIsProfileHydrated: (isProfileHydrated) => set({ isProfileHydrated }),
 

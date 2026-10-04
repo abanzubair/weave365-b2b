@@ -8,6 +8,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
 
 export const runtime = 'edge';
 
@@ -120,6 +121,9 @@ export async function handleCreateOrder(request) {
       dropship_details = {},
       items = [],
       total_amount = 0,
+      currency = 'INR',
+      currency_symbol = '',
+      base_inr_total = 0,
       shipping_mode = 'standard',
       shipping_speed = 'standard',
       notes = '',
@@ -147,6 +151,11 @@ export async function handleCreateOrder(request) {
       );
     }
 
+    const orderCurrency = String(currency || 'INR').toUpperCase();
+    const currencySymbol = currency_symbol || (orderCurrency === 'INR' ? '₹' : orderCurrency === 'USD' ? '$' : orderCurrency === 'EUR' ? '€' : orderCurrency === 'GBP' ? '£' : `${orderCurrency} `);
+    const requestedAmount = Number(Number(total_amount).toFixed(2));
+    const fallbackInrAmount = Number(Number(base_inr_total || total_amount).toFixed(2));
+
     const isDropship = shipping_mode === 'dropship';
     const supabase = getSupabaseAdmin();
 
@@ -164,8 +173,8 @@ export async function handleCreateOrder(request) {
       pincode: pincode,
       status: 'pending_payment',
       payment_method: 'cashfree',
-      total_amount: Number(Number(total_amount).toFixed(2)),
-      message: `CASHFREE CHECKOUT ORDER\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\nStatus: Pending Cashfree Payment\nNotes: ${notes || 'None'}`,
+      total_amount: requestedAmount,
+      message: `CASHFREE CHECKOUT ORDER\nTotal: ${currencySymbol}${requestedAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (${orderCurrency})\nCurrency: ${orderCurrency}\nStatus: Pending Cashfree Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
       dropship_sender_phone: isDropship ? (dropship_details.sender_phone || null) : null,
@@ -187,6 +196,7 @@ export async function handleCreateOrder(request) {
         color: item.color || item.selectedColorName || 'Standard',
         quantity: Number(item.quantity) || 1,
         price: Number(item.price) || 0,
+        currency: orderCurrency,
       })),
     };
 
@@ -236,12 +246,12 @@ export async function handleCreateOrder(request) {
     const cleanDbId = dbOrderId.replace(/-/g, '').slice(0, 16);
     const cfOrderId = `CF_${cleanDbId}_${Date.now().toString().slice(-6)}`;
 
-    // 2. Call Cashfree PG /orders API
+    // 2. Call Cashfree PG /orders API with dynamic order_currency
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com';
     const cfReqBody = {
       order_id: cfOrderId,
-      order_amount: Number(Number(total_amount).toFixed(2)),
-      order_currency: 'INR',
+      order_amount: requestedAmount,
+      order_currency: orderCurrency,
       customer_details: {
         customer_id: validUserId || `cust_${phone}_${cleanDbId.slice(0, 6)}`,
         customer_name: fullName.slice(0, 50),
@@ -252,10 +262,10 @@ export async function handleCreateOrder(request) {
         return_url: `${siteUrl}/checkout?order_id={order_id}`,
         notify_url: `${siteUrl}/api/cashfree/webhook`,
       },
-      order_note: `Weave365 Order #${dbOrderId.slice(0, 8)}`,
+      order_note: `Weave365 Order #${dbOrderId.slice(0, 8)} (${orderCurrency} ${requestedAmount})`,
     };
 
-    const cfResponse = await fetch(`${cf.baseUrl}/orders`, {
+    let cfResponse = await fetch(`${cf.baseUrl}/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -266,7 +276,37 @@ export async function handleCreateOrder(request) {
       body: JSON.stringify(cfReqBody),
     });
 
-    const cfData = await cfResponse.json();
+    let cfData = await cfResponse.json();
+
+    // If the currency is not enabled on the merchant account, fallback gracefully to base INR amount
+    let finalCurrency = orderCurrency;
+    let finalAmount = requestedAmount;
+
+    if (!cfResponse.ok && orderCurrency !== 'INR' && cfData.message && cfData.message.toLowerCase().includes('currency')) {
+      console.warn(`[Cashfree createOrder] Gateway rejected currency ${orderCurrency} (${cfData.message}). Falling back to INR amount (₹${fallbackInrAmount})...`);
+      finalCurrency = 'INR';
+      finalAmount = fallbackInrAmount;
+
+      const fallbackReqBody = {
+        ...cfReqBody,
+        order_amount: fallbackInrAmount,
+        order_currency: 'INR',
+        order_note: `Weave365 Order #${dbOrderId.slice(0, 8)} (INR ${fallbackInrAmount} fallback from ${orderCurrency} ${requestedAmount})`,
+      };
+
+      cfResponse = await fetch(`${cf.baseUrl}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-id': cf.appId,
+          'x-client-secret': cf.secretKey,
+          'x-api-version': cf.apiVersion,
+        },
+        body: JSON.stringify(fallbackReqBody),
+      });
+
+      cfData = await cfResponse.json();
+    }
 
     if (!cfResponse.ok || !cfData.payment_session_id) {
       console.error('[Cashfree createOrder] PG API error:', cfData);
@@ -285,6 +325,7 @@ export async function handleCreateOrder(request) {
       .from('orders')
       .update({
         cf_order_id: cfOrderId,
+        total_amount: finalAmount,
         message: `${orderPayload.message}\nCashfree Order ID: ${cfOrderId}\nSession: ${cfData.payment_session_id}`,
       })
       .eq('id', dbOrderId);
@@ -295,6 +336,8 @@ export async function handleCreateOrder(request) {
         payment_session_id: cfData.payment_session_id,
         order_id: cfOrderId,
         db_order_id: dbOrderId,
+        order_currency: cfData.order_currency || finalCurrency,
+        order_amount: cfData.order_amount || finalAmount,
         environment: cf.env,
       },
       { status: 200, headers: corsHeaders }
@@ -356,10 +399,30 @@ export async function handleVerifyOrder(request) {
         updatePayload.cf_order_id = order_id;
       }
 
+      let targetOrderId = db_order_id;
       if (db_order_id) {
         await supabase.from('orders').update(updatePayload).eq('id', db_order_id);
       } else if (order_id) {
-        await supabase.from('orders').update(updatePayload).eq('cf_order_id', order_id);
+        const { data: updatedRows } = await supabase
+          .from('orders')
+          .update(updatePayload)
+          .eq('cf_order_id', order_id)
+          .select('id');
+        if (updatedRows && updatedRows.length > 0) {
+          targetOrderId = updatedRows[0].id;
+        }
+      }
+
+      // Automatically dispatch minimal confirmation email to buyer
+      if (targetOrderId) {
+        try {
+          await sendBuyerOrderConfirmationEmail({
+            orderId: targetOrderId,
+            supabase,
+          });
+        } catch (emailErr) {
+          console.error('[Cashfree verifyOrder] Error sending buyer confirmation email:', emailErr);
+        }
       }
     }
 
@@ -369,6 +432,7 @@ export async function handleVerifyOrder(request) {
         order_status: orderStatus,
         is_paid: isPaid,
         order_amount: cfOrder.order_amount,
+        order_currency: cfOrder.order_currency || 'INR',
         cf_order: cfOrder,
       },
       { status: 200, headers: corsHeaders }
@@ -445,6 +509,16 @@ export async function handleWebhook(request) {
               message: `${target.message || ''}\n\n[Webhook Confirmed] Payment ID: ${paymentId || 'N/A'} at ${new Date().toISOString()}`,
             })
             .eq('id', target.id);
+
+          // Automatically dispatch minimal confirmation email to buyer (idempotency prevents double send)
+          try {
+            await sendBuyerOrderConfirmationEmail({
+              orderId: target.id,
+              supabase,
+            });
+          } catch (emailErr) {
+            console.error('[Cashfree Webhook] Error sending buyer confirmation email:', emailErr);
+          }
         }
       }
     }

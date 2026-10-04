@@ -24,6 +24,7 @@ import {
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
+import { saveCachedProfile, saveCachedUser } from '../utils/authCache.js';
 
 const countryCodes = [
   { value: '+91', label: 'India (+91)' },
@@ -265,22 +266,18 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
         setBuyerProfile(updatedBuyerProfile);
       }
 
-      // 4. Update cached localStorage user
+      // 4. Update cached localStorage user & profile
       if (typeof window !== 'undefined') {
-        try {
-          const cached = localStorage.getItem('sareeva_user');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            parsed.user_metadata = {
-              ...(parsed.user_metadata || {}),
-              buyer_profile: updatedBuyerProfile,
-              full_name: cleanFullName,
-            };
-            localStorage.setItem('sareeva_user', JSON.stringify(parsed));
-          }
-        } catch (e) {
-          console.warn('LocalStorage user update error:', e);
-        }
+        saveCachedProfile(updatedBuyerProfile);
+        const updatedUserObj = {
+          ...(user || {}),
+          user_metadata: {
+            ...(user?.user_metadata || {}),
+            buyer_profile: updatedBuyerProfile,
+            full_name: cleanFullName,
+          },
+        };
+        saveCachedUser(updatedUserObj);
       }
 
       setStatusMessage({

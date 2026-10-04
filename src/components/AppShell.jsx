@@ -7,6 +7,7 @@ import { useCountryCurrency } from '../store/useCountryCurrency.js';
 import { adminEmails, serviceablePincodes, storeConfig } from '../config.js';
 import { loadSavedState, persistCart, persistFavorites, readLocal, parseCartVariantCode, changeCartColor, upsertCartSelections, resolveItemVariant } from '../utils/cartHelpers.js';
 import { loadProfileForUser, syncProfileFromUser, isProfileComplete } from '../utils/profileHelpers.js';
+import { getCachedAuth, clearCachedAuth } from '../utils/authCache.js';
 import { getBuyerAccess } from '../utils/buyerAccess.js';
 import { trackSiteTraffic } from '../utils/trafficTracker.js';
 import {
@@ -264,33 +265,20 @@ export function AppShell({ children }) {
     };
   }, [setProducts]);
 
-  // Supabase Auth Listener (loaded dynamically and deferred to avoid loading @supabase/supabase-js during initial paint)
+  // Supabase Auth Listener (fast local hydration + instant live session resolution)
   useEffect(() => {
     let isMounted = true;
     let authUnsubscribe = null;
 
-    // Immediately restore cached local session if present so user sees their state with zero latency
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const localUser = localStorage.getItem('sareeva_user');
-        if (localUser) {
-          const parsedUser = JSON.parse(localUser);
-          setUser(parsedUser);
-          setBuyerProfile(parsedUser.user_metadata?.buyer_profile || parsedUser.buyer_profile || null);
-        }
-      } catch (e) {
-        console.error(e);
-      }
+    // Immediately restore cached local session if present so user sees their state with zero latency (0ms)
+    const { user: cachedUser, buyerProfile: cachedProfile } = getCachedAuth();
+    if (cachedUser) {
+      if (!user) setUser(cachedUser);
+      if (cachedProfile && !buyerProfile) setBuyerProfile(cachedProfile);
     }
     setIsProfileHydrated(true);
 
-    // On admin and account routes, resolve session immediately (0ms). On public storefront defer to preserve LCP.
-    const isSpecialRoute = typeof window !== 'undefined' && (
-      window.location.pathname.startsWith('/admin') ||
-      window.location.pathname.startsWith('/account')
-    );
-    const delay = isSpecialRoute ? 0 : 3500;
-
+    // Resolve live Supabase session immediately (0ms deferral allows first paint frame, zero blocking delay)
     const timer = setTimeout(() => {
       import('../supabaseClient.js').then(({ isSupabaseConfigured, supabase }) => {
         if (!isMounted) return;
@@ -302,12 +290,20 @@ export function AppShell({ children }) {
           if (!isMounted) return;
           const sessionUser = data.session?.user || null;
           setUser(sessionUser);
+          if (!sessionUser && cachedUser) {
+            clearCachedAuth();
+            setBuyerProfile(null);
+          }
         });
 
         const { data } = supabase.auth.onAuthStateChange((event, session) => {
           if (!isMounted) return;
           const sessionUser = session?.user || null;
           setUser(sessionUser);
+          if (!sessionUser) {
+            clearCachedAuth();
+            setBuyerProfile(null);
+          }
           if (event === 'PASSWORD_RECOVERY') {
             navigate('signup', null, null, { mode: 'reset-password' });
           }
@@ -317,14 +313,14 @@ export function AppShell({ children }) {
       }).catch((err) => {
         console.error('Error loading Supabase auth:', err);
       });
-    }, delay);
+    }, 0);
 
     return () => {
       isMounted = false;
       clearTimeout(timer);
       if (authUnsubscribe) authUnsubscribe();
     };
-  }, [setUser, setBuyerProfile, navigate, setIsProfileHydrated]);
+  }, [user, buyerProfile, setUser, setBuyerProfile, navigate, setIsProfileHydrated]);
 
   // Hydrate User Profile & Influencer Referral
   useEffect(() => {
@@ -339,46 +335,60 @@ export function AppShell({ children }) {
         return;
       }
 
-      setIsProfileHydrated(false);
-
       try {
-        await syncProfileFromUser(user);
+        // Fast DB profile fetch (read-only, does not block on write)
         const { profile } = await loadProfileForUser(user);
         if (isActive) {
-          setBuyerProfile(profile);
+          if (profile) {
+            setBuyerProfile(profile);
+          } else {
+            // Only sync/upsert to DB if profile row doesn't exist yet
+            await syncProfileFromUser(user);
+            const { profile: createdProfile } = await loadProfileForUser(user);
+            if (isActive && createdProfile) {
+              setBuyerProfile(createdProfile);
+            }
+          }
+
+          // Asynchronously sync attribution in background if missing, without blocking profile hydration
+          const storedAttr = getStoredAttribution();
+          if (storedAttr && !user.user_metadata?.acquisition) {
+            void syncProfileFromUser(user).catch(() => {});
+          }
 
           const { supabase, isSupabaseConfigured } = await import('../supabaseClient.js');
-          if (isSupabaseConfigured && supabase) {
-            supabase
-              .from('influencer_profiles')
-              .select('referral_code, is_approved')
-              .eq('id', user.id)
-              .maybeSingle()
-              .then(({ data }) => {
-                if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
-                  setOwnAffiliateCode(data.referral_code.trim().toUpperCase());
-                } else if (isActive) {
-                  clearOwnAffiliateCode();
-                }
-              })
-              .catch((err) => console.error('[Referral] Error:', err));
+          if (isSupabaseConfigured && supabase && isActive) {
+            const targetProfile = profile || user.user_metadata?.buyer_profile || user.buyer_profile;
+            const cleanWhatsapp = targetProfile?.whatsapp_number
+              ? String(targetProfile.whatsapp_number).replace(/\D/g, '').slice(-10)
+              : '';
 
-            if (profile?.whatsapp_number) {
-              const cleanWhatsapp = String(profile.whatsapp_number).replace(/\D/g, '').slice(-10);
-              try {
-                const { data: vProfile } = await supabase
-                  .from('vendor_profiles')
-                  .select('status, drive_folder_url')
-                  .eq('whatsapp_number', cleanWhatsapp)
-                  .maybeSingle();
-
-                if (vProfile && isActive) {
-                  setVendorOnboarding(vProfile);
-                }
-              } catch (e) {
-                console.error('Error hydrating vendor profile:', e);
-              }
-            }
+            await Promise.allSettled([
+              supabase
+                .from('influencer_profiles')
+                .select('referral_code, is_approved')
+                .eq('id', user.id)
+                .maybeSingle()
+                .then(({ data }) => {
+                  if (isActive && data && data.is_approved && data.referral_code && typeof window !== 'undefined') {
+                    setOwnAffiliateCode(data.referral_code.trim().toUpperCase());
+                  } else if (isActive) {
+                    clearOwnAffiliateCode();
+                  }
+                }),
+              cleanWhatsapp
+                ? supabase
+                    .from('vendor_profiles')
+                    .select('status, drive_folder_url')
+                    .eq('whatsapp_number', cleanWhatsapp)
+                    .maybeSingle()
+                    .then(({ data: vProfile }) => {
+                      if (vProfile && isActive) {
+                        setVendorOnboarding(vProfile);
+                      }
+                    })
+                : Promise.resolve(),
+            ]);
           }
         }
       } catch (err) {
@@ -589,8 +599,7 @@ export function AppShell({ children }) {
     } catch (e) {
       console.error('Sign out error:', e);
     } finally {
-      localStorage.removeItem('sareeva_user');
-      localStorage.removeItem('just_registered_b2b');
+      clearCachedAuth();
       setUser(null);
       setBuyerProfile(null);
       setIsProfileHydrated(true);

@@ -7,6 +7,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
 
 export const runtime = 'edge';
 
@@ -160,7 +161,7 @@ export async function POST(request) {
     // 3. Trigger Email Notification via Resend (Async / Non-blocking)
     const resendApiKey = process.env.RESEND_API_KEY;
     if (resendApiKey) {
-      const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@updates.weave365.com';
+      const fromEmail = process.env.RESEND_NOTIFICATIONS_FROM_EMAIL || process.env.RESEND_DEFAULT_FROM_EMAIL || 'notifications@updates.weave365.com';
       const targetEmail = process.env.NEXT_PUBLIC_STORE_EMAIL || 'weave365@gmail.com';
 
       const itemsRowsHtml = items.map((item, idx) => `
@@ -245,6 +246,15 @@ export async function POST(request) {
           html: emailHtml,
         }),
       }).catch((err) => console.error('[orderHandler] Resend notification dispatch error:', err));
+
+      // Also auto-dispatch minimal confirmation email to buyer if email address provided
+      if (email && email.includes('@')) {
+        sendBuyerOrderConfirmationEmail({
+          orderId,
+          order: { ...orderPayload, id: orderId },
+          supabase,
+        }).catch((err) => console.error('[orderHandler] Buyer confirmation email dispatch error:', err));
+      }
     }
 
     return Response.json(

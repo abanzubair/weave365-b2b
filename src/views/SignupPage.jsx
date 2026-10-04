@@ -33,6 +33,7 @@ import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { syncProfileFromUser, loadProfileForUser, isProfileComplete } from '../utils/profileHelpers.js';
 
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
+import { clearCachedAuth } from '../utils/authCache.js';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
@@ -158,7 +159,6 @@ export function SignupPage({
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [tempDemoUser, setTempDemoUser] = useState(null);
 
   const [profile, setProfile] = useState({
     fullName: '',
@@ -183,8 +183,7 @@ export function SignupPage({
       if (isSupabaseConfigured) {
         await supabase.auth.signOut();
       }
-      localStorage.removeItem('sareeva_user');
-      localStorage.removeItem('just_registered_b2b');
+      clearCachedAuth();
       if (setUser) setUser(null);
       if (setBuyerProfile) setBuyerProfile(null);
       setEmail('');
@@ -449,7 +448,7 @@ export function SignupPage({
     }
 
     if (!isSupabaseConfigured) {
-      setMessage('demo-reset-sent');
+      setMessage('Password reset is temporarily unavailable.');
       return;
     }
 
@@ -485,12 +484,7 @@ export function SignupPage({
     }
 
     if (!isSupabaseConfigured) {
-      setMessage('Password updated successfully (demo mode).');
-      setTimeout(() => {
-        setMode('login');
-        setNewPassword('');
-        setMessage('');
-      }, 1500);
+      setMessage('Password update is temporarily unavailable.');
       return;
     }
 
@@ -529,7 +523,7 @@ export function SignupPage({
         setLoading(false);
       }
     } else {
-      setMessage(`Demo mode: ${provider} OAuth simulated. Log in via email for full mock user.`);
+      setMessage('Social login is temporarily unavailable.');
     }
   }
 
@@ -716,25 +710,7 @@ export function SignupPage({
       const isVendorRegister = registeredProfile.buyer_type === 'vendor' || registeredProfile.role === 'vendor';
 
       if (!isSupabaseConfigured) {
-        const demoUser = {
-          id: email || 'demo-user',
-          email: email || 'demo@weave365.local',
-          user_metadata: { buyer_profile: registeredProfile, role: isVendorRegister ? 'vendor' : 'customer' },
-        };
-
-        if (mode === 'register') {
-          setTempDemoUser(demoUser);
-          if (isVendorRegister) {
-            setMessage('seller-registered');
-          } else {
-            setMessage('demo-verification-sent');
-          }
-        } else {
-          localStorage.setItem('sareeva_user', JSON.stringify(demoUser));
-          if (setUser) setUser(demoUser);
-          if (setBuyerProfile) setBuyerProfile(registeredProfile);
-          navigate('home');
-        }
+        setMessage('Authentication service is temporarily unavailable. Please try again later.');
         setLoading(false);
         return;
       }
@@ -805,24 +781,7 @@ export function SignupPage({
     }
   }
 
-  function handleSimulateVerification() {
-    if (tempDemoUser) {
-      const demoUserWithConfirmedEmail = {
-        ...tempDemoUser,
-        email_confirmed_at: new Date().toISOString(),
-      };
-      localStorage.setItem('sareeva_user', JSON.stringify(demoUserWithConfirmedEmail));
-      if (setUser) setUser(demoUserWithConfirmedEmail);
-      if (setBuyerProfile) {
-        setBuyerProfile(demoUserWithConfirmedEmail.user_metadata.buyer_profile);
-      }
-      setTempDemoUser(null);
-      setMessage('Demo account verified and logged in successfully!');
-      setTimeout(() => {
-        navigate('home');
-      }, 800);
-    }
-  }
+
 
   return (
     <div className="signup-page-wrapper">
@@ -907,24 +866,7 @@ export function SignupPage({
                   Back to Login <ArrowRight size={16} />
                 </button>
               </div>
-            ) : message === 'demo-verification-sent' ? (
-              <div className="signup-status-card">
-                <div className="signup-status-icon">
-                  <Mail size={24} />
-                </div>
-                <h2 className="signup-status-title">Verify Your Email (Demo Mode)</h2>
-                <p className="signup-status-desc">
-                  A verification link has been simulated for <strong style={{ color: '#0f172a' }}>{email}</strong>.
-                  In production, clicking the email link activates the account.
-                </p>
-                <button
-                  type="button"
-                  className="signup-submit-btn"
-                  onClick={handleSimulateVerification}
-                >
-                  Simulate Verification Click →
-                </button>
-              </div>
+
             ) : mode === 'forgot-password' ? (
               /* Forgot Password Mode */
               <div>
@@ -989,15 +931,7 @@ export function SignupPage({
                     ✓ Reset link sent! Please check your email inbox and spam folder.
                   </p>
                 )}
-                {message === 'demo-reset-sent' && (
-                  <div style={{ marginTop: '16px' }}>
-                    <p className="signup-demo-notice">Demo mode: click below to simulate password reset.</p>
-                    <button type="button" className="signup-submit-btn" onClick={() => { setMode('reset-password'); setMessage(''); }}>
-                      Simulate Reset Link →
-                    </button>
-                  </div>
-                )}
-                {message && message !== 'reset-link-sent' && message !== 'demo-reset-sent' && message !== 'account-not-found' && (
+                {message && message !== 'reset-link-sent' && message !== 'account-not-found' && (
                   <div className="signup-alert-error">
                     <AlertCircle size={16} style={{ flexShrink: 0 }} />
                     <span>{message}</span>

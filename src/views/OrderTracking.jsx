@@ -44,6 +44,18 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const orderCurrency = useMemo(() => {
+    if (order?.currency) return String(order.currency).toUpperCase();
+    if (order?.message) {
+      const match = order.message.match(/Currency:\s*([A-Z]{3})/i) || order.message.match(/\(([A-Z]{3})\)/);
+      if (match) return match[1].toUpperCase();
+    }
+    if (Array.isArray(order?.items) && order.items[0]?.currency) {
+      return String(order.items[0].currency).toUpperCase();
+    }
+    return 'INR';
+  }, [order]);
+
   // Ensure catalog products are available for image & title lookups
   useEffect(() => {
     if (products && products.length > 0) {
@@ -629,7 +641,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                           </div>
                         </div>
                         <div className="tracking-item-price">
-                          {totalPrice ? formatMoney(totalPrice) : (item.price ? formatMoney(item.price * qty) : 'Wholesale Direct')}
+                          {totalPrice ? formatMoney(totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * qty, { currency: orderCurrency }) : 'Wholesale Direct')}
                         </div>
                       </div>
                     );
@@ -647,7 +659,8 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                             const unitPrice = Number(it.price) || 0;
                             const qty = Number(it.quantity) || 1;
                             return acc + (unitPrice * qty);
-                          }, 0) || 0)
+                          }, 0) || 0),
+                      { currency: orderCurrency }
                     )}
                   </strong>
                 </div>

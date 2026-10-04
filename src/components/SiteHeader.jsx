@@ -421,7 +421,8 @@ export function SiteHeader(props) {
           {/* Desktop Auth / User Button */}
           <button
             type="button"
-            className="nav-auth-pill-btn desktop-only-action"
+            suppressHydrationWarning
+            className={`${user ? 'nav-account-pill-btn' : 'nav-auth-pill-btn'} desktop-only-action`}
             onClick={(e) => {
               e.stopPropagation();
               if (user) {
@@ -432,7 +433,7 @@ export function SiteHeader(props) {
               }
             }}
           >
-            <span>{userDisplayName}</span>
+            <span suppressHydrationWarning>{userDisplayName}</span>
           </button>
 
           {/* Mobile User Icon */}

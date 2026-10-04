@@ -110,6 +110,8 @@ export function CheckoutPage({
               id: returnOrderId,
               orderNumber: returnOrderId.slice(0, 8).toUpperCase(),
               total: data.order_amount || total,
+              currency: data.order_currency || currentCountry?.currency || 'INR',
+              currencySymbol: currentCountry?.currencySymbol || '₹',
               paymentMethod: 'cashfree',
               deliveryDetails: {},
               cfOrderId: returnOrderId,
@@ -284,7 +286,11 @@ export function CheckoutPage({
     const billedKg = Math.max(1, Math.ceil(totalGrams / 1000));
     // Standard shipping: Free across all orders
     const stdFee = 0;
-    const expFee = billedKg * 150;
+    const expFeeInr = billedKg * 150;
+    const isForeignCurrency = currentCountry?.currency && currentCountry.currency !== 'INR';
+    const expFee = isForeignCurrency
+      ? getLocalizedPrice(expFeeInr, currentCountry, exchangeRates).finalPrice
+      : expFeeInr;
     const actualFee = shippingSpeed === 'expedited' ? expFee : stdFee;
 
     return {
@@ -294,7 +300,7 @@ export function CheckoutPage({
       expeditedShippingFee: expFee,
       shippingFee: actualFee,
     };
-  }, [items, shippingSpeed]);
+  }, [items, shippingSpeed, currentCountry, exchangeRates]);
 
 
   const bulkDiscount = useMemo(() => {
@@ -324,6 +330,14 @@ export function CheckoutPage({
   }, [baseTotal, bulkDiscount]);
 
   const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
+
+  const baseInrTotal = useMemo(() => {
+    if (!items || !items.length) return 0;
+    const inrConfig = { code: 'IN', name: 'India', currency: 'INR', currencySymbol: '₹', markupPercent: 0 };
+    const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, inrConfig, exchangeRates);
+    const inrShipping = shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0;
+    return Math.max(0, (inrTotals.total || 0) - (discount || 0)) + inrShipping;
+  }, [items, priceAccess, exchangeRates, shippingSpeed, billedWeightKg, discount]);
 
   const { baseAmount, gstAmount } = useMemo(() => {
     const netItems = Math.max(0, (baseTotal || 0) - (discount || 0));
@@ -429,6 +443,9 @@ export function CheckoutPage({
             };
           }),
           total_amount: total,
+          currency: (currentCountry?.currency || 'INR').toUpperCase(),
+          currency_symbol: currentCountry?.currencySymbol || '₹',
+          base_inr_total: baseInrTotal,
           notes: dropshipNotes,
         }),
       });
@@ -483,7 +500,9 @@ export function CheckoutPage({
         setCreatedOrder({
           id: data.db_order_id,
           orderNumber: (data.db_order_id || '').slice(0, 8).toUpperCase(),
-          total,
+          total: verifyData.order_amount || data.order_amount || total,
+          currency: verifyData.order_currency || data.order_currency || currentCountry?.currency || 'INR',
+          currencySymbol: currentCountry?.currencySymbol || '₹',
           paymentMethod: 'cashfree',
           deliveryDetails,
           cfOrderId: data.order_id,
@@ -660,7 +679,7 @@ export function CheckoutPage({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
               <span style={{ color: '#64748b' }}>Amount Paid</span>
               <span style={{ fontWeight: '700', color: '#166534', fontSize: '0.96rem' }}>
-                {formatMoney(orderTotal, 2)}
+                {formatMoney(orderTotal, { currency: createdOrder?.currency || currentCountry?.currency, fractionDigits: 2 })}
               </span>
             </div>
 
@@ -748,7 +767,7 @@ export function CheckoutPage({
             </div>
 
             <div className="checkout-pay-title">Pay Weave365</div>
-            <div className="checkout-total-amount">{formatMoney(total, 2)}</div>
+            <div className="checkout-total-amount">{formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })}</div>
 
             {/* Cart Items List */}
             <div className="checkout-items-wrapper">
@@ -1399,7 +1418,7 @@ export function CheckoutPage({
                   {isSubmitting ? (
                     'Processing...'
                   ) : (
-                    <>Pay {formatMoney(total, 2)} <ArrowRight size={17} /></>
+                    <>Pay {formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })} <ArrowRight size={17} /></>
                   )}
                 </button>
               </form>
