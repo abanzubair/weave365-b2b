@@ -259,7 +259,7 @@ export function AppShell({ children }) {
           }
         })
         .catch((err) => console.warn('[AppShell] Vendor stock hydration notice:', err?.message || err));
-    }, 4500);
+    }, 500);
 
     return () => {
       window.removeEventListener(VENDOR_STOCK_UPDATED_EVENT, handleStockUpdate);

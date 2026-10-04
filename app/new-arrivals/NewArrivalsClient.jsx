@@ -26,7 +26,7 @@ export default function NewArrivalsClient({ initialProducts = [] }) {
     }
   }, [initialProducts, setProducts]);
 
-  const allProducts = initialProducts.length > 0 ? initialProducts : storeProducts;
+  const allProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
 
   const priceAccess = useMemo(() => {
     return getBuyerAccess(user, buyerProfile);

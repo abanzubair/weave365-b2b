@@ -43,7 +43,7 @@ export default function CatalogueClient({
     }
   }, [initialProducts, initialConfigOptions, setProducts, setConfigOptions]);
 
-  const rawProducts = initialProducts.length > 0 ? initialProducts : storeProducts;
+  const rawProducts = storeProducts.length > 0 ? storeProducts : initialProducts;
   const config = (storeConfigOptions?.categories?.length > 0 ? storeConfigOptions : initialConfigOptions) || {
     categories: [],
     fabrics: [],

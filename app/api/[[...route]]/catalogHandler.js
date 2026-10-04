@@ -53,7 +53,11 @@ function applyStockOverrides(products, stockRows) {
       { key: stockKey, label: stockLabel },
       ...nonStockTags,
     ];
-    const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && product.isArchived);
+    const isArchived = stockKey === 'archived'
+      ? true
+      : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
+          ? false
+          : Boolean(product.isArchived));
     return {
       ...product,
       stockStatusOverride: stockKey,

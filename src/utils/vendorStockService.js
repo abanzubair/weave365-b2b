@@ -374,11 +374,16 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
 
   return products.map((product) => {
     const key = product.id || product.groupKey;
-    const override = overrides[key] || (product.id ? overrides[product.id] : null) || (product.groupKey ? overrides[product.groupKey] : null);
+    const parentKey = key && typeof key === 'string' && key.includes('-') ? key.split('-')[0] : null;
+    const override = overrides[key] ||
+      (product.id ? overrides[product.id] : null) ||
+      (product.groupKey ? overrides[product.groupKey] : null) ||
+      (parentKey ? overrides[parentKey] : null);
+
     if (!override) return product;
 
-    const stockKey = override.stockStatus;
-    const stockLabel = override.stockStatusLabel;
+    const stockKey = override.stockStatus || override.stock_status;
+    const stockLabel = override.stockStatusLabel || override.stock_status_label;
 
     // Filter out existing stock tags and prepend the active override tag
     const nonStockTags = (product.statusTags || []).filter(
@@ -390,14 +395,18 @@ export function applyStockOverridesToProducts(products = [], overrides = {}) {
       ...nonStockTags,
     ];
 
-    const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && Boolean(product.isArchived));
+    const isArchived = stockKey === 'archived'
+      ? true
+      : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
+          ? false
+          : Boolean(product.isArchived));
 
     return {
       ...product,
       stockStatusOverride: stockKey,
       stockStatusLabel: stockLabel,
-      stockLastUpdatedIST: override.updatedAtIST,
-      stockLastUpdated: override.updatedAt,
+      stockLastUpdatedIST: override.updatedAtIST || override.updated_at_ist,
+      stockLastUpdated: override.updatedAt || override.updated_at,
       statusTags: updatedTags,
       isOutOfStock: stockKey === 'out-of-stock',
       isReadyStock: stockKey === 'ready-stock',

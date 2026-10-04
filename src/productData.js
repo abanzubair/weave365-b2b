@@ -221,6 +221,55 @@ export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     const normalizedProducts = cachedJson.map((p, idx) => normalizeLoadedProduct(p, idx));
+
+    // Server-side: merge vendor stock overrides directly from Supabase
+    // so SSR-rendered pages immediately reflect archived / stock status.
+    // Protected by ISR cache (revalidate=300) — the DB is queried at most once per 5 min.
+    if (typeof window === 'undefined' && isSupabaseConfigured && supabase) {
+      try {
+        const { data: stockRows } = await supabase
+          .from('vendor_product_stock')
+          .select('product_id, stock_status, stock_status_label, updated_at, updated_at_ist');
+        if (Array.isArray(stockRows) && stockRows.length > 0) {
+          const stockMap = new Map();
+          for (const row of stockRows) {
+            if (row.product_id) stockMap.set(row.product_id, row);
+          }
+          return normalizedProducts.map((product) => {
+            const key = product.id || product.groupKey;
+            const row = stockMap.get(key);
+            if (!row) return product;
+            const stockKey = row.stock_status;
+            const stockLabel = row.stock_status_label;
+            const nonStockTags = (product.statusTags || []).filter(
+              (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
+            );
+            const isArchived = stockKey === 'archived'
+              ? true
+              : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
+                  ? false
+                  : Boolean(product.isArchived));
+            return {
+              ...product,
+              stockStatusOverride: stockKey,
+              stockStatusLabel: stockLabel,
+              stockLastUpdatedIST: row.updated_at_ist || '',
+              stockLastUpdated: row.updated_at || '',
+              statusTags: [{ key: stockKey, label: stockLabel }, ...nonStockTags],
+              isOutOfStock: stockKey === 'out-of-stock',
+              isReadyStock: stockKey === 'ready-stock',
+              isPreOrder: stockKey === 'pre-order',
+              isBackSoon: stockKey === 'back-soon',
+              isArchived,
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('[productData] Server-side vendor stock merge skipped:', e?.message || e);
+      }
+    }
+
+    // Client-side: check localStorage for vendor stock overrides
     if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('weave365_vendor_product_stock');
@@ -236,7 +285,11 @@ export const fetchProducts = safeCache(async function fetchProducts() {
               const nonStockTags = (product.statusTags || []).filter(
                 (tag) => !['ready-stock', 'pre-order', 'out-of-stock', 'back-soon', 'archived'].includes(tag.key)
               );
-              const isArchived = stockKey === 'archived' || (stockKey !== 'ready-stock' && stockKey !== 'pre-order' && product.isArchived);
+              const isArchived = stockKey === 'archived'
+                ? true
+                : (['ready-stock', 'pre-order', 'out-of-stock', 'back-soon'].includes(stockKey)
+                    ? false
+                    : Boolean(product.isArchived));
               return {
                 ...product,
                 stockStatusOverride: stockKey,
@@ -248,7 +301,7 @@ export const fetchProducts = safeCache(async function fetchProducts() {
                 isReadyStock: stockKey === 'ready-stock',
                 isPreOrder: stockKey === 'pre-order',
                 isBackSoon: stockKey === 'back-soon',
-                isArchived: isArchived,
+                isArchived,
               };
             });
           }
