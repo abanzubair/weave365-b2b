@@ -36,6 +36,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
 import QRCodeImage from '../components/QRCodeImage.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
+import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import '../styles/checkout.css';
 
 export function CheckoutPage({
@@ -91,8 +92,8 @@ export function CheckoutPage({
   );
   const [dropshipNotes, setDropshipNotes] = useState('');
 
-  // Payment method: 'upi' | 'whatsapp'
-  const [paymentMethod, setPaymentMethod] = useState('upi');
+  // Payment method: 'cashfree' | 'whatsapp' | 'upi'
+  const [paymentMethod, setPaymentMethod] = useState('cashfree');
   const [checkoutStep, setCheckoutStep] = useState('details'); // 'details' | 'payment'
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [copiedUpi, setCopiedUpi] = useState(false);
@@ -101,6 +102,38 @@ export function CheckoutPage({
   const [createdOrder, setCreatedOrder] = useState(null);
   const [orderError, setOrderError] = useState('');
   const [showExpressPayNotice, setShowExpressPayNotice] = useState(false);
+
+  // Auto-verify if customer returned from a browser redirect with ?order_id=
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnOrderId = urlParams.get('order_id');
+    if (returnOrderId && !orderSuccess) {
+      setIsSubmitting(true);
+      fetch('/api/cashfree/verify-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: returnOrderId }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && (data.is_paid || data.order_status === 'PAID')) {
+            setCreatedOrder({
+              id: returnOrderId,
+              orderNumber: returnOrderId.slice(0, 8).toUpperCase(),
+              total: data.order_amount || total,
+              paymentMethod: 'cashfree',
+              deliveryDetails: {},
+              cfOrderId: returnOrderId,
+            });
+            if (clearCart) clearCart();
+            setOrderSuccess(true);
+          }
+        })
+        .catch((err) => console.error('[Cashfree] Return verify error:', err))
+        .finally(() => setIsSubmitting(false));
+    }
+  }, []);
 
   // Focus & viewport positioning ref for order success card
   const successCardRef = useRef(null);
@@ -509,6 +542,147 @@ export function CheckoutPage({
     await recordOrderReceived(deliveryDetails, currentWhatsappUrl, method, customUtr);
   };
 
+  const handleCashfreeCheckout = async (deliveryDetails) => {
+    setIsSubmitting(true);
+    setOrderError('');
+
+    // Save address if user checked save box and not dropshipping
+    if (saveToAccount && user?.id && isSupabaseConfigured && shippingMode === 'standard' && useCustomAddress) {
+      try {
+        await supabase.from('addresses').insert({
+          user_id: user.id,
+          full_name: deliveryDetails.full_name,
+          phone_number: deliveryDetails.phone_number,
+          address_line1: deliveryDetails.address_line1,
+          address_line2: deliveryDetails.address_line2,
+          city: deliveryDetails.city,
+          state: deliveryDetails.state,
+          pincode: deliveryDetails.pincode,
+          country: 'India',
+        });
+      } catch (err) {
+        console.error('Error saving address:', err);
+      }
+    }
+
+    try {
+      const res = await fetch('/api/cashfree/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user?.id || null,
+          email: email || user?.email || '',
+          shipping_mode: shippingMode,
+          shipping_speed: shippingSpeed,
+          delivery_details: deliveryDetails,
+          dropship_details: {
+            sender_name: senderName,
+            sender_phone: senderPhone,
+            sender_address: senderAddress,
+            sender_city: senderCity,
+            sender_state: senderState,
+            sender_pincode: senderPincode,
+            packing_preference: packingPreference,
+          },
+          items: items.map((item) => {
+            const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
+            const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
+            return {
+              product_id: item.productGroupKey,
+              product_title: item.product?.title || '',
+              variant_code: item.variant?.code || '',
+              color: item.selectedColorName || 'Standard',
+              quantity: item.quantity,
+              price: locPrice.finalPrice,
+              base_inr_price: rawPrice,
+            };
+          }),
+          total_amount: total,
+          notes: dropshipNotes,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.payment_session_id) {
+        throw new Error(data.error || 'Failed to initialize payment gateway order.');
+      }
+
+      const envMode = (data.environment || process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT || 'SANDBOX').toLowerCase() === 'production'
+        ? 'production'
+        : 'sandbox';
+
+      const cashfree = await loadCashfree({ mode: envMode });
+      if (!cashfree) {
+        throw new Error('Cashfree Payment Gateway SDK failed to initialize.');
+      }
+
+      const checkoutResult = await cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: '_modal',
+      });
+
+      // ⚠️ Result handling (Cashfree Web SDK v3):
+      if (checkoutResult?.error) {
+        // Modal dismissed or network interruption - don't show fatal error
+        setOrderError('Payment was not completed. You can retry whenever you are ready, or choose another payment option.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (checkoutResult?.redirect) {
+        return;
+      }
+
+      // Customer submitted payment attempt -> verify on backend
+      const verifyRes = await fetch('/api/cashfree/verify-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: data.order_id,
+          db_order_id: data.db_order_id,
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (verifyData.success && (verifyData.is_paid || verifyData.order_status === 'PAID')) {
+        setCreatedOrder({
+          id: data.db_order_id,
+          orderNumber: (data.db_order_id || '').slice(0, 8).toUpperCase(),
+          total,
+          paymentMethod: 'cashfree',
+          deliveryDetails,
+          cfOrderId: data.order_id,
+        });
+
+        const saleAmount = items.reduce((sum, it) => sum + (Number(customerPrice(it.variant?.prices, priceAccess)) || 0) * (Number(it.quantity) || 1), 0);
+        void recordReferral({
+          orderId: data.db_order_id,
+          buyerId: priceAccess?.userId || user?.id || null,
+          buyerName: priceAccess?.buyerName || deliveryDetails.full_name || 'Guest Buyer',
+          items: items.map((item) => ({
+            product_id: item.productGroupKey,
+            product_title: item.product?.title || '',
+            variant_code: item.variant?.code || '',
+            color: item.selectedColorName || '',
+            quantity: item.quantity,
+            price: customerPrice(item.variant?.prices, priceAccess),
+          })),
+          saleAmount: saleAmount > 0 ? saleAmount : (total || 0),
+        });
+
+        if (clearCart) clearCart();
+        setOrderSuccess(true);
+      } else {
+        setOrderError(`Payment status: ${verifyData.order_status || 'Unconfirmed'}. If funds were deducted, your order will automatically be confirmed via webhook.`);
+      }
+    } catch (err) {
+      console.error('[handleCashfreeCheckout] Error:', err);
+      setOrderError(err.message || 'Payment initiation failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleProceedToPayment = (e) => {
     e?.preventDefault();
     if (!items.length) return;
@@ -517,12 +691,17 @@ export function CheckoutPage({
     const deliveryDetails = getValidatedDeliveryDetails();
     if (!deliveryDetails) return;
 
+    if (paymentMethod === 'cashfree') {
+      handleCashfreeCheckout(deliveryDetails);
+      return;
+    }
+
     if (paymentMethod === 'whatsapp') {
       handleFinalOrderSubmit('whatsapp');
       return;
     }
 
-    // Advance to Step 2: Payment & Proof
+    // Advance to Step 2: Payment & Proof for manual UPI
     setCheckoutStep('payment');
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -569,6 +748,7 @@ export function CheckoutPage({
   }
 
   if (orderSuccess) {
+    const isCashfreeOrder = (createdOrder?.paymentMethod || paymentMethod) === 'cashfree';
     const isWhatsappOrder = (createdOrder?.paymentMethod || paymentMethod) === 'whatsapp';
     const recipient = createdOrder?.deliveryDetails || {};
     const orderRef = createdOrder?.orderNumber || (createdOrder?.id ? createdOrder.id.slice(0, 8).toUpperCase() : 'ORD-NEW');
@@ -609,15 +789,17 @@ export function CheckoutPage({
               width: '52px',
               height: '52px',
               borderRadius: '50%',
-              background: isWhatsappOrder ? '#f0fdf4' : '#f0f9ff',
-              border: `1px solid ${isWhatsappOrder ? '#bbf7d0' : '#bae6fd'}`,
+              background: isCashfreeOrder ? '#f0fdf4' : (isWhatsappOrder ? '#f0fdf4' : '#f0f9ff'),
+              border: `1px solid ${isCashfreeOrder ? '#bbf7d0' : (isWhatsappOrder ? '#bbf7d0' : '#bae6fd')}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 14px',
             }}
           >
-            {isWhatsappOrder ? (
+            {isCashfreeOrder ? (
+              <CheckCircle size={26} style={{ color: '#16a34a' }} />
+            ) : isWhatsappOrder ? (
               <WhatsappIcon size={26} />
             ) : (
               <Clock size={24} style={{ color: '#0284c7' }} />
@@ -625,7 +807,11 @@ export function CheckoutPage({
           </div>
 
           <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a', margin: '0 0 6px 0', letterSpacing: '-0.025em' }}>
-            {isWhatsappOrder ? 'Order Registered on WhatsApp' : 'Order Placed Successfully'}
+            {isCashfreeOrder
+              ? 'Payment Confirmed & Order Placed!'
+              : isWhatsappOrder
+              ? 'Order Registered on WhatsApp'
+              : 'Order Placed Successfully'}
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
@@ -637,9 +823,9 @@ export function CheckoutPage({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: isWhatsappOrder ? '#fef3c7' : '#f0f9ff',
-                color: isWhatsappOrder ? '#92400e' : '#0369a1',
-                border: `1px solid ${isWhatsappOrder ? '#fde68a' : '#bae6fd'}`,
+                background: isCashfreeOrder ? '#dcfce7' : (isWhatsappOrder ? '#fef3c7' : '#f0f9ff'),
+                color: isCashfreeOrder ? '#166534' : (isWhatsappOrder ? '#92400e' : '#0369a1'),
+                border: `1px solid ${isCashfreeOrder ? '#bbf7d0' : (isWhatsappOrder ? '#fde68a' : '#bae6fd')}`,
                 fontSize: '0.74rem',
                 fontWeight: '600',
                 padding: '2px 8px',
@@ -647,8 +833,22 @@ export function CheckoutPage({
                 letterSpacing: '0.02em',
               }}
             >
-              <Clock size={11} />
-              {isWhatsappOrder ? 'WhatsApp Order' : 'Payment Verification Pending'}
+              {isCashfreeOrder ? (
+                <>
+                  <Check size={12} />
+                  Payment Verified • Cashfree PG
+                </>
+              ) : isWhatsappOrder ? (
+                <>
+                  <Clock size={11} />
+                  WhatsApp Order
+                </>
+              ) : (
+                <>
+                  <Clock size={11} />
+                  Payment Verification Pending
+                </>
+              )}
             </span>
           </div>
 
@@ -681,8 +881,8 @@ export function CheckoutPage({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
-              <span style={{ color: '#64748b' }}>Amount Due</span>
-              <span style={{ fontWeight: '700', color: '#0f172a', fontSize: '0.96rem' }}>
+              <span style={{ color: '#64748b' }}>{isCashfreeOrder ? 'Amount Paid' : 'Amount Due'}</span>
+              <span style={{ fontWeight: '700', color: isCashfreeOrder ? '#166534' : '#0f172a', fontSize: '0.96rem' }}>
                 {formatMoney(orderTotal, 2)}
               </span>
             </div>
@@ -693,6 +893,15 @@ export function CheckoutPage({
                 {shippingSpeed === 'expedited' ? '2–3 Business Days' : '4–5 Business Days'}
               </span>
             </div>
+
+            {createdOrder?.cfOrderId && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px', paddingTop: '2px' }}>
+                <span style={{ color: '#64748b' }}>PG Order ID</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#166534', background: '#f0fdf4', padding: '2px 6px', borderRadius: '4px', border: '1px solid #bbf7d0', fontSize: '0.78rem' }}>
+                  {createdOrder.cfOrderId}
+                </span>
+              </div>
+            )}
 
             {utr && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px', paddingTop: '2px' }}>
@@ -707,21 +916,23 @@ export function CheckoutPage({
           {/* Contextual Notice */}
           <div
             style={{
-              background: '#f8fafc',
-              border: '1px solid #f1f5f9',
+              background: isCashfreeOrder ? '#f0fdf4' : '#f8fafc',
+              border: `1px solid ${isCashfreeOrder ? '#dcfce7' : '#f1f5f9'}`,
               borderRadius: '8px',
               padding: '10px 14px',
               marginBottom: '18px',
               textAlign: 'left',
               fontSize: '0.8rem',
-              color: '#475569',
+              color: isCashfreeOrder ? '#166534' : '#475569',
               lineHeight: '1.45',
             }}
           >
-            <div style={{ fontWeight: '600', color: '#0f172a', marginBottom: '2px', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              {isWhatsappOrder ? 'Next Steps' : 'Payment Verification'}
+            <div style={{ fontWeight: '600', color: isCashfreeOrder ? '#14532d' : '#0f172a', marginBottom: '2px', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              {isCashfreeOrder ? 'Order Confirmed' : isWhatsappOrder ? 'Next Steps' : 'Payment Verification'}
             </div>
-            {isWhatsappOrder
+            {isCashfreeOrder
+              ? 'Your payment was successfully received and verified via Cashfree Payment Gateway. Your order is registered and being prepared for packaging and dispatch from our Varanasi hub.'
+              : isWhatsappOrder
               ? 'We have recorded your order details. Connect with our Varanasi weaving desk on WhatsApp to confirm availability and parcel dispatch.'
               : utr
               ? 'We will verify your payment against your UTR (typically within 15–30 minutes). You will receive a WhatsApp dispatch confirmation once matched.'
@@ -730,7 +941,7 @@ export function CheckoutPage({
 
           {/* Primary & Secondary Actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {createdOrder?.whatsappUrl && (
+            {createdOrder?.whatsappUrl && !isCashfreeOrder && (
               <a
                 href={createdOrder.whatsappUrl}
                 target="_blank"
@@ -1400,24 +1611,31 @@ export function CheckoutPage({
                 </div>
 
                 <div className="payment-method-group">
-                  {/* Option 1: Direct UPI / QR Bank Transfer */}
+                  {/* Option 1: Cashfree Online Payment (Default & Recommended) */}
                   <label
-                    className={`payment-method-card ${paymentMethod === 'upi' ? 'selected' : ''}`}
-                    onClick={() => setPaymentMethod('upi')}
+                    className={`payment-method-card ${paymentMethod === 'cashfree' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('cashfree')}
                   >
                     <div className="payment-method-left">
                       <input
                         type="radio"
                         name="paymentType"
-                        checked={paymentMethod === 'upi'}
-                        onChange={() => setPaymentMethod('upi')}
+                        checked={paymentMethod === 'cashfree'}
+                        onChange={() => setPaymentMethod('cashfree')}
                       />
                       <div>
-                        <span className="payment-method-title">Direct UPI / QR Transfer</span>
-                        <div className="payment-method-desc">GPay, PhonePe, Paytm, BHIM or NetBanking. Proceed to Step 2 to scan QR.</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span className="payment-method-title">Instant Online Payment</span>
+                          <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', padding: '2px 7px', borderRadius: '4px', fontWeight: 600 }}>
+                            ⚡ Instant Confirmation
+                          </span>
+                        </div>
+                        <div className="payment-method-desc">
+                          UPI (GPay, PhonePe, Paytm, CRED), Credit/Debit Cards, NetBanking (50+ banks) via Cashfree.
+                        </div>
                       </div>
                     </div>
-                    <QrCode size={20} style={{ color: '#0f172a' }} />
+                    <CreditCard size={20} style={{ color: paymentMethod === 'cashfree' ? '#2563eb' : '#64748b' }} />
                   </label>
 
                   {/* Option 2: Confirm & Order on WhatsApp */}
@@ -1438,6 +1656,26 @@ export function CheckoutPage({
                       </div>
                     </div>
                     <WhatsappIcon size={20} />
+                  </label>
+
+                  {/* Option 3: Direct UPI / Manual QR Transfer */}
+                  <label
+                    className={`payment-method-card ${paymentMethod === 'upi' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('upi')}
+                  >
+                    <div className="payment-method-left">
+                      <input
+                        type="radio"
+                        name="paymentType"
+                        checked={paymentMethod === 'upi'}
+                        onChange={() => setPaymentMethod('upi')}
+                      />
+                      <div>
+                        <span className="payment-method-title">Manual UPI / QR Bank Transfer</span>
+                        <div className="payment-method-desc">Scan static QR code and submit 12-digit UTR manually.</div>
+                      </div>
+                    </div>
+                    <QrCode size={20} style={{ color: '#64748b' }} />
                   </label>
                 </div>
 
@@ -1470,15 +1708,17 @@ export function CheckoutPage({
                 >
                   {isSubmitting ? (
                     'Processing Order...'
+                  ) : paymentMethod === 'cashfree' ? (
+                    <>Pay Securely with Cashfree • {formatMoney(total, 2)} <ArrowRight size={18} /></>
                   ) : paymentMethod === 'whatsapp' ? (
                     <>Place Order via WhatsApp • {formatMoney(total, 2)} <ArrowRight size={18} /></>
                   ) : (
-                    <>Proceed to UPI Payment • {formatMoney(total, 2)} <ArrowRight size={18} /></>
+                    <>Proceed to Manual UPI • {formatMoney(total, 2)} <ArrowRight size={18} /></>
                   )}
                 </button>
 
                 <div style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '8px' }}>
-                  <ShieldCheck size={14} style={{ color: '#16a34a' }} /> Encrypted & Secure 256-Bit SSL Checkout
+                  <ShieldCheck size={14} style={{ color: '#16a34a' }} /> Encrypted & Secure 256-Bit SSL Checkout • RBI Compliant
                 </div>
               </form>
             </>

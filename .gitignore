@@ -34,6 +34,7 @@ skills/*
 .zcode/
 skills-lock.json
 AGENTS.md
+.agent/*
 
 # OpenNext & Wrangler
 .open-next/
@@ -57,4 +58,5 @@ Weave-Template/
 llm-wiki/
 raw/
 wiki/
-.obsidian/
+.obsidian/
+.agent/skills/cashfree-skills/
