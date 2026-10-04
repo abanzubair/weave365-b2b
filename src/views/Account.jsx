@@ -74,6 +74,8 @@ function getStatusBadgeStyle(status) {
       return { backgroundColor: '#eafaf1', color: '#2e7d32', border: '1px solid rgba(46, 125, 50, 0.2)' };
     case 'dispatched':
       return { backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid rgba(21, 101, 192, 0.2)' };
+    case 'paid':
+      return { backgroundColor: '#eafaf1', color: '#2e7d32', border: '1px solid rgba(46, 125, 50, 0.2)' };
     case 'verified':
     case 'processing':
     case 'active':

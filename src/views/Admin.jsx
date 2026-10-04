@@ -51,7 +51,7 @@ import SeoSettings from './admin/SeoSettings.jsx';
 import PageBuilder from './admin/PageBuilder.jsx';
 import VendorApplications from './admin/VendorApplications.jsx';
 import { ReviewsModeration } from './admin/ReviewsModeration.jsx';
-import { AdminTrackingPanel } from './admin/AdminTrackingPanel.jsx';
+import { AdminTrackingPanel, isNeedsAttentionStatus } from './admin/AdminTrackingPanel.jsx';
 import DirectoryManager from './admin/DirectoryManager.jsx';
 import EnquiresManager from './admin/EnquiresManager.jsx';
 import InfluencerManager from './admin/InfluencerManager.jsx';
@@ -526,7 +526,7 @@ export function Admin({
         i.inquiry_type === 'cart_payment' ||
         i.inquiry_type === 'cart_payment_fallback' ||
         i.inquiry_type === 'reseller_api_order';
-      const isNew = (i.status || 'new').toLowerCase() === 'new';
+      const isNew = isNeedsAttentionStatus(i.status);
       return isOrder && isNew;
     }).length;
   }, [enquiryRows]);

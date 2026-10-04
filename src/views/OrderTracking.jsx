@@ -259,43 +259,55 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     return null;
   }, [order]);
 
+  const currentStatus = (order?.status || 'new').toLowerCase();
+
   // Status mapping and step calculation
   const steps = [
-    { label: 'Processing Payment', icon: CreditCard, key: 'payment_sent' },
+    { label: 'Payment Received', icon: CreditCard, key: 'payment_received' },
     { label: 'Quality Check & Packing', icon: PackageCheck, key: 'verified' },
     { label: 'Dispatched', icon: Truck, key: 'dispatched' },
     { label: 'Delivered', icon: Gift, key: 'delivered' }
   ];
-
-  const currentStatus = (order?.status || 'new').toLowerCase();
 
   const getStepProgress = () => {
     if (currentStatus === 'cancelled') return -1;
     if (currentStatus === 'delivered' || currentStatus === 'done') return 4;
     if (currentStatus === 'dispatched') return 3;
     if (currentStatus === 'verified' || currentStatus === 'processing' || currentStatus === 'active') return 2;
-    return 1; // 'new' status / payment screenshot shared
+    return 1; // Step 1: Payment Received
   };
 
   const stepProgress = getStepProgress();
 
   const getStatusMessage = () => {
-    if (order?.tracking_message) return order.tracking_message;
+    if (
+      order?.tracking_message &&
+      !order.tracking_message.toLowerCase().includes('screenshot') &&
+      !order.tracking_message.toLowerCase().includes('finance team')
+    ) {
+      return order.tracking_message;
+    }
 
     switch (currentStatus) {
       case 'cancelled':
+      case 'rejected':
         return 'This order checkout has been cancelled. Please reach out to our team if you need assistance.';
       case 'delivered':
       case 'done':
-        return 'Your package has been successfully delivered. We hope you love your Banarasi weaves!';
+        return 'Your package has been successfully delivered. We hope you love your authentic Banarasi weaves!';
       case 'dispatched':
+      case 'in_transit':
+      case 'shipped':
         return 'Great news! Your handwoven saree shipment has been dispatched from our Varanasi center and is on its way to you.';
       case 'verified':
       case 'processing':
       case 'active':
         return 'Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.';
+      case 'paid':
+      case 'new':
+      case 'pending_payment':
       default:
-        return 'We have received your payment screenshot. Our finance team is verifying the transaction (this verification could take up to 2–4 hours). We will update your tracking status shortly.';
+        return 'Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.';
     }
   };
 

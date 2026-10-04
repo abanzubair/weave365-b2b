@@ -628,24 +628,6 @@ export function CheckoutPage({
             <span style={{ color: '#64748b', fontSize: '0.86rem' }}>
               Order Reference: <strong style={{ color: '#0f172a', letterSpacing: '0.5px' }}>#{orderRef}</strong>
             </span>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: '#dcfce7',
-                color: '#166534',
-                border: '1px solid #bbf7d0',
-                fontSize: '0.74rem',
-                fontWeight: '600',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                letterSpacing: '0.02em',
-              }}
-            >
-              <Check size={12} />
-              Payment Verified • Cashfree PG
-            </span>
           </div>
 
           {/* Clean Flat Summary Rows */}

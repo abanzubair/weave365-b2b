@@ -84,8 +84,11 @@ export default function DashboardOverview({
   const isEligibleOrder = (row) => {
     const status = String(row.status || '').toLowerCase().trim();
     return (
+      status === 'paid' ||
+      status === 'verified' ||
       status === 'payment verified' ||
       status === 'processing & qc' ||
+      status === 'processing' ||
       status === 'dispatched' ||
       status === 'delivered'
     );
@@ -322,11 +325,17 @@ export default function DashboardOverview({
   }, [enquiryRows]);
 
   const pendingOrdersCount = useMemo(() => {
-    return enquiryRows.filter(e => String(e.status || '').toLowerCase().trim() === 'payment verified').length;
+    return enquiryRows.filter(e => {
+      const s = String(e.status || '').toLowerCase().trim();
+      return s === 'payment verified' || s === 'verified' || s === 'paid';
+    }).length;
   }, [enquiryRows]);
 
   const pendingOrdersAmount = useMemo(() => {
-    const rows = enquiryRows.filter(e => String(e.status || '').toLowerCase().trim() === 'payment verified');
+    const rows = enquiryRows.filter(e => {
+      const s = String(e.status || '').toLowerCase().trim();
+      return s === 'payment verified' || s === 'verified' || s === 'paid';
+    });
     return rows.reduce((sum, r) => sum + getOrderAmountInINR(r), 0);
   }, [enquiryRows]);
 

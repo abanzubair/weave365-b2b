@@ -71,6 +71,93 @@ function getCarrierTrackingUrl(carrier = '', awb = '') {
   return null;
 }
 
+// Status classification helpers
+export function isNeedsAttentionStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'new' || s === 'paid' || s === 'pending_payment' || s === 'unfulfilled';
+}
+
+export function isFulfillmentStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'verified' || s === 'processing' || s === 'packing' || s === 'qc' || s === 'in_fulfillment';
+}
+
+export function isTransitStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'dispatched' || s === 'in_transit' || s === 'shipped';
+}
+
+export function isDeliveredStatus(status) {
+  const s = String(status || '').toLowerCase().trim();
+  return s === 'delivered' || s === 'done' || s === 'completed';
+}
+
+export function getOrderStatusDisplay(status) {
+  const s = String(status || 'new').toLowerCase().trim();
+  if (s === 'paid') {
+    return {
+      label: 'Payment Received',
+      pillClass: 'pill-paid',
+      dotColor: '#16a34a',
+      category: 'needs_attention'
+    };
+  }
+  if (s === 'new') {
+    return {
+      label: 'Payment Received',
+      pillClass: 'pill-paid',
+      dotColor: '#16a34a',
+      category: 'needs_attention'
+    };
+  }
+  if (s === 'pending_payment') {
+    return {
+      label: 'Pending Payment',
+      pillClass: 'pill-new',
+      dotColor: '#d97706',
+      category: 'needs_attention'
+    };
+  }
+  if (isFulfillmentStatus(s)) {
+    return {
+      label: s === 'processing' ? 'Processing' : 'In Fulfillment (QC)',
+      pillClass: 'pill-verified',
+      dotColor: '#4f46e5',
+      category: 'in_fulfillment'
+    };
+  }
+  if (isTransitStatus(s)) {
+    return {
+      label: 'In Transit',
+      pillClass: 'pill-dispatched',
+      dotColor: '#0284c7',
+      category: 'in_transit'
+    };
+  }
+  if (isDeliveredStatus(s)) {
+    return {
+      label: 'Delivered',
+      pillClass: 'pill-delivered',
+      dotColor: '#16a34a',
+      category: 'delivered'
+    };
+  }
+  if (s === 'cancelled' || s === 'rejected') {
+    return {
+      label: 'Cancelled',
+      pillClass: 'pill-cancelled',
+      dotColor: '#e11d48',
+      category: 'cancelled'
+    };
+  }
+  return {
+    label: status || 'New',
+    pillClass: `pill-${s}`,
+    dotColor: '#64748b',
+    category: 'other'
+  };
+}
+
 export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminData }) {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('tracking'); // 'tracking' | 'details'
@@ -90,7 +177,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   const handleOpenEditor = (inquiry, defaultTab = 'tracking') => {
     setSelectedInquiry(inquiry);
     setActiveModalTab(defaultTab);
-    setFormStatus(inquiry.status || 'verified');
+    setFormStatus(inquiry.status || 'new');
     setFormCarrier(inquiry.tracking_carrier || 'Delhivery');
     setFormTrackingNum(inquiry.tracking_number || '');
     setFormMessage(inquiry.tracking_message || '');
@@ -512,6 +599,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     } else if (type === 'delivered') {
       setFormMessage('Shipment successfully delivered! Thank you for ordering with us.');
       setFormStatus('delivered');
+    } else if (type === 'needs_attention' || type === 'new' || type === 'paid') {
+      setFormMessage('Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.');
+      setFormStatus((selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new');
     }
   };
 
@@ -571,17 +661,23 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
     const stats = {
       total: baseSet.length,
-      newCount: baseSet.filter(i => i.cleanStatus === 'new').length,
-      inProgressCount: baseSet.filter(i => i.cleanStatus === 'verified' || i.cleanStatus === 'processing').length,
-      dispatchedCount: baseSet.filter(i => i.cleanStatus === 'dispatched').length,
-      deliveredCount: baseSet.filter(i => i.cleanStatus === 'delivered' || i.cleanStatus === 'done').length,
+      newCount: baseSet.filter(i => isNeedsAttentionStatus(i.cleanStatus)).length,
+      inProgressCount: baseSet.filter(i => isFulfillmentStatus(i.cleanStatus)).length,
+      dispatchedCount: baseSet.filter(i => isTransitStatus(i.cleanStatus)).length,
+      deliveredCount: baseSet.filter(i => isDeliveredStatus(i.cleanStatus)).length,
     };
 
     let result = baseSet;
 
     if (statusFilter !== 'all') {
-      if (statusFilter === 'in_progress') {
-        result = result.filter(i => i.cleanStatus === 'verified' || i.cleanStatus === 'processing');
+      if (statusFilter === 'new') {
+        result = result.filter(i => isNeedsAttentionStatus(i.cleanStatus));
+      } else if (statusFilter === 'in_progress' || statusFilter === 'in_fulfillment') {
+        result = result.filter(i => isFulfillmentStatus(i.cleanStatus));
+      } else if (statusFilter === 'dispatched' || statusFilter === 'in_transit') {
+        result = result.filter(i => isTransitStatus(i.cleanStatus));
+      } else if (statusFilter === 'delivered') {
+        result = result.filter(i => isDeliveredStatus(i.cleanStatus));
       } else {
         result = result.filter(i => i.cleanStatus === statusFilter.toLowerCase());
       }
@@ -720,13 +816,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
               onChange={(e) => setStatusFilter(e.target.value)}
               className="admin-select-refined"
             >
-              <option value="new">Status: Needs Attention</option>
-              <option value="all">Status: All (Everything)</option>
-              <option value="in_progress">Status: In Fulfillment</option>
-              <option value="verified">Status: Verified</option>
-              <option value="processing">Status: Processing</option>
-              <option value="dispatched">Status: Dispatched</option>
-              <option value="delivered">Status: Delivered</option>
+              <option value="new">Status: Needs Attention ({orderStats.newCount})</option>
+              <option value="all">Status: Total Orders ({orderStats.total})</option>
+              <option value="in_progress">Status: In Fulfillment ({orderStats.inProgressCount})</option>
+              <option value="dispatched">Status: In Transit ({orderStats.dispatchedCount})</option>
+              <option value="delivered">Status: Delivered ({orderStats.deliveredCount})</option>
               <option value="cancelled">Status: Cancelled</option>
             </select>
           </div>
@@ -958,15 +1052,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
                     {/* Status Badge */}
                     <td>
-                      <span className={`admin-status-pill pill-${currentStatus}`}>
-                        <span className="admin-status-dot" />
-                        {currentStatus === 'new' ? 'New / Review' :
-                         currentStatus === 'verified' ? 'Verified' :
-                         currentStatus === 'processing' ? 'Processing' :
-                         currentStatus === 'dispatched' ? 'Dispatched' :
-                         currentStatus === 'delivered' ? 'Delivered' :
-                         currentStatus === 'cancelled' ? 'Cancelled' : currentStatus}
-                      </span>
+                      {(() => {
+                        const badgeInfo = getOrderStatusDisplay(inquiry.status);
+                        return (
+                          <span className={`admin-status-pill ${badgeInfo.pillClass}`}>
+                            <span className="admin-status-dot" style={{ background: badgeInfo.dotColor }} />
+                            {badgeInfo.label}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* Actions */}
@@ -1039,10 +1133,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       </>
                     )}
                   </h3>
-                  <span className={`admin-status-pill pill-${(selectedInquiry.status || 'new').toLowerCase()}`}>
-                    <span className="admin-status-dot" />
-                    {selectedInquiry.status || 'new'}
-                  </span>
+                  {(() => {
+                    const badgeInfo = getOrderStatusDisplay(selectedInquiry.status);
+                    return (
+                      <span className={`admin-status-pill ${badgeInfo.pillClass}`}>
+                        <span className="admin-status-dot" style={{ background: badgeInfo.dotColor }} />
+                        {badgeInfo.label}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="admin-modal-sub-row">
                   <span>Placed on {new Date(selectedInquiry.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
@@ -1060,6 +1159,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   <X size={18} />
                 </button>
               </div>
+            </div>
+
+            {/* Modal Tab Switcher */}
+            <div className="admin-modal-tabs-strip">
+              <button
+                type="button"
+                className={`admin-modal-tab-btn ${activeModalTab === 'tracking' ? 'active' : ''}`}
+                onClick={() => setActiveModalTab('tracking')}
+              >
+                <Truck size={14} /> Update Fulfillment
+              </button>
+              <button
+                type="button"
+                className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
+                onClick={() => setActiveModalTab('details')}
+              >
+                <Layers size={14} /> Order Details & Items ({(selectedInquiry.items || []).length || 1})
+              </button>
             </div>
 
             {/* Modal Context Strip (Shown on Fulfillment tab for quick reference) */}
@@ -1095,22 +1212,57 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     </div>
                     <div className="admin-status-picker-grid">
                       {[
-                        { id: 'new', label: 'Processing Payment', sub: 'Needs attention / proof review', color: '#b45309' },
-                        { id: 'verified', label: 'Quality Check & Packing', sub: 'Payment verified, in Varanasi QC', color: '#4338ca' },
-                        { id: 'dispatched', label: 'Dispatched', sub: 'Shipped with courier AWB', color: '#0369a1' },
-                        { id: 'delivered', label: 'Delivered', sub: 'Package handed to buyer', color: '#15803d' },
-                        { id: 'cancelled', label: 'Cancelled', sub: 'Order voided or returned', color: '#be123c' },
+                        {
+                          id: 'needs_attention',
+                          targetStatus: (selectedInquiry?.status || '').toLowerCase() === 'paid' ? 'paid' : 'new',
+                          label: 'Payment Received',
+                          sub: 'Payment captured via Gateway · Ready for QC & packaging',
+                          color: '#b45309',
+                          isSelected: isNeedsAttentionStatus(formStatus)
+                        },
+                        {
+                          id: 'verified',
+                          targetStatus: 'verified',
+                          label: 'In Fulfillment (QC & Packing)',
+                          sub: 'Quality check & packaging at Varanasi hub',
+                          color: '#4338ca',
+                          isSelected: isFulfillmentStatus(formStatus)
+                        },
+                        {
+                          id: 'dispatched',
+                          targetStatus: 'dispatched',
+                          label: 'In Transit (Dispatched)',
+                          sub: 'Dispatched with logistics carrier tracking AWB',
+                          color: '#0369a1',
+                          isSelected: isTransitStatus(formStatus)
+                        },
+                        {
+                          id: 'delivered',
+                          targetStatus: 'delivered',
+                          label: 'Delivered',
+                          sub: 'Package successfully handed to buyer',
+                          color: '#15803d',
+                          isSelected: isDeliveredStatus(formStatus)
+                        },
+                        {
+                          id: 'cancelled',
+                          targetStatus: 'cancelled',
+                          label: 'Cancelled',
+                          sub: 'Order voided, cancelled or returned',
+                          color: '#be123c',
+                          isSelected: formStatus === 'cancelled' || formStatus === 'rejected'
+                        },
                       ].map(st => (
                         <button
                           key={st.id}
                           type="button"
-                          className={`admin-status-card-opt ${formStatus === st.id ? 'selected' : ''}`}
-                          onClick={() => setFormStatus(st.id)}
+                          className={`admin-status-card-opt ${st.isSelected ? 'selected' : ''}`}
+                          onClick={() => setFormStatus(st.targetStatus)}
                         >
                           <div className="admin-status-card-top">
                             <span className="admin-status-dot-sm" style={{ background: st.color }} />
                             <span className="admin-status-card-name">{st.label}</span>
-                            {formStatus === st.id && <Check size={14} className="admin-status-check-icon" />}
+                            {st.isSelected && <Check size={14} className="admin-status-check-icon" />}
                           </div>
                           <span className="admin-status-card-sub">{st.sub}</span>
                         </button>
@@ -1182,6 +1334,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         <span className="admin-section-title">BUYER TRACKING NOTIFICATION NOTE</span>
                       </div>
                       <div className="admin-quick-templates">
+                        <button type="button" onClick={() => applyTemplate('paid')} className="admin-template-btn">
+                          <Sparkles size={11} /> Payment Received
+                        </button>
                         <button type="button" onClick={() => applyTemplate('verified')} className="admin-template-btn">
                           <Sparkles size={11} /> QC & Packing
                         </button>
@@ -1366,6 +1521,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       </a>
                     </div>
                     <div className="admin-modal-footer-right">
+                      <button
+                        type="button"
+                        className="admin-btn-action-primary"
+                        onClick={() => setActiveModalTab('tracking')}
+                        title="Update status, enter tracking carrier & dispatch"
+                        style={{ padding: '8px 14px', fontSize: '13px' }}
+                      >
+                        <Truck size={14} /> <span>Fulfill / Dispatch</span>
+                      </button>
                       <button
                         type="button"
                         className="admin-btn-secondary"
