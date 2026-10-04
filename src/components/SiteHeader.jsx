@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { ChevronDown, Search, User, X } from './icons.jsx';
+import { ChevronDown, Search, User, X, Bars3Icon } from './icons.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
 import { DropdownPortal } from './DropdownPortal.jsx';
 import { AppLink } from './AppLink.jsx';
@@ -523,16 +523,12 @@ export function SiteHeader(props) {
           type="button" 
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
         >
-          {menuOpen ? (
-            <X size={20} strokeWidth={1.5} />
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="hamburger-svg">
-              <rect className="line line-top" x="4" y="6" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-middle" x="4" y="11" width="16" height="1.5" rx="0.75" fill="currentColor" />
-              <rect className="line line-bottom" x="4" y="16" width="16" height="1.5" rx="0.75" fill="currentColor" />
-            </svg>
-          )}
+          <span className="hamburger-box" aria-hidden="true">
+            <Bars3Icon size={20} strokeWidth={1.5} className="hamburger-icon-bars" />
+            <X size={20} strokeWidth={1.5} className="hamburger-icon-cross" />
+          </span>
         </button>
       </div>
     </header>

@@ -10,12 +10,16 @@ const rootDir = path.resolve(__dirname, '..');
 
 describe('MobileMenu Icon Imports & Regression Tests', () => {
   const mobileMenuPath = path.join(rootDir, 'src/components/MobileMenu.jsx');
+  const siteHeaderPath = path.join(rootDir, 'src/components/SiteHeader.jsx');
   const iconsPath = path.join(rootDir, 'src/components/icons.jsx');
   const layoutCssPath = path.join(rootDir, 'src/styles/layout.css');
+  const componentsCssPath = path.join(rootDir, 'src/styles/components.css');
 
   const mobileMenuContent = fs.readFileSync(mobileMenuPath, 'utf8');
+  const siteHeaderContent = fs.readFileSync(siteHeaderPath, 'utf8');
   const iconsContent = fs.readFileSync(iconsPath, 'utf8');
   const layoutCssContent = fs.readFileSync(layoutCssPath, 'utf8');
+  const componentsCssContent = fs.readFileSync(componentsCssPath, 'utf8');
 
   test('Requirement 1: LogOut is imported from ./icons.jsx in MobileMenu.jsx', () => {
     const importMatch = mobileMenuContent.match(/import\s*\{([^}]+)\}\s*from\s*['"]\.\/icons(?:\.jsx)?['"]/);
@@ -152,6 +156,22 @@ describe('MobileMenu Icon Imports & Regression Tests', () => {
   test('Requirement 8: Mobile menu footer uses Phone and Mail icons for contact links', () => {
     assert(mobileMenuContent.includes('<Phone size={15} />'), 'Footer phone link must use <Phone /> icon');
     assert(mobileMenuContent.includes('<Mail size={15} />'), 'Footer email link must use <Mail /> icon');
+  });
+
+  test('Requirement 9: SiteHeader imports Bars3Icon and X from ./icons.jsx', () => {
+    const importMatch = siteHeaderContent.match(/import\s*\{([^}]+)\}\s*from\s*['"]\.\/icons(?:\.jsx)?['"]/);
+    assert(importMatch, 'SiteHeader.jsx must import icons from ./icons.jsx');
+    const importedIcons = importMatch[1].split(',').map(s => s.trim());
+    assert(importedIcons.includes('Bars3Icon'), 'SiteHeader must import Bars3Icon from ./icons.jsx');
+    assert(importedIcons.includes('X'), 'SiteHeader must import X from ./icons.jsx');
+  });
+
+  test('Requirement 10: SiteHeader renders hamburger-box with Bars3Icon and X for smooth animation', () => {
+    assert(siteHeaderContent.includes('className="hamburger-icon-bars"'), 'SiteHeader must include Bars3Icon with className hamburger-icon-bars');
+    assert(siteHeaderContent.includes('className="hamburger-icon-cross"'), 'SiteHeader must include X with className hamburger-icon-cross');
+    assert(componentsCssContent.includes('.hamburger-box'), 'components.css must define .hamburger-box wrapper');
+    assert(componentsCssContent.includes('.hamburger-btn.is-active .hamburger-icon-bars'), 'components.css must define active state for bars');
+    assert(componentsCssContent.includes('.hamburger-btn.is-active .hamburger-icon-cross'), 'components.css must define active state for cross');
   });
 });
 
