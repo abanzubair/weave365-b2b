@@ -11,7 +11,7 @@ const CSP_DIRECTIVES = [
   "frame-ancestors 'self' https://ecom-template-1-tau.vercel.app https://50k-gamma.vercel.app https://e-com-template-3.vercel.app",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://*.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com",
 ].join('; ');
 
 function applySecurityHeaders(res) {

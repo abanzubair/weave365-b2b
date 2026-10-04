@@ -44,6 +44,7 @@ export async function GET(request, { params }) {
   if (routeKey === 'storefront') return storefrontGet(request);
   if (routeKey === 'feed/google-shopping') return googleShoppingGet(request);
   if (routeKey === 'vendor-registration') return vendorRegistrationGet(request);
+  if (routeKey === 'cashfree/webhook') return Response.json({ status: 'active', service: 'cashfree-webhook' }, { status: 200 });
 
   return Response.json({ error: `GET /api/${routeKey} Not Found` }, { status: 404 });
 }

@@ -10,13 +10,10 @@ import {
   Package,
   ShieldCheck,
   CreditCard,
-  QrCode,
-  Copy,
   Check,
   ShoppingBag,
   ArrowDown,
   AlertCircle,
-  Clock,
   ArrowRight,
 } from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
@@ -25,8 +22,6 @@ import {
   customerPrice,
   formatMoney,
   getLocalizedPrice,
-  buildWhatsappUrl,
-  calculateComboDiscount,
   fallbackProductImage,
 } from '../storefrontShared.jsx';
 import { useCountryCurrency } from '../store/useCountryCurrency.js';
@@ -34,8 +29,6 @@ import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimiz
 
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
-import QRCodeImage from '../components/QRCodeImage.jsx';
-import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import '../styles/checkout.css';
 
@@ -92,16 +85,10 @@ export function CheckoutPage({
   );
   const [dropshipNotes, setDropshipNotes] = useState('');
 
-  // Payment method: 'cashfree' | 'whatsapp' | 'upi'
-  const [paymentMethod, setPaymentMethod] = useState('cashfree');
-  const [checkoutStep, setCheckoutStep] = useState('details'); // 'details' | 'payment'
-  const [upiTransactionId, setUpiTransactionId] = useState('');
-  const [copiedUpi, setCopiedUpi] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [orderError, setOrderError] = useState('');
-  const [showExpressPayNotice, setShowExpressPayNotice] = useState(false);
 
   // Auto-verify if customer returned from a browser redirect with ?order_id=
   useEffect(() => {
@@ -183,10 +170,6 @@ export function CheckoutPage({
     }
   };
 
-  const handleExpressPayClick = () => {
-    setShowExpressPayNotice(true);
-    setTimeout(() => setShowExpressPayNotice(false), 4000);
-  };
 
   // Fetch saved addresses for logged-in user
   useEffect(() => {
@@ -349,19 +332,6 @@ export function CheckoutPage({
   }, [baseTotal, discount]);
 
 
-  const upiId = storeConfig.upiId || 'weave365@upi';
-  const rawUpiUrl = useMemo(
-    () => `upi://pay?pa=${upiId}&pn=${encodeURIComponent(storeConfig.name || 'Weave365')}&am=${total || 0}&cu=INR&tn=${encodeURIComponent('Order Payment')}`,
-    [total, upiId]
-  );
-
-  const copyUpiId = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(storeConfig.upiId || 'weave365@upi');
-      setCopiedUpi(true);
-      setTimeout(() => setCopiedUpi(false), 2000);
-    }
-  };
 
   const handlePincodeChange = (val) => {
     setFormPincode(val);
@@ -401,146 +371,6 @@ export function CheckoutPage({
     };
   };
 
-  const recordOrderReceived = async (deliveryDetails, currentWhatsappUrl, method = paymentMethod, utr = upiTransactionId) => {
-    setIsSubmitting(true);
-    setOrderError('');
-
-    try {
-      const isDropshipOrder = Boolean(deliveryDetails.is_dropship);
-      const utrNote = utr
-        ? `Paid via UPI. UTR/Ref: ${utr} (Payment Pending Verification)`
-        : (method === 'whatsapp' ? 'Direct WhatsApp Order' : 'Paid via UPI (Screenshot on WhatsApp)');
-      const finalNotes = dropshipNotes ? `${dropshipNotes} | ${utrNote}` : utrNote;
-
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user?.id || null,
-          email: email || user?.email || '',
-          payment_method: method,
-          shipping_mode: shippingMode,
-          shipping_speed: shippingSpeed,
-          currency: currentCountry?.currency || 'INR',
-          country_code: currentCountry?.code || 'IN',
-          exchange_rate: exchangeRates?.[currentCountry?.currency] || 1,
-          markup_percent: currentCountry?.markupPercent || 0,
-          delivery_details: deliveryDetails,
-          dropship_details: {
-            sender_name: senderName,
-            sender_phone: senderPhone,
-            sender_address: senderAddress,
-            sender_city: senderCity,
-            sender_state: senderState,
-            sender_pincode: senderPincode,
-            packing_preference: packingPreference,
-          },
-          items: items.map(item => {
-            const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
-            const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
-            return {
-              product_id: item.productGroupKey,
-              product_title: item.product?.title || '',
-              variant_code: item.variant?.code || '',
-              color: item.selectedColorName || 'Standard',
-              quantity: item.quantity,
-              price: locPrice.finalPrice,
-              base_inr_price: rawPrice,
-            };
-          }),
-          total_amount: total,
-          notes: finalNotes,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to submit order. Please check details and try again.');
-      }
-
-      const newOrderId = data.orderId;
-      setCreatedOrder({
-        id: newOrderId,
-        orderNumber: data.orderNumber || (newOrderId ? newOrderId.slice(0, 8).toUpperCase() : 'ORD'),
-        total,
-        paymentMethod: method,
-        deliveryDetails,
-        whatsappUrl: currentWhatsappUrl,
-        upiTransactionId: utr,
-      });
-
-      // Track influencer referral if applicable
-      const saleAmount = items.reduce((sum, it) => sum + (Number(customerPrice(it.variant?.prices, priceAccess)) || 0) * (Number(it.quantity) || 1), 0);
-      void recordReferral({
-        orderId: newOrderId,
-        buyerId: priceAccess?.userId || user?.id || null,
-        buyerName: priceAccess?.buyerName || deliveryDetails.full_name || 'Guest Buyer',
-        items: items.map(item => ({
-          product_id: item.productGroupKey,
-          product_title: item.product?.title || '',
-          variant_code: item.variant?.code || '',
-          color: item.selectedColorName || '',
-          quantity: item.quantity,
-          price: customerPrice(item.variant?.prices, priceAccess),
-        })),
-        saleAmount: saleAmount > 0 ? saleAmount : (total || 0),
-      });
-
-      if (clearCart) {
-        clearCart();
-      }
-
-      if (method === 'whatsapp' || method === 'upi_screenshot') {
-        try {
-          window.open(currentWhatsappUrl, '_blank');
-        } catch (e) {
-          console.warn('Popup blocked, order success screen ready:', e);
-        }
-      }
-
-      setOrderSuccess(true);
-    } catch (err) {
-      console.error('Failed to record order:', err);
-      setOrderError(err.message || 'Unable to place order right now. Please try again or place order via WhatsApp.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFinalOrderSubmit = async (method = paymentMethod, customUtr = upiTransactionId) => {
-    const deliveryDetails = getValidatedDeliveryDetails();
-    if (!deliveryDetails) return;
-
-    // Save address if user checked save box and not dropshipping
-    if (saveToAccount && user?.id && isSupabaseConfigured && shippingMode === 'standard' && useCustomAddress) {
-      try {
-        await supabase.from('addresses').insert({
-          user_id: user.id,
-          full_name: deliveryDetails.full_name,
-          phone_number: deliveryDetails.phone_number,
-          address_line1: deliveryDetails.address_line1,
-          address_line2: deliveryDetails.address_line2,
-          city: deliveryDetails.city,
-          state: deliveryDetails.state,
-          pincode: deliveryDetails.pincode,
-          country: 'India',
-        });
-      } catch (err) {
-        console.error('Error saving address:', err);
-      }
-    }
-
-    const targetPhone = String(storeConfig.whatsapp || '9919101369').replace(/\D/g, '');
-    const waPhone = targetPhone.startsWith('91') ? targetPhone : `91${targetPhone}`;
-    const formattedTotal = formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 });
-    const waText = method === 'whatsapp'
-      ? `Hello Weave365, I would like to place an order for ${items.length} items (Total: ${formattedTotal}). Delivery to: ${deliveryDetails.full_name}, ${deliveryDetails.city} - ${deliveryDetails.pincode}. Please confirm availability and dispatch.`
-      : `Hello Weave365, I have completed the payment of ${formattedTotal} for my order to ${deliveryDetails.city}.${customUtr ? ` Ref/UTR: ${customUtr}.` : ''} Please find my payment details attached for verification.`;
-
-    const currentWhatsappUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`;
-
-    await recordOrderReceived(deliveryDetails, currentWhatsappUrl, method, customUtr);
-  };
 
   const handleCashfreeCheckout = async (deliveryDetails) => {
     setIsSubmitting(true);
@@ -619,6 +449,10 @@ export function CheckoutPage({
       const checkoutResult = await cashfree.checkout({
         paymentSessionId: data.payment_session_id,
         redirectTarget: '_modal',
+        appearance: {
+          width: '650px',
+          height: '780px',
+        },
       });
 
       // ⚠️ Result handling (Cashfree Web SDK v3):
@@ -691,38 +525,7 @@ export function CheckoutPage({
     const deliveryDetails = getValidatedDeliveryDetails();
     if (!deliveryDetails) return;
 
-    if (paymentMethod === 'cashfree') {
-      handleCashfreeCheckout(deliveryDetails);
-      return;
-    }
-
-    if (paymentMethod === 'whatsapp') {
-      handleFinalOrderSubmit('whatsapp');
-      return;
-    }
-
-    // Advance to Step 2: Payment & Proof for manual UPI
-    setCheckoutStep('payment');
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleUtrSubmit = () => {
-    const cleanUtr = upiTransactionId.trim();
-    if (!cleanUtr) {
-      alert('Please enter the 12-digit UPI Reference / UTR Number from your payment receipt, or choose Option B below to send your payment screenshot on WhatsApp.');
-      return;
-    }
-    if (cleanUtr.length < 6) {
-      alert('Please enter a valid UPI Reference / UTR Number (usually 12 digits).');
-      return;
-    }
-    handleFinalOrderSubmit('upi', cleanUtr);
-  };
-
-  const handleWhatsAppScreenshotSubmit = () => {
-    handleFinalOrderSubmit('upi_screenshot', '');
+    handleCashfreeCheckout(deliveryDetails);
   };
 
   if (!items.length && !orderSuccess) {
@@ -748,12 +551,9 @@ export function CheckoutPage({
   }
 
   if (orderSuccess) {
-    const isCashfreeOrder = (createdOrder?.paymentMethod || paymentMethod) === 'cashfree';
-    const isWhatsappOrder = (createdOrder?.paymentMethod || paymentMethod) === 'whatsapp';
     const recipient = createdOrder?.deliveryDetails || {};
     const orderRef = createdOrder?.orderNumber || (createdOrder?.id ? createdOrder.id.slice(0, 8).toUpperCase() : 'ORD-NEW');
     const orderTotal = createdOrder?.total || total;
-    const utr = createdOrder?.upiTransactionId || upiTransactionId;
 
     return (
       <div
@@ -789,29 +589,19 @@ export function CheckoutPage({
               width: '52px',
               height: '52px',
               borderRadius: '50%',
-              background: isCashfreeOrder ? '#f0fdf4' : (isWhatsappOrder ? '#f0fdf4' : '#f0f9ff'),
-              border: `1px solid ${isCashfreeOrder ? '#bbf7d0' : (isWhatsappOrder ? '#bbf7d0' : '#bae6fd')}`,
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 14px',
             }}
           >
-            {isCashfreeOrder ? (
-              <CheckCircle size={26} style={{ color: '#16a34a' }} />
-            ) : isWhatsappOrder ? (
-              <WhatsappIcon size={26} />
-            ) : (
-              <Clock size={24} style={{ color: '#0284c7' }} />
-            )}
+            <CheckCircle size={26} style={{ color: '#16a34a' }} />
           </div>
 
           <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a', margin: '0 0 6px 0', letterSpacing: '-0.025em' }}>
-            {isCashfreeOrder
-              ? 'Payment Confirmed & Order Placed!'
-              : isWhatsappOrder
-              ? 'Order Registered on WhatsApp'
-              : 'Order Placed Successfully'}
+            Payment Confirmed & Order Placed!
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
@@ -823,9 +613,9 @@ export function CheckoutPage({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: isCashfreeOrder ? '#dcfce7' : (isWhatsappOrder ? '#fef3c7' : '#f0f9ff'),
-                color: isCashfreeOrder ? '#166534' : (isWhatsappOrder ? '#92400e' : '#0369a1'),
-                border: `1px solid ${isCashfreeOrder ? '#bbf7d0' : (isWhatsappOrder ? '#fde68a' : '#bae6fd')}`,
+                background: '#dcfce7',
+                color: '#166534',
+                border: '1px solid #bbf7d0',
                 fontSize: '0.74rem',
                 fontWeight: '600',
                 padding: '2px 8px',
@@ -833,26 +623,12 @@ export function CheckoutPage({
                 letterSpacing: '0.02em',
               }}
             >
-              {isCashfreeOrder ? (
-                <>
-                  <Check size={12} />
-                  Payment Verified • Cashfree PG
-                </>
-              ) : isWhatsappOrder ? (
-                <>
-                  <Clock size={11} />
-                  WhatsApp Order
-                </>
-              ) : (
-                <>
-                  <Clock size={11} />
-                  Payment Verification Pending
-                </>
-              )}
+              <Check size={12} />
+              Payment Verified • Cashfree PG
             </span>
           </div>
 
-          {/* Clean Flat Summary Rows — NO NESTED CARDS */}
+          {/* Clean Flat Summary Rows */}
           <div
             style={{
               textAlign: 'left',
@@ -881,8 +657,8 @@ export function CheckoutPage({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
-              <span style={{ color: '#64748b' }}>{isCashfreeOrder ? 'Amount Paid' : 'Amount Due'}</span>
-              <span style={{ fontWeight: '700', color: isCashfreeOrder ? '#166534' : '#0f172a', fontSize: '0.96rem' }}>
+              <span style={{ color: '#64748b' }}>Amount Paid</span>
+              <span style={{ fontWeight: '700', color: '#166534', fontSize: '0.96rem' }}>
                 {formatMoney(orderTotal, 2)}
               </span>
             </div>
@@ -902,98 +678,53 @@ export function CheckoutPage({
                 </span>
               </div>
             )}
-
-            {utr && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px', paddingTop: '2px' }}>
-                <span style={{ color: '#64748b' }}>Submitted UTR</span>
-                <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#0369a1', background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                  {utr}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Contextual Notice */}
           <div
             style={{
-              background: isCashfreeOrder ? '#f0fdf4' : '#f8fafc',
-              border: `1px solid ${isCashfreeOrder ? '#dcfce7' : '#f1f5f9'}`,
+              background: '#f0fdf4',
+              border: '1px solid #dcfce7',
               borderRadius: '8px',
               padding: '10px 14px',
               marginBottom: '18px',
               textAlign: 'left',
               fontSize: '0.8rem',
-              color: isCashfreeOrder ? '#166534' : '#475569',
+              color: '#166534',
               lineHeight: '1.45',
             }}
           >
-            <div style={{ fontWeight: '600', color: isCashfreeOrder ? '#14532d' : '#0f172a', marginBottom: '2px', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              {isCashfreeOrder ? 'Order Confirmed' : isWhatsappOrder ? 'Next Steps' : 'Payment Verification'}
+            <div style={{ fontWeight: '600', color: '#14532d', marginBottom: '2px', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Order Confirmed
             </div>
-            {isCashfreeOrder
-              ? 'Your payment was successfully received and verified via Cashfree Payment Gateway. Your order is registered and being prepared for packaging and dispatch from our Varanasi hub.'
-              : isWhatsappOrder
-              ? 'We have recorded your order details. Connect with our Varanasi weaving desk on WhatsApp to confirm availability and parcel dispatch.'
-              : utr
-              ? 'We will verify your payment against your UTR (typically within 15–30 minutes). You will receive a WhatsApp dispatch confirmation once matched.'
-              : 'Please tap below to send your payment screenshot on WhatsApp so we can verify your payment and immediately dispatch your parcel.'}
+            Your payment was successfully received and verified via Cashfree Payment Gateway. Your order is registered and being prepared for packaging and dispatch from our Varanasi hub.
           </div>
 
           {/* Primary & Secondary Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {createdOrder?.whatsappUrl && !isCashfreeOrder && (
-              <a
-                href={createdOrder.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  background: '#4A5A31',
-                  color: '#ffffff',
-                  padding: '11px 20px',
-                  borderRadius: '8px',
-                  fontWeight: '700',
-                  fontSize: '0.9rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(74, 90, 49, 0.25)',
-                  transition: 'background-color 0.2s',
-                }}
-              >
-                <WhatsappIcon size={18} />
-                {isWhatsappOrder
-                  ? 'Open WhatsApp to Confirm Dispatch'
-                  : utr
-                  ? 'Message Weaver Desk on WhatsApp'
-                  : 'Send Payment Screenshot on WhatsApp'}
-              </a>
-            )}
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button
-                type="button"
-                className="checkout-submit-btn"
-                onClick={() => navigate('account')}
-                style={{ flex: 1, height: '42px', fontSize: '0.85rem' }}
-              >
-                View My Orders
-              </button>
-              <button
-                type="button"
-                className="shipping-mode-btn"
-                onClick={() => navigate('catalogue')}
-                style={{ flex: 1, height: '42px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
-              >
-                Continue Shopping
-              </button>
-            </div>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="checkout-submit-btn"
+              onClick={() => navigate('account')}
+              style={{ flex: 1, height: '42px', fontSize: '0.85rem' }}
+            >
+              View My Orders
+            </button>
+            <button
+              type="button"
+              className="shipping-mode-btn"
+              onClick={() => navigate('catalogue')}
+              style={{ flex: 1, height: '42px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+            >
+              Continue Shopping
+            </button>
           </div>
         </div>
       </div>
     );
   }
+
+
 
   return (
     <div className="checkout-page-container">
@@ -1141,21 +872,8 @@ export function CheckoutPage({
           </div>
         </div>
 
-        {/* Right Pane: Stripe-Style Checkout Form / 2-Step Flow */}
+        {/* Right Pane: Stripe-Style Checkout Form */}
         <div className="checkout-form-pane">
-          {checkoutStep === 'details' ? (
-            <>
-              {/* Top Step Breadcrumb */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '700', color: '#0f172a' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', background: '#0f172a', color: '#fff', fontSize: '0.8rem', fontWeight: '700' }}>1</span>
-                  Step 1: Delivery Details
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', fontWeight: '500', color: '#94a3b8' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', background: '#f1f5f9', color: '#94a3b8', fontSize: '0.8rem', fontWeight: '700' }}>2</span>
-                  Step 2: Pay & Confirm
-                </div>
-              </div>
 
               {/* Shipping Mode Segmented Control (Standard vs Dropshipping) */}
               <div className="shipping-mode-control">
@@ -1605,78 +1323,51 @@ export function CheckoutPage({
                   </label>
                 </div>
 
-                {/* Payment Route Selection */}
+                {/* Payment Method Presentation */}
                 <div className="checkout-section-title" style={{ marginTop: '20px' }}>
-                  <CreditCard size={18} /> Payment Preference
+                  <CreditCard size={18} /> Payment Method
                 </div>
 
-                <div className="payment-method-group">
-                  {/* Option 1: Cashfree Online Payment (Default & Recommended) */}
-                  <label
-                    className={`payment-method-card ${paymentMethod === 'cashfree' ? 'selected' : ''}`}
-                    onClick={() => setPaymentMethod('cashfree')}
-                  >
-                    <div className="payment-method-left">
-                      <input
-                        type="radio"
-                        name="paymentType"
-                        checked={paymentMethod === 'cashfree'}
-                        onChange={() => setPaymentMethod('cashfree')}
-                      />
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #2563eb',
+                    background: '#f8fafc',
+                    gap: '12px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '8px',
+                        background: '#eff6ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#2563eb',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CreditCard size={22} />
+                    </div>
+                    <div>
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <span className="payment-method-title">Instant Online Payment</span>
-                          <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', padding: '2px 7px', borderRadius: '4px', fontWeight: 600 }}>
-                            ⚡ Instant Confirmation
-                          </span>
-                        </div>
-                        <div className="payment-method-desc">
-                          UPI (GPay, PhonePe, Paytm, CRED), Credit/Debit Cards, NetBanking (50+ banks) via Cashfree.
-                        </div>
+                        <span style={{ fontWeight: '700', fontSize: '0.94rem', color: '#0f172a' }}>
+                          Instant Online Payment
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '3px' }}>
+                        UPI (Google Pay, PhonePe, Paytm, CRED), Credit/Debit Cards, NetBanking (50+ banks)
                       </div>
                     </div>
-                    <CreditCard size={20} style={{ color: paymentMethod === 'cashfree' ? '#2563eb' : '#64748b' }} />
-                  </label>
-
-                  {/* Option 2: Confirm & Order on WhatsApp */}
-                  <label
-                    className={`payment-method-card ${paymentMethod === 'whatsapp' ? 'selected' : ''}`}
-                    onClick={() => setPaymentMethod('whatsapp')}
-                  >
-                    <div className="payment-method-left">
-                      <input
-                        type="radio"
-                        name="paymentType"
-                        checked={paymentMethod === 'whatsapp'}
-                        onChange={() => setPaymentMethod('whatsapp')}
-                      />
-                      <div>
-                        <span className="payment-method-title">Direct Order on WhatsApp</span>
-                        <div className="payment-method-desc">Chat directly with Varanasi weaving masters for custom bulk inquiries or instant dispatch.</div>
-                      </div>
-                    </div>
-                    <WhatsappIcon size={20} />
-                  </label>
-
-                  {/* Option 3: Direct UPI / Manual QR Transfer */}
-                  <label
-                    className={`payment-method-card ${paymentMethod === 'upi' ? 'selected' : ''}`}
-                    onClick={() => setPaymentMethod('upi')}
-                  >
-                    <div className="payment-method-left">
-                      <input
-                        type="radio"
-                        name="paymentType"
-                        checked={paymentMethod === 'upi'}
-                        onChange={() => setPaymentMethod('upi')}
-                      />
-                      <div>
-                        <span className="payment-method-title">Manual UPI / QR Bank Transfer</span>
-                        <div className="payment-method-desc">Scan static QR code and submit 12-digit UTR manually.</div>
-                      </div>
-                    </div>
-                    <QrCode size={20} style={{ color: '#64748b' }} />
-                  </label>
+                  </div>
+                  <ShieldCheck size={22} style={{ color: '#16a34a', flexShrink: 0 }} />
                 </div>
 
                 {orderError && (
@@ -1707,13 +1398,9 @@ export function CheckoutPage({
                   style={{ marginTop: '20px' }}
                 >
                   {isSubmitting ? (
-                    'Processing Order...'
-                  ) : paymentMethod === 'cashfree' ? (
-                    <>Pay Securely with Cashfree • {formatMoney(total, 2)} <ArrowRight size={18} /></>
-                  ) : paymentMethod === 'whatsapp' ? (
-                    <>Place Order via WhatsApp • {formatMoney(total, 2)} <ArrowRight size={18} /></>
+                    'Connecting to Cashfree Gateway...'
                   ) : (
-                    <>Proceed to Manual UPI • {formatMoney(total, 2)} <ArrowRight size={18} /></>
+                    <>Pay Securely with Cashfree • {formatMoney(total, 2)} <ArrowRight size={18} /></>
                   )}
                 </button>
 
@@ -1721,224 +1408,6 @@ export function CheckoutPage({
                   <ShieldCheck size={14} style={{ color: '#16a34a' }} /> Encrypted & Secure 256-Bit SSL Checkout • RBI Compliant
                 </div>
               </form>
-            </>
-          ) : (
-            /* Step 2: Payment & Proof Submission — Distilled, Un-nested, High-Craft */
-            <div className="checkout-step-payment-pane" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-              {/* Context Header: Navigation & Order Summary */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', paddingBottom: '20px', borderBottom: '1px solid #e2e8f0' }}>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setCheckoutStep('details')}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: '#0284c7',
-                      fontWeight: '600',
-                      fontSize: '0.84rem',
-                      cursor: 'pointer',
-                      marginBottom: '8px',
-                    }}
-                  >
-                    <ArrowLeft size={14} /> Edit delivery details
-                  </button>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0f172a', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
-                    Pay & Confirm
-                  </h2>
-                  <div style={{ fontSize: '0.86rem', color: '#64748b' }}>
-                    Delivering to <strong>{formName}</strong> ({formPhone}) • {formCity}, {formState}
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: '2px' }}>
-                    Total Due
-                  </div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
-                    {formatMoney(total, 2)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 1: Scan & Pay Affordance */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', margin: '0 0 4px 0' }}>
-                    Scan QR with any UPI app
-                  </h3>
-                  <p style={{ fontSize: '0.86rem', color: '#64748b', margin: 0 }}>
-                    Google Pay, PhonePe, Paytm, BHIM, or NetBanking
-                  </p>
-                </div>
-
-                {/* QR Code */}
-                <div style={{ padding: '8px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'inline-block' }}>
-                  <QRCodeImage
-                    text={rawUpiUrl}
-                    size={180}
-                    alt="Weave365 UPI Payment QR"
-                    style={{ display: 'block', borderRadius: '8px' }}
-                  />
-                </div>
-
-                {/* UPI VPA Pill & Copy Button */}
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px 12px' }}>
-                  <span style={{ fontFamily: 'monospace', fontWeight: '700', fontSize: '0.92rem', color: '#0f172a', letterSpacing: '0.3px' }}>
-                    {upiId}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={copyUpiId}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      color: copiedUpi ? '#16a34a' : '#0369a1',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      padding: '2px 6px',
-                    }}
-                  >
-                    {copiedUpi ? <Check size={14} /> : <Copy size={14} />}
-                    {copiedUpi ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-
-                {/* Mobile Deep Link */}
-                <a
-                  href={rawUpiUrl}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    background: '#0f172a',
-                    color: '#ffffff',
-                    padding: '10px 22px',
-                    borderRadius: '8px',
-                    fontSize: '0.88rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.15)',
-                  }}
-                >
-                  <QrCode size={16} /> Tap to Open in UPI App (Mobile)
-                </a>
-              </div>
-
-              {/* Clean Section Divider with Subtle Spacing */}
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '24px' }}>
-                <div style={{ maxWidth: '440px', margin: '0 auto', width: '100%' }}>
-                  <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', margin: '0 0 6px 0' }}>
-                      Confirm your payment
-                    </h3>
-                    <p style={{ fontSize: '0.84rem', color: '#64748b', margin: 0 }}>
-                      Submit your 12-digit UPI reference number or send your receipt on WhatsApp to start parcel packing.
-                    </p>
-                  </div>
-
-                  {/* Option 1: 12-Digit UTR */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                    <label htmlFor="upi-utr-input" style={{ fontSize: '0.84rem', fontWeight: '600', color: '#334155' }}>
-                      12-digit UPI Reference / UTR Number
-                    </label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        id="upi-utr-input"
-                        type="text"
-                        className="checkout-input"
-                        placeholder="e.g. 423589123456"
-                        value={upiTransactionId}
-                        onChange={(e) => setUpiTransactionId(e.target.value.replace(/\s+/g, ''))}
-                        maxLength={24}
-                        style={{ flex: 1, minWidth: '160px', height: '44px', fontFamily: 'monospace', fontSize: '0.9rem' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleUtrSubmit}
-                        disabled={isSubmitting}
-                        className="checkout-submit-btn"
-                        style={{ width: 'auto', minWidth: '120px', height: '44px', padding: '0 16px', fontSize: '0.86rem', whiteSpace: 'nowrap' }}
-                      >
-                        {isSubmitting ? 'Verifying...' : 'Submit UTR'}
-                      </button>
-                    </div>
-                    <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                      Found in Google Pay, PhonePe, or Paytm receipt under "UPI Ref" or "UTR".
-                    </div>
-                  </div>
-
-                  {/* Inline Subtle "or" Divider */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '16px 0', color: '#94a3b8', fontSize: '0.78rem', fontWeight: '600' }}>
-                    <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
-                    <span>OR</span>
-                    <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
-                  </div>
-
-                  {/* Option 2: WhatsApp Receipt */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={handleWhatsAppScreenshotSubmit}
-                      disabled={isSubmitting}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        maxWidth: '300px',
-                        width: '100%',
-                        height: '44px',
-                        padding: '0 20px',
-                        backgroundColor: '#4A5A31',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '0.88rem',
-                        fontWeight: '700',
-                        cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 2px 8px rgba(74, 90, 49, 0.25)',
-                        transition: 'background-color 0.2s',
-                      }}
-                    >
-                      <WhatsappIcon size={18} />
-                      {isSubmitting ? 'Registering order...' : 'Send Receipt on WhatsApp'}
-                    </button>
-                    <div style={{ fontSize: '0.76rem', color: '#64748b', textAlign: 'center' }}>
-                      Don't have the UTR handy? We'll open WhatsApp so you can attach your screenshot directly.
-                    </div>
-                  </div>
-
-                  {orderError && (
-                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '12px 14px', marginTop: '16px', color: '#991b1b', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <AlertCircle size={18} />
-                      <span>{orderError}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Bottom Return Link */}
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px', textAlign: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => setCheckoutStep('details')}
-                  className="checkout-back-link"
-                >
-                  <ArrowLeft size={16} /> Return to delivery details
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

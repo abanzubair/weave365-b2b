@@ -930,6 +930,10 @@ create table if not exists public.orders (
   email text,
   pincode text,
   status text default 'new',
+  payment_method text default 'cashfree',
+  total_amount numeric(12, 2),
+  cf_order_id text,
+  cf_payment_id text,
   tracking_carrier text,
   tracking_number text,
   tracking_message text,
@@ -952,6 +956,12 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_city text;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_state text;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_recipient_pincode text;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_packing_preference text;
+
+-- Ensure payment & gateway columns exist on orders table if table already exists
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method text DEFAULT 'cashfree';
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS total_amount numeric(12, 2);
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS cf_order_id text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS cf_payment_id text;
 
 -- Enable RLS
 alter table public.orders enable row level security;
@@ -986,6 +996,7 @@ create policy "orders admin delete"
 create index if not exists orders_user_id_idx on public.orders (user_id);
 create index if not exists orders_status_idx on public.orders (status);
 create index if not exists orders_is_dropship_idx on public.orders (is_dropship);
+create index if not exists orders_cf_order_id_idx on public.orders (cf_order_id);
 
 -- Trigger for updated_at
 drop trigger if exists touch_orders_updated_at on public.orders;

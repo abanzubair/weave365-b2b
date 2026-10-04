@@ -917,3 +917,20 @@
     height: 120px !important;
   }
 }
+
+/* Cashfree Drop-in Modal Height Enhancement */
+iframe[src*="cashfree.com"],
+div[id*="cashfree"] iframe,
+div[id*="cf-"] iframe {
+  max-height: 94vh !important;
+}
+
+@media (min-height: 720px) and (min-width: 600px) {
+  iframe[src*="cashfree.com"],
+  div[id*="cashfree"] iframe,
+  div[id*="cf-"] iframe {
+    height: 780px !important;
+    min-height: 720px !important;
+  }
+}
+

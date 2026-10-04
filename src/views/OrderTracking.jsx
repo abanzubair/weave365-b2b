@@ -641,11 +641,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   <span>Total Order Value</span>
                   <strong>
                     {formatMoney(
-                      (order.items || []).reduce((acc, it) => {
-                        const unitPrice = Number(it.price) || 0;
-                        const qty = Number(it.quantity) || 1;
-                        return acc + (unitPrice * qty);
-                      }, 0) || order.total_amount || 0
+                      (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                        ? Number(order.total_amount)
+                        : ((order.items || []).reduce((acc, it) => {
+                            const unitPrice = Number(it.price) || 0;
+                            const qty = Number(it.quantity) || 1;
+                            return acc + (unitPrice * qty);
+                          }, 0) || 0)
                     )}
                   </strong>
                 </div>

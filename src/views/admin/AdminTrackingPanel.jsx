@@ -1339,10 +1339,12 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>
                             {formatMoney(
-                              (selectedInquiry.items || []).reduce((acc, it) => {
-                                const resolved = resolveItemDetails(it);
-                                return acc + (resolved.price * resolved.quantity);
-                              }, 0) || selectedInquiry.total_amount || 0
+                              (selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
+                                ? Number(selectedInquiry.total_amount)
+                                : ((selectedInquiry.items || []).reduce((acc, it) => {
+                                    const resolved = resolveItemDetails(it);
+                                    return acc + (resolved.price * resolved.quantity);
+                                  }, 0) || 0)
                             )}
                           </td>
                         </tr>

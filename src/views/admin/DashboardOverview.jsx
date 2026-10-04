@@ -43,7 +43,9 @@ export default function DashboardOverview({
   // Price Calculation helper (returns raw amount in INR)
   const getOrderAmountInINR = (row) => {
     let amtInINR = 0;
-    if (row.amount !== undefined && row.amount !== null && Number(row.amount) > 0) {
+    if (row.total_amount !== undefined && row.total_amount !== null && Number(row.total_amount) > 0) {
+      amtInINR = Number(row.total_amount);
+    } else if (row.amount !== undefined && row.amount !== null && Number(row.amount) > 0) {
       amtInINR = Number(row.amount);
     } else if (row.total_price !== undefined && row.total_price !== null && Number(row.total_price) > 0) {
       amtInINR = Number(row.total_price);

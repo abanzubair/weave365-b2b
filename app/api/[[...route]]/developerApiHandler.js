@@ -1137,6 +1137,7 @@ export async function handleDeveloperApiPost(request, pathSegments) {
           pincode: recipientPincode,
           message: `[API Dropship Order #${reseller_order_id || 'N/A'}] Delivery Address: ${fullAddressStr}. Notes: ${shipping_notes || 'Blind packaging'}`,
           items: normalizedItems,
+          total_amount: calculatedTotalAmount,
           status: 'new',
           is_dropship: true,
           dropship_sender_name: senderName,

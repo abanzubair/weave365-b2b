@@ -163,6 +163,8 @@ export async function handleCreateOrder(request) {
       phone: isDropship ? (dropship_details.sender_phone || phone) : phone,
       pincode: pincode,
       status: 'pending_payment',
+      payment_method: 'cashfree',
+      total_amount: Number(Number(total_amount).toFixed(2)),
       message: `CASHFREE CHECKOUT ORDER\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\nStatus: Pending Cashfree Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
@@ -255,6 +257,7 @@ export async function handleCreateOrder(request) {
     await supabase
       .from('orders')
       .update({
+        cf_order_id: cfOrderId,
         message: `${orderPayload.message}\nCashfree Order ID: ${cfOrderId}\nSession: ${cfData.payment_session_id}`,
       })
       .eq('id', dbOrderId);
@@ -316,14 +319,21 @@ export async function handleVerifyOrder(request) {
     const orderStatus = cfOrder.order_status; // 'PAID', 'ACTIVE', 'EXPIRED', 'FAILED'
     const isPaid = orderStatus === 'PAID';
 
-    if (isPaid && db_order_id) {
+    if (isPaid) {
       const supabase = getSupabaseAdmin();
-      await supabase
-        .from('orders')
-        .update({
-          status: 'paid',
-        })
-        .eq('id', db_order_id);
+      const updatePayload = {
+        status: 'paid',
+        payment_method: 'cashfree',
+      };
+      if (order_id) {
+        updatePayload.cf_order_id = order_id;
+      }
+
+      if (db_order_id) {
+        await supabase.from('orders').update(updatePayload).eq('id', db_order_id);
+      } else if (order_id) {
+        await supabase.from('orders').update(updatePayload).eq('cf_order_id', order_id);
+      }
     }
 
     return Response.json(
@@ -375,19 +385,36 @@ export async function handleWebhook(request) {
 
       if (cfOrderId) {
         const supabase = getSupabaseAdmin();
-        // Query order containing this Cashfree order ID in notes/message
-        const { data: matchedOrders } = await supabase
+        // 1. Instant indexed lookup via cf_order_id
+        let target = null;
+        const { data: indexedOrders } = await supabase
           .from('orders')
-          .select('id, status, message')
-          .ilike('message', `%${cfOrderId}%`)
+          .select('id, status, message, cf_order_id, cf_payment_id')
+          .eq('cf_order_id', cfOrderId)
           .limit(1);
 
-        if (matchedOrders && matchedOrders.length > 0) {
-          const target = matchedOrders[0];
+        if (indexedOrders && indexedOrders.length > 0) {
+          target = indexedOrders[0];
+        } else {
+          // Fallback to message search for legacy orders created before migration
+          const { data: legacyOrders } = await supabase
+            .from('orders')
+            .select('id, status, message, cf_order_id, cf_payment_id')
+            .ilike('message', `%${cfOrderId}%`)
+            .limit(1);
+          if (legacyOrders && legacyOrders.length > 0) {
+            target = legacyOrders[0];
+          }
+        }
+
+        if (target) {
           await supabase
             .from('orders')
             .update({
               status: 'paid',
+              payment_method: 'cashfree',
+              cf_order_id: cfOrderId,
+              cf_payment_id: paymentId ? String(paymentId) : (target.cf_payment_id || null),
               message: `${target.message || ''}\n\n[Webhook Confirmed] Payment ID: ${paymentId || 'N/A'} at ${new Date().toISOString()}`,
             })
             .eq('id', target.id);

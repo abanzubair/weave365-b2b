@@ -862,10 +862,11 @@ export function Account({
                             month: 'short',
                             year: 'numeric'
                           });
-                          const statusStyle = getStatusBadgeStyle(order.status);
-                          const orderTotal = order.items && Array.isArray(order.items)
-                            ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
-                            : 0;
+                          const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
+                            ? Number(order.total_amount)
+                            : (order.items && Array.isArray(order.items)
+                              ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                              : 0);
                           const isDropshipOrder = Boolean(order.is_dropship);
 
                           return (

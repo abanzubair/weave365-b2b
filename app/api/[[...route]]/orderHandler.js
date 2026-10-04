@@ -115,6 +115,7 @@ export async function POST(request) {
       phone: isDropship ? (dropship_details.sender_phone || phone) : phone,
       pincode: pincode,
       status: 'new',
+      total_amount: Number(Number(total_amount).toFixed(2)),
       message: orderMessage,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
