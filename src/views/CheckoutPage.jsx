@@ -15,6 +15,7 @@ import {
   ArrowDown,
   AlertCircle,
   ArrowRight,
+  Lock,
 } from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import {
@@ -458,7 +459,7 @@ export function CheckoutPage({
       // ⚠️ Result handling (Cashfree Web SDK v3):
       if (checkoutResult?.error) {
         // Modal dismissed or network interruption - don't show fatal error
-        setOrderError('Payment was not completed. You can retry whenever you are ready, or choose another payment option.');
+        setOrderError('Payment was cancelled. You can retry whenever you are ready.');
         setIsSubmitting(false);
         return;
       }
@@ -1323,9 +1324,9 @@ export function CheckoutPage({
                   </label>
                 </div>
 
-                {/* Payment Method Presentation */}
+                {/* Payment Method */}
                 <div className="checkout-section-title" style={{ marginTop: '20px' }}>
-                  <CreditCard size={18} /> Payment Method
+                  <CreditCard size={17} /> Payment Method
                 </div>
 
                 <div
@@ -1333,59 +1334,57 @@ export function CheckoutPage({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '16px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #2563eb',
+                    padding: '14px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
                     background: '#f8fafc',
                     gap: '12px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div
                       style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '8px',
-                        background: '#eff6ff',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '6px',
+                        background: '#f1f5f9',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#2563eb',
+                        color: '#475569',
                         flexShrink: 0,
                       }}
                     >
-                      <CreditCard size={22} />
+                      <CreditCard size={18} />
                     </div>
                     <div>
-                      <div>
-                        <span style={{ fontWeight: '700', fontSize: '0.94rem', color: '#0f172a' }}>
-                          Instant Online Payment
-                        </span>
+                      <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#0f172a' }}>
+                        Online Payment
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '3px' }}>
-                        UPI (Google Pay, PhonePe, Paytm, CRED), Credit/Debit Cards, NetBanking (50+ banks)
+                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
+                        UPI, Credit / Debit Cards, NetBanking
                       </div>
                     </div>
                   </div>
-                  <ShieldCheck size={22} style={{ color: '#16a34a', flexShrink: 0 }} />
+                  <Lock size={14} style={{ color: '#94a3b8', flexShrink: 0 }} />
                 </div>
 
                 {orderError && (
                   <div
                     style={{
-                      background: '#fef2f2',
-                      border: '1px solid #fecaca',
+                      background: '#fff7ed',
+                      border: '1px solid #ffedd5',
                       borderRadius: '8px',
-                      padding: '12px 14px',
-                      marginTop: '16px',
-                      color: '#991b1b',
-                      fontSize: '0.85rem',
+                      padding: '11px 14px',
+                      marginTop: '14px',
+                      color: '#9a3412',
+                      fontSize: '0.82rem',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                     }}
                   >
-                    <AlertCircle size={18} />
+                    <AlertCircle size={15} style={{ color: '#ea580c', flexShrink: 0 }} />
                     <span>{orderError}</span>
                   </div>
                 )}
@@ -1395,18 +1394,14 @@ export function CheckoutPage({
                   type="submit"
                   className="checkout-submit-btn"
                   disabled={isSubmitting}
-                  style={{ marginTop: '20px' }}
+                  style={{ marginTop: '18px' }}
                 >
                   {isSubmitting ? (
-                    'Connecting to Cashfree Gateway...'
+                    'Processing...'
                   ) : (
-                    <>Pay Securely with Cashfree • {formatMoney(total, 2)} <ArrowRight size={18} /></>
+                    <>Pay {formatMoney(total, 2)} <ArrowRight size={17} /></>
                   )}
                 </button>
-
-                <div style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '8px' }}>
-                  <ShieldCheck size={14} style={{ color: '#16a34a' }} /> Encrypted & Secure 256-Bit SSL Checkout • RBI Compliant
-                </div>
               </form>
         </div>
       </div>

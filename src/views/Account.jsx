@@ -468,8 +468,11 @@ export function Account({
 
 
   const orderHistoryList = useMemo(() => {
+    const UNPAID_STATUSES = ['pending_payment', 'draft', 'unpaid', 'failed', 'cancelled', 'payment_pending'];
     return (placedOrders || []).filter(o => {
       if (o._sourceTable === 'inquiries' || String(o.status || '').toLowerCase() === 'inquiry') return false;
+      const st = String(o.status || '').toLowerCase().trim();
+      if (UNPAID_STATUSES.includes(st)) return false;
       return true;
     });
   }, [placedOrders]);
@@ -862,6 +865,7 @@ export function Account({
                             month: 'short',
                             year: 'numeric'
                           });
+                          const statusStyle = getStatusBadgeStyle(order.status);
                           const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
                             ? Number(order.total_amount)
                             : (order.items && Array.isArray(order.items)

@@ -190,21 +190,48 @@ export async function handleCreateOrder(request) {
       })),
     };
 
-    const { data: dbOrder, error: dbError } = await supabase
-      .from('orders')
-      .insert(orderPayload)
-      .select('id')
-      .single();
+    let dbOrderId = null;
 
-    if (dbError) {
-      console.error('[Cashfree createOrder] Supabase insert error:', dbError);
-      return Response.json(
-        { success: false, error: 'Failed to initialize order record: ' + dbError.message },
-        { status: 500, headers: corsHeaders }
-      );
+    // Check if there is an existing pending_payment order for this user/phone created in the last 2 hours
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    let existingPendingQuery = supabase
+      .from('orders')
+      .select('id')
+      .eq('status', 'pending_payment')
+      .gt('created_at', twoHoursAgo)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (validUserId) {
+      existingPendingQuery = existingPendingQuery.eq('user_id', validUserId);
+    } else if (phone) {
+      existingPendingQuery = existingPendingQuery.eq('phone', phone);
     }
 
-    const dbOrderId = dbOrder.id;
+    const { data: existingOrders } = await existingPendingQuery;
+
+    if (existingOrders && existingOrders.length > 0) {
+      dbOrderId = existingOrders[0].id;
+      await supabase
+        .from('orders')
+        .update(orderPayload)
+        .eq('id', dbOrderId);
+    } else {
+      const { data: dbOrder, error: dbError } = await supabase
+        .from('orders')
+        .insert(orderPayload)
+        .select('id')
+        .single();
+
+      if (dbError) {
+        console.error('[Cashfree createOrder] Supabase insert error:', dbError);
+        return Response.json(
+          { success: false, error: 'Failed to initialize order record: ' + dbError.message },
+          { status: 500, headers: corsHeaders }
+        );
+      }
+      dbOrderId = dbOrder.id;
+    }
     // Cashfree order_id max 45 chars alphanumeric, underscore, hyphen
     const cleanDbId = dbOrderId.replace(/-/g, '').slice(0, 16);
     const cfOrderId = `CF_${cleanDbId}_${Date.now().toString().slice(-6)}`;
