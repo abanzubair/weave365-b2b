@@ -65,10 +65,7 @@ import {
   roundCurrency,
 } from './storefrontShared.jsx';
 import { useCountryCurrency } from './store/useCountryCurrency.js';
-const Newsletter = dynamic(
-  () => import('./components/Newsletter.jsx').then((m) => m.Newsletter),
-  { ssr: false }
-);
+import { Newsletter } from './components/Newsletter.jsx';
 import { ProductTrustStrip } from './components/ProductTrustStrip.jsx';
 const ProductCard = dynamic(
   () => import('./components/ProductCard.jsx').then((m) => m.ProductCard),
@@ -90,10 +87,7 @@ import { usePageSeo } from './hooks/usePageSeo.js';
 import { getStoredReferralCode, getOwnAffiliateCode } from './utils/influencerHelpers.js';
 import Breadcrumb from './components/Breadcrumb.jsx';
 import { SharpStar } from './components/icons.jsx';
-const ProductPageSkeleton = dynamic(
-  () => import('./components/ProductPageSkeleton.jsx'),
-  { ssr: false }
-);
+import ProductPageSkeleton from './components/ProductPageSkeleton.jsx';
 
 export function ProductDetailWrapper(props) {
   let product = props.productsById?.get(props.productId);

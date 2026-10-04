@@ -10,35 +10,14 @@ import { ArrowRight, ChevronLeft, ChevronRight, PackageCheck, Clock3, BadgePerce
 import { expandedProductCards, formatMoney, customerPrice } from '../storefrontShared.jsx';
 import { SectionTitle } from '../components/SectionTitle.jsx';
 import { priceNoticeForAccess } from '../utils/buyerAccess.js';
-import dynamic from 'next/dynamic';
-
 import { HomeProductRails } from '../components/HomeProductRails.jsx';
 import { HomeReviewsSlider } from '../components/HomeReviewsSlider.jsx';
-
-const WholesalePartnership = dynamic(
-  () => import('../components/WholesalePartnership.jsx').then((m) => m.WholesalePartnership),
-  { ssr: false }
-);
-const ResellerProgram = dynamic(
-  () => import('../components/ResellerProgram.jsx').then((m) => m.ResellerProgram),
-  { ssr: false }
-);
-const OccasionShowcase = dynamic(
-  () => import('../components/OccasionShowcase.jsx').then((m) => m.OccasionShowcase),
-  { ssr: false }
-);
-const PrivateLabelSection = dynamic(
-  () => import('../components/PrivateLabelSection.jsx').then((m) => m.PrivateLabelSection),
-  { ssr: false }
-);
-const Newsletter = dynamic(
-  () => import('../components/Newsletter.jsx').then((m) => m.Newsletter),
-  { ssr: false }
-);
-const HomeBlogSection = dynamic(
-  () => import('../components/HomeBlogSection.jsx').then((m) => m.HomeBlogSection),
-  { ssr: false }
-);
+import { WholesalePartnership } from '../components/WholesalePartnership.jsx';
+import { ResellerProgram } from '../components/ResellerProgram.jsx';
+import { OccasionShowcase } from '../components/OccasionShowcase.jsx';
+import { PrivateLabelSection } from '../components/PrivateLabelSection.jsx';
+import { Newsletter } from '../components/Newsletter.jsx';
+import { HomeBlogSection } from '../components/HomeBlogSection.jsx';
 import { storeConfig, seoCategoryMap, getCategorySlug, siteUrl } from '../config.js';
 import { assetSrc } from '../utils/assetSrc.js';
 import { getOptimizedImageUrl, getImageSrcSet, getOriginalImageUrl } from '../utils/imageOptimizer.js';

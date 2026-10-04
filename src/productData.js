@@ -516,9 +516,19 @@ function normalizeRow(row) {
   );
 }
 
+const STANDARD_CSV_HEADERS = [
+  'ID', 'Code', 'Stock In', 'Tag', 'Variant', 'Color',
+  'VID', 'Partner', 'Mobile', 'Pc / Set', 'Cost', 'B2B',
+  'B2C', 'D2C', 'Offer', 'COD', 'Quantity', 'Weight'
+];
+
 function normalizeCsvHeader(header, index) {
-  const trimmed = header.trim();
-  return trimmed || `__empty_${index}`;
+  const trimmed = String(header || '').trim();
+  if (trimmed) return trimmed;
+  if (typeof index === 'number' && index < STANDARD_CSV_HEADERS.length) {
+    return STANDARD_CSV_HEADERS[index];
+  }
+  return `__empty_${index}`;
 }
 
 function readCsvValue(row, ...keys) {
@@ -971,8 +981,12 @@ export async function syncSheetsToSupabase(supabaseOverride = null) {
     const Papa = (await import('papaparse')).default;
     const appendCacheBuster = (rawUrl) => {
       if (!rawUrl) return rawUrl;
-      const separator = rawUrl.includes('?') ? '&' : '?';
-      return `${rawUrl}${separator}_t=${Date.now()}`;
+      let url = rawUrl;
+      if (url.includes('/gviz/tq') && url.includes('tqx=out:csv')) {
+        url = url.replace('/gviz/tq', '/export').replace('tqx=out:csv', 'format=csv');
+      }
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}_t=${Date.now()}`;
     };
 
     const fetchText = async (url) => {
