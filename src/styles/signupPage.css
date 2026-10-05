@@ -1425,6 +1425,584 @@
 }
 
 /* ==========================================================================
+   New Signup Entry & Qualification Flow Styles
+   ========================================================================== */
+
+.signup-entry-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-entry-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 22px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.signup-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  user-select: none;
+  text-align: left;
+}
+
+.signup-entry-card:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.signup-entry-card.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.14);
+}
+
+.signup-entry-card-icon-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #f1f5f9;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.signup-entry-card.selected .signup-entry-card-icon-wrap {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.signup-entry-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.signup-entry-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  flex-wrap: wrap;
+}
+
+.signup-entry-card-title {
+  font-family: 'Manrope', var(--font-body), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.signup-entry-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.signup-entry-card.selected .signup-entry-card-badge {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.signup-entry-card-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.signup-entry-radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.signup-entry-card.selected .signup-entry-radio-circle {
+  border-color: #4f46e5;
+  background: #4f46e5;
+}
+
+.signup-entry-radio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
+.signup-entry-card.selected .signup-entry-radio-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.signup-entry-continue-btn {
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   Qualification Form Views
+   ========================================================================== */
+
+.signup-qual-form-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-qual-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.signup-qual-step-pill {
+  display: inline-flex;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  padding: 3px 11px;
+  border-radius: 20px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.signup-qual-questions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.signup-qual-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.signup-supplier-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.signup-supplier-section-title {
+  font-family: 'Manrope', var(--font-body), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+
+.signup-qual-question-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.signup-qual-question-card.has-error {
+  border-color: #ef4444;
+  background: #fffafa;
+  box-shadow: 0 0 0 1px #ef4444;
+}
+
+.signup-field.has-error .signup-input {
+  border-color: #ef4444;
+  background: #fffafa;
+}
+
+.signup-qual-qlabel {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.signup-qual-required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.signup-qual-qdesc {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: -2px 0 4px;
+}
+
+.signup-qual-radio-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.signup-qual-radio-grid-2col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.signup-qual-radio-grid-stack {
+  grid-template-columns: 1fr;
+}
+
+.signup-qual-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.signup-qual-radio-inline {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.signup-qual-radio-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.signup-qual-radio-option:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.signup-qual-radio-option.selected {
+  background: #eef2ff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.signup-qual-radio-option.inline {
+  flex: 1;
+  justify-content: center;
+}
+
+.signup-qual-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.signup-qual-radio-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.signup-qual-radio-option.selected .signup-qual-radio-indicator {
+  border-color: #4f46e5;
+  background: #4f46e5;
+}
+
+.signup-qual-radio-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
+.signup-qual-radio-option.selected .signup-qual-radio-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.signup-qual-option-text {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.signup-qual-radio-option.selected .signup-qual-option-text {
+  color: #312e81;
+  font-weight: 600;
+}
+
+.signup-qual-checkbox-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.signup-qual-checkbox-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.signup-qual-checkbox-option:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.signup-qual-checkbox-option.selected {
+  background: #eef2ff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.signup-qual-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.signup-qual-checkbox-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.signup-qual-checkbox-option.selected .signup-qual-checkbox-box {
+  border-color: #4f46e5;
+  background: #4f46e5;
+}
+
+.signup-qual-conditional {
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.signup-role-chip-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.signup-role-chip-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.signup-role-chip-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.signup-role-chip-badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4338ca;
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.signup-role-chip-change-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f46e5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.signup-role-chip-change-btn:hover {
+  background: #eef2ff;
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .signup-qual-radio-grid-2col {
+    grid-template-columns: 1fr;
+  }
+  .signup-qual-grid-2col {
+    grid-template-columns: 1fr;
+  }
+  .signup-supplier-section {
+    padding: 16px 14px;
+  }
+}
+
+/* ==========================================================================
+   Verified Supplier Summary Card (Prevents duplicate fields in Account Form)
+   ========================================================================== */
+.signup-supplier-verified-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+
+.signup-supplier-verified-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.signup-supplier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.signup-supplier-firm-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.signup-supplier-contact-line {
+  font-size: 13px;
+  color: #475569;
+  margin: 0 0 3px;
+}
+
+.signup-supplier-loc-line {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+.signup-supplier-edit-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.signup-supplier-edit-btn:hover {
+  background: #eef2ff;
+  border-color: #4338ca;
+}
+
+/* ==========================================================================
    Complete Scrollbar Removal (Chrome, Safari, Firefox, Edge, Touch)
    ========================================================================== */
 html:has(.signup-page-wrapper),

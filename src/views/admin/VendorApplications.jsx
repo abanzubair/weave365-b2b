@@ -1457,6 +1457,80 @@ export default function VendorApplications({
                   </div>
                 </div>
               </div>
+
+              {/* Supplier Qualification / Onboarding Details Card (if submitted via onboarding flow) */}
+              {inspectVendor.qualification && (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={16} style={{ color: '#4f46e5' }} />
+                    Supplier Onboarding & Capability Profile
+                  </h4>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', fontSize: '13px' }}>
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>GST Registration</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.has_gst || 'No'}</strong>
+                      {inspectVendor.qualification.gstin && (
+                        <div style={{ fontSize: '12px', color: '#4338ca', marginTop: '2px', fontWeight: 600 }}>
+                          GSTIN: {inspectVendor.qualification.gstin}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Business Role</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.business_type || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Years in Business</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.business_experience || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Wholesale Price Range</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.wholesale_price_range || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Weaving Specialisation</span>
+                      <strong style={{ color: '#0f172a' }}>
+                        {Array.isArray(inspectVendor.qualification.weaving_specialisation)
+                          ? inspectVendor.qualification.weaving_specialisation.join(', ')
+                          : inspectVendor.qualification.weaving_specialisation || 'N/A'}
+                      </strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Manufacturing Location</span>
+                      <strong style={{ color: '#0f172a' }}>
+                        {inspectVendor.qualification.manufacturing_location || 'N/A'}
+                        {inspectVendor.qualification.other_city_name ? ` (${inspectVendor.qualification.other_city_name})` : ''}
+                      </strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Single-Piece Supply</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.single_piece_supply || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Repeat Supply Capability</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.repeat_supply || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Website Catalogue</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.has_catalogue || 'N/A'}</strong>
+                    </div>
+
+                    <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Catalogue Source</span>
+                      <strong style={{ color: '#0f172a' }}>{inspectVendor.qualification.catalogue_source || 'N/A'}</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

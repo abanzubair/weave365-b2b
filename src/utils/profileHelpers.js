@@ -34,6 +34,8 @@ export function profileRowFromUser(user) {
     website: buyerProfile.website || '',
     social_handle: buyerProfile.social_handle || buyerProfile.socialHandle || '',
     acquisition: acquisition || undefined,
+    user_type: buyerProfile.user_type || user?.user_metadata?.user_type || (isVendor ? 'supplier' : 'customer'),
+    qualification: buyerProfile.qualification || user?.user_metadata?.qualification || null,
     buyer_type: isVendor ? 'vendor' : (buyerProfile.buyer_type || 'customer'),
     buyer_subtype: buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : 'Customer'),
     role: isVendor ? 'vendor' : (buyerProfile.role || user.user_metadata?.role || 'customer'),
@@ -78,9 +80,16 @@ export async function syncProfileFromUser(user) {
     .upsert(profileRow, { onConflict: 'id' });
 
   // If the columns don't exist yet on public.profiles (e.g. pending DB migration),
-  // retry without acquisition, website and social_handle to ensure user signup/login is not blocked.
-  if (error && (error.message?.includes('acquisition') || error.message?.includes('website') || error.message?.includes('social_handle') || error.code === 'PGRST204')) {
-    const { acquisition, website, social_handle, ...fallbackRow } = profileRow;
+  // retry without acquisition, website, social_handle, qualification, user_type to ensure user signup/login is not blocked.
+  if (error && (
+    error.message?.includes('acquisition') ||
+    error.message?.includes('website') ||
+    error.message?.includes('social_handle') ||
+    error.message?.includes('qualification') ||
+    error.message?.includes('user_type') ||
+    error.code === 'PGRST204'
+  )) {
+    const { acquisition, website, social_handle, qualification, user_type, ...fallbackRow } = profileRow;
     const retryResult = await supabase
       .from('profiles')
       .upsert(fallbackRow, { onConflict: 'id' });

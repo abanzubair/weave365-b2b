@@ -526,6 +526,11 @@ export default function BuyerPipeline({
                       <span className="pipeline-type-label">
                         {getBuyerTypeLabel(profile)}
                       </span>
+                      {profile.qualification?.monthly_budget_label && (
+                        <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px' }} title={`Monthly Budget: ${profile.qualification.monthly_budget_label}`}>
+                          {profile.qualification.monthly_budget_label}
+                        </span>
+                      )}
                     </td>
                     <td className="pipeline-col-items">
                       <div className="pipeline-items-cell">

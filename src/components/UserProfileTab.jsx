@@ -23,7 +23,7 @@ import {
 } from './icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
-import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
+import { applyAutoApprovalToBuyerProfile, isVendorProfile } from '../utils/buyerAccess.js';
 import { saveCachedProfile, saveCachedUser } from '../utils/authCache.js';
 
 const countryCodes = [
@@ -178,10 +178,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
     setSaving(true);
 
     try {
-      const matchedRole = ACCOUNT_ROLE_OPTIONS.find(
-        (opt) => opt.buyerSubtype === formData.buyerSubtype
-      );
-      const isVendor = matchedRole?.buyerType === 'vendor' || formData.buyerSubtype === 'Vendor';
+      const isVendor = isVendorProfile(buyerProfile) || isVendorProfile({ buyer_type: formData.buyerSubtype, buyer_subtype: formData.buyerSubtype });
 
       const updatedBuyerProfile = applyAutoApprovalToBuyerProfile({
         ...(buyerProfile || {}),

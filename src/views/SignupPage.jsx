@@ -1,14 +1,15 @@
 /**
  * @file SignupPage.jsx
  * @description Dedicated Signup & Authentication Page matching the modern split-screen
- * mesh-gradient design. Implements an initial role selection step for "Customer Signup"
- * (Wholesaler, Reseller, User) vs "Partner Signup" (Vendor / Weaver) and preserves all
- * corporate B2B profile fields and Supabase authentication.
+ * mesh-gradient design. Implements the new 3-way Signup Entry Flow:
+ * - Business: Qualification Form (5 Questions) -> Account Creation
+ * - Customer: Direct Account Creation
+ * - Supplier: Supplier / Vendor Onboarding (Sections 5.1-5.4) -> Account Creation
  */
 'use client';
 import '../styles/signupPage.css';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,44 +18,27 @@ import {
   EyeOff,
   Lock,
   Mail,
-  ShieldCheck,
   Store,
-  ShoppingBag,
-  Users,
   AlertCircle,
   Loader2,
-  Sparkles,
-  Clock,
-  MessageCircle,
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { syncProfileFromUser, loadProfileForUser, isProfileComplete } from '../utils/profileHelpers.js';
-
 import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
 import { clearCachedAuth } from '../utils/authCache.js';
 
-const GoogleIcon = () => (
-  <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
-    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
-    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
-  </svg>
-);
-
-const BehanceIcon = () => (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
-    <path d="M7.5 13.5c-1.6 0-2.3.8-2.3 2 0 1.2.7 2 2.3 2 1.3 0 2-.6 2.2-1.5h1.9c-.3 1.9-1.9 3-4.1 3-2.8 0-4.4-1.8-4.4-4.4 0-2.7 1.7-4.5 4.5-4.5 2.5 0 4.1 1.6 4.1 4.2v.7H5.2c.1 1 .8 1.6 2.3 1.6.9 0 1.6-.3 1.9-.9h2.1c-.5 1.4-1.7 2.1-4 2.1zM5.3 12h3.9c-.1-.9-.7-1.4-1.9-1.4-1.2 0-1.9.5-2 1.4zm11.3-4.8h4.5v1.4h-4.5V7.2zm4.1 5.3c0-1.8-1.2-2.7-2.8-2.7h-3.4v8.2h3.6c1.8 0 3-1 3-2.8 0-1.1-.6-1.9-1.5-2.2 1.4-.4 2.1-1.3 2.1-2.5zm-4.3-.2h1.4c.8 0 1.3.4 1.3 1.2 0 .7-.5 1.1-1.3 1.1h-1.4v-2.3zm1.6 5.8h-1.6v-2.4h1.6c.9 0 1.4.4 1.4 1.2 0 .8-.5 1.2-1.4 1.2z" />
-  </svg>
-);
-
-const FacebookIcon = () => (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="#1877F2" aria-hidden="true">
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </svg>
-);
+import { RoleEntryCards } from '../components/signup/RoleEntryCards.jsx';
+import { BusinessQualificationForm } from '../components/signup/BusinessQualificationForm.jsx';
+import { SupplierOnboardingForm } from '../components/signup/SupplierOnboardingForm.jsx';
+import {
+  BUSINESS_TYPES,
+  INITIAL_BUSINESS_FORM,
+  INITIAL_SUPPLIER_FORM,
+  validateBusinessQualification,
+  validateSupplierQualification,
+} from '../components/signup/signupConstants.js';
 
 const countryCodes = [
   { value: '+91', label: 'India +91' },
@@ -67,17 +51,6 @@ const countryCodes = [
   { value: '+974', label: 'Qatar +974' },
   { value: '+966', label: 'Saudi Arabia +966' },
   { value: '+965', label: 'Kuwait +965' },
-];
-
-const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Under 999'];
-
-const ACCOUNT_ROLE_OPTIONS = [
-  { id: 'wholesaler', label: 'Wholesaler', buyerType: 'customer', buyerSubtype: 'Wholesaler' },
-  { id: 'boutique', label: 'Boutique', buyerType: 'customer', buyerSubtype: 'Boutique' },
-  { id: 'reseller', label: 'Reseller', buyerType: 'customer', buyerSubtype: 'Reseller' },
-  { id: 'customer', label: 'Buyer', buyerType: 'customer', buyerSubtype: 'Customer' },
-  { id: 'online_store', label: 'Website Owner', buyerType: 'customer', buyerSubtype: 'Online Store' },
-  { id: 'vendor', label: 'Sell on Weave 365', buyerType: 'vendor', buyerSubtype: 'Vendor', isSeller: true },
 ];
 
 function toTitleCaseName(value) {
@@ -141,17 +114,11 @@ export function SignupPage({
   );
 
   const [mode, setMode] = useState(() => {
-    if (isResettingPassword) {
-      return 'reset-password';
-    }
-    if (isOnboarding) {
-      return 'complete-profile';
-    }
-    if (initialMode === 'complete-profile' || initialMode === 'completion-profile') {
-      return 'login';
-    }
+    if (isResettingPassword) return 'reset-password';
+    if (isOnboarding) return 'complete-profile';
+    if (initialMode === 'complete-profile' || initialMode === 'completion-profile') return 'login';
     return initialMode || 'login';
-  }); // 'register' | 'login' | 'forgot-password' | 'reset-password' | 'complete-profile'
+  });
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -160,6 +127,92 @@ export function SignupPage({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  // ---------------------------------------------------------------------------
+  // NEW SIGNUP FLOW STATE
+  // ---------------------------------------------------------------------------
+  const [selectedUserType, setSelectedUserType] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('weave365_signup_flow');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.selectedUserType) return parsed.selectedUserType;
+        }
+      } catch {}
+    }
+    if (initialType) {
+      const lower = String(initialType).toLowerCase().trim();
+      if (lower === 'partner' || lower === 'vendor' || lower === 'seller' || lower === 'supplier') {
+        return 'supplier';
+      }
+      if (lower === 'customer' || lower === 'buyer' || lower === 'user') {
+        return 'customer';
+      }
+      return 'business';
+    }
+    return null;
+  }); // 'business' | 'customer' | 'supplier' | null
+
+  const [signupStep, setSignupStep] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('weave365_signup_flow');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.signupStep) return parsed.signupStep;
+        }
+      } catch {}
+    }
+    if (initialType) {
+      const lower = String(initialType).toLowerCase().trim();
+      if (lower === 'partner' || lower === 'vendor' || lower === 'seller' || lower === 'supplier') {
+        return 'supplier-qualification';
+      }
+      if (lower === 'customer' || lower === 'buyer' || lower === 'user') {
+        return 'account-form';
+      }
+      return 'business-qualification';
+    }
+    return 'select-type';
+  }); // 'select-type' | 'business-qualification' | 'supplier-qualification' | 'account-form'
+
+  const [businessForm, setBusinessForm] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('weave365_signup_flow');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.businessForm) return { ...INITIAL_BUSINESS_FORM, ...parsed.businessForm };
+        }
+      } catch {}
+    }
+    if (initialType) {
+      const lower = String(initialType).toLowerCase().trim();
+      const matched = BUSINESS_TYPES.find(b => b.id === lower || b.subtype.toLowerCase() === lower);
+      if (matched) {
+        return { ...INITIAL_BUSINESS_FORM, business_type: matched.id };
+      }
+    }
+    return { ...INITIAL_BUSINESS_FORM };
+  });
+
+  const [supplierForm, setSupplierForm] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('weave365_signup_flow');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.supplierForm) return { ...INITIAL_SUPPLIER_FORM, ...parsed.supplierForm };
+        }
+      } catch {}
+    }
+    return { ...INITIAL_SUPPLIER_FORM };
+  });
+
+  const [qualValidationError, setQualValidationError] = useState('');
+  const [qualErrorField, setQualErrorField] = useState('');
+
+  // Standard Account Profile fields
   const [profile, setProfile] = useState({
     fullName: '',
     countryCode: '+91',
@@ -176,6 +229,52 @@ export function SignupPage({
     interestedCategories: ['Saree'],
     rememberMe: false,
   });
+
+  // Sync draft to sessionStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      sessionStorage.setItem(
+        'weave365_signup_flow',
+        JSON.stringify({
+          selectedUserType,
+          signupStep,
+          businessForm,
+          supplierForm,
+        })
+      );
+    } catch {}
+  }, [selectedUserType, signupStep, businessForm, supplierForm]);
+
+  // Sync initial type when passed via props / query params
+  useEffect(() => {
+    if (initialType) {
+      const lower = String(initialType).toLowerCase().trim();
+      if (lower === 'partner' || lower === 'vendor' || lower === 'seller' || lower === 'supplier') {
+        setSelectedUserType('supplier');
+        setSignupStep('supplier-qualification');
+        setProfile((prev) => ({ ...prev, buyerType: 'vendor', buyerSubtype: 'Supplier' }));
+      } else if (lower === 'customer' || lower === 'buyer' || lower === 'user') {
+        setSelectedUserType('customer');
+        setSignupStep('account-form');
+        setProfile((prev) => ({ ...prev, buyerType: 'customer', buyerSubtype: 'Customer' }));
+      } else {
+        setSelectedUserType('business');
+        const matched = BUSINESS_TYPES.find(
+          (b) =>
+            b.id === lower ||
+            b.subtype.toLowerCase() === lower ||
+            (lower === 'website_owner' && b.id === 'online_store') ||
+            (lower === 'website owner' && b.id === 'online_store')
+        );
+        if (matched) {
+          setBusinessForm((prev) => ({ ...prev, business_type: matched.id }));
+          setProfile((prev) => ({ ...prev, buyerSubtype: matched.subtype, buyerType: 'customer' }));
+        }
+        setSignupStep('business-qualification');
+      }
+    }
+  }, [initialType]);
 
   async function handleSignOut() {
     setLoading(true);
@@ -209,30 +308,6 @@ export function SignupPage({
       setLoading(false);
     }
   }
-
-  // Sync initial type when passed via props / query params
-  useEffect(() => {
-    if (initialType) {
-      const lower = String(initialType).toLowerCase().trim();
-      const matched = ACCOUNT_ROLE_OPTIONS.find(
-        (opt) =>
-          opt.id === lower ||
-          opt.buyerType === lower ||
-          opt.buyerSubtype.toLowerCase() === lower ||
-          (lower === 'buyer' && opt.id === 'customer') ||
-          (lower === 'partner' && opt.id === 'vendor') ||
-          (lower === 'seller' && opt.id === 'vendor') ||
-          ((lower === 'website_owner' || lower === 'website owner') && opt.id === 'online_store')
-      );
-      if (matched) {
-        setProfile((prev) => ({
-          ...prev,
-          buyerType: matched.buyerType,
-          buyerSubtype: matched.buyerSubtype,
-        }));
-      }
-    }
-  }, [initialType]);
 
   // Pre-fill authenticated Google/User info & auto-complete pending registration if present
   useEffect(() => {
@@ -270,7 +345,7 @@ export function SignupPage({
         const cleanPincode = normalizePincodeInput(pending.pincode);
 
         if (cleanName && cleanWhatsapp.length === 10 && pending.city && cleanPincode.length === 6) {
-          const isVendor = pending.buyerType === 'vendor' || pending.buyerSubtype === 'Vendor';
+          const isVendor = pending.buyerType === 'vendor' || pending.buyerSubtype === 'Vendor' || pending.user_type === 'supplier';
           const newProfile = {
             id: user.id,
             email: user.email,
@@ -281,6 +356,8 @@ export function SignupPage({
             whatsapp: cleanWhatsapp,
             whatsapp_country_code: pending.countryCode || '+91',
             whatsapp_number: cleanWhatsapp,
+            user_type: pending.user_type || (isVendor ? 'supplier' : 'customer'),
+            qualification: pending.qualification || null,
             buyer_type: isVendor ? 'vendor' : (pending.buyerType || 'customer'),
             buyer_subtype: pending.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
             role: isVendor ? 'vendor' : 'customer',
@@ -301,6 +378,8 @@ export function SignupPage({
               await supabase.auth.updateUser({
                 data: {
                   buyer_profile: newProfile,
+                  user_type: newProfile.user_type,
+                  qualification: newProfile.qualification,
                   role: isVendor ? 'vendor' : 'customer',
                   full_name: cleanName,
                 },
@@ -362,40 +441,173 @@ export function SignupPage({
     setProfile((current) => ({ ...current, [field]: value }));
   }
 
-  function toggleCategory(category) {
-    setProfile((current) => {
-      const exists = current.interestedCategories.includes(category);
-      return {
-        ...current,
-        interestedCategories: exists
-          ? current.interestedCategories.filter((item) => item !== category)
-          : [...current.interestedCategories, category],
-      };
-    });
+  // ---------------------------------------------------------------------------
+  // STEP NAVIGATION HANDLERS (ENFORCING BYPASS PREVENTION)
+  // ---------------------------------------------------------------------------
+  function handleSelectUserType(typeId) {
+    setSelectedUserType(typeId);
+    setQualValidationError('');
+    setQualErrorField('');
+
+    if (typeId === 'customer') {
+      setProfile((prev) => ({
+        ...prev,
+        buyerType: 'customer',
+        buyerSubtype: 'Customer',
+      }));
+      setSignupStep('account-form');
+    } else if (typeId === 'business') {
+      setProfile((prev) => ({
+        ...prev,
+        buyerType: 'customer',
+      }));
+      setSignupStep('business-qualification');
+    } else if (typeId === 'supplier') {
+      setProfile((prev) => ({
+        ...prev,
+        buyerType: 'vendor',
+        buyerSubtype: 'Supplier',
+      }));
+      setSignupStep('supplier-qualification');
+    }
   }
 
+  function handleContinueBusinessQualification() {
+    const val = validateBusinessQualification(businessForm);
+    if (!val.isValid) {
+      setQualValidationError(val.error);
+      setQualErrorField(val.field);
+      return;
+    }
+    setQualValidationError('');
+    setQualErrorField('');
+
+    const matched = BUSINESS_TYPES.find((b) => b.id === businessForm.business_type);
+    setProfile((prev) => ({
+      ...prev,
+      buyerSubtype: matched?.subtype || 'Wholesaler',
+      buyerType: 'customer',
+    }));
+    setSignupStep('account-form');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function handleContinueSupplierQualification() {
+    const val = validateSupplierQualification(supplierForm);
+    if (!val.isValid) {
+      setQualValidationError(val.error);
+      setQualErrorField(val.field);
+      return;
+    }
+    setQualValidationError('');
+    setQualErrorField('');
+
+    // Pre-populate account details from supplier answers
+    setProfile((prev) => ({
+      ...prev,
+      fullName: supplierForm.contact_person || prev.fullName,
+      businessName: supplierForm.business_name || prev.businessName,
+      city: supplierForm.location_city || prev.city,
+      whatsapp: String(supplierForm.phone || '').replace(/\D/g, '').slice(0, 10) || prev.whatsapp,
+      website: (supplierForm.ecommerce_website || '').trim() || prev.website,
+      socialHandle: (supplierForm.instagram || '').trim() || prev.socialHandle,
+      buyerType: 'vendor',
+      buyerSubtype: supplierForm.business_type || 'Supplier',
+    }));
+    if (supplierForm.business_email) {
+      setEmail(supplierForm.business_email);
+    }
+    setSignupStep('account-form');
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function handleBackToRoleSelection() {
+    setSignupStep('select-type');
+    setQualValidationError('');
+    setQualErrorField('');
+  }
+
+  function handleBackFromAccountForm() {
+    if (selectedUserType === 'business') {
+      setSignupStep('business-qualification');
+    } else if (selectedUserType === 'supplier') {
+      setSignupStep('supplier-qualification');
+    } else {
+      setSignupStep('select-type');
+    }
+    setQualValidationError('');
+    setQualErrorField('');
+  }
+
+  // ---------------------------------------------------------------------------
+  // PROFILE BUILDER
+  // ---------------------------------------------------------------------------
   function buildBuyerProfile() {
-    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
-    const isVendor = profile.buyerType === 'vendor' ||
-      String(profile.buyerSubtype || '').toLowerCase().includes('vendor') ||
-      String(profile.buyerSubtype || '').toLowerCase().includes('weaver');
+    const isVendor = selectedUserType === 'supplier';
+    const cleanName = toTitleCaseName(
+      isVendor ? (supplierForm.contact_person || profile.fullName) : profile.fullName
+    );
+    const cleanWhatsapp = String(
+      isVendor ? (supplierForm.phone || profile.whatsapp) : (profile.whatsapp || '')
+    ).replace(/\D/g, '').slice(0, 10);
+    const cleanCity = (
+      isVendor ? (supplierForm.location_city || profile.city) : (profile.city || '')
+    ).trim();
+    const cleanBusinessName = (
+      isVendor ? (supplierForm.business_name || profile.businessName) : (profile.businessName || '')
+    ).trim();
+    const cleanWebsite = (
+      isVendor ? (supplierForm.ecommerce_website || profile.website) : (profile.website || '')
+    ).trim();
+    const cleanSocial = (
+      isVendor ? (supplierForm.instagram || profile.socialHandle) : (profile.socialHandle || '')
+    ).trim();
+
+    let buyerSubtype = 'Customer';
+    if (selectedUserType === 'business') {
+      const matched = BUSINESS_TYPES.find((b) => b.id === businessForm.business_type);
+      buyerSubtype = matched?.subtype || profile.buyerSubtype || 'Wholesaler';
+    } else if (selectedUserType === 'supplier') {
+      buyerSubtype = supplierForm.business_type || 'Supplier';
+    } else {
+      buyerSubtype = 'Customer';
+    }
+
+    const qualificationData = selectedUserType === 'business'
+      ? {
+          ...businessForm,
+          user_type: 'business',
+          business_type_label: BUSINESS_TYPES.find((b) => b.id === businessForm.business_type)?.label || 'Wholesaler',
+        }
+      : selectedUserType === 'supplier'
+        ? {
+            ...supplierForm,
+            user_type: 'supplier',
+          }
+        : null;
 
     return applyAutoApprovalToBuyerProfile({
-      full_name: toTitleCaseName(profile.fullName),
+      full_name: cleanName,
       whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
       whatsapp_country_code: profile.countryCode,
       whatsapp_number: cleanWhatsapp,
-      business_name: profile.businessName.trim(),
-      website: (profile.website || '').trim(),
-      social_handle: (profile.socialHandle || '').trim(),
+      business_name: cleanBusinessName,
+      website: cleanWebsite,
+      social_handle: cleanSocial,
+      user_type: selectedUserType || (isVendor ? 'supplier' : 'customer'),
+      qualification: qualificationData,
       buyer_type: isVendor ? 'vendor' : 'customer',
-      buyer_subtype: profile.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
+      buyer_subtype: buyerSubtype,
       role: isVendor ? 'vendor' : 'customer',
-      buying_behavior: profile.buyingBehavior,
-      city: profile.city?.trim() || '',
+      buying_behavior: profile.buyingBehavior || 'instant',
+      city: cleanCity,
       state: profile.state?.trim() || '',
       pincode: normalizePincodeInput(profile.pincode),
-      interested_categories: profile.interestedCategories,
+      interested_categories: isVendor ? (supplierForm.supplied_products || ['Saree']) : (profile.interestedCategories || ['Saree']),
       price_group: 'approved',
       approval_status: 'approved',
     });
@@ -405,7 +617,6 @@ export function SignupPage({
     const clean = String(inputEmail || '').trim().toLowerCase();
     if (!clean) return false;
 
-    // 1. Try server-side check-email endpoint (bypasses RLS)
     try {
       const res = await fetch('/api/check-email', {
         method: 'POST',
@@ -420,7 +631,6 @@ export function SignupPage({
       console.warn('API check-email error:', e);
     }
 
-    // 2. Client-side Supabase query fallback
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
@@ -452,7 +662,6 @@ export function SignupPage({
       return;
     }
 
-    // Verify if email exists in database before sending password reset link
     const exists = await checkEmailExists(cleanEmail);
     if (!exists) {
       setMessage('account-not-found');
@@ -493,7 +702,7 @@ export function SignupPage({
     if (error) {
       setMessage(error.message);
     } else {
-      await supabase.auth.signOut().catch(() => { });
+      await supabase.auth.signOut().catch(() => {});
       if (setUser) setUser(null);
       if (setBuyerProfile) setBuyerProfile(null);
       setMessage('Password updated successfully! Please sign in with your new password.');
@@ -527,10 +736,32 @@ export function SignupPage({
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // GOOGLE REGISTRATION (WITH STRICT BYPASS PREVENTION)
+  // ---------------------------------------------------------------------------
   function handleGoogleRegister() {
-    if (!profile.buyerSubtype) {
-      setMessage('Please select your Business Type.');
+    if (!selectedUserType) {
+      setMessage('Please select which best describes you.');
+      setSignupStep('select-type');
       return;
+    }
+
+    if (selectedUserType === 'business') {
+      const bVal = validateBusinessQualification(businessForm);
+      if (!bVal.isValid) {
+        setQualValidationError(bVal.error);
+        setQualErrorField(bVal.field);
+        setSignupStep('business-qualification');
+        return;
+      }
+    } else if (selectedUserType === 'supplier') {
+      const sVal = validateSupplierQualification(supplierForm);
+      if (!sVal.isValid) {
+        setQualValidationError(sVal.error);
+        setQualErrorField(sVal.field);
+        setSignupStep('supplier-qualification');
+        return;
+      }
     }
 
     const cleanName = toTitleCaseName(profile.fullName);
@@ -550,6 +781,26 @@ export function SignupPage({
       return;
     }
 
+    const isVendor = selectedUserType === 'supplier';
+    const buyerSubtype = selectedUserType === 'business'
+      ? (BUSINESS_TYPES.find((b) => b.id === businessForm.business_type)?.subtype || 'Wholesaler')
+      : selectedUserType === 'supplier'
+        ? (supplierForm.business_type || 'Supplier')
+        : 'Customer';
+
+    const qualificationData = selectedUserType === 'business'
+      ? {
+          ...businessForm,
+          user_type: 'business',
+          business_type_label: BUSINESS_TYPES.find((b) => b.id === businessForm.business_type)?.label || 'Wholesaler',
+        }
+      : selectedUserType === 'supplier'
+        ? {
+            ...supplierForm,
+            user_type: 'supplier',
+          }
+        : null;
+
     const pendingProfile = {
       fullName: cleanName,
       whatsapp: cleanWhatsapp,
@@ -557,12 +808,15 @@ export function SignupPage({
       businessName: profile.businessName || '',
       website: (profile.website || '').trim(),
       socialHandle: (profile.socialHandle || '').trim(),
-      buyerType: profile.buyerType || 'customer',
-      buyerSubtype: profile.buyerSubtype || 'Customer',
+      user_type: selectedUserType,
+      qualification: qualificationData,
+      buyerType: isVendor ? 'vendor' : 'customer',
+      buyerSubtype: buyerSubtype,
+      role: isVendor ? 'vendor' : 'customer',
       city: profile.city.trim(),
       state: profile.state.trim(),
       pincode: cleanPincode,
-      interestedCategories: profile.interestedCategories || ['Saree'],
+      interestedCategories: isVendor ? (supplierForm.supplied_products || ['Saree']) : (profile.interestedCategories || ['Saree']),
     };
 
     try {
@@ -574,10 +828,10 @@ export function SignupPage({
     handleSocialLogin('google');
   }
 
-  const cleanSellerName = profile.fullName || '';
-  const cleanSellerBusiness = profile.businessName || '';
-  const cleanSellerPhone = profile.whatsapp || '';
-  const cleanSellerCity = profile.city || '';
+  const cleanSellerName = profile.fullName || supplierForm.contact_person || '';
+  const cleanSellerBusiness = profile.businessName || supplierForm.business_name || '';
+  const cleanSellerPhone = profile.whatsapp || supplierForm.phone || '';
+  const cleanSellerCity = profile.city || supplierForm.location_city || '';
 
   const sellerWaMessage = [
     'Hello Weave 365 Onboarding Team,',
@@ -593,6 +847,9 @@ export function SignupPage({
 
   const sellerWaUrl = `https://wa.me/919919101369?text=${encodeURIComponent(sellerWaMessage)}`;
 
+  // ---------------------------------------------------------------------------
+  // FORM SUBMISSION (WITH COMPLETE BYPASS ENFORCEMENT)
+  // ---------------------------------------------------------------------------
   async function submit(event) {
     event.preventDefault();
     if (loading) return;
@@ -614,10 +871,31 @@ export function SignupPage({
 
       // Handle Post-Google Onboarding / Complete Profile
       if (mode === 'complete-profile') {
-        if (!profile.buyerSubtype) {
-          setMessage('Please select your Business Type.');
+        if (!selectedUserType) {
+          setMessage('Please select which best describes you.');
+          setSignupStep('select-type');
           setLoading(false);
           return;
+        }
+
+        if (selectedUserType === 'business') {
+          const bVal = validateBusinessQualification(businessForm);
+          if (!bVal.isValid) {
+            setQualValidationError(bVal.error);
+            setQualErrorField(bVal.field);
+            setSignupStep('business-qualification');
+            setLoading(false);
+            return;
+          }
+        } else if (selectedUserType === 'supplier') {
+          const sVal = validateSupplierQualification(supplierForm);
+          if (!sVal.isValid) {
+            setQualValidationError(sVal.error);
+            setQualErrorField(sVal.field);
+            setSignupStep('supplier-qualification');
+            setLoading(false);
+            return;
+          }
         }
 
         const cleanName = toTitleCaseName(profile.fullName);
@@ -644,6 +922,8 @@ export function SignupPage({
           const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
             data: {
               buyer_profile: newProfile,
+              user_type: selectedUserType,
+              qualification: newProfile.qualification,
               role: isVendor ? 'vendor' : 'customer',
               full_name: cleanName,
             },
@@ -670,31 +950,75 @@ export function SignupPage({
 
         setMessage('Profile completed successfully! Redirecting...');
         setTimeout(() => {
-          navigate(profile.buyerType === 'vendor' ? 'account' : 'home');
+          navigate(newProfile.buyer_type === 'vendor' ? 'account' : 'home');
         }, 700);
         return;
       }
 
       if (mode === 'register') {
-        if (!profile.buyerSubtype) {
-          setMessage('Please select your Business Type.');
+        if (!selectedUserType) {
+          setMessage('Please select which best describes you.');
+          setSignupStep('select-type');
           setLoading(false);
           return;
         }
 
-        const cleanName = toTitleCaseName(profile.fullName);
-        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+        if (selectedUserType === 'business') {
+          const bVal = validateBusinessQualification(businessForm);
+          if (!bVal.isValid) {
+            setQualValidationError(bVal.error);
+            setQualErrorField(bVal.field);
+            setSignupStep('business-qualification');
+            setLoading(false);
+            return;
+          }
+        } else if (selectedUserType === 'supplier') {
+          const sVal = validateSupplierQualification(supplierForm);
+          if (!sVal.isValid) {
+            setQualValidationError(sVal.error);
+            setQualErrorField(sVal.field);
+            setSignupStep('supplier-qualification');
+            setLoading(false);
+            return;
+          }
+        }
+
+        const isVendor = selectedUserType === 'supplier';
+        const cleanName = toTitleCaseName(
+          isVendor ? (supplierForm.contact_person || profile.fullName) : profile.fullName
+        );
+        const cleanWhatsapp = String(
+          isVendor ? (supplierForm.phone || profile.whatsapp) : (profile.whatsapp || '')
+        ).replace(/\D/g, '').slice(0, 10);
+        const cleanCity = (
+          isVendor ? (supplierForm.location_city || profile.city) : (profile.city || '')
+        ).trim();
+        const cleanPincode = normalizePincodeInput(profile.pincode);
 
         if (
           !cleanName ||
-          !profile.city.trim() ||
+          !cleanCity ||
           !profile.state.trim() ||
           cleanWhatsapp.length !== 10 ||
-          normalizePincodeInput(profile.pincode).length !== 6
+          cleanPincode.length !== 6
         ) {
           setMessage(
-            'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
+            isVendor
+              ? 'Please enter your State and 6-digit Pincode to complete registration.'
+              : 'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
           );
+          setLoading(false);
+          return;
+        }
+
+        if (selectedUserType === 'business' && !(profile.businessName || '').trim()) {
+          setMessage('Please enter your Business / Store Name.');
+          setLoading(false);
+          return;
+        }
+
+        if (!password || password.length < 6) {
+          setMessage('Password must be at least 6 characters.');
           setLoading(false);
           return;
         }
@@ -703,11 +1027,12 @@ export function SignupPage({
           ...current,
           fullName: cleanName,
           whatsapp: cleanWhatsapp,
+          city: cleanCity,
         }));
       }
 
       const registeredProfile = mode === 'register' ? buildBuyerProfile() : {};
-      const isVendorRegister = registeredProfile.buyer_type === 'vendor' || registeredProfile.role === 'vendor';
+      const isVendorRegister = selectedUserType === 'supplier' || registeredProfile.buyer_type === 'vendor' || registeredProfile.role === 'vendor';
 
       if (!isSupabaseConfigured) {
         setMessage('Authentication service is temporarily unavailable. Please try again later.');
@@ -719,16 +1044,20 @@ export function SignupPage({
         ? `${window.location.origin}/`
         : 'https://www.weave365.com/';
 
+      const authEmail = (selectedUserType === 'supplier' ? (supplierForm.business_email || email) : email).trim();
+
       const result =
         mode === 'login'
           ? await supabase.auth.signInWithPassword({ email, password })
           : await supabase.auth.signUp({
-            email,
+            email: authEmail,
             password,
             options: {
               emailRedirectTo: redirectUrl,
               data: {
                 buyer_profile: registeredProfile,
+                user_type: selectedUserType,
+                qualification: registeredProfile.qualification,
                 role: isVendorRegister ? 'vendor' : 'customer',
                 full_name: toTitleCaseName(profile.fullName),
               },
@@ -780,8 +1109,6 @@ export function SignupPage({
       setLoading(false);
     }
   }
-
-
 
   return (
     <div className="signup-page-wrapper">
@@ -866,7 +1193,6 @@ export function SignupPage({
                   Back to Login <ArrowRight size={16} />
                 </button>
               </div>
-
             ) : mode === 'forgot-password' ? (
               /* Forgot Password Mode */
               <div>
@@ -917,6 +1243,7 @@ export function SignupPage({
                         className="signup-not-found-btn"
                         onClick={() => {
                           setMode('register');
+                          setSignupStep('select-type');
                           setMessage('');
                         }}
                       >
@@ -937,7 +1264,6 @@ export function SignupPage({
                     <span>{message}</span>
                   </div>
                 )}
-
               </div>
             ) : mode === 'reset-password' ? (
               /* Reset Password Mode */
@@ -1108,6 +1434,7 @@ export function SignupPage({
                         type="button"
                         onClick={() => {
                           setMode('register');
+                          setSignupStep(selectedUserType ? (selectedUserType === 'customer' ? 'account-form' : `${selectedUserType}-qualification`) : 'select-type');
                           setMessage('');
                         }}
                       >
@@ -1139,290 +1466,401 @@ export function SignupPage({
               </div>
             ) : (
               /* =================================================================
-                 Signup / Complete Profile Form (Customer or Partner)
+                 SIGNUP / REGISTRATION FLOW (BUSINESS / CUSTOMER / SUPPLIER)
                  ================================================================= */
               <div className="signup-form-view-wrapper">
                 <div className="signup-form-centered-body">
-                  <div className="signup-form-header">
-                    <div className="signup-form-title-row">
-                      <h2 className="signup-form-title">
-                        {isOnboarding ? 'Complete Your Profile' : 'Create an account'}
-                      </h2>
-                    </div>
-                    {isOnboarding && (
-                      <p className="signup-form-subtitle">
-                        Provide your business details to unlock wholesale catalog access.
+                  {/* STEP 0: Role Selection ("Which best describes you?") */}
+                  {signupStep === 'select-type' ? (
+                    <RoleEntryCards
+                      selectedType={selectedUserType}
+                      onSelectType={handleSelectUserType}
+                      onContinue={() => {
+                        if (selectedUserType) handleSelectUserType(selectedUserType);
+                      }}
+                      onSwitchToLogin={() => {
+                        setMode('login');
+                        setMessage('');
+                      }}
+                    />
+                  ) : signupStep === 'business-qualification' ? (
+                    /* STEP 1A: Business Qualification Form (5 Questions) */
+                    <BusinessQualificationForm
+                      formData={businessForm}
+                      onChange={(field, val) => setBusinessForm((prev) => ({ ...prev, [field]: val }))}
+                      onBack={handleBackToRoleSelection}
+                      onContinue={handleContinueBusinessQualification}
+                      validationError={qualValidationError}
+                      errorField={qualErrorField}
+                    />
+                  ) : signupStep === 'supplier-qualification' ? (
+                    /* STEP 1B: Supplier / Vendor Onboarding Form (5.1 - 5.4) */
+                    <SupplierOnboardingForm
+                      formData={supplierForm}
+                      onChange={(field, val) => setSupplierForm((prev) => ({ ...prev, [field]: val }))}
+                      onBack={handleBackToRoleSelection}
+                      onContinue={handleContinueSupplierQualification}
+                      validationError={qualValidationError}
+                      errorField={qualErrorField}
+                    />
+                  ) : message === 'verification-email-sent' ? (
+                    /* Email Verification Sent Card */
+                    <div style={{ padding: '36px 24px', textAlign: 'center', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                        <Mail size={28} />
+                      </div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Check Your Email</h3>
+                      <p style={{ fontSize: '14.5px', color: '#64748b', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto 20px' }}>
+                        We have sent an activation link to <strong>{email}</strong>. Please check your inbox (and spam folder) and verify your email to activate your account.
                       </p>
-                    )}
-                  </div>
-
-                  <form onSubmit={submit} className="signup-form">
-                    <div className="signup-form-grid">
-                      {/* Business Type / Role Selector */}
-                      <div className="signup-field signup-field-full">
-                        <label className="signup-label">
-                          <span>Business Type *</span>
-                        </label>
-                        <div className="signup-role-radio-group" role="radiogroup" aria-label="Business Type">
-                          {ACCOUNT_ROLE_OPTIONS.map((option) => {
-                            const isSelected = Boolean(
-                              profile.buyerSubtype && (
-                                (profile.buyerSubtype || '').toLowerCase() === option.buyerSubtype.toLowerCase() ||
-                                (option.id === 'vendor' && profile.buyerType === 'vendor') ||
-                                (option.id === 'customer' && (profile.buyerSubtype || '').toLowerCase() === 'buyer') ||
-                                (option.id === 'online_store' && (
-                                  (profile.buyerSubtype || '').toLowerCase() === 'website owner' ||
-                                  (profile.buyerSubtype || '').toLowerCase() === 'website_owner'
-                                ))
-                              )
-                            );
-
-                            return (
-                              <label
-                                key={option.id}
-                                className={`signup-role-radio-card ${isSelected ? 'selected' : ''}`}
-                                title={option.isSeller ? "Register as a Seller / Weaver to list and sell products on Weave 365" : undefined}
-                              >
-                                <input
-                                  type="radio"
-                                  name="accountRole"
-                                  value={option.id}
-                                  checked={isSelected}
-                                  required
-                                  onChange={() => {
-                                    setProfile((prev) => ({
-                                      ...prev,
-                                      buyerType: option.buyerType,
-                                      buyerSubtype: option.buyerSubtype,
-                                    }));
-                                  }}
-                                  className="signup-role-radio-input"
-                                />
-                                <span className="signup-role-custom-radio" aria-hidden="true">
-                                  <span className="signup-role-radio-inner" />
-                                </span>
-                                <span className="signup-role-radio-label">{option.label}</span>
-                              </label>
-                            );
-                          })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('login');
+                          setMessage('');
+                          setSignupStep('select-type');
+                        }}
+                        className="signup-submit-btn"
+                        style={{ maxWidth: '240px', margin: '0 auto' }}
+                      >
+                        Go to Sign In
+                      </button>
+                    </div>
+                  ) : message === 'seller-registered' ? (
+                    /* Supplier Registration Complete Card */
+                    <div style={{ padding: '36px 24px', textAlign: 'center', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                        <Check size={28} />
+                      </div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Supplier Application Received!</h3>
+                      <p style={{ fontSize: '14.5px', color: '#64748b', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto 20px' }}>
+                        Thank you for applying to be a Weave 365 supplier. Our team will review your application and contact you directly.
+                      </p>
+                      {sellerWaUrl && (
+                        <a
+                          href={sellerWaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="signup-submit-btn"
+                          style={{ maxWidth: '280px', margin: '0 auto 12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', background: '#25d366' }}
+                        >
+                          <WhatsappIcon size={18} /> Fast-track on WhatsApp
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('login');
+                          setMessage('');
+                          setSignupStep('select-type');
+                        }}
+                        className="signup-not-found-btn"
+                        style={{ margin: '10px auto 0', justifyContent: 'center' }}
+                      >
+                        Back to Home / Login
+                      </button>
+                    </div>
+                  ) : (
+                    /* STEP 2: Standard Account Creation Form (Old Business Type field removed) */
+                    <div>
+                      {/* Role Chip Banner & Back Navigation */}
+                      <div className="signup-role-chip-banner">
+                        <div className="signup-role-chip-left">
+                          <span className="signup-role-chip-title">
+                            {selectedUserType === 'business'
+                              ? 'Wholesale Business Account'
+                              : selectedUserType === 'supplier'
+                                ? 'Supplier Partner Account'
+                                : 'Personal Customer Account'}
+                          </span>
+                          <span className="signup-role-chip-badge">
+                            {selectedUserType === 'business'
+                              ? (BUSINESS_TYPES.find((b) => b.id === businessForm.business_type)?.label || 'Business')
+                              : selectedUserType === 'supplier'
+                                ? (supplierForm.business_type || 'Artisan Loom')
+                                : 'Personal'}
+                          </span>
                         </div>
+                        <button
+                          type="button"
+                          onClick={handleBackFromAccountForm}
+                          className="signup-role-chip-change-btn"
+                        >
+                          {selectedUserType === 'business'
+                            ? '← Edit Qualification'
+                            : selectedUserType === 'supplier'
+                              ? '← Edit Onboarding'
+                              : '← Change Type'}
+                        </button>
                       </div>
 
-                      {/* Full Name */}
-                      <div className="signup-field">
-                        <label className="signup-label">Full Name *</label>
-                        <input
-                          type="text"
-                          value={profile.fullName}
-                          onChange={(e) => updateProfile('fullName', e.target.value)}
-                          onBlur={(e) => updateProfile('fullName', toTitleCaseName(e.target.value))}
-                          placeholder="Enter your full name"
-                          autoComplete="name"
-                          required
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* Business Name */}
-                      <div className="signup-field">
-                        <label className="signup-label">Business Name</label>
-                        <input
-                          type="text"
-                          value={profile.businessName}
-                          onChange={(e) => updateProfile('businessName', e.target.value)}
-                          placeholder="Optional business name"
-                          autoComplete="organization"
-                          className="signup-input"
-                        />
-                      </div>
-
-
-
-
-                      {/* WhatsApp Number (Full Width for comfortable digits typing) */}
-                      <div className="signup-field signup-field-full">
-                        <label className="signup-label">WhatsApp Number *</label>
-                        <div className="signup-input-phone-group">
-                          <select
-                            className="signup-select"
-                            value={profile.countryCode}
-                            onChange={(e) => updateProfile('countryCode', e.target.value)}
-                          >
-                            {countryCodes.map((item) => (
-                              <option key={item.value} value={item.value}>
-                                {item.label}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="tel"
-                            value={profile.whatsapp}
-                            onChange={(e) =>
-                              updateProfile(
-                                'whatsapp',
-                                e.target.value.replace(/\D/g, '').slice(0, 10)
-                              )
-                            }
-                            placeholder="Enter 10-digit WhatsApp number"
-                            autoComplete="tel-national"
-                            required
-                            className="signup-input"
-                          />
+                      <div className="signup-form-header">
+                        <div className="signup-form-title-row">
+                          <h2 className="signup-form-title">
+                            {isOnboarding
+                              ? 'Complete Your Profile'
+                              : selectedUserType === 'business'
+                                ? 'Create Wholesale Account'
+                                : selectedUserType === 'supplier'
+                                  ? 'Complete Supplier Account'
+                                  : 'Create Personal Account'}
+                          </h2>
                         </div>
+                        <p className="signup-form-subtitle">
+                          {selectedUserType === 'business'
+                            ? 'Enter your account details to access wholesale factory pricing and live inventory.'
+                            : selectedUserType === 'supplier'
+                              ? 'Set your dispatch state, pincode, and password to finalize your supplier application.'
+                              : 'Enter your details to start shopping authentic handloom.'}
+                        </p>
                       </div>
 
-                      {/* City */}
-                      <div className="signup-field">
-                        <label className="signup-label">City *</label>
-                        <input
-                          type="text"
-                          value={profile.city}
-                          onChange={(e) => updateProfile('city', e.target.value)}
-                          placeholder="e.g. Varanasi"
-                          autoComplete="address-level2"
-                          required
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* State */}
-                      <div className="signup-field">
-                        <label className="signup-label">State *</label>
-                        <input
-                          type="text"
-                          value={profile.state}
-                          onChange={(e) => updateProfile('state', e.target.value)}
-                          placeholder="e.g. Uttar Pradesh"
-                          autoComplete="address-level1"
-                          required
-                          className="signup-input"
-                        />
-                      </div>
-
-
-                      {/* Pincode */}
-                      <div className="signup-field">
-                        <label className="signup-label">Pincode *</label>
-                        <input
-                          type="text"
-                          value={profile.pincode}
-                          onChange={(e) =>
-                            updateProfile('pincode', normalizePincodeInput(e.target.value))
-                          }
-                          placeholder="6-digit pincode"
-                          inputMode="numeric"
-                          required
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* Email */}
-                      <div className="signup-field">
-                        <label className="signup-label">
-                          <span>Email Address *</span>
-                          {isOnboarding && (
-                            <span className="signup-verified-badge">
-                              <Check size={11} /> Google Verified
-                            </span>
-                          )}
-                        </label>
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@example.com"
-                          autoComplete="email"
-                          required
-                          disabled={isOnboarding}
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* Website */}
-                      <div className="signup-field">
-                        <label className="signup-label">Website</label>
-                        <input
-                          type="url"
-                          value={profile.website}
-                          onChange={(e) => updateProfile('website', e.target.value)}
-                          placeholder="https://yourstore.com"
-                          autoComplete="url"
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* Social Handle */}
-                      <div className="signup-field">
-                        <label className="signup-label">Social Handle</label>
-                        <input
-                          type="text"
-                          value={profile.socialHandle}
-                          onChange={(e) => updateProfile('socialHandle', e.target.value)}
-                          placeholder="@yourhandle or profile link"
-                          className="signup-input"
-                        />
-                      </div>
-
-                      {/* Password (Only for standard email registrations, not Google onboarding) */}
-                      {!isOnboarding && (
-                        <div className="signup-field signup-field-full">
-                          <label className="signup-label">Password *</label>
-                          <div className="signup-input-wrapper">
-                            <input
-                              type={showPassword ? 'text' : 'password'}
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
-                              placeholder="Minimum 6 characters"
-                              autoComplete="new-password"
-                              minLength={6}
-                              required
-                              className="signup-input"
-                              style={{ paddingRight: '44px' }}
-                            />
+                      {/* Verified Supplier Information Summary Card (Eliminates redundant inputs) */}
+                      {selectedUserType === 'supplier' && (
+                        <div className="signup-supplier-verified-card">
+                          <div className="signup-supplier-verified-header">
+                            <div>
+                              <span className="signup-supplier-badge">
+                                <Check size={11} /> Onboarding Details Verified
+                              </span>
+                              <h3 className="signup-supplier-firm-name">
+                                {supplierForm.business_name || profile.businessName || 'Supplier Firm'}
+                              </h3>
+                              <p className="signup-supplier-contact-line">
+                                Contact: <strong>{supplierForm.contact_person || profile.fullName}</strong> • <strong>{supplierForm.business_email || email}</strong> • <strong>+91 {supplierForm.phone || profile.whatsapp}</strong>
+                              </p>
+                              <p className="signup-supplier-loc-line">
+                                Location: <strong>{supplierForm.location_city || profile.city}</strong>
+                                {supplierForm.gstin ? ` • GSTIN: ${supplierForm.gstin}` : ''}
+                                {supplierForm.business_type ? ` • Role: ${supplierForm.business_type}` : ''}
+                              </p>
+                            </div>
                             <button
                               type="button"
-                              className="signup-password-toggle"
-                              onClick={() => setShowPassword(!showPassword)}
-                              aria-label={showPassword ? 'Hide password' : 'Show password'}
+                              onClick={handleBackFromAccountForm}
+                              className="signup-supplier-edit-btn"
+                              title="Click to edit contact or business info"
                             >
-                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              Edit Info
                             </button>
                           </div>
                         </div>
                       )}
-                    </div>
 
+                      <form onSubmit={submit} className="signup-form">
+                        <div className="signup-form-grid">
+                          {/* =======================================================
+                              Fields for Business & Customer (Not asked in Supplier form)
+                              ======================================================= */}
+                          {selectedUserType !== 'supplier' && (
+                            <>
+                              {/* Full Name */}
+                              <div className="signup-field">
+                                <label className="signup-label">
+                                  <span>Full Name *</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  value={profile.fullName}
+                                  onChange={(e) => updateProfile('fullName', e.target.value)}
+                                  onBlur={(e) => updateProfile('fullName', toTitleCaseName(e.target.value))}
+                                  placeholder="Enter your full name"
+                                  autoComplete="name"
+                                  required
+                                  className="signup-input"
+                                />
+                              </div>
 
-                    <button type="submit" className="signup-submit-btn" disabled={loading}>
-                      {loading ? (
-                        <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
-                      ) : isOnboarding ? (
-                        'Complete Registration & Continue'
-                      ) : (
-                        'Create Account with Password'
-                      )}
-                    </button>
+                              {/* Business Name (Required only for Business Wholesale Account) */}
+                              {selectedUserType === 'business' && (
+                                <div className="signup-field">
+                                  <label className="signup-label">
+                                    <span>Business / Store Name *</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={profile.businessName}
+                                    onChange={(e) => updateProfile('businessName', e.target.value)}
+                                    placeholder="e.g. Varanasi Silk Palace"
+                                    autoComplete="organization"
+                                    required
+                                    className="signup-input"
+                                  />
+                                </div>
+                              )}
 
-                    {!isOnboarding && (
-                      <>
-                        <div className="signup-divider">
-                          <span>or</span>
+                              {/* WhatsApp Number */}
+                              <div className="signup-field signup-field-full">
+                                <label className="signup-label">WhatsApp Number *</label>
+                                <div className="signup-input-phone-group">
+                                  <select
+                                    className="signup-select"
+                                    value={profile.countryCode}
+                                    onChange={(e) => updateProfile('countryCode', e.target.value)}
+                                  >
+                                    {countryCodes.map((item) => (
+                                      <option key={item.value} value={item.value}>
+                                        {item.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <input
+                                    type="tel"
+                                    value={profile.whatsapp}
+                                    onChange={(e) =>
+                                      updateProfile(
+                                        'whatsapp',
+                                        e.target.value.replace(/\D/g, '').slice(0, 10)
+                                      )
+                                    }
+                                    placeholder="Enter 10-digit WhatsApp number"
+                                    autoComplete="tel-national"
+                                    required
+                                    className="signup-input"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* City */}
+                              <div className="signup-field">
+                                <label className="signup-label">City *</label>
+                                <input
+                                  type="text"
+                                  value={profile.city}
+                                  onChange={(e) => updateProfile('city', e.target.value)}
+                                  placeholder="e.g. Varanasi"
+                                  autoComplete="address-level2"
+                                  required
+                                  className="signup-input"
+                                />
+                              </div>
+                            </>
+                          )}
+
+                          {/* =======================================================
+                              Fields Common to All (State & Pincode)
+                              ======================================================= */}
+                          {/* State */}
+                          <div className="signup-field">
+                            <label className="signup-label">State *</label>
+                            <input
+                              type="text"
+                              value={profile.state}
+                              onChange={(e) => updateProfile('state', e.target.value)}
+                              placeholder="e.g. Uttar Pradesh"
+                              autoComplete="address-level1"
+                              required
+                              className="signup-input"
+                            />
+                          </div>
+
+                          {/* Pincode */}
+                          <div className="signup-field">
+                            <label className="signup-label">Pincode *</label>
+                            <input
+                              type="text"
+                              value={profile.pincode}
+                              onChange={(e) =>
+                                updateProfile('pincode', normalizePincodeInput(e.target.value))
+                              }
+                              placeholder="6-digit pincode"
+                              inputMode="numeric"
+                              required
+                              className="signup-input"
+                            />
+                          </div>
+
+                          {/* Email Address (Only shown for non-suppliers; for suppliers, shown in verified card above) */}
+                          {selectedUserType !== 'supplier' && (
+                            <div className="signup-field signup-field-full">
+                              <label className="signup-label">
+                                <span>Email Address *</span>
+                                {isOnboarding && (
+                                  <span className="signup-verified-badge">
+                                    <Check size={11} /> Google Verified
+                                  </span>
+                                )}
+                              </label>
+                              <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="you@example.com"
+                                autoComplete="email"
+                                required
+                                disabled={isOnboarding}
+                                className="signup-input"
+                              />
+                            </div>
+                          )}
+
+                          {/* Password (Only for standard email registrations, not Google onboarding) */}
+                          {!isOnboarding && (
+                            <div className="signup-field signup-field-full">
+                              <label className="signup-label">
+                                {selectedUserType === 'supplier' ? 'Create Account Password *' : 'Password *'}
+                              </label>
+                              <div className="signup-input-wrapper">
+                                <input
+                                  type={showPassword ? 'text' : 'password'}
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Minimum 6 characters"
+                                  autoComplete="new-password"
+                                  minLength={6}
+                                  required
+                                  className="signup-input"
+                                  style={{ paddingRight: '44px' }}
+                                />
+                                <button
+                                  type="button"
+                                  className="signup-password-toggle"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
-                        <GoogleButton
-                          onClick={handleGoogleRegister}
-                          text="Sign up with Google"
-                        />
-                      </>
-                    )}
+                        <button type="submit" className="signup-submit-btn" disabled={loading}>
+                          {loading ? (
+                            <><Loader2 size={16} className="auth-spinner" /> {isOnboarding ? 'Saving Profile...' : 'Creating Account...'}</>
+                          ) : isOnboarding ? (
+                            'Complete Registration & Continue'
+                          ) : selectedUserType === 'business' ? (
+                            'Create Wholesale Account'
+                          ) : selectedUserType === 'supplier' ? (
+                            'Submit Application & Create Account'
+                          ) : (
+                            'Create Account with Password'
+                          )}
+                        </button>
 
-                    {message && (
-                      <div className="signup-alert-error">
-                        <AlertCircle size={18} style={{ flexShrink: 0 }} />
-                        <span>{message}</span>
-                      </div>
-                    )}
-                  </form>
+                        {!isOnboarding && (
+                          <>
+                            <div className="signup-divider">
+                              <span>or</span>
+                            </div>
+
+                            <GoogleButton
+                              onClick={handleGoogleRegister}
+                              text="Sign up with Google"
+                            />
+                          </>
+                        )}
+
+                        {message && message !== 'verification-email-sent' && message !== 'seller-registered' && (
+                          <div className="signup-alert-error">
+                            <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                            <span>{message}</span>
+                          </div>
+                        )}
+                      </form>
+                    </div>
+                  )}
                 </div>
 
                 <div className="signup-form-bottom-footer">

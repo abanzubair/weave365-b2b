@@ -17,7 +17,16 @@ export function isVendorProfile(profile) {
   if (!profile) return false;
   const type = String(profile.buyer_type || '').toLowerCase().trim();
   const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
-  return type === 'vendor' || type === 'partner' || subtype.includes('vendor') || subtype.includes('weaver');
+  const userType = String(profile.user_type || '').toLowerCase().trim();
+  return (
+    type === 'vendor' ||
+    type === 'partner' ||
+    type === 'supplier' ||
+    userType === 'supplier' ||
+    subtype.includes('vendor') ||
+    subtype.includes('weaver') ||
+    subtype.includes('supplier')
+  );
 }
 
 export function normalizeBuyerType(value, subtype) {

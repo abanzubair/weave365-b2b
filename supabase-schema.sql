@@ -49,6 +49,8 @@ alter table public.profiles add column if not exists role text default 'customer
 alter table public.profiles add column if not exists vendor_code text;
 alter table public.profiles add column if not exists partner_name text;
 alter table public.profiles add column if not exists acquisition jsonb default '{}'::jsonb;
+alter table public.profiles add column if not exists user_type text default 'customer';
+alter table public.profiles add column if not exists qualification jsonb default '{}'::jsonb;
 alter table public.profiles add column if not exists created_at timestamptz default now();
 alter table public.profiles add column if not exists updated_at timestamptz default now();
 
@@ -269,6 +271,8 @@ begin
     interested_categories,
     buying_behavior,
     role,
+    user_type,
+    qualification,
     approval_status,
     price_group,
     created_at,
@@ -292,6 +296,8 @@ begin
     coalesce(bp->'interested_categories', '[]'::jsonb),
     coalesce(bp->>'buying_behavior', 'instant'),
     coalesce(new.raw_user_meta_data->>'role', bp->>'role', 'customer'),
+    coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type', 'customer'),
+    coalesce(bp->'qualification', new.raw_user_meta_data->'qualification', '{}'::jsonb),
     'approved',
     'approved',
     coalesce(new.created_at, now()),
@@ -309,6 +315,8 @@ begin
     website = case when public.profiles.website is null or public.profiles.website = '' then excluded.website else public.profiles.website end,
     social_handle = case when public.profiles.social_handle is null or public.profiles.social_handle = '' then excluded.social_handle else public.profiles.social_handle end,
     interested_categories = case when public.profiles.interested_categories is null or public.profiles.interested_categories = '[]'::jsonb then excluded.interested_categories else public.profiles.interested_categories end,
+    user_type = coalesce(excluded.user_type, public.profiles.user_type),
+    qualification = case when public.profiles.qualification is null or public.profiles.qualification = '{}'::jsonb then excluded.qualification else public.profiles.qualification end,
     updated_at = now();
 
   return new;
