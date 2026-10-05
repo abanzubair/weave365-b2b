@@ -137,24 +137,24 @@ export function MobileMenu(props) {
       case 'wholesale':
         return (
           <>
-            <AppLink to="sarees" href="/sarees" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Wholesale Banarasi Sarees</span>
+            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Wholesale Sourcing</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="suits" href="/suits" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Wholesale Banarasi Suits</span>
+            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Bulk &amp; Export Enquiry</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
             <AppLink to="catalogue" href="/catalogue" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
               <span>Wholesale Catalog</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Bulk Enquiry &amp; MOQ</span>
+            <AppLink to="sarees" href="/sarees" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Banarasi Sarees</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Retailer / Boutique Sourcing</span>
+            <AppLink to="suits" href="/suits" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Banarasi Suits</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
             <a href={wholesaleWaLink} target="_blank" rel="noopener noreferrer" className="mobile-subpanel-wa" onClick={onClose}>

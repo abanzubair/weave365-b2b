@@ -154,20 +154,20 @@ export function SiteHeader(props) {
             WHOLESALE <ChevronDown size={14} className={dropdownOpen === 'wholesale' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={wholesaleRef} isOpen={dropdownOpen === 'wholesale'} className="dropdown-menu nav-standard-dropdown">
-            <AppLink to="sarees" href="/sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Wholesale Banarasi Sarees
+            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Wholesale Sourcing
             </AppLink>
-            <AppLink to="suits" href="/suits" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Wholesale Banarasi Suits
+            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Bulk &amp; Export Enquiry
             </AppLink>
             <AppLink to="catalogue" href="/catalogue" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Wholesale Catalog
             </AppLink>
-            <AppLink to="bulk-inquiry" href="/bulk-inquiry" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Bulk Enquiry &amp; MOQ
+            <AppLink to="sarees" href="/sarees" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Banarasi Sarees
             </AppLink>
-            <AppLink to="sourcing-partners" href="/sourcing-partners" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Retailer / Boutique Sourcing
+            <AppLink to="suits" href="/suits" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Banarasi Suits
             </AppLink>
             <div className="nav-dropdown-divider" />
             <a
