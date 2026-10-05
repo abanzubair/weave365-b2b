@@ -18,9 +18,11 @@ export function isAdminUser(user) {
 
 export async function safeSelect(table, query = '*') {
   let req = supabase.from(table).select(query);
-  const tablesWithCreatedAt = ['site_analytics', 'inquiries', 'orders', 'api_orders', 'download_logs'];
+  const tablesWithCreatedAt = ['site_analytics', 'inquiries', 'orders', 'api_orders'];
   if (tablesWithCreatedAt.includes(table)) {
     req = req.order('created_at', { ascending: false });
+  } else if (table === 'download_logs') {
+    req = req.order('downloaded_at', { ascending: false });
   }
   if (table === 'site_analytics') {
     req = req.limit(1500);
@@ -28,6 +30,17 @@ export async function safeSelect(table, query = '*') {
     req = req.limit(500);
   }
   const { data, error } = await req;
+  // If ordering failed because the column didn't exist in Supabase schema, retry safely without order
+  if (error && error.message && error.message.includes('does not exist')) {
+    const fallbackReq = supabase
+      .from(table)
+      .select(query)
+      .limit(table === 'site_analytics' ? 1500 : 500);
+    const fallbackRes = await fallbackReq;
+    if (!fallbackRes.error) {
+      return { data: fallbackRes.data || [], error: null };
+    }
+  }
   if (error) return { data: [], error };
   return { data: data || [], error: null };
 }

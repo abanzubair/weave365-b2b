@@ -754,8 +754,13 @@ create table if not exists public.download_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   product_id text not null,
-  downloaded_at timestamptz default now()
+  downloaded_at timestamptz default now(),
+  created_at timestamptz default now()
 );
+
+-- Migration: Add created_at and downloaded_at to existing download_logs if missing
+alter table public.download_logs add column if not exists created_at timestamptz default now();
+alter table public.download_logs add column if not exists downloaded_at timestamptz default now();
 
 -- Enable RLS for data protection
 alter table public.download_logs enable row level security;
