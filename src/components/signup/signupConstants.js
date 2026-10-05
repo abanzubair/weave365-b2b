@@ -223,9 +223,9 @@ export function validateSupplierQualification(form) {
     return { isValid: false, error: 'Please enter a valid Business Email address.', field: 'business_email' };
   }
 
-  const cleanPhone = String(form?.phone || '').replace(/\D/g, '').slice(-10);
-  if (cleanPhone.length !== 10) {
-    return { isValid: false, error: 'Please enter a valid 10-digit WhatsApp / Phone Number.', field: 'phone' };
+  const cleanPhone = String(form?.phone || '').replace(/\D/g, '').slice(0, 15);
+  if (cleanPhone.length < 6 || cleanPhone.length > 15) {
+    return { isValid: false, error: 'Please enter a valid WhatsApp / Phone Number.', field: 'phone' };
   }
 
   if (!form?.instagram?.trim()) {

@@ -131,8 +131,9 @@ export function SupplierOnboardingForm({
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                placeholder="10-digit mobile number"
+                onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                placeholder="WhatsApp / Phone number"
+                maxLength={15}
                 className="signup-input"
                 required
               />

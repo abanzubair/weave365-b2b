@@ -51,6 +51,7 @@ alter table public.profiles add column if not exists partner_name text;
 alter table public.profiles add column if not exists acquisition jsonb default '{}'::jsonb;
 alter table public.profiles add column if not exists user_type text default 'customer';
 alter table public.profiles add column if not exists qualification jsonb default '{}'::jsonb;
+alter table public.profiles add column if not exists country text default 'India';
 alter table public.profiles add column if not exists created_at timestamptz default now();
 alter table public.profiles add column if not exists updated_at timestamptz default now();
 
@@ -266,6 +267,7 @@ begin
     city,
     state,
     pincode,
+    country,
     website,
     social_handle,
     interested_categories,
@@ -291,6 +293,7 @@ begin
     coalesce(bp->>'city', ''),
     coalesce(bp->>'state', ''),
     coalesce(bp->>'pincode', ''),
+    coalesce(bp->>'country', new.raw_user_meta_data->>'country', 'India'),
     coalesce(bp->>'website', new.raw_user_meta_data->>'website', ''),
     coalesce(bp->>'social_handle', bp->>'socialHandle', new.raw_user_meta_data->>'social_handle', new.raw_user_meta_data->>'socialHandle', ''),
     coalesce(bp->'interested_categories', '[]'::jsonb),
@@ -312,6 +315,7 @@ begin
     city = case when public.profiles.city is null or public.profiles.city = '' then excluded.city else public.profiles.city end,
     state = case when public.profiles.state is null or public.profiles.state = '' then excluded.state else public.profiles.state end,
     pincode = case when public.profiles.pincode is null or public.profiles.pincode = '' then excluded.pincode else public.profiles.pincode end,
+    country = coalesce(excluded.country, public.profiles.country, 'India'),
     website = case when public.profiles.website is null or public.profiles.website = '' then excluded.website else public.profiles.website end,
     social_handle = case when public.profiles.social_handle is null or public.profiles.social_handle = '' then excluded.social_handle else public.profiles.social_handle end,
     interested_categories = case when public.profiles.interested_categories is null or public.profiles.interested_categories = '[]'::jsonb then excluded.interested_categories else public.profiles.interested_categories end,

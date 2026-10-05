@@ -301,7 +301,7 @@ export function buildSingleProductWhatsappUrl(product, variant, quantity = 1, pi
 
 
 export function normalizePincodeInput(value) {
-  return String(value).replace(/\D/g, '').slice(0, 6);
+  return String(value || '').replace(/[^a-zA-Z0-9\s-]/g, '').slice(0, 12);
 }
 
 export function calculateComboDiscount(items, priceAccess) {

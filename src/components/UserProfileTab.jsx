@@ -72,6 +72,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
     city: '',
     state: '',
     pincode: '',
+    country: 'India',
     interestedCategories: ['Saree'],
   });
 
@@ -82,7 +83,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
   useEffect(() => {
     const p = buyerProfile || user?.user_metadata?.buyer_profile || {};
     const rawWhatsapp = p.whatsapp_number || p.whatsapp || '';
-    const cleanWhatsapp = String(rawWhatsapp).replace(/\D/g, '').slice(-10);
+    const cleanWhatsapp = String(rawWhatsapp).replace(/\D/g, '').slice(0, 15);
 
     let cleanCity = String(p.city || '').trim();
     let cleanState = String(p.state || '').trim();
@@ -108,6 +109,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       city: cleanCity,
       state: cleanState,
       pincode: p.pincode || '',
+      country: p.country || 'India',
       interestedCategories: Array.isArray(p.interested_categories) && p.interested_categories.length > 0 
         ? p.interested_categories 
         : ['Saree'],
@@ -138,10 +140,11 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
 
   const isComplete = Boolean(
     formData.fullName.trim() &&
-    formData.whatsappNumber.length === 10 &&
+    formData.whatsappNumber.length >= 6 &&
+    formData.whatsappNumber.length <= 15 &&
     formData.city.trim() &&
     formData.state.trim() &&
-    formData.pincode.length === 6
+    formData.pincode.trim().length >= 3
   );
 
   const handleSave = async (e) => {
@@ -150,7 +153,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
     setStatusMessage(null);
 
     const cleanFullName = toTitleCase(formData.fullName);
-    const cleanWhatsapp = String(formData.whatsappNumber || '').replace(/\D/g, '').slice(0, 10);
+    const cleanWhatsapp = String(formData.whatsappNumber || '').replace(/\D/g, '').slice(0, 15);
     const cleanPincode = normalizePincodeInput(formData.pincode);
 
     // Validation
@@ -158,8 +161,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       setStatusMessage({ type: 'error', text: 'Please enter your full name.' });
       return;
     }
-    if (cleanWhatsapp.length !== 10) {
-      setStatusMessage({ type: 'error', text: 'Please enter a valid 10-digit WhatsApp number.' });
+    if (cleanWhatsapp.length < 6 || cleanWhatsapp.length > 15) {
+      setStatusMessage({ type: 'error', text: 'Please enter a valid WhatsApp / phone number.' });
       return;
     }
     if (!formData.city.trim()) {
@@ -170,8 +173,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       setStatusMessage({ type: 'error', text: 'Please enter your state.' });
       return;
     }
-    if (cleanPincode.length !== 6) {
-      setStatusMessage({ type: 'error', text: 'Please enter a valid 6-digit postal pincode.' });
+    if (cleanPincode.trim().length < 3) {
+      setStatusMessage({ type: 'error', text: 'Please enter a valid postal code / pincode.' });
       return;
     }
 
@@ -196,6 +199,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
         city: formData.city.trim(),
         state: formData.state.trim(),
         pincode: cleanPincode,
+        country: (formData.country || 'India').trim(),
         interested_categories: formData.interestedCategories,
         updated_at: new Date().toISOString(),
       });
@@ -230,6 +234,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           city: formData.city.trim(),
           state: formData.state.trim(),
           pincode: cleanPincode,
+          country: (formData.country || 'India').trim(),
           interested_categories: formData.interestedCategories,
           price_group: updatedBuyerProfile.price_group || 'approved',
           approval_status: updatedBuyerProfile.approval_status || 'approved',
@@ -240,8 +245,13 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           .from('profiles')
           .upsert(profileRow, { onConflict: 'id' });
 
-        if (dbError && (dbError.message?.includes('website') || dbError.message?.includes('social_handle') || dbError.code === 'PGRST204')) {
-          const { website, social_handle, ...fallbackRow } = profileRow;
+        if (dbError && (
+          dbError.message?.includes('website') ||
+          dbError.message?.includes('social_handle') ||
+          dbError.message?.includes('country') ||
+          dbError.code === 'PGRST204'
+        )) {
+          const { website, social_handle, country, ...fallbackRow } = profileRow;
           const retryResult = await supabase
             .from('profiles')
             .upsert(fallbackRow, { onConflict: 'id' });
@@ -409,9 +419,9 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                     type="tel"
                     className="account-form-input"
                     value={formData.whatsappNumber}
-                    onChange={(e) => handleChange('whatsappNumber', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    placeholder="10-digit number"
-                    maxLength={10}
+                    onChange={(e) => handleChange('whatsappNumber', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                    placeholder="WhatsApp / phone number"
+                    maxLength={15}
                     required
                   />
                 </div>
@@ -596,8 +606,28 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                   className="account-form-input"
                   value={formData.pincode}
                   onChange={(e) => handleChange('pincode', normalizePincodeInput(e.target.value))}
-                  placeholder="6-digit PIN"
-                  maxLength={6}
+                  placeholder="Postal / Pincode"
+                  maxLength={12}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Country */}
+            <div className="account-form-field">
+              <label className="account-form-label" htmlFor="profile-country">
+                <span>Country</span>
+                <span className="account-label-required">*</span>
+              </label>
+              <div className="account-input-with-icon">
+                <Globe size={16} className="account-field-icon" />
+                <input
+                  id="profile-country"
+                  type="text"
+                  className="account-form-input"
+                  value={formData.country || 'India'}
+                  onChange={(e) => handleChange('country', e.target.value)}
+                  placeholder="e.g. India"
                   required
                 />
               </div>

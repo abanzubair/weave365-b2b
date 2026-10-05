@@ -128,8 +128,8 @@ export default function BuyerPipeline({
       return !isAdminUser(p) && !isConfiguredAdmin && p.role !== 'admin';
     });
     const isIncomplete = (p) => {
-      const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '').slice(-10);
-      return cleanPhone.length < 10 || !String(p.city || '').trim();
+      const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '');
+      return cleanPhone.length < 6 || !String(p.city || '').trim();
     };
 
     if (userTypeFilter === 'customer') {

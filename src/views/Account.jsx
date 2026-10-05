@@ -236,7 +236,7 @@ export function Account({
   const [isDefault, setIsDefault] = useState(false);
 
   const normalizePincodeInput = (value) => {
-    return String(value).replace(/\D/g, '').slice(0, 6);
+    return String(value || '').replace(/[^a-zA-Z0-9\s-]/g, '').slice(0, 12);
   };
 
   const fetchAddresses = async () => {
@@ -1059,11 +1059,13 @@ export function Account({
                     />
                   </label>
                   <label className="field-label">
-                    Pincode *
+                    Postal / Pincode *
                     <input 
                       type="text" 
                       value={formPincode}
                       onChange={(e) => setFormPincode(normalizePincodeInput(e.target.value))}
+                      placeholder="Postal / Pincode"
+                      maxLength={12}
                       required 
                     />
                   </label>

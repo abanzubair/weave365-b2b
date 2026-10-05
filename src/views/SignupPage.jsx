@@ -226,6 +226,7 @@ export function SignupPage({
     city: '',
     state: '',
     pincode: '',
+    country: 'India',
     interestedCategories: ['Saree'],
     rememberMe: false,
   });
@@ -330,6 +331,7 @@ export function SignupPage({
         ...prev,
         website: prev.website || existingBuyerProfile.website || '',
         socialHandle: prev.socialHandle || existingBuyerProfile.social_handle || existingBuyerProfile.socialHandle || '',
+        country: prev.country || existingBuyerProfile.country || 'India',
       }));
     }
 
@@ -341,10 +343,10 @@ export function SignupPage({
         localStorage.removeItem('pending_b2b_profile');
 
         const cleanName = pending.fullName || toTitleCaseName(googleName || '');
-        const cleanWhatsapp = String(pending.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+        const cleanWhatsapp = String(pending.whatsapp || '').replace(/\D/g, '').slice(0, 15);
         const cleanPincode = normalizePincodeInput(pending.pincode);
 
-        if (cleanName && cleanWhatsapp.length === 10 && pending.city && cleanPincode.length === 6) {
+        if (cleanName && cleanWhatsapp.length >= 6 && cleanWhatsapp.length <= 15 && pending.city && cleanPincode.trim().length >= 3) {
           const isVendor = pending.buyerType === 'vendor' || pending.buyerSubtype === 'Vendor' || pending.user_type === 'supplier';
           const newProfile = {
             id: user.id,
@@ -364,6 +366,7 @@ export function SignupPage({
             city: pending.city,
             state: pending.state,
             pincode: cleanPincode,
+            country: pending.country || 'India',
             interested_categories: pending.interestedCategories || ['Saree'],
             buying_behavior: 'instant',
             approval_status: 'approved',
@@ -510,7 +513,7 @@ export function SignupPage({
       fullName: supplierForm.contact_person || prev.fullName,
       businessName: supplierForm.business_name || prev.businessName,
       city: supplierForm.location_city || prev.city,
-      whatsapp: String(supplierForm.phone || '').replace(/\D/g, '').slice(0, 10) || prev.whatsapp,
+      whatsapp: String(supplierForm.phone || '').replace(/\D/g, '').slice(0, 15) || prev.whatsapp,
       website: (supplierForm.ecommerce_website || '').trim() || prev.website,
       socialHandle: (supplierForm.instagram || '').trim() || prev.socialHandle,
       buyerType: 'vendor',
@@ -553,7 +556,7 @@ export function SignupPage({
     );
     const cleanWhatsapp = String(
       isVendor ? (supplierForm.phone || profile.whatsapp) : (profile.whatsapp || '')
-    ).replace(/\D/g, '').slice(0, 10);
+    ).replace(/\D/g, '').slice(0, 15);
     const cleanCity = (
       isVendor ? (supplierForm.location_city || profile.city) : (profile.city || '')
     ).trim();
@@ -607,6 +610,7 @@ export function SignupPage({
       city: cleanCity,
       state: profile.state?.trim() || '',
       pincode: normalizePincodeInput(profile.pincode),
+      country: (profile.country || 'India').trim(),
       interested_categories: isVendor ? (supplierForm.supplied_products || ['Saree']) : (profile.interestedCategories || ['Saree']),
       price_group: 'approved',
       approval_status: 'approved',
@@ -765,18 +769,19 @@ export function SignupPage({
     }
 
     const cleanName = toTitleCaseName(profile.fullName);
-    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+    const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 15);
     const cleanPincode = normalizePincodeInput(profile.pincode);
 
     if (
       !cleanName ||
       !profile.city.trim() ||
       !profile.state.trim() ||
-      cleanWhatsapp.length !== 10 ||
-      cleanPincode.length !== 6
+      cleanWhatsapp.length < 6 ||
+      cleanWhatsapp.length > 15 ||
+      cleanPincode.trim().length < 3
     ) {
       setMessage(
-        'Please enter your Full Name, 10-digit WhatsApp number, City, State, and 6-digit Pincode above to continue with Google.'
+        'Please enter your Full Name, valid WhatsApp / phone number, City, State, Country, and Postal / Pincode above to continue with Google.'
       );
       return;
     }
@@ -816,6 +821,7 @@ export function SignupPage({
       city: profile.city.trim(),
       state: profile.state.trim(),
       pincode: cleanPincode,
+      country: (profile.country || 'India').trim(),
       interestedCategories: isVendor ? (supplierForm.supplied_products || ['Saree']) : (profile.interestedCategories || ['Saree']),
     };
 
@@ -899,17 +905,19 @@ export function SignupPage({
         }
 
         const cleanName = toTitleCaseName(profile.fullName);
-        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 10);
+        const cleanWhatsapp = String(profile.whatsapp || '').replace(/\D/g, '').slice(0, 15);
+        const cleanPincode = normalizePincodeInput(profile.pincode);
 
         if (
           !cleanName ||
           !profile.city.trim() ||
           !profile.state.trim() ||
-          cleanWhatsapp.length !== 10 ||
-          normalizePincodeInput(profile.pincode).length !== 6
+          cleanWhatsapp.length < 6 ||
+          cleanWhatsapp.length > 15 ||
+          cleanPincode.trim().length < 3
         ) {
           setMessage(
-            'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
+            'Please complete every required field. Please enter a valid WhatsApp / phone number and postal / pincode.'
           );
           setLoading(false);
           return;
@@ -989,7 +997,7 @@ export function SignupPage({
         );
         const cleanWhatsapp = String(
           isVendor ? (supplierForm.phone || profile.whatsapp) : (profile.whatsapp || '')
-        ).replace(/\D/g, '').slice(0, 10);
+        ).replace(/\D/g, '').slice(0, 15);
         const cleanCity = (
           isVendor ? (supplierForm.location_city || profile.city) : (profile.city || '')
         ).trim();
@@ -999,13 +1007,14 @@ export function SignupPage({
           !cleanName ||
           !cleanCity ||
           !profile.state.trim() ||
-          cleanWhatsapp.length !== 10 ||
-          cleanPincode.length !== 6
+          cleanWhatsapp.length < 6 ||
+          cleanWhatsapp.length > 15 ||
+          cleanPincode.trim().length < 3
         ) {
           setMessage(
             isVendor
-              ? 'Please enter your State and 6-digit Pincode to complete registration.'
-              : 'Please complete every required field. WhatsApp number must be 10 digits, pincode must be 6 digits.'
+              ? 'Please enter your State and Postal / Pincode to complete registration.'
+              : 'Please complete every required field. Please enter a valid WhatsApp / phone number and postal / pincode.'
           );
           setLoading(false);
           return;
@@ -1654,8 +1663,8 @@ export function SignupPage({
                               ======================================================= */}
                           {selectedUserType !== 'supplier' && (
                             <>
-                              {/* Full Name */}
-                              <div className="signup-field">
+                              {/* Full Name (Full width as requested) */}
+                              <div className="signup-field signup-field-full">
                                 <label className="signup-label">
                                   <span>Full Name *</span>
                                 </label>
@@ -1671,9 +1680,9 @@ export function SignupPage({
                                 />
                               </div>
 
-                              {/* Business Name (Required only for Business Wholesale Account) */}
+                              {/* Business Name (Required only for Business Wholesale Account - Full width) */}
                               {selectedUserType === 'business' && (
-                                <div className="signup-field">
+                                <div className="signup-field signup-field-full">
                                   <label className="signup-label">
                                     <span>Business / Store Name *</span>
                                   </label>
@@ -1710,11 +1719,12 @@ export function SignupPage({
                                     onChange={(e) =>
                                       updateProfile(
                                         'whatsapp',
-                                        e.target.value.replace(/\D/g, '').slice(0, 10)
+                                        e.target.value.replace(/\D/g, '').slice(0, 15)
                                       )
                                     }
-                                    placeholder="Enter 10-digit WhatsApp number"
+                                    placeholder="Enter WhatsApp / phone number"
                                     autoComplete="tel-national"
+                                    maxLength={15}
                                     required
                                     className="signup-input"
                                   />
@@ -1738,7 +1748,7 @@ export function SignupPage({
                           )}
 
                           {/* =======================================================
-                              Fields Common to All (State & Pincode)
+                              Fields Common to All (State, Pincode, Country)
                               ======================================================= */}
                           {/* State */}
                           <div className="signup-field">
@@ -1763,8 +1773,22 @@ export function SignupPage({
                               onChange={(e) =>
                                 updateProfile('pincode', normalizePincodeInput(e.target.value))
                               }
-                              placeholder="6-digit pincode"
-                              inputMode="numeric"
+                              placeholder="Postal / Pincode"
+                              maxLength={12}
+                              required
+                              className="signup-input"
+                            />
+                          </div>
+
+                          {/* Country */}
+                          <div className={`signup-field ${selectedUserType === 'supplier' ? 'signup-field-full' : ''}`}>
+                            <label className="signup-label">Country *</label>
+                            <input
+                              type="text"
+                              value={profile.country || 'India'}
+                              onChange={(e) => updateProfile('country', e.target.value)}
+                              placeholder="e.g. India"
+                              autoComplete="country-name"
                               required
                               className="signup-input"
                             />

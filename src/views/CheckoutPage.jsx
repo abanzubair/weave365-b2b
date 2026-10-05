@@ -360,7 +360,7 @@ export function CheckoutPage({
   const handlePincodeChange = (val) => {
     setFormPincode(val);
     if (setPincode) setPincode(val);
-    if (val.length === 6 && checkPincode) {
+    if (val && val.length >= 3 && checkPincode) {
       checkPincode();
     }
   };
@@ -1008,7 +1008,8 @@ export function CheckoutPage({
                               id="checkout-phone"
                               type="tel"
                               className="checkout-input"
-                              placeholder="10-digit mobile number"
+                              placeholder="Mobile / phone number"
+                              maxLength={15}
                               value={formPhone}
                               onChange={(e) => setFormPhone(e.target.value)}
                               required
@@ -1070,13 +1071,13 @@ export function CheckoutPage({
 
                         <div className="checkout-input-row">
                           <div className="checkout-field">
-                            <label htmlFor="checkout-pincode">Pincode *</label>
+                            <label htmlFor="checkout-pincode">Postal / Pincode *</label>
                             <input
                               id="checkout-pincode"
                               type="text"
                               className="checkout-input"
-                              placeholder="6-digit pincode"
-                              maxLength={6}
+                              placeholder="Postal / Pincode"
+                              maxLength={12}
                               value={formPincode}
                               onChange={(e) => handlePincodeChange(e.target.value)}
                               required
@@ -1178,13 +1179,13 @@ export function CheckoutPage({
 
                     <div className="checkout-input-row">
                       <div className="checkout-field">
-                        <label htmlFor="sender-pincode">Pincode *</label>
+                        <label htmlFor="sender-pincode">Postal / Pincode *</label>
                         <input
                           id="sender-pincode"
                           type="text"
                           className="checkout-input"
-                          placeholder="6-digit pincode"
-                          maxLength={6}
+                          placeholder="Postal / Pincode"
+                          maxLength={12}
                           value={senderPincode}
                           onChange={(e) => setSenderPincode(e.target.value)}
                           required
@@ -1269,13 +1270,13 @@ export function CheckoutPage({
 
                     <div className="checkout-input-row">
                       <div className="checkout-field">
-                        <label htmlFor="recipient-pincode">Pincode *</label>
+                        <label htmlFor="recipient-pincode">Postal / Pincode *</label>
                         <input
                           id="recipient-pincode"
                           type="text"
                           className="checkout-input"
-                          placeholder="6-digit pincode"
-                          maxLength={6}
+                          placeholder="Postal / Pincode"
+                          maxLength={12}
                           value={formPincode}
                           onChange={(e) => handlePincodeChange(e.target.value)}
                           required

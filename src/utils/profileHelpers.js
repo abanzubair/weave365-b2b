@@ -45,6 +45,7 @@ export function profileRowFromUser(user) {
     city: buyerProfile.city ? (buyerProfile.city.includes(',') ? buyerProfile.city.split(',')[0].trim() : buyerProfile.city) : '',
     state: buyerProfile.state || (buyerProfile.city && buyerProfile.city.includes(',') ? buyerProfile.city.split(',').slice(1).join(',').trim() : ''),
     pincode: buyerProfile.pincode || '',
+    country: buyerProfile.country || 'India',
     interested_categories: buyerProfile.interested_categories || [],
     price_group: buyerProfile.price_group || 'approved',
     approval_status: buyerProfile.approval_status || 'approved',
@@ -80,16 +81,17 @@ export async function syncProfileFromUser(user) {
     .upsert(profileRow, { onConflict: 'id' });
 
   // If the columns don't exist yet on public.profiles (e.g. pending DB migration),
-  // retry without acquisition, website, social_handle, qualification, user_type to ensure user signup/login is not blocked.
+  // retry without acquisition, website, social_handle, qualification, user_type, country to ensure user signup/login is not blocked.
   if (error && (
     error.message?.includes('acquisition') ||
     error.message?.includes('website') ||
     error.message?.includes('social_handle') ||
     error.message?.includes('qualification') ||
     error.message?.includes('user_type') ||
+    error.message?.includes('country') ||
     error.code === 'PGRST204'
   )) {
-    const { acquisition, website, social_handle, qualification, user_type, ...fallbackRow } = profileRow;
+    const { acquisition, website, social_handle, qualification, user_type, country, ...fallbackRow } = profileRow;
     const retryResult = await supabase
       .from('profiles')
       .upsert(fallbackRow, { onConflict: 'id' });
@@ -123,11 +125,11 @@ export function isProfileComplete(user, buyerProfile) {
   if (!profile) return false;
 
   const fullName = String(profile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
-  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(-10);
+  const whatsapp = String(profile.whatsapp_number || profile.whatsapp || '').replace(/\D/g, '').slice(0, 15);
   const city = String(profile.city || '').trim();
-  const pincode = String(profile.pincode || '').replace(/\D/g, '').slice(0, 6);
+  const pincode = String(profile.pincode || '').replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 12);
 
-  if (!fullName || whatsapp.length !== 10 || !city || pincode.length !== 6) {
+  if (!fullName || whatsapp.length < 6 || whatsapp.length > 15 || !city || pincode.length < 3) {
     return false;
   }
 
