@@ -64,8 +64,10 @@ export const useStorefront = create((set) => ({
   // Cart & Favorites State
   cart: [],
   favorites: [],
+  isCartHydrated: false,
   setCart: (cart) => set((state) => ({ cart: resolveArrayUpdate(cart, state.cart) })),
   setFavorites: (favorites) => set((state) => ({ favorites: resolveArrayUpdate(favorites, state.favorites) })),
+  setIsCartHydrated: (isCartHydrated) => set({ isCartHydrated }),
 
   // Data Caches & Storefront Collections
   products: [],

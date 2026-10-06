@@ -142,11 +142,14 @@ export async function loadSavedState(userId) {
 }
 
 export async function persistCart(cart, userId) {
-  const supabase = await getSupabase();
-  if (!supabase) {
-    localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
-    return;
+  if (typeof window !== 'undefined' && userId) {
+    try {
+      localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+    } catch (e) {}
   }
+
+  const supabase = await getSupabase();
+  if (!supabase) return;
 
   const variantCodesInCart = cart.map((item) => item.variantCode);
 
@@ -172,11 +175,14 @@ export async function persistCart(cart, userId) {
 }
 
 export async function persistFavorites(favorites, userId) {
-  const supabase = await getSupabase();
-  if (!supabase) {
-    localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites));
-    return;
+  if (typeof window !== 'undefined' && userId) {
+    try {
+      localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites));
+    } catch (e) {}
   }
+
+  const supabase = await getSupabase();
+  if (!supabase) return;
 
   const productKeysInFavorites = favorites.map((item) => item.productGroupKey);
 

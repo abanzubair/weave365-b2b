@@ -44,6 +44,7 @@ export function CheckoutPage({
   checkPincode,
   navigate,
   clearCart,
+  isLoading = false,
 }) {
   // Shipping Mode: 'standard' | 'dropship'
   const [shippingMode, setShippingMode] = useState('standard');
@@ -560,6 +561,19 @@ export function CheckoutPage({
 
     handleCashfreeCheckout(deliveryDetails);
   };
+
+  if (isLoading && !orderSuccess) {
+    return (
+      <div className="checkout-page-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '60vh', padding: '60px 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', maxWidth: '440px', margin: '0 auto' }}>
+          <div className="checkout-loading-spinner" />
+          <p style={{ color: 'var(--muted)', fontSize: '0.95rem', marginTop: '16px', fontWeight: '500' }}>
+            Loading your order items...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!items.length && !orderSuccess) {
     return (

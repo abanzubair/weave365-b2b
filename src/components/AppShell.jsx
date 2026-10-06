@@ -85,6 +85,7 @@ export function AppShell({ children }) {
     setCart,
     favorites,
     setFavorites,
+    setIsCartHydrated,
     pincode,
     setPincode,
     codStatus,
@@ -421,24 +422,48 @@ export function AppShell({ children }) {
     if (!currentUserId) {
       setCart(readLocal('cart_guest'));
       setFavorites(readLocal('favorites_guest'));
+      setIsCartHydrated(true);
       return;
+    }
+
+    // Immediately seed from local cache to prevent empty flashes on page load/navigation
+    const localCachedCart = readLocal(`cart_${currentUserId}`);
+    if (localCachedCart && localCachedCart.length > 0) {
+      setCart(localCachedCart);
+    }
+    const localCachedFavs = readLocal(`favorites_${currentUserId}`);
+    if (localCachedFavs && localCachedFavs.length > 0) {
+      setFavorites(localCachedFavs);
     }
 
     import('../supabaseClient.js').then(({ isSupabaseConfigured }) => {
       if (isSupabaseConfigured) {
         loadSavedState(currentUserId).then(({ savedCart, savedFavorites }) => {
-          setCart(savedCart);
-          setFavorites(savedFavorites);
+          if (savedCart && savedCart.length > 0) {
+            setCart(savedCart);
+          } else if (localCachedCart && localCachedCart.length > 0) {
+            void persistCart(localCachedCart, currentUserId);
+          }
+          if (savedFavorites && savedFavorites.length > 0) {
+            setFavorites(savedFavorites);
+          } else if (localCachedFavs && localCachedFavs.length > 0) {
+            void persistFavorites(localCachedFavs, currentUserId);
+          }
+          setIsCartHydrated(true);
+        }).catch(() => {
+          setIsCartHydrated(true);
         });
       } else {
         setCart(readLocal(`cart_${currentUserId}`));
         setFavorites(readLocal(`favorites_${currentUserId}`));
+        setIsCartHydrated(true);
       }
     }).catch(() => {
       setCart(readLocal(`cart_${currentUserId}`));
       setFavorites(readLocal(`favorites_${currentUserId}`));
+      setIsCartHydrated(true);
     });
-  }, [currentUserId, setCart, setFavorites]);
+  }, [currentUserId, setCart, setFavorites, setIsCartHydrated]);
 
   // Search lock scroll
   useEffect(() => {

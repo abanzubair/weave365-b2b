@@ -34,10 +34,13 @@ export default function ProductPageClient({
   } = useStorefront();
 
   useEffect(() => {
-    if (initialAllProducts.length > 0 && (storeProducts.length === 0 || storeProducts.length < initialAllProducts.length)) {
-      setProducts(initialAllProducts);
+    if (!initialProduct && !initialAllProducts?.length) return;
+    if (!storeProducts || storeProducts.length === 0) {
+      setProducts(initialAllProducts?.length ? initialAllProducts : [initialProduct]);
+    } else if (initialProduct && !storeProducts.some((p) => p.id === initialProduct.id)) {
+      setProducts([...storeProducts, initialProduct]);
     }
-  }, [initialAllProducts, storeProducts.length, setProducts]);
+  }, [initialProduct, initialAllProducts, storeProducts, setProducts]);
 
   const allProducts = useMemo(() => {
     if (initialAllProducts.length > storeProducts.length) {
