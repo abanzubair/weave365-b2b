@@ -305,9 +305,11 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
         return 'Payment verified! Your order is currently undergoing quality inspection and careful packaging at our Varanasi hub before courier dispatch.';
       case 'paid':
       case 'new':
-      case 'pending_payment':
-      default:
         return 'Payment received successfully! Your order is confirmed and queued for quality check and packaging at our Varanasi hub.';
+      case 'pending_payment':
+        return 'Payment pending confirmation. Please complete payment to confirm your order.';
+      default:
+        return 'Order received. Our team will verify and update your order status shortly.';
     }
   };
 

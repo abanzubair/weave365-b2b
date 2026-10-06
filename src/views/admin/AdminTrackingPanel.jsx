@@ -76,7 +76,7 @@ function getCarrierTrackingUrl(carrier = '', awb = '') {
 // Status classification helpers
 export function isNeedsAttentionStatus(status) {
   const s = String(status || '').toLowerCase().trim();
-  return s === 'new' || s === 'paid' || s === 'pending_payment' || s === 'unfulfilled';
+  return s === 'new' || s === 'paid' || s === 'unfulfilled';
 }
 
 export function isFulfillmentStatus(status) {
@@ -638,11 +638,16 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
   // Filter orders by channel, status, and search query
   const { filteredInquiries, orderStats, channelCounts } = useMemo(() => {
-    let allOrders = [...inquiries].map(i => ({
-      ...i,
-      isDropship: Boolean(i.is_dropship || i._sourceTable === 'api_orders' || i.inquiry_type === 'reseller_api_order'),
-      cleanStatus: (i.status || 'new').toLowerCase(),
-    }));
+    let allOrders = [...inquiries]
+      .filter(i => {
+        const s = String(i.status || '').toLowerCase().trim();
+        return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
+      })
+      .map(i => ({
+        ...i,
+        isDropship: Boolean(i.is_dropship || i._sourceTable === 'api_orders' || i.inquiry_type === 'reseller_api_order'),
+        cleanStatus: (i.status || 'new').toLowerCase(),
+      }));
 
     const directOrders = allOrders.filter(i => 
       i._sourceTable === 'orders' || 

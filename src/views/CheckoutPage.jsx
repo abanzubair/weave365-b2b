@@ -492,6 +492,19 @@ export function CheckoutPage({
         // Modal dismissed or network interruption - don't show fatal error
         setOrderError('Payment was cancelled. You can retry whenever you are ready.');
         setIsSubmitting(false);
+
+        // Clean up / delete the temporary pending draft so it is never recorded in orders
+        if (data.db_order_id || data.order_id) {
+          fetch('/api/cashfree/cancel-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              db_order_id: data.db_order_id,
+              order_id: data.order_id,
+            }),
+            keepalive: true,
+          }).catch((err) => console.warn('Failed to clean up cancelled pending order:', err));
+        }
         return;
       }
 

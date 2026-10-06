@@ -35,7 +35,12 @@ export default function DashboardOverview({
   const [activeChartTab, setActiveChartTab] = useState('sales');
 
   const enquiryRows = useMemo(() => {
-    const orders = (adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' }));
+    const orders = (adminData.optional.orders || [])
+      .filter(o => {
+        const s = String(o.status || '').toLowerCase().trim();
+        return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
+      })
+      .map(o => ({ ...o, _sourceTable: 'orders' }));
     const sorted = orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     return sorted;
   }, [adminData.optional.orders]);

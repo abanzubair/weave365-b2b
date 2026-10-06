@@ -162,7 +162,19 @@ export async function handleCreateOrder(request) {
     const isDropship = shipping_mode === 'dropship';
     const supabase = getSupabaseAdmin();
 
-    // 1. Pre-insert order in Supabase with 'pending_payment'
+    // 1. Auto-clean any stale abandoned pending_payment drafts older than 30 minutes
+    try {
+      const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      await supabase
+        .from('orders')
+        .delete()
+        .eq('status', 'pending_payment')
+        .lt('created_at', thirtyMinsAgo);
+    } catch (cleanupErr) {
+      console.warn('[Cashfree createOrder] Stale draft cleanup error:', cleanupErr);
+    }
+
+    // 2. Pre-insert or update order in Supabase with 'pending_payment'
     const validUserId = (user_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id))
       ? user_id
       : null;
@@ -537,3 +549,50 @@ export async function handleWebhook(request) {
     return Response.json({ status: 'Error', message: err.message }, { status: 500 });
   }
 }
+
+/**
+ * POST /api/cashfree/cancel-order
+ * Discards unfulfilled/abandoned draft order if user dismisses Cashfree payment modal without paying
+ */
+export async function handleCancelOrder(request) {
+  const corsHeaders = getCorsHeaders(request);
+  try {
+    const { db_order_id, order_id } = await request.json();
+    if (!db_order_id && !order_id) {
+      return Response.json(
+        { success: false, error: 'Missing order identifier.' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const supabase = getSupabaseAdmin();
+    // Safety check: ONLY delete rows that are still in 'pending_payment' status (never touch paid orders)
+    let query = supabase.from('orders').delete().eq('status', 'pending_payment');
+    if (db_order_id) {
+      query = query.eq('id', db_order_id);
+    } else if (order_id) {
+      query = query.eq('cf_order_id', order_id);
+    }
+
+    const { error: delError } = await query;
+    if (delError) {
+      console.warn('[Cashfree cancelOrder] Supabase deletion error:', delError);
+      return Response.json(
+        { success: false, error: delError.message },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    return Response.json(
+      { success: true, message: 'Unpaid order draft deleted.' },
+      { status: 200, headers: corsHeaders }
+    );
+  } catch (err) {
+    console.error('[Cashfree cancelOrder] Exception:', err);
+    return Response.json(
+      { success: false, error: err.message || 'Server error cancelling order.' },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+

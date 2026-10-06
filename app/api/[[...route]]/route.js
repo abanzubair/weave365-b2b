@@ -26,6 +26,7 @@ import {
   handleCreateOrder as cashfreeCreateOrder,
   handleVerifyOrder as cashfreeVerifyOrder,
   handleWebhook as cashfreeWebhook,
+  handleCancelOrder as cashfreeCancelOrder,
 } from './cashfreeHandler.js';
 
 export async function GET(request, { params }) {
@@ -60,6 +61,7 @@ export async function POST(request, { params }) {
 
   if (routeKey === 'orders' || routeKey === 'order') return orderPost(request);
   if (routeKey === 'cashfree/create-order') return cashfreeCreateOrder(request);
+  if (routeKey === 'cashfree/cancel-order') return cashfreeCancelOrder(request);
   if (routeKey === 'cashfree/verify-order') return cashfreeVerifyOrder(request);
   if (routeKey === 'cashfree/webhook') return cashfreeWebhook(request);
   if (routeKey === 'country-pricing' || routeKey === 'admin/country-pricing') return countryPricingPost(request);

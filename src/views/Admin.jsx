@@ -495,7 +495,12 @@ export function Admin({
 
   const enquiryRows = useMemo(() => {
     const rawInquiries = (adminData.optional.inquiries || []).map(i => ({ ...i, _sourceTable: 'inquiries' }));
-    const rawOrders = (adminData.optional.orders || []).map(o => ({ ...o, _sourceTable: 'orders' }));
+    const rawOrders = (adminData.optional.orders || [])
+      .filter(o => {
+        const s = String(o.status || '').toLowerCase().trim();
+        return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
+      })
+      .map(o => ({ ...o, _sourceTable: 'orders' }));
     const rawApiOrders = (adminData.optional.api_orders || []).map(a => ({
       ...a,
       _sourceTable: 'api_orders',
