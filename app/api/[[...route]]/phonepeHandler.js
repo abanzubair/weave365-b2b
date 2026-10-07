@@ -151,10 +151,31 @@ function safeEqual(a, b) {
 
 async function verifyWebhookAuth(request, pp) {
   if (!pp.webhookUsername || !pp.webhookPassword) return false;
-  const header = (request.headers.get('authorization') || '').trim().replace(/^SHA256\s+/i, '');
-  if (!header) return false;
-  const expected = await sha256Hex(`${pp.webhookUsername}:${pp.webhookPassword}`);
-  return safeEqual(header.toLowerCase(), expected.toLowerCase());
+  const authHeader = (request.headers.get('authorization') || '').trim();
+  if (!authHeader) return false;
+
+  // 1. Direct SHA256 hex match (with or without 'SHA256 ' prefix)
+  const shaToken = authHeader.replace(/^SHA256\s+/i, '').trim();
+  const expectedHash = await sha256Hex(`${pp.webhookUsername}:${pp.webhookPassword}`);
+  if (safeEqual(shaToken.toLowerCase(), expectedHash.toLowerCase())) {
+    return true;
+  }
+
+  // 2. HTTP Basic Auth: 'Basic ' + base64("username:password")
+  if (/^Basic\s+/i.test(authHeader)) {
+    const b64 = authHeader.replace(/^Basic\s+/i, '').trim();
+    try {
+      const decoded = atob(b64);
+      const expectedPair = `${pp.webhookUsername}:${pp.webhookPassword}`;
+      if (safeEqual(decoded, expectedPair)) {
+        return true;
+      }
+    } catch {
+      // invalid base64
+    }
+  }
+
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -501,19 +522,40 @@ export async function handleVerifyOrder(request) {
 export async function handleWebhook(request) {
   const pp = getPhonePeConfig();
 
+  // Safely read body text to support empty test pings / healthchecks
+  let rawText = '';
+  let body = {};
+  try {
+    rawText = await request.text();
+    if (rawText && rawText.trim()) {
+      body = JSON.parse(rawText);
+    }
+  } catch {
+    body = {};
+  }
+
+  const event = body.event;
+  const payload = body.payload || {};
+  const merchantOrderId = payload.merchantOrderId;
+
+  // PhonePe Dashboard pings the webhook URL when creating/testing the webhook.
+  // If the request has an empty body, no event, or is a test/ping probe, acknowledge 200 OK
+  // so the PhonePe dashboard's URL verification check passes immediately.
+  const isTestProbe = !rawText || !rawText.trim() || !event || event === 'ping' || event === 'test' || !merchantOrderId;
+  if (isTestProbe) {
+    console.log('[PhonePe Webhook] Verification probe / ping received. Responding 200 OK.');
+    return Response.json({ status: 'OK', ping: true }, { status: 200 });
+  }
+
+  // For actual payment events, strictly verify Authorization
   const isValid = await verifyWebhookAuth(request, pp);
   if (!isValid) {
-    console.warn('[PhonePe Webhook] Invalid or missing Authorization header.');
+    console.warn('[PhonePe Webhook] Invalid or missing Authorization header on event:', event);
     return new Response('Invalid webhook authorization', { status: 401 });
   }
 
   try {
-    const body = await request.json();
-    // Per PhonePe docs: use `event` (not `type`) and root-level `payload.state`
-    const event = body.event;
-    const payload = body.payload || {};
-    const merchantOrderId = payload.merchantOrderId;
-    console.log(`[PhonePe Webhook] Verified event received: ${event} (${merchantOrderId || 'no order id'})`);
+    console.log(`[PhonePe Webhook] Verified event received: ${event} (${merchantOrderId})`);
 
     if (event === 'checkout.order.completed' && merchantOrderId && payload.state === 'COMPLETED') {
       // Defense in depth: confirm with PhonePe directly rather than trusting the callback body alone
