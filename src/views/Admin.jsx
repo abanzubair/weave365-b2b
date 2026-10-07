@@ -394,15 +394,45 @@ export function Admin({
   async function updateVendorProfile(profileId, updateData) {
     if (!isSupabaseConfigured || !allowed || !profileId) return false;
 
+    // Remove fields that do not exist as root columns in the profiles DB schema
+    // and store them inside qualification JSONB to avoid PostgREST schema cache errors
+    const {
+      account_locked,
+      locked_reason,
+      ...safeUpdate
+    } = updateData || {};
+
+    const targetProfile = (adminData.profiles || []).find((p) => p.id === profileId) || {};
+    const existingQual = (typeof targetProfile.qualification === 'object' && targetProfile.qualification) ? targetProfile.qualification : {};
+    const qualToSet = (typeof safeUpdate.qualification === 'object' && safeUpdate.qualification) ? safeUpdate.qualification : { ...existingQual };
+
+    if (account_locked !== undefined || locked_reason !== undefined) {
+      safeUpdate.qualification = {
+        ...qualToSet,
+        ...(account_locked !== undefined ? { account_locked } : {}),
+        ...(locked_reason !== undefined ? { locked_reason } : {}),
+      };
+    }
+
     const update = {
-      ...updateData,
+      ...safeUpdate,
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('profiles')
       .update(update)
       .eq('id', profileId);
+
+    // If qualification column doesn't exist on public.profiles, retry without it
+    if (error && error.message?.includes('qualification')) {
+      const { qualification, ...withoutQual } = update;
+      const retryResult = await supabase
+        .from('profiles')
+        .update(withoutQual)
+        .eq('id', profileId);
+      error = retryResult.error;
+    }
 
     if (error) {
       alert(`Failed to update vendor profile: ${error.message}`);
@@ -412,12 +442,12 @@ export function Admin({
     setAdminData((current) => ({
       ...current,
       profiles: current.profiles.map((row) => (
-        row.id === profileId ? { ...row, ...update } : row
+        row.id === profileId ? { ...row, ...updateData, ...update } : row
       )),
     }));
 
     if (profileId === activeUser?.id && onProfileChange) {
-      onProfileChange({ ...(buyerProfile || {}), ...update });
+      onProfileChange({ ...(buyerProfile || {}), ...updateData, ...update });
     }
 
     return true;
@@ -794,6 +824,7 @@ export function Admin({
               toggleResellerDashboard={toggleResellerDashboard}
               updateInquiryStatus={updateInquiryStatus}
               user={activeUser}
+              updateProfile={updateVendorProfile}
             />
           )}
 

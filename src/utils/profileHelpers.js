@@ -20,8 +20,24 @@ export function profileRowFromUser(user) {
   const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
 
   const isVendor = isVendorProfile(buyerProfile) || user?.user_metadata?.role === 'vendor';
+  const isBusiness = !isVendor && (
+    buyerProfile.user_type === 'business' ||
+    user?.user_metadata?.user_type === 'business' ||
+    buyerProfile.buyer_type === 'business' ||
+    buyerProfile.buyer_type === 'reseller' ||
+    buyerProfile.role === 'reseller' ||
+    buyerProfile.role === 'business' ||
+    (buyerProfile.buyer_subtype && !['customer', 'user', ''].includes(buyerProfile.buyer_subtype.toLowerCase().trim())) ||
+    Boolean(buyerProfile.business_name?.trim())
+  );
+
   const storedAttr = getStoredAttribution();
   const acquisition = buyerProfile.acquisition || user?.user_metadata?.acquisition || storedAttr || null;
+
+  const userType = isVendor ? 'supplier' : (isBusiness ? 'business' : 'customer');
+  const buyerType = isVendor ? 'vendor' : (isBusiness ? 'business' : 'customer');
+  const role = isVendor ? 'vendor' : (isBusiness ? (buyerProfile.role === 'admin' ? 'admin' : (buyerProfile.role || 'reseller')) : (buyerProfile.role === 'admin' ? 'admin' : 'customer'));
+  const buyerSubtype = buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : (isBusiness ? 'Reseller' : 'Customer'));
 
   return applyAutoApprovalToBuyerProfile({
     id: user.id,
@@ -34,11 +50,11 @@ export function profileRowFromUser(user) {
     website: buyerProfile.website || '',
     social_handle: buyerProfile.social_handle || buyerProfile.socialHandle || '',
     acquisition: acquisition || undefined,
-    user_type: buyerProfile.user_type || user?.user_metadata?.user_type || (isVendor ? 'supplier' : 'customer'),
+    user_type: userType,
     qualification: buyerProfile.qualification || user?.user_metadata?.qualification || null,
-    buyer_type: isVendor ? 'vendor' : (buyerProfile.buyer_type || 'customer'),
-    buyer_subtype: buyerProfile.buyer_subtype || (isVendor ? 'Vendor' : 'Customer'),
-    role: isVendor ? 'vendor' : (buyerProfile.role || user.user_metadata?.role || 'customer'),
+    buyer_type: buyerType,
+    buyer_subtype: buyerSubtype,
+    role: role,
     vendor_code: buyerProfile.vendor_code || '',
     partner_name: buyerProfile.partner_name || '',
     buying_behavior: buyerProfile.buying_behavior || 'instant',
@@ -74,6 +90,40 @@ export async function syncProfileFromUser(user) {
         }
       }).catch(() => {});
     } catch {}
+  }
+
+  let { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('user_type, role, buyer_type, buyer_subtype, qualification, approval_status, price_group, vendor_code, partner_name')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (existingProfile) {
+    // Preserve administrative role promotions if present in DB
+    if (existingProfile.role && existingProfile.role !== 'customer') {
+      profileRow.role = existingProfile.role;
+    }
+    if (existingProfile.user_type && profileRow.user_type === 'customer' && existingProfile.user_type !== 'customer') {
+      profileRow.user_type = existingProfile.user_type;
+    }
+    if (existingProfile.buyer_type && profileRow.buyer_type === 'customer' && existingProfile.buyer_type !== 'customer') {
+      profileRow.buyer_type = existingProfile.buyer_type;
+    }
+    if (existingProfile.buyer_subtype && (!profileRow.buyer_subtype || profileRow.buyer_subtype === 'Customer')) {
+      profileRow.buyer_subtype = existingProfile.buyer_subtype;
+    }
+    if (existingProfile.vendor_code) profileRow.vendor_code = existingProfile.vendor_code;
+    if (existingProfile.partner_name) profileRow.partner_name = existingProfile.partner_name;
+    if (existingProfile.price_group) profileRow.price_group = existingProfile.price_group;
+    if (existingProfile.approval_status) profileRow.approval_status = existingProfile.approval_status;
+
+    // Merge qualification: combine existing DB fields with incoming qualification without wiping questionnaire data
+    const existingQual = (typeof existingProfile.qualification === 'object' && existingProfile.qualification) ? existingProfile.qualification : {};
+    const incomingQual = (typeof profileRow.qualification === 'object' && profileRow.qualification) ? profileRow.qualification : {};
+    profileRow.qualification = {
+      ...existingQual,
+      ...incomingQual,
+    };
   }
 
   let { error } = await supabase

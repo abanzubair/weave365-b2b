@@ -1724,8 +1724,8 @@
 .product-page-popover {
   position: absolute;
   bottom: calc(100% + 10px);
-  width: 240px;
-  max-width: calc(100vw - 32px);
+  width: 276px;
+  max-width: calc(100vw - 24px);
   z-index: 1002;
   background: #ffffff;
   border-radius: 14px;
@@ -1815,6 +1815,28 @@
 
 .product-page-popover .item-copy span {
   font-size: 10px;
+}
+
+.item-restricted-hint,
+.product-page-popover .item-copy span.item-restricted-hint,
+.item-copy span.item-restricted-hint {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4.5px !important;
+  color: #92400e !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  margin-top: 1px !important;
+}
+
+.item-restricted-hint .hint-text {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #92400e !important;
 }
 
 @keyframes pagePopoverSlideUp {

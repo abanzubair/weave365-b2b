@@ -110,22 +110,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <link
-        rel="preload"
-        as="image"
-        type="image/webp"
-        href="/assets/banner/heroFreeWebsite-400.webp"
-        media="(max-width: 640px)"
-        fetchPriority="high"
-      />
-      <link
-        rel="preload"
-        as="image"
-        type="image/avif"
-        href="/assets/banner/heroFreeWebsite-600.avif"
-        media="(min-width: 641px)"
-        fetchPriority="high"
-      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsJsonLd) }}

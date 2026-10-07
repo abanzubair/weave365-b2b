@@ -8,14 +8,12 @@ const resolveArrayUpdate = (nextValue, currentValue) => {
   return Array.isArray(resolved) ? resolved : [];
 };
 
-const initialAuth = typeof window !== 'undefined' ? getCachedAuth() : { user: null, buyerProfile: null };
-
 export const useStorefront = create((set) => ({
   // Auth & Profile State
-  user: initialAuth.user,
-  buyerProfile: initialAuth.buyerProfile,
+  user: null,
+  buyerProfile: null,
   vendorOnboarding: null,
-  isProfileHydrated: Boolean(initialAuth.user),
+  isProfileHydrated: false,
   setUser: (user) => {
     const current = useStorefront.getState?.()?.user;
     if (user === current || (user?.id && current?.id && user.id === current.id && user.updated_at === current.updated_at)) {

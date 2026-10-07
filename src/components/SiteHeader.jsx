@@ -95,19 +95,32 @@ export function SiteHeader(props) {
   const companyRef = props.companyRef || internalCompanyRef;
 
   const setCategory = props.setCategory;
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const searchActive = props.searchActive ?? store.searchActive;
   const setSearchActive = props.setSearchActive ?? store.setSearchActive;
   const profileRef = props.profileRef || internalProfileRef;
-  const user = props.user ?? store.user;
-  const buyerProfile = props.buyerProfile ?? store.buyerProfile;
-  const userDisplayName = user
+  const activeUser = isMounted ? (props.user ?? store.user) : null;
+  const activeBuyerProfile = isMounted ? (props.buyerProfile ?? store.buyerProfile) : null;
+  const userDisplayName = activeUser
     ? (() => {
-        const rawName = buyerProfile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || buyerProfile?.business_name || user.email?.split('@')[0] || 'Account';
+        const rawName =
+          activeBuyerProfile?.full_name ||
+          activeUser.user_metadata?.buyer_profile?.full_name ||
+          activeUser.user_metadata?.full_name ||
+          activeUser.user_metadata?.name ||
+          activeBuyerProfile?.business_name ||
+          activeUser.user_metadata?.buyer_profile?.business_name ||
+          activeUser.email?.split('@')[0] ||
+          'Account';
         return rawName.trim().split(/\s+/)[0] || 'Account';
       })()
     : 'Log In';
   const vendorOnboarding = props.vendorOnboarding ?? store.vendorOnboarding;
-  const userEmail = (user?.email || '').toLowerCase().trim();
+  const userEmail = (activeUser?.email || '').toLowerCase().trim();
   const isAdmin = props.isAdmin ?? Boolean(userEmail && adminEmails.includes(userEmail));
   const favoritesCount = props.favoritesCount ?? store.favorites.length;
   const handleSignOut = props.handleSignOut;
@@ -421,11 +434,10 @@ export function SiteHeader(props) {
           {/* Desktop Auth / User Button */}
           <button
             type="button"
-            suppressHydrationWarning
-            className={`${user ? 'nav-account-pill-btn' : 'nav-auth-pill-btn'} desktop-only-action`}
+            className={`${activeUser ? 'nav-account-pill-btn' : 'nav-auth-pill-btn'} desktop-only-action`}
             onClick={(e) => {
               e.stopPropagation();
-              if (user) {
+              if (activeUser) {
                 setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
               } else {
                 if (navigate) navigate('signup');
@@ -433,7 +445,7 @@ export function SiteHeader(props) {
               }
             }}
           >
-            <span suppressHydrationWarning>{userDisplayName}</span>
+            <span>{userDisplayName}</span>
           </button>
 
           {/* Mobile User Icon */}
@@ -442,7 +454,7 @@ export function SiteHeader(props) {
             className={`premium-icon-btn mobile-user-trigger mobile-only-action ${dropdownOpen === 'account' ? 'active' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              if (user) {
+              if (activeUser) {
                 setDropdownOpen(dropdownOpen === 'account' ? null : 'account');
               } else {
                 if (navigate) navigate('signup');
@@ -457,7 +469,7 @@ export function SiteHeader(props) {
             )}
           </button>
 
-          {user && (
+          {activeUser && (
             <DropdownPortal anchorRef={profileRef} isOpen={dropdownOpen === 'account'}>
               {isAdmin && (
                 <button

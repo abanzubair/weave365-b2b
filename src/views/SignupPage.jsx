@@ -26,7 +26,7 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { normalizePincodeInput } from '../storefrontShared.jsx';
 import { WhatsappIcon } from '../components/WhatsappIcon.jsx';
 import { syncProfileFromUser, loadProfileForUser, isProfileComplete } from '../utils/profileHelpers.js';
-import { applyAutoApprovalToBuyerProfile } from '../utils/buyerAccess.js';
+import { applyAutoApprovalToBuyerProfile, isAccountLocked, isVendorProfile } from '../utils/buyerAccess.js';
 import { clearCachedAuth } from '../utils/authCache.js';
 
 import { RoleEntryCards } from '../components/signup/RoleEntryCards.jsx';
@@ -103,6 +103,7 @@ export function SignupPage({
   initialType = null,
 }) {
   const profileComplete = isProfileComplete(user, buyerProfile);
+  const accountLocked = isAccountLocked(buyerProfile, user);
   const isResettingPassword = initialMode === 'reset-password' ||
     (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'));
 
@@ -348,6 +349,18 @@ export function SignupPage({
 
         if (cleanName && cleanWhatsapp.length >= 6 && cleanWhatsapp.length <= 15 && pending.city && cleanPincode.trim().length >= 3) {
           const isVendor = pending.buyerType === 'vendor' || pending.buyerSubtype === 'Vendor' || pending.user_type === 'supplier';
+          const isBusiness = !isVendor && (
+            pending.user_type === 'business' ||
+            pending.buyerType === 'business' ||
+            pending.buyerType === 'reseller' ||
+            (pending.buyerSubtype && pending.buyerSubtype !== 'Customer') ||
+            Boolean(pending.businessName)
+          );
+          const userType = isVendor ? 'supplier' : (isBusiness ? 'business' : 'customer');
+          const buyerType = isVendor ? 'vendor' : (isBusiness ? 'business' : 'customer');
+          const role = isVendor ? 'vendor' : (isBusiness ? 'reseller' : 'customer');
+          const buyerSubtype = pending.buyerSubtype || (isVendor ? 'Vendor' : (isBusiness ? 'Reseller' : 'Customer'));
+
           const newProfile = {
             id: user.id,
             email: user.email,
@@ -358,11 +371,11 @@ export function SignupPage({
             whatsapp: cleanWhatsapp,
             whatsapp_country_code: pending.countryCode || '+91',
             whatsapp_number: cleanWhatsapp,
-            user_type: pending.user_type || (isVendor ? 'supplier' : 'customer'),
+            user_type: userType,
             qualification: pending.qualification || null,
-            buyer_type: isVendor ? 'vendor' : (pending.buyerType || 'customer'),
-            buyer_subtype: pending.buyerSubtype || (isVendor ? 'Vendor' : 'Customer'),
-            role: isVendor ? 'vendor' : 'customer',
+            buyer_type: buyerType,
+            buyer_subtype: buyerSubtype,
+            role: role,
             city: pending.city,
             state: pending.state,
             pincode: cleanPincode,
@@ -382,8 +395,9 @@ export function SignupPage({
                 data: {
                   buyer_profile: newProfile,
                   user_type: newProfile.user_type,
+                  buyer_type: newProfile.buyer_type,
                   qualification: newProfile.qualification,
-                  role: isVendor ? 'vendor' : 'customer',
+                  role: newProfile.role,
                   full_name: cleanName,
                 },
               });
@@ -411,6 +425,15 @@ export function SignupPage({
       (typeof window !== 'undefined' && window.location.hash.includes('type=recovery'))
     ) {
       return;
+    }
+
+    const activeProf = buyerProfile || user?.user_metadata?.buyer_profile;
+    const currentLocked = isAccountLocked(activeProf, user);
+    if (currentLocked) {
+      if (navigate) {
+        navigate('account');
+        return;
+      }
     }
 
     if (!isProfileComplete(user, buyerProfile)) {
@@ -593,6 +616,11 @@ export function SignupPage({
           }
         : null;
 
+    const isBusiness = selectedUserType === 'business';
+    const userType = isVendor ? 'supplier' : (isBusiness ? 'business' : 'customer');
+    const buyerType = isVendor ? 'vendor' : (isBusiness ? 'business' : 'customer');
+    const role = isVendor ? 'vendor' : (isBusiness ? 'reseller' : 'customer');
+
     return applyAutoApprovalToBuyerProfile({
       full_name: cleanName,
       whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
@@ -601,11 +629,11 @@ export function SignupPage({
       business_name: cleanBusinessName,
       website: cleanWebsite,
       social_handle: cleanSocial,
-      user_type: selectedUserType || (isVendor ? 'supplier' : 'customer'),
+      user_type: userType,
       qualification: qualificationData,
-      buyer_type: isVendor ? 'vendor' : 'customer',
+      buyer_type: buyerType,
       buyer_subtype: buyerSubtype,
-      role: isVendor ? 'vendor' : 'customer',
+      role: role,
       buying_behavior: profile.buyingBehavior || 'instant',
       city: cleanCity,
       state: profile.state?.trim() || '',
@@ -806,6 +834,11 @@ export function SignupPage({
           }
         : null;
 
+    const isBusiness = selectedUserType === 'business';
+    const userType = isVendor ? 'supplier' : (isBusiness ? 'business' : 'customer');
+    const buyerType = isVendor ? 'vendor' : (isBusiness ? 'business' : 'customer');
+    const role = isVendor ? 'vendor' : (isBusiness ? 'reseller' : 'customer');
+
     const pendingProfile = {
       fullName: cleanName,
       whatsapp: cleanWhatsapp,
@@ -813,11 +846,11 @@ export function SignupPage({
       businessName: profile.businessName || '',
       website: (profile.website || '').trim(),
       socialHandle: (profile.socialHandle || '').trim(),
-      user_type: selectedUserType,
+      user_type: userType,
       qualification: qualificationData,
-      buyerType: isVendor ? 'vendor' : 'customer',
+      buyerType: buyerType,
       buyerSubtype: buyerSubtype,
-      role: isVendor ? 'vendor' : 'customer',
+      role: role,
       city: profile.city.trim(),
       state: profile.state.trim(),
       pincode: cleanPincode,
@@ -930,9 +963,10 @@ export function SignupPage({
           const { data: updatedAuth, error: authErr } = await supabase.auth.updateUser({
             data: {
               buyer_profile: newProfile,
-              user_type: selectedUserType,
+              user_type: newProfile.user_type,
+              buyer_type: newProfile.buyer_type,
               qualification: newProfile.qualification,
-              role: isVendor ? 'vendor' : 'customer',
+              role: newProfile.role,
               full_name: cleanName,
             },
           });
@@ -1065,9 +1099,10 @@ export function SignupPage({
               emailRedirectTo: redirectUrl,
               data: {
                 buyer_profile: registeredProfile,
-                user_type: selectedUserType,
+                user_type: registeredProfile.user_type,
+                buyer_type: registeredProfile.buyer_type,
                 qualification: registeredProfile.qualification,
-                role: isVendorRegister ? 'vendor' : 'customer',
+                role: registeredProfile.role,
                 full_name: toTitleCaseName(profile.fullName),
               },
             },
@@ -1105,7 +1140,13 @@ export function SignupPage({
           if (setBuyerProfile && profileData.profile) {
             setBuyerProfile(profileData.profile);
           }
-          if (isProfileComplete(loggedUser, profileData.profile)) {
+          const activeProf = profileData.profile || loggedUser.user_metadata?.buyer_profile;
+          const userIsLocked = isAccountLocked(activeProf, loggedUser);
+          const userIsComplete = isProfileComplete(loggedUser, activeProf);
+
+          if (userIsLocked) {
+            navigate('account');
+          } else if (userIsComplete) {
             navigate('home');
           } else {
             setMode('complete-profile');
@@ -1316,53 +1357,99 @@ export function SignupPage({
                   </div>
                 )}
               </div>
-            ) : user && profileComplete && mode !== 'register' && !loading ? (
-              /* =================================================================
-                 Already Logged In (Profile Complete) View
-                 ================================================================= */
-              <div className="signup-form-view-wrapper">
-                <div className="signup-form-centered-body">
-                  <div className="signup-form-header">
-                    <div className="signup-form-title-row">
-                      <h2 className="signup-form-title">You're signed in</h2>
+            ) : user && mode !== 'register' && !loading && (accountLocked || profileComplete) ? (
+              accountLocked ? (
+                /* =================================================================
+                   Already Logged In — Account Locked (Profile Details Required)
+                   ================================================================= */
+                <div className="signup-form-view-wrapper">
+                  <div className="signup-form-centered-body">
+                    <div className="signup-form-header">
+                      <div className="signup-form-title-row">
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: '#fef2f2', color: '#dc2626', margin: '0 auto 12px' }}>
+                          <Lock size={24} />
+                        </div>
+                        <h2 className="signup-form-title" style={{ color: '#991b1b' }}>Action Required: Account Locked</h2>
+                      </div>
+                      <p className="signup-form-subtitle" style={{ maxWidth: '420px', margin: '0 auto' }}>
+                        Your account has been switched to {isVendorProfile(buyerProfile) ? 'a Supplier Partner' : 'a Business & Reseller'} account. Access to orders, addresses, and wholesale features is locked until you complete your required profile details.
+                      </p>
                     </div>
-                    <p className="signup-form-subtitle">
-                      Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your account is active.
-                    </p>
+
+                    <div className="signup-signedin-actions" style={{ maxWidth: '380px', margin: '0 auto' }}>
+                      <button
+                        type="button"
+                        className="signup-submit-btn signup-signedin-btn"
+                        style={{ background: '#b45309', borderColor: '#b45309' }}
+                        onClick={() => navigate('account')}
+                      >
+                        Complete Profile in My Account <ArrowRight size={16} />
+                      </button>
+                    </div>
+
+                    <div className="signup-switch-link" style={{ marginTop: '16px' }}>
+                      Want to switch accounts?{' '}
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="signup-signedin-actions">
-                    <button
-                      type="button"
-                      className="signup-submit-btn signup-signedin-btn"
-                      onClick={() => navigate('catalogue')}
-                    >
-                      Browse Catalogue <ArrowRight size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className="signup-google-btn signup-signedin-btn"
-                      onClick={() => navigate('account')}
-                    >
-                      Go to My Account
-                    </button>
-                  </div>
-
-                  <div className="signup-switch-link" style={{ marginTop: '16px' }}>
-                    Want to switch accounts?{' '}
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                    >
-                      Sign out
-                    </button>
+                  <div className="signup-form-bottom-footer">
+                    <LegalDisclaimer />
                   </div>
                 </div>
+              ) : (
+                /* =================================================================
+                   Already Logged In (Profile Complete) View
+                   ================================================================= */
+                <div className="signup-form-view-wrapper">
+                  <div className="signup-form-centered-body">
+                    <div className="signup-form-header">
+                      <div className="signup-form-title-row">
+                        <h2 className="signup-form-title">You&apos;re signed in</h2>
+                      </div>
+                      <p className="signup-form-subtitle">
+                        Welcome, <strong>{buyerProfile?.full_name || buyerProfile?.business_name || user.email}</strong>. Your account is active.
+                      </p>
+                    </div>
 
-                <div className="signup-form-bottom-footer">
-                  <LegalDisclaimer />
+                    <div className="signup-signedin-actions">
+                      <button
+                        type="button"
+                        className="signup-submit-btn signup-signedin-btn"
+                        onClick={() => navigate('catalogue')}
+                      >
+                        Browse Catalogue <ArrowRight size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        className="signup-google-btn signup-signedin-btn"
+                        onClick={() => navigate('account')}
+                      >
+                        Go to My Account
+                      </button>
+                    </div>
+
+                    <div className="signup-switch-link" style={{ marginTop: '16px' }}>
+                      Want to switch accounts?{' '}
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="signup-form-bottom-footer">
+                    <LegalDisclaimer />
+                  </div>
                 </div>
-              </div>
+              )
             ) : mode === 'login' && !isOnboarding ? (
               /* =================================================================
                  Login View
@@ -1785,7 +1872,7 @@ export function SignupPage({
                             <label className="signup-label">Country *</label>
                             <input
                               type="text"
-                              value={profile.country || 'India'}
+                              value={profile.country ?? ''}
                               onChange={(e) => updateProfile('country', e.target.value)}
                               placeholder="e.g. India"
                               autoComplete="country-name"

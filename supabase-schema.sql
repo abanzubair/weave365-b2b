@@ -198,20 +198,47 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  is_vendor boolean;
+  is_business boolean;
 begin
   new.updated_at = now();
-  new.buyer_type = case 
-    when new.buyer_type in ('vendor', 'reseller', 'wholesale', 'customer', 'user') then new.buyer_type
-    when new.buyer_subtype ilike '%vendor%' or new.buyer_subtype ilike '%weaver%' then 'vendor'
-    else 'customer'
-  end;
 
-  if new.role = 'admin' then
-    new.role = 'admin';
-  elsif new.buyer_type = 'vendor' or new.buyer_subtype ilike '%vendor%' or new.buyer_subtype ilike '%weaver%' then
-    new.role = 'vendor';
+  is_vendor := (
+    new.user_type = 'supplier' or
+    new.buyer_type = 'vendor' or
+    new.role = 'vendor' or
+    new.buyer_subtype ilike '%vendor%' or
+    new.buyer_subtype ilike '%weaver%' or
+    new.buyer_subtype ilike '%supplier%'
+  );
+
+  is_business := not is_vendor and (
+    new.user_type = 'business' or
+    new.buyer_type in ('business', 'reseller', 'wholesale') or
+    new.role in ('reseller', 'business') or
+    (new.buyer_subtype is not null and trim(new.buyer_subtype) not in ('Customer', 'customer', 'User', 'user', '')) or
+    (new.business_name is not null and trim(new.business_name) <> '')
+  );
+
+  if is_vendor then
+    new.buyer_type := 'vendor';
+    new.user_type := 'supplier';
+    new.role := case when new.role = 'admin' then 'admin' else 'vendor' end;
+  elsif is_business then
+    new.buyer_type := 'business';
+    new.user_type := 'business';
+    new.role := case when new.role = 'admin' then 'admin' else 'reseller' end;
+    if new.buyer_subtype is null or trim(new.buyer_subtype) in ('', 'Customer', 'customer') then
+      new.buyer_subtype := 'Reseller';
+    end if;
   else
-    new.role = coalesce(new.role, 'customer');
+    new.buyer_type := 'customer';
+    new.user_type := 'customer';
+    new.role := case when new.role = 'admin' then 'admin' else 'customer' end;
+    if new.buyer_subtype is null or trim(new.buyer_subtype) = '' then
+      new.buyer_subtype := 'Customer';
+    end if;
   end if;
 
   if tg_op = 'INSERT' and not public.is_admin() then
@@ -288,8 +315,8 @@ begin
     coalesce(bp->>'whatsapp_number', bp->>'whatsapp', new.raw_user_meta_data->>'whatsapp_number', ''),
     coalesce(bp->>'whatsapp_country_code', '+91'),
     coalesce(bp->>'business_name', new.raw_user_meta_data->>'business_name', ''),
-    coalesce(bp->>'buyer_type', new.raw_user_meta_data->>'buyer_type', 'customer'),
-    coalesce(bp->>'buyer_subtype', new.raw_user_meta_data->>'buyer_subtype', 'Customer'),
+    coalesce(bp->>'buyer_type', new.raw_user_meta_data->>'buyer_type', case when coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type') = 'business' or (bp->>'business_name' is not null and trim(bp->>'business_name') <> '') then 'business' else 'customer' end),
+    coalesce(bp->>'buyer_subtype', new.raw_user_meta_data->>'buyer_subtype', case when coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type') = 'business' or (bp->>'business_name' is not null and trim(bp->>'business_name') <> '') then 'Reseller' else 'Customer' end),
     coalesce(bp->>'city', ''),
     coalesce(bp->>'state', ''),
     coalesce(bp->>'pincode', ''),
@@ -298,8 +325,8 @@ begin
     coalesce(bp->>'social_handle', bp->>'socialHandle', new.raw_user_meta_data->>'social_handle', new.raw_user_meta_data->>'socialHandle', ''),
     coalesce(bp->'interested_categories', '[]'::jsonb),
     coalesce(bp->>'buying_behavior', 'instant'),
-    coalesce(new.raw_user_meta_data->>'role', bp->>'role', 'customer'),
-    coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type', 'customer'),
+    coalesce(new.raw_user_meta_data->>'role', bp->>'role', case when coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type') = 'business' or (bp->>'business_name' is not null and trim(bp->>'business_name') <> '') then 'reseller' else 'customer' end),
+    coalesce(bp->>'user_type', new.raw_user_meta_data->>'user_type', case when (bp->>'business_name' is not null and trim(bp->>'business_name') <> '') then 'business' else 'customer' end),
     coalesce(bp->'qualification', new.raw_user_meta_data->'qualification', '{}'::jsonb),
     'approved',
     'approved',
@@ -1693,6 +1720,7 @@ alter table public.api_keys add column if not exists gst_number text;
 alter table public.api_keys add column if not exists catalog_mode text not null default 'all';
 alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
 alter table public.api_keys add column if not exists orders_enabled boolean not null default false;
+alter table public.api_keys add column if not exists encrypted_key text;
 
 -- Data migration: Safely mask any legacy plaintext API keys stored in key_prefix so secrets cannot be retrieved
 update public.api_keys

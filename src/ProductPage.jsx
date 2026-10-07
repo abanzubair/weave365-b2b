@@ -77,7 +77,7 @@ const ResellerWhatsappShare = dynamic(
 );
 import { SectionTitle } from './components/SectionTitle.jsx';
 import { WhatsappIcon } from './components/WhatsappIcon.jsx';
-import { priceNoticeForAccess } from './utils/buyerAccess.js';
+import { priceNoticeForAccess, detectAccountCategory } from './utils/buyerAccess.js';
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
@@ -162,11 +162,17 @@ export function ProductDetail({
   checkPincode,
   openAuth,
   user,
+  buyerProfile,
   onReady,
   initialColorName = null,
   initialVariantCode = null,
   initialReviews = [],
 }) {
+  const isCustomer = Boolean(
+    priceAccess?.isCustomer ||
+    (user && !priceAccess?.isVendor && detectAccountCategory(user, buyerProfile) === 'customer')
+  );
+
   const resolvedInitial = useMemo(() => {
     let colorQuery = initialColorName;
     let variantQuery = initialVariantCode;
@@ -1016,6 +1022,12 @@ export function ProductDetail({
       return;
     }
 
+    if (isCustomer) {
+      setToastMessage('A Business account is required to download catalogue photos.');
+      setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
+
     const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
     const localKey = `weave365_dl_${userId}_${productId}_${todayStr}`;
 
@@ -1819,6 +1831,11 @@ export function ProductDetail({
                                 handleRestrictedAction('share catalogue details', () => setWhatsappShareOpen(true));
                                 return;
                               }
+                              if (isCustomer) {
+                                setToastMessage('A Business account is required to share catalogue products.');
+                                setTimeout(() => setToastMessage(''), 3500);
+                                return;
+                              }
                               setWhatsappShareOpen(true);
                             }}
                           >
@@ -1826,7 +1843,9 @@ export function ProductDetail({
                             <div className="item-copy">
                               <strong>Share on Social Media</strong>
                               {!priceAccess?.isLoggedIn ? (
-                                <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                                <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
+                              ) : isCustomer ? (
+                                <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
                               ) : (
                                 <span>Custom margin & unbranded specs</span>
                               )}
@@ -1840,6 +1859,15 @@ export function ProductDetail({
                             onClick={async () => {
                               if (isDownloading) return;
                               handleClosePanel();
+                              if (!priceAccess?.isLoggedIn) {
+                                handleRestrictedAction('download catalogue photos', downloadImagesAsZip);
+                                return;
+                              }
+                              if (isCustomer) {
+                                setToastMessage('A Business account is required to download catalogue photos.');
+                                setTimeout(() => setToastMessage(''), 3500);
+                                return;
+                              }
                               handleRestrictedAction('download catalogue photos', downloadImagesAsZip);
                             }}
                             disabled={isDownloading}
@@ -1848,7 +1876,9 @@ export function ProductDetail({
                             <div className="item-copy">
                               <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                               {!priceAccess?.isLoggedIn ? (
-                                <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                                <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
+                              ) : isCustomer ? (
+                                <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
                               ) : (
                                 <span>HD images & spec details</span>
                               )}

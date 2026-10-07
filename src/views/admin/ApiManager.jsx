@@ -34,6 +34,8 @@ import {
   ArrowLeft,
   X,
   ShoppingBag,
+  Clock,
+  FileText,
 } from '../../components/icons.jsx';
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
@@ -50,6 +52,10 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   
   // Selected user for "Inspect Dashboard" mode
   const [inspectedKeyId, setInspectedKeyId] = useState(null);
+
+  // Review API Access Request Modal state
+  const [reviewRequestItem, setReviewRequestItem] = useState(null);
+  const [approvingRequestId, setApprovingRequestId] = useState(null);
 
   // Confirmation Dialog State
   const [confirmDialog, setConfirmDialog] = useState({
@@ -175,6 +181,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
       if (tierFilter !== 'all' && k.tier !== tierFilter) return false;
       if (statusFilter === 'active' && !k.is_active) return false;
       if (statusFilter === 'disabled' && k.is_active) return false;
+      if (statusFilter === 'pending' && (k.is_active || !k.profiles?.qualification?.api_access_request)) return false;
 
       if (endpointFilter === 'orders_on' && !k.orders_enabled) return false;
       if (endpointFilter === 'orders_off' && k.orders_enabled) return false;
@@ -458,6 +465,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Statuses</option>
+            <option value="pending">Pending Approval Only</option>
             <option value="active">Active Only</option>
             <option value="disabled">Disabled Only</option>
           </select>
@@ -494,6 +502,7 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
               const tierInfo = TIER_CONFIGS[item.tier] || TIER_CONFIGS.free;
               const phone = item.profiles?.whatsapp || '';
               const whatsappUrl = phone ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(item.client_name)},%20regarding%20your%20Weave365%20API%20integration...` : null;
+              const hasAccessRequest = Boolean(item.profiles?.qualification?.api_access_request);
 
               return (
                 <tr key={item.id}>
@@ -510,6 +519,32 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                       </a>
                     ) : (
                       <span className="api-no-website">No website specified</span>
+                    )}
+
+                    {!item.is_active && hasAccessRequest && (
+                      <div style={{ marginTop: '5px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setReviewRequestItem(item)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.6875rem',
+                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            background: '#fef3c7',
+                            color: '#92400e',
+                            border: '1px solid #fde68a',
+                            cursor: 'pointer',
+                          }}
+                          title="Click to review submitted API Access Request"
+                        >
+                          <Clock size={10} />
+                          <span>Pending Approval</span>
+                        </button>
+                      </div>
                     )}
                   </td>
 
@@ -653,6 +688,19 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                         <Eye size={12} />
                         <span>Inspect</span>
                       </button>
+                      {hasAccessRequest && (
+                        <button
+                          type="button"
+                          onClick={() => setReviewRequestItem(item)}
+                          title="Review Submitted API Access Request Application"
+                          className="api-action-btn api-inspect-btn"
+                          style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                          aria-label="Review Request"
+                        >
+                          <FileText size={12} />
+                          <span>Review</span>
+                        </button>
+                      )}
                       {whatsappUrl ? (
                         <a
                           href={whatsappUrl}
@@ -1049,6 +1097,228 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                 }
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* 7. API Access Request Review Modal */}
+      {reviewRequestItem && (
+        <div className="api-req-modal-overlay" onClick={() => setReviewRequestItem(null)}>
+          <div className="api-req-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="api-req-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={18} style={{ color: '#0284c7' }} />
+                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700 }}>API Access Request Application</h3>
+              </div>
+              <button
+                type="button"
+                className="api-req-modal-close-btn"
+                onClick={() => setReviewRequestItem(null)}
+                aria-label="Close Modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="api-req-modal-body">
+              {(() => {
+                const req = reviewRequestItem.profiles?.qualification?.api_access_request || {};
+                const isItemActive = Boolean(reviewRequestItem.is_active);
+
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: isItemActive ? '#ecfdf5' : '#fffbeb', borderRadius: '8px', border: `1px solid ${isItemActive ? '#a7f3d0' : '#fde68a'}` }}>
+                      <div>
+                        <strong style={{ fontSize: '0.9375rem', color: isItemActive ? '#065f46' : '#92400e', display: 'block' }}>
+                          {reviewRequestItem.client_name || 'Client'}
+                        </strong>
+                        <span style={{ fontSize: '0.8125rem', color: isItemActive ? '#047857' : '#b45309' }}>
+                          Account: {reviewRequestItem.profiles?.email || 'N/A'}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', background: isItemActive ? '#10b981' : '#f59e0b', color: '#ffffff' }}>
+                        {isItemActive ? 'Active & Approved' : 'Pending Approval'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="api-req-item">
+                        <span className="api-req-label">GSTIN</span>
+                        <span className="api-req-val" style={{ fontFamily: 'monospace' }}>
+                          {req.gstin || reviewRequestItem.gst_number || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Storefront URL</span>
+                        {req.websiteUrl || reviewRequestItem.client_website ? (
+                          <a
+                            href={req.websiteUrl || reviewRequestItem.client_website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="api-client-link"
+                            style={{ fontSize: '0.9375rem', wordBreak: 'break-all' }}
+                          >
+                            <Globe size={12} /> {req.websiteUrl || reviewRequestItem.client_website} <ExternalLink size={10} />
+                          </a>
+                        ) : (
+                          <span className="api-req-val">N/A</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="api-req-item">
+                      <span className="api-req-label">Business Description</span>
+                      <span className="api-req-val">
+                        {req.businessType || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Operational Status</span>
+                        <span className="api-req-val">
+                          {req.operationalStatus || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Integration Platform</span>
+                        <span className="api-req-val">
+                          {req.platform || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="api-req-item">
+                      <span className="api-req-label">API Use Cases Requested</span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                        {Array.isArray(req.apiUseCases) && req.apiUseCases.length > 0 ? (
+                          req.apiUseCases.map((uc) => (
+                            <span
+                              key={uc}
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                background: '#f1f5f9',
+                                border: '1px solid #cbd5e1',
+                                color: '#334155',
+                              }}
+                            >
+                              ✓ {uc}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="api-req-val">None specified</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Expected Monthly Volume</span>
+                        <span className="api-req-val">
+                          {req.monthlyOrderVolume || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Start Timeline</span>
+                        <span className="api-req-val">
+                          {req.timeline || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Sells from Other Suppliers?</span>
+                        <span className="api-req-val">
+                          {req.sellsOtherSuppliers || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="api-req-item">
+                        <span className="api-req-label">Technical Contact Email</span>
+                        <span className="api-req-val">
+                          {req.technicalEmail || 'None provided'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="api-req-item">
+                      <span className="api-req-label">Integration Goals & Objectives</span>
+                      <div
+                        style={{
+                          background: '#f8fafc',
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.5',
+                          color: '#1e293b',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {req.goals || 'No description provided.'}
+                      </div>
+                    </div>
+
+                    {req.submittedAt && (
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'right' }}>
+                        Submitted: {new Date(req.submittedAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+
+            <div className="api-req-modal-footer">
+              <button
+                type="button"
+                className="api-btn-secondary"
+                onClick={() => setReviewRequestItem(null)}
+              >
+                Close
+              </button>
+              {!reviewRequestItem.is_active && (
+                <button
+                  type="button"
+                  disabled={approvingRequestId === reviewRequestItem.id}
+                  className="primary-button"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 18px',
+                    fontSize: '0.875rem',
+                    background: '#059669',
+                    borderColor: '#059669',
+                  }}
+                  onClick={async () => {
+                    const keyId = reviewRequestItem.id;
+                    setApprovingRequestId(keyId);
+                    try {
+                      const { error } = await developerService.updateApiKey(keyId, { is_active: true });
+                      if (error) throw error;
+                      setAllKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, is_active: true } : k)));
+                      setReviewRequestItem((prev) => (prev ? { ...prev, is_active: true } : null));
+                      alert('API Access approved and enabled successfully!');
+                    } catch (err) {
+                      alert('Failed to enable API access: ' + err.message);
+                    } finally {
+                      setApprovingRequestId(null);
+                    }
+                  }}
+                >
+                  {approvingRequestId === reviewRequestItem.id ? (
+                    <RefreshCw size={14} className="spin-icon" />
+                  ) : (
+                    <CheckCircle2 size={14} />
+                  )}
+                  <span>Approve & Enable API Access</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

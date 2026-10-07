@@ -102,6 +102,7 @@ export const ProductCard = memo(function ProductCard({
   const [popupOpen, setPopupOpen] = useState(false);
   const whatsappUrl = buildSingleProductWhatsappUrl(product, selectedVariant, 1, undefined, undefined, priceAccess, currentCountry, exchangeRates);
   const canResellerShare = priceAccess?.canViewPrices !== false;
+  const isCustomer = Boolean(priceAccess?.isCustomer);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showResellerWhatsapp, setShowResellerWhatsapp] = useState(false);
   const [showBuyPanel, setShowBuyPanel] = useState(false);
@@ -229,6 +230,12 @@ export const ProductCard = memo(function ProductCard({
     if (!priceAccess?.isLoggedIn || !userId) {
       handleClose();
       triggerToast('Only logged in users can download catalogue photos');
+      return;
+    }
+
+    if (isCustomer) {
+      handleClose();
+      triggerToast('A Business account is required to download catalogue photos.');
       return;
     }
 
@@ -569,6 +576,10 @@ export const ProductCard = memo(function ProductCard({
                       triggerToast('Only logged in users can share catalogue details');
                       return;
                     }
+                    if (isCustomer) {
+                      triggerToast('A Business account is required to share catalogue products.');
+                      return;
+                    }
                     setShowResellerWhatsapp(true);
                   }}
                 >
@@ -576,7 +587,9 @@ export const ProductCard = memo(function ProductCard({
                   <div className="item-copy">
                     <strong>Share on Social Media</strong>
                     {!priceAccess?.isLoggedIn ? (
-                      <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                      <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
+                    ) : isCustomer ? (
+                      <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
                     ) : (
                       <span>Custom margin & unbranded specs</span>
                     )}
@@ -592,9 +605,12 @@ export const ProductCard = memo(function ProductCard({
                     if (!priceAccess?.isLoggedIn) {
                       handleClose();
                       triggerToast('Only logged in users can download catalogue photos');
-                      return;
+                    } else if (isCustomer) {
+                      handleClose();
+                      triggerToast('A Business account is required to download catalogue photos.');
+                    } else {
+                      await handleDownloadPhotos();
                     }
-                    await handleDownloadPhotos();
                   }}
                   disabled={isDownloading}
                 >
@@ -602,7 +618,9 @@ export const ProductCard = memo(function ProductCard({
                   <div className="item-copy">
                     <strong>{isDownloading ? 'Downloading...' : 'Download Photos'}</strong>
                     {!priceAccess?.isLoggedIn ? (
-                      <span className="item-restricted-hint"><LockKeyhole size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />Login required</span>
+                      <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Login required</span></span>
+                    ) : isCustomer ? (
+                      <span className="item-restricted-hint"><LockKeyhole size={13} style={{ flexShrink: 0 }} /><span className="hint-text">Business account required</span></span>
                     ) : (
                       <span>HD images & spec details</span>
                     )}

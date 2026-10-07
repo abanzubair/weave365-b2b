@@ -29,6 +29,7 @@ import {
   Eye,
   EyeOff,
   Power,
+  Sparkles,
 } from '../../components/icons.jsx';
 import { PRICE_GROUPS, isVendorProfile } from '../../utils/buyerAccess.js';
 import {

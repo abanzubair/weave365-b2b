@@ -15,6 +15,7 @@ import {
   handleIncomingReferral,
   setOwnAffiliateCode,
   clearOwnAffiliateCode,
+  clearStoredReferralCode,
 } from '../utils/influencerHelpers.js';
 import { useAppNavigate } from '../hooks/useAppNavigate.js';
 import {
@@ -46,7 +47,6 @@ const WhatsAppFloat = dynamic(
 );
 import { InternalLinkNetwork } from './InternalLinkNetwork.jsx';
 import { Footer } from './Footer.jsx';
-import { ErrorBoundary } from './ErrorBoundary.jsx';
 
 export function AppShell({ children }) {
   const pathname = usePathname() || '/';
@@ -271,11 +271,10 @@ export function AppShell({ children }) {
 
     // Immediately restore cached local session if present so user sees their state with zero latency (0ms)
     const { user: cachedUser, buyerProfile: cachedProfile } = getCachedAuth();
-    const current = useStorefront.getState();
-    if (cachedUser && !current.user) {
+    if (cachedUser) {
       setUser(cachedUser);
     }
-    if (cachedProfile && !current.buyerProfile) {
+    if (cachedProfile) {
       setBuyerProfile(cachedProfile);
     }
     setIsProfileHydrated(true);
@@ -634,6 +633,7 @@ export function AppShell({ children }) {
       setBuyerProfile(null);
       setIsProfileHydrated(true);
       clearStoredReferralCode();
+      clearOwnAffiliateCode();
       navigate('home');
     }
   }, [navigate, setUser, setBuyerProfile, setIsProfileHydrated]);
@@ -714,9 +714,7 @@ export function AppShell({ children }) {
       )}
 
       <main>
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        {children}
       </main>
 
       {!hideShellSections && (

@@ -88,13 +88,19 @@ export const TIER_CONFIGS = {
 };
 
 /**
- * Sanitize key record to ensure key_hash is stripped and key_prefix is always masked
+ * Sanitize key record to ensure key_hash and encrypted secrets are stripped,
+ * and key_prefix is always masked for dashboard display.
  */
 export function sanitizeKeyRecord(record) {
   if (!record) return record;
-  const { key_hash, ...safe } = record;
+  const { key_hash, encrypted_key, ...safe } = record;
   if (safe.key_prefix && safe.key_prefix.length > 20) {
     safe.key_prefix = `${safe.key_prefix.slice(0, 14)}...${safe.key_prefix.slice(-4)}`;
+  }
+  if (safe.profiles?.qualification?.encrypted_api_keys) {
+    const safeQual = { ...safe.profiles.qualification };
+    delete safeQual.encrypted_api_keys;
+    safe.profiles = { ...safe.profiles, qualification: safeQual };
   }
   return safe;
 }
@@ -107,7 +113,7 @@ export const developerService = {
     if (!isSupabaseConfigured || !userId) return { data: null, error: null };
     let { data, error } = await supabase
       .from('api_keys')
-      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .maybeSingle();
@@ -128,7 +134,7 @@ export const developerService = {
       try {
         const { data: prof } = await supabase
           .from('profiles')
-          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification')
           .eq('id', data.user_id)
           .maybeSingle();
         if (prof) data.profiles = prof;
@@ -147,7 +153,7 @@ export const developerService = {
     if (!isSupabaseConfigured || !keyId) return { data: null, error: null };
     let { data, error } = await supabase
       .from('api_keys')
-      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
+      .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
       .eq('id', keyId)
       .single();
 
@@ -166,7 +172,7 @@ export const developerService = {
       try {
         const { data: prof } = await supabase
           .from('profiles')
-          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+          .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification')
           .eq('id', data.user_id)
           .maybeSingle();
         if (prof) data.profiles = prof;
@@ -237,7 +243,7 @@ export const developerService = {
   /**
    * Create a new API Key for a user
    */
-  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps, ordersEnabled = false }) {
+  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps, ordersEnabled = false, isActive = false, requestDetails = null }) {
     if (!isSupabaseConfigured || !userId) throw new Error('Supabase not configured or missing userId');
 
     const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.free;
@@ -257,7 +263,7 @@ export const developerService = {
       tier: tier,
       monthly_quota: customQuota || tierConfig.monthlyQuota,
       rate_limit_rps: customRps || tierConfig.rateLimitRps,
-      is_active: true,
+      is_active: Boolean(isActive),
       orders_enabled: Boolean(ordersEnabled), // Disabled by default for security
       allowed_endpoints: ordersEnabled ? ['catalog', 'stock', 'product', 'orders'] : ['catalog', 'stock', 'product'],
     };
@@ -301,7 +307,7 @@ export const developerService = {
 
     if (error) throw error;
 
-    // Sync domain owner name and GST number to user profile
+    // Sync domain owner name, GST number, and request details to user profile
     try {
       const profileUpdates = {};
       if (clientName) profileUpdates.business_name = clientName;
@@ -309,6 +315,21 @@ export const developerService = {
       if (gstNumber) {
         profileUpdates.gstin = gstNumber;
         profileUpdates.gst_number = gstNumber;
+      }
+      if (requestDetails) {
+        let currentQual = {};
+        try {
+          const { data: pData } = await supabase.from('profiles').select('qualification').eq('id', userId).single();
+          if (pData?.qualification && typeof pData.qualification === 'object') {
+            currentQual = pData.qualification;
+          }
+        } catch (qe) {
+          console.warn('[developerService] Error reading existing qualification:', qe);
+        }
+        profileUpdates.qualification = {
+          ...currentQual,
+          api_access_request: requestDetails,
+        };
       }
       if (Object.keys(profileUpdates).length > 0) {
         await supabase
@@ -320,9 +341,12 @@ export const developerService = {
       console.warn('[developerService] Profile sync error:', e);
     }
 
+    // Securely vault encrypted secret key to server
+    await this.vaultApiKey(data.id, rawKey, userId);
+
     return {
       keyRecord: sanitizeKeyRecord(data),
-      rawSecretKey: rawKey, // Shown ONLY once to user/admin on creation
+      rawSecretKey: rawKey,
     };
   },
 
@@ -349,10 +373,64 @@ export const developerService = {
 
     if (error) throw error;
 
+    // Securely vault encrypted secret key to server
+    await this.vaultApiKey(keyId, rawKey, data.user_id);
+
     return {
       keyRecord: sanitizeKeyRecord(data),
-      rawSecretKey: rawKey, // Shown ONLY once to user/admin on regeneration
+      rawSecretKey: rawKey,
     };
+  },
+
+  /**
+   * Vault encrypted API key on server backend
+   */
+  async vaultApiKey(keyId, rawKey, userId) {
+    try {
+      if (typeof window === 'undefined' || !keyId || !rawKey || !userId) return;
+      const session = (await supabase?.auth?.getSession())?.data?.session;
+      const token = session?.access_token;
+      if (!token) return;
+
+      await fetch('/api/developer/vault-key', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ keyId, rawKey, userId }),
+      });
+    } catch (e) {
+      console.warn('[developerService] Failed to vault API key:', e);
+    }
+  },
+
+  /**
+   * On-demand secure retrieval of full unmasked API key when user clicks the eye icon.
+   * Key is NEVER stored in localStorage, sessionStorage, or browser device storage.
+   */
+  async revealApiKey(keyId) {
+    if (!keyId) throw new Error('Missing keyId');
+    const session = (await supabase?.auth?.getSession())?.data?.session;
+    const token = session?.access_token;
+    if (!token) throw new Error('Please sign in to view your API credentials.');
+
+    const response = await fetch('/api/developer/reveal-key', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ keyId }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      const err = new Error(result.error || 'Failed to securely fetch API key.');
+      err.code = result.code;
+      throw err;
+    }
+    return result.rawKey;
   },
 
   /**
@@ -441,7 +519,7 @@ export const developerService = {
     try {
       const res = await supabase
         .from('api_keys')
-        .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role)')
+        .select('*, profiles:user_id(id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification)')
         .order('created_at', { ascending: false });
       keys = res.data;
       keysError = res.error;
@@ -464,7 +542,7 @@ export const developerService = {
         if (userIds.length > 0) {
           const { data: profs } = await supabase
             .from('profiles')
-            .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role')
+            .select('id, email, full_name, business_name, whatsapp, city, pincode, buyer_subtype, role, qualification')
             .in('id', userIds);
           
           if (profs && profs.length > 0) {

@@ -160,6 +160,7 @@ export default function ProductPageClient({
       codStatus={codStatus}
       checkPincode={checkPincode}
       user={user}
+      buyerProfile={buyerProfile}
       initialColorName={initialColorName}
       initialVariantCode={initialVariantCode}
     />

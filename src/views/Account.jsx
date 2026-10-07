@@ -23,6 +23,7 @@ import {
   ClipboardList, 
   Heart, 
   History, 
+  Lock,
   LockKeyhole, 
   ShoppingBag, 
   UserRound, 
@@ -43,11 +44,12 @@ import {
   ExternalLink,
   Phone,
   Check,
+  Share2,
   User
 } from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import { priceNoticeForAccess } from '../utils/buyerAccess.js';
+import { priceNoticeForAccess, isAccountLocked, detectAccountCategory } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { UserProfileTab } from '../components/UserProfileTab.jsx';
@@ -56,7 +58,7 @@ import { DeveloperDashboard } from '../components/developer/DeveloperDashboard.j
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
 import { isProfileComplete } from '../utils/profileHelpers.js';
-import { adminEmails } from '../config.js';
+import { adminEmails, storeConfig } from '../config.js';
 import '../styles/developerDashboard.css';
 import '../styles/accountMinimal.css';
 
@@ -117,7 +119,20 @@ export function Account({
                    Boolean(buyerProfile?.vendor_code) ||
                    Boolean(user?.user_metadata?.buyer_profile?.vendor_code));
 
+  const accountLocked = isAccountLocked(buyerProfile, user);
+
+  const isCustomer = !isAdmin && !isVendor && (priceAccess?.isCustomer ?? (detectAccountCategory(user, buyerProfile) === 'customer'));
+
+  // Quick WhatsApp upgrade link for customer accounts wishing to switch to a business account
+  const cleanStoreWa = String(storeConfig?.whatsapp || '9919101369').replace(/\D/g, '');
+  const fullWaPhone = cleanStoreWa.length === 10 ? `91${cleanStoreWa}` : cleanStoreWa;
+  const activeCustomerName = buyerProfile?.full_name || user?.user_metadata?.full_name || '';
+  const activeCustomerEmail = user?.email || buyerProfile?.email || '';
+  const businessWaMsg = `Hi Weave365, I would like to switch my account to a Business & Reseller account.\nName: ${activeCustomerName || 'N/A'}\nEmail: ${activeCustomerEmail || 'N/A'}`;
+  const businessWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(businessWaMsg)}`;
+
   const [activeTab, setActiveTab] = useState(() => {
+    if (isAccountLocked(buyerProfile, user)) return 'profile';
     if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
       return isVendor ? 'vendor-stock' : 'orders';
     }
@@ -126,9 +141,19 @@ export function Account({
     return 'orders';
   });
 
+  useEffect(() => {
+    if (accountLocked) {
+      setActiveTab('profile');
+    }
+  }, [accountLocked]);
+
   const [orderSubTab, setOrderSubTab] = useState('enquiry');
 
   useEffect(() => {
+    if (accountLocked) {
+      setActiveTab('profile');
+      return;
+    }
     if (initialTab) {
       if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
         setActiveTab(isVendor ? 'vendor-stock' : 'orders');
@@ -136,7 +161,7 @@ export function Account({
         setActiveTab(initialTab);
       }
     }
-  }, [initialTab, isVendor]);
+  }, [initialTab, isVendor, accountLocked]);
 
   const [addresses, setAddresses] = useState([]);
   const [addressLoading, setAddressLoading] = useState(false);
@@ -554,24 +579,46 @@ export function Account({
       </div>
       */}
 
-      {/* 2. INCOMPLETE PROFILE NOTICE */}
-      {!isProfileComplete(user, buyerProfile) && (
-        <div className="account-profile-incomplete-strip">
-          <div className="incomplete-strip-text">
-            <AlertTriangle size={17} className="incomplete-strip-icon" />
-            <div>
-              <strong>Complete your wholesale profile</strong>
-              <span>Add your WhatsApp number, city, and pincode to activate wholesale pricing and rapid dispatch.</span>
-            </div>
+      {/* 2. LOCKED ACCOUNT NOTIFICATION OR INCOMPLETE PROFILE NOTICE */}
+      {accountLocked ? (
+        <div className="account-locked-top-strip" role="alert">
+          <Lock size={14} className="account-locked-top-icon" />
+          <div className="account-locked-top-text">
+            <strong>Account Locked:</strong>
+            <span>Complete your {isVendor ? 'supplier partner' : 'business & reseller'} profile below to unlock all features.</span>
           </div>
-          <button
-            type="button"
-            className="account-strip-btn"
-            onClick={() => setActiveTab('profile')}
-          >
-            Complete Profile →
-          </button>
         </div>
+      ) : (
+        !isProfileComplete(user, buyerProfile) && (
+          <div className="account-profile-incomplete-strip">
+            <div className="incomplete-strip-text">
+              <AlertTriangle size={17} className="incomplete-strip-icon" />
+              <div>
+                <strong>
+                  {isVendor 
+                    ? 'Complete your supplier partner profile' 
+                    : (buyerProfile?.user_type === 'business' || buyerProfile?.business_name
+                        ? 'Complete your wholesale profile' 
+                        : 'Complete your account profile')}
+                </strong>
+                <span>
+                  {isVendor
+                    ? 'Add your contact person, city, and dispatch location to activate supplier verification.'
+                    : (buyerProfile?.user_type === 'business' || buyerProfile?.business_name
+                        ? 'Add your WhatsApp number, city, and pincode to activate wholesale factory pricing.'
+                        : 'Add your WhatsApp number, city, and pincode for seamless order delivery and updates.')}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="account-strip-btn"
+              onClick={() => setActiveTab('profile')}
+            >
+              Complete Profile →
+            </button>
+          </div>
+        )
       )}
 
       {/* 3. MINIMAL TAB NAVIGATION */}
@@ -579,10 +626,12 @@ export function Account({
         {isVendor && (
           <button 
             type="button" 
-            className={`account-nav-item ${activeTab === 'vendor-stock' ? 'active' : ''}`}
-            onClick={() => setActiveTab('vendor-stock')}
+            className={`account-nav-item ${activeTab === 'vendor-stock' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+            onClick={() => !accountLocked && setActiveTab('vendor-stock')}
+            disabled={accountLocked}
+            title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
           >
-            <Boxes size={16} />
+            {accountLocked ? <Lock size={15} /> : <Boxes size={16} />}
             <span>Stock Inventory</span>
           </button>
         )}
@@ -596,19 +645,23 @@ export function Account({
         </button>
         <button 
           type="button" 
-          className={`account-nav-item ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
+          className={`account-nav-item ${activeTab === 'orders' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+          onClick={() => !accountLocked && setActiveTab('orders')}
+          disabled={accountLocked}
+          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
-          <ClipboardList size={16} />
+          {accountLocked ? <Lock size={15} /> : <ClipboardList size={16} />}
           <span>Orders</span>
           {placedOrders.length > 0 && <span className="nav-count">{placedOrders.length}</span>}
         </button>
         <button 
           type="button" 
-          className={`account-nav-item ${activeTab === 'addresses' ? 'active' : ''}`}
-          onClick={() => setActiveTab('addresses')}
+          className={`account-nav-item ${activeTab === 'addresses' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+          onClick={() => !accountLocked && setActiveTab('addresses')}
+          disabled={accountLocked}
+          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
-          <MapPin size={16} />
+          {accountLocked ? <Lock size={15} /> : <MapPin size={16} />}
           <span>Addresses</span>
           {addresses.length > 0 && <span className="nav-count">{addresses.length}</span>}
         </button>
@@ -622,18 +675,22 @@ export function Account({
         </button> */}
         <button 
           type="button" 
-          className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''}`}
-          onClick={() => setActiveTab('influencer')}
+          className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+          onClick={() => !accountLocked && setActiveTab('influencer')}
+          disabled={accountLocked}
+          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
-          <UserRound size={16} />
+          {accountLocked ? <Lock size={15} /> : <UserRound size={16} />}
           <span>Affiliates</span>
         </button>
         <button 
           type="button" 
-          className={`account-nav-item ${activeTab === 'developer' ? 'active' : ''}`}
-          onClick={() => setActiveTab('developer')}
+          className={`account-nav-item ${activeTab === 'developer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+          onClick={() => !accountLocked && setActiveTab('developer')}
+          disabled={accountLocked}
+          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
-          <Code2 size={16} />
+          {accountLocked ? <Lock size={15} /> : <Code2 size={16} />}
           <span>Developer API</span>
         </button>
       </nav>
@@ -642,7 +699,7 @@ export function Account({
       <div className="account-tab-content-area">
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <div className="account-panel-minimal">
+          <div className="account-panel-minimal panel-transparent">
             <UserProfileTab 
               user={user} 
               buyerProfile={buyerProfile} 
@@ -654,7 +711,7 @@ export function Account({
 
         {/* ORDERS TAB */}
         {activeTab === 'orders' && (
-          <div className="account-panel-minimal">
+          <div className="account-panel-minimal panel-transparent">
             <div className="account-section-header">
               <div className="account-order-subtabs">
                 <button
@@ -882,13 +939,24 @@ export function Account({
                             >
                               <div className="order-card-top-bar">
                                 <div className="order-ref-group">
-                                  <span className="order-ref-code">#{order.id}</span>
-                                  {isDropshipOrder && (
-                                    <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
-                                      Dropship
+                                  <div className="order-ref-id-row">
+                                    <span className="order-ref-code" title={order.id}>
+                                      <span className="order-ref-full">#{order.id}</span>
+                                      <span className="order-ref-short">
+                                        #{order.id.length > 16 
+                                          ? `${order.id.slice(0, 8)}…${order.id.slice(-4)}`
+                                          : order.id}
+                                      </span>
                                     </span>
-                                  )}
-                                  <span className="order-date-text">{orderDate}</span>
+                                  </div>
+                                  <div className="order-ref-meta-row">
+                                    <span className="order-date-text">{orderDate}</span>
+                                    {isDropshipOrder && (
+                                      <span className="account-chip tier" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>
+                                        Dropship
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <span 
                                   className="order-status-pill"
@@ -910,10 +978,18 @@ export function Account({
                                   <div key={idx} className="order-item-row">
                                     <div className="order-item-left">
                                       <span className="order-item-bullet" />
-                                      <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
-                                      {item.color && <span className="order-item-variant">· {item.color}</span>}
+                                      <div className="order-item-details">
+                                        <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
+                                        <div className="order-item-meta-pills">
+                                          {item.color && (
+                                            <span className="order-item-color-pill">
+                                              {item.color}
+                                            </span>
+                                          )}
+                                          <span className="order-item-qty-pill">Qty {item.quantity || 1}</span>
+                                        </div>
+                                      </div>
                                     </div>
-                                    <span className="order-item-qty">Qty {item.quantity || 1}</span>
                                   </div>
                                 ))}
                               </div>
@@ -971,7 +1047,7 @@ export function Account({
 
         {/* ADDRESSES TAB */}
         {activeTab === 'addresses' && (
-          <div className="account-panel-minimal">
+          <div className="account-panel-minimal panel-transparent">
             <div className="account-section-header">
               <span className="account-section-title">
                 <MapPin size={18} />
@@ -1202,7 +1278,7 @@ export function Account({
 
         {/* BUILD YOUR OWN WEBSITE */}
         {activeTab === 'reseller' && (
-          <div className="account-panel-minimal">
+          <div className="account-panel-minimal panel-transparent">
             <div className="account-section-header">
               <span className="account-section-title">
                 <Globe size={18} />
@@ -1229,7 +1305,7 @@ export function Account({
 
         {/* AFFILIATES TAB */}
         {activeTab === 'influencer' && (
-          <div className="account-panel-minimal">
+          <div className="account-panel-minimal panel-transparent">
             <div className="account-section-header">
               <span className="account-section-title">
                 <UserRound size={18} />
@@ -1508,7 +1584,59 @@ export function Account({
         {/* DEVELOPER API TAB */}
         {activeTab === 'developer' && (
           <div className="account-panel-minimal panel-transparent">
-            <DeveloperDashboard user={user} buyerProfile={buyerProfile} />
+            {isCustomer ? (
+              <div className="account-empty-state" style={{ padding: '56px 20px', maxWidth: '480px', margin: '0 auto', textAlign: 'center' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: 'rgba(183, 134, 70, 0.08)',
+                  border: '1px solid rgba(183, 134, 70, 0.22)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--gold-dark, #805d31)',
+                  margin: '0 auto 12px'
+                }}>
+                  <Code2 size={22} strokeWidth={1.8} />
+                </div>
+                <h3 className="account-empty-title" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink, #1a1a1a)', margin: '0 0 8px' }}>
+                  Developer API
+                </h3>
+                <p className="account-empty-desc" style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px', lineHeight: '1.6' }}>
+                  Developer API keys, webhooks, and catalogue endpoints are available exclusively for Business & Reseller accounts.
+                </p>
+                <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="primary-button"
+                    style={{ padding: '10px 24px', fontSize: '13.5px', borderRadius: '8px', fontWeight: 600 }}
+                    onClick={() => setActiveTab('profile')}
+                  >
+                    Switch to Business Account
+                  </button>
+                  <a
+                    href={businessWaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '12.5px',
+                      color: 'var(--gold-dark, #805d31)',
+                      textDecoration: 'none',
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span>Request upgrade on WhatsApp</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <DeveloperDashboard user={user} buyerProfile={buyerProfile} navigate={navigate} />
+            )}
           </div>
         )}
       </div>

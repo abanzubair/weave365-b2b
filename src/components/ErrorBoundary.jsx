@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { AlertTriangle, RefreshCw, Mail } from './icons.jsx';
 import { storeConfig } from '../config.js';

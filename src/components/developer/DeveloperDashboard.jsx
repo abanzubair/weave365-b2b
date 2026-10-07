@@ -57,6 +57,63 @@ import { fetchProducts } from '../../productData.js';
 import { storeConfig } from '../../config.js';
 import '../../styles/developerDashboard.css';
 
+export const BUSINESS_TYPES = [
+  'Ethnic Wear Online Store — Banarasi Sarees and Suits',
+  'Online Fashion Brand — Ethnic Wear Boutique',
+  'eCommerce Website — Multiple Categories',
+  'Dropshipping Platform',
+  'Marketplace',
+  'Other',
+];
+
+export const OPERATIONAL_STATUSES = [
+  'Currently selling',
+  'Recently launched',
+  'Launching within 30 days',
+  'Planning to launch',
+  'Just exploring',
+];
+
+export const API_USE_CASES = [
+  'Product Catalogue',
+  'Product Images and Details',
+  'Live Inventory',
+  'Wholesale Pricing',
+  'Order Creation',
+  'Order Tracking',
+  'Dropshipping',
+];
+
+export const INTEGRATION_PLATFORMS = [
+  'Shopify',
+  'WooCommerce',
+  'PrestaShop',
+  'Custom Website',
+  'Other',
+];
+
+export const MONTHLY_ORDER_VOLUMES = [
+  'Not sure yet',
+  'Under 50 orders',
+  '50 - 200 orders',
+  '200 - 500 orders',
+  '500 - 2,000 orders',
+  '2,000 + orders',
+];
+
+export const TIMELINE_OPTIONS = [
+  'Immediately',
+  'Within 7 days',
+  'Within 30 days',
+  '1 - 3 months',
+  'Just researching',
+];
+
+export const OTHER_SUPPLIERS_OPTIONS = [
+  'Yes',
+  'No',
+];
+
 /**
  * Modern confirmation modal for sensitive and dangerous admin actions.
  */
@@ -497,10 +554,13 @@ export function DeveloperDashboard({
   apiKeyRecord: initialKeyRecord,
   isAdminMode = false,
   onAdminUpdate,
+  navigate,
 }) {
   const [apiKey, setApiKey] = useState(initialKeyRecord || null);
   const [loading, setLoading] = useState(!initialKeyRecord);
-  const [revealedKey, setRevealedKey] = useState(null); // only set right after generation/regeneration
+  const [revealedKey, setRevealedKey] = useState(null); // transient in-memory ONLY; fetched strictly on user click
+  const [revealingKey, setRevealingKey] = useState(false);
+  const [copyingKey, setCopyingKey] = useState(false);
   const [showKeySecret, setShowKeySecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [usageStats, setUsageStats] = useState({ usage: [], totalMonth: initialKeyRecord?.monthTotal ?? 0 });
@@ -532,7 +592,25 @@ export function DeveloperDashboard({
   const [adminOrdersEnabled, setAdminOrdersEnabled] = useState(initialKeyRecord?.orders_enabled ?? false);
   const [adminSaving, setAdminSaving] = useState(false);
 
-  // Key creation state for new users
+  // API Access Request form state
+  const [reqGstin, setReqGstin] = useState(
+    buyerProfile?.gstin || buyerProfile?.gst_number || initialKeyRecord?.gst_number || ''
+  );
+  const [reqWebsite, setReqWebsite] = useState(
+    initialKeyRecord?.client_website || ''
+  );
+  const [reqBusinessType, setReqBusinessType] = useState('');
+  const [reqOperationalStatus, setReqOperationalStatus] = useState('');
+  const [reqUseCases, setReqUseCases] = useState([]);
+  const [reqPlatform, setReqPlatform] = useState('');
+  const [reqOrderVolume, setReqOrderVolume] = useState('');
+  const [reqTimeline, setReqTimeline] = useState('');
+  const [reqOtherSuppliers, setReqOtherSuppliers] = useState('');
+  const [reqGoals, setReqGoals] = useState('');
+  const [reqTechnicalEmail, setReqTechnicalEmail] = useState('');
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+
+  // Legacy key creation fallback
   const [newClientName, setNewClientName] = useState(buyerProfile?.business_name || buyerProfile?.full_name || '');
   const [newClientWebsite, setNewClientWebsite] = useState('');
   const [domainOwnerName, setDomainOwnerName] = useState(buyerProfile?.full_name || user?.user_metadata?.full_name || '');
@@ -540,6 +618,13 @@ export function DeveloperDashboard({
   const [creatingKey, setCreatingKey] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newGeneratedSecret, setNewGeneratedSecret] = useState(null);
+
+  // Sync profile values if loaded asynchronously
+  useEffect(() => {
+    if (buyerProfile?.gstin && !reqGstin) {
+      setReqGstin(buyerProfile.gstin);
+    }
+  }, [buyerProfile?.gstin]);
 
   // Confirmation Modal State for dangerous / impactful admin actions
   const [confirmDialog, setConfirmDialog] = useState({
@@ -862,6 +947,99 @@ export function DeveloperDashboard({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const handleToggleUseCase = (useCase) => {
+    setReqUseCases((prev) =>
+      prev.includes(useCase)
+        ? prev.filter((item) => item !== useCase)
+        : [...prev, useCase]
+    );
+  };
+
+  const handleSubmitApiAccessRequest = async (e) => {
+    e.preventDefault();
+    if (!user?.id) return;
+
+    if (!reqGstin.trim()) {
+      alert('Please enter your GSTIN.');
+      return;
+    }
+    if (!reqWebsite.trim()) {
+      alert('Please enter your eCommerce Website / Online Store URL.');
+      return;
+    }
+    if (!reqBusinessType) {
+      alert('Please select what best describes your business.');
+      return;
+    }
+    if (!reqOperationalStatus) {
+      alert('Please select whether your business is currently operational.');
+      return;
+    }
+    if (reqUseCases.length === 0) {
+      alert('Please select at least one use case for the Weave 365 API.');
+      return;
+    }
+    if (!reqPlatform) {
+      alert('Please select which platform you are integrating with.');
+      return;
+    }
+    if (!reqOrderVolume) {
+      alert('Please select your expected monthly order volume.');
+      return;
+    }
+    if (!reqTimeline) {
+      alert('Please select when you plan to start using the API.');
+      return;
+    }
+    if (!reqOtherSuppliers) {
+      alert('Please select whether you currently sell products from other suppliers.');
+      return;
+    }
+    if (!reqGoals.trim()) {
+      alert('Please describe what you are looking to achieve through the integration.');
+      return;
+    }
+
+    setSubmittingRequest(true);
+    try {
+      const requestDetails = {
+        gstin: reqGstin.trim().toUpperCase(),
+        websiteUrl: reqWebsite.trim(),
+        businessType: reqBusinessType,
+        operationalStatus: reqOperationalStatus,
+        apiUseCases: reqUseCases,
+        platform: reqPlatform,
+        monthlyOrderVolume: reqOrderVolume,
+        timeline: reqTimeline,
+        sellsOtherSuppliers: reqOtherSuppliers,
+        goals: reqGoals.trim(),
+        technicalEmail: reqTechnicalEmail.trim(),
+        submittedAt: new Date().toISOString(),
+      };
+
+      const clientName = buyerProfile?.business_name || buyerProfile?.full_name || user?.user_metadata?.full_name || 'B2B Client Portal';
+      const domainOwnerName = buyerProfile?.full_name || user?.user_metadata?.full_name || '';
+
+      const { keyRecord } = await developerService.createApiKey(user.id, {
+        clientName,
+        clientWebsite: reqWebsite.trim(),
+        domainOwnerName,
+        gstNumber: reqGstin.trim().toUpperCase(),
+        tier: 'free',
+        ordersEnabled: false,
+        isActive: false, // Critical: Not immediately accessible, requires admin manual approval
+        requestDetails,
+      });
+
+      setApiKey(keyRecord);
+      if (onAdminUpdate) onAdminUpdate(keyRecord);
+    } catch (err) {
+      alert('Failed to submit API Access Request: ' + err.message);
+    } finally {
+      setSubmittingRequest(false);
+    }
+  };
+
   const handleCreateApiKey = async (e) => {
     e.preventDefault();
     if (!user?.id) return;
@@ -892,8 +1070,9 @@ export function DeveloperDashboard({
         orders_enabled: false,
       });
       setApiKey(keyRecord);
-      setNewGeneratedSecret(rawSecretKey);
-      setRevealedKey(rawSecretKey);
+      setNewGeneratedSecret(null);
+      setRevealedKey(null);
+      setShowKeySecret(false);
       await developerService.getUsageStats(keyRecord.id, 14, keyRecord.user_id || user?.id).then(setUsageStats);
     } catch (err) {
       alert('Failed to generate API Key: ' + err.message);
@@ -912,16 +1091,72 @@ export function DeveloperDashboard({
       requiredInputText: 'REGENERATE',
       onConfirm: async () => {
         try {
-          const { keyRecord, rawSecretKey } = await developerService.regenerateApiKey(apiKey.id);
+          const { keyRecord } = await developerService.regenerateApiKey(apiKey.id);
           setApiKey(keyRecord);
-          setNewGeneratedSecret(rawSecretKey);
-          setRevealedKey(rawSecretKey);
-          alert('New API Key generated successfully! Please copy and store it safely.');
+          setNewGeneratedSecret(null);
+          // Never leave the secret key exposed automatically; fetch strictly when user clicks eye
+          setRevealedKey(null);
+          setShowKeySecret(false);
+          alert('New API Key generated successfully! You can click the eye icon to securely view and copy your secret key anytime.');
         } catch (err) {
           alert('Failed to regenerate key: ' + err.message);
         }
       }
     });
+  };
+
+  const handleToggleReveal = async () => {
+    if (showKeySecret) {
+      setShowKeySecret(false);
+      return;
+    }
+
+    // If already in transient memory from a previous click in this active session
+    if (revealedKey) {
+      setShowKeySecret(true);
+      return;
+    }
+
+    if (!apiKey?.id) return;
+    setRevealingKey(true);
+    try {
+      const fullKey = await developerService.revealApiKey(apiKey.id);
+      // Strictly stored in transient React state only. Never in localStorage or browser storage.
+      setRevealedKey(fullKey);
+      setShowKeySecret(true);
+    } catch (err) {
+      if (err.code === 'LEGACY_KEY_NEEDS_REGENERATION') {
+        alert('This API key was created before secure on-demand retrieval was available. Please click "Regenerate Key" above to generate a new key that supports instant viewing.');
+      } else {
+        alert(err.message || 'Failed to securely fetch API key.');
+      }
+    } finally {
+      setRevealingKey(false);
+    }
+  };
+
+  const handleCopyKey = async () => {
+    if (revealedKey) {
+      copyToClipboard(revealedKey, 'api-key');
+      return;
+    }
+
+    if (!apiKey?.id) return;
+    setCopyingKey(true);
+    try {
+      const fullKey = await developerService.revealApiKey(apiKey.id);
+      // Strictly stored in transient React state only. Never in localStorage or browser storage.
+      setRevealedKey(fullKey);
+      copyToClipboard(fullKey, 'api-key');
+    } catch (err) {
+      if (err.code === 'LEGACY_KEY_NEEDS_REGENERATION') {
+        alert('This API key was created before secure on-demand retrieval was available. Please click "Regenerate Key" above to generate a new key that can be copied.');
+      } else {
+        alert(err.message || 'Failed to securely retrieve API key for copying.');
+      }
+    } finally {
+      setCopyingKey(false);
+    }
   };
 
   const handleDeleteApiKey = async () => {
@@ -1041,8 +1276,8 @@ export function DeveloperDashboard({
     return Math.max(1, lastDay.getDate() - now.getDate());
   }, []);
 
-  // Display key string
-  const displayKey = revealedKey || apiKey?.key_prefix || '••••••••••••••••••••••••••••••••';
+  // Display key string (only unmasked when explicitly revealed by user click)
+  const displayKey = showKeySecret && revealedKey ? revealedKey : (apiKey?.key_prefix || '••••••••••••••••••••••••••••••••');
 
   if (loading) {
     return (
@@ -1053,102 +1288,356 @@ export function DeveloperDashboard({
     );
   }
 
-  // If user has no API Key yet and not in admin mode
+  // Pending request in profile qualification
+  const pendingRequest = apiKey?.profiles?.qualification?.api_access_request || buyerProfile?.qualification?.api_access_request;
+  const isPendingApproval = Boolean(!apiKey?.is_active && (apiKey || pendingRequest));
+
+  // If request is submitted and pending manual Admin approval
+  if (!isAdminMode && isPendingApproval) {
+    const waSupportUrl = `https://wa.me/91${(storeConfig.whatsapp || '9919101369').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+      'Hi Weave 365 Team, I have submitted an API Access Request and would like to contact support.'
+    )}`;
+
+    return (
+      <div className="dev-after-submission-container">
+        <div className="dev-after-submission-card">
+          <div className="dev-after-icon-wrap">
+            <CheckCircle2 size={32} />
+          </div>
+          <div className="dev-after-status-tag">
+            <Clock size={14} />
+            <span>Status: Under Review</span>
+          </div>
+          <h2 className="dev-after-heading">Thanks. We’ve received your API access request.</h2>
+          <p className="dev-after-body">
+            Our team will review your business and integration requirements and contact you regarding API access and API documentation.
+          </p>
+          <div className="dev-after-actions">
+            <button
+              type="button"
+              className="dev-btn-visit"
+              onClick={() => {
+                if (navigate) {
+                  navigate('catalogue');
+                } else {
+                  window.location.href = '/';
+                }
+              }}
+            >
+              <span>Visit Weave 365</span>
+            </button>
+            <a
+              href={waSupportUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-btn-support"
+            >
+              <MessageCircle size={16} />
+              <span>Contact Support</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user has not submitted request yet and not in admin mode
   if (!apiKey && !isAdminMode) {
     return (
-      <div className="dev-dashboard-empty">
-        <div className="dev-empty-icon-wrap">
-          <KeyRound size={26} />
-        </div>
-        <h2>Connect Your Storefront via Weave 365 API</h2>
-        <p className="dev-empty-desc">
-          Automate live catalog sync, real-time handloom product stock availability, and dropship order management directly with your store.
-        </p>
-
-        <div className="dev-empty-perks">
-          <span className="dev-perk-item">
-            <Check size={14} className="dev-perk-icon" /> 2,000 monthly requests included
-          </span>
-          <span className="dev-perk-item">
-            <Check size={14} className="dev-perk-icon" /> Real-time stock status sync
-          </span>
-          <span className="dev-perk-item">
-            <Check size={14} className="dev-perk-icon" /> Ready-made WooCommerce & Shopify scripts
-          </span>
-        </div>
-
-        <form onSubmit={handleCreateApiKey} className="dev-new-key-form">
-          <div className="dev-form-row">
-            <label className="dev-form-label">
-              <span>Business / Storefront Name <span className="dev-required">*</span></span>
-              <input
-                type="text"
-                required
-                value={newClientName}
-                onChange={(e) => setNewClientName(e.target.value)}
-                placeholder="e.g. My Boutique Store"
-                className="dev-form-input"
-              />
-            </label>
-            <label className="dev-form-label">
-              <span>Storefront Website URL <span className="dev-required">*</span></span>
-              <input
-                type="url"
-                required
-                value={newClientWebsite}
-                onChange={(e) => setNewClientWebsite(e.target.value)}
-                placeholder="https://www.example.com"
-                className="dev-form-input"
-              />
-            </label>
+      <div className="dev-api-request-container">
+        <div className="dev-api-request-card">
+          <div className="dev-api-request-header">
+            <h2 className="dev-api-request-title">API Access Request</h2>
+            <p className="dev-api-request-subtitle">
+              Submit your business and integration requirements to request access to the Weave 365 Developer API.
+            </p>
           </div>
 
-          <div className="dev-form-row">
-            <label className="dev-form-label">
-              <span>Domain Owner / Developer Name <span className="dev-required">*</span></span>
+          <form onSubmit={handleSubmitApiAccessRequest} className="dev-api-form">
+            {/* GSTIN * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label" htmlFor="dev-req-gstin">
+                <span>GSTIN</span>
+                <span className="dev-required">*</span>
+              </label>
               <input
+                id="dev-req-gstin"
                 type="text"
                 required
-                value={domainOwnerName}
-                onChange={(e) => setDomainOwnerName(e.target.value)}
-                placeholder="e.g. Rahul Sharma"
-                className="dev-form-input"
-              />
-            </label>
-            <label className="dev-form-label">
-              <span>GST Number / GSTIN <span className="dev-required">*</span></span>
-              <input
-                type="text"
-                required
-                value={gstNumber}
-                onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                value={reqGstin}
+                onChange={(e) => setReqGstin(e.target.value.toUpperCase())}
                 placeholder="e.g. 29ABCDE1234F1Z5"
                 maxLength={15}
                 className="dev-form-input"
               />
-            </label>
-          </div>
+            </div>
 
-          <button type="submit" disabled={creatingKey} className="primary-button dev-activate-btn">
-            {creatingKey ? <RefreshCw size={16} className="spin-icon" /> : <Zap size={16} />}
-            {creatingKey ? 'Generating Key...' : 'Generate API Key'}
-          </button>
-          <p className="dev-form-footnote">
-            Free Starter tier • Instant activation • No credit card required
-          </p>
-        </form>
+            {/* Your eCommerce Website / Online Store URL * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label" htmlFor="dev-req-website">
+                <span>Your eCommerce Website / Online Store URL</span>
+                <span className="dev-required">*</span>
+              </label>
+              <input
+                id="dev-req-website"
+                type="url"
+                required
+                value={reqWebsite}
+                onChange={(e) => setReqWebsite(e.target.value)}
+                placeholder="https://www.yourstore.com"
+                className="dev-form-input"
+              />
+            </div>
 
-        <div className="dev-empty-docs-banner">
-          <BookOpen size={16} className="dev-docs-banner-icon" />
-          <span>Need technical schema, endpoints & tutorials first?</span>
-          <a
-            href="/developer-api"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="dev-docs-banner-link"
-          >
-            View Developer API Documentation ↗
-          </a>
+            {/* What best describes your business? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>What best describes your business?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {BUSINESS_TYPES.map((type) => (
+                  <label
+                    key={type}
+                    className={`dev-option-label ${reqBusinessType === type ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="business_type"
+                      value={type}
+                      checked={reqBusinessType === type}
+                      onChange={() => setReqBusinessType(type)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Is your business currently operational? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>Is your business currently operational?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {OPERATIONAL_STATUSES.map((status) => (
+                  <label
+                    key={status}
+                    className={`dev-option-label ${reqOperationalStatus === status ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="operational_status"
+                      value={status}
+                      checked={reqOperationalStatus === status}
+                      onChange={() => setReqOperationalStatus(status)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{status}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* What do you want to use the Weave 365 API for? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>What do you want to use the Weave 365 API for?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Checkboxes. Allow multiple selections.</span>
+              <div className="dev-options-list">
+                {API_USE_CASES.map((useCase) => {
+                  const isChecked = reqUseCases.includes(useCase);
+                  return (
+                    <label
+                      key={useCase}
+                      className={`dev-option-label ${isChecked ? 'selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        name="api_use_cases"
+                        value={useCase}
+                        checked={isChecked}
+                        onChange={() => handleToggleUseCase(useCase)}
+                        className="dev-option-input"
+                      />
+                      <span>{useCase}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Which platform are you integrating with? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>Which platform are you integrating with?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {INTEGRATION_PLATFORMS.map((platform) => (
+                  <label
+                    key={platform}
+                    className={`dev-option-label ${reqPlatform === platform ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="integration_platform"
+                      value={platform}
+                      checked={reqPlatform === platform}
+                      onChange={() => setReqPlatform(platform)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{platform}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* What is your expected monthly order volume? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>What is your expected monthly order volume?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {MONTHLY_ORDER_VOLUMES.map((vol) => (
+                  <label
+                    key={vol}
+                    className={`dev-option-label ${reqOrderVolume === vol ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="monthly_volume"
+                      value={vol}
+                      checked={reqOrderVolume === vol}
+                      onChange={() => setReqOrderVolume(vol)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{vol}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* When do you plan to start using the API? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>When do you plan to start using the API?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {TIMELINE_OPTIONS.map((time) => (
+                  <label
+                    key={time}
+                    className={`dev-option-label ${reqTimeline === time ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="start_timeline"
+                      value={time}
+                      checked={reqTimeline === time}
+                      onChange={() => setReqTimeline(time)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{time}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Do you currently sell products from other suppliers? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label">
+                <span>Do you currently sell products from other suppliers?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use Radio Buttons. Allow only one selection.</span>
+              <div className="dev-options-list">
+                {OTHER_SUPPLIERS_OPTIONS.map((opt) => (
+                  <label
+                    key={opt}
+                    className={`dev-option-label ${reqOtherSuppliers === opt ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="other_suppliers"
+                      value={opt}
+                      checked={reqOtherSuppliers === opt}
+                      onChange={() => setReqOtherSuppliers(opt)}
+                      className="dev-option-input"
+                      required
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* What are you looking to achieve through the integration? * */}
+            <div className="dev-form-group">
+              <label className="dev-group-label" htmlFor="dev-req-goals">
+                <span>What are you looking to achieve through the integration?</span>
+                <span className="dev-required">*</span>
+              </label>
+              <span className="dev-group-caption">Use a Long Text field.</span>
+              <textarea
+                id="dev-req-goals"
+                required
+                rows={4}
+                value={reqGoals}
+                onChange={(e) => setReqGoals(e.target.value)}
+                placeholder="Please tell us briefly about your business, your current setup, and what you want to automate using the API."
+                className="dev-form-textarea"
+              />
+            </div>
+
+            {/* Technical Contact / Developer Email */}
+            <div className="dev-form-group">
+              <label className="dev-group-label" htmlFor="dev-req-tech-email">
+                <span>Technical Contact / Developer Email</span>
+              </label>
+              <span className="dev-group-caption">
+                Optional. If the developer or technical contact is different from the registered Weave 365 account holder, enter their email address here.
+              </span>
+              <input
+                id="dev-req-tech-email"
+                type="email"
+                value={reqTechnicalEmail}
+                onChange={(e) => setReqTechnicalEmail(e.target.value)}
+                placeholder="developer@example.com"
+                className="dev-form-input"
+              />
+            </div>
+
+            {/* Submit Button & Footnote */}
+            <div className="dev-api-submit-wrap">
+              <button
+                type="submit"
+                disabled={submittingRequest}
+                className="dev-api-submit-btn"
+              >
+                {submittingRequest ? <RefreshCw size={16} className="spin-icon" /> : <Zap size={16} />}
+                <span>{submittingRequest ? 'Submitting Request...' : 'Request API Access'}</span>
+              </button>
+              <p className="dev-api-footnote">
+                Our technology team will review your business and integration requirements before providing API access.
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     );
@@ -1462,27 +1951,38 @@ export function DeveloperDashboard({
             </div>
             <div className="dev-cred-input-wrap">
               <input
-                type={showKeySecret ? 'text' : 'password'}
+                type={showKeySecret && revealedKey ? 'text' : 'password'}
                 readOnly
-                value={displayKey}
+                value={showKeySecret && revealedKey ? revealedKey : (apiKey?.key_prefix || '••••••••••••••••••••••••••••••••')}
                 className="dev-cred-input"
+                autoComplete="off"
+                spellCheck="false"
               />
               <button
                 type="button"
                 className="dev-icon-btn"
-                onClick={() => setShowKeySecret(!showKeySecret)}
+                onClick={handleToggleReveal}
+                disabled={revealingKey}
                 title={showKeySecret ? 'Hide Key' : 'Reveal Key'}
                 aria-label={showKeySecret ? 'Hide Key' : 'Reveal Key'}
               >
-                {showKeySecret ? <EyeOff size={16} /> : <Eye size={16} />}
+                {revealingKey ? (
+                  <RefreshCw size={16} className="spin-icon" />
+                ) : showKeySecret ? (
+                  <EyeOff size={16} />
+                ) : (
+                  <Eye size={16} />
+                )}
               </button>
               <button
                 type="button"
                 className="dev-copy-btn"
-                onClick={() => copyToClipboard(revealedKey || apiKey?.key_prefix, 'api-key')}
+                onClick={handleCopyKey}
+                disabled={copyingKey}
+                title="Copy full API Key"
               >
                 {copiedField === 'api-key' ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copiedField === 'api-key' ? 'Copied' : 'Copy'}</span>
+                <span>{copiedField === 'api-key' ? 'Copied' : (copyingKey ? 'Fetching...' : 'Copy')}</span>
               </button>
             </div>
           </div>

@@ -878,7 +878,276 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 }
 
 /**
- * Main POST router for /api/v1/* (e.g. /api/v1/orders)
+ * Cryptographic helper functions for on-demand key encryption / decryption (Edge-safe Web Crypto)
+ */
+function bufToHex(buf) {
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBuf(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
+function getVaultSecret() {
+  return process.env.API_KEY_VAULT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'weave365-vault-edge-secret';
+}
+
+async function encryptSecret(plaintext, secretKey) {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.digest('SHA-256', encoder.encode(secretKey));
+  const aesKey = await crypto.subtle.importKey('raw', keyMaterial, { name: 'AES-GCM' }, false, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertextBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, encoder.encode(plaintext));
+  return bufToHex(iv) + ':' + bufToHex(ciphertextBuf);
+}
+
+async function decryptSecret(payload, secretKey) {
+  const [ivHex, cipherHex] = (payload || '').split(':');
+  if (!ivHex || !cipherHex) throw new Error('Invalid encrypted payload');
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const keyMaterial = await crypto.subtle.digest('SHA-256', encoder.encode(secretKey));
+  const aesKey = await crypto.subtle.importKey('raw', keyMaterial, { name: 'AES-GCM' }, false, ['decrypt']);
+  const iv = hexToBuf(ivHex);
+  const cipherBuf = hexToBuf(cipherHex);
+  const decryptedBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, cipherBuf);
+  return decoder.decode(decryptedBuf);
+}
+
+/**
+ * Handle on-demand secure reveal of full API key.
+ * Strictly verifies authenticated user session and key ownership.
+ */
+async function handleRevealApiKey(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Authentication token required to reveal credentials.',
+    }, { status: 401, headers: cors });
+  }
+
+  // 1. Verify caller session with Supabase Auth
+  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !authUser) {
+    return Response.json({
+      success: false,
+      code: 'UNAUTHORIZED',
+      error: 'Invalid or expired session. Please sign in again.',
+    }, { status: 401, headers: cors });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+  const { keyId } = body || {};
+
+  if (!keyId) {
+    return Response.json({
+      success: false,
+      code: 'BAD_REQUEST',
+      error: 'Missing required keyId parameter.',
+    }, { status: 400, headers: cors });
+  }
+
+  // 2. Fetch the target key record
+  const { data: keyRecord, error: keyError } = await supabase
+    .from('api_keys')
+    .select('*')
+    .eq('id', keyId)
+    .maybeSingle();
+
+  if (keyError || !keyRecord) {
+    return Response.json({
+      success: false,
+      code: 'NOT_FOUND',
+      error: 'API key record not found.',
+    }, { status: 404, headers: cors });
+  }
+
+  // 3. Authorize: Caller must be the key owner or an authorized administrator
+  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const userEmail = (authUser.email || '').trim().toLowerCase();
+  let isAuthorized = (authUser.id === keyRecord.user_id) || adminEmails.includes(userEmail);
+
+  if (!isAuthorized) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authUser.id)
+      .maybeSingle();
+    if (profile?.role === 'admin') isAuthorized = true;
+  }
+
+  if (!isAuthorized) {
+    return Response.json({
+      success: false,
+      code: 'FORBIDDEN',
+      error: 'You do not have permission to inspect this API key.',
+    }, { status: 403, headers: cors });
+  }
+
+  // 4. Retrieve encrypted ciphertext from:
+  //    (a) api_keys.encrypted_key column
+  //    (b) profiles.qualification.encrypted_api_keys[keyId]
+  //    (c) admin_notes audit vault backup
+  let ciphertext = keyRecord.encrypted_key || null;
+
+  if (!ciphertext) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('qualification')
+      .eq('id', keyRecord.user_id)
+      .maybeSingle();
+    ciphertext = prof?.qualification?.encrypted_api_keys?.[keyId] || null;
+  }
+
+  if (!ciphertext) {
+    try {
+      const { data: notes } = await supabase
+        .from('admin_notes')
+        .select('note')
+        .eq('buyer_id', keyRecord.user_id)
+        .order('created_at', { ascending: false });
+
+      for (const n of notes || []) {
+        try {
+          const parsed = JSON.parse(n.note);
+          if (parsed?.type === 'encrypted_api_key' && parsed.keyId === keyId && parsed.ciphertext) {
+            ciphertext = parsed.ciphertext;
+            break;
+          }
+        } catch {}
+      }
+    } catch {}
+  }
+
+  if (!ciphertext) {
+    return Response.json({
+      success: false,
+      code: 'LEGACY_KEY_NEEDS_REGENERATION',
+      error: 'This API key was created before secure on-demand retrieval was available. Please click "Regenerate Key" above to generate a new key.',
+    }, { status: 404, headers: cors });
+  }
+
+  // 5. Decrypt using the server vault secret
+  try {
+    const vaultSecret = getVaultSecret();
+    const rawKey = await decryptSecret(ciphertext, vaultSecret);
+
+    return Response.json({
+      success: true,
+      rawKey,
+    }, {
+      status: 200,
+      headers: {
+        ...cors,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+      },
+    });
+  } catch (decErr) {
+    console.error('[handleRevealApiKey] Decryption failed:', decErr);
+    return Response.json({
+      success: false,
+      code: 'DECRYPTION_ERROR',
+      error: 'Failed to decrypt API key credentials.',
+    }, { status: 500, headers: cors });
+  }
+}
+
+/**
+ * Handle secure vaulting of raw API key immediately upon generation / regeneration.
+ */
+async function handleVaultApiKey(request, supabase) {
+  const cors = getCorsHeaders(request);
+  const authHeader = request.headers.get('authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+
+  if (!token) {
+    return Response.json({ success: false, code: 'UNAUTHORIZED', error: 'Authentication required' }, { status: 401, headers: cors });
+  }
+
+  const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !authUser) {
+    return Response.json({ success: false, code: 'UNAUTHORIZED', error: 'Invalid session' }, { status: 401, headers: cors });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+  const { keyId, rawKey, userId } = body || {};
+
+  if (!keyId || !rawKey || !userId) {
+    return Response.json({ success: false, code: 'BAD_REQUEST', error: 'Missing keyId, rawKey, or userId' }, { status: 400, headers: cors });
+  }
+
+  // Authorization check
+  const adminEmails = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  const userEmail = (authUser.email || '').trim().toLowerCase();
+  let isAuthorized = (authUser.id === userId) || adminEmails.includes(userEmail);
+
+  if (!isAuthorized) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', authUser.id).maybeSingle();
+    if (profile?.role === 'admin') isAuthorized = true;
+  }
+
+  if (!isAuthorized) {
+    return Response.json({ success: false, code: 'FORBIDDEN', error: 'Unauthorized to vault this key' }, { status: 403, headers: cors });
+  }
+
+  try {
+    const vaultSecret = getVaultSecret();
+    const ciphertext = await encryptSecret(rawKey, vaultSecret);
+
+    // 1. Vault in profiles.qualification.encrypted_api_keys
+    const { data: prof } = await supabase.from('profiles').select('qualification').eq('id', userId).maybeSingle();
+    const currentQual = prof?.qualification || {};
+    const existingVault = currentQual.encrypted_api_keys || {};
+    const updatedVault = { ...existingVault, [keyId]: ciphertext };
+    await supabase.from('profiles').update({
+      qualification: { ...currentQual, encrypted_api_keys: updatedVault }
+    }).eq('id', userId);
+
+    // 2. Direct update to api_keys.encrypted_key if column exists
+    try {
+      await supabase.from('api_keys').update({ encrypted_key: ciphertext }).eq('id', keyId);
+    } catch (_) {}
+
+    // 3. Backup vault in admin_notes
+    try {
+      await supabase.from('admin_notes').insert([{
+        buyer_id: userId,
+        note: JSON.stringify({ type: 'encrypted_api_key', keyId, ciphertext, createdAt: new Date().toISOString() })
+      }]);
+    } catch (_) {}
+
+    return Response.json({ success: true }, { status: 200, headers: cors });
+  } catch (err) {
+    console.error('[handleVaultApiKey] Vaulting failed:', err);
+    return Response.json({ success: false, code: 'VAULT_ERROR', error: err.message }, { status: 500, headers: cors });
+  }
+}
+
+/**
+ * Main POST router for /api/v1/* and /api/developer/*
  */
 export async function handleDeveloperApiPost(request, pathSegments) {
   const supabase = await getSupabase();
@@ -888,7 +1157,15 @@ export async function handleDeveloperApiPost(request, pathSegments) {
 
   const endpoint = pathSegments[1] || '';
 
-  // 1. Authenticate Request
+  // 0. On-Demand Secure Key Reveal & Vaulting for Authenticated Users (Session Auth)
+  if (endpoint === 'reveal-key') {
+    return handleRevealApiKey(request, supabase);
+  }
+  if (endpoint === 'vault-key') {
+    return handleVaultApiKey(request, supabase);
+  }
+
+  // 1. Authenticate Request via API Key
   const auth = await authenticateApiKey(request, supabase);
   if (!auth.authenticated) {
     return Response.json({ status: 'error', code: auth.code || 'UNAUTHORIZED', message: auth.error }, { status: auth.status, headers: defaultCorsHeaders });
