@@ -15,7 +15,6 @@ import {
   ArrowDown,
   AlertCircle,
   ArrowRight,
-  Lock,
 } from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import {
@@ -32,6 +31,9 @@ import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { recordReferral } from '../utils/influencerHelpers.js';
 import { load as loadCashfree } from '@cashfreepayments/cashfree-js';
 import '../styles/checkout.css';
+
+// PhonePe is shown at checkout only once keys are configured and this flag is set at build time.
+const PHONEPE_ENABLED = process.env.NEXT_PUBLIC_PHONEPE_ENABLED === 'true';
 
 export function CheckoutPage({
   items = [],
@@ -91,12 +93,53 @@ export function CheckoutPage({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [orderError, setOrderError] = useState('');
+  // Payment gateway chosen by the customer: 'cashfree' | 'phonepe'
+  const [paymentGateway, setPaymentGateway] = useState('cashfree');
 
-  // Auto-verify if customer returned from a browser redirect with ?order_id=
+  // Auto-verify if customer returned from a gateway redirect
+  // (?order_id= for Cashfree, ?pp_order_id= for PhonePe)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const urlParams = new URLSearchParams(window.location.search);
+    const phonePeReturnId = urlParams.get('pp_order_id');
     const returnOrderId = urlParams.get('order_id');
+
+    if (phonePeReturnId && !orderSuccess) {
+      setIsSubmitting(true);
+      fetch('/api/phonepe/verify-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: phonePeReturnId }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && data.is_paid) {
+            setCreatedOrder({
+              id: data.db_order_id || phonePeReturnId,
+              orderNumber: (data.db_order_id || phonePeReturnId).slice(0, 8).toUpperCase(),
+              total: data.order_amount || total,
+              currency: 'INR',
+              currencySymbol: '₹',
+              paymentMethod: 'phonepe',
+              deliveryDetails: {},
+              cfOrderId: phonePeReturnId,
+            });
+            if (clearCart) clearCart();
+            setOrderSuccess(true);
+          } else if (data.success && data.order_status === 'PENDING') {
+            setOrderError('Your PhonePe payment is still being processed. If money was debited, your order will be confirmed automatically within a few minutes.');
+          } else {
+            setOrderError(data.error || 'PhonePe payment was not completed. You can retry whenever you are ready.');
+          }
+        })
+        .catch((err) => {
+          console.error('[PhonePe] Return verify error:', err);
+          setOrderError('We could not confirm your PhonePe payment yet. If money was debited, your order will be confirmed automatically.');
+        })
+        .finally(() => setIsSubmitting(false));
+      return;
+    }
+
     if (returnOrderId && !orderSuccess) {
       setIsSubmitting(true);
       fetch('/api/cashfree/verify-order', {
@@ -397,11 +440,48 @@ export function CheckoutPage({
   };
 
 
-  const handleCashfreeCheckout = async (deliveryDetails) => {
-    setIsSubmitting(true);
-    setOrderError('');
+  // Shared create-order request body used by every gateway
+  const buildCreateOrderBody = (deliveryDetails) => ({
+    user_id: user?.id || null,
+    email: email || user?.email || '',
+    shipping_mode: shippingMode,
+    shipping_speed: shippingSpeed,
+    delivery_details: deliveryDetails,
+    dropship_details: {
+      sender_name: senderName,
+      sender_phone: senderPhone,
+      sender_address: senderAddress,
+      sender_city: senderCity,
+      sender_state: senderState,
+      sender_pincode: senderPincode,
+      packing_preference: packingPreference,
+    },
+    items: items.map((item) => {
+      const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
+      const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
+      return {
+        product_id: item.productGroupKey,
+        product_title: item.product?.title || '',
+        variant_code: item.variant?.code || '',
+        color: item.selectedColorName || 'Standard',
+        quantity: item.quantity,
+        price: locPrice.finalPrice,
+        base_inr_price: locPrice.markedUpBasePrice || rawPrice,
+        original_inr_price: rawPrice,
+      };
+    }),
+    total_amount: total,
+    currency: (currentCountry?.currency || 'INR').toUpperCase(),
+    currency_symbol: currentCountry?.currencySymbol || '₹',
+    base_inr_total: markedUpInrTotal,
+    country_code: currentCountry?.code || 'IN',
+    country_name: currentCountry?.name || 'India',
+    markup_percent: Number(currentCountry?.markupPercent || 0),
+    notes: dropshipNotes,
+  });
 
-    // Save address if user checked save box and not dropshipping
+  // Persist the delivery address if the customer asked us to (shared by every gateway)
+  const saveAddressIfRequested = async (deliveryDetails) => {
     if (saveToAccount && user?.id && isSupabaseConfigured && shippingMode === 'standard' && useCustomAddress) {
       try {
         await supabase.from('addresses').insert({
@@ -419,49 +499,49 @@ export function CheckoutPage({
         console.error('Error saving address:', err);
       }
     }
+  };
+
+  // PhonePe: create order on the server, then redirect the customer to PhonePe's hosted checkout.
+  // Verification happens when they return to /checkout?pp_order_id=... (see the effect above).
+  const handlePhonePeCheckout = async (deliveryDetails) => {
+    setIsSubmitting(true);
+    setOrderError('');
+
+    await saveAddressIfRequested(deliveryDetails);
+
+    try {
+      const res = await fetch('/api/phonepe/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildCreateOrderBody(deliveryDetails)),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.redirect_url) {
+        throw new Error(data.error || 'Failed to initialize PhonePe payment.');
+      }
+
+      // Keep the button in its "Processing..." state while the browser navigates away
+      window.location.assign(data.redirect_url);
+    } catch (err) {
+      console.error('[handlePhonePeCheckout] Error:', err);
+      setOrderError(err.message || 'Payment initiation failed. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCashfreeCheckout = async (deliveryDetails) => {
+    setIsSubmitting(true);
+    setOrderError('');
+
+    // Save address if user checked save box and not dropshipping
+    await saveAddressIfRequested(deliveryDetails);
 
     try {
       const res = await fetch('/api/cashfree/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user?.id || null,
-          email: email || user?.email || '',
-          shipping_mode: shippingMode,
-          shipping_speed: shippingSpeed,
-          delivery_details: deliveryDetails,
-          dropship_details: {
-            sender_name: senderName,
-            sender_phone: senderPhone,
-            sender_address: senderAddress,
-            sender_city: senderCity,
-            sender_state: senderState,
-            sender_pincode: senderPincode,
-            packing_preference: packingPreference,
-          },
-          items: items.map((item) => {
-            const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
-            const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
-            return {
-              product_id: item.productGroupKey,
-              product_title: item.product?.title || '',
-              variant_code: item.variant?.code || '',
-              color: item.selectedColorName || 'Standard',
-              quantity: item.quantity,
-              price: locPrice.finalPrice,
-              base_inr_price: locPrice.markedUpBasePrice || rawPrice,
-              original_inr_price: rawPrice,
-            };
-          }),
-          total_amount: total,
-          currency: (currentCountry?.currency || 'INR').toUpperCase(),
-          currency_symbol: currentCountry?.currencySymbol || '₹',
-          base_inr_total: markedUpInrTotal,
-          country_code: currentCountry?.code || 'IN',
-          country_name: currentCountry?.name || 'India',
-          markup_percent: Number(currentCountry?.markupPercent || 0),
-          notes: dropshipNotes,
-        }),
+        body: JSON.stringify(buildCreateOrderBody(deliveryDetails)),
       });
 
       const data = await res.json();
@@ -572,7 +652,11 @@ export function CheckoutPage({
     const deliveryDetails = getValidatedDeliveryDetails();
     if (!deliveryDetails) return;
 
-    handleCashfreeCheckout(deliveryDetails);
+    if (paymentGateway === 'phonepe' && PHONEPE_ENABLED) {
+      handlePhonePeCheckout(deliveryDetails);
+    } else {
+      handleCashfreeCheckout(deliveryDetails);
+    }
   };
 
   if (isLoading && !orderSuccess) {
@@ -739,7 +823,7 @@ export function CheckoutPage({
             <div style={{ fontWeight: '600', color: '#14532d', marginBottom: '2px', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Order Confirmed
             </div>
-            Your payment was successfully received and verified via Cashfree Payment Gateway. Your order is registered and being prepared for packaging and dispatch from our Varanasi hub.
+            Your payment was successfully received and verified via {createdOrder?.paymentMethod === 'phonepe' ? 'PhonePe' : 'Cashfree Payment Gateway'}. Your order is registered and being prepared for packaging and dispatch from our Varanasi hub.
           </div>
 
           {/* Primary & Secondary Actions */}
@@ -1335,7 +1419,7 @@ export function CheckoutPage({
                         onChange={() => setShippingSpeed('standard')}
                       />
                       <div className="shipping-speed-text">
-                        <div>
+                        <div className="shipping-speed-title">
                           <strong>Standard Shipping:</strong>{' '}
                           <span style={{ color: '#16a34a', fontWeight: '600' }}>FREE</span>
                         </div>
@@ -1359,8 +1443,17 @@ export function CheckoutPage({
                         onChange={() => setShippingSpeed('expedited')}
                       />
                       <div className="shipping-speed-text">
-                        <div><strong>Expedited Shipping:</strong> Additional Courier Charges Apply</div>
-                        <div className="shipping-delivery-days">Estimated Delivery: <strong>2–3 Business Days</strong></div>
+                        <div className="shipping-speed-title">
+                          <strong>Expedited Shipping:</strong>{' '}
+                          <span style={{ color: '#64748b', fontWeight: '500' }}>
+                            {expeditedShippingFee > 0
+                              ? `+${formatMoney(expeditedShippingFee, { currency: currentCountry?.currency, fractionDigits: 0 })}`
+                              : 'Charges Apply'}
+                          </span>
+                        </div>
+                        <div className="shipping-delivery-days">
+                          Estimated Delivery: <strong>2–3 Business Days</strong>
+                        </div>
                       </div>
                     </div>
                   </label>
@@ -1371,45 +1464,96 @@ export function CheckoutPage({
                   <CreditCard size={17} /> Payment Method
                 </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    background: '#f8fafc',
-                    gap: '12px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '6px',
-                        background: '#f1f5f9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#475569',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <CreditCard size={18} />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#0f172a' }}>
-                        Online Payment
+                {(() => {
+                  const paymentOptions = [
+                    {
+                      id: 'cashfree',
+                      title: 'Cashfree',
+                      badge: (
+                        <img
+                          src="/assets/payment-methods/cashfree.svg"
+                          alt="Cashfree"
+                          width={32}
+                          height={32}
+                          style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                          loading="lazy"
+                        />
+                      ),
+                    },
+                    ...(PHONEPE_ENABLED
+                      ? [{
+                          id: 'phonepe',
+                          title: 'PhonePe',
+                          badge: (
+                            <img
+                              src="/assets/payment-methods/phonepe.svg"
+                              alt="PhonePe"
+                              width={32}
+                              height={32}
+                              style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                              loading="lazy"
+                            />
+                          ),
+                        }]
+                      : []),
+                  ];
+                  const selectable = paymentOptions.length > 1;
+
+                  return (
+                    <>
+                      <div
+                        role="radiogroup"
+                        aria-label="Payment method"
+                        className={`payment-method-group ${!selectable ? 'single' : ''}`}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: selectable ? 'repeat(2, minmax(0, 1fr))' : '1fr',
+                          gap: '12px',
+                        }}
+                      >
+                        {paymentOptions.map((opt) => {
+                          const selected = paymentGateway === opt.id;
+                          return (
+                            <label
+                              key={opt.id}
+                              id={`payment-option-${opt.id}`}
+                              className={`payment-method-card ${selectable && selected ? 'selected' : ''}`}
+                            >
+                              <div className="payment-method-left">
+                                {selectable && (
+                                  <input
+                                    type="radio"
+                                    name="payment_gateway"
+                                    value={opt.id}
+                                    checked={selected}
+                                    onChange={() => setPaymentGateway(opt.id)}
+                                  />
+                                )}
+                                <div
+                                  className="payment-method-badge"
+                                  style={{ background: opt.badgeBg }}
+                                >
+                                  {opt.badge}
+                                </div>
+                                <div className="payment-method-info">
+                                  <div className="payment-method-title">
+                                    {opt.title}
+                                  </div>
+                                </div>
+                              </div>
+                            </label>
+                          );
+                        })}
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-                        UPI, Credit / Debit Cards, NetBanking
-                      </div>
-                    </div>
-                  </div>
-                  <Lock size={14} style={{ color: '#94a3b8', flexShrink: 0 }} />
-                </div>
+
+                      {paymentGateway === 'phonepe' && PHONEPE_ENABLED && (currentCountry?.currency || 'INR').toUpperCase() !== 'INR' && (
+                        <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '6px', lineHeight: '1.4' }}>
+                          * PhonePe settles in INR (charged as ₹{markedUpInrTotal.toLocaleString('en-IN')}).
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {orderError && (
                   <div
@@ -1441,7 +1585,9 @@ export function CheckoutPage({
                   {isSubmitting ? (
                     'Processing...'
                   ) : (
-                    <>Pay {formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })} <ArrowRight size={17} /></>
+                    <>Pay {paymentGateway === 'phonepe' && PHONEPE_ENABLED && (currentCountry?.currency || 'INR').toUpperCase() !== 'INR'
+                      ? formatMoney(markedUpInrTotal, { currency: 'INR', fractionDigits: 2 })
+                      : formatMoney(total, { currency: currentCountry?.currency, fractionDigits: 2 })} <ArrowRight size={17} /></>
                   )}
                 </button>
               </form>

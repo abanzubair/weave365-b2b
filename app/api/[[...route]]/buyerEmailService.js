@@ -194,7 +194,7 @@ export function renderBuyerConfirmationEmailHtml({
                       PAYMENT STATUS
                     </div>
                     <div style="font-size: 13px; font-weight: 500; color: #18181b;">
-                      Verified &middot; Cashfree PG (${orderCurrency})
+                      Verified &middot; ${order.payment_method === 'phonepe' ? 'PhonePe' : 'Cashfree PG'} (${orderCurrency})
                     </div>
                   </td>
                 </tr>

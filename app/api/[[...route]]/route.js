@@ -28,6 +28,11 @@ import {
   handleWebhook as cashfreeWebhook,
   handleCancelOrder as cashfreeCancelOrder,
 } from './cashfreeHandler.js';
+import {
+  handleCreateOrder as phonepeCreateOrder,
+  handleVerifyOrder as phonepeVerifyOrder,
+  handleWebhook as phonepeWebhook,
+} from './phonepeHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
@@ -46,6 +51,7 @@ export async function GET(request, { params }) {
   if (routeKey === 'feed/google-shopping') return googleShoppingGet(request);
   if (routeKey === 'vendor-registration') return vendorRegistrationGet(request);
   if (routeKey === 'cashfree/webhook') return Response.json({ status: 'active', service: 'cashfree-webhook' }, { status: 200 });
+  if (routeKey === 'phonepe/webhook') return Response.json({ status: 'active', service: 'phonepe-webhook' }, { status: 200 });
 
   return Response.json({ error: `GET /api/${routeKey} Not Found` }, { status: 404 });
 }
@@ -64,6 +70,9 @@ export async function POST(request, { params }) {
   if (routeKey === 'cashfree/cancel-order') return cashfreeCancelOrder(request);
   if (routeKey === 'cashfree/verify-order') return cashfreeVerifyOrder(request);
   if (routeKey === 'cashfree/webhook') return cashfreeWebhook(request);
+  if (routeKey === 'phonepe/create-order') return phonepeCreateOrder(request);
+  if (routeKey === 'phonepe/verify-order') return phonepeVerifyOrder(request);
+  if (routeKey === 'phonepe/webhook') return phonepeWebhook(request);
   if (routeKey === 'country-pricing' || routeKey === 'admin/country-pricing') return countryPricingPost(request);
   if (routeKey === 'contact') return contactPost(request);
   if (routeKey === 'analytics') return analyticsPost(request);

@@ -419,17 +419,32 @@ export async function handleVerifyOrder(request) {
         updatePayload.cf_order_id = order_id;
       }
 
+      // Only flip pending_payment -> paid. The status filter makes this atomic and idempotent,
+      // so repeat verifies can never downgrade an order that has already progressed (shipped, etc.).
       let targetOrderId = db_order_id;
       if (db_order_id) {
-        await supabase.from('orders').update(updatePayload).eq('id', db_order_id);
+        await supabase
+          .from('orders')
+          .update(updatePayload)
+          .eq('id', db_order_id)
+          .eq('status', 'pending_payment');
       } else if (order_id) {
         const { data: updatedRows } = await supabase
           .from('orders')
           .update(updatePayload)
           .eq('cf_order_id', order_id)
+          .eq('status', 'pending_payment')
           .select('id');
         if (updatedRows && updatedRows.length > 0) {
           targetOrderId = updatedRows[0].id;
+        } else {
+          // Already processed earlier - still resolve the id so the (idempotent) email step can run
+          const { data: existing } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('cf_order_id', order_id)
+            .maybeSingle();
+          if (existing) targetOrderId = existing.id;
         }
       }
 
@@ -519,16 +534,23 @@ export async function handleWebhook(request) {
         }
 
         if (target) {
-          await supabase
-            .from('orders')
-            .update({
-              status: 'paid',
-              payment_method: 'cashfree',
-              cf_order_id: cfOrderId,
-              cf_payment_id: paymentId ? String(paymentId) : (target.cf_payment_id || null),
-              message: `${target.message || ''}\n\n[Webhook Confirmed] Payment ID: ${paymentId || 'N/A'} at ${new Date().toISOString()}`,
-            })
-            .eq('id', target.id);
+          // Only flip pending_payment -> paid (atomic via the status filter). A late or duplicate
+          // webhook must not revert an order that is already paid/shipped/delivered.
+          if (target.status === 'pending_payment') {
+            await supabase
+              .from('orders')
+              .update({
+                status: 'paid',
+                payment_method: 'cashfree',
+                cf_order_id: cfOrderId,
+                cf_payment_id: paymentId ? String(paymentId) : (target.cf_payment_id || null),
+                message: `${target.message || ''}\n\n[Webhook Confirmed] Payment ID: ${paymentId || 'N/A'} at ${new Date().toISOString()}`,
+              })
+              .eq('id', target.id)
+              .eq('status', 'pending_payment');
+          } else {
+            console.log(`[Cashfree Webhook] Order ${target.id} already '${target.status}'. Skipping status update.`);
+          }
 
           // Automatically dispatch minimal confirmation email to buyer (idempotency prevents double send)
           try {

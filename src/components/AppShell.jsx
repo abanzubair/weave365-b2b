@@ -44,11 +44,6 @@ const WhatsAppFloat = dynamic(
   () => import('./WhatsAppFloat.jsx').then((m) => m.WhatsAppFloat),
   { ssr: false }
 );
-
-const ResellerOnboardingWalkthrough = dynamic(
-  () => import('./ResellerOnboardingWalkthrough.jsx').then((m) => m.ResellerOnboardingWalkthrough),
-  { ssr: false }
-);
 import { InternalLinkNetwork } from './InternalLinkNetwork.jsx';
 import { Footer } from './Footer.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
@@ -750,13 +745,6 @@ export function AppShell({ children }) {
         />
       )}
 
-      {!hideShellSections && user && (
-        <ResellerOnboardingWalkthrough
-          user={user}
-          buyerProfile={buyerProfile}
-          priceAccess={priceAccess}
-        />
-      )}
 
       {!hideShellSections && showWaFloat && <WhatsAppFloat />}
     </>
