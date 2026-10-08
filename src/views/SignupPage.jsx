@@ -214,22 +214,36 @@ export function SignupPage({
   const [qualErrorField, setQualErrorField] = useState('');
 
   // Standard Account Profile fields
-  const [profile, setProfile] = useState({
-    fullName: '',
-    countryCode: '+91',
-    whatsapp: '',
-    businessName: '',
-    website: '',
-    socialHandle: '',
-    buyerType: '',
-    buyerSubtype: '',
-    buyingBehavior: 'instant',
-    city: '',
-    state: '',
-    pincode: '',
-    country: 'India',
-    interestedCategories: ['Saree'],
-    rememberMe: false,
+  const [profile, setProfile] = useState(() => {
+    const defaultProfile = {
+      fullName: '',
+      countryCode: '+91',
+      whatsapp: '',
+      businessName: '',
+      website: '',
+      socialHandle: '',
+      buyerType: '',
+      buyerSubtype: '',
+      buyingBehavior: 'instant',
+      city: '',
+      state: '',
+      pincode: '',
+      country: 'India',
+      interestedCategories: ['Saree'],
+      rememberMe: false,
+    };
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('weave365_signup_flow');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.profileDraft) {
+            return { ...defaultProfile, ...parsed.profileDraft };
+          }
+        }
+      } catch {}
+    }
+    return defaultProfile;
   });
 
   // Sync draft to sessionStorage
@@ -243,10 +257,20 @@ export function SignupPage({
           signupStep,
           businessForm,
           supplierForm,
+          profileDraft: {
+            fullName: profile.fullName,
+            businessName: profile.businessName,
+            website: profile.website,
+            socialHandle: profile.socialHandle,
+            whatsapp: profile.whatsapp,
+            city: profile.city,
+            state: profile.state,
+            pincode: profile.pincode,
+          },
         })
       );
     } catch {}
-  }, [selectedUserType, signupStep, businessForm, supplierForm]);
+  }, [selectedUserType, signupStep, businessForm, supplierForm, profile]);
 
   // Sync initial type when passed via props / query params
   useEffect(() => {
@@ -512,7 +536,7 @@ export function SignupPage({
     setProfile((prev) => ({
       ...prev,
       buyerSubtype: matched?.subtype || 'Wholesaler',
-      buyerType: 'customer',
+      buyerType: 'business',
     }));
     setSignupStep('account-form');
     if (typeof window !== 'undefined') {
@@ -606,6 +630,8 @@ export function SignupPage({
     const qualificationData = selectedUserType === 'business'
       ? {
           ...businessForm,
+          website: cleanWebsite,
+          social_handle: cleanSocial,
           user_type: 'business',
           business_type_label: BUSINESS_TYPES.find((b) => b.id === businessForm.business_type)?.label || 'Wholesaler',
         }
@@ -1767,22 +1793,61 @@ export function SignupPage({
                                 />
                               </div>
 
-                              {/* Business Name (Required only for Business Wholesale Account - Full width) */}
+                              {/* Business Name, Website & Social Handle (For Business Wholesale Account) */}
                               {selectedUserType === 'business' && (
-                                <div className="signup-field signup-field-full">
-                                  <label className="signup-label">
-                                    <span>Business / Store Name *</span>
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={profile.businessName}
-                                    onChange={(e) => updateProfile('businessName', e.target.value)}
-                                    placeholder="e.g. Varanasi Silk Palace"
-                                    autoComplete="organization"
-                                    required
-                                    className="signup-input"
-                                  />
-                                </div>
+                                <>
+                                  <div className="signup-field signup-field-full">
+                                    <label className="signup-label">
+                                      <span>Business / Store Name *</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={profile.businessName}
+                                      onChange={(e) => updateProfile('businessName', e.target.value)}
+                                      placeholder="e.g. Varanasi Silk Palace"
+                                      autoComplete="organization"
+                                      required
+                                      className="signup-input"
+                                    />
+                                  </div>
+
+                                  {/* Website URL (Optional) */}
+                                  <div className="signup-field">
+                                    <label className="signup-label">
+                                      <span>Website URL</span>
+                                      <span className="signup-label-subtext">(Optional)</span>
+                                    </label>
+                                    <input
+                                      type="url"
+                                      value={profile.website}
+                                      onChange={(e) => updateProfile('website', e.target.value)}
+                                      onBlur={(e) => {
+                                        const val = e.target.value.trim();
+                                        if (val && !/^https?:\/\//i.test(val)) {
+                                          updateProfile('website', `https://${val}`);
+                                        }
+                                      }}
+                                      placeholder="https://yourstore.com"
+                                      autoComplete="url"
+                                      className="signup-input"
+                                    />
+                                  </div>
+
+                                  {/* Social Handle (Optional) */}
+                                  <div className="signup-field">
+                                    <label className="signup-label">
+                                      <span>Social Handle / Instagram</span>
+                                      <span className="signup-label-subtext">(Optional)</span>
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={profile.socialHandle}
+                                      onChange={(e) => updateProfile('socialHandle', e.target.value)}
+                                      placeholder="@yourhandle or profile link"
+                                      className="signup-input"
+                                    />
+                                  </div>
+                                </>
                               )}
 
                               {/* WhatsApp Number */}

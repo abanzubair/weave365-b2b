@@ -120,6 +120,8 @@ export const INITIAL_BUSINESS_FORM = {
   monthly_budget: '',
   sales_channels: [],
   purchase_intent: '',
+  website: '',
+  social_handle: '',
 };
 
 export const INITIAL_SUPPLIER_FORM = {
