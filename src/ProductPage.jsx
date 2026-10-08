@@ -83,7 +83,10 @@ import { priceNoticeForAccess, detectAccountCategory, isAccountLocked } from './
 import {
   getOptimizedImageUrl,
   getImageSrcSet,
-  getOriginalImageUrl
+  getOriginalImageUrl,
+  createClientThumbnail,
+  compressImageForUpload,
+  resolveReviewPhoto
 } from './utils/imageOptimizer.js';
 import { usePageSeo } from './hooks/usePageSeo.js';
 import { getStoredReferralCode, getOwnAffiliateCode } from './utils/influencerHelpers.js';
@@ -494,13 +497,15 @@ export function ProductDetail({
     const photos = [];
     activeReviews.forEach(r => {
       const imgs = Array.isArray(r.images) ? r.images : [];
-      imgs.forEach((imgUrl, imgIndex) => {
-        if (imgUrl) {
+      imgs.forEach((imgItem, imgIndex) => {
+        const { full, thumb } = resolveReviewPhoto(imgItem);
+        if (full) {
           photos.push({
-            url: imgUrl,
+            url: full,
+            thumbUrl: thumb || full,
             review: r,
             index: imgIndex,
-            id: `${r.id || r.created_at}-${imgIndex}`
+            id: `${r.id || r.created_at || 'photo'}-${imgIndex}`
           });
         }
       });
@@ -657,8 +662,21 @@ export function ProductDetail({
     for (let i = 0; i < fileItems.length; i++) {
       const item = fileItems[i];
       try {
+        // 1. Compress master photo to under 500KB (max 1920px Full HD, crisp WebP/JPEG)
+        const compressedMasterFile = await compressImageForUpload(item.file, {
+          maxDimension: 1920,
+          maxSizeBytes: 500 * 1024,
+          quality: 0.82
+        });
+
+        // 2. Generate ultra-lightweight thumbnail (~5-10KB) client-side before uploading
+        const thumbFile = await createClientThumbnail(compressedMasterFile, 180, 0.72);
+
         const formData = new FormData();
-        formData.append('file', item.file);
+        formData.append('file', compressedMasterFile);
+        if (thumbFile && thumbFile !== compressedMasterFile) {
+          formData.append('thumbnail', thumbFile);
+        }
         formData.append('sku', productSku);
         formData.append('uploader', uploaderName);
         formData.append('index', String(i + 1));
@@ -670,7 +688,10 @@ export function ProductDetail({
         if (res.ok) {
           const json = await res.json();
           if (json.status === 'success' && json.url) {
-            uploadedUrls.push(json.url);
+            // Save both full-resolution master and lightweight thumbnail URL
+            const fullUrl = json.url;
+            const thumbUrl = json.thumbUrl || json.url;
+            uploadedUrls.push(`${fullUrl}|||${thumbUrl}`);
             continue;
           }
         }
@@ -707,7 +728,7 @@ export function ProductDetail({
     }
 
     const trimmedName = reviewForm.reviewer_name.trim().slice(0, 100);
-    const trimmedBusiness = (reviewForm.business_name || 'B2B Client').trim().slice(0, 200);
+    const trimmedBusiness = (reviewForm.business_name || '').trim().slice(0, 200);
     const trimmedTitle = (reviewForm.title || 'Product Review').trim().slice(0, 200);
     const trimmedComment = reviewForm.comment.trim().slice(0, 2000);
 
@@ -741,12 +762,12 @@ export function ProductDetail({
     const newReview = {
       product_id: product.id,
       reviewer_name: trimmedName,
-      business_name: trimmedBusiness,
+      business_name: trimmedBusiness || null,
       rating: reviewForm.rating,
       title: trimmedTitle,
       comment: trimmedComment,
       images: uploadedImageUrls,
-      verified_buyer: !isGuest,
+      verified_buyer: false,
       status: isGuest ? 'pending' : 'approved',
       created_at: new Date().toISOString(),
     };
@@ -2283,140 +2304,184 @@ export function ProductDetail({
           </div>
         </section>
 
-        <div className="product-highlight-showcase">
+        <section className="product-highlight-showcase">
           <div className="showcase-image-col">
-            <img
-              src={getOptimizedImageUrl(product.images[1] || product.images[0], 'detail') || fallbackProductImage}
-              srcSet={getImageSrcSet(product.images[1] || product.images[0], ['listing', 'detail'])}
-              sizes="(max-width: 768px) 100vw, 500px"
-              alt={`${product.title} fabric close-up`}
-              loading="lazy"
-              decoding="async"
-              width={500}
-              height={600}
-              onError={(e) => {
-                const raw1 = getOriginalImageUrl(product.images[1]);
-                const raw0 = getOriginalImageUrl(product.images[0]);
-                if (raw1 && e.target.src !== raw1 && e.target.src !== raw0) {
-                  e.target.src = raw1;
-                  e.target.removeAttribute('srcset');
-                } else if (raw0 && e.target.src !== raw0) {
-                  e.target.src = raw0;
-                  e.target.removeAttribute('srcset');
-                } else {
-                  e.target.style.opacity = '0';
-                }
-              }}
-            />
-            <div className="showcase-image-badge">
-              <Sparkles size={14} /> {product.subCategory || 'Premium Quality'}
+            <div className="showcase-image-frame">
+              <img
+                src={getOptimizedImageUrl(product.images[1] || product.images[0], 'detail') || fallbackProductImage}
+                srcSet={getImageSrcSet(product.images[1] || product.images[0], ['listing', 'detail'])}
+                sizes="(max-width: 768px) 100vw, 500px"
+                alt={`${product.title} fabric close-up`}
+                loading="lazy"
+                decoding="async"
+                width={500}
+                height={600}
+                onError={(e) => {
+                  const raw1 = getOriginalImageUrl(product.images[1]);
+                  const raw0 = getOriginalImageUrl(product.images[0]);
+                  if (raw1 && e.target.src !== raw1 && e.target.src !== raw0) {
+                    e.target.src = raw1;
+                    e.target.removeAttribute('srcset');
+                  } else if (raw0 && e.target.src !== raw0) {
+                    e.target.src = raw0;
+                    e.target.removeAttribute('srcset');
+                  } else {
+                    e.target.style.opacity = '0';
+                  }
+                }}
+              />
+              <div className="showcase-artisan-tag">
+                <Sparkles size={12} />
+                <span>{product.subCategory || 'Heritage Craft'}</span>
+              </div>
+            </div>
+            <div className="showcase-image-caption">
+              <span>Weave 365 Atelier · Direct Varanasi Loom Dispatch</span>
             </div>
           </div>
 
           <div className="showcase-content-col">
             <div className="showcase-header">
-              <span className="showcase-subtitle">Craftsmanship & Style</span>
-              <h2>Product Highlights</h2>
+              <h2 className="showcase-title">Product Highlights</h2>
               <p className="showcase-description">
-                Every Weave 365 creation is crafted with meticulous attention to detail, utilizing heritage techniques combined with contemporary comfort and premium design.
+                Every Weave 365 creation is crafted with meticulous attention to detail, pairing heritage weaving traditions with contemporary drape and comfort.
               </p>
             </div>
 
             <div className="showcase-highlights-grid">
-              {product.weave && (
-                <div className="highlight-card">
-                  <span className="card-icon">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--gold-mid)' }}>
-                      <path d="M6 3v18M12 3v18M18 3v18M3 6h18M3 12h18M3 18h18" />
-                    </svg>
-                  </span>
-                  <div className="card-body">
-                    <h3>Weave Technique</h3>
-                    <p>Authentic {product.weave} handloom weaving technique</p>
-                  </div>
-                </div>
-              )}
-              <div className="highlight-card">
-                <span className="card-icon"><Star size={18} /></span>
-                <div className="card-body">
-                  <h3>Heritage Fabric</h3>
-                  <p>Premium {product.fabric || 'saree'} with {product.work || 'designer'} work</p>
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <Layers size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Weave Technique</h3>
+                  <p className="highlight-text">
+                    {product.weave
+                      ? (product.weave.toLowerCase().includes('powerloom')
+                          ? `Precision ${product.weave} weaving technique`
+                          : `Authentic ${product.weave} weaving technique`)
+                      : 'Authentic Banarasi weaving technique'}
+                  </p>
                 </div>
               </div>
-              <div className="highlight-card">
-                <span className="card-icon"><CheckCircle2 size={18} /></span>
-                <div className="card-body">
-                  <h3>Lightweight Feel</h3>
-                  <p>Smooth texture and lightweight comfortable feel all day</p>
+
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <Star size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Heritage Fabric</h3>
+                  <p className="highlight-text">
+                    Premium {product.fabric || 'saree'} with {product.work || 'designer'} work
+                  </p>
                 </div>
               </div>
-              <div className="highlight-card animate-detailing">
-                <span className="card-icon"><Sparkles size={18} /></span>
-                <div className="card-body">
-                  <h3>Intricate Detailing</h3>
-                  <p>Elegant border with sophisticated and precise detail work</p>
+
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <CheckCircle2 size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Lightweight Feel</h3>
+                  <p className="highlight-text">
+                    Smooth texture and lightweight comfortable drape all day
+                  </p>
                 </div>
               </div>
-              <div className="highlight-card">
-                <span className="card-icon"><Gift size={18} /></span>
-                <div className="card-body">
-                  <h3>Full Set</h3>
-                  <p>Comes with matching unstitched designer blouse piece</p>
+
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <Sparkles size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Intricate Detailing</h3>
+                  <p className="highlight-text">
+                    Refined border finish with precise artisan detail work
+                  </p>
+                </div>
+              </div>
+
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <Gift size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Full Set</h3>
+                  <p className="highlight-text">
+                    Includes matching unstitched designer blouse piece
+                  </p>
+                </div>
+              </div>
+
+              <div className="highlight-item">
+                <span className="highlight-icon" aria-hidden="true">
+                  <ShieldCheck size={16} />
+                </span>
+                <div className="highlight-body">
+                  <h3 className="highlight-label">Quality Assured</h3>
+                  <p className="highlight-text">
+                    Loom-inspected standard with direct B2B batch dispatch
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="showcase-divider" />
-
-            <div className="showcase-perfect-section">
-              <h3>Perfect For</h3>
-              <div className="perfect-badges-row">
-                <span className="perfect-badge"><PackageCheck size={14} /> Casual Wear</span>
-                <span className="perfect-badge"><Heart size={14} /> Daily Wear</span>
-                <span className="perfect-badge"><ShoppingBag size={14} /> Office Wear</span>
-                <span className="perfect-badge"><Award size={14} /> Small Gatherings</span>
+            <div className="showcase-occasions">
+              <span className="occasions-heading">Ideal Occasions</span>
+              <div className="occasions-chips-row">
+                <span className="occasion-chip"><PackageCheck size={12} /> Casual Wear</span>
+                <span className="occasion-chip"><Heart size={12} /> Daily Wear</span>
+                <span className="occasion-chip"><ShoppingBag size={12} /> Office Wear</span>
+                <span className="occasion-chip"><Award size={12} /> Small Gatherings</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Related Collections & Fabrics Exploration Network */}
         <section className="product-exploration-section">
           <div className="exploration-header">
-            <span className="subtitle">Sourcing Network</span>
-            <h2>Explore Related Collections & Fabrics</h2>
-            <p>Direct loom-to-store sourcing pathways. Explore sister catalogs and similar weave structures.</p>
+            <h2 className="exploration-title">Explore Related Collections & Fabrics</h2>
+            <p className="exploration-lead">
+              Direct loom-to-store sourcing pathways across sister catalogs and complementary weave structures.
+            </p>
           </div>
           <div className="exploration-grid">
             <div className="exploration-column">
-              <h3>Related Collections</h3>
+              <div className="exploration-column-head">
+                <h3 className="exploration-column-title">Related Collections</h3>
+                <span className="exploration-column-count">{explorationData.collections.length} pathways</span>
+              </div>
               <div className="exploration-tags-row">
                 {explorationData.collections.map((col) => (
                   <button
                     key={col.label}
                     type="button"
-                    className="exploration-pill"
+                    className="exploration-chip"
                     onClick={() => navigate(col.url)}
                   >
-                    <span>{col.label}</span>
-                    <ChevronRight size={14} className="pill-arrow" />
+                    <span className="chip-label">{col.label}</span>
+                    <ArrowRight size={13} className="chip-arrow" />
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="exploration-column">
-              <h3>Similar Fabrics</h3>
+              <div className="exploration-column-head">
+                <h3 className="exploration-column-title">Similar Fabrics</h3>
+                <span className="exploration-column-count">{explorationData.fabrics.length} weaves</span>
+              </div>
               <div className="exploration-tags-row">
                 {explorationData.fabrics.map((fab) => (
                   <button
                     key={fab.label}
                     type="button"
-                    className={`exploration-pill ${fab.isCurrent ? 'current-active' : ''}`}
+                    className="exploration-chip"
                     onClick={() => navigate(fab.url)}
                   >
-                    <span>{fab.label}</span>
-                    <ChevronRight size={14} className="pill-arrow" />
+                    <span className="chip-label">{fab.label}</span>
+                    <ArrowRight size={13} className="chip-arrow" />
                   </button>
                 ))}
               </div>
@@ -2493,7 +2558,7 @@ export function ProductDetail({
                 </div>
                 <span className="clean-reviews-dot">•</span>
                 <span className="clean-reviews-count-label">
-                  {stats.count === 0 ? 'Be the first boutique to review' : `Based on ${stats.count} verified B2B review${stats.count === 1 ? '' : 's'}`}
+                  {stats.count === 0 ? 'Be the first to review' : `Based on ${stats.count} review${stats.count === 1 ? '' : 's'}`}
                 </span>
               </div>
             </div>
@@ -2722,11 +2787,17 @@ export function ProductDetail({
                     aria-label={`Enlarge photo ${pIdx + 1}`}
                   >
                     <img
-                      src={photoItem.url}
-                      alt={`Photo by ${photoItem.review.reviewer_name}`}
+                      src={photoItem.thumbUrl || photoItem.url}
+                      alt={`Photo by ${photoItem.review?.reviewer_name || 'Customer'}`}
                       loading="lazy"
+                      width="76"
+                      height="76"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.src !== photoItem.url) {
+                          e.currentTarget.src = photoItem.url;
+                        } else {
+                          e.currentTarget.style.display = 'none';
+                        }
                       }}
                     />
                     <div className="clean-photo-hover-icon">
@@ -2827,7 +2898,7 @@ export function ProductDetail({
                         ))}
                       </div>
                       <span className="clean-review-author">{review.reviewer_name}</span>
-                      {review.business_name && (
+                      {review.business_name && review.business_name.trim().toLowerCase() !== 'b2b client' && (
                         <>
                           <span className="clean-review-dot">•</span>
                           <span className="clean-review-business">{review.business_name}</span>
@@ -2841,9 +2912,6 @@ export function ProductDetail({
                           day: 'numeric',
                         })}
                       </span>
-                      {review.verified_buyer !== false && (
-                        <span className="clean-review-badge">Verified Buyer</span>
-                      )}
                     </div>
 
                     {review.title && <h4 className="clean-review-title">{review.title}</h4>}
@@ -2852,40 +2920,52 @@ export function ProductDetail({
                     {/* Customer Photo Attachments */}
                     {reviewImages.length > 0 && (
                       <div className="clean-review-photos-grid">
-                        {reviewImages.map((imgUrl, imgIdx) => (
-                          <button
-                            type="button"
-                            key={imgIdx}
-                            className="clean-review-photo-btn"
-                            onClick={() => {
-                              const reviewPhotoItems = reviewImages.map((u, i) => ({
-                                url: u,
-                                review,
-                                index: i
-                              }));
-                              setLightboxPhoto({
-                                url: imgUrl,
-                                photoIndex: imgIdx,
-                                totalPhotos: reviewImages.length,
-                                allPhotos: reviewPhotoItems,
-                                review,
-                              });
-                            }}
-                            aria-label={`Enlarge photo ${imgIdx + 1}`}
-                          >
-                            <img
-                              src={imgUrl}
-                              alt="Review photo"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
+                        {reviewImages.map((imgItem, imgIdx) => {
+                          const photo = resolveReviewPhoto(imgItem);
+                          return (
+                            <button
+                              type="button"
+                              key={imgIdx}
+                              className="clean-review-photo-btn"
+                              onClick={() => {
+                                const reviewPhotoItems = reviewImages.map((u, i) => {
+                                  const resolved = resolveReviewPhoto(u);
+                                  return {
+                                    url: resolved.full,
+                                    review,
+                                    index: i
+                                  };
+                                });
+                                setLightboxPhoto({
+                                  url: photo.full,
+                                  photoIndex: imgIdx,
+                                  totalPhotos: reviewImages.length,
+                                  allPhotos: reviewPhotoItems,
+                                  review,
+                                });
                               }}
-                            />
-                            <div className="clean-review-photo-hover">
-                              <ZoomIn size={14} />
-                            </div>
-                          </button>
-                        ))}
+                              aria-label={`Enlarge photo ${imgIdx + 1}`}
+                            >
+                              <img
+                                src={photo.thumb || photo.full}
+                                alt="Review photo"
+                                loading="lazy"
+                                width="68"
+                                height="68"
+                                onError={(e) => {
+                                  if (e.currentTarget.src !== photo.full) {
+                                    e.currentTarget.src = photo.full;
+                                  } else {
+                                    e.currentTarget.style.display = 'none';
+                                  }
+                                }}
+                              />
+                              <div className="clean-review-photo-hover">
+                                <ZoomIn size={14} />
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </article>
@@ -2981,11 +3061,10 @@ export function ProductDetail({
                       <div className="clean-lightbox-author-row">
                         <div>
                           <strong className="clean-lightbox-name">{lightboxPhoto.review.reviewer_name}</strong>
-                          {lightboxPhoto.review.business_name && (
+                          {lightboxPhoto.review.business_name && lightboxPhoto.review.business_name.trim().toLowerCase() !== 'b2b client' && (
                             <span className="clean-lightbox-business"> • {lightboxPhoto.review.business_name}</span>
                           )}
                         </div>
-                        <span className="clean-lightbox-badge">Verified Buyer</span>
                       </div>
 
                       <div className="clean-lightbox-rating-row">

@@ -148,6 +148,24 @@ export async function POST(request) {
     // Key format: reviews/{sku}/{uploader}-{timestamp}[-{index}].{ext}
     const key = `reviews/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}.${ext}`;
 
+    // Optional lightweight thumbnail file uploaded alongside
+    const thumbFile = formData.get('thumbnail') || formData.get('thumb');
+    let thumbBuffer = null;
+    let thumbKey = '';
+    let thumbContentType = 'image/webp';
+
+    if (thumbFile && typeof thumbFile !== 'string') {
+      try {
+        thumbBuffer = await thumbFile.arrayBuffer();
+        const thumbCleanName = (thumbFile.name || 'thumb.webp').toLowerCase().replace(/[^a-z0-9.-]/g, '-');
+        const thumbExt = thumbCleanName.split('.').pop() || 'webp';
+        thumbContentType = thumbFile.type || (thumbExt === 'webp' ? 'image/webp' : 'image/jpeg');
+        thumbKey = `reviews/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}-thumb.${thumbExt}`;
+      } catch (tErr) {
+        console.warn('[Upload Route] Failed to read thumbnail buffer:', tErr);
+      }
+    }
+
     let isBindingUsed = false;
     let context = null;
 
@@ -160,6 +178,7 @@ export async function POST(request) {
 
     let storageProvider = 'none';
     let publicUrl = '';
+    let publicThumbUrl = '';
 
     // 1. Try Cloudflare Pages native R2 binding if active
     if (context && context.env && context.env.R2_BUCKET) {
@@ -173,6 +192,21 @@ export async function POST(request) {
         const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://assets.weave365.com';
         publicUrl = `${baseUrl.replace(/\/$/, '')}/${key}`;
         storageProvider = 'cloudflare-r2-binding';
+
+        // Also save thumbnail if present
+        if (thumbBuffer && thumbKey) {
+          try {
+            await context.env.R2_BUCKET.put(thumbKey, thumbBuffer, {
+              httpMetadata: {
+                contentType: thumbContentType,
+                cacheControl: 'public, max-age=31536000, immutable',
+              },
+            });
+            publicThumbUrl = `${baseUrl.replace(/\/$/, '')}/${thumbKey}`;
+          } catch (tBindErr) {
+            console.warn('[Upload Route] Native R2 thumbnail upload failed:', tBindErr);
+          }
+        }
       } catch (bindErr) {
         console.warn('[Upload Route] Native R2 binding upload failed:', bindErr);
       }
@@ -185,6 +219,18 @@ export async function POST(request) {
         if (r2Url) {
           publicUrl = r2Url;
           storageProvider = 'cloudflare-r2-s3';
+        }
+
+        // Also upload thumbnail via S3 if present
+        if (thumbBuffer && thumbKey) {
+          try {
+            const r2ThumbUrl = await uploadToR2ViaS3(thumbKey, thumbBuffer, thumbContentType);
+            if (r2ThumbUrl) {
+              publicThumbUrl = r2ThumbUrl;
+            }
+          } catch (tS3Err) {
+            console.warn('[Upload Route] Direct R2 S3 thumbnail upload error:', tS3Err);
+          }
         }
       } catch (r2S3Err) {
         console.warn('[Upload Route] Direct R2 S3 upload error:', r2S3Err);
@@ -199,12 +245,22 @@ export async function POST(request) {
       });
       publicUrl = `/api/image?key=${key}`;
       storageProvider = 'local-in-memory';
+
+      if (thumbBuffer && thumbKey) {
+        globalThis.__localUploads.set(thumbKey, {
+          buffer: new Uint8Array(thumbBuffer),
+          type: thumbContentType,
+        });
+        publicThumbUrl = `/api/image?key=${thumbKey}`;
+      }
     }
 
     return Response.json({
       status: 'success',
       url: publicUrl,
+      thumbUrl: publicThumbUrl || publicUrl,
       key,
+      thumbKey: thumbKey || key,
       via: storageProvider,
     });
   } catch (err) {
