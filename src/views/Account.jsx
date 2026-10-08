@@ -138,7 +138,7 @@ export function Account({
     }
     if (initialTab) return initialTab;
     if (isVendor) return 'vendor-stock';
-    return 'orders';
+    return 'profile';
   });
 
   useEffect(() => {
@@ -147,7 +147,7 @@ export function Account({
     }
   }, [accountLocked]);
 
-  const [orderSubTab, setOrderSubTab] = useState('enquiry');
+  const [orderSubTab, setOrderSubTab] = useState('history');
 
   useEffect(() => {
     if (accountLocked) {
@@ -716,10 +716,10 @@ export function Account({
               <div className="account-order-subtabs">
                 <button
                   type="button"
-                  className={`account-order-subtab-btn ${orderSubTab === 'enquiry' ? 'active' : ''}`}
-                  onClick={() => setOrderSubTab('enquiry')}
+                  className={`account-order-subtab-btn ${orderSubTab === 'history' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('history')}
                 >
-                  Enquiry {enquiriesList.length > 0 && <span className="subtab-badge">({enquiriesList.length})</span>}
+                  Order History {orderHistoryList.length > 0 && <span className="subtab-badge">({orderHistoryList.length})</span>}
                 </button>
                 <button
                   type="button"
@@ -732,10 +732,10 @@ export function Account({
                 </button>
                 <button
                   type="button"
-                  className={`account-order-subtab-btn ${orderSubTab === 'history' ? 'active' : ''}`}
-                  onClick={() => setOrderSubTab('history')}
+                  className={`account-order-subtab-btn ${orderSubTab === 'enquiry' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('enquiry')}
                 >
-                  Order History {orderHistoryList.length > 0 && <span className="subtab-badge">({orderHistoryList.length})</span>}
+                  Enquiry {enquiriesList.length > 0 && <span className="subtab-badge">({enquiriesList.length})</span>}
                 </button>
               </div>
             </div>
