@@ -106,6 +106,7 @@ export async function GET(request) {
         headers.set('Access-Control-Allow-Origin', '*');
         return new Response(localFile.buffer, { headers });
       }
+
     }
 
     // 3. Proxy remote HTTP/HTTPS images (Google Drive thumbnails, Supabase, R2 CDN, etc.)

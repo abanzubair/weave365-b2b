@@ -651,10 +651,18 @@ export function ProductDetail({
     if (!fileItems || fileItems.length === 0) return [];
     const uploadedUrls = [];
 
-    for (const item of fileItems) {
+    const productSku = variantCode || product?.variants?.[0]?.code || product?.sku || product?.id || 'product';
+    const uploaderName = (reviewForm.reviewer_name || 'customer').trim();
+
+    for (let i = 0; i < fileItems.length; i++) {
+      const item = fileItems[i];
       try {
         const formData = new FormData();
         formData.append('file', item.file);
+        formData.append('sku', productSku);
+        formData.append('uploader', uploaderName);
+        formData.append('index', String(i + 1));
+
         const res = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
@@ -2717,6 +2725,9 @@ export function ProductDetail({
                       src={photoItem.url}
                       alt={`Photo by ${photoItem.review.reviewer_name}`}
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                     <div className="clean-photo-hover-icon">
                       <ZoomIn size={14} />
@@ -2862,7 +2873,14 @@ export function ProductDetail({
                             }}
                             aria-label={`Enlarge photo ${imgIdx + 1}`}
                           >
-                            <img src={imgUrl} alt="Review photo" loading="lazy" />
+                            <img
+                              src={imgUrl}
+                              alt="Review photo"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
                             <div className="clean-review-photo-hover">
                               <ZoomIn size={14} />
                             </div>
