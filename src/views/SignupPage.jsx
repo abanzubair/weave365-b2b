@@ -425,7 +425,14 @@ export function SignupPage({
                   full_name: cleanName,
                 },
               });
-              await syncProfileFromUser({ ...user, user_metadata: { ...user.user_metadata, buyer_profile: newProfile } });
+              await syncProfileFromUser({
+                ...user,
+                user_metadata: {
+                  ...user.user_metadata,
+                  buyer_profile: newProfile,
+                  qualification: newProfile.qualification,
+                },
+              });
             }
             if (setBuyerProfile) setBuyerProfile(newProfile);
             setLoading(false);

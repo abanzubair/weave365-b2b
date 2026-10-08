@@ -868,10 +868,18 @@ create table if not exists public.product_reviews (
   rating integer not null check (rating >= 1 and rating <= 5),
   title text,
   comment text not null,
+  images text[] default '{}',
+  verified_buyer boolean default false,
+  helpful_count integer default 0,
   status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Backward-compatibility columns if table already exists
+alter table public.product_reviews add column if not exists images text[] default '{}';
+alter table public.product_reviews add column if not exists verified_buyer boolean default false;
+alter table public.product_reviews add column if not exists helpful_count integer default 0;
 
 -- Enable RLS
 alter table public.product_reviews enable row level security;
@@ -1483,6 +1491,9 @@ create table if not exists public.product_reviews (
   rating integer not null check (rating >= 1 and rating <= 5),
   title text default 'Product Review',
   comment text not null,
+  images text[] default '{}',
+  verified_buyer boolean default false,
+  helpful_count integer default 0,
   status text not null default 'pending',
   user_id uuid references auth.users(id) on delete set null,
   created_at timestamptz default now()

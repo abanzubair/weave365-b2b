@@ -300,7 +300,7 @@ export default async function ProductPage({ params, searchParams }) {
     try {
       const { data, error } = await supabase
         .from('product_reviews')
-        .select('reviewer_name, rating, comment, title, created_at')
+        .select('id, product_id, reviewer_name, business_name, rating, comment, title, images, verified_buyer, created_at, status')
         .eq('product_id', product.id)
         .eq('status', 'approved')
         .order('created_at', { ascending: false });

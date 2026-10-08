@@ -33,6 +33,8 @@ import {
   ZoomIn,
   X,
   Check,
+  PhotoIcon,
+  Upload,
 } from './components/icons.jsx';
 import { storeConfig, getProductCategorySlug, getCategorySlug, siteUrl } from './config.js';
 import './styles/productDetail.css';
@@ -394,6 +396,12 @@ export function ProductDetail({
 
   // Submit Form states
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState('all'); // 'all', 'photos', 5, 4, 3, 2, 1
+  const [selectedReviewFiles, setSelectedReviewFiles] = useState([]); // [{ file, previewUrl, name, size }]
+  const [uploadingReviewImages, setUploadingReviewImages] = useState(false);
+  const [lightboxPhoto, setLightboxPhoto] = useState(null); // { url, reviewer_name, business_name, rating, comment, title, created_at, photoIndex, totalPhotos, allPhotos }
+  const reviewFileInputRef = useRef(null);
+
   const [reviewForm, setReviewForm] = useState({
     reviewer_name: '',
     business_name: '',
@@ -407,6 +415,40 @@ export function ProductDetail({
   const [reviewSubmitSuccess, setReviewSubmitSuccess] = useState(false);
   const [reviewSubmitError, setReviewSubmitError] = useState('');
   const [hoveredRating, setHoveredRating] = useState(0);
+
+  // Sync dbReviews when initialReviews props change
+  useEffect(() => {
+    if (initialReviews && initialReviews.length > 0) {
+      setDbReviews(initialReviews);
+    }
+  }, [initialReviews]);
+
+  // Client-side fetch of approved reviews for this product
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProductReviews() {
+      if (!product?.id) return;
+      try {
+        const { supabase, isSupabaseConfigured } = await import('./supabaseClient.js');
+        if (isSupabaseConfigured && supabase) {
+          const { data, error } = await supabase
+            .from('product_reviews')
+            .select('id, product_id, reviewer_name, business_name, rating, comment, title, images, verified_buyer, created_at, status')
+            .eq('product_id', product.id)
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
+
+          if (!error && data && isMounted) {
+            setDbReviews(data);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch product reviews from Supabase:', err);
+      }
+    }
+    void loadProductReviews();
+    return () => { isMounted = false; };
+  }, [product?.id]);
 
   // Pre-fill reviewer name inline during render if user/priceAccess changes
   const userObj = user || (priceAccess?.userId ? { id: priceAccess.userId, user_metadata: { full_name: priceAccess.userFullName || '', business_name: priceAccess.businessName || '' } } : null);
@@ -446,6 +488,68 @@ export function ProductDetail({
     }
     return uniqueReviews;
   }, [dbReviews, localReviews]);
+
+  // Collect all photos from active reviews for the customer photo gallery reel
+  const allCustomerPhotos = useMemo(() => {
+    const photos = [];
+    activeReviews.forEach(r => {
+      const imgs = Array.isArray(r.images) ? r.images : [];
+      imgs.forEach((imgUrl, imgIndex) => {
+        if (imgUrl) {
+          photos.push({
+            url: imgUrl,
+            review: r,
+            index: imgIndex,
+            id: `${r.id || r.created_at}-${imgIndex}`
+          });
+        }
+      });
+    });
+    return photos;
+  }, [activeReviews]);
+
+  // Filter reviews based on user selection ('all', 'photos', or star rating)
+  const filteredReviews = useMemo(() => {
+    if (reviewFilter === 'photos') {
+      return activeReviews.filter(r => Array.isArray(r.images) && r.images.length > 0);
+    }
+    if (typeof reviewFilter === 'number') {
+      return activeReviews.filter(r => Math.round(Number(r.rating)) === reviewFilter);
+    }
+    return activeReviews;
+  }, [activeReviews, reviewFilter]);
+
+  // Handle keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!lightboxPhoto) return;
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setLightboxPhoto(null);
+      } else if (e.key === 'ArrowRight' && lightboxPhoto.allPhotos?.length > 1) {
+        const nextIdx = (lightboxPhoto.photoIndex + 1) % lightboxPhoto.allPhotos.length;
+        const nextItem = lightboxPhoto.allPhotos[nextIdx];
+        setLightboxPhoto({
+          ...lightboxPhoto,
+          url: nextItem.url,
+          photoIndex: nextIdx,
+          review: nextItem.review || lightboxPhoto.review
+        });
+      } else if (e.key === 'ArrowLeft' && lightboxPhoto.allPhotos?.length > 1) {
+        const prevIdx = (lightboxPhoto.photoIndex - 1 + lightboxPhoto.allPhotos.length) % lightboxPhoto.allPhotos.length;
+        const prevItem = lightboxPhoto.allPhotos[prevIdx];
+        setLightboxPhoto({
+          ...lightboxPhoto,
+          url: prevItem.url,
+          photoIndex: prevIdx,
+          review: prevItem.review || lightboxPhoto.review
+        });
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxPhoto]);
 
   // Calculate rating stats
   const stats = useMemo(() => {
@@ -495,6 +599,94 @@ export function ProductDetail({
     setReviewForm(prev => ({ ...prev, rating: newRating }));
   };
 
+  const handleReviewFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const remainingSlots = 4 - selectedReviewFiles.length;
+    if (remainingSlots <= 0) {
+      setReviewSubmitError('You can upload a maximum of 4 photos.');
+      return;
+    }
+
+    const validNewFiles = [];
+    for (const f of files.slice(0, remainingSlots)) {
+      if (!f.type.startsWith('image/')) {
+        setReviewSubmitError('Please select valid image files (JPG, PNG, WEBP).');
+        continue;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        setReviewSubmitError('Each photo must be smaller than 5MB.');
+        continue;
+      }
+      validNewFiles.push({
+        file: f,
+        previewUrl: URL.createObjectURL(f),
+        name: f.name,
+        size: f.size
+      });
+    }
+
+    if (validNewFiles.length > 0) {
+      setReviewSubmitError('');
+      setSelectedReviewFiles(prev => [...prev, ...validNewFiles]);
+    }
+
+    if (reviewFileInputRef.current) {
+      reviewFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveReviewFile = (indexToRemove) => {
+    setSelectedReviewFiles(prev => {
+      const target = prev[indexToRemove];
+      if (target?.previewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((_, idx) => idx !== indexToRemove);
+    });
+  };
+
+  const uploadReviewImagesToServer = async (fileItems) => {
+    if (!fileItems || fileItems.length === 0) return [];
+    const uploadedUrls = [];
+
+    for (const item of fileItems) {
+      try {
+        const formData = new FormData();
+        formData.append('file', item.file);
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success' && json.url) {
+            uploadedUrls.push(json.url);
+            continue;
+          }
+        }
+      } catch (err) {
+        console.warn('API upload failed, falling back to data URL:', err);
+      }
+
+      // Local fallback to base64 data URL
+      try {
+        const base64Url = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(item.file);
+        });
+        uploadedUrls.push(base64Url);
+      } catch (base64Err) {
+        console.error('Failed to convert image to base64:', base64Err);
+      }
+    }
+
+    return uploadedUrls;
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!reviewForm.reviewer_name || !reviewForm.comment) {
@@ -522,6 +714,18 @@ export function ProductDetail({
 
     setReviewSubmitting(true);
     setReviewSubmitError('');
+    if (selectedReviewFiles.length > 0) {
+      setUploadingReviewImages(true);
+    }
+
+    let uploadedImageUrls = [];
+    try {
+      uploadedImageUrls = await uploadReviewImagesToServer(selectedReviewFiles);
+    } catch (uploadErr) {
+      console.warn('Error during image upload:', uploadErr);
+    } finally {
+      setUploadingReviewImages(false);
+    }
 
     const userObj = user || null;
     const isGuest = !userObj;
@@ -533,6 +737,8 @@ export function ProductDetail({
       rating: reviewForm.rating,
       title: trimmedTitle,
       comment: trimmedComment,
+      images: uploadedImageUrls,
+      verified_buyer: !isGuest,
       status: isGuest ? 'pending' : 'approved',
       created_at: new Date().toISOString(),
     };
@@ -573,6 +779,14 @@ export function ProductDetail({
         localStorage.setItem(`weave365_local_product_reviews_${product.id}`, JSON.stringify(updatedLocal));
         setDbReviews(prev => [addedReview, ...prev]);
       }
+
+      // Cleanup preview URLs
+      selectedReviewFiles.forEach(item => {
+        if (item.previewUrl?.startsWith('blob:')) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+      });
+      setSelectedReviewFiles([]);
 
       setReviewSubmitSuccess(true);
       setReviewForm({
@@ -2251,27 +2465,34 @@ export function ProductDetail({
           </div>
         </section>
 
-        {/* Product Reviews & Rating Breakdown Section */}
-        <section className="product-reviews-section animate-fade-in">
-          <div className="section-heading-row" style={{ marginBottom: '1.5rem' }}>
-            <SectionTitle title="Client Sourcing Reviews" align="left" />
-          </div>
-
-          <div className="reviews-minimal-header">
-            <div className="reviews-minimal-summary">
-              <div className="reviews-average-group">
-                <span className="reviews-average-score">{stats.avg}</span>
-                <SharpStar size={18} fill="var(--gold)" stroke="var(--gold)" className="reviews-header-star" />
+        {/* Product Reviews Section (Minimal & Clean Editorial Design) */}
+        <section className="clean-reviews-section animate-fade-in">
+          {/* Header & Score Bar */}
+          <div className="clean-reviews-header">
+            <div className="clean-reviews-header-info">
+              <h2 className="clean-reviews-heading">Client Sourcing Reviews</h2>
+              <div className="clean-reviews-summary-line">
+                <span className="clean-reviews-score">{stats.avg}</span>
+                <div className="clean-reviews-stars">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <SharpStar
+                      key={s}
+                      size={14}
+                      fill={s <= Math.round(Number(stats.avg || 5)) ? 'var(--gold)' : 'none'}
+                      stroke="var(--gold)"
+                    />
+                  ))}
+                </div>
+                <span className="clean-reviews-dot">•</span>
+                <span className="clean-reviews-count-label">
+                  {stats.count === 0 ? 'Be the first boutique to review' : `Based on ${stats.count} verified B2B review${stats.count === 1 ? '' : 's'}`}
+                </span>
               </div>
-              <span className="reviews-summary-divider" aria-hidden="true">•</span>
-              <span className="reviews-count-label">
-                Based on {stats.count} verified B2B review{stats.count === 1 ? '' : 's'}
-              </span>
             </div>
 
             <button
               type="button"
-              className={`reviews-write-btn-minimal ${showReviewForm ? 'active' : ''}`}
+              className={`clean-reviews-toggle-btn ${showReviewForm ? 'is-active' : ''}`}
               onClick={() => {
                 if (!user && !priceAccess?.userId) {
                   if (navigate) navigate('signup');
@@ -2281,51 +2502,61 @@ export function ProductDetail({
                 }
               }}
             >
-              {showReviewForm ? 'Cancel' : 'Write a Review'}
+              {showReviewForm ? '✕ Close Form' : '+ Write a Review'}
             </button>
           </div>
 
+          {/* Minimal Sourcing Review Form */}
           {showReviewForm && (
-            <div className="reviews-form-container-minimal animate-fade-in">
+            <div className="clean-reviews-form-wrap animate-fade-in">
               {reviewSubmitSuccess ? (
-                <div className="review-submit-success-card animate-scale-up">
-                  <Check size={24} className="success-check-icon" />
-                  <h4 className="success-title">Review Submitted Successfully</h4>
-                  <p className="success-message">
-                    Thank you for sharing your experience. Your verified review helps other B2B boutique owners make informed sourcing decisions and supports local weavers in Varanasi.
+                <div className="clean-reviews-success-card animate-scale-up">
+                  <div className="clean-success-icon-wrap">
+                    <Check size={22} className="clean-success-icon" />
+                  </div>
+                  <h4 className="clean-success-heading">Review Submitted Successfully</h4>
+                  <p className="clean-success-desc">
+                    Thank you for sharing your sourcing feedback. Your verified review supports artisan weavers in Varanasi and helps other boutique owners source with confidence.
                   </p>
                 </div>
               ) : (
-                <>
-                  <h3 className="form-title-minimal">Submit Sourcing Review</h3>
-                  <form onSubmit={handleReviewSubmit} className="reviews-entry-form-minimal">
-                    <div className="form-grid-2-minimal">
-                      <div className="form-group-minimal">
-                        <label htmlFor="prod_reviewer_name">Your Name *</label>
-                        <input
-                          type="text"
-                          id="prod_reviewer_name"
-                          required
-                          value={reviewForm.reviewer_name}
-                          onChange={(e) => setReviewForm(prev => ({ ...prev, reviewer_name: e.target.value }))}
-                          placeholder="e.g. Ananya Rao"
-                        />
-                      </div>
-                      <div className="form-group-minimal">
-                        <label htmlFor="prod_business_name">Business Details</label>
-                        <input
-                          type="text"
-                          id="prod_business_name"
-                          value={reviewForm.business_name}
-                          onChange={(e) => setReviewForm(prev => ({ ...prev, business_name: e.target.value }))}
-                          placeholder="e.g. Aura Silks, Chennai"
-                        />
-                      </div>
-                    </div>
+                <form onSubmit={handleReviewSubmit} className="clean-reviews-form">
+                  <div className="clean-form-header">
+                    <h3 className="clean-form-title">Submit Sourcing Feedback</h3>
+                    <p className="clean-form-subtitle">
+                      Share notes on fabric weight, zari lustre, drape quality, or customer reception.
+                    </p>
+                  </div>
 
-                    <div className="form-group-minimal">
-                      <label>Overall Rating *</label>
-                      <div className="interactive-stars-row-minimal">
+                  <div className="clean-form-grid-2">
+                    <div className="clean-form-field">
+                      <label htmlFor="prod_reviewer_name">Your Name *</label>
+                      <input
+                        type="text"
+                        id="prod_reviewer_name"
+                        required
+                        value={reviewForm.reviewer_name}
+                        onChange={(e) => setReviewForm(prev => ({ ...prev, reviewer_name: e.target.value }))}
+                        placeholder="e.g. Ananya Rao"
+                      />
+                    </div>
+                    <div className="clean-form-field">
+                      <label htmlFor="prod_business_name">Boutique / Business (Optional)</label>
+                      <input
+                        type="text"
+                        id="prod_business_name"
+                        value={reviewForm.business_name}
+                        onChange={(e) => setReviewForm(prev => ({ ...prev, business_name: e.target.value }))}
+                        placeholder="e.g. Aura Silks, Chennai"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Rating Selector */}
+                  <div className="clean-form-field">
+                    <label>Overall Sourcing Rating *</label>
+                    <div className="clean-stars-selector">
+                      <div className="clean-stars-row">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             type="button"
@@ -2333,125 +2564,446 @@ export function ProductDetail({
                             onClick={() => handleRatingChange(star)}
                             onMouseEnter={() => setHoveredRating(star)}
                             onMouseLeave={() => setHoveredRating(0)}
-                            className="star-rating-btn-minimal"
+                            className="clean-star-btn"
                             aria-label={`Rate ${star} stars`}
                           >
                             <SharpStar
-                              size={18}
+                              size={22}
                               fill={star <= (hoveredRating || reviewForm.rating) ? 'var(--gold)' : 'none'}
                               stroke="var(--gold)"
-                              className="interactive-star-minimal"
+                              className="clean-star-svg"
                             />
                           </button>
                         ))}
                       </div>
+                      <span className="clean-stars-descriptor">
+                        {(hoveredRating || reviewForm.rating) === 5 && '5.0 — Outstanding Heritage Weave'}
+                        {(hoveredRating || reviewForm.rating) === 4 && '4.0 — Premium Retail Grade'}
+                        {(hoveredRating || reviewForm.rating) === 3 && '3.0 — Standard Commercial Fabric'}
+                        {(hoveredRating || reviewForm.rating) === 2 && '2.0 — Needs Improvement'}
+                        {(hoveredRating || reviewForm.rating) === 1 && '1.0 — Unsatisfactory'}
+                      </span>
                     </div>
+                  </div>
 
-                    <div className="form-group-minimal">
-                      <label htmlFor="prod_review_title">Review Title</label>
+                  <div className="clean-form-field">
+                    <label htmlFor="prod_review_title">Headline</label>
+                    <input
+                      type="text"
+                      id="prod_review_title"
+                      value={reviewForm.title}
+                      onChange={(e) => setReviewForm(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Exceptional zari sheen and soft drape"
+                    />
+                  </div>
+
+                  <div className="clean-form-field">
+                    <label htmlFor="prod_review_comment">Detailed Review *</label>
+                    <textarea
+                      id="prod_review_comment"
+                      required
+                      rows={4}
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                      placeholder="Describe the fabric weight, weaving density, color vibrancy, or customer response..."
+                    />
+                  </div>
+
+                  {/* Clean Photo Uploader */}
+                  <div className="clean-form-field">
+                    <label>Photos (Optional)</label>
+                    <div className="clean-photo-upload-bar">
                       <input
-                        type="text"
-                        id="prod_review_title"
-                        value={reviewForm.title}
-                        onChange={(e) => setReviewForm(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g. Soft fabric, premium gold zari border"
+                        type="file"
+                        ref={reviewFileInputRef}
+                        onChange={handleReviewFileChange}
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        style={{ display: 'none' }}
                       />
+                      <button
+                        type="button"
+                        className="clean-photo-add-btn"
+                        onClick={() => reviewFileInputRef.current?.click()}
+                        disabled={selectedReviewFiles.length >= 4}
+                      >
+                        <PhotoIcon size={16} />
+                        <span>{selectedReviewFiles.length > 0 ? 'Add More Photos' : 'Add Photos'}</span>
+                        <span className="clean-photo-badge">{selectedReviewFiles.length}/4</span>
+                      </button>
+                      <span className="clean-photo-hint">
+                        Attach swatches, zari detail, or boutique drape (max 5MB each)
+                      </span>
                     </div>
 
-                    <div className="form-group-minimal">
-                      <label htmlFor="prod_review_comment">Review Details *</label>
-                      <textarea
-                        id="prod_review_comment"
-                        required
-                        rows={3}
-                        value={reviewForm.comment}
-                        onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
-                        placeholder="Describe the fabric weight, weaving density, color vibrancy, or customer response..."
-                      />
-                    </div>
+                    {selectedReviewFiles.length > 0 && (
+                      <div className="clean-photo-previews">
+                        {selectedReviewFiles.map((item, idx) => (
+                          <div key={idx} className="clean-photo-thumb-card">
+                            <img src={item.previewUrl} alt={`Review preview ${idx + 1}`} className="clean-photo-thumb-img" />
+                            <button
+                              type="button"
+                              className="clean-photo-remove-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveReviewFile(idx);
+                              }}
+                              aria-label="Remove image"
+                            >
+                              <X size={11} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="captcha-wrapper-minimal">
-                      <SliderCaptcha onVerify={setIsCaptchaVerified} isReset={isCaptchaReset} />
-                    </div>
+                  <div className="clean-captcha-wrap">
+                    <SliderCaptcha onVerify={setIsCaptchaVerified} isReset={isCaptchaReset} />
+                  </div>
 
-                    {reviewSubmitError && <p className="review-submit-error-minimal">{reviewSubmitError}</p>}
+                  {reviewSubmitError && <p className="clean-form-error">{reviewSubmitError}</p>}
 
+                  <div className="clean-form-actions">
                     <button
                       type="submit"
                       disabled={reviewSubmitting || !isCaptchaVerified}
-                      className="review-submit-btn-minimal"
+                      className="clean-form-submit-btn"
                     >
-                      {reviewSubmitting ? 'Submitting...' : 'Submit Product Review'}
+                      {reviewSubmitting
+                        ? (uploadingReviewImages ? 'Uploading Photos...' : 'Submitting Review...')
+                        : 'Submit Review'}
                     </button>
-                  </form>
-                </>
+                    <button
+                      type="button"
+                      className="clean-form-cancel-btn"
+                      onClick={() => setShowReviewForm(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
               )}
             </div>
           )}
 
-          {activeReviews.length === 0 && !showReviewForm && (
-            <div className="reviews-empty-state-minimal">
-              <p className="reviews-empty-title">No client reviews yet for this design</p>
-              <p className="reviews-empty-desc">
-                Be the first boutique partner to share feedback on weave density, zari lustre, and customer reception.
-              </p>
+          {/* Customer Photos Reel (if photos exist) */}
+          {allCustomerPhotos.length > 0 && (
+            <div className="clean-customer-photos animate-fade-in">
+              <div className="clean-customer-photos-head">
+                <span className="clean-customer-photos-title">Customer Sourcing Photos</span>
+                <span className="clean-customer-photos-count">
+                  {allCustomerPhotos.length} {allCustomerPhotos.length === 1 ? 'photo' : 'photos'}
+                </span>
+              </div>
+              <div className="clean-customer-photos-rail">
+                {allCustomerPhotos.map((photoItem, pIdx) => (
+                  <button
+                    type="button"
+                    key={photoItem.id || pIdx}
+                    className="clean-customer-photo-thumb"
+                    onClick={() => {
+                      setLightboxPhoto({
+                        url: photoItem.url,
+                        photoIndex: pIdx,
+                        totalPhotos: allCustomerPhotos.length,
+                        allPhotos: allCustomerPhotos,
+                        review: photoItem.review,
+                      });
+                    }}
+                    aria-label={`Enlarge photo ${pIdx + 1}`}
+                  >
+                    <img
+                      src={photoItem.url}
+                      alt={`Photo by ${photoItem.review.reviewer_name}`}
+                      loading="lazy"
+                    />
+                    <div className="clean-photo-hover-icon">
+                      <ZoomIn size={14} />
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
+          {/* Review Filter Bar */}
           {activeReviews.length > 0 && (
-            <div className="reviews-feed-container-minimal">
-              {activeReviews.slice(0, visibleCount).map((review, index) => (
-                <article className="review-item-minimal animate-fade-in" key={review.id || index}>
-                  <div className="review-item-meta-minimal">
-                    <span className="reviewer-name-minimal">{review.reviewer_name}</span>
-                    {review.business_name && (
-                      <span className="reviewer-business-minimal">({review.business_name})</span>
-                    )}
-                    <span className="review-date-minimal">
-                      {new Date(review.created_at).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
+            <div className="clean-filter-bar">
+              <button
+                type="button"
+                className={`clean-filter-pill ${reviewFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setReviewFilter('all')}
+              >
+                All ({activeReviews.length})
+              </button>
+              {allCustomerPhotos.length > 0 && (
+                <button
+                  type="button"
+                  className={`clean-filter-pill ${reviewFilter === 'photos' ? 'active' : ''}`}
+                  onClick={() => setReviewFilter('photos')}
+                >
+                  <PhotoIcon size={13} /> With Photos ({activeReviews.filter(r => Array.isArray(r.images) && r.images.length > 0).length})
+                </button>
+              )}
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const count = stats.distribution[stars] || 0;
+                if (count === 0 && activeReviews.length < 4) return null;
+                return (
+                  <button
+                    key={stars}
+                    type="button"
+                    className={`clean-filter-pill ${reviewFilter === stars ? 'active' : ''}`}
+                    onClick={() => setReviewFilter(reviewFilter === stars ? 'all' : stars)}
+                  >
+                    {stars} ★ ({count})
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-                  <div className="review-item-rating-row-minimal">
-                    <div className="review-item-stars-minimal">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <SharpStar
-                          key={star}
-                          size={11}
-                          fill={star <= review.rating ? 'var(--gold)' : 'none'}
-                          stroke="var(--gold)"
-                          className="feed-star-icon-minimal"
-                        />
-                      ))}
+          {/* Empty State */}
+          {filteredReviews.length === 0 && !showReviewForm && (
+            <div className="clean-empty-state">
+              <p className="clean-empty-title">
+                {activeReviews.length === 0
+                  ? 'No client reviews yet for this design'
+                  : reviewFilter === 'photos'
+                  ? 'No reviews with photos yet'
+                  : 'No reviews found for this rating'}
+              </p>
+              <p className="clean-empty-subtitle">
+                {activeReviews.length === 0
+                  ? 'Be the first boutique partner to share feedback on weave density, zari lustre, and customer reception.'
+                  : 'Try selecting "All Reviews" or submit a new sourcing review.'}
+              </p>
+              {activeReviews.length === 0 && (
+                <button
+                  type="button"
+                  className="clean-empty-action-btn"
+                  onClick={() => {
+                    if (!user && !priceAccess?.userId) {
+                      if (navigate) navigate('signup');
+                      else if (openAuth) openAuth();
+                    } else {
+                      setShowReviewForm(true);
+                    }
+                  }}
+                >
+                  Write the First Review
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Review Items List */}
+          {filteredReviews.length > 0 && (
+            <div className="clean-reviews-feed">
+              {filteredReviews.slice(0, visibleCount).map((review, index) => {
+                const reviewImages = Array.isArray(review.images) ? review.images.filter(Boolean) : [];
+                return (
+                  <article className="clean-review-card animate-fade-in" key={review.id || index}>
+                    <div className="clean-review-meta-line">
+                      <div className="clean-review-stars">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <SharpStar
+                            key={star}
+                            size={12}
+                            fill={star <= review.rating ? 'var(--gold)' : 'none'}
+                            stroke="var(--gold)"
+                          />
+                        ))}
+                      </div>
+                      <span className="clean-review-author">{review.reviewer_name}</span>
+                      {review.business_name && (
+                        <>
+                          <span className="clean-review-dot">•</span>
+                          <span className="clean-review-business">{review.business_name}</span>
+                        </>
+                      )}
+                      <span className="clean-review-dot">•</span>
+                      <span className="clean-review-date">
+                        {new Date(review.created_at).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                      {review.verified_buyer !== false && (
+                        <span className="clean-review-badge">Verified Buyer</span>
+                      )}
                     </div>
-                    <span className="reviewer-badge-minimal">✓ Verified Buyer</span>
-                  </div>
 
-                  <div className="reviewer-purchase-details-minimal">
-                    Ordered: {product.title}
-                  </div>
+                    {review.title && <h4 className="clean-review-title">{review.title}</h4>}
+                    <p className="clean-review-comment">{review.comment}</p>
 
-                  {review.title && <h4 className="review-item-title-minimal">{review.title}</h4>}
-                  <p className="review-item-comment-minimal">{review.comment}</p>
-                </article>
-              ))}
+                    {/* Customer Photo Attachments */}
+                    {reviewImages.length > 0 && (
+                      <div className="clean-review-photos-grid">
+                        {reviewImages.map((imgUrl, imgIdx) => (
+                          <button
+                            type="button"
+                            key={imgIdx}
+                            className="clean-review-photo-btn"
+                            onClick={() => {
+                              const reviewPhotoItems = reviewImages.map((u, i) => ({
+                                url: u,
+                                review,
+                                index: i
+                              }));
+                              setLightboxPhoto({
+                                url: imgUrl,
+                                photoIndex: imgIdx,
+                                totalPhotos: reviewImages.length,
+                                allPhotos: reviewPhotoItems,
+                                review,
+                              });
+                            }}
+                            aria-label={`Enlarge photo ${imgIdx + 1}`}
+                          >
+                            <img src={imgUrl} alt="Review photo" loading="lazy" />
+                            <div className="clean-review-photo-hover">
+                              <ZoomIn size={14} />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
 
-              {activeReviews.length > visibleCount && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+              {filteredReviews.length > visibleCount && (
+                <div className="clean-load-more-wrap">
                   <button
                     type="button"
-                    className="reviews-write-btn-minimal"
-                    style={{ background: 'transparent', color: 'var(--ink)' }}
+                    className="clean-load-more-btn"
                     onClick={() => setVisibleCount(prev => prev + 5)}
                   >
                     Load More Reviews
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Lightbox Modal for Customer Photos */}
+          {lightboxPhoto && (
+            <div
+              className="clean-lightbox-overlay animate-fade-in"
+              onClick={() => setLightboxPhoto(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Review photo viewer"
+            >
+              <div className="clean-lightbox-modal" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  className="clean-lightbox-close"
+                  onClick={() => setLightboxPhoto(null)}
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="clean-lightbox-body">
+                  <div className="clean-lightbox-stage">
+                    {lightboxPhoto.allPhotos?.length > 1 && (
+                      <button
+                        type="button"
+                        className="clean-lightbox-nav prev"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const prevIdx = (lightboxPhoto.photoIndex - 1 + lightboxPhoto.allPhotos.length) % lightboxPhoto.allPhotos.length;
+                          const prevItem = lightboxPhoto.allPhotos[prevIdx];
+                          setLightboxPhoto({
+                            ...lightboxPhoto,
+                            url: prevItem.url,
+                            photoIndex: prevIdx,
+                            review: prevItem.review || lightboxPhoto.review
+                          });
+                        }}
+                        aria-label="Previous"
+                      >
+                        <ChevronLeft size={22} />
+                      </button>
+                    )}
+
+                    <img
+                      src={lightboxPhoto.url}
+                      alt="Customer photo"
+                      className="clean-lightbox-img"
+                    />
+
+                    {lightboxPhoto.allPhotos?.length > 1 && (
+                      <button
+                        type="button"
+                        className="clean-lightbox-nav next"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const nextIdx = (lightboxPhoto.photoIndex + 1) % lightboxPhoto.allPhotos.length;
+                          const nextItem = lightboxPhoto.allPhotos[nextIdx];
+                          setLightboxPhoto({
+                            ...lightboxPhoto,
+                            url: nextItem.url,
+                            photoIndex: nextIdx,
+                            review: nextItem.review || lightboxPhoto.review
+                          });
+                        }}
+                        aria-label="Next"
+                      >
+                        <ChevronRight size={22} />
+                      </button>
+                    )}
+                  </div>
+
+                  {lightboxPhoto.review && (
+                    <div className="clean-lightbox-details">
+                      <div className="clean-lightbox-author-row">
+                        <div>
+                          <strong className="clean-lightbox-name">{lightboxPhoto.review.reviewer_name}</strong>
+                          {lightboxPhoto.review.business_name && (
+                            <span className="clean-lightbox-business"> • {lightboxPhoto.review.business_name}</span>
+                          )}
+                        </div>
+                        <span className="clean-lightbox-badge">Verified Buyer</span>
+                      </div>
+
+                      <div className="clean-lightbox-rating-row">
+                        <div className="clean-lightbox-stars">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <SharpStar
+                              key={s}
+                              size={13}
+                              fill={s <= Number(lightboxPhoto.review.rating || 5) ? 'var(--gold)' : 'none'}
+                              stroke="var(--gold)"
+                            />
+                          ))}
+                        </div>
+                        <span className="clean-lightbox-date">
+                          {new Date(lightboxPhoto.review.created_at).toLocaleDateString('en-IN', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+
+                      {lightboxPhoto.review.title && (
+                        <h5 className="clean-lightbox-title">{lightboxPhoto.review.title}</h5>
+                      )}
+                      <p className="clean-lightbox-comment">{lightboxPhoto.review.comment}</p>
+
+                      {lightboxPhoto.allPhotos?.length > 1 && (
+                        <div className="clean-lightbox-counter">
+                          Photo {lightboxPhoto.photoIndex + 1} of {lightboxPhoto.allPhotos.length}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </section>

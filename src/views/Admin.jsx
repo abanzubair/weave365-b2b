@@ -222,6 +222,8 @@ export function Admin({
   // Reviews moderation state
   const [pendingReviews, setPendingReviews] = useState([]);
   const [allSiteReviews, setAllSiteReviews] = useState([]);
+  const [allProductReviews, setAllProductReviews] = useState([]);
+  const [reviewsCategory, setReviewsCategory] = useState('product'); // 'product' | 'service'
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState('');
   const [reviewsFilter, setReviewsFilter] = useState('pending');
@@ -453,7 +455,7 @@ export function Admin({
     return true;
   }
 
-  // API Call: Fetch all service reviews for moderation
+  // API Call: Fetch all service reviews and product reviews for moderation
   async function loadSiteReviews() {
     if (!isSupabaseConfigured) {
       setReviewsError('Supabase is not configured.');
@@ -462,14 +464,25 @@ export function Admin({
     setReviewsLoading(true);
     setReviewsError('');
     try {
-      const { data, error } = await supabase
-        .from('service_reviews')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      setAllSiteReviews(data || []);
-      setPendingReviews((data || []).filter(r => r.status === 'pending'));
+      const [serviceRes, productRes] = await Promise.all([
+        supabase
+          .from('service_reviews')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(200),
+        supabase
+          .from('product_reviews')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(200),
+      ]);
+
+      if (serviceRes.error) console.warn('Service reviews fetch warning:', serviceRes.error);
+      if (productRes.error) console.warn('Product reviews fetch warning:', productRes.error);
+
+      setAllSiteReviews(serviceRes.data || []);
+      setAllProductReviews(productRes.data || []);
+      setPendingReviews((serviceRes.data || []).filter(r => r.status === 'pending'));
     } catch (err) {
       console.error('Error loading reviews for moderation:', err);
       setReviewsError(err.message || 'Failed to load reviews.');
@@ -478,20 +491,21 @@ export function Admin({
     }
   }
 
-  // API Call: Approve/Delete service reviews
-  async function handleReviewAction(reviewId, action) {
+  // API Call: Approve/Delete reviews (service_reviews or product_reviews)
+  async function handleReviewAction(reviewId, action, targetTable = 'product') {
     if (!isSupabaseConfigured) return;
     setReviewActionLoading(reviewId);
     try {
+      const table = targetTable === 'service' || targetTable === 'service_reviews' ? 'service_reviews' : 'product_reviews';
       if (action === 'approve') {
         const { error } = await supabase
-          .from('service_reviews')
+          .from(table)
           .update({ status: 'approved' })
           .eq('id', reviewId);
         if (error) throw error;
       } else if (action === 'delete') {
         const { error } = await supabase
-          .from('service_reviews')
+          .from(table)
           .delete()
           .eq('id', reviewId);
         if (error) throw error;
@@ -860,7 +874,10 @@ export function Admin({
             <ReviewsModeration
               reviewsFilter={reviewsFilter}
               setReviewsFilter={setReviewsFilter}
+              reviewsCategory={reviewsCategory}
+              setReviewsCategory={setReviewsCategory}
               allSiteReviews={allSiteReviews}
+              allProductReviews={allProductReviews}
               reviewsLoading={reviewsLoading}
               reviewsError={reviewsError}
               loadSiteReviews={loadSiteReviews}

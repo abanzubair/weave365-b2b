@@ -49,7 +49,6 @@ export function profileRowFromUser(user) {
     business_name: buyerProfile.business_name || '',
     website: buyerProfile.website || '',
     social_handle: buyerProfile.social_handle || buyerProfile.socialHandle || '',
-    acquisition: acquisition || undefined,
     user_type: userType,
     qualification: buyerProfile.qualification || user?.user_metadata?.qualification || null,
     buyer_type: buyerType,
@@ -130,22 +129,40 @@ export async function syncProfileFromUser(user) {
     .from('profiles')
     .upsert(profileRow, { onConflict: 'id' });
 
-  // If the columns don't exist yet on public.profiles (e.g. pending DB migration),
-  // retry without acquisition, website, social_handle, qualification, user_type, country to ensure user signup/login is not blocked.
+  // If a column doesn't exist yet on public.profiles (e.g. pending DB migration),
+  // retry without ONLY the specific failing column(s), NEVER stripping qualification or core user profile data.
   if (error && (
     error.message?.includes('acquisition') ||
     error.message?.includes('website') ||
     error.message?.includes('social_handle') ||
-    error.message?.includes('qualification') ||
-    error.message?.includes('user_type') ||
     error.message?.includes('country') ||
+    error.message?.includes('column') ||
+    error.message?.includes('schema cache') ||
     error.code === 'PGRST204'
   )) {
-    const { acquisition, website, social_handle, qualification, user_type, country, ...fallbackRow } = profileRow;
-    const retryResult = await supabase
-      .from('profiles')
-      .upsert(fallbackRow, { onConflict: 'id' });
-    error = retryResult.error;
+    const fallbackRow = { ...profileRow };
+    const optionalColumns = ['acquisition', 'website', 'social_handle', 'country'];
+    let modified = false;
+
+    for (const col of optionalColumns) {
+      if (error.message?.includes(col)) {
+        delete fallbackRow[col];
+        modified = true;
+      }
+    }
+
+    // Safety fallback: if error did not mention a specific column, remove acquisition if present
+    if (!modified && 'acquisition' in fallbackRow) {
+      delete fallbackRow.acquisition;
+      modified = true;
+    }
+
+    if (modified) {
+      const retryResult = await supabase
+        .from('profiles')
+        .upsert(fallbackRow, { onConflict: 'id' });
+      error = retryResult.error;
+    }
   }
 
   return { error: error || null };
