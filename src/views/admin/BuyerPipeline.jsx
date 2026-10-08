@@ -137,7 +137,7 @@ export default function BuyerPipeline({
   updateProfile,
 }) {
   // Local state for filters and sorting
-  const [userTypeFilter, setUserTypeFilter] = useState('customer');
+  const [userTypeFilter, setUserTypeFilter] = useState('all');
   const [acquisitionFilter, setAcquisitionFilter] = useState('all');
   const [userPageLimit, setUserPageLimit] = useState('10');
   const [userSortField, setUserSortField] = useState('date');
@@ -543,10 +543,10 @@ export default function BuyerPipeline({
             onChange={(e) => setUserTypeFilter(e.target.value)}
             className="pipeline-filter-select"
           >
+            <option value="all">All</option>
             <option value="customer">Customer</option>
             <option value="business">Business</option>
             <option value="vendor">Seller</option>
-            <option value="all">All</option>
             <option value="locked">Locked</option>
             <option value="incomplete">Drop Off</option>
           </select>
@@ -607,8 +607,6 @@ export default function BuyerPipeline({
                 <th className="pipeline-col-acquisition">Acquisition</th>
                 <th className="pipeline-col-type">Type</th>
                 <th className="pipeline-col-items">Cart & Fav</th>
-                <th className="pipeline-col-social">Social & Web</th>
-                <th className="pipeline-col-dashboard">Dashboard</th>
                 <th className="pipeline-col-action">Action</th>
               </tr>
             </thead>
@@ -616,8 +614,6 @@ export default function BuyerPipeline({
               {displayedProfiles.map((profile, index) => {
                 const cartRows = userCartMap.get(profile.id) || [];
                 const favoriteRows = userFavoriteMap.get(profile.id) || [];
-                const socialInfo = getSocialInfo(profile.social_handle || profile.socialHandle);
-                const websiteInfo = getWebsiteInfo(profile.website || profile.client_website);
 
                 const storefront = storefrontsByReseller[profile.id] || (profile.user_id ? storefrontsByReseller[profile.user_id] : null);
                 const storeSlug = storefront?.slug || profile.reseller_slug || profile.store_slug;
@@ -743,95 +739,61 @@ export default function BuyerPipeline({
                         </button>
                       </div>
                     </td>
-                    <td className="pipeline-col-social">
-                      <div className="pipeline-social-cell">
-                        {socialInfo && (
-                          <a
-                            href={socialInfo.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`pipeline-social-badge ${socialInfo.type}`}
-                            title={`Open ${socialInfo.display} (${socialInfo.url})`}
-                          >
-                            {socialInfo.type === 'facebook' ? (
-                              <Facebook size={12} className="pipeline-badge-icon" />
-                            ) : (
-                              <Instagram size={12} className="pipeline-badge-icon" />
-                            )}
-                            <span className="pipeline-badge-text">{socialInfo.display}</span>
-                            <ExternalLink size={10} className="pipeline-badge-ext" />
-                          </a>
-                        )}
-                        {websiteInfo && (
-                          <a
-                            href={websiteInfo.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="pipeline-social-badge website"
-                            title={`Open website: ${websiteInfo.url}`}
-                          >
-                            <Globe size={12} className="pipeline-badge-icon" />
-                            <span className="pipeline-badge-text">{websiteInfo.display}</span>
-                            <ExternalLink size={10} className="pipeline-badge-ext" />
-                          </a>
-                        )}
-                        {!socialInfo && !websiteInfo && (
-                          <span className="pipeline-no-social">—</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="pipeline-col-dashboard">
-                      <div className="reseller-dashboard-cell">
-                        <div className="reseller-dashboard-status-row">
-                          <span className={`reseller-dashboard-status ${profile.reseller_dashboard_enabled ? 'enabled' : 'disabled'}`}>
-                            {profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'}
-                          </span>
+                    <td className="pipeline-col-action">
+                      <div className="pipeline-action-cell">
+                        <div className="pipeline-action-buttons-row">
                           <button
                             type="button"
-                            onClick={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
-                            className={`admin-action-link-btn ${profile.reseller_dashboard_enabled ? 'btn-disable' : 'btn-enable'}`}
+                            onClick={() => openInspectModal(profile)}
+                            className="pipeline-action-details-btn"
+                            title="View all signup details and switch account type"
                           >
-                            {profile.reseller_dashboard_enabled ? 'Disable' : 'Enable'}
+                            <Eye size={13} />
+                            <span>Details</span>
                           </button>
-                        </div>
-                        {storeUrl && (
-                          <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="reseller-website-link"
-                            title={`Open reseller storefront: ${storeDisplayName} (${storeUrl})`}
+                          <button
+                            type="button"
+                            onClick={() => handleCopyUserDetails(profile)}
+                            className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
+                            title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
                           >
-                            <Globe size={12} className="reseller-website-icon" />
-                            <span className="reseller-website-text">{storeDisplayName}</span>
-                            <ExternalLink size={11} className="reseller-website-ext-icon" />
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="pipeline-col-action">
-                      <div className="pipeline-action-cell" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <button
-                          type="button"
-                          onClick={() => openInspectModal(profile)}
-                          className="pipeline-action-details-btn"
-                          title="View all signup details and switch account type"
-                        >
-                          <Eye size={13} />
-                          <span>Details</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyUserDetails(profile)}
-                          className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
-                          title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
-                        >
-                          {copyFeedback[profile.id] ? (
-                            <Check size={16} className="icon-check-anim" />
-                          ) : (
-                            <Copy size={16} />
+                            {copyFeedback[profile.id] ? (
+                              <Check size={16} className="icon-check-anim" />
+                            ) : (
+                              <Copy size={16} />
+                            )}
+                          </button>
+                          {storeUrl && (
+                            <a
+                              href={storeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="pipeline-action-icon-btn pipeline-store-link-btn"
+                              title={`Open reseller storefront: ${storeDisplayName} (${storeUrl})`}
+                            >
+                              <Globe size={14} />
+                            </a>
                           )}
-                        </button>
+                        </div>
+                        {toggleResellerDashboard && (
+                          <label
+                            className="pipeline-switch-toggle"
+                            title={`Reseller Website: ${profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'} (Click to toggle)`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={Boolean(profile.reseller_dashboard_enabled)}
+                              onChange={() => toggleResellerDashboard(profile, !profile.reseller_dashboard_enabled)}
+                              aria-label="Toggle Reseller Website"
+                            />
+                            <span className="pipeline-switch-track">
+                              <span className="pipeline-switch-thumb" />
+                            </span>
+                            <span className={`pipeline-switch-label ${profile.reseller_dashboard_enabled ? 'active' : ''}`}>
+                              Website
+                            </span>
+                          </label>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -840,7 +802,7 @@ export default function BuyerPipeline({
               })}
               {displayedProfiles.length === 0 && (
                 <tr>
-                  <td colSpan="9" className="admin-table-empty">No profiles found.</td>
+                  <td colSpan="7" className="admin-table-empty">No profiles found.</td>
                 </tr>
               )}
             </tbody>
@@ -850,8 +812,8 @@ export default function BuyerPipeline({
 
       {/* Row count summary */}
       <div className="pipeline-footer-summary">
-        Showing {displayedProfiles.length} of {sortedProfiles.length} customers
-        {userTypeFilter !== 'customer' && ` (${userTypeFilter})`}
+        Showing {displayedProfiles.length} of {sortedProfiles.length} accounts
+        {userTypeFilter !== 'all' && ` (${userTypeFilter})`}
       </div>
 
       {/* Notices */}
