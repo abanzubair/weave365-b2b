@@ -3,7 +3,7 @@
  * @description Centralized single source of truth for Cloudflare Image Transformations.
  * 
  * Architecture:
- * - Keeps high-quality master JPEGs in Cloudflare R2 (bucket: weave365images).
+ * - Keeps high-quality master JPEGs in Cloudflare R2 (bucket: weave365image).
  * - Dynamically requests optimized WebP/AVIF versions on-demand via Cloudflare's
  *   Image Transformation layer:
  *   https://<CDN_DOMAIN>/cdn-cgi/image/<OPTIONS>/<ORIGINAL_PATH>
@@ -108,7 +108,7 @@ export function extractImagePath(sourceUrl) {
     if (parts[1]) {
       const pathParts = parts[1].split('/');
       // Remove bucket name if present as first path segment
-      const bucket = (typeof process !== 'undefined' && process.env?.R2_BUCKET_NAME) || 'weave365images';
+      const bucket = (typeof process !== 'undefined' && process.env?.R2_BUCKET_NAME) || 'weave365image';
       if (pathParts[0] === bucket) {
         pathParts.shift();
       }

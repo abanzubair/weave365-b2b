@@ -35,7 +35,7 @@ export async function GET(request) {
         const parts = decodedImageUrl.split('.r2.cloudflarestorage.com/');
         if (parts[1]) {
           const pathParts = parts[1].split('/');
-          const bucketName = process.env.R2_BUCKET_NAME || 'weave365images';
+          const bucketName = process.env.R2_BUCKET_NAME || 'weave365image';
           if (pathParts[0] === bucketName) {
             pathParts.shift();
           }

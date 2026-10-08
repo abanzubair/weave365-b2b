@@ -11,7 +11,7 @@ globalThis.__localUploads = globalThis.__localUploads || new Map();
  */
 async function uploadToR2ViaS3(key, buffer, contentType) {
   const endpoint = process.env.R2_ENDPOINT?.replace(/\/$/, '');
-  const bucket = process.env.R2_BUCKET_NAME || 'weave365images';
+  const bucket = process.env.R2_BUCKET_NAME || 'weave365image';
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
