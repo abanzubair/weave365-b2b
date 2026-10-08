@@ -139,6 +139,8 @@ export function getBuyerAccess(user, buyerProfile) {
       isVendor: false,
       accountCategory: 'guest',
       isCustomer: false,
+      accountLocked: false,
+      isLocked: false,
     };
   }
 
@@ -149,6 +151,7 @@ export function getBuyerAccess(user, buyerProfile) {
   const category = detectAccountCategory(user, profile);
   const isAdmin = user?.role === 'admin' || user?.user_metadata?.role === 'admin' || profile?.role === 'admin';
   const isCustomer = !isVendor && !isAdmin && category === 'customer';
+  const accountLocked = !isAdmin && Boolean(isAccountLocked(profile, user));
 
   return {
     isLoggedIn: true,
@@ -173,6 +176,8 @@ export function getBuyerAccess(user, buyerProfile) {
     ),
     accountCategory: category,
     isCustomer,
+    accountLocked,
+    isLocked: accountLocked,
   };
 }
 
@@ -199,7 +204,13 @@ export function isAccountLocked(profile, user) {
   const qual = (typeof p.qualification === 'object' && p.qualification) ? p.qualification : (user?.user_metadata?.qualification || {});
 
   // 1. Explicit lock flag in qualification JSONB or on profile object
-  if (qual.account_locked === true || p.account_locked === true || p.is_locked === true) {
+  if (
+    qual.account_locked === true ||
+    p.account_locked === true ||
+    p.is_locked === true ||
+    user?.user_metadata?.account_locked === true ||
+    user?.user_metadata?.is_locked === true
+  ) {
     return true;
   }
 
@@ -208,6 +219,11 @@ export function isAccountLocked(profile, user) {
   const role = String(p.role || user?.user_metadata?.role || '').toLowerCase().trim();
   const buyerType = String(p.buyer_type || '').toLowerCase().trim();
   const buyerSubtype = String(p.buyer_subtype || '').toLowerCase().trim();
+
+  // Admin is never locked
+  if (role === 'admin' || user?.user_metadata?.role === 'admin' || user?.role === 'admin') {
+    return false;
+  }
 
   const isVendor = userType === 'supplier' || userType === 'vendor' || role === 'vendor' || buyerType === 'vendor' || buyerSubtype.includes('vendor') || buyerSubtype.includes('supplier');
   const isReseller = userType === 'business' || userType === 'reseller' || role === 'reseller' || buyerType === 'business' || buyerSubtype.includes('reseller');

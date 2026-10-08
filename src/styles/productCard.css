@@ -657,24 +657,31 @@
 /* Elegant Toast Notification for ProductCard and ProductDetail */
 .elegant-toast {
   position: fixed;
-  bottom: 30px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #1f1a16;
   color: #ffffff;
-  padding: 12px 24px;
-  border-radius: 30px;
+  padding: 10px 20px;
+  border-radius: 24px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13.5px;
+  line-height: 1.4;
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 10000;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  max-width: calc(100vw - 32px);
+  width: max-content;
+  white-space: normal;
+  word-break: break-word;
+  box-sizing: border-box;
 }
 
 .elegant-toast.show {

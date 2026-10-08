@@ -127,7 +127,8 @@ export function ResellerWhatsappShare({
     return () => { isActive = false; };
   }, [open, shareImagesKey, isApprovedReseller, product?.title, activeVariant?.code, priceAccess?.isLoggedIn]);
 
-  if (!priceAccess?.isLoggedIn || !isApprovedReseller || !product) return null;
+  const isLocked = Boolean(priceAccess?.accountLocked || priceAccess?.isLocked);
+  if (!priceAccess?.isLoggedIn || !isApprovedReseller || isLocked || !product) return null;
 
   async function copyMessage() {
     try {

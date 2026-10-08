@@ -58,7 +58,6 @@ export function RoleEntryCards({
               <div className="signup-entry-card-content">
                 <div className="signup-entry-card-top">
                   <h3 className="signup-entry-card-title">{type.title}</h3>
-                  <span className="signup-entry-card-badge">{type.badge}</span>
                 </div>
                 <p className="signup-entry-card-desc">{type.description}</p>
               </div>
