@@ -363,6 +363,9 @@ export function ProductDetail({
   useEffect(() => {
     if (!zoomImage) return;
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         setZoomImage(null);
@@ -383,6 +386,7 @@ export function ProductDetail({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      document.body.style.overflow = originalOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [zoomImage, product.images]);
@@ -555,6 +559,18 @@ export function ProductDetail({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxPhoto]);
+
+  // Lock background scroll when review photo lightbox is open
+  useEffect(() => {
+    if (!lightboxPhoto) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [Boolean(lightboxPhoto)]);
 
   // Calculate rating stats
   const stats = useMemo(() => {
@@ -2793,10 +2809,26 @@ export function ProductDetail({
                       width="76"
                       height="76"
                       onError={(e) => {
-                        if (e.currentTarget.src !== photoItem.url) {
-                          e.currentTarget.src = photoItem.url;
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallbackTried && photoItem.url && !target.src.endsWith(photoItem.url)) {
+                          target.dataset.fallbackTried = 'true';
+                          target.src = photoItem.url;
                         } else {
-                          e.currentTarget.style.display = 'none';
+                          target.onerror = null;
+                          const parentThumb = target.closest('.clean-customer-photo-thumb');
+                          if (parentThumb) {
+                            parentThumb.style.display = 'none';
+                            const rail = parentThumb.closest('.clean-customer-photos-rail');
+                            if (rail) {
+                              const remaining = Array.from(rail.querySelectorAll('.clean-customer-photo-thumb')).filter(el => el.style.display !== 'none');
+                              if (remaining.length === 0) {
+                                const section = rail.closest('.clean-customer-photos');
+                                if (section) section.style.display = 'none';
+                              }
+                            }
+                          } else {
+                            target.style.display = 'none';
+                          }
                         }
                       }}
                     />
@@ -2953,10 +2985,23 @@ export function ProductDetail({
                                 width="68"
                                 height="68"
                                 onError={(e) => {
-                                  if (e.currentTarget.src !== photo.full) {
-                                    e.currentTarget.src = photo.full;
+                                  const target = e.currentTarget;
+                                  if (!target.dataset.fallbackTried && photo.full && !target.src.endsWith(photo.full)) {
+                                    target.dataset.fallbackTried = 'true';
+                                    target.src = photo.full;
                                   } else {
-                                    e.currentTarget.style.display = 'none';
+                                    target.onerror = null;
+                                    const parentBtn = target.closest('.clean-review-photo-btn');
+                                    if (parentBtn) {
+                                      parentBtn.style.display = 'none';
+                                      const grid = parentBtn.closest('.clean-review-photos-grid');
+                                      if (grid) {
+                                        const remaining = Array.from(grid.querySelectorAll('.clean-review-photo-btn')).filter(el => el.style.display !== 'none');
+                                        if (remaining.length === 0) grid.style.display = 'none';
+                                      }
+                                    } else {
+                                      target.style.display = 'none';
+                                    }
                                   }
                                 }}
                               />
@@ -2987,7 +3032,7 @@ export function ProductDetail({
           )}
 
           {/* Lightbox Modal for Customer Photos */}
-          {lightboxPhoto && (
+          {lightboxPhoto && typeof document !== 'undefined' ? createPortal(
             <div
               className="clean-lightbox-overlay animate-fade-in"
               onClick={() => setLightboxPhoto(null)}
@@ -3101,8 +3146,9 @@ export function ProductDetail({
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            </div>,
+            document.body
+          ) : null}
         </section>
 
         <section className="you-may-like home-product-section">

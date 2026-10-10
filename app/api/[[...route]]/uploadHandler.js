@@ -87,6 +87,9 @@ async function uploadToR2ViaS3(key, buffer, contentType) {
     if (res.ok) {
       const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://assets.weave365.com';
       return `${baseUrl.replace(/\/$/, '')}/${key}`;
+    } else {
+      const errText = await res.text().catch(() => '');
+      console.error(`[R2 S3 Upload Failed] HTTP ${res.status}:`, errText);
     }
   } catch (err) {
     console.warn('[R2 S3 Upload Error]:', err);
@@ -239,6 +242,7 @@ export async function POST(request) {
 
     // 3. Fallback: Local dev in-memory (only when Cloudflare R2 is offline in local dev)
     if (!publicUrl) {
+      console.warn(`[Upload Route] R2 upload unavailable, falling back to local in-memory storage for key: ${key}`);
       globalThis.__localUploads.set(key, {
         buffer: new Uint8Array(buffer),
         type: file.type || 'image/jpeg'
