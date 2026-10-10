@@ -5,15 +5,23 @@ export const runtime = 'edge';
 // Global in-memory cache for local development upload testing without S3 credentials or R2 bindings
 globalThis.__localUploads = globalThis.__localUploads || new Map();
 
+const R2_CONFIG = {
+  endpoint: 'https://19495a554f7e8aee993d4f48a274a030.r2.cloudflarestorage.com',
+  bucket: 'weave365image',
+  accessKeyId: '28ac0a09db010b6ca8b739ed713c14f8',
+  secretAccessKey: '4fafc48aec3ea2c083aa9deb52868c7f40a58ecadcc5dab23f3edc0b28da46a9',
+  publicUrl: 'https://assets.weave365.com',
+};
+
 /**
  * Direct S3 API PUT to Cloudflare R2 using Web Crypto (SigV4)
  * Enables uploading directly to R2 in local dev or outside Cloudflare Pages bindings.
  */
-async function uploadToR2ViaS3(key, buffer, contentType) {
-  const endpoint = process.env.R2_ENDPOINT?.replace(/\/$/, '');
-  const bucket = process.env.R2_BUCKET_NAME || 'weave365image';
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+async function uploadToR2ViaS3(key, buffer, contentType, env = {}) {
+  const endpoint = (env?.R2_ENDPOINT || process.env.R2_ENDPOINT || R2_CONFIG.endpoint)?.replace(/\/$/, '');
+  const bucket = env?.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME || R2_CONFIG.bucket;
+  const accessKeyId = env?.R2_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID || R2_CONFIG.accessKeyId;
+  const secretAccessKey = env?.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY || R2_CONFIG.secretAccessKey;
 
   if (!endpoint || !accessKeyId || !secretAccessKey) return null;
 
@@ -85,7 +93,7 @@ async function uploadToR2ViaS3(key, buffer, contentType) {
     });
 
     if (res.ok) {
-      const baseUrl = process.env.NEXT_PUBLIC_R2_URL || 'https://assets.weave365.com';
+      const baseUrl = env?.NEXT_PUBLIC_R2_URL || process.env.NEXT_PUBLIC_R2_URL || R2_CONFIG.publicUrl || 'https://assets.weave365.com';
       return `${baseUrl.replace(/\/$/, '')}/${key}`;
     } else {
       const errText = await res.text().catch(() => '');
@@ -215,10 +223,10 @@ export async function POST(request) {
       }
     }
 
-    // 2. Try direct Cloudflare R2 S3 API upload if credentials are provided
-    if (!publicUrl && process.env.R2_ENDPOINT && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
+    // 2. Try direct Cloudflare R2 S3 API upload (via env or R2_CONFIG credentials)
+    if (!publicUrl) {
       try {
-        const r2Url = await uploadToR2ViaS3(key, buffer, file.type || 'image/jpeg');
+        const r2Url = await uploadToR2ViaS3(key, buffer, file.type || 'image/jpeg', context?.env);
         if (r2Url) {
           publicUrl = r2Url;
           storageProvider = 'cloudflare-r2-s3';
@@ -227,7 +235,7 @@ export async function POST(request) {
         // Also upload thumbnail via S3 if present
         if (thumbBuffer && thumbKey) {
           try {
-            const r2ThumbUrl = await uploadToR2ViaS3(thumbKey, thumbBuffer, thumbContentType);
+            const r2ThumbUrl = await uploadToR2ViaS3(thumbKey, thumbBuffer, thumbContentType, context?.env);
             if (r2ThumbUrl) {
               publicThumbUrl = r2ThumbUrl;
             }

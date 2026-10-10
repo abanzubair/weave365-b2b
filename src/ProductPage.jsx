@@ -541,6 +541,7 @@ export function ProductDetail({
         setLightboxPhoto({
           ...lightboxPhoto,
           url: nextItem.url,
+          thumbUrl: nextItem.thumbUrl || nextItem.url,
           photoIndex: nextIdx,
           review: nextItem.review || lightboxPhoto.review
         });
@@ -550,6 +551,7 @@ export function ProductDetail({
         setLightboxPhoto({
           ...lightboxPhoto,
           url: prevItem.url,
+          thumbUrl: prevItem.thumbUrl || prevItem.url,
           photoIndex: prevIdx,
           review: prevItem.review || lightboxPhoto.review
         });
@@ -2794,6 +2796,7 @@ export function ProductDetail({
                     onClick={() => {
                       setLightboxPhoto({
                         url: photoItem.url,
+                        thumbUrl: photoItem.thumbUrl || photoItem.url,
                         photoIndex: pIdx,
                         totalPhotos: allCustomerPhotos.length,
                         allPhotos: allCustomerPhotos,
@@ -2964,12 +2967,14 @@ export function ProductDetail({
                                   const resolved = resolveReviewPhoto(u);
                                   return {
                                     url: resolved.full,
+                                    thumbUrl: resolved.thumb || resolved.full,
                                     review,
                                     index: i
                                   };
                                 });
                                 setLightboxPhoto({
                                   url: photo.full,
+                                  thumbUrl: photo.thumb || photo.full,
                                   photoIndex: imgIdx,
                                   totalPhotos: reviewImages.length,
                                   allPhotos: reviewPhotoItems,
@@ -3063,6 +3068,7 @@ export function ProductDetail({
                           setLightboxPhoto({
                             ...lightboxPhoto,
                             url: prevItem.url,
+                            thumbUrl: prevItem.thumbUrl || prevItem.url,
                             photoIndex: prevIdx,
                             review: prevItem.review || lightboxPhoto.review
                           });
@@ -3077,6 +3083,13 @@ export function ProductDetail({
                       src={lightboxPhoto.url}
                       alt="Customer photo"
                       className="clean-lightbox-img"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallbackTried && lightboxPhoto.thumbUrl && !target.src.endsWith(lightboxPhoto.thumbUrl)) {
+                          target.dataset.fallbackTried = 'true';
+                          target.src = lightboxPhoto.thumbUrl;
+                        }
+                      }}
                     />
 
                     {lightboxPhoto.allPhotos?.length > 1 && (
@@ -3090,6 +3103,7 @@ export function ProductDetail({
                           setLightboxPhoto({
                             ...lightboxPhoto,
                             url: nextItem.url,
+                            thumbUrl: nextItem.thumbUrl || nextItem.url,
                             photoIndex: nextIdx,
                             review: nextItem.review || lightboxPhoto.review
                           });
