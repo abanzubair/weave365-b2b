@@ -989,6 +989,19 @@ export function SignupPage({
           return;
         }
 
+        if (selectedUserType === 'business') {
+          if (!(profile.businessName || '').trim()) {
+            setMessage('Please enter your Business / Store Name.');
+            setLoading(false);
+            return;
+          }
+          if (!(profile.socialHandle || '').trim()) {
+            setMessage('Please enter your Social Handle / Instagram profile.');
+            setLoading(false);
+            return;
+          }
+        }
+
         const newProfile = buildBuyerProfile();
         const isVendor = newProfile.buyer_type === 'vendor' || newProfile.role === 'vendor';
 
@@ -1087,10 +1100,17 @@ export function SignupPage({
           return;
         }
 
-        if (selectedUserType === 'business' && !(profile.businessName || '').trim()) {
-          setMessage('Please enter your Business / Store Name.');
-          setLoading(false);
-          return;
+        if (selectedUserType === 'business') {
+          if (!(profile.businessName || '').trim()) {
+            setMessage('Please enter your Business / Store Name.');
+            setLoading(false);
+            return;
+          }
+          if (!(profile.socialHandle || '').trim()) {
+            setMessage('Please enter your Social Handle / Instagram profile.');
+            setLoading(false);
+            return;
+          }
         }
 
         if (!password || password.length < 6) {
@@ -1840,17 +1860,17 @@ export function SignupPage({
                                     />
                                   </div>
 
-                                  {/* Social Handle (Optional) */}
+                                  {/* Social Handle (Mandatory) */}
                                   <div className="signup-field">
                                     <label className="signup-label">
-                                      <span>Social Handle / Instagram</span>
-                                      <span className="signup-label-subtext">(Optional)</span>
+                                      <span>Social Handle / Instagram *</span>
                                     </label>
                                     <input
                                       type="text"
                                       value={profile.socialHandle}
                                       onChange={(e) => updateProfile('socialHandle', e.target.value)}
                                       placeholder="@yourhandle or profile link"
+                                      required
                                       className="signup-input"
                                     />
                                   </div>

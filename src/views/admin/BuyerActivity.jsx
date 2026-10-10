@@ -920,10 +920,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               <table className="buyer-activity-table table-grouped">
                 <thead>
                   <tr>
+                    <th style={{ width: '140px' }}>Last Active</th>
                     <th style={{ width: '250px' }}>Buyer &amp; Location</th>
                     <th style={{ width: '230px' }}>Intent Summary</th>
-                    <th style={{ width: '290px' }}>Products of Interest</th>
-                    <th style={{ width: '130px' }}>Last Active</th>
+                    <th style={{ width: '280px' }}>Products of Interest</th>
                     <th style={{ width: '200px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
@@ -945,7 +945,12 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                         <tr key={group.key} className="buyer-group-row-wrapper">
                           <td colSpan={5} style={{ padding: 0, border: 'none' }}>
                             <div className={`buyer-group-main-row ${isExpanded ? 'is-expanded' : ''}`}>
-                              {/* 1. Buyer & Tier */}
+                              {/* 1. Time / Last Active */}
+                              <div className="group-col col-time">
+                                <span className="time-relative">{formatTimeClean(group.lastActive)}</span>
+                              </div>
+
+                              {/* 2. Buyer & Tier */}
                               <div className="group-col col-buyer">
                                 <div className="buyer-primary-row">
                                   <span className="buyer-name" title={b.name}>{b.name}</span>
@@ -963,7 +968,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                 </div>
                               </div>
 
-                              {/* 2. Intent Summary */}
+                              {/* 3. Intent Summary */}
                               <div className="group-col col-intent">
                                 <div className="intent-badges-row">
                                   {group.totalCartQty >= 15 ? (
@@ -1008,7 +1013,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                 </div>
                               </div>
 
-                              {/* 3. Products */}
+                              {/* 4. Products */}
                               <div className="group-col col-products">
                                 {topProd ? (
                                   <div className="product-compact-preview">
@@ -1037,11 +1042,6 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                                 ) : (
                                   <span className="text-muted">—</span>
                                 )}
-                              </div>
-
-                              {/* 4. Time */}
-                              <div className="group-col col-time">
-                                <span className="time-relative">{formatTimeClean(group.lastActive)}</span>
                               </div>
 
                               {/* 5. Actions */}

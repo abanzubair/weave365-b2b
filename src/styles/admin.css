@@ -7864,25 +7864,28 @@
 .toolbar-controls-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 /* Segmented Toggle: By Buyer vs Live Feed */
 .buyer-view-mode-toggle {
   display: inline-flex;
+  align-items: center;
   background: #f1f5f9;
   padding: 2px;
   border-radius: 7px;
   border: 1px solid #e2e8f0;
   gap: 2px;
+  height: 36px;
+  box-sizing: border-box;
 }
 
 .view-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 32px;
+  height: 30px;
   padding: 0 12px;
   border: none;
   border-radius: 5px;
@@ -7906,6 +7909,35 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+/* Filters & Sort Controls */
+.toolbar-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.toolbar-select-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-type-filter {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-control-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  white-space: nowrap;
+}
+
 .toolbar-select-dropdown {
   height: 36px;
   padding: 4px 12px;
@@ -7919,24 +7951,12 @@
   outline: none;
   font-family: inherit;
   transition: all 0.15s ease;
+  box-sizing: border-box;
+  margin: 0;
 }
 
 .toolbar-select-dropdown:focus {
   border-color: #0f172a;
-}
-
-.toolbar-select-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.toolbar-control-label {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .toolbar-sort-dropdown {
@@ -7980,7 +8000,7 @@
 
 .buyer-group-main-row {
   display: grid;
-  grid-template-columns: 250px 230px 1fr 130px 200px;
+  grid-template-columns: 140px 250px 230px 1fr 200px;
   align-items: center;
   padding: 10px 14px;
   border-bottom: 1px solid #f1f5f9;
