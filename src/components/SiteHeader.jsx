@@ -137,7 +137,7 @@ export function SiteHeader(props) {
   const isResellActive = ['resell-sarees-online', 'dropshipping', 'white-label', 'reseller-faqs', 'affiliate-program', 'reseller-dashboard'].includes(route);
   const isCustomWovenActive = ['custom-weaving', 'custom-woven', 'handloom-vs-powerloom-guide'].includes(route);
   const isCollectionsActive = ['new-arrivals', 'lehengas', 'dupattas', 'under-999'].includes(route);
-  const isCompanyActive = ['about', 'contact', 'shipping-delivery', 'returns-cancellation', 'payment-policy', 'collaboration', 'sell-banarasi-sarees'].includes(route);
+  const isCompanyActive = ['about', 'contact', 'affiliate-program', 'collaboration', 'sell-banarasi-sarees', 'become-a-supplier', 'shipping-delivery', 'returns-cancellation', 'payment-policy'].includes(route);
 
   return (
     <header className={`site-header ${scrolled ? 'scrolled' : ''} ${pastHero ? 'past-hero' : ''} ${menuOpen ? 'menu-open' : ''}`}>
@@ -209,7 +209,6 @@ export function SiteHeader(props) {
             RESELL <ChevronDown size={14} className={dropdownOpen === 'resell' ? 'rotate' : ''} />
           </button>
           <DropdownPortal anchorRef={resellRef} isOpen={dropdownOpen === 'resell'} className="dropdown-menu nav-standard-dropdown">
-            <span className="nav-dropdown-tagline">Sell Without Inventory</span>
             <AppLink to="resell-sarees-online" href="/resell-sarees-online" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Sell Without Inventory
             </AppLink>
@@ -393,23 +392,20 @@ export function SiteHeader(props) {
             <AppLink to="about" href="/about" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               About Weave 365
             </AppLink>
-            <AppLink to="collaboration" href="/collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Our Banaras Network
-            </AppLink>
             <AppLink to="contact" href="/contact" navigate={navigate} onClick={() => setDropdownOpen(null)}>
               Contact Us
             </AppLink>
-            <AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Shipping &amp; Delivery
+            <AppLink to="affiliate-program" href="/affiliate-program" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Affiliates
             </AppLink>
-            <AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Returns &amp; Cancellation
+            <AppLink to="collaboration" href="/collaboration" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Collaborations
             </AppLink>
-            <AppLink to="payment-policy" href="/payment-policy" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Payment Policy
+            <AppLink to="account?tab=developer" href="/account?tab=developer" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              API Access
             </AppLink>
-            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} onClick={() => setDropdownOpen(null)}>
-              Reseller FAQs
+            <AppLink to="become-a-supplier" href="/become-a-supplier" navigate={navigate} onClick={() => setDropdownOpen(null)}>
+              Become a Supplier
             </AppLink>
           </DropdownPortal>
         </div>

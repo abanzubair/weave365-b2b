@@ -58,7 +58,7 @@ export function BusinessQualificationForm({
         {/* Question 1 — Business Type */}
         <div className={`signup-qual-question-card ${errorField === 'business_type' ? 'has-error' : ''}`}>
           <label className="signup-qual-qlabel">
-            <span>Question 1 — What best describes your business?</span>
+            <span>What best describes your business?</span>
             <span className="signup-qual-required">*</span>
           </label>
           <p className="signup-qual-qdesc">Select the option that best fits your business model.</p>
@@ -91,7 +91,7 @@ export function BusinessQualificationForm({
         {/* Question 2 — Business Experience */}
         <div className={`signup-qual-question-card ${errorField === 'business_experience' ? 'has-error' : ''}`}>
           <label className="signup-qual-qlabel">
-            <span>Question 2 — How long have you been in business?</span>
+            <span>How long have you been in business?</span>
             <span className="signup-qual-required">*</span>
           </label>
           <div className="signup-qual-radio-grid signup-qual-radio-grid-stack" role="radiogroup" aria-label="Business Experience">
@@ -123,7 +123,7 @@ export function BusinessQualificationForm({
         {/* Question 3 — Monthly Sourcing Budget */}
         <div className={`signup-qual-question-card ${errorField === 'monthly_budget' ? 'has-error' : ''}`}>
           <label className="signup-qual-qlabel">
-            <span>Question 3 — What is your approximate monthly sourcing / purchase budget?</span>
+            <span>What is your approximate monthly sourcing / purchase budget?</span>
             <span className="signup-qual-required">*</span>
           </label>
           <div className="signup-qual-radio-grid signup-qual-radio-grid-stack" role="radiogroup" aria-label="Monthly Sourcing Budget">
@@ -155,7 +155,7 @@ export function BusinessQualificationForm({
         {/* Question 4 — Sales Channels */}
         <div className={`signup-qual-question-card ${errorField === 'sales_channels' ? 'has-error' : ''}`}>
           <label className="signup-qual-qlabel">
-            <span>Question 4 — Where do you currently sell?</span>
+            <span>Where do you currently sell?</span>
             <span className="signup-qual-required">*</span>
           </label>
           <p className="signup-qual-qdesc">Select all that apply (at least one).</p>
@@ -186,7 +186,7 @@ export function BusinessQualificationForm({
         {/* Question 5 — Purchase Intent */}
         <div className={`signup-qual-question-card ${errorField === 'purchase_intent' ? 'has-error' : ''}`}>
           <label className="signup-qual-qlabel">
-            <span>Question 5 — When do you expect to place your first order?</span>
+            <span>When do you expect to place your first order?</span>
             <span className="signup-qual-required">*</span>
           </label>
           <div className="signup-qual-radio-grid signup-qual-radio-grid-stack" role="radiogroup" aria-label="Purchase Intent">

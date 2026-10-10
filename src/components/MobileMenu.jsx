@@ -275,28 +275,24 @@ export function MobileMenu(props) {
               <span>About Weave 365</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="collaboration" href="/collaboration" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Our Banaras Network</span>
-              <ChevronRight size={16} className="mobile-subpanel-arrow" />
-            </AppLink>
             <AppLink to="contact" href="/contact" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
               <span>Contact Us</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="shipping-delivery" href="/shipping-delivery" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Shipping &amp; Delivery</span>
+            <AppLink to="affiliate-program" href="/affiliate-program" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Affiliates</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="returns-cancellation" href="/returns-cancellation" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Returns &amp; Cancellation</span>
+            <AppLink to="collaboration" href="/collaboration" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Collaborations</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="payment-policy" href="/payment-policy" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Payment Policy</span>
+            <AppLink to="account?tab=developer" href="/account?tab=developer" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>API Access</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
-            <AppLink to="reseller-faqs" href="/reseller-faqs" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
-              <span>Reseller FAQs</span>
+            <AppLink to="become-a-supplier" href="/become-a-supplier" navigate={navigate} className="mobile-subpanel-link" onClick={onClose}>
+              <span>Become a Supplier</span>
               <ChevronRight size={16} className="mobile-subpanel-arrow" />
             </AppLink>
           </>

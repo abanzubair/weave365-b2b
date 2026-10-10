@@ -156,35 +156,35 @@ export function validateBusinessQualification(form) {
   if (!form?.business_type) {
     return {
       isValid: false,
-      error: 'Please select what best describes your business (Question 1).',
+      error: 'Please select what best describes your business.',
       field: 'business_type',
     };
   }
   if (!form?.business_experience) {
     return {
       isValid: false,
-      error: 'Please select how long you have been in business (Question 2).',
+      error: 'Please select how long you have been in business.',
       field: 'business_experience',
     };
   }
   if (!form?.monthly_budget) {
     return {
       isValid: false,
-      error: 'Please select your approximate monthly sourcing budget (Question 3).',
+      error: 'Please select your approximate monthly sourcing budget.',
       field: 'monthly_budget',
     };
   }
   if (!Array.isArray(form?.sales_channels) || form.sales_channels.length === 0) {
     return {
       isValid: false,
-      error: 'Please select at least one sales channel where you sell (Question 4).',
+      error: 'Please select at least one sales channel where you sell.',
       field: 'sales_channels',
     };
   }
   if (!form?.purchase_intent) {
     return {
       isValid: false,
-      error: 'Please select when you expect to place your first order (Question 5).',
+      error: 'Please select when you expect to place your first order.',
       field: 'purchase_intent',
     };
   }
@@ -197,7 +197,7 @@ export function validateBusinessQualification(form) {
  * @returns {{ isValid: boolean, error?: string, field?: string }}
  */
 export function validateSupplierQualification(form) {
-  // 5.1 Business Information
+  // Business Information
   if (!form?.contact_person?.trim()) {
     return { isValid: false, error: 'Please enter Contact Person Name.', field: 'contact_person' };
   }
@@ -242,7 +242,7 @@ export function validateSupplierQualification(form) {
     return { isValid: false, error: 'Please select your approximate wholesale price range.', field: 'wholesale_price_range' };
   }
 
-  // 5.2 Your Business
+  // Your Business
   if (!form?.business_type) {
     return { isValid: false, error: 'Please select what best describes your business.', field: 'business_type' };
   }
@@ -263,7 +263,7 @@ export function validateSupplierQualification(form) {
     return { isValid: false, error: 'Please specify your manufacturing city.', field: 'other_city_name' };
   }
 
-  // 5.3 Supply Capability
+  // Supply Capability
   if (!form?.single_piece_supply) {
     return { isValid: false, error: 'Please select whether you offer single-piece supply.', field: 'single_piece_supply' };
   }
@@ -272,7 +272,7 @@ export function validateSupplierQualification(form) {
     return { isValid: false, error: 'Please select whether you can provide consistent repeat supply.', field: 'repeat_supply' };
   }
 
-  // 5.4 Product & Catalogue
+  // Product & Catalogue
   if (!form?.has_catalogue) {
     return { isValid: false, error: 'Please select whether you have a product catalogue for your website.', field: 'has_catalogue' };
   }

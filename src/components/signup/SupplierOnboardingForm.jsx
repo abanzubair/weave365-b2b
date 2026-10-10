@@ -57,10 +57,10 @@ export function SupplierOnboardingForm({
 
       <div className="signup-qual-sections">
         {/* =================================================================
-           5.1 Business Information
+           Business Information
            ================================================================= */}
         <div className="signup-supplier-section">
-          <h3 className="signup-supplier-section-title">5.1 Business Information</h3>
+          <h3 className="signup-supplier-section-title">Business Information</h3>
 
           <div className="signup-form-grid">
             {/* Contact Person Name */}
@@ -273,10 +273,10 @@ export function SupplierOnboardingForm({
         </div>
 
         {/* =================================================================
-           5.2 Your Business
+           Your Business
            ================================================================= */}
         <div className="signup-supplier-section">
-          <h3 className="signup-supplier-section-title">5.2 Your Business</h3>
+          <h3 className="signup-supplier-section-title">Your Business</h3>
 
           {/* What best describes your business? */}
           <div className={`signup-qual-question-card ${errorField === 'business_type' ? 'has-error' : ''}`}>
@@ -406,10 +406,10 @@ export function SupplierOnboardingForm({
         </div>
 
         {/* =================================================================
-           5.3 Supply Capability
+           Supply Capability
            ================================================================= */}
         <div className="signup-supplier-section">
-          <h3 className="signup-supplier-section-title">5.3 Supply Capability</h3>
+          <h3 className="signup-supplier-section-title">Supply Capability</h3>
 
           <div className="signup-qual-grid-2col">
             {/* Single-piece supply */}
@@ -471,10 +471,10 @@ export function SupplierOnboardingForm({
         </div>
 
         {/* =================================================================
-           5.4 Product & Catalogue
+           Product & Catalogue
            ================================================================= */}
         <div className="signup-supplier-section">
-          <h3 className="signup-supplier-section-title">5.4 Product & Catalogue</h3>
+          <h3 className="signup-supplier-section-title">Product & Catalogue</h3>
 
           {/* Do you have a product catalogue for your website? */}
           <div className={`signup-qual-question-card ${errorField === 'has_catalogue' ? 'has-error' : ''}`}>
