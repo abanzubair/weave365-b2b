@@ -122,7 +122,7 @@ export function NewArrivalsPage({
       return b._originalIndex - a._originalIndex;
     });
 
-    // Defensive fallback: if no explicitly flagged new items, pull the latest 16 items by stockInDate
+    // Defensive fallback: if no explicitly flagged new items, pull the latest 20 items by stockInDate
     if (filtered.length === 0) {
       filtered = [...productsWithIndex]
         .filter(p => !p.isArchived)
@@ -134,7 +134,7 @@ export function NewArrivalsPage({
           }
           return b._originalIndex - a._originalIndex;
         })
-        .slice(0, 16);
+        .slice(0, 20);
     }
     return filtered;
   }, [products]);

@@ -54,7 +54,7 @@ export function Catalog({
     if (typeof window !== 'undefined' && window.innerWidth <= 820) {
       return 12;
     }
-    return 16;
+    return 20;
   };
 
   const [visibleCount, setVisibleCount] = useState(12);
