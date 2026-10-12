@@ -29,6 +29,11 @@ import {
   handleCancelOrder as cashfreeCancelOrder,
 } from './cashfreeHandler.js';
 import {
+  handleSellerProductGet,
+  handleSellerProductPost,
+  handleAdminSellerProductPatch,
+} from './sellerProductHandler.js';
+import {
   handleCreateOrder as phonepeCreateOrder,
   handleVerifyOrder as phonepeVerifyOrder,
   handleWebhook as phonepeWebhook,
@@ -43,6 +48,7 @@ export async function GET(request, { params }) {
     return handleDeveloperApiGet(request, routeArray);
   }
 
+  if (routeKey === 'seller/products' || routeKey === 'seller-products') return handleSellerProductGet(request);
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
   if (routeKey === 'country-pricing' || routeKey === 'countries') return countryPricingGet(request);
@@ -65,6 +71,8 @@ export async function POST(request, { params }) {
     return handleDeveloperApiPost(request, routeArray);
   }
 
+  if (routeKey === 'seller/products' || routeKey === 'seller-products') return handleSellerProductPost(request);
+  if (routeKey === 'admin/seller-products') return handleAdminSellerProductPatch(request);
   if (routeKey === 'orders' || routeKey === 'order') return orderPost(request);
   if (routeKey === 'cashfree/create-order') return cashfreeCreateOrder(request);
   if (routeKey === 'cashfree/cancel-order') return cashfreeCancelOrder(request);
@@ -83,6 +91,18 @@ export async function POST(request, { params }) {
   if (routeKey === 'admin/sync') return adminSyncPost(request);
   if (routeKey === 'check-email' || routeKey === 'auth/check-email') return checkEmailPost(request);
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
+}
+
+export async function PATCH(request, { params }) {
+  const resolvedParams = await params;
+  const routeArray = resolvedParams?.route || [];
+  const routeKey = routeArray.join('/');
+
+  if (routeKey === 'admin/seller-products' || routeKey === 'seller/products' || routeKey === 'seller-products') {
+    return handleAdminSellerProductPatch(request);
+  }
+
+  return Response.json({ error: `PATCH /api/${routeKey} Not Found` }, { status: 404 });
 }
 
 const ALLOWED_ADMIN_ORIGINS = [

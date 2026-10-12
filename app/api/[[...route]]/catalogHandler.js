@@ -74,6 +74,67 @@ function applyStockOverrides(products, stockRows) {
   });
 }
 
+function transformSellerProductToCatalog(sp) {
+  if (!sp || !sp.sku) return null;
+  const baseSku = sp.sku;
+  const colors = Array.isArray(sp.colors) ? sp.colors : [];
+  const images = Array.isArray(sp.images) ? sp.images : [];
+  const coverImage = sp.cover_image || images[0] || '';
+  
+  const colorOptions = colors.map((c) => ({
+    name: c.color || 'Standard',
+    image: c.image_url || coverImage,
+  }));
+  
+  const variants = colors.map((c, idx) => ({
+    code: c.sku || `${baseSku}-${idx + 1}`,
+    color: c.color || '',
+    image: c.image_url || coverImage,
+    prices: {
+      mrp: sp.wholesale_price || null,
+      b2r: null,
+      single: null,
+      cod: null,
+      offer: null,
+    },
+  }));
+  
+  return {
+    id: baseSku,
+    groupKey: baseSku,
+    categoryCode: sp.category_code || baseSku[0] || '1',
+    vendorCode: sp.seller_code,
+    designCode: sp.design_code,
+    category: sp.category || 'Saree',
+    partner: sp.seller_name || `Vendor ${sp.seller_code}`,
+    fabric: sp.fabric,
+    fabricTop: sp.fabric_top,
+    fabricBottom: sp.fabric_bottom,
+    fabricDupatta: sp.fabric_dupatta,
+    work: sp.work,
+    pattern: sp.pattern,
+    weave: sp.weave,
+    purity: sp.purity,
+    type: sp.type,
+    title: sp.title || `${sp.fabric} ${sp.work} ${sp.category}`,
+    images: images.length ? images : (coverImage ? [coverImage] : []),
+    cover: coverImage,
+    variants,
+    colorOptions,
+    totalColors: colorOptions.length,
+    status: 'Ready Stock',
+    statusTags: [{ key: 'ready-stock', label: 'Ready Stock' }],
+    isReadyStock: true,
+    isOutOfStock: false,
+    isArchived: false,
+    raw: {
+      ...sp,
+      VID: sp.seller_code,
+      B2B: sp.wholesale_price,
+    },
+  };
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -94,7 +155,7 @@ export async function GET(request) {
     };
 
     if (type === 'all') {
-      const [{ data, error }, { data: stockData }] = await Promise.all([
+      const [{ data, error }, { data: stockData }, { data: approvedSellerProds }] = await Promise.all([
         supabase
           .from('sheet_data')
           .select('id, csv_data')
@@ -102,6 +163,10 @@ export async function GET(request) {
         supabase
           .from('vendor_product_stock')
           .select('*'),
+        supabase
+          .from('seller_products')
+          .select('*')
+          .eq('status', 'approved'),
       ]);
 
       if (error) {
@@ -132,6 +197,11 @@ export async function GET(request) {
         }
       });
 
+      if (Array.isArray(approvedSellerProds) && approvedSellerProds.length > 0) {
+        const approvedMapped = approvedSellerProds.map(transformSellerProductToCatalog).filter(Boolean);
+        result.products = [...approvedMapped, ...result.products];
+      }
+
       return new Response(JSON.stringify(result), {
         status: 200,
         headers: cdnCacheHeaders,
@@ -139,7 +209,7 @@ export async function GET(request) {
     }
 
     if (type === 'products') {
-      const [{ data, error }, { data: stockData }] = await Promise.all([
+      const [{ data, error }, { data: stockData }, { data: approvedSellerProds }] = await Promise.all([
         supabase
           .from('sheet_data')
           .select('csv_data')
@@ -148,6 +218,10 @@ export async function GET(request) {
         supabase
           .from('vendor_product_stock')
           .select('*'),
+        supabase
+          .from('seller_products')
+          .select('*')
+          .eq('status', 'approved'),
       ]);
 
       if (error) {
@@ -166,6 +240,11 @@ export async function GET(request) {
 
       if (Array.isArray(stockData) && stockData.length > 0) {
         products = applyStockOverrides(products, stockData);
+      }
+
+      if (Array.isArray(approvedSellerProds) && approvedSellerProds.length > 0) {
+        const approvedMapped = approvedSellerProds.map(transformSellerProductToCatalog).filter(Boolean);
+        products = [...approvedMapped, ...products];
       }
 
       return new Response(JSON.stringify(products), {

@@ -45,7 +45,8 @@ import {
   Phone,
   Check,
   Share2,
-  User
+  User,
+  Upload
 } from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
@@ -54,6 +55,7 @@ import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { UserProfileTab } from '../components/UserProfileTab.jsx';
 import { VendorStockPanel } from '../components/VendorStockPanel.jsx';
+import { SellerProductUpload } from '../components/SellerProductUpload.jsx';
 import { DeveloperDashboard } from '../components/developer/DeveloperDashboard.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { applyAsInfluencer, fetchInfluencerStats } from '../utils/influencerHelpers.js';
@@ -133,6 +135,9 @@ export function Account({
 
   const [activeTab, setActiveTab] = useState(() => {
     if (isAccountLocked(buyerProfile, user)) return 'profile';
+    if (initialTab === 'upload' || initialTab === 'vendor-upload') {
+      return isVendor ? 'vendor-upload' : 'orders';
+    }
     if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
       return isVendor ? 'vendor-stock' : 'orders';
     }
@@ -155,7 +160,9 @@ export function Account({
       return;
     }
     if (initialTab) {
-      if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
+      if (initialTab === 'upload' || initialTab === 'vendor-upload') {
+        setActiveTab(isVendor ? 'vendor-upload' : 'orders');
+      } else if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
         setActiveTab(isVendor ? 'vendor-stock' : 'orders');
       } else {
         setActiveTab(initialTab);
@@ -624,16 +631,28 @@ export function Account({
       {/* 3. MINIMAL TAB NAVIGATION */}
       <nav className="account-nav-bar" aria-label="Account Tabs">
         {isVendor && (
-          <button 
-            type="button" 
-            className={`account-nav-item ${activeTab === 'vendor-stock' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-            onClick={() => !accountLocked && setActiveTab('vendor-stock')}
-            disabled={accountLocked}
-            title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
-          >
-            {accountLocked ? <Lock size={15} /> : <Boxes size={16} />}
-            <span>Stock Inventory</span>
-          </button>
+          <>
+            <button 
+              type="button" 
+              className={`account-nav-item ${activeTab === 'vendor-stock' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+              onClick={() => !accountLocked && setActiveTab('vendor-stock')}
+              disabled={accountLocked}
+              title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
+            >
+              {accountLocked ? <Lock size={15} /> : <Boxes size={16} />}
+              <span>Stock Inventory</span>
+            </button>
+            <button 
+              type="button" 
+              className={`account-nav-item ${activeTab === 'vendor-upload' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+              onClick={() => !accountLocked && setActiveTab('vendor-upload')}
+              disabled={accountLocked}
+              title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
+            >
+              {accountLocked ? <Lock size={15} /> : <Upload size={16} />}
+              <span>Upload Design</span>
+            </button>
+          </>
         )}
         <button 
           type="button" 
@@ -1577,6 +1596,17 @@ export function Account({
               user={user}
               buyerProfile={buyerProfile}
               products={products}
+            />
+          </div>
+        )}
+
+        {/* VENDOR PRODUCT UPLOAD TAB */}
+        {activeTab === 'vendor-upload' && (
+          <div className="account-panel-minimal panel-transparent">
+            <SellerProductUpload
+              user={user}
+              buyerProfile={buyerProfile}
+              catalogProducts={products}
             />
           </div>
         )}

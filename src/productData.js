@@ -217,19 +217,95 @@ function normalizeLoadedProduct(product, idx) {
   };
 }
 
+function transformSellerProductToCatalog(sp) {
+  if (!sp || !sp.sku) return null;
+  const baseSku = sp.sku;
+  const colors = Array.isArray(sp.colors) ? sp.colors : [];
+  const images = Array.isArray(sp.images) ? sp.images : [];
+  const coverImage = sp.cover_image || images[0] || '';
+  
+  const colorOptions = colors.map((c) => ({
+    name: c.color || 'Standard',
+    image: c.image_url || coverImage,
+  }));
+  
+  const variants = colors.map((c, idx) => ({
+    code: c.sku || `${baseSku}-${idx + 1}`,
+    color: c.color || '',
+    image: c.image_url || coverImage,
+    prices: {
+      mrp: sp.wholesale_price || null,
+      b2r: null,
+      single: null,
+      cod: null,
+      offer: null,
+    },
+  }));
+  
+  return {
+    id: baseSku,
+    groupKey: baseSku,
+    categoryCode: sp.category_code || baseSku[0] || '1',
+    vendorCode: sp.seller_code,
+    designCode: sp.design_code,
+    category: sp.category || 'Saree',
+    partner: sp.seller_name || `Vendor ${sp.seller_code}`,
+    fabric: sp.fabric,
+    fabricTop: sp.fabric_top,
+    fabricBottom: sp.fabric_bottom,
+    fabricDupatta: sp.fabric_dupatta,
+    work: sp.work,
+    pattern: sp.pattern,
+    weave: sp.weave,
+    purity: sp.purity,
+    type: sp.type,
+    title: sp.title || `${sp.fabric} ${sp.work} ${sp.category}`,
+    images: images.length ? images : (coverImage ? [coverImage] : []),
+    cover: coverImage,
+    variants,
+    colorOptions,
+    totalColors: colorOptions.length,
+    status: 'Ready Stock',
+    statusTags: [{ key: 'ready-stock', label: 'Ready Stock' }],
+    isReadyStock: true,
+    isOutOfStock: false,
+    isArchived: false,
+    raw: {
+      ...sp,
+      VID: sp.seller_code,
+      B2B: sp.wholesale_price,
+    },
+  };
+}
+
 export const fetchProducts = safeCache(async function fetchProducts() {
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
-    const normalizedProducts = cachedJson.map((p, idx) => normalizeLoadedProduct(p, idx));
+    let normalizedProducts = cachedJson.map((p, idx) => normalizeLoadedProduct(p, idx));
 
-    // Server-side: merge vendor stock overrides directly from Supabase
-    // so SSR-rendered pages immediately reflect archived / stock status.
+    // Server-side: merge approved seller products and vendor stock overrides directly from Supabase
+    // so SSR-rendered pages immediately reflect approved seller items and archived / stock status.
     // Protected by ISR cache (revalidate=300) — the DB is queried at most once per 5 min.
     if (typeof window === 'undefined' && isSupabaseConfigured && supabase) {
       try {
-        const { data: stockRows } = await supabase
-          .from('vendor_product_stock')
-          .select('product_id, stock_status, stock_status_label, updated_at, updated_at_ist');
+        const [{ data: stockRows }, { data: approvedSellerProds }] = await Promise.all([
+          supabase
+            .from('vendor_product_stock')
+            .select('product_id, stock_status, stock_status_label, updated_at, updated_at_ist'),
+          supabase
+            .from('seller_products')
+            .select('*')
+            .eq('status', 'approved'),
+        ]);
+
+        if (Array.isArray(approvedSellerProds) && approvedSellerProds.length > 0) {
+          const sellerMapped = approvedSellerProds
+            .map(transformSellerProductToCatalog)
+            .filter(Boolean)
+            .map((p, idx) => normalizeLoadedProduct(p, normalizedProducts.length + idx));
+          normalizedProducts = [...sellerMapped, ...normalizedProducts];
+        }
+
         if (Array.isArray(stockRows) && stockRows.length > 0) {
           const stockMap = new Map();
           for (const row of stockRows) {

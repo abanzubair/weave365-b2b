@@ -126,18 +126,25 @@ export async function POST(request) {
       );
     }
 
+    const folderRaw = String(formData.get('folder') || formData.get('type') || '').trim().toLowerCase();
+    const isProduct = folderRaw === 'products' || folderRaw === 'product';
+    const folder = isProduct ? 'products' : 'reviews';
+
     // Security: Validate MIME type
-    const ALLOWED_MIME_TYPES = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/webp',
-      'image/avif',
-      'application/pdf',
-    ];
-    if (file.type && !ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+    // For product designs: strictly image files only (no PDFs, documents, or archives)
+    const ALLOWED_MIME_TYPES = isProduct
+      ? ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif']
+      : ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif', 'application/pdf'];
+
+    const fileMime = String(file.type || '').toLowerCase();
+    if (fileMime && !ALLOWED_MIME_TYPES.includes(fileMime)) {
       return Response.json(
-        { status: 'error', error: 'Invalid file type. Only JPEG, PNG, WEBP, AVIF, and PDF files are allowed.' },
+        {
+          status: 'error',
+          error: isProduct
+            ? 'Invalid file type. Only image files (JPEG, PNG, WEBP, AVIF) can be uploaded for product designs.'
+            : 'Invalid file type. Only JPEG, PNG, WEBP, AVIF, and PDF files are allowed.',
+        },
         { status: 400 }
       );
     }
@@ -145,19 +152,21 @@ export async function POST(request) {
     const buffer = await file.arrayBuffer();
 
     const skuRaw = formData.get('sku') || formData.get('productId') || '';
-    const uploaderRaw = formData.get('uploader') || formData.get('reviewerName') || '';
+    const uploaderRaw = formData.get('uploader') || formData.get('reviewerName') || formData.get('color') || '';
     const indexRaw = formData.get('index') || '';
 
-    // Sanitize and create an organized bucket key: reviews/{sku}/{uploader}-{timestamp}[-{index}].{ext}
+    // Sanitize and create an organized bucket key:
+    // For products: products/{sku}/{color}-{timestamp}[-{index}].{ext}
+    // For reviews: reviews/{sku}/{uploader}-{timestamp}[-{index}].{ext}
     const timestamp = Date.now();
     const cleanSku = String(skuRaw).trim().toLowerCase().replace(/[^a-z0-9.-]/g, '-').replace(/-+/g, '-') || 'general';
-    const cleanUploader = String(uploaderRaw).trim().toLowerCase().replace(/[^a-z0-9.-]/g, '-').replace(/-+/g, '-') || 'buyer';
+    const cleanUploader = String(uploaderRaw).trim().toLowerCase().replace(/[^a-z0-9.-]/g, '-').replace(/-+/g, '-') || (isProduct ? 'variant' : 'buyer');
     const cleanFileName = (file.name || 'photo.jpg').toLowerCase().replace(/[^a-z0-9.-]/g, '-').replace(/-+/g, '-');
     const ext = cleanFileName.split('.').pop() || 'jpg';
     const indexSuffix = indexRaw ? `-${indexRaw}` : '';
     
-    // Key format: reviews/{sku}/{uploader}-{timestamp}[-{index}].{ext}
-    const key = `reviews/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}.${ext}`;
+    // Key format in Cloudflare R2 bucket:
+    const key = `${folder}/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}.${ext}`;
 
     // Optional lightweight thumbnail file uploaded alongside
     const thumbFile = formData.get('thumbnail') || formData.get('thumb');
@@ -171,7 +180,7 @@ export async function POST(request) {
         const thumbCleanName = (thumbFile.name || 'thumb.webp').toLowerCase().replace(/[^a-z0-9.-]/g, '-');
         const thumbExt = thumbCleanName.split('.').pop() || 'webp';
         thumbContentType = thumbFile.type || (thumbExt === 'webp' ? 'image/webp' : 'image/jpeg');
-        thumbKey = `reviews/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}-thumb.${thumbExt}`;
+        thumbKey = `${folder}/${cleanSku}/${cleanUploader}-${timestamp}${indexSuffix}-thumb.${thumbExt}`;
       } catch (tErr) {
         console.warn('[Upload Route] Failed to read thumbnail buffer:', tErr);
       }

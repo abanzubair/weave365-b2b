@@ -38,6 +38,7 @@ import {
   VENDOR_STOCK_UPDATED_EVENT,
 } from '../../utils/vendorStockService.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
+import { SellerUploadsModeration } from './SellerUploadsModeration.jsx';
 
 function toTitleCase(str) {
   if (!str) return '';
@@ -100,6 +101,7 @@ export default function VendorApplications({
   setActiveTab,
 }) {
   // Local state
+  const [subTab, setSubTab] = useState('vendors'); // 'vendors' | 'uploads'
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [codeFilter, setCodeFilter] = useState('all'); // 'all' | 'assigned' | 'unassigned'
@@ -557,6 +559,56 @@ export default function VendorApplications({
         </div>
       </div>
 
+      {/* 1.5 Sub-view navigation switcher */}
+      <div style={{ display: 'flex', gap: 10, borderBottom: '1px solid #e2e8f0', paddingBottom: 12, marginBottom: 18 }}>
+        <button
+          type="button"
+          onClick={() => setSubTab('vendors')}
+          style={{
+            background: subTab === 'vendors' ? '#0f172a' : '#f8fafc',
+            color: subTab === 'vendors' ? '#ffffff' : '#475569',
+            border: `1px solid ${subTab === 'vendors' ? '#0f172a' : '#e2e8f0'}`,
+            borderRadius: 8,
+            padding: '8px 18px',
+            fontSize: 13.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Users size={16} />
+          <span>Registered Vendors & Loom Codes</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('uploads')}
+          style={{
+            background: subTab === 'uploads' ? '#0f172a' : '#f8fafc',
+            color: subTab === 'uploads' ? '#ffffff' : '#475569',
+            border: `1px solid ${subTab === 'uploads' ? '#0f172a' : '#e2e8f0'}`,
+            borderRadius: 8,
+            padding: '8px 18px',
+            fontSize: 13.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Boxes size={16} />
+          <span>Seller Product Uploads & Approvals</span>
+        </button>
+      </div>
+
+      {subTab === 'uploads' ? (
+        <SellerUploadsModeration />
+      ) : (
+        <>
       {/* 2. Mini-Metrics KPI Grid */}
       <div className="admin-partners-metrics-grid">
         <div className="admin-partner-metric-card">
@@ -1027,6 +1079,8 @@ export default function VendorApplications({
           </table>
         </div>
       </div>
+      </>
+      )}
 
       {/* 5. Quick Code Assign Dialog */}
       {quickCodeVendor && (

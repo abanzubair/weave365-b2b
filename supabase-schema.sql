@@ -1940,3 +1940,73 @@ on conflict (id) do update set
   next_refresh = excluded.next_refresh,
   expires_at = excluded.expires_at;
 
+-- ========================================================
+-- SELLER PRODUCT UPLOADS & ADMIN APPROVAL TABLE
+-- ========================================================
+create table if not exists public.seller_products (
+  id uuid primary key default gen_random_uuid(),
+  seller_id uuid references public.profiles(id) on delete set null,
+  seller_code text not null,               -- e.g. "V02"
+  seller_name text,                        -- Firm or Partner name
+  sku text not null,                       -- Predefined 6-digit base SKU e.g. "102001"
+  category text not null,                  -- "Saree", "Suit", "Dupatta", "Lehenga"
+  category_code text not null,             -- "1", "2", "3", "4"
+  design_code text not null,               -- "001"
+  title text not null,
+  fabric text not null,
+  fabric_top text,                         -- For Suits
+  fabric_bottom text,                      -- For Suits
+  fabric_dupatta text,                     -- For Suits
+  work text not null,
+  pattern text not null,
+  weave text not null,
+  purity text not null,
+  type text not null,
+  colors jsonb not null default '[]'::jsonb, -- Array of [{ color: 'Rani', image_url: '...', sku: '102001-1' }]
+  images jsonb not null default '[]'::jsonb, -- Array of Cloudflare R2 image URLs
+  cover_image text,                        -- Primary design cover image
+  wholesale_price numeric,
+  status text not null default 'submitted' check (status in ('submitted', 'approved', 'rejected')),
+  admin_notes text,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists seller_products_seller_code_idx on public.seller_products (seller_code);
+create index if not exists seller_products_sku_idx on public.seller_products (sku);
+create index if not exists seller_products_status_idx on public.seller_products (status);
+create index if not exists seller_products_category_idx on public.seller_products (category);
+create index if not exists seller_products_created_at_idx on public.seller_products (created_at desc);
+
+alter table public.seller_products enable row level security;
+
+-- Public can view approved products only
+drop policy if exists "Public view approved seller products" on public.seller_products;
+create policy "Public view approved seller products"
+  on public.seller_products for select
+  to anon, authenticated
+  using (status = 'approved');
+
+-- Authenticated sellers can view own products regardless of status
+drop policy if exists "Sellers view own products" on public.seller_products;
+create policy "Sellers view own products"
+  on public.seller_products for select
+  to authenticated
+  using (auth.uid() = seller_id);
+
+-- Authenticated users can insert products
+drop policy if exists "Sellers insert products" on public.seller_products;
+create policy "Sellers insert products"
+  on public.seller_products for insert
+  to anon, authenticated
+  with check (true);
+
+-- Admins can view and update all seller products
+drop policy if exists "Admin all actions on seller products" on public.seller_products;
+create policy "Admin all actions on seller products"
+  on public.seller_products for all
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+
