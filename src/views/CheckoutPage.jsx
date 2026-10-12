@@ -93,8 +93,10 @@ export function CheckoutPage({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [orderError, setOrderError] = useState('');
-  // Payment gateway chosen by the customer: 'cashfree' | 'phonepe'
-  const [paymentGateway, setPaymentGateway] = useState('cashfree');
+  // Payment gateway chosen by the customer: 'phonepe' | 'cashfree'
+  const [paymentGateway, setPaymentGateway] = useState(
+    PHONEPE_ENABLED ? 'phonepe' : 'cashfree'
+  );
 
   // Auto-verify if customer returned from a gateway redirect
   // (?order_id= for Cashfree, ?pp_order_id= for PhonePe)
@@ -1466,20 +1468,6 @@ export function CheckoutPage({
 
                 {(() => {
                   const paymentOptions = [
-                    {
-                      id: 'cashfree',
-                      title: 'Cashfree',
-                      badge: (
-                        <img
-                          src="/assets/payment-methods/cashfree.svg"
-                          alt="Cashfree"
-                          width={32}
-                          height={32}
-                          style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-                          loading="lazy"
-                        />
-                      ),
-                    },
                     ...(PHONEPE_ENABLED
                       ? [{
                           id: 'phonepe',
@@ -1496,6 +1484,20 @@ export function CheckoutPage({
                           ),
                         }]
                       : []),
+                    {
+                      id: 'cashfree',
+                      title: 'Cashfree',
+                      badge: (
+                        <img
+                          src="/assets/payment-methods/cashfree.svg"
+                          alt="Cashfree"
+                          width={32}
+                          height={32}
+                          style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                          loading="lazy"
+                        />
+                      ),
+                    },
                   ];
                   const selectable = paymentOptions.length > 1;
 

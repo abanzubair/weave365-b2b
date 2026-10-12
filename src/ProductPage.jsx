@@ -1988,7 +1988,7 @@ export function ProductDetail({
                 </div>
                 <div className="delivery-time-info">
                   <span className="delivery-time-label">Delivery Time:</span>
-                  <span className="delivery-time-value">Processing 3-4 Business Days · Transit 4–5 Business Days</span>
+                  <span className="delivery-time-value">Processing 3-5 Business Days · Transit 4–5 Business Days</span>
                 </div>
               </div>
 
