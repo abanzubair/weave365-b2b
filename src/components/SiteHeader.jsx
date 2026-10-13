@@ -425,6 +425,11 @@ export function SiteHeader(props) {
           <Search size={19} strokeWidth={1.75} />
         </button>
 
+        {/* Country Code & Dropdown of All Existing Countries (Desktop) */}
+        <div className="desktop-only-action">
+          <CountrySelector variant="desktop" />
+        </div>
+
         {/* 1. Log In / User Name Dropdown Button */}
         <div className="nav-item-dropdown account-dropdown-container" ref={profileRef}>
           {/* Desktop Auth / User Button */}
@@ -491,26 +496,6 @@ export function SiteHeader(props) {
               </button>
               <button
                 type="button"
-                className="profile-dropdown-cart-btn"
-                onClick={() => {
-                  setCartOpen(true);
-                  setDropdownOpen(null);
-                }}
-              >
-                <span>My Cart {cartProducts.length > 0 ? `(${cartProducts.length})` : ''}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (navigate) navigate('favorites');
-                  else window.location.href = '/favorites';
-                  setDropdownOpen(null);
-                }}
-              >
-                Saved Items {favoritesCount > 0 ? `(${favoritesCount})` : ''}
-              </button>
-              <button
-                type="button"
                 onClick={() => {
                   handleSignOut();
                   setDropdownOpen(null);
@@ -522,10 +507,23 @@ export function SiteHeader(props) {
           )}
         </div>
 
-        {/* Country & Currency Selector */}
-        <div className="desktop-only-action">
-          <CountrySelector variant="desktop" />
-        </div>
+        {/* Supplier Pill Button (Replaces Currency Button) */}
+        <a
+          href="https://weave365.com/become-a-supplier"
+          className="nav-supplier-pill-btn desktop-only-action"
+          title="Become a Supplier"
+          aria-label="Become a Supplier"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+              e.preventDefault();
+              if (navigate) navigate('become-a-supplier');
+              else window.location.href = '/become-a-supplier';
+            }
+          }}
+        >
+          <span className="supplier-prefix">Become a </span>
+          <span className="supplier-base-label">Supplier</span>
+        </a>
 
         <button 
           className={`hamburger-btn ${menuOpen ? 'is-active' : ''}`} 

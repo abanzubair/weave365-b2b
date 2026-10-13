@@ -1,9 +1,9 @@
 /**
  * @file countrySelector.css
- * @description Minimal Styles for Desktop & Mobile Country & Currency Selector
+ * @description Minimal Styles for Country Code Trigger & Dropdown of All Existing Countries
  */
 
-/* Desktop Trigger Pill */
+/* Desktop Trigger Pill (Placed right after search icon) */
 .country-selector-wrapper {
   position: relative;
   display: inline-flex;
@@ -13,60 +13,40 @@
 .country-selector-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   background: transparent;
   border: 1.5px solid #9ca3af;
   border-radius: 9999px;
-  padding: 5px 12px;
-  min-height: 32px;
+  padding: 0 12px;
+  height: 34px;
+  min-height: 34px;
   box-sizing: border-box;
-  font-family: var(--font-inter, 'Manrope', system-ui, sans-serif);
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #334155;
+  font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink, #1a1a1a);
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s ease;
   user-select: none;
   white-space: nowrap;
   outline: none;
 }
 
-.country-selector-trigger:hover {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: #4b5563;
-  color: #0f172a;
-}
-
+.country-selector-trigger:hover,
 .country-selector-trigger.is-open {
-  border-color: #4b5563;
   background: rgba(0, 0, 0, 0.03);
-  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.06);
-  color: #0f172a;
-}
-
-.country-flag-icon {
-  font-size: 1rem;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.country-trigger-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.country-trigger-sep {
-  color: #94a3b8;
+  border-color: #4b5563;
+  color: var(--gold, #b78646);
 }
 
 .country-trigger-code {
-  color: #334155;
-  font-weight: 600;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
+  color: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .country-trigger-chevron {
@@ -78,20 +58,21 @@
   transform: rotate(180deg);
 }
 
-/* Desktop Dropdown Menu (Minimal, No Search Bar) */
+/* Desktop Dropdown Menu */
 .country-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
-  width: 210px;
+  left: 0;
+  width: 270px;
+  max-width: 90vw;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   overflow: hidden;
-  padding: 4px;
-  animation: countryDropdownFade 0.15s ease-out forwards;
+  padding: 6px;
+  animation: countryDropdownFade 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes countryDropdownFade {
@@ -105,8 +86,63 @@
   }
 }
 
+/* Search Bar inside Country Dropdown */
+.country-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.country-search-wrapper:focus-within {
+  border-color: var(--gold, #b78646);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(183, 134, 70, 0.12);
+}
+
+.country-search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.country-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #0f172a;
+}
+
+.country-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.country-search-clear {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.country-search-clear:hover {
+  color: #0f172a;
+}
+
+/* Dropdown list of countries */
 .country-dropdown-list {
-  max-height: 200px;
+  max-height: 240px;
   overflow-y: auto;
   padding: 0;
   margin: 0;
@@ -124,17 +160,24 @@
   border-radius: 9999px;
 }
 
+.country-dropdown-empty {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
 .country-dropdown-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 6px 8px;
+  padding: 7px 8px;
   border: none;
   background: transparent;
   border-radius: 6px;
   cursor: pointer;
-  font-family: var(--font-inter, 'Manrope', system-ui, sans-serif);
+  font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
   text-align: left;
   transition: background-color 0.12s ease;
   outline: none;
@@ -184,7 +227,7 @@
 }
 
 .country-item-check {
-  color: #0f172a;
+  color: var(--gold, #b78646);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -198,81 +241,41 @@
   flex-direction: column;
 }
 
-.mobile-country-dropdown .mobile-account-items {
-  overflow: hidden;
-}
-
-.mobile-country-dropdown .mobile-account-items-inner {
-  max-height: 180px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-  padding: 8px 16px 10px;
-  gap: 4px;
-}
-
-.mobile-country-dropdown .mobile-account-items-inner::-webkit-scrollbar {
-  width: 4px;
-}
-
-.mobile-country-dropdown .mobile-account-items-inner::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-
-.mobile-country-dropdown .mobile-account-subitem {
-  padding: 8px 12px;
-  min-height: 40px;
-}
-
 .mobile-menu-curr-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  background: var(--surface-soft, #fbf9f6);
-  border: 1px solid var(--line, #e2e8f0);
+  gap: 4px;
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 1px 7px;
   border-radius: 9999px;
-  font-size: 12px;
   font-weight: 600;
-  color: var(--ink, #1f140d);
-  margin-left: auto;
-  margin-right: 6px;
 }
 
 .curr-pill-flag {
-  font-size: 13px;
-  line-height: 1;
+  font-size: 12px;
 }
 
 .curr-pill-code {
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .curr-pill-sym {
-  font-size: 11px;
-  color: var(--muted, #64748b);
+  color: #64748b;
   font-weight: 500;
 }
 
 .country-subitem-curr {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted, #64748b);
-  margin-left: auto;
-  padding-right: 6px;
+  font-size: 11px;
+  color: #64748b;
+  display: block;
 }
 
 .country-subitem-check {
+  color: var(--gold, #b78646);
   display: flex;
   align-items: center;
-  color: var(--gold-dark, #93652b);
   flex-shrink: 0;
-}
-
-.mobile-account-subitem.is-selected {
-  background: rgba(183, 134, 70, 0.09);
-  font-weight: 600;
 }

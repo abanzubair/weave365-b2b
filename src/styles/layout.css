@@ -249,15 +249,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 16px;
-  min-height: 32px;
+  padding: 0 16px;
+  height: 34px;
+  min-height: 34px;
+  box-sizing: border-box;
   background: transparent;
   border: 1.5px solid #9ca3af;
   border-radius: 9999px;
   font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1;
   color: var(--ink, #1a1a1a);
   cursor: pointer;
   white-space: nowrap;
@@ -275,15 +277,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 18px;
-  min-height: 32px;
+  padding: 0 18px;
+  height: 34px;
+  min-height: 34px;
+  box-sizing: border-box;
   background: #875a22;
   border: 1.5px solid #875a22;
   border-radius: 9999px;
   font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1;
   color: #ffffff;
   cursor: pointer;
   white-space: nowrap;
@@ -295,6 +299,61 @@
   background: #734c1b;
   border-color: #734c1b;
   color: #ffffff;
+}
+
+.nav-supplier-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 34px;
+  min-height: 34px;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1.5px solid #9ca3af;
+  border-radius: 9999px;
+  font-family: var(--font-body, 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink, #1a1a1a);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.nav-supplier-pill-btn:hover {
+  background: rgba(183, 134, 70, 0.05);
+  border-color: #875a22;
+  color: #875a22;
+}
+
+.nav-supplier-pill-btn .supplier-prefix {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-6px);
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+  transition: max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: max-width, opacity, transform;
+}
+
+.nav-supplier-pill-btn:hover .supplier-prefix,
+.nav-supplier-pill-btn:focus-visible .supplier-prefix {
+  max-width: 80px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.nav-supplier-pill-btn .supplier-base-label {
+  display: inline-block;
 }
 
 .premium-icon-btn {

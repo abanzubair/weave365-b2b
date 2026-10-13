@@ -8,47 +8,10 @@
 
 import { create } from 'zustand';
 import { DEFAULT_BASELINE_RATES } from '../constants/currencyRates.js';
+import { ALL_EXISTING_COUNTRIES } from '../constants/allCountries.js';
 import { getLocalizedPrice, calculateLocalizedHybridProductPrice, calculateLocalizedHybridCartTotals, formatCurrency } from '../services/pricingService.js';
 
-export const INITIAL_COUNTRIES = [
-  {
-    code: 'IN',
-    name: 'India',
-    currency: 'INR',
-    currencySymbol: '₹',
-    markupPercent: 0,
-    flag: '🇮🇳',
-    enabled: true,
-    isBase: true,
-  },
-  {
-    code: 'US',
-    name: 'USA',
-    currency: 'USD',
-    currencySymbol: '$',
-    markupPercent: 10,
-    flag: '🇺🇸',
-    enabled: true,
-  },
-  {
-    code: 'QA',
-    name: 'Qatar',
-    currency: 'QAR',
-    currencySymbol: 'QAR',
-    markupPercent: 15,
-    flag: '🇶🇦',
-    enabled: true,
-  },
-  {
-    code: 'AE',
-    name: 'UAE',
-    currency: 'AED',
-    currencySymbol: 'AED',
-    markupPercent: 12,
-    flag: '🇦🇪',
-    enabled: true,
-  },
-];
+export const INITIAL_COUNTRIES = ALL_EXISTING_COUNTRIES;
 
 export const PRESET_ADDITIONAL_COUNTRIES = [
   { code: 'GB', name: 'United Kingdom', currency: 'GBP', currencySymbol: '£', markupPercent: 12, flag: '🇬🇧' },
@@ -81,8 +44,8 @@ function setCookie(name, value, days = 365) {
 
 export const useCountryCurrency = create((set, get) => ({
   // State
-  currentCountry: INITIAL_COUNTRIES[0], // Defaults to India
-  countries: INITIAL_COUNTRIES,
+  currentCountry: ALL_EXISTING_COUNTRIES[0], // Defaults to India
+  countries: ALL_EXISTING_COUNTRIES,
   exchangeRates: DEFAULT_BASELINE_RATES,
   exchangeRateMeta: {
     provider: 'ExchangeRate-API (open.er-api.com)',
@@ -119,11 +82,11 @@ export const useCountryCurrency = create((set, get) => ({
 
   setCountries: (countries) => {
     const current = get().currentCountry;
-    const resolvedCountries = Array.isArray(countries) ? countries : INITIAL_COUNTRIES;
+    const resolvedCountries = Array.isArray(countries) ? countries : ALL_EXISTING_COUNTRIES;
     const currentStillValid = resolvedCountries.find((c) => c.code === current.code && c.enabled !== false);
     set({
       countries: resolvedCountries,
-      currentCountry: currentStillValid || resolvedCountries[0] || INITIAL_COUNTRIES[0],
+      currentCountry: currentStillValid || resolvedCountries[0] || ALL_EXISTING_COUNTRIES[0],
     });
   },
 
@@ -161,7 +124,20 @@ export const useCountryCurrency = create((set, get) => ({
 
         const serverCountries = Array.isArray(data.countries) && data.countries.length > 0
           ? data.countries
-          : INITIAL_COUNTRIES;
+          : [];
+
+        // Merge custom DB markups/status with comprehensive country list
+        const mergedCountries = ALL_EXISTING_COUNTRIES.map((base) => {
+          const custom = serverCountries.find((sc) => sc.code?.toUpperCase() === base.code?.toUpperCase());
+          return custom ? { ...base, ...custom } : base;
+        });
+
+        // Retain any custom added countries from database
+        serverCountries.forEach((sc) => {
+          if (!mergedCountries.some((c) => c.code?.toUpperCase() === sc.code?.toUpperCase())) {
+            mergedCountries.push(sc);
+          }
+        });
 
         const serverRates = data.exchangeRates || DEFAULT_BASELINE_RATES;
         const serverMeta = data.exchangeRateMeta || {};
@@ -177,12 +153,12 @@ export const useCountryCurrency = create((set, get) => ({
           targetCode = detectedCode;
         }
 
-        const selectedCountry = serverCountries.find((c) => c.code.toUpperCase() === targetCode && c.enabled !== false)
-          || serverCountries.find((c) => c.code === 'IN')
-          || serverCountries[0];
+        const selectedCountry = mergedCountries.find((c) => c.code.toUpperCase() === targetCode && c.enabled !== false)
+          || mergedCountries.find((c) => c.code === 'IN')
+          || mergedCountries[0];
 
         set({
-          countries: serverCountries,
+          countries: mergedCountries,
           currentCountry: selectedCountry,
           exchangeRates: serverRates,
           exchangeRateMeta: serverMeta,
@@ -207,6 +183,7 @@ export const useCountryCurrency = create((set, get) => ({
     const initialCountries = get().countries;
     const selected = initialCountries.find((c) => c.code === (savedCode || 'IN')) || initialCountries[0];
     set({
+      countries: initialCountries,
       currentCountry: selected,
       isManualSelection: isManual,
       isInitialized: true,

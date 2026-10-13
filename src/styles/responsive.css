@@ -98,16 +98,29 @@
   }
   .nav-auth-pill-btn {
     font-size: 13.5px !important;
-    padding: 6px 18px !important;
+    padding: 0 18px !important;
+    height: 34px !important;
     min-height: 34px !important;
+    box-sizing: border-box !important;
   }
   .nav-account-pill-btn {
     font-size: 13.5px !important;
-    padding: 6px 20px !important;
+    padding: 0 20px !important;
+    height: 34px !important;
     min-height: 34px !important;
+    box-sizing: border-box !important;
+  }
+  .nav-supplier-pill-btn {
+    font-size: 13.5px !important;
+    padding: 0 18px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    box-sizing: border-box !important;
   }
   .country-selector-trigger {
+    height: 34px !important;
     min-height: 34px !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -136,16 +149,29 @@
   }
   .nav-auth-pill-btn {
     font-size: 14px !important;
-    padding: 7px 20px !important;
+    padding: 0 20px !important;
+    height: 36px !important;
     min-height: 36px !important;
+    box-sizing: border-box !important;
   }
   .nav-account-pill-btn {
     font-size: 14px !important;
-    padding: 7px 22px !important;
+    padding: 0 22px !important;
+    height: 36px !important;
     min-height: 36px !important;
+    box-sizing: border-box !important;
+  }
+  .nav-supplier-pill-btn {
+    font-size: 14px !important;
+    padding: 0 20px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    box-sizing: border-box !important;
   }
   .country-selector-trigger {
+    height: 36px !important;
     min-height: 36px !important;
+    box-sizing: border-box !important;
   }
   .brand-logo {
     height: 32px !important;

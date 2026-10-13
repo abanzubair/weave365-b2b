@@ -157,6 +157,9 @@ export function Account({
     ) {
       return isVendor ? 'vendor-stock' : 'orders';
     }
+    if (isVendor && (initialTab === 'influencer' || initialTab === 'affiliates' || initialTab === 'developer')) {
+      return 'vendor-stock';
+    }
     if (initialTab) return initialTab;
     if (isVendor && !accountLocked) return 'vendor-stock';
     return 'profile';
@@ -191,6 +194,8 @@ export function Account({
         initialTab === 'stock-inventory'
       ) {
         setActiveTab(isVendor ? 'vendor-stock' : 'orders');
+      } else if (isVendor && (initialTab === 'influencer' || initialTab === 'affiliates' || initialTab === 'developer')) {
+        setActiveTab('vendor-stock');
       } else {
         setActiveTab(initialTab);
       }
@@ -725,26 +730,30 @@ export function Account({
           <Globe size={16} />
           <span>Build Your Own Website</span>
         </button> */}
-        <button 
-          type="button" 
-          className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && handleSelectTab('influencer')}
-          disabled={accountLocked}
-          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
-        >
-          {accountLocked ? <Lock size={15} /> : <UserRound size={16} />}
-          <span>Affiliates</span>
-        </button>
-        <button 
-          type="button" 
-          className={`account-nav-item ${activeTab === 'developer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && handleSelectTab('developer')}
-          disabled={accountLocked}
-          title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
-        >
-          {accountLocked ? <Lock size={15} /> : <Code2 size={16} />}
-          <span>Developer API</span>
-        </button>
+        {!isVendor && (
+          <button 
+            type="button" 
+            className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+            onClick={() => !accountLocked && handleSelectTab('influencer')}
+            disabled={accountLocked}
+            title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
+          >
+            {accountLocked ? <Lock size={15} /> : <UserRound size={16} />}
+            <span>Affiliates</span>
+          </button>
+        )}
+        {!isVendor && (
+          <button 
+            type="button" 
+            className={`account-nav-item ${activeTab === 'developer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
+            onClick={() => !accountLocked && handleSelectTab('developer')}
+            disabled={accountLocked}
+            title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
+          >
+            {accountLocked ? <Lock size={15} /> : <Code2 size={16} />}
+            <span>Developer API</span>
+          </button>
+        )}
       </nav>
 
       {/* 4. ACTIVE TAB CONTENT */}
@@ -1356,7 +1365,7 @@ export function Account({
         )}
 
         {/* AFFILIATES TAB */}
-        {activeTab === 'influencer' && (
+        {!isVendor && activeTab === 'influencer' && (
           <div className="account-panel-minimal panel-transparent">
             <div className="account-section-header">
               <span className="account-section-title">
@@ -1645,7 +1654,7 @@ export function Account({
         )}
 
         {/* DEVELOPER API TAB */}
-        {activeTab === 'developer' && (
+        {!isVendor && activeTab === 'developer' && (
           <div className="account-panel-minimal panel-transparent">
             {isCustomer ? (
               <div className="account-empty-state" style={{ padding: '56px 20px', maxWidth: '480px', margin: '0 auto', textAlign: 'center' }}>
