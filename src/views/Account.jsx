@@ -17,7 +17,7 @@
  * @param {Function} props.onSignOut - Callback to end the user session
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
   Bookmark, 
   ClipboardList, 
@@ -50,7 +50,7 @@ import {
 } from '../components/icons.jsx';
 import { customerPrice, fallbackProductImage, formatMoney, calculateHybridCartTotals, calculateComboDiscount } from '../storefrontShared.jsx';
 import { getOptimizedImageUrl, getOriginalImageUrl } from '../utils/imageOptimizer.js';
-import { priceNoticeForAccess, isAccountLocked, detectAccountCategory } from '../utils/buyerAccess.js';
+import { priceNoticeForAccess, isAccountLocked, detectAccountCategory, isVendorProfile } from '../utils/buyerAccess.js';
 import { ResellerTools } from '../components/ResellerTools.jsx';
 import { ResellerUpgradeCard } from '../components/ResellerUpgradeCard.jsx';
 import { UserProfileTab } from '../components/UserProfileTab.jsx';
@@ -111,15 +111,24 @@ export function Account({
   const isAdmin = Boolean(userEmail && adminEmails.includes(userEmail)) || user?.role === 'admin' || user?.user_metadata?.role === 'admin' || buyerProfile?.role === 'admin';
 
   const isVendor = !isAdmin && (
+                   isVendorProfile(buyerProfile) ||
+                   isVendorProfile(user?.user_metadata?.buyer_profile) ||
+                   isVendorProfile(user?.buyer_profile) ||
                    buyerProfile?.buyer_type === 'vendor' ||
                    user?.user_metadata?.buyer_profile?.buyer_type === 'vendor' ||
                    user?.buyer_profile?.buyer_type === 'vendor' ||
                    buyerProfile?.buyer_subtype?.toLowerCase().includes('vendor') ||
                    user?.user_metadata?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
                    user?.buyer_profile?.buyer_subtype?.toLowerCase().includes('vendor') ||
+                   buyerProfile?.role === 'vendor' ||
+                   user?.user_metadata?.role === 'vendor' ||
+                   user?.role === 'vendor' ||
+                   buyerProfile?.user_type === 'supplier' ||
+                   user?.user_metadata?.user_type === 'supplier' ||
                    priceAccess?.buyerType === 'vendor' ||
                    Boolean(buyerProfile?.vendor_code) ||
-                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code));
+                   Boolean(user?.user_metadata?.buyer_profile?.vendor_code) ||
+                   Boolean(user?.buyer_profile?.vendor_code));
 
   const accountLocked = isAccountLocked(buyerProfile, user);
 
@@ -133,24 +142,35 @@ export function Account({
   const businessWaMsg = `Hi Weave365, I would like to switch my account to a Business & Reseller account.\nName: ${activeCustomerName || 'N/A'}\nEmail: ${activeCustomerEmail || 'N/A'}`;
   const businessWaUrl = `https://wa.me/${fullWaPhone}?text=${encodeURIComponent(businessWaMsg)}`;
 
-  const [activeTab, setActiveTab] = useState(() => {
-    if (isAccountLocked(buyerProfile, user)) return 'profile';
+  const userSwitchedTabRef = useRef(false);
+
+  const resolveDefaultTab = useCallback(() => {
     if (initialTab === 'upload' || initialTab === 'vendor-upload') {
       return isVendor ? 'vendor-upload' : 'orders';
     }
-    if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
+    if (
+      initialTab === 'stock' ||
+      initialTab === 'vendor' ||
+      initialTab === 'vendor-stock' ||
+      initialTab === 'inventory' ||
+      initialTab === 'stock-inventory'
+    ) {
       return isVendor ? 'vendor-stock' : 'orders';
     }
     if (initialTab) return initialTab;
-    if (isVendor) return 'vendor-stock';
+    if (isVendor && !accountLocked) return 'vendor-stock';
     return 'profile';
+  }, [initialTab, isVendor, accountLocked]);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (accountLocked) return 'profile';
+    return resolveDefaultTab();
   });
 
-  useEffect(() => {
-    if (accountLocked) {
-      setActiveTab('profile');
-    }
-  }, [accountLocked]);
+  const handleSelectTab = useCallback((tabName) => {
+    userSwitchedTabRef.current = true;
+    setActiveTab(tabName);
+  }, []);
 
   const [orderSubTab, setOrderSubTab] = useState('history');
 
@@ -160,13 +180,26 @@ export function Account({
       return;
     }
     if (initialTab) {
+      userSwitchedTabRef.current = false;
       if (initialTab === 'upload' || initialTab === 'vendor-upload') {
         setActiveTab(isVendor ? 'vendor-upload' : 'orders');
-      } else if (initialTab === 'stock' || initialTab === 'vendor' || initialTab === 'vendor-stock') {
+      } else if (
+        initialTab === 'stock' ||
+        initialTab === 'vendor' ||
+        initialTab === 'vendor-stock' ||
+        initialTab === 'inventory' ||
+        initialTab === 'stock-inventory'
+      ) {
         setActiveTab(isVendor ? 'vendor-stock' : 'orders');
       } else {
         setActiveTab(initialTab);
       }
+      return;
+    }
+
+    // Default opening tab for seller account is stock inventory
+    if (isVendor && !userSwitchedTabRef.current) {
+      setActiveTab('vendor-stock');
     }
   }, [initialTab, isVendor, accountLocked]);
 
@@ -620,7 +653,7 @@ export function Account({
             <button
               type="button"
               className="account-strip-btn"
-              onClick={() => setActiveTab('profile')}
+              onClick={() => handleSelectTab('profile')}
             >
               Complete Profile →
             </button>
@@ -635,7 +668,7 @@ export function Account({
             <button 
               type="button" 
               className={`account-nav-item ${activeTab === 'vendor-stock' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-              onClick={() => !accountLocked && setActiveTab('vendor-stock')}
+              onClick={() => !accountLocked && handleSelectTab('vendor-stock')}
               disabled={accountLocked}
               title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
             >
@@ -645,7 +678,7 @@ export function Account({
             <button 
               type="button" 
               className={`account-nav-item ${activeTab === 'vendor-upload' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-              onClick={() => !accountLocked && setActiveTab('vendor-upload')}
+              onClick={() => !accountLocked && handleSelectTab('vendor-upload')}
               disabled={accountLocked}
               title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
             >
@@ -657,7 +690,7 @@ export function Account({
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
+          onClick={() => handleSelectTab('profile')}
         >
           <User size={16} />
           <span>Profile</span>
@@ -665,7 +698,7 @@ export function Account({
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'orders' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && setActiveTab('orders')}
+          onClick={() => !accountLocked && handleSelectTab('orders')}
           disabled={accountLocked}
           title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
@@ -676,7 +709,7 @@ export function Account({
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'addresses' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && setActiveTab('addresses')}
+          onClick={() => !accountLocked && handleSelectTab('addresses')}
           disabled={accountLocked}
           title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
@@ -695,7 +728,7 @@ export function Account({
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'influencer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && setActiveTab('influencer')}
+          onClick={() => !accountLocked && handleSelectTab('influencer')}
           disabled={accountLocked}
           title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
@@ -705,7 +738,7 @@ export function Account({
         <button 
           type="button" 
           className={`account-nav-item ${activeTab === 'developer' ? 'active' : ''} ${accountLocked ? 'locked' : ''}`}
-          onClick={() => !accountLocked && setActiveTab('developer')}
+          onClick={() => !accountLocked && handleSelectTab('developer')}
           disabled={accountLocked}
           title={accountLocked ? 'Account locked: Complete profile to unlock' : undefined}
         >
@@ -1641,7 +1674,7 @@ export function Account({
                     type="button"
                     className="primary-button"
                     style={{ padding: '10px 24px', fontSize: '13.5px', borderRadius: '8px', fontWeight: 600 }}
-                    onClick={() => setActiveTab('profile')}
+                    onClick={() => handleSelectTab('profile')}
                   >
                     Switch to Business Account
                   </button>

@@ -94,6 +94,23 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(null);
   const [submitError, setSubmitError] = useState('');
+  const [localCatalogProducts, setLocalCatalogProducts] = useState(() => (Array.isArray(catalogProducts) && catalogProducts.length >= 25 ? catalogProducts : []));
+
+  // Ensure full catalog is loaded so SKU design numbers never collide
+  useEffect(() => {
+    if (Array.isArray(catalogProducts) && catalogProducts.length >= 25) {
+      setLocalCatalogProducts(catalogProducts);
+    } else {
+      import('../productData.js')
+        .then((m) => m.fetchProducts())
+        .then((all) => {
+          if (Array.isArray(all) && all.length > 0) {
+            setLocalCatalogProducts(all);
+          }
+        })
+        .catch((err) => console.error('[SellerProductUpload] Error loading full catalog:', err));
+    }
+  }, [catalogProducts]);
 
   // 1. Seller Code verification
   const rawSellerCode = String(
@@ -112,20 +129,20 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
     ''
   ).trim();
 
-  // 2. Form state for Product Attributes
-  const [category, setCategory] = useState('Saree');
-  const [fabric, setFabric] = useState(FABRIC_OPTIONS[0]);
-  const [work, setWork] = useState(WORK_OPTIONS[0]);
-  const [pattern, setPattern] = useState(PATTERN_OPTIONS[0]);
-  const [weave, setWeave] = useState(WEAVE_OPTIONS[0]);
-  const [purity, setPurity] = useState(PURITY_OPTIONS[0]);
-  const [productType, setProductType] = useState(TYPE_OPTIONS[0]);
+  // 2. Form state for Product Attributes (initially blank)
+  const [category, setCategory] = useState('');
+  const [fabric, setFabric] = useState('');
+  const [work, setWork] = useState('');
+  const [pattern, setPattern] = useState('');
+  const [weave, setWeave] = useState('');
+  const [purity, setPurity] = useState('');
+  const [productType, setProductType] = useState('');
 
   // Conditional fields for Suit
-  const isSuit = category.toLowerCase() === 'suit';
-  const [fabricTop, setFabricTop] = useState(SUIT_TOP_FABRICS[0]);
-  const [fabricBottom, setFabricBottom] = useState(SUIT_BOTTOM_FABRICS[0]);
-  const [fabricDupatta, setFabricDupatta] = useState(SUIT_DUPATTA_FABRICS[0]);
+  const isSuit = Boolean(category && category.toLowerCase() === 'suit');
+  const [fabricTop, setFabricTop] = useState('');
+  const [fabricBottom, setFabricBottom] = useState('');
+  const [fabricDupatta, setFabricDupatta] = useState('');
 
   // Optional price and title
   const [wholesalePrice, setWholesalePrice] = useState('');
@@ -156,9 +173,10 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
     const prefix = `${catCode}${venDigits}`;
 
     const existingDesignNumbers = new Set();
+    const allProductsToCheck = localCatalogProducts.length > 0 ? localCatalogProducts : catalogProducts;
 
     // Check catalog products
-    for (const p of catalogProducts) {
+    for (const p of allProductsToCheck) {
       const pSku = String(p.id || p.groupKey || p.raw?.Code || '').trim();
       if (pSku.startsWith(prefix) && pSku.length >= 6) {
         const dStr = pSku.slice(3, 6);
@@ -184,7 +202,7 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
     }
 
     return String(candidate).padStart(3, '0').slice(-3);
-  }, [sellerCode, category, catalogProducts, mySubmissions]);
+  }, [sellerCode, category, catalogProducts, localCatalogProducts, mySubmissions]);
 
   // 5. Predefined Base SKU
   const baseSku = useMemo(() => {
@@ -459,8 +477,36 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
       return;
     }
 
+    if (!category) {
+      setSubmitError('Please select a Category.');
+      return;
+    }
+    if (!fabric) {
+      setSubmitError('Please select a Fabric.');
+      return;
+    }
     if (isSuit && (!fabricTop || !fabricBottom || !fabricDupatta)) {
       setSubmitError('Please select Top, Bottom, and Dupatta fabrics for this Suit design.');
+      return;
+    }
+    if (!work) {
+      setSubmitError('Please select Work.');
+      return;
+    }
+    if (!pattern) {
+      setSubmitError('Please select a Pattern.');
+      return;
+    }
+    if (!weave) {
+      setSubmitError('Please select a Weave.');
+      return;
+    }
+    if (!purity) {
+      setSubmitError('Please select Purity.');
+      return;
+    }
+    if (!productType) {
+      setSubmitError('Please select a Type.');
       return;
     }
 
@@ -537,6 +583,16 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
       ]);
       setCustomTitle('');
       setWholesalePrice('');
+      setCategory('');
+      setFabric('');
+      setWork('');
+      setPattern('');
+      setWeave('');
+      setPurity('');
+      setProductType('');
+      setFabricTop('');
+      setFabricBottom('');
+      setFabricDupatta('');
 
       // Refresh list
       void loadSubmissions();
@@ -762,265 +818,14 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
             </div>
           )}
 
-          {/* 1. Predefined SKU Live Preview Banner */}
-          <div className="seller-sku-preview-banner">
-            <div className="seller-sku-preview-left">
-              <span className="seller-sku-label">Auto-Generated Predefined SKU</span>
-              <span className="seller-sku-code-value">{baseSku}</span>
-            </div>
-            <div className="seller-sku-meta-pills">
-              <span className="seller-sku-pill">Category: {category} ({getCategoryCode(category)})</span>
-              <span className="seller-sku-pill">Seller: {sellerCode} ({getVendorDigits(sellerCode)})</span>
-              <span className="seller-sku-pill">Design: #{nextDesignNumber} (Auto-Calculated)</span>
-            </div>
-          </div>
-
-          {/* 2. Product Category & Attributes Card */}
-          <div className="seller-card-section">
-            <div className="seller-section-header">
-              <div>
-                <h2 className="seller-section-title">
-                  <Tag size={18} />
-                  <span>Product Classification & Details</span>
-                </h2>
-                <p className="seller-section-desc">
-                  Select the specific taxonomy values for this single design.
-                </p>
-              </div>
-            </div>
-
-            <div className="seller-form-grid-3">
-              {/* Category */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Category <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  {PRODUCT_CATEGORIES.map((c) => (
-                    <option key={c.code} value={c.label}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Fabric */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Fabric <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={fabric}
-                  onChange={(e) => setFabric(e.target.value)}
-                  required
-                >
-                  {FABRIC_OPTIONS.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Conditional Suit Component Fabrics */}
-              {isSuit && (
-                <>
-                  <div className="seller-form-group">
-                    <label className="seller-field-label">
-                      Top Fabric <span className="required">*</span>
-                    </label>
-                    <select
-                      className="seller-select-input"
-                      value={fabricTop}
-                      onChange={(e) => setFabricTop(e.target.value)}
-                      required
-                    >
-                      {SUIT_TOP_FABRICS.map((st) => (
-                        <option key={st} value={st}>
-                          {st}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="seller-form-group">
-                    <label className="seller-field-label">
-                      Bottom Fabric <span className="required">*</span>
-                    </label>
-                    <select
-                      className="seller-select-input"
-                      value={fabricBottom}
-                      onChange={(e) => setFabricBottom(e.target.value)}
-                      required
-                    >
-                      {SUIT_BOTTOM_FABRICS.map((sb) => (
-                        <option key={sb} value={sb}>
-                          {sb}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="seller-form-group">
-                    <label className="seller-field-label">
-                      Dupatta Fabric <span className="required">*</span>
-                    </label>
-                    <select
-                      className="seller-select-input"
-                      value={fabricDupatta}
-                      onChange={(e) => setFabricDupatta(e.target.value)}
-                      required
-                    >
-                      {SUIT_DUPATTA_FABRICS.map((sd) => (
-                        <option key={sd} value={sd}>
-                          {sd}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {/* Work */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Work <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={work}
-                  onChange={(e) => setWork(e.target.value)}
-                  required
-                >
-                  {WORK_OPTIONS.map((w) => (
-                    <option key={w} value={w}>
-                      {w}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Pattern */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Pattern <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={pattern}
-                  onChange={(e) => setPattern(e.target.value)}
-                  required
-                >
-                  {PATTERN_OPTIONS.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Weave */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Weave <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={weave}
-                  onChange={(e) => setWeave(e.target.value)}
-                  required
-                >
-                  {WEAVE_OPTIONS.map((wv) => (
-                    <option key={wv} value={wv}>
-                      {wv}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Purity */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Purity <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={purity}
-                  onChange={(e) => setPurity(e.target.value)}
-                  required
-                >
-                  {PURITY_OPTIONS.map((pr) => (
-                    <option key={pr} value={pr}>
-                      {pr}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Type */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">
-                  Type <span className="required">*</span>
-                </label>
-                <select
-                  className="seller-select-input"
-                  value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
-                  required
-                >
-                  {TYPE_OPTIONS.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Wholesale Price (Optional) */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">Wholesale Price (₹ / pc)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  className="seller-text-input"
-                  placeholder="e.g. 2400"
-                  value={wholesalePrice}
-                  onChange={(e) => setWholesalePrice(e.target.value)}
-                />
-              </div>
-
-              {/* Custom Design Title (Optional) */}
-              <div className="seller-form-group">
-                <label className="seller-field-label">Custom Design Title (Optional)</label>
-                <input
-                  type="text"
-                  className="seller-text-input"
-                  placeholder={`e.g. ${fabric} ${work} ${category}`}
-                  value={customTitle}
-                  onChange={(e) => setCustomTitle(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Multi-Color Single-Design Images Card */}
+          {/* 1. Multi-Color Single-Design Images Card */}
           <div className="seller-card-section">
             <div className="seller-section-header">
               <div>
                 <h2 className="seller-section-title">
                   <ImageIcon size={18} />
-                  <span>Color Variations & Images</span>
+                  <span>Color Variations</span>
                 </h2>
-                <p className="seller-section-desc">
-                  Upload photos of each color for this single design product. Each color is assigned a sub-SKU (e.g. {baseSku}-1).
-                </p>
               </div>
             </div>
 
@@ -1176,6 +981,255 @@ export function SellerProductUpload({ user, buyerProfile, catalogProducts = [] }
                 <Plus size={15} />
                 <span>Add Color Variation</span>
               </button>
+            </div>
+          </div>
+
+          {/* 2. Product Category & Attributes Card */}
+          <div className="seller-card-section">
+            <div className="seller-section-header">
+              <div>
+                <h2 className="seller-section-title">
+                  <Tag size={18} />
+                  <span>Product Classification & Details</span>
+                </h2>
+                <p className="seller-section-desc">
+                  Select the specific values for this design.
+                </p>
+              </div>
+            </div>
+
+            <div className="seller-form-grid-3">
+              {/* Category */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Category <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!category ? 'placeholder-selected' : ''}`}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {PRODUCT_CATEGORIES.map((c) => (
+                    <option key={c.code} value={c.label}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Fabric */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Fabric <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!fabric ? 'placeholder-selected' : ''}`}
+                  value={fabric}
+                  onChange={(e) => setFabric(e.target.value)}
+                  required
+                >
+                  <option value="">Select Fabric</option>
+                  {FABRIC_OPTIONS.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Conditional Suit Component Fabrics */}
+              {isSuit && (
+                <>
+                  <div className="seller-form-group">
+                    <label className="seller-field-label">
+                      Top Fabric <span className="required">*</span>
+                    </label>
+                    <select
+                      className={`seller-select-input ${!fabricTop ? 'placeholder-selected' : ''}`}
+                      value={fabricTop}
+                      onChange={(e) => setFabricTop(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Top Fabric</option>
+                      {SUIT_TOP_FABRICS.map((st) => (
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="seller-form-group">
+                    <label className="seller-field-label">
+                      Bottom Fabric <span className="required">*</span>
+                    </label>
+                    <select
+                      className={`seller-select-input ${!fabricBottom ? 'placeholder-selected' : ''}`}
+                      value={fabricBottom}
+                      onChange={(e) => setFabricBottom(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Bottom Fabric</option>
+                      {SUIT_BOTTOM_FABRICS.map((sb) => (
+                        <option key={sb} value={sb}>
+                          {sb}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="seller-form-group">
+                    <label className="seller-field-label">
+                      Dupatta Fabric <span className="required">*</span>
+                    </label>
+                    <select
+                      className={`seller-select-input ${!fabricDupatta ? 'placeholder-selected' : ''}`}
+                      value={fabricDupatta}
+                      onChange={(e) => setFabricDupatta(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Dupatta Fabric</option>
+                      {SUIT_DUPATTA_FABRICS.map((sd) => (
+                        <option key={sd} value={sd}>
+                          {sd}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Work */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Work <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!work ? 'placeholder-selected' : ''}`}
+                  value={work}
+                  onChange={(e) => setWork(e.target.value)}
+                  required
+                >
+                  <option value="">Select Work</option>
+                  {WORK_OPTIONS.map((w) => (
+                    <option key={w} value={w}>
+                      {w}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Pattern */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Pattern <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!pattern ? 'placeholder-selected' : ''}`}
+                  value={pattern}
+                  onChange={(e) => setPattern(e.target.value)}
+                  required
+                >
+                  <option value="">Select Pattern</option>
+                  {PATTERN_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Weave */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Weave <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!weave ? 'placeholder-selected' : ''}`}
+                  value={weave}
+                  onChange={(e) => setWeave(e.target.value)}
+                  required
+                >
+                  <option value="">Select Weave</option>
+                  {WEAVE_OPTIONS.map((wv) => (
+                    <option key={wv} value={wv}>
+                      {wv}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Purity */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Purity <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!purity ? 'placeholder-selected' : ''}`}
+                  value={purity}
+                  onChange={(e) => setPurity(e.target.value)}
+                  required
+                >
+                  <option value="">Select Purity</option>
+                  {PURITY_OPTIONS.map((pu) => (
+                    <option key={pu} value={pu}>
+                      {pu}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Type */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">
+                  Type <span className="required">*</span>
+                </label>
+                <select
+                  className={`seller-select-input ${!productType ? 'placeholder-selected' : ''}`}
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                  required
+                >
+                  <option value="">Select Type</option>
+                  {TYPE_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Wholesale Price (Optional) */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">Wholesale Price (₹ / pc)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="seller-text-input"
+                  placeholder="e.g. 2400"
+                  value={wholesalePrice}
+                  onChange={(e) => setWholesalePrice(e.target.value)}
+                />
+              </div>
+
+              {/* Custom Design Title (Optional) */}
+              <div className="seller-form-group">
+                <label className="seller-field-label">Custom Design Title (Optional)</label>
+                <input
+                  type="text"
+                  className="seller-text-input"
+                  placeholder={
+                    fabric && work && category
+                      ? `e.g. ${fabric} ${work} ${category}`
+                      : 'e.g. Art Silk Antique Zari Saree'
+                  }
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 

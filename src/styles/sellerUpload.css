@@ -78,6 +78,8 @@
 /* Tab Switcher - Minimal Flat Segmented */
 .seller-upload-nav-tabs {
   display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
   background: #f5f5f4;
   padding: 4px;
   border-radius: 10px;
@@ -199,9 +201,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f0efee;
+  margin-bottom: 16px;
 }
 
 .seller-section-title {
@@ -334,12 +334,23 @@
   cursor: not-allowed;
 }
 
+.seller-select-input.placeholder-selected {
+  color: #78716c;
+}
+
+.seller-select-input option {
+  color: #1c1917;
+}
+
+.seller-select-input option[value=""] {
+  color: #78716c;
+}
+
 /* Color Variant Section - Compact Horizontal Rows */
 .seller-colors-list {
   display: flex;
   flex-direction: column;
   gap: 0;
-  border-top: 1px solid #f1f5f9;
 }
 
 .seller-color-row {
@@ -611,6 +622,7 @@
   /* Section 1: Top Navigation Tabs on Mobile */
   .seller-upload-nav-tabs {
     display: flex;
+    align-self: stretch;
     width: 100%;
     padding: 3px;
     gap: 3px;

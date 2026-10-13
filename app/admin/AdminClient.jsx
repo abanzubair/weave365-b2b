@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Admin } from '../../src/views/Admin.jsx';
 import { useStorefront } from '../../src/store/useStorefront.js';
 import { useAppNavigate } from '../../src/hooks/useAppNavigate.js';
-import { fetchSupabaseBlogPosts, fetchSupabaseLandingPages } from '../../src/productData.js';
+import { fetchSupabaseBlogPosts, fetchSupabaseLandingPages, fetchProducts } from '../../src/productData.js';
 
 export default function AdminClient() {
   const navigate = useAppNavigate();
@@ -17,6 +17,8 @@ export default function AdminClient() {
     blogs,
     setBlogs,
     products,
+    setProducts,
+    isCatalogHydrated,
     landingPages,
     setLandingPages,
   } = useStorefront();
@@ -40,7 +42,16 @@ export default function AdminClient() {
         })
         .catch(console.error);
     }
-  }, [blogs, landingPages, setBlogs, setLandingPages]);
+    if (!isCatalogHydrated || !products || products.length < 25) {
+      fetchProducts()
+        .then((all) => {
+          if (Array.isArray(all) && all.length > 0 && setProducts) {
+            setProducts(all, true);
+          }
+        })
+        .catch((err) => console.error('[AdminClient] Error loading full catalog:', err));
+    }
+  }, [blogs, landingPages, isCatalogHydrated, products, setBlogs, setLandingPages, setProducts]);
 
   return (
     <Admin

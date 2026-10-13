@@ -877,54 +877,162 @@
   margin: 0;
 }
 
-/* Seller Application Confirmation (Distilled & Clarified) */
-.signup-seller-status-card {
-  padding: 36px 28px 30px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.05);
-  gap: 14px;
-}
+/* ==========================================================================
+   Seller Email Verification Card (Minimal, Clean & Refined)
+   ========================================================================== */
 
-.signup-seller-status-icon {
-  width: 52px;
-  height: 52px;
-  background: #f8fafc;
-  color: #1e293b;
-  border: 1.5px solid #e2e8f0;
-}
-
-.signup-seller-status-card .signup-status-title {
-  font-size: 21px;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.02em;
-}
-
-.signup-seller-status-card .signup-status-desc {
-  font-size: 14px;
-  color: #64748b;
-  line-height: 1.5;
-  max-width: 380px;
-}
-
-.signup-seller-status-card .signup-status-desc strong {
-  color: #0f172a;
-}
-
-.signup-seller-fasttrack {
+.seller-verify-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  text-align: center;
+  padding: 44px 32px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.02);
+  max-width: 420px;
+  margin: auto;
   width: 100%;
-  margin-top: 8px;
+  box-sizing: border-box;
 }
 
-.signup-seller-fasttrack-hint {
-  font-size: 12.5px;
-  font-weight: 500;
+.seller-verify-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.seller-verify-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.seller-verify-desc {
+  font-size: 14px;
   color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  max-width: 340px;
+}
+
+.seller-verify-email {
+  color: #0f172a;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.seller-verify-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.seller-verify-primary-btn {
+  width: 100%;
+  max-width: 200px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  text-decoration: none;
+}
+
+.seller-verify-primary-btn:hover {
+  background: #1e293b;
+}
+
+.seller-verify-primary-btn:active {
+  transform: scale(0.99);
+}
+
+.seller-verify-resend-wrap {
+  font-size: 13px;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.seller-verify-text-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.seller-verify-text-link:hover {
+  color: #475569;
+}
+
+.seller-verify-text-link:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.seller-verify-status-msg {
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.seller-verify-status-msg.success {
+  color: #16a34a;
+}
+
+.seller-verify-status-msg.error {
+  color: #dc2626;
+}
+
+.seller-verify-support {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12.5px;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.seller-verify-wa-link {
+  color: #475569;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.seller-verify-wa-link:hover {
+  color: #0f172a;
 }
 
 .signup-seller-whatsapp-btn {

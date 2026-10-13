@@ -47,16 +47,16 @@ export function SearchOverlay(props) {
 
   // Ensure products are fetched if search is activated on pages where products weren't eagerly loaded
   useEffect(() => {
-    if (searchActive && (!store.products || store.products.length === 0)) {
+    if (searchActive && (!store.products || store.products.length < 25 || !store.isCatalogHydrated)) {
       fetchProducts()
         .then((prods) => {
           if (prods && prods.length > 0 && store.setProducts) {
-            store.setProducts(prods);
+            store.setProducts(prods, true);
           }
         })
         .catch(console.error);
     }
-  }, [searchActive, store.products, store.setProducts]);
+  }, [searchActive, store.products, store.isCatalogHydrated, store.setProducts]);
 
   // Handle ESC key to close search
   useEffect(() => {

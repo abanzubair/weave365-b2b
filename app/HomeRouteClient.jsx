@@ -34,7 +34,7 @@ export default function HomeRouteClient({
   useEffect(() => {
     const state = useStorefront.getState();
     if (initialProducts.length > 0 && state.products.length === 0) {
-      setProducts(initialProducts);
+      setProducts(initialProducts, false);
     }
     if (initialHeroSlides.length > 0 && state.heroSlides.length === 0) {
       setHeroSlides(initialHeroSlides);
@@ -48,7 +48,7 @@ export default function HomeRouteClient({
           .then((m) => m.fetchProducts())
           .then((all) => {
             if (all && all.length > 0) {
-              setProducts(all);
+              setProducts(all, true);
             }
           })
           .catch(() => {});

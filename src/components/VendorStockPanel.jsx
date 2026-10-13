@@ -29,7 +29,8 @@ import {
   saveVendorProductStock, 
   VENDOR_STOCK_UPDATED_EVENT 
 } from '../utils/vendorStockService.js';
-import { fetchProducts } from '../productData.js';
+import { fetchProducts, clearProductDataCache } from '../productData.js';
+import { useStorefront } from '../store/useStorefront.js';
 import { fallbackProductImage } from '../storefrontShared.jsx';
 import { AppLink } from './AppLink.jsx';
 import { WhatsappIcon } from './WhatsappIcon.jsx';
@@ -45,27 +46,51 @@ function normalizeVendorCode(vid) {
 }
 
 export function VendorStockPanel({ user, buyerProfile, products = [] }) {
-  const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length > 0 ? products : []));
+  const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length >= 25 ? products : []));
   const [stockOverrides, setStockOverrides] = useState(() => getVendorStockLocal());
-  const [loading, setLoading] = useState(() => !Array.isArray(products) || products.length === 0);
+  const [loading, setLoading] = useState(() => !Array.isArray(products) || products.length < 25);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [justSavedId, setJustSavedId] = useState(null);
 
-  // Sync products if prop updates or fetch if initially empty
+  // Sync products if prop updates with full catalog, or fetch full catalog if incomplete
   useEffect(() => {
-    if (Array.isArray(products) && products.length > 0) {
+    if (Array.isArray(products) && products.length >= 25) {
       setCatalogProducts(products);
       setLoading(false);
-    } else if (catalogProducts.length === 0) {
+    } else {
       setLoading(true);
       fetchProducts()
-        .then((data) => setCatalogProducts(data || []))
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCatalogProducts(data);
+            useStorefront.getState().setProducts(data, true);
+          }
+        })
         .catch((err) => console.error('[VendorStockPanel] Error loading products:', err))
         .finally(() => setLoading(false));
     }
   }, [products]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      clearProductDataCache();
+      const freshProducts = await fetchProducts();
+      if (Array.isArray(freshProducts) && freshProducts.length > 0) {
+        setCatalogProducts(freshProducts);
+        useStorefront.getState().setProducts(freshProducts, true);
+      }
+      const remoteData = await fetchVendorStockOverrides(true);
+      setStockOverrides(remoteData);
+    } catch (err) {
+      console.error('[VendorStockPanel] Refresh error:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Check administrative privilege
   const userEmail = String(user?.email || '').toLowerCase().trim();
@@ -445,26 +470,53 @@ export function VendorStockPanel({ user, buyerProfile, products = [] }) {
             </div>
           </div>
 
-          {/* Vendor Selector Dropdown (Admin Only) */}
-          {isAdmin && (
-            <div className="vendor-selector-wrap">
-              <label htmlFor="vendor-vid-select" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Admin Switch VID:
-              </label>
-              <select
-                id="vendor-vid-select"
-                className="vendor-vid-select"
-                value={selectedVendorKey}
-                onChange={(e) => setSelectedVendorKey(e.target.value)}
-              >
-                {vendorOptions.map((v) => (
-                  <option key={v.key} value={v.key}>
-                    {v.displayName} ({v.count} designs)
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="vendor-stock-sync-btn"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(255, 255, 255, 0.18)',
+                color: '#fff',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '8px',
+                padding: '7px 13px',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: (refreshing || loading) ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              title="Sync live stock & refresh catalog from database"
+            >
+              <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
+              <span>{refreshing ? 'Syncing…' : 'Sync Live Stock'}</span>
+            </button>
+
+            {/* Vendor Selector Dropdown (Admin Only) */}
+            {isAdmin && (
+              <div className="vendor-selector-wrap">
+                <label htmlFor="vendor-vid-select" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Admin Switch VID:
+                </label>
+                <select
+                  id="vendor-vid-select"
+                  className="vendor-vid-select"
+                  value={selectedVendorKey}
+                  onChange={(e) => setSelectedVendorKey(e.target.value)}
+                >
+                  {vendorOptions.map((v) => (
+                    <option key={v.key} value={v.key}>
+                      {v.displayName} ({v.count} designs)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Real-Time Stats Ribbon */}

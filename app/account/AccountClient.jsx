@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Account } from '../../src/views/Account.jsx';
 import { useStorefront } from '../../src/store/useStorefront.js';
@@ -20,11 +20,27 @@ export default function AccountClient() {
     buyerProfile,
     setBuyerProfile,
     products,
+    setProducts,
+    isCatalogHydrated,
     cart,
     setCart,
     favorites,
     setCartOpen,
   } = useStorefront();
+
+  // Ensure complete catalog is loaded for Account & Seller Dashboard
+  useEffect(() => {
+    if (!isCatalogHydrated || !products || products.length < 25) {
+      import('../../src/productData.js')
+        .then((m) => m.fetchProducts())
+        .then((all) => {
+          if (Array.isArray(all) && all.length > 0) {
+            setProducts(all, true);
+          }
+        })
+        .catch((err) => console.error('[AccountClient] Error loading full catalog:', err));
+    }
+  }, [isCatalogHydrated, products, setProducts]);
 
   const priceAccess = useMemo(() => {
     return getBuyerAccess(user, buyerProfile);

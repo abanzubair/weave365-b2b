@@ -18,14 +18,23 @@ export function isVendorProfile(profile) {
   const type = String(profile.buyer_type || '').toLowerCase().trim();
   const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
   const userType = String(profile.user_type || '').toLowerCase().trim();
+  const role = String(profile.role || '').toLowerCase().trim();
   return (
     type === 'vendor' ||
     type === 'partner' ||
     type === 'supplier' ||
+    type === 'seller' ||
     userType === 'supplier' ||
+    userType === 'vendor' ||
+    userType === 'seller' ||
+    role === 'vendor' ||
+    role === 'supplier' ||
+    role === 'seller' ||
     subtype.includes('vendor') ||
     subtype.includes('weaver') ||
-    subtype.includes('supplier')
+    subtype.includes('supplier') ||
+    subtype.includes('seller') ||
+    Boolean(profile.vendor_code)
   );
 }
 
@@ -235,8 +244,11 @@ export function isAccountLocked(profile, user) {
     }
   }
 
-  // 4. For Supplier Partners: account is locked unless supplier onboarding is complete
+  // 4. For Supplier Partners: account is locked unless supplier onboarding is complete or vendor_code is assigned / approved
   if (isVendor) {
+    if (Boolean(p.vendor_code) || p.approval_status === 'approved') {
+      return false;
+    }
     if (!isCategoryDetailsComplete(p, 'supplier')) {
       return true;
     }
@@ -293,6 +305,9 @@ export function isCategoryDetailsComplete(profile, category = 'customer') {
 
   // Supplier Partner specific requirements:
   if (category === 'supplier' || category === 'vendor') {
+    if (Boolean(profile.vendor_code) || profile.approval_status === 'approved') {
+      return true;
+    }
     const businessName = String(profile.business_name || qual.business_name || qual.supplierBusinessName || '').trim();
     const supplierType = String(qual.business_type || qual.supplierBusinessType || '').trim();
     const formCompleted = Boolean(qual.form_completed === true);

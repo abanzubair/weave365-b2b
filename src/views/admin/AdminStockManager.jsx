@@ -41,6 +41,7 @@ import {
   VENDOR_STOCK_UPDATED_EVENT,
 } from '../../utils/vendorStockService.js';
 import { fetchProducts, clearProductDataCache } from '../../productData.js';
+import { useStorefront } from '../../store/useStorefront.js';
 import { fallbackProductImage } from '../../storefrontShared.jsx';
 import { AppLink } from '../../components/AppLink.jsx';
 
@@ -57,9 +58,9 @@ export default function AdminStockManager({
   user,
   buyerProfile,
 }) {
-  const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length > 0 ? products : []));
+  const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length >= 25 ? products : []));
   const [stockOverrides, setStockOverrides] = useState(() => getVendorStockLocal());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => !Array.isArray(products) || products.length < 25);
   const [refreshing, setRefreshing] = useState(false);
 
   // Filter & Search state
@@ -80,14 +81,20 @@ export default function AdminStockManager({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(24);
 
-  // Sync products if prop updates
+  // Sync products if prop updates with full catalog, or fetch full catalog if incomplete
   useEffect(() => {
-    if (Array.isArray(products) && products.length > 0) {
+    if (Array.isArray(products) && products.length >= 25) {
       setCatalogProducts(products);
-    } else if (catalogProducts.length === 0) {
+      setLoading(false);
+    } else {
       setLoading(true);
       fetchProducts()
-        .then((data) => setCatalogProducts(data || []))
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCatalogProducts(data);
+            useStorefront.getState().setProducts(data, true);
+          }
+        })
         .catch((err) => console.error('[AdminStockManager] Error loading products:', err))
         .finally(() => setLoading(false));
     }
@@ -102,6 +109,7 @@ export default function AdminStockManager({
         const freshProducts = await fetchProducts();
         if (Array.isArray(freshProducts) && freshProducts.length > 0) {
           setCatalogProducts(freshProducts);
+          useStorefront.getState().setProducts(freshProducts, true);
         }
       }
       const remoteData = await fetchVendorStockOverrides(force);

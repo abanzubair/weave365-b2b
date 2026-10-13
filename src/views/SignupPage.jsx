@@ -127,6 +127,8 @@ export function SignupPage({
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendStatus, setResendStatus] = useState('');
 
   // ---------------------------------------------------------------------------
   // NEW SIGNUP FLOW STATE
@@ -919,6 +921,38 @@ export function SignupPage({
 
   const sellerWaUrl = `https://wa.me/919919101369?text=${encodeURIComponent(sellerWaMessage)}`;
 
+  async function handleResendVerification(targetEmail) {
+    const toEmail = (targetEmail || supplierForm.business_email || email || '').trim();
+    if (!toEmail) return;
+    setResendLoading(true);
+    setResendStatus('');
+    try {
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/`
+        : 'https://www.weave365.com/';
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email: toEmail,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
+        if (error) {
+          setResendStatus(error.message || 'Unable to resend email at this time.');
+        } else {
+          setResendStatus('Verification link resent! Please check your inbox and spam folder.');
+        }
+      } else {
+        setResendStatus('Verification service unavailable.');
+      }
+    } catch (err) {
+      setResendStatus('Failed to resend. Please try again later.');
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // FORM SUBMISSION (WITH COMPLETE BYPASS ENFORCEMENT)
   // ---------------------------------------------------------------------------
@@ -1162,7 +1196,11 @@ export function SignupPage({
           });
 
       if (result.error) {
-        setMessage(result.error.message);
+        if (result.error.message?.toLowerCase().includes('email not confirmed')) {
+          setMessage('email-not-confirmed');
+        } else {
+          setMessage(result.error.message);
+        }
         setLoading(false);
       } else {
         if (mode === 'register') {
@@ -1241,39 +1279,62 @@ export function SignupPage({
         {/* Right Side: Form Panel */}
         <div className="signup-form-panel">
           <div className="signup-form-inner">
-            {/* Seller Registration Application Received State */}
+            {/* Seller Registration Email Verification State */}
             {message === 'seller-registered' ? (
-              <div className="signup-status-card signup-seller-status-card">
-                <div className="signup-status-icon signup-seller-status-icon">
-                  <Store size={26} />
+              <div className="seller-verify-card">
+                <div className="seller-verify-icon-wrap">
+                  <Mail size={22} strokeWidth={1.8} />
                 </div>
-                <h2 className="signup-status-title">Application Received</h2>
-                <p className="signup-status-desc">
-                  We'll review your loom and business details and reach out within <strong>2 business days</strong>.
+                <h2 className="seller-verify-title">Check your email</h2>
+                <p className="seller-verify-desc">
+                  We sent a verification link to <span className="seller-verify-email">{supplierForm.business_email || email}</span>. Click the link to confirm your email and activate your seller account.
                 </p>
 
-                <div className="signup-seller-fasttrack">
-                  <span className="signup-seller-fasttrack-hint">
-                    Need faster activation?
-                  </span>
-                  <a
-                    href={sellerWaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="signup-seller-whatsapp-btn"
+                <div className="seller-verify-actions">
+                  <button
+                    type="button"
+                    className="seller-verify-primary-btn"
+                    onClick={() => {
+                      setMode('login');
+                      setMessage('');
+                      setSignupStep('select-type');
+                    }}
                   >
-                    <WhatsappIcon size={17} />
-                    <span>Chat on WhatsApp</span>
-                  </a>
+                    Back to Sign In
+                  </button>
+
+                  <div className="seller-verify-resend-wrap">
+                    <span>Didn't receive the email?</span>
+                    <button
+                      type="button"
+                      onClick={() => handleResendVerification(supplierForm.business_email || email)}
+                      disabled={resendLoading}
+                      className="seller-verify-text-link"
+                    >
+                      {resendLoading ? 'Sending...' : 'Resend link'}
+                    </button>
+                  </div>
+
+                  {resendStatus && (
+                    <span className={`seller-verify-status-msg ${resendStatus.includes('resent') ? 'success' : 'error'}`}>
+                      {resendStatus}
+                    </span>
+                  )}
                 </div>
 
-                <button
-                  type="button"
-                  className="signup-seller-secondary-btn"
-                  onClick={() => navigate('home')}
-                >
-                  Explore wholesale catalog →
-                </button>
+                {sellerWaUrl && (
+                  <div className="seller-verify-support">
+                    <span>Need help?</span>
+                    <a
+                      href={sellerWaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="seller-verify-wa-link"
+                    >
+                      Contact support
+                    </a>
+                  </div>
+                )}
               </div>
             ) : message === 'verification-email-sent' ? (
               <div className="signup-status-card">
@@ -1600,7 +1661,41 @@ export function SignupPage({
                       text="Sign in with Google"
                     />
 
-                    {message && (
+                    {message && (message === 'email-not-confirmed' || message.toLowerCase().includes('email not confirmed')) ? (
+                      <div className="signup-alert-error" style={{ background: '#fef2f2', borderColor: '#fecaca', color: '#991b1b', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Mail size={16} style={{ flexShrink: 0, color: '#dc2626' }} />
+                          <strong>Email Verification Required</strong>
+                        </div>
+                        <span style={{ fontSize: '13px', lineHeight: 1.5 }}>
+                          Please confirm your email address before logging in. A verification link was sent to your email when you registered.
+                        </span>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleResendVerification(email)}
+                            disabled={resendLoading}
+                            style={{
+                              background: '#ffffff',
+                              border: '1px solid #dc2626',
+                              color: '#dc2626',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {resendLoading ? 'Resending...' : 'Resend Verification Link'}
+                          </button>
+                          {resendStatus && (
+                            <span style={{ fontSize: '12px', color: resendStatus.includes('resent') ? '#16a34a' : '#dc2626' }}>
+                              {resendStatus}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : message && (
                       <div className="signup-alert-error">
                         <AlertCircle size={16} style={{ flexShrink: 0 }} />
                         <span>{message}</span>
@@ -1676,38 +1771,61 @@ export function SignupPage({
                       </button>
                     </div>
                   ) : message === 'seller-registered' ? (
-                    /* Supplier Registration Complete Card */
-                    <div style={{ padding: '36px 24px', textAlign: 'center', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                      <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                        <Check size={28} />
+                    /* Supplier Registration Email Verification Sent Card */
+                    <div className="seller-verify-card">
+                      <div className="seller-verify-icon-wrap">
+                        <Mail size={22} strokeWidth={1.8} />
                       </div>
-                      <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Supplier Application Received!</h3>
-                      <p style={{ fontSize: '14.5px', color: '#64748b', lineHeight: 1.6, maxWidth: '380px', margin: '0 auto 20px' }}>
-                        Thank you for applying to be a Weave 365 supplier. Our team will review your application and contact you directly.
+                      <h2 className="seller-verify-title">Check your email</h2>
+                      <p className="seller-verify-desc">
+                        We sent a verification link to <span className="seller-verify-email">{supplierForm.business_email || email}</span>. Click the link to confirm your email and activate your seller account.
                       </p>
-                      {sellerWaUrl && (
-                        <a
-                          href={sellerWaUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="signup-submit-btn"
-                          style={{ maxWidth: '280px', margin: '0 auto 12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', background: '#25d366' }}
+
+                      <div className="seller-verify-actions">
+                        <button
+                          type="button"
+                          className="seller-verify-primary-btn"
+                          onClick={() => {
+                            setMode('login');
+                            setMessage('');
+                            setSignupStep('select-type');
+                          }}
                         >
-                          <WhatsappIcon size={18} /> Fast-track on WhatsApp
-                        </a>
+                          Back to Sign In
+                        </button>
+
+                        <div className="seller-verify-resend-wrap">
+                          <span>Didn't receive the email?</span>
+                          <button
+                            type="button"
+                            onClick={() => handleResendVerification(supplierForm.business_email || email)}
+                            disabled={resendLoading}
+                            className="seller-verify-text-link"
+                          >
+                            {resendLoading ? 'Sending...' : 'Resend link'}
+                          </button>
+                        </div>
+
+                        {resendStatus && (
+                          <span className={`seller-verify-status-msg ${resendStatus.includes('resent') ? 'success' : 'error'}`}>
+                            {resendStatus}
+                          </span>
+                        )}
+                      </div>
+
+                      {sellerWaUrl && (
+                        <div className="seller-verify-support">
+                          <span>Need help?</span>
+                          <a
+                            href={sellerWaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="seller-verify-wa-link"
+                          >
+                            Contact support
+                          </a>
+                        </div>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMode('login');
-                          setMessage('');
-                          setSignupStep('select-type');
-                        }}
-                        className="signup-not-found-btn"
-                        style={{ margin: '10px auto 0', justifyContent: 'center' }}
-                      >
-                        Back to Home / Login
-                      </button>
                     </div>
                   ) : (
                     /* STEP 2: Standard Account Creation Form (Old Business Type field removed) */

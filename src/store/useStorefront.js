@@ -69,6 +69,7 @@ export const useStorefront = create((set) => ({
 
   // Data Caches & Storefront Collections
   products: [],
+  isCatalogHydrated: false,
   status: 'loading',
   error: '',
   heroSlides: [],
@@ -76,15 +77,19 @@ export const useStorefront = create((set) => ({
   configOptions: { priceRanges: [], categories: [], fabrics: [], weaves: [], occasions: [] },
   pageSeoSettings: [],
   landingPages: [],
-  setProducts: (products) => {
+  setProducts: (products, isFullCatalog = null) => {
     const current = useStorefront.getState().products;
     const resolved = typeof products === 'function' ? products(current) : products;
     const localOverrides = getVendorStockLocal();
     const finalProducts = (localOverrides && Object.keys(localOverrides).length > 0 && Array.isArray(resolved))
       ? applyStockOverridesToProducts(resolved, localOverrides)
       : (Array.isArray(resolved) ? resolved : []);
-    set({ products: finalProducts });
+    const hydrated = isFullCatalog !== null
+      ? Boolean(isFullCatalog)
+      : (finalProducts.length >= 25 || Boolean(useStorefront.getState().isCatalogHydrated));
+    set({ products: finalProducts, isCatalogHydrated: hydrated });
   },
+  setIsCatalogHydrated: (isCatalogHydrated) => set({ isCatalogHydrated }),
   setStatus: (status) => set({ status }),
   setError: (error) => set({ error }),
   setHeroSlides: (heroSlides) => set({ heroSlides }),
