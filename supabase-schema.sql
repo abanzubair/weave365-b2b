@@ -1,6 +1,6 @@
 -- Weave365 Supabase repair/setup script.
 -- Safe to run more than once in the Supabase SQL editor.
--- Products and private prices can stay in Google Sheets; Supabase stores auth, buyer CRM, cart, favourites, and inquiry data.
+-- Products and private prices can stay in Google Sheets, Supabase stores auth, buyer CRM, cart, favourites, and inquiry data.
 
 create extension if not exists pgcrypto;
 
@@ -183,6 +183,10 @@ as $$
       'weave365@gmail.com'
     )
     or
+    coalesce(auth.jwt()->'app_metadata'->>'role', '') = 'admin'
+    or
+    coalesce(auth.jwt()->'user_metadata'->>'role', '') = 'admin'
+    or
     exists (
       select 1
       from public.profiles
@@ -204,13 +208,53 @@ declare
 begin
   new.updated_at = now();
 
+  -- Enforce Role and Status Immutability for non-admins on UPDATE
+  if tg_op = 'UPDATE' and not public.is_admin() then
+    if new.role is distinct from old.role then
+      raise exception 'Unauthorized: Non-admin users cannot change account role';
+    end if;
+    if new.approval_status is distinct from old.approval_status then
+      raise exception 'Unauthorized: Non-admin users cannot alter approval status';
+    end if;
+    if new.price_group is distinct from old.price_group then
+      raise exception 'Unauthorized: Non-admin users cannot alter price group';
+    end if;
+    new.role := old.role;
+    new.approval_status := old.approval_status;
+    new.price_group := old.price_group;
+
+    -- Ensure existing business/reseller accounts are never overwritten with supplier roles
+    if old.user_type = 'business' or old.buyer_type in ('business', 'reseller', 'wholesale') or old.role in ('reseller', 'business') then
+      new.user_type := 'business';
+      new.buyer_type := 'business';
+    end if;
+  end if;
+
+  if tg_op = 'INSERT' and not public.is_admin() then
+    if new.role = 'admin' then
+      new.role := 'customer';
+    end if;
+  end if;
+
+  -- Exact vendor classification mirroring isVendorProfile from buyerAccess.js
   is_vendor := (
-    new.user_type = 'supplier' or
-    new.buyer_type = 'vendor' or
-    new.role = 'vendor' or
-    new.buyer_subtype ilike '%vendor%' or
-    new.buyer_subtype ilike '%weaver%' or
-    new.buyer_subtype ilike '%supplier%'
+    (new.buyer_subtype is not null and (
+      new.buyer_subtype ilike '%vendor%' or
+      new.buyer_subtype ilike '%weaver%' or
+      new.buyer_subtype ilike '%supplier%'
+    ) and not (
+      new.buyer_subtype ilike '%reseller%' or
+      new.buyer_subtype ilike '%wholeseller%' or
+      new.buyer_subtype ilike '%wholesale%'
+    ))
+    or new.user_type in ('supplier', 'vendor')
+    or new.buyer_type = 'vendor'
+    or new.role = 'vendor'
+    or (new.vendor_code is not null and trim(new.vendor_code) <> '')
+  ) and not (
+    new.role in ('reseller', 'business')
+    or new.user_type = 'business'
+    or new.buyer_type in ('business', 'reseller', 'wholesale')
   );
 
   is_business := not is_vendor and (
@@ -224,21 +268,32 @@ begin
   if is_vendor then
     new.buyer_type := 'vendor';
     new.user_type := 'supplier';
-    new.role := case when new.role = 'admin' then 'admin' else 'vendor' end;
+    if tg_op = 'INSERT' or public.is_admin() then
+      new.role := case when new.role = 'admin' then 'admin' else 'vendor' end;
+    end if;
   elsif is_business then
     new.buyer_type := 'business';
     new.user_type := 'business';
-    new.role := case when new.role = 'admin' then 'admin' else 'reseller' end;
+    if tg_op = 'INSERT' or public.is_admin() then
+      new.role := case when new.role = 'admin' then 'admin' else 'reseller' end;
+    end if;
     if new.buyer_subtype is null or trim(new.buyer_subtype) in ('', 'Customer', 'customer') then
       new.buyer_subtype := 'Reseller';
     end if;
   else
     new.buyer_type := 'customer';
     new.user_type := 'customer';
-    new.role := case when new.role = 'admin' then 'admin' else 'customer' end;
+    if tg_op = 'INSERT' or public.is_admin() then
+      new.role := case when new.role = 'admin' then 'admin' else 'customer' end;
+    end if;
     if new.buyer_subtype is null or trim(new.buyer_subtype) = '' then
       new.buyer_subtype := 'Customer';
     end if;
+  end if;
+
+  -- Ensure role is always preserved for non-admins on UPDATE
+  if tg_op = 'UPDATE' and not public.is_admin() then
+    new.role := old.role;
   end if;
 
   if tg_op = 'INSERT' and not public.is_admin() then
@@ -755,22 +810,48 @@ create table if not exists public.vendor_profiles (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+alter table public.vendor_profiles add column if not exists user_id uuid references auth.users(id) on delete set null;
+
 -- Enable RLS and policy for vendor_profiles
 alter table public.vendor_profiles enable row level security;
 
 drop policy if exists "Allow public onboarding inserts" on public.vendor_profiles;
-create policy "Allow public onboarding inserts" 
+drop policy if exists "vendor_profiles insert onboarding" on public.vendor_profiles;
+create policy "vendor_profiles insert onboarding" 
   on public.vendor_profiles for insert 
   with check (true);
 
 drop policy if exists "Allow select onboarding profiles" on public.vendor_profiles;
-create policy "Allow select onboarding profiles" 
+drop policy if exists "vendor_profiles select owner or admin" on public.vendor_profiles;
+create policy "vendor_profiles select owner or admin" 
   on public.vendor_profiles for select 
-  using (true);
+  to authenticated
+  using (
+    public.is_admin()
+    or (user_id is not null and user_id = auth.uid())
+    or email = (select email from auth.users where id = auth.uid())
+  );
 
 drop policy if exists "Allow admin all onboarding profiles" on public.vendor_profiles;
-create policy "Allow admin all onboarding profiles" 
-  on public.vendor_profiles for all 
+drop policy if exists "vendor_profiles update owner or admin" on public.vendor_profiles;
+create policy "vendor_profiles update owner or admin" 
+  on public.vendor_profiles for update 
+  to authenticated
+  using (
+    public.is_admin()
+    or (user_id is not null and user_id = auth.uid())
+    or email = (select email from auth.users where id = auth.uid())
+  )
+  with check (
+    public.is_admin()
+    or (user_id is not null and user_id = auth.uid())
+    or email = (select email from auth.users where id = auth.uid())
+  );
+
+drop policy if exists "vendor_profiles delete admin" on public.vendor_profiles;
+create policy "vendor_profiles delete admin" 
+  on public.vendor_profiles for delete 
+  to authenticated
   using (public.is_admin());
 
 -------------------------------------------------------------------------------
@@ -973,6 +1054,7 @@ ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS dropship_packing_preferenc
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
+  order_number text,
   user_id uuid references auth.users(id) on delete set null,
   items jsonb default '[]'::jsonb,
   message text,
@@ -993,7 +1075,9 @@ create table if not exists public.orders (
   updated_at timestamptz default now()
 );
 
--- Ensure dropshipping columns exist on orders table if table already exists
+-- Ensure dropshipping & order_number columns exist on orders table if table already exists
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS order_number text;
+UPDATE public.orders SET order_number = 'ORD-' || substring(id::text from 1 for 8) WHERE order_number IS NULL;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS is_dropship boolean DEFAULT false;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_name text;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS dropship_sender_phone text;
@@ -1056,6 +1140,584 @@ create trigger touch_orders_updated_at
 before update on public.orders
 for each row execute function public.touch_updated_at();
 
+-- ==============================================================================
+-- 3NF NORMALIZED ORDER ENTITIES & DUAL-WRITE SYNCHRONIZATION
+-- ==============================================================================
+
+-- 1. Order Delivery Addresses (1:1 with orders)
+create table if not exists public.order_delivery_addresses (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null unique references public.orders(id) on delete cascade,
+  recipient_name text not null,
+  phone text,
+  email text,
+  address_line1 text not null,
+  address_line2 text,
+  city text not null,
+  state text not null,
+  pincode text not null,
+  country text not null default 'India',
+  company_name text,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists order_delivery_addresses_order_id_idx on public.order_delivery_addresses (order_id);
+create index if not exists order_delivery_addresses_pincode_idx on public.order_delivery_addresses (pincode);
+
+alter table public.order_delivery_addresses enable row level security;
+
+drop policy if exists "order_delivery_addresses select own or admin" on public.order_delivery_addresses;
+create policy "order_delivery_addresses select own or admin"
+  on public.order_delivery_addresses for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.orders o
+      where o.id = order_delivery_addresses.order_id
+        and o.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "order_delivery_addresses modify admin" on public.order_delivery_addresses;
+create policy "order_delivery_addresses modify admin"
+  on public.order_delivery_addresses for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists touch_order_delivery_addresses_updated_at on public.order_delivery_addresses;
+create trigger touch_order_delivery_addresses_updated_at
+  before update on public.order_delivery_addresses
+  for each row execute function public.touch_updated_at();
+
+-- 2. Order Dropship Senders (1:1 with dropship orders)
+create table if not exists public.order_dropship_senders (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null unique references public.orders(id) on delete cascade,
+  sender_name text not null,
+  sender_phone text,
+  sender_address text,
+  sender_city text,
+  sender_state text,
+  sender_pincode text,
+  packing_preference text default 'Blind Packaging',
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists order_dropship_senders_order_id_idx on public.order_dropship_senders (order_id);
+
+alter table public.order_dropship_senders enable row level security;
+
+drop policy if exists "order_dropship_senders select own or admin" on public.order_dropship_senders;
+create policy "order_dropship_senders select own or admin"
+  on public.order_dropship_senders for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.orders o
+      where o.id = order_dropship_senders.order_id
+        and o.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "order_dropship_senders modify admin" on public.order_dropship_senders;
+create policy "order_dropship_senders modify admin"
+  on public.order_dropship_senders for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists touch_order_dropship_senders_updated_at on public.order_dropship_senders;
+create trigger touch_order_dropship_senders_updated_at
+  before update on public.order_dropship_senders
+  for each row execute function public.touch_updated_at();
+
+-- 3. Order Items (1:N with orders)
+create table if not exists public.order_items (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  product_id text not null,
+  variant_code text,
+  product_title text not null,
+  color text,
+  quantity integer not null check (quantity > 0),
+  unit_price numeric(12, 2) not null default 0,
+  total_price numeric(12, 2) not null default 0,
+  currency text not null default 'INR',
+  thumbnail_url text,
+  base_inr_price numeric(12, 2),
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists order_items_order_id_idx on public.order_items (order_id);
+create index if not exists order_items_product_id_idx on public.order_items (product_id);
+
+alter table public.order_items enable row level security;
+
+drop policy if exists "order_items select own or admin" on public.order_items;
+create policy "order_items select own or admin"
+  on public.order_items for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.orders o
+      where o.id = order_items.order_id
+        and o.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "order_items modify admin" on public.order_items;
+create policy "order_items modify admin"
+  on public.order_items for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists touch_order_items_updated_at on public.order_items;
+create trigger touch_order_items_updated_at
+  before update on public.order_items
+  for each row execute function public.touch_updated_at();
+
+-- 4. Order Fulfillments (1:N with orders)
+create table if not exists public.order_fulfillments (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  tracking_carrier text not null,
+  tracking_number text not null,
+  tracking_message text,
+  status text not null default 'dispatched',
+  dispatched_at timestamptz default timezone('utc'::text, now()),
+  delivered_at timestamptz,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists order_fulfillments_order_id_idx on public.order_fulfillments (order_id);
+create index if not exists order_fulfillments_tracking_number_idx on public.order_fulfillments (tracking_number);
+
+alter table public.order_fulfillments enable row level security;
+
+drop policy if exists "order_fulfillments select own or admin" on public.order_fulfillments;
+create policy "order_fulfillments select own or admin"
+  on public.order_fulfillments for select
+  to authenticated
+  using (
+    public.is_admin() or exists (
+      select 1 from public.orders o
+      where o.id = order_fulfillments.order_id
+        and o.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "order_fulfillments modify admin" on public.order_fulfillments;
+create policy "order_fulfillments modify admin"
+  on public.order_fulfillments for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists touch_order_fulfillments_updated_at on public.order_fulfillments;
+create trigger touch_order_fulfillments_updated_at
+  before update on public.order_fulfillments
+  for each row execute function public.touch_updated_at();
+
+-- 5. Dual-Write Trigger: Synchronize Legacy orders to Normalized Entities
+create or replace function public.sync_orders_to_normalized()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
+
+  -- 5.1 Delivery Address Sync
+  if new.dropship_recipient_name is not null or new.buyer_name is not null then
+    insert into public.order_delivery_addresses (
+      order_id,
+      recipient_name,
+      phone,
+      email,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      pincode,
+      country,
+      company_name
+    ) values (
+      new.id,
+      coalesce(new.dropship_recipient_name, new.buyer_name, 'Recipient'),
+      coalesce(new.dropship_recipient_phone, new.phone, ''),
+      new.email,
+      coalesce(new.dropship_recipient_address, 'Address'),
+      null,
+      coalesce(new.dropship_recipient_city, 'City'),
+      coalesce(new.dropship_recipient_state, 'State'),
+      coalesce(new.dropship_recipient_pincode, new.pincode, ''),
+      'India',
+      new.business_name
+    )
+    on conflict (order_id) do update set
+      recipient_name = excluded.recipient_name,
+      phone = excluded.phone,
+      email = coalesce(excluded.email, public.order_delivery_addresses.email),
+      address_line1 = excluded.address_line1,
+      city = excluded.city,
+      state = excluded.state,
+      pincode = excluded.pincode,
+      company_name = coalesce(excluded.company_name, public.order_delivery_addresses.company_name),
+      updated_at = now();
+  end if;
+
+  -- 5.2 Dropship Sender Sync
+  if new.is_dropship is true and (new.dropship_sender_name is not null or new.dropship_sender_phone is not null) then
+    insert into public.order_dropship_senders (
+      order_id,
+      sender_name,
+      sender_phone,
+      sender_address,
+      sender_city,
+      sender_state,
+      sender_pincode,
+      packing_preference
+    ) values (
+      new.id,
+      coalesce(new.dropship_sender_name, 'Sender'),
+      coalesce(new.dropship_sender_phone, ''),
+      new.dropship_sender_address,
+      new.dropship_sender_city,
+      new.dropship_sender_state,
+      new.dropship_sender_pincode,
+      coalesce(new.dropship_packing_preference, 'Blind Packaging')
+    )
+    on conflict (order_id) do update set
+      sender_name = excluded.sender_name,
+      sender_phone = excluded.sender_phone,
+      sender_address = excluded.sender_address,
+      sender_city = excluded.sender_city,
+      sender_state = excluded.sender_state,
+      sender_pincode = excluded.sender_pincode,
+      packing_preference = excluded.packing_preference,
+      updated_at = now();
+  end if;
+
+  -- 5.3 Order Items Sync
+  if new.items is not null and jsonb_typeof(new.items) = 'array' and jsonb_array_length(new.items) > 0 then
+    delete from public.order_items where order_id = new.id;
+    insert into public.order_items (
+      order_id,
+      product_id,
+      variant_code,
+      product_title,
+      color,
+      quantity,
+      unit_price,
+      total_price,
+      currency,
+      thumbnail_url,
+      base_inr_price
+    )
+    select
+      new.id,
+      coalesce(elem->>'product_id', elem->>'id', 'PROD'),
+      elem->>'variant_code',
+      coalesce(elem->>'product_title', elem->>'title', 'Product'),
+      coalesce(elem->>'color', 'Standard'),
+      greatest(1, coalesce((elem->>'quantity')::int, 1)),
+      coalesce((elem->>'unit_price')::numeric, (elem->>'price')::numeric, 0),
+      coalesce((elem->>'total_price')::numeric, (coalesce((elem->>'unit_price')::numeric, (elem->>'price')::numeric, 0) * greatest(1, coalesce((elem->>'quantity')::int, 1)))),
+      coalesce(elem->>'currency', 'INR'),
+      coalesce(elem->>'thumbnail_url', elem->>'image'),
+      coalesce((elem->>'base_inr_price')::numeric, (elem->>'price')::numeric, (elem->>'unit_price')::numeric, 0)
+    from jsonb_array_elements(new.items) as elem;
+  end if;
+
+  -- 5.4 Order Fulfillment Sync
+  if new.tracking_carrier is not null or new.tracking_number is not null then
+    insert into public.order_fulfillments (
+      order_id,
+      tracking_carrier,
+      tracking_number,
+      tracking_message,
+      status,
+      dispatched_at,
+      delivered_at
+    ) values (
+      new.id,
+      coalesce(new.tracking_carrier, 'Delhivery'),
+      coalesce(new.tracking_number, ''),
+      new.tracking_message,
+      case when new.status = 'delivered' then 'delivered' else 'dispatched' end,
+      now(),
+      case when new.status = 'delivered' then now() else null end
+    );
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trigger_orders_dual_write on public.orders;
+create trigger trigger_orders_dual_write
+  after insert or update on public.orders
+  for each row execute function public.sync_orders_to_normalized();
+
+-- 5.5 Reverse Sync Triggers (from normalized tables back to orders)
+create or replace function public.sync_delivery_address_to_orders()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
+
+  update public.orders
+  set
+    buyer_name = coalesce(orders.buyer_name, new.recipient_name),
+    phone = coalesce(orders.phone, new.phone),
+    email = coalesce(new.email, orders.email),
+    pincode = coalesce(orders.pincode, new.pincode),
+    dropship_recipient_name = new.recipient_name,
+    dropship_recipient_phone = new.phone,
+    dropship_recipient_address = new.address_line1,
+    dropship_recipient_city = new.city,
+    dropship_recipient_state = new.state,
+    dropship_recipient_pincode = new.pincode,
+    updated_at = now()
+  where id = new.order_id;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trigger_sync_delivery_address on public.order_delivery_addresses;
+create trigger trigger_sync_delivery_address
+  after insert or update on public.order_delivery_addresses
+  for each row execute function public.sync_delivery_address_to_orders();
+
+create or replace function public.sync_dropship_sender_to_orders()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
+
+  update public.orders
+  set
+    is_dropship = true,
+    dropship_sender_name = new.sender_name,
+    dropship_sender_phone = new.sender_phone,
+    dropship_sender_address = new.sender_address,
+    dropship_sender_city = new.sender_city,
+    dropship_sender_state = new.sender_state,
+    dropship_sender_pincode = new.sender_pincode,
+    dropship_packing_preference = new.packing_preference,
+    updated_at = now()
+  where id = new.order_id;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trigger_sync_dropship_sender on public.order_dropship_senders;
+create trigger trigger_sync_dropship_sender
+  after insert or update on public.order_dropship_senders
+  for each row execute function public.sync_dropship_sender_to_orders();
+
+create or replace function public.sync_fulfillment_to_orders()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
+
+  update public.orders
+  set
+    tracking_carrier = new.tracking_carrier,
+    tracking_number = new.tracking_number,
+    tracking_message = new.tracking_message,
+    status = case when new.status = 'delivered' then 'delivered' else coalesce(orders.status, 'dispatched') end,
+    updated_at = now()
+  where id = new.order_id;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trigger_sync_fulfillment on public.order_fulfillments;
+create trigger trigger_sync_fulfillment
+  after insert or update on public.order_fulfillments
+  for each row execute function public.sync_fulfillment_to_orders();
+
+-- ========================================================
+-- B2B Developer API Keys & Reseller Integrations
+-- ========================================================
+create table if not exists public.api_keys (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  key_prefix text not null,               -- e.g. "w365_live_9a7f..."
+  key_hash text not null unique,          -- SHA-256 hash of secret key
+  client_name text not null,              -- e.g. "My Reseller Store"
+  client_website text,                    -- e.g. "https://www.example.com"
+  domain_owner_name text,                 -- Domain owner / primary developer
+  gst_number text,                        -- Optional GSTIN / tax registration number
+  tier text not null default 'free',      -- 'free', 'growth', 'pro'
+  catalog_mode text not null default 'all', -- 'all' (entire master catalog) or 'curated' (selected_skus only)
+  selected_skus jsonb default '[]'::jsonb, -- array of chosen product SKUs e.g. ["100001", "100005"]
+  monthly_quota integer not null default 2000,
+  rate_limit_rps integer not null default 1,
+  is_active boolean not null default true,
+  orders_enabled boolean not null default false, -- Explicit admin-controlled toggle for /api/v1/orders
+  allowed_endpoints jsonb default '["catalog", "stock", "product"]'::jsonb,
+  webhook_url text,
+  last_used_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.api_keys add column if not exists domain_owner_name text;
+alter table public.api_keys add column if not exists gst_number text;
+alter table public.api_keys add column if not exists catalog_mode text not null default 'all';
+alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
+alter table public.api_keys add column if not exists orders_enabled boolean not null default false;
+alter table public.api_keys add column if not exists encrypted_key text;
+
+-- Data migration: Safely mask any legacy plaintext API keys stored in key_prefix so secrets cannot be retrieved
+update public.api_keys
+set key_prefix = substring(key_prefix from 1 for 14) || '...' || substring(key_prefix from length(key_prefix) - 3 for 4)
+where length(key_prefix) > 20;
+
+-- Data migration: Sanitize any legacy development localhost client_website values
+update public.api_keys
+set client_website = 'https://www.weave365.com/account'
+where client_website like '%localhost%';
+
+create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
+create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
+create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
+create index if not exists api_keys_orders_enabled_idx on public.api_keys (orders_enabled);
+
+-- Daily Aggregated Usage Tracking Table (1 row per key/user per day = zero DB bloat)
+create table if not exists public.api_usage_daily (
+  id uuid primary key default gen_random_uuid(),
+  api_key_id uuid references public.api_keys(id) on delete set null,
+  user_id uuid references public.profiles(id) on delete cascade,
+  usage_date date not null default current_date,
+  total_requests integer not null default 0,
+  successful_requests integer not null default 0,
+  rate_limited_requests integer not null default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (api_key_id, usage_date)
+);
+
+create index if not exists api_usage_daily_key_date_idx on public.api_usage_daily (api_key_id, usage_date desc);
+create index if not exists api_usage_daily_user_date_idx on public.api_usage_daily (user_id, usage_date desc);
+
+-- Atomic counter function for instant zero-race updates
+create or replace function public.record_api_request(
+  p_key_id uuid,
+  p_is_success boolean default true,
+  p_is_rate_limited boolean default false
+)
+returns void language plpgsql security definer as $$
+declare
+  v_user_id uuid;
+begin
+  select user_id into v_user_id from public.api_keys where id = p_key_id;
+
+  insert into public.api_usage_daily (api_key_id, user_id, usage_date, total_requests, successful_requests, rate_limited_requests, updated_at)
+  values (
+    p_key_id,
+    v_user_id,
+    current_date,
+    1,
+    case when p_is_success then 1 else 0 end,
+    case when p_is_rate_limited then 1 else 0 end,
+    now()
+  )
+  on conflict (api_key_id, usage_date)
+  do update set
+    user_id = coalesce(public.api_usage_daily.user_id, v_user_id),
+    total_requests = public.api_usage_daily.total_requests + 1,
+    successful_requests = public.api_usage_daily.successful_requests + (case when p_is_success then 1 else 0 end),
+    rate_limited_requests = public.api_usage_daily.rate_limited_requests + (case when p_is_rate_limited then 1 else 0 end),
+    updated_at = now();
+
+  update public.api_keys
+  set last_used_at = now()
+  where id = p_key_id;
+end;
+$$;
+
+alter table public.api_keys enable row level security;
+alter table public.api_usage_daily enable row level security;
+
+-- Drop legacy permissive policies
+drop policy if exists "Admin manage all api_keys" on public.api_keys;
+drop policy if exists "Public read api_keys" on public.api_keys;
+drop policy if exists "api_keys select own or admin" on public.api_keys;
+drop policy if exists "api_keys insert own or admin" on public.api_keys;
+drop policy if exists "api_keys update own or admin" on public.api_keys;
+drop policy if exists "api_keys delete own or admin" on public.api_keys;
+
+-- Hardened RLS policies for api_keys: only authenticated key owner or admin
+create policy "api_keys select own or admin"
+  on public.api_keys for select
+  to authenticated
+  using (user_id = auth.uid() or public.is_admin());
+
+create policy "api_keys insert own or admin"
+  on public.api_keys for insert
+  to authenticated
+  with check (user_id = auth.uid() or public.is_admin());
+
+create policy "api_keys update own or admin"
+  on public.api_keys for update
+  to authenticated
+  using (user_id = auth.uid() or public.is_admin())
+  with check (user_id = auth.uid() or public.is_admin());
+
+create policy "api_keys delete own or admin"
+  on public.api_keys for delete
+  to authenticated
+  using (user_id = auth.uid() or public.is_admin());
+
+-- Drop legacy permissive policies for api_usage_daily
+drop policy if exists "Admin manage all api_usage_daily" on public.api_usage_daily;
+drop policy if exists "Public read api_usage_daily" on public.api_usage_daily;
+drop policy if exists "api_usage_daily select own or admin" on public.api_usage_daily;
+drop policy if exists "api_usage_daily modify admin" on public.api_usage_daily;
+
+-- Hardened RLS policies for api_usage_daily: owner or admin read, admin write
+create policy "api_usage_daily select own or admin"
+  on public.api_usage_daily for select
+  to authenticated
+  using (user_id = auth.uid() or public.is_admin());
+
+create policy "api_usage_daily modify admin"
+  on public.api_usage_daily for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
 -- -------------------------------------------------------------------------------
 -- B2B DEVELOPER API & RESELLER DROPSHIP ORDERS TABLE
 -- -------------------------------------------------------------------------------
@@ -1106,28 +1768,43 @@ create policy "api_orders insert public or authenticated"
   with check (true);
 
 drop policy if exists "api_orders select public or authenticated" on public.api_orders;
-create policy "api_orders select public or authenticated"
+drop policy if exists "api_orders select own or admin" on public.api_orders;
+create policy "api_orders select own or admin"
   on public.api_orders for select
-  using (true);
+  to authenticated
+  using (user_id = auth.uid() or public.is_admin());
 
 drop policy if exists "api_orders update admin" on public.api_orders;
 create policy "api_orders update admin"
   on public.api_orders for update
-  using (true);
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
 
--- Create secure get_order_tracking database function to fetch tracking data by ID from api_orders, orders and inquiries
+drop policy if exists "api_orders delete admin" on public.api_orders;
+create policy "api_orders delete admin"
+  on public.api_orders for delete
+  to authenticated
+  using (public.is_admin());
+
+-- Create secure get_order_tracking database function querying normalized 3NF tables
 DROP FUNCTION IF EXISTS public.get_order_tracking(uuid);
 CREATE OR REPLACE FUNCTION public.get_order_tracking(order_id uuid)
 RETURNS TABLE (
   id uuid,
-  buyer_name text,
-  phone text,
-  email text,
+  order_number text,
   status text,
   tracking_carrier text,
   tracking_number text,
   tracking_message text,
+  dispatched_at timestamptz,
+  delivered_at timestamptz,
+  recipient jsonb,
+  sender jsonb,
   items jsonb,
+  buyer_name text,
+  phone text,
+  email text,
   message text,
   is_dropship boolean,
   dropship_sender_name text,
@@ -1152,94 +1829,56 @@ AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    a.id,
-    a.recipient_name AS buyer_name,
-    a.recipient_phone AS phone,
-    a.recipient_email AS email,
-    a.status,
-    a.tracking_carrier,
-    a.tracking_number,
-    a.tracking_message,
-    a.items,
-    a.shipping_notes AS message,
-    true AS is_dropship,
-    a.sender_name AS dropship_sender_name,
-    a.sender_phone AS dropship_sender_phone,
-    NULL::text AS dropship_sender_address,
-    NULL::text AS dropship_sender_city,
-    NULL::text AS dropship_sender_state,
-    NULL::text AS dropship_sender_pincode,
-    a.recipient_name AS dropship_recipient_name,
-    a.recipient_phone AS dropship_recipient_phone,
-    a.recipient_address AS dropship_recipient_address,
-    a.recipient_city AS dropship_recipient_city,
-    a.recipient_state AS dropship_recipient_state,
-    a.recipient_pincode AS dropship_recipient_pincode,
-    a.packing_preference AS dropship_packing_preference,
-    a.created_at,
-    a.updated_at
-  FROM public.api_orders a
-  WHERE a.id = order_id
-  UNION ALL
-  SELECT 
     o.id,
-    o.buyer_name,
-    o.phone,
-    o.email,
-    o.status,
-    o.tracking_carrier,
-    o.tracking_number,
-    o.tracking_message,
-    o.items,
+    coalesce(o.order_number, 'ORD-' || substring(o.id::text from 1 for 8)) AS order_number,
+    coalesce(f.status, o.status) AS status,
+    coalesce(f.tracking_carrier, o.tracking_carrier) AS tracking_carrier,
+    coalesce(f.tracking_number, o.tracking_number) AS tracking_number,
+    coalesce(f.tracking_message, o.tracking_message) AS tracking_message,
+    f.dispatched_at,
+    f.delivered_at,
+    to_jsonb(a.*) AS recipient,
+    to_jsonb(s.*) AS sender,
+    coalesce(
+      (
+        SELECT jsonb_agg(to_jsonb(it.*))
+        FROM public.order_items it
+        WHERE it.order_id = o.id
+      ),
+      o.items,
+      '[]'::jsonb
+    ) AS items,
+    coalesce(a.recipient_name, o.buyer_name) AS buyer_name,
+    coalesce(a.phone, o.phone) AS phone,
+    coalesce(a.email, o.email) AS email,
     o.message,
     o.is_dropship,
-    o.dropship_sender_name,
-    o.dropship_sender_phone,
-    o.dropship_sender_address,
-    o.dropship_sender_city,
-    o.dropship_sender_state,
-    o.dropship_sender_pincode,
-    o.dropship_recipient_name,
-    o.dropship_recipient_phone,
-    o.dropship_recipient_address,
-    o.dropship_recipient_city,
-    o.dropship_recipient_state,
-    o.dropship_recipient_pincode,
-    o.dropship_packing_preference,
+    coalesce(s.sender_name, o.dropship_sender_name) AS dropship_sender_name,
+    coalesce(s.sender_phone, o.dropship_sender_phone) AS dropship_sender_phone,
+    coalesce(s.sender_address, o.dropship_sender_address) AS dropship_sender_address,
+    coalesce(s.sender_city, o.dropship_sender_city) AS dropship_sender_city,
+    coalesce(s.sender_state, o.dropship_sender_state) AS dropship_sender_state,
+    coalesce(s.sender_pincode, o.dropship_sender_pincode) AS dropship_sender_pincode,
+    coalesce(a.recipient_name, o.dropship_recipient_name) AS dropship_recipient_name,
+    coalesce(a.phone, o.dropship_recipient_phone) AS dropship_recipient_phone,
+    coalesce(a.address_line1, o.dropship_recipient_address) AS dropship_recipient_address,
+    coalesce(a.city, o.dropship_recipient_city) AS dropship_recipient_city,
+    coalesce(a.state, o.dropship_recipient_state) AS dropship_recipient_state,
+    coalesce(a.pincode, o.dropship_recipient_pincode) AS dropship_recipient_pincode,
+    coalesce(s.packing_preference, o.dropship_packing_preference) AS dropship_packing_preference,
     o.created_at,
     o.updated_at
   FROM public.orders o
-  WHERE o.id = order_id
-  UNION ALL
-  SELECT 
-    i.id,
-    i.buyer_name,
-    i.phone,
-    i.email,
-    i.status,
-    i.tracking_carrier,
-    i.tracking_number,
-    i.tracking_message,
-    i.items,
-    i.message,
-    i.is_dropship,
-    i.dropship_sender_name,
-    i.dropship_sender_phone,
-    i.dropship_sender_address,
-    i.dropship_sender_city,
-    i.dropship_sender_state,
-    i.dropship_sender_pincode,
-    i.dropship_recipient_name,
-    i.dropship_recipient_phone,
-    i.dropship_recipient_address,
-    i.dropship_recipient_city,
-    i.dropship_recipient_state,
-    i.dropship_recipient_pincode,
-    i.dropship_packing_preference,
-    i.created_at,
-    i.updated_at
-  FROM public.inquiries i
-  WHERE i.id = order_id;
+  LEFT JOIN public.order_delivery_addresses a ON a.order_id = o.id
+  LEFT JOIN public.order_dropship_senders s ON s.order_id = o.id
+  LEFT JOIN LATERAL (
+    SELECT ful.*
+    FROM public.order_fulfillments ful
+    WHERE ful.order_id = o.id
+    ORDER BY ful.created_at DESC
+    LIMIT 1
+  ) f ON true
+  WHERE o.id = get_order_tracking.order_id;
 END;
 $$;
 
@@ -1262,9 +1901,9 @@ CREATE TABLE IF NOT EXISTS public.landing_pages (
   intro_title text,
   intro_text text,
   buyer_guide_title text,
-  buyer_guide_sections jsonb DEFAULT '[]'::jsonb, -- Array of { title, content }
-  faqs jsonb DEFAULT '[]'::jsonb,                 -- Array of { q, a }
-  filter jsonb DEFAULT '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
+  buyer_guide_sections jsonb default '[]'::jsonb, -- Array of { title, content }
+  faqs jsonb default '[]'::jsonb,                 -- Array of { q, a }
+  filter jsonb default '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
   catalog_title text,
   catalog_subtitle text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -1283,246 +1922,6 @@ CREATE POLICY "landing pages public read" ON public.landing_pages
 DROP POLICY IF EXISTS "landing pages admin all" ON public.landing_pages;
 CREATE POLICY "landing pages admin all" ON public.landing_pages 
   FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
--------------------------------------------------------------------------------
--- PRODUCT REVIEWS
--------------------------------------------------------------------------------
-
-create table if not exists public.product_reviews (
-  id uuid primary key default gen_random_uuid(),
-  product_id text not null,
-  reviewer_name text not null,
-  business_name text default 'B2B Client',
-  rating integer not null check (rating >= 1 and rating <= 5),
-  title text default 'Product Review',
-  comment text not null,
-  status text not null default 'pending',
-  user_id uuid references auth.users(id) on delete set null,
-  created_at timestamptz default now()
-);
-
--- Enable RLS
-alter table public.product_reviews enable row level security;
-
--- Read policy (Approved reviews are visible to all)
-drop policy if exists "product reviews public read" on public.product_reviews;
-create policy "product reviews public read"
-  on public.product_reviews for select
-  to anon, authenticated
-  using (status = 'approved');
-
--- Insert policy (Guests and authenticated users can insert reviews)
-drop policy if exists "product reviews insert access" on public.product_reviews;
-create policy "product reviews insert access"
-  on public.product_reviews for insert
-  to anon, authenticated
-  with check (true);
-
--- Admin policy (Full CRUD access for administrators)
-drop policy if exists "product reviews admin all" on public.product_reviews;
-create policy "product reviews admin all"
-  on public.product_reviews for all
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
-
--------------------------------------------------------------------------------
--- B2B INFLUENCER & AFFILIATE PROGRAM TABLES
--------------------------------------------------------------------------------
-
--- 1. Influencer Profiles
-create table if not exists public.influencer_profiles (
-  id uuid primary key references public.profiles(id) on delete cascade,
-  referral_code text unique not null,
-  commission_percentage numeric not null default 10.0 check (commission_percentage >= 0 and commission_percentage <= 100),
-  payment_details jsonb default '{}'::jsonb,
-  is_approved boolean default false,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
--- 2. Influencer Landing Click Logs
-create table if not exists public.influencer_clicks (
-  id uuid primary key default gen_random_uuid(),
-  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
-  user_agent text,
-  referrer text,
-  created_at timestamptz default now()
-);
-
--- 3. Influencer Sales Referrals
-create table if not exists public.influencer_referrals (
-  id uuid primary key default gen_random_uuid(),
-  influencer_id uuid not null references public.influencer_profiles(id) on delete cascade,
-  order_id uuid references public.orders(id) on delete set null,
-  inquiry_id uuid references public.inquiries(id) on delete set null,
-  buyer_id uuid references public.profiles(id) on delete set null,
-  buyer_name text,
-  items jsonb default '[]'::jsonb,
-  sale_amount numeric not null default 0,
-  commission_amount numeric not null default 0,
-  status text default 'pending' check (status in ('pending', 'paid', 'cancelled')),
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
--- Indices
-create index if not exists influencer_profiles_code_idx on public.influencer_profiles (lower(referral_code));
-create index if not exists influencer_clicks_influencer_id_idx on public.influencer_clicks (influencer_id);
-create index if not exists influencer_referrals_influencer_id_idx on public.influencer_referrals (influencer_id);
-
--- Enable RLS
-alter table public.influencer_profiles enable row level security;
-alter table public.influencer_clicks enable row level security;
-alter table public.influencer_referrals enable row level security;
-
--- Policies: Influencer Profiles
-drop policy if exists "Anyone can select influencer profiles" on public.influencer_profiles;
-create policy "Anyone can select influencer profiles"
-  on public.influencer_profiles for select
-  using (true);
-
-drop policy if exists "Users can insert own influencer profile" on public.influencer_profiles;
-create policy "Users can insert own influencer profile"
-  on public.influencer_profiles for insert
-  to authenticated
-  with check ((select auth.uid()) = id);
-
-drop policy if exists "Users can update own influencer profile" on public.influencer_profiles;
-create policy "Users can update own influencer profile"
-  on public.influencer_profiles for update
-  to authenticated
-  using ((select auth.uid()) = id)
-  with check ((select auth.uid()) = id);
-
-drop policy if exists "Admin manage all influencer profiles" on public.influencer_profiles;
-create policy "Admin manage all influencer profiles"
-  on public.influencer_profiles for all
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
-
--- Policies: Influencer Clicks
-drop policy if exists "Anyone can insert clicks" on public.influencer_clicks;
-create policy "Anyone can insert clicks"
-  on public.influencer_clicks for insert
-  with check (true);
-
-drop policy if exists "Influencers can select own clicks" on public.influencer_clicks;
-create policy "Influencers can select own clicks"
-  on public.influencer_clicks for select
-  to authenticated
-  using ((select auth.uid()) = influencer_id or public.is_admin());
-
--- Policies: Influencer Referrals
-drop policy if exists "Anyone can insert referrals" on public.influencer_referrals;
-create policy "Anyone can insert referrals"
-  on public.influencer_referrals for insert
-  with check (true);
-
-drop policy if exists "Influencers can select own referrals" on public.influencer_referrals;
-create policy "Influencers can select own referrals"
-  on public.influencer_referrals for select
-  to authenticated
-  using ((select auth.uid()) = influencer_id or public.is_admin());
-
-drop policy if exists "Admin manage all referrals" on public.influencer_referrals;
-create policy "Admin manage all referrals"
-  on public.influencer_referrals for all
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
-
--- ========================================================
--- Website Traffic & AI Referral Analytics Table
--- ========================================================
-create table if not exists public.site_analytics (
-  id uuid primary key default gen_random_uuid(),
-  session_id text,
-  path text not null default '/',
-  referrer text,
-  source_category text default 'Direct / App',
-  source_name text default 'Direct Visit',
-  device_type text default 'Desktop',
-  device_os text default 'Unknown',
-  browser text default 'Unknown',
-  country text default 'IN',
-  city text default 'Unknown',
-  created_at timestamptz default now()
-);
-
-create index if not exists site_analytics_created_at_idx on public.site_analytics (created_at desc);
-create index if not exists site_analytics_source_category_idx on public.site_analytics (source_category);
-create index if not exists site_analytics_source_name_idx on public.site_analytics (source_name);
-
-alter table public.site_analytics enable row level security;
-
-  buyer_guide_sections jsonb DEFAULT '[]'::jsonb, -- Array of { title, content }
-  faqs jsonb DEFAULT '[]'::jsonb,                 -- Array of { q, a }
-  filter jsonb DEFAULT '{}'::jsonb,                -- Filtering rules: { category, fabric, work, search }
-  catalog_title text,
-  catalog_subtitle text,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
-ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_title text;
-ALTER TABLE public.landing_pages ADD COLUMN IF NOT EXISTS catalog_subtitle text;
-
-ALTER TABLE public.landing_pages ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "landing pages public read" ON public.landing_pages;
-CREATE POLICY "landing pages public read" ON public.landing_pages 
-  FOR SELECT TO anon, authenticated USING (true);
-
-DROP POLICY IF EXISTS "landing pages admin all" ON public.landing_pages;
-CREATE POLICY "landing pages admin all" ON public.landing_pages 
-  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
--------------------------------------------------------------------------------
--- PRODUCT REVIEWS
--------------------------------------------------------------------------------
-
-create table if not exists public.product_reviews (
-  id uuid primary key default gen_random_uuid(),
-  product_id text not null,
-  reviewer_name text not null,
-  business_name text default 'B2B Client',
-  rating integer not null check (rating >= 1 and rating <= 5),
-  title text default 'Product Review',
-  comment text not null,
-  images text[] default '{}',
-  verified_buyer boolean default false,
-  helpful_count integer default 0,
-  status text not null default 'pending',
-  user_id uuid references auth.users(id) on delete set null,
-  created_at timestamptz default now()
-);
-
--- Enable RLS
-alter table public.product_reviews enable row level security;
-
--- Read policy (Approved reviews are visible to all)
-drop policy if exists "product reviews public read" on public.product_reviews;
-create policy "product reviews public read"
-  on public.product_reviews for select
-  to anon, authenticated
-  using (status = 'approved');
-
--- Insert policy (Guests and authenticated users can insert reviews)
-drop policy if exists "product reviews insert access" on public.product_reviews;
-create policy "product reviews insert access"
-  on public.product_reviews for insert
-  to anon, authenticated
-  with check (true);
-
--- Admin policy (Full CRUD access for administrators)
-drop policy if exists "product reviews admin all" on public.product_reviews;
-create policy "product reviews admin all"
-  on public.product_reviews for all
-  to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
 
 -------------------------------------------------------------------------------
 -- B2B INFLUENCER & AFFILIATE PROGRAM TABLES
@@ -1694,141 +2093,106 @@ create policy "Public read vendor product stock"
   using (true);
 
 drop policy if exists "Public modify vendor product stock" on public.vendor_product_stock;
-create policy "Public modify vendor product stock"
+drop policy if exists "vendor_product_stock modify admin or vendor" on public.vendor_product_stock;
+create policy "vendor_product_stock modify admin or vendor"
   on public.vendor_product_stock for all
-  to anon, authenticated
-  using (true)
-  with check (true);
-
--- ========================================================
--- B2B Developer API Keys & Reseller Integrations
--- ========================================================
-create table if not exists public.api_keys (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  key_prefix text not null,               -- e.g. "w365_live_9a7f..."
-  key_hash text not null unique,          -- SHA-256 hash of secret key
-  client_name text not null,              -- e.g. "My Reseller Store"
-  client_website text,                    -- e.g. "https://www.example.com"
-  domain_owner_name text,                 -- Domain owner / primary developer
-  gst_number text,                        -- Optional GSTIN / tax registration number
-  tier text not null default 'free',      -- 'free', 'growth', 'pro'
-  catalog_mode text not null default 'all', -- 'all' (entire master catalog) or 'curated' (selected_skus only)
-  selected_skus jsonb default '[]'::jsonb, -- array of chosen product SKUs e.g. ["100001", "100005"]
-  monthly_quota integer not null default 2000,
-  rate_limit_rps integer not null default 1,
-  is_active boolean not null default true,
-  orders_enabled boolean not null default false, -- Explicit admin-controlled toggle for /api/v1/orders
-  allowed_endpoints jsonb default '["catalog", "stock", "product"]'::jsonb,
-  webhook_url text,
-  last_used_at timestamptz,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
-alter table public.api_keys add column if not exists domain_owner_name text;
-alter table public.api_keys add column if not exists gst_number text;
-alter table public.api_keys add column if not exists catalog_mode text not null default 'all';
-alter table public.api_keys add column if not exists selected_skus jsonb default '[]'::jsonb;
-alter table public.api_keys add column if not exists orders_enabled boolean not null default false;
-alter table public.api_keys add column if not exists encrypted_key text;
-
--- Data migration: Safely mask any legacy plaintext API keys stored in key_prefix so secrets cannot be retrieved
-update public.api_keys
-set key_prefix = substring(key_prefix from 1 for 14) || '...' || substring(key_prefix from length(key_prefix) - 3 for 4)
-where length(key_prefix) > 20;
-
--- Data migration: Sanitize any legacy development localhost client_website values
-update public.api_keys
-set client_website = 'https://www.weave365.com/account'
-where client_website like '%localhost%';
-
-create index if not exists api_keys_user_id_idx on public.api_keys (user_id);
-create index if not exists api_keys_key_hash_idx on public.api_keys (key_hash);
-create index if not exists api_keys_is_active_idx on public.api_keys (is_active);
-create index if not exists api_keys_orders_enabled_idx on public.api_keys (orders_enabled);
-
--- Daily Aggregated Usage Tracking Table (1 row per key/user per day = zero DB bloat)
-create table if not exists public.api_usage_daily (
-  id uuid primary key default gen_random_uuid(),
-  api_key_id uuid references public.api_keys(id) on delete set null,
-  user_id uuid references public.profiles(id) on delete cascade,
-  usage_date date not null default current_date,
-  total_requests integer not null default 0,
-  successful_requests integer not null default 0,
-  rate_limited_requests integer not null default 0,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  unique (api_key_id, usage_date)
-);
-
-create index if not exists api_usage_daily_key_date_idx on public.api_usage_daily (api_key_id, usage_date desc);
-create index if not exists api_usage_daily_user_date_idx on public.api_usage_daily (user_id, usage_date desc);
-
--- Atomic counter function for instant zero-race updates
-create or replace function public.record_api_request(
-  p_key_id uuid,
-  p_is_success boolean default true,
-  p_is_rate_limited boolean default false
-)
-returns void language plpgsql security definer as $$
-declare
-  v_user_id uuid;
-begin
-  select user_id into v_user_id from public.api_keys where id = p_key_id;
-
-  insert into public.api_usage_daily (api_key_id, user_id, usage_date, total_requests, successful_requests, rate_limited_requests, updated_at)
-  values (
-    p_key_id,
-    v_user_id,
-    current_date,
-    1,
-    case when p_is_success then 1 else 0 end,
-    case when p_is_rate_limited then 1 else 0 end,
-    now()
+  to authenticated
+  using (
+    public.is_admin()
+    or exists (
+      select 1 from public.profiles
+      where profiles.id = auth.uid()
+        and profiles.vendor_code is not null
+        and profiles.vendor_code = vendor_product_stock.vendor_code
+    )
   )
-  on conflict (api_key_id, usage_date)
-  do update set
-    user_id = coalesce(public.api_usage_daily.user_id, v_user_id),
-    total_requests = public.api_usage_daily.total_requests + 1,
-    successful_requests = public.api_usage_daily.successful_requests + (case when p_is_success then 1 else 0 end),
-    rate_limited_requests = public.api_usage_daily.rate_limited_requests + (case when p_is_rate_limited then 1 else 0 end),
-    updated_at = now();
+  with check (
+    public.is_admin()
+    or exists (
+      select 1 from public.profiles
+      where profiles.id = auth.uid()
+        and profiles.vendor_code is not null
+        and profiles.vendor_code = vendor_product_stock.vendor_code
+    )
+  );
 
-  update public.api_keys
-  set last_used_at = now()
-  where id = p_key_id;
-end;
-$$;
+-- ========================================================
+-- SHEET DATA (PRODUCT CATALOG & STATIC ASSET CACHE)
+-- ========================================================
+create table if not exists public.sheet_data (
+  id text primary key,
+  csv_data text,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
 
-alter table public.api_keys enable row level security;
-alter table public.api_usage_daily enable row level security;
+create index if not exists sheet_data_updated_at_idx on public.sheet_data (updated_at desc);
 
-drop policy if exists "Admin manage all api_keys" on public.api_keys;
-create policy "Admin manage all api_keys"
-  on public.api_keys for all
-  to authenticated
-  using (true)
-  with check (true);
+alter table public.sheet_data enable row level security;
 
-drop policy if exists "Public read api_keys" on public.api_keys;
-create policy "Public read api_keys"
-  on public.api_keys for select
+drop policy if exists "sheet_data public read" on public.sheet_data;
+create policy "sheet_data public read"
+  on public.sheet_data for select
   to anon, authenticated
   using (true);
 
-drop policy if exists "Admin manage all api_usage_daily" on public.api_usage_daily;
-create policy "Admin manage all api_usage_daily"
-  on public.api_usage_daily for all
+drop policy if exists "sheet_data admin modify" on public.sheet_data;
+create policy "sheet_data admin modify"
+  on public.sheet_data for all
   to authenticated
-  using (true)
-  with check (true);
+  using (public.is_admin())
+  with check (public.is_admin());
 
-drop policy if exists "Public read api_usage_daily" on public.api_usage_daily;
-create policy "Public read api_usage_daily"
-  on public.api_usage_daily for select
+drop trigger if exists touch_sheet_data_updated_at on public.sheet_data;
+create trigger touch_sheet_data_updated_at
+  before update on public.sheet_data
+  for each row execute function public.touch_updated_at();
+
+-- ========================================================
+-- BLOG POSTS (DYNAMIC CMS & SEO ARTICLES)
+-- ========================================================
+create table if not exists public.blog_posts (
+  id uuid default gen_random_uuid() primary key,
+  slug text unique not null,
+  title text not null,
+  meta_title text,
+  meta_description text,
+  category text not null,
+  tag text,
+  date text not null,
+  read_time text not null,
+  author text not null,
+  image text not null,
+  intro text not null,
+  content text not null,
+  faqs jsonb default '[]'::jsonb,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists blog_posts_slug_idx on public.blog_posts (slug);
+create index if not exists blog_posts_category_idx on public.blog_posts (category);
+create index if not exists blog_posts_created_at_idx on public.blog_posts (created_at desc);
+
+alter table public.blog_posts enable row level security;
+
+drop policy if exists "blog_posts public read" on public.blog_posts;
+create policy "blog_posts public read"
+  on public.blog_posts for select
   to anon, authenticated
   using (true);
+
+drop policy if exists "blog_posts admin modify" on public.blog_posts;
+create policy "blog_posts admin modify"
+  on public.blog_posts for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop trigger if exists touch_blog_posts_updated_at on public.blog_posts;
+create trigger touch_blog_posts_updated_at
+  before update on public.blog_posts
+  for each row execute function public.touch_updated_at();
 
 -- ==============================================================================
 -- COUNTRY-BASED PRICING & DYNAMIC EXCHANGE RATES
@@ -1998,15 +2362,15 @@ create policy "Sellers view own products"
 drop policy if exists "Sellers insert products" on public.seller_products;
 create policy "Sellers insert products"
   on public.seller_products for insert
-  to anon, authenticated
-  with check (true);
+  to authenticated
+  with check (auth.uid() = seller_id or public.is_admin());
 
 -- Admins can view and update all seller products
 drop policy if exists "Admin all actions on seller products" on public.seller_products;
 create policy "Admin all actions on seller products"
   on public.seller_products for all
-  to anon, authenticated
-  using (true)
-  with check (true);
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
 
 

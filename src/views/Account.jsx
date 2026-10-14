@@ -218,11 +218,11 @@ export function Account({
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [copiedTrackingId, setCopiedTrackingId] = useState(null);
 
-  const copyCustomerTrackingLink = (orderId) => {
+  const copyCustomerTrackingLink = (orderRef) => {
     if (typeof window === 'undefined') return;
-    const link = `${window.location.origin}/order-tracking?id=${orderId}`;
+    const link = `${window.location.origin}/order-tracking/${encodeURIComponent(orderRef)}`;
     navigator.clipboard.writeText(link);
-    setCopiedTrackingId(orderId);
+    setCopiedTrackingId(orderRef);
     setTimeout(() => setCopiedTrackingId(null), 2000);
   };
 
@@ -333,7 +333,10 @@ export function Account({
     setOrdersLoading(true);
     try {
       const [ordersRes, inquiriesRes] = await Promise.all([
-        supabase.from('orders').select('*').eq('user_id', user.id),
+        supabase
+          .from('orders')
+          .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+          .eq('user_id', user.id),
         supabase.from('inquiries').select('*').eq('user_id', user.id)
       ]);
       if (ordersRes.error) throw ordersRes.error;
@@ -986,12 +989,19 @@ export function Account({
                             year: 'numeric'
                           });
                           const statusStyle = getStatusBadgeStyle(order.status);
+                          const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
+                          const dropshipSender = Array.isArray(order.order_dropship_senders) ? order.order_dropship_senders[0] : order.order_dropship_senders;
+                          const orderItemsList = (Array.isArray(order.order_items) && order.order_items.length > 0)
+                            ? order.order_items
+                            : (Array.isArray(order.items) ? order.items : []);
+
                           const orderTotal = (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
                             ? Number(order.total_amount)
-                            : (order.items && Array.isArray(order.items)
-                              ? order.items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0)
+                            : (orderItemsList.length > 0
+                              ? orderItemsList.reduce((sum, it) => sum + (Number(it.unit_price ?? it.price) || 0) * (Number(it.quantity) || 1), 0)
                               : 0);
                           const isDropshipOrder = Boolean(order.is_dropship);
+                          const displayRef = order.order_number || order.id;
 
                           return (
                             <div 
@@ -1001,12 +1011,12 @@ export function Account({
                               <div className="order-card-top-bar">
                                 <div className="order-ref-group">
                                   <div className="order-ref-id-row">
-                                    <span className="order-ref-code" title={order.id}>
-                                      <span className="order-ref-full">#{order.id}</span>
+                                    <span className="order-ref-code" title={displayRef}>
+                                      <span className="order-ref-full">#{displayRef}</span>
                                       <span className="order-ref-short">
-                                        #{order.id.length > 16 
-                                          ? `${order.id.slice(0, 8)}…${order.id.slice(-4)}`
-                                          : order.id}
+                                        #{displayRef.length > 16 
+                                          ? `${displayRef.slice(0, 8)}…${displayRef.slice(-4)}`
+                                          : displayRef}
                                       </span>
                                     </span>
                                   </div>
@@ -1029,18 +1039,18 @@ export function Account({
 
                               {isDropshipOrder && (
                                 <div className="order-dropship-info-box">
-                                  <div><strong>Sender Label:</strong> {order.dropship_sender_name || order.business_name || 'Reseller'} {order.dropship_sender_phone ? `(${order.dropship_sender_phone})` : ''}</div>
-                                  <div><strong>Deliver To:</strong> {order.dropship_recipient_name || order.buyer_name} ({order.dropship_recipient_phone || 'N/A'}) — {order.dropship_recipient_city} {order.dropship_recipient_pincode ? `(${order.dropship_recipient_pincode})` : ''}</div>
+                                  <div><strong>Sender Label:</strong> {dropshipSender?.sender_name || order.dropship_sender_name || order.business_name || 'Reseller'} {(dropshipSender?.sender_phone || order.dropship_sender_phone) ? `(${dropshipSender?.sender_phone || order.dropship_sender_phone})` : ''}</div>
+                                  <div><strong>Deliver To:</strong> {deliveryAddr?.recipient_name || order.dropship_recipient_name || order.buyer_name} ({deliveryAddr?.phone || order.dropship_recipient_phone || 'N/A'}) — {deliveryAddr?.city || order.dropship_recipient_city} {(deliveryAddr?.pincode || order.dropship_recipient_pincode) ? `(${deliveryAddr?.pincode || order.dropship_recipient_pincode})` : ''}</div>
                                 </div>
                               )}
 
                               <div className="order-items-list">
-                                {order.items && Array.isArray(order.items) && order.items.map((item, idx) => (
+                                {orderItemsList.map((item, idx) => (
                                   <div key={idx} className="order-item-row">
                                     <div className="order-item-left">
                                       <span className="order-item-bullet" />
                                       <div className="order-item-details">
-                                        <span className="order-item-title">{item.product_title || 'Banarasi Saree'}</span>
+                                        <span className="order-item-title">{item.product_title || item.title || 'Banarasi Saree'}</span>
                                         <div className="order-item-meta-pills">
                                           {item.color && (
                                             <span className="order-item-color-pill">
@@ -1067,7 +1077,7 @@ export function Account({
                                   <button 
                                     type="button" 
                                     className="order-track-btn"
-                                    onClick={() => navigate('order-tracking', order.id)}
+                                    onClick={() => navigate('order-tracking', displayRef)}
                                   >
                                     <span>Track Order</span>
                                     <ArrowUpRight size={13} />
@@ -1076,10 +1086,10 @@ export function Account({
                                     <button
                                       type="button"
                                       className="order-copy-link-btn"
-                                      onClick={() => copyCustomerTrackingLink(order.id)}
+                                      onClick={() => copyCustomerTrackingLink(displayRef)}
                                       title="Copy tracking link for your customer"
                                     >
-                                      {copiedTrackingId === order.id ? (
+                                      {copiedTrackingId === displayRef ? (
                                         <>
                                           <Check size={13} style={{ color: '#059669' }} />
                                           <span style={{ color: '#059669' }}>Copied!</span>

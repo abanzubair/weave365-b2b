@@ -249,7 +249,10 @@ export function Admin({
 
     const optionalResults = await Promise.all(
       optionalTables.map(async (table) => {
-        const result = await safeSelect(table.key);
+        const query = table.key === 'orders'
+          ? '*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)'
+          : '*';
+        const result = await safeSelect(table.key, query);
         return [table.key, result];
       }),
     );
@@ -544,7 +547,52 @@ export function Admin({
         const s = String(o.status || '').toLowerCase().trim();
         return s !== 'pending_payment' && s !== 'draft' && s !== 'unpaid';
       })
-      .map(o => ({ ...o, _sourceTable: 'orders' }));
+      .map(o => {
+        const deliveryAddr = Array.isArray(o.order_delivery_addresses) ? o.order_delivery_addresses[0] : o.order_delivery_addresses;
+        const dropshipSender = Array.isArray(o.order_dropship_senders) ? o.order_dropship_senders[0] : o.order_dropship_senders;
+        const fulfillments = Array.isArray(o.order_fulfillments) ? o.order_fulfillments : [];
+        const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+        const normalizedItems = (Array.isArray(o.order_items) && o.order_items.length > 0)
+          ? o.order_items.map(it => ({
+              ...it,
+              product_title: it.product_title || it.title,
+              title: it.product_title || it.title,
+              price: it.unit_price ?? it.price,
+              unit_price: it.unit_price ?? it.price,
+              image: it.thumbnail_url || it.image,
+              thumbnail_url: it.thumbnail_url || it.image,
+            }))
+          : (o.items || []);
+
+        return {
+          ...o,
+          _sourceTable: 'orders',
+          order_delivery_addresses: deliveryAddr,
+          order_dropship_senders: dropshipSender,
+          order_items: normalizedItems,
+          items: normalizedItems,
+          buyer_name: deliveryAddr?.recipient_name || o.buyer_name,
+          phone: deliveryAddr?.phone || o.phone,
+          email: deliveryAddr?.email || o.email,
+          pincode: deliveryAddr?.pincode || o.pincode,
+          dropship_recipient_name: deliveryAddr?.recipient_name || o.dropship_recipient_name,
+          dropship_recipient_phone: deliveryAddr?.phone || o.dropship_recipient_phone,
+          dropship_recipient_address: deliveryAddr?.address_line1 || o.dropship_recipient_address,
+          dropship_recipient_city: deliveryAddr?.city || o.dropship_recipient_city,
+          dropship_recipient_state: deliveryAddr?.state || o.dropship_recipient_state,
+          dropship_recipient_pincode: deliveryAddr?.pincode || o.dropship_recipient_pincode,
+          dropship_sender_name: dropshipSender?.sender_name || o.dropship_sender_name,
+          dropship_sender_phone: dropshipSender?.sender_phone || o.dropship_sender_phone,
+          dropship_sender_address: dropshipSender?.sender_address || o.dropship_sender_address,
+          dropship_sender_city: dropshipSender?.sender_city || o.dropship_sender_city,
+          dropship_sender_state: dropshipSender?.sender_state || o.dropship_sender_state,
+          dropship_sender_pincode: dropshipSender?.sender_pincode || o.dropship_sender_pincode,
+          dropship_packing_preference: dropshipSender?.packing_preference || o.dropship_packing_preference,
+          tracking_carrier: latestFulfillment?.tracking_carrier || o.tracking_carrier,
+          tracking_number: latestFulfillment?.tracking_number || o.tracking_number,
+          tracking_message: latestFulfillment?.tracking_message || o.tracking_message,
+        };
+      });
     const rawApiOrders = (adminData.optional.api_orders || []).map(a => ({
       ...a,
       _sourceTable: 'api_orders',

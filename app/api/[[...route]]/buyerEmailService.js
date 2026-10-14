@@ -14,9 +14,14 @@ export const runtime = 'edge';
 /**
  * Format a UUID or string into a clean short order reference: ORD-XXXXXXXX
  */
-export function formatOrderNumber(orderId) {
-  if (!orderId) return 'ORD-WEAVE';
-  const clean = String(orderId).replace(/[^a-zA-Z0-9]/g, '');
+export function formatOrderNumber(orderOrId) {
+  if (!orderOrId) return 'ORD-WEAVE';
+  if (typeof orderOrId === 'object' && orderOrId?.order_number) {
+    return orderOrId.order_number;
+  }
+  const str = typeof orderOrId === 'object' ? (orderOrId.id || 'WEAVE') : String(orderOrId);
+  if (str.startsWith('ORD-') || str.startsWith('B2B-') || str.startsWith('API-')) return str;
+  const clean = str.replace(/[^a-zA-Z0-9]/g, '');
   return `ORD-${clean.slice(0, 8).toUpperCase()}`;
 }
 
@@ -70,7 +75,10 @@ export function renderBuyerConfirmationEmailHtml({
   siteUrl = 'https://www.weave365.com',
   supportWhatsApp = '919919101369',
 }) {
-  const recipientName = order.buyer_name || order.dropship_recipient_name || 'Valued Buyer';
+  const deliveryAddr = Array.isArray(order.order_delivery_addresses) ? order.order_delivery_addresses[0] : order.order_delivery_addresses;
+  const dropshipSender = Array.isArray(order.order_dropship_senders) ? order.order_dropship_senders[0] : order.order_dropship_senders;
+
+  const recipientName = deliveryAddr?.recipient_name || order.buyer_name || order.dropship_recipient_name || 'Valued Buyer';
   const orderCurrency = detectOrderCurrency(order);
   const totalAmountFormatted = formatCurrency(order.total_amount, orderCurrency);
   const orderDate = order.created_at
@@ -86,14 +94,17 @@ export function renderBuyerConfirmationEmailHtml({
       });
 
   const isDropship = Boolean(order.is_dropship);
-  const destName = order.dropship_recipient_name || order.buyer_name || recipientName;
-  const destPhone = order.dropship_recipient_phone || order.phone || '';
-  const destAddress = order.dropship_recipient_address || '';
-  const destCity = order.dropship_recipient_city || '';
-  const destState = order.dropship_recipient_state || '';
-  const destPincode = order.dropship_recipient_pincode || order.pincode || '';
+  const destName = deliveryAddr?.recipient_name || order.dropship_recipient_name || order.buyer_name || recipientName;
+  const destPhone = deliveryAddr?.phone || order.dropship_recipient_phone || order.phone || '';
+  const destAddress = deliveryAddr?.address_line1 || order.dropship_recipient_address || '';
+  const destCity = deliveryAddr?.city || order.dropship_recipient_city || '';
+  const destState = deliveryAddr?.state || order.dropship_recipient_state || '';
+  const destPincode = deliveryAddr?.pincode || order.dropship_recipient_pincode || order.pincode || '';
 
-  const items = Array.isArray(order.items) ? order.items : [];
+  const rawItems = (Array.isArray(order.order_items) && order.order_items.length > 0)
+    ? order.order_items
+    : (Array.isArray(order.items) ? order.items : []);
+  const items = rawItems;
 
   const itemsRowsHtml = items.length > 0
     ? items.map((item, idx) => {
@@ -101,7 +112,8 @@ export function renderBuyerConfirmationEmailHtml({
         const color = item.color || item.selectedColorName || 'Standard';
         const code = item.variant_code || 'N/A';
         const qty = item.quantity || 1;
-        const lineTotal = formatCurrency((Number(item.price) || 0) * (Number(qty) || 1), orderCurrency);
+        const itemPrice = item.unit_price ?? item.price ?? 0;
+        const lineTotal = formatCurrency((Number(itemPrice) || 0) * (Number(qty) || 1), orderCurrency);
 
         return `
           <tr>
@@ -348,7 +360,7 @@ export async function sendBuyerOrderConfirmationEmail({
   if (!orderRecord && orderId && supabase) {
     const { data, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
       .eq('id', orderId)
       .maybeSingle();
 
@@ -364,13 +376,14 @@ export async function sendBuyerOrderConfirmationEmail({
     return { success: false, reason: 'no_order_record' };
   }
 
-  const targetEmail = overrideEmail || orderRecord.email;
+  const deliveryAddr = Array.isArray(orderRecord.order_delivery_addresses) ? orderRecord.order_delivery_addresses[0] : orderRecord.order_delivery_addresses;
+  const targetEmail = overrideEmail || deliveryAddr?.email || orderRecord.email;
   if (!targetEmail || !targetEmail.includes('@')) {
     console.warn('[buyerEmailService] Order has no valid recipient email:', targetEmail);
     return { success: false, reason: 'invalid_email' };
   }
 
-  const orderNumber = formatOrderNumber(orderRecord.id);
+  const orderNumber = formatOrderNumber(orderRecord);
 
   // Idempotency check: don't double send if already confirmed and not forcing
   const emailSentTag = '[Buyer Confirmation Sent]';

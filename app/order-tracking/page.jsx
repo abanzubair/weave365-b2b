@@ -9,10 +9,12 @@ export const metadata = {
   },
 };
 
-export default function OrderTrackingRoute() {
+export default async function OrderTrackingRoute({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const inquiryId = resolvedSearchParams?.id || resolvedSearchParams?.order_id || '';
   return (
     <Suspense fallback={null}>
-      <OrderTrackingClient />
+      <OrderTrackingClient inquiryId={inquiryId} />
     </Suspense>
   );
 }

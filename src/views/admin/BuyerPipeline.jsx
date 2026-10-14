@@ -180,6 +180,10 @@ export default function BuyerPipeline({
 
   const getProfileRoleKey = (p) => {
     if (!p) return 'customer';
+    const subtype = String(p.buyer_subtype || '').toLowerCase().trim();
+    if (subtype.includes('reseller') || subtype.includes('wholeseller') || p.role === 'reseller' || p.user_type === 'business') {
+      return 'reseller';
+    }
     if (isVendorProfile(p)) return 'supplier';
     const isBusiness = p.user_type === 'business' || p.buyer_type === 'business' || p.buyer_type === 'reseller' || p.role === 'reseller' || (p.buyer_subtype && p.buyer_subtype.toLowerCase() !== 'customer') || Boolean(p.business_name?.trim());
     return isBusiness ? 'reseller' : 'customer';

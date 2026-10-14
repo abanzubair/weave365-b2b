@@ -118,7 +118,7 @@ export function CheckoutPage({
           if (data.success && data.is_paid) {
             setCreatedOrder({
               id: data.db_order_id || phonePeReturnId,
-              orderNumber: (data.db_order_id || phonePeReturnId).slice(0, 8).toUpperCase(),
+              orderNumber: data.order_number || (data.db_order_id || phonePeReturnId).slice(0, 8).toUpperCase(),
               total: data.order_amount || total,
               currency: 'INR',
               currencySymbol: '₹',
@@ -153,8 +153,8 @@ export function CheckoutPage({
         .then((data) => {
           if (data.success && (data.is_paid || data.order_status === 'PAID')) {
             setCreatedOrder({
-              id: returnOrderId,
-              orderNumber: returnOrderId.slice(0, 8).toUpperCase(),
+              id: data.db_order_id || returnOrderId,
+              orderNumber: data.order_number || (data.db_order_id || returnOrderId).slice(0, 8).toUpperCase(),
               total: data.order_amount || total,
               currency: data.order_currency || currentCountry?.currency || 'INR',
               currencySymbol: currentCountry?.currencySymbol || '₹',
@@ -608,7 +608,7 @@ export function CheckoutPage({
       if (verifyData.success && (verifyData.is_paid || verifyData.order_status === 'PAID')) {
         setCreatedOrder({
           id: data.db_order_id,
-          orderNumber: (data.db_order_id || '').slice(0, 8).toUpperCase(),
+          orderNumber: verifyData.order_number || data.order_number || (data.db_order_id || '').slice(0, 8).toUpperCase(),
           total: verifyData.order_amount || data.order_amount || total,
           currency: verifyData.order_currency || data.order_currency || currentCountry?.currency || 'INR',
           currencySymbol: (verifyData.order_currency || data.order_currency) === 'INR' ? '₹' : (currentCountry?.currencySymbol || '₹'),

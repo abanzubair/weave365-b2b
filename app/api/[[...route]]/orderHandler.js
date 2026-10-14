@@ -107,8 +107,11 @@ export async function POST(request) {
       ? user_id
       : null;
 
-    // 2. Insert into Supabase Orders table
+    const orderNumber = `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
+    // 2. Insert into Supabase Orders table (dual-write trigger synchronizes 3NF entities)
     const orderPayload = {
+      order_number: orderNumber,
       user_id: validUserId,
       email: email || null,
       buyer_name: isDropship ? (dropship_details.sender_name || fullName) : fullName,
@@ -145,7 +148,7 @@ export async function POST(request) {
     const { data: insertedOrder, error: insertError } = await supabase
       .from('orders')
       .insert(orderPayload)
-      .select('id, created_at')
+      .select('id, order_number, created_at')
       .single();
 
     if (insertError) {
@@ -157,6 +160,20 @@ export async function POST(request) {
     }
 
     const orderId = insertedOrder?.id;
+    const resolvedOrderNumber = insertedOrder?.order_number || orderNumber;
+
+    // Retrieve normalized 3NF order entities for downstream email and verification
+    let normalizedOrder = null;
+    try {
+      const { data: fetched3NF } = await supabase
+        .from('orders')
+        .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+        .eq('id', orderId)
+        .maybeSingle();
+      if (fetched3NF) normalizedOrder = fetched3NF;
+    } catch (normErr) {
+      console.warn('[orderHandler] 3NF fetch notice:', normErr);
+    }
 
     // 3. Trigger Email Notification via Resend (Async / Non-blocking)
     const resendApiKey = process.env.RESEND_API_KEY;
@@ -176,7 +193,7 @@ export async function POST(request) {
         </tr>
       `).join('');
 
-      const emailSubject = `🎉 New Order #${orderId?.slice(0, 8)}: ${fullName} (₹${Number(total_amount).toLocaleString('en-IN')}) - ${paymentLabel}`;
+      const emailSubject = `🎉 New Order #${resolvedOrderNumber || orderId?.slice(0, 8)}: ${fullName} (₹${Number(total_amount).toLocaleString('en-IN')}) - ${paymentLabel}`;
       const emailHtml = `
         <!DOCTYPE html>
         <html>
@@ -185,7 +202,7 @@ export async function POST(request) {
           <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
             <div style="background: #0f172a; color: #ffffff; padding: 24px; text-align: center;">
               <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">NEW WEAVE 365 ORDER RECEIVED</h1>
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Order ID: ${orderId}</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Order Ref: ${resolvedOrderNumber} &middot; ID: ${orderId}</p>
             </div>
             <div style="padding: 24px;">
               <div style="background: #f1f5f9; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">
@@ -251,7 +268,7 @@ export async function POST(request) {
       if (email && email.includes('@')) {
         sendBuyerOrderConfirmationEmail({
           orderId,
-          order: { ...orderPayload, id: orderId },
+          order: normalizedOrder || { ...orderPayload, id: orderId, order_number: resolvedOrderNumber },
           supabase,
         }).catch((err) => console.error('[orderHandler] Buyer confirmation email dispatch error:', err));
       }
@@ -261,7 +278,7 @@ export async function POST(request) {
       {
         success: true,
         orderId: orderId,
-        orderNumber: orderId ? orderId.slice(0, 8).toUpperCase() : 'ORD',
+        orderNumber: resolvedOrderNumber,
         message: 'Order registered successfully.',
       },
       { status: 200, headers: corsHeaders }

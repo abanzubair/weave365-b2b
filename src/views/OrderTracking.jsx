@@ -101,55 +101,138 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           return;
         }
 
+        const cleanId = inquiryId.trim();
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(inquiryId.trim())) {
-          setError('Invalid order tracking ID format. Please verify your ID or contact support.');
-          setOrder(null);
-          setLoading(false);
-          return;
-        }
+        const isUuid = uuidRegex.test(cleanId);
 
-        // Use the secure RPC function to get order tracking by ID
         let trackingOrder = null;
-        try {
-          const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
-            order_id: inquiryId
-          });
-          if (!rpcError && data && data.length > 0) {
-            trackingOrder = data[0];
+
+        // 1. If UUID, attempt high-performance get_order_tracking RPC
+        if (isUuid) {
+          try {
+            const { data, error: rpcError } = await supabase.rpc('get_order_tracking', {
+              order_id: cleanId
+            });
+            if (!rpcError && data && data.length > 0) {
+              trackingOrder = data[0];
+            }
+          } catch (rpcErr) {
+            console.warn('get_order_tracking RPC fallback:', rpcErr);
           }
-        } catch (rpcErr) {
-          console.warn('get_order_tracking RPC fallback:', rpcErr);
         }
 
-        // Direct table fallback if RPC is unconfigured or missed api_orders
+        // 2. Direct table fallback if RPC is unconfigured, returned nothing, or cleanId is an order_number
         if (!trackingOrder) {
-          const [{ data: apiData }, { data: ordData }, { data: inqData }] = await Promise.all([
-            supabase.from('api_orders').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
-            supabase.from('orders').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
-            supabase.from('inquiries').select('*').eq('id', inquiryId).maybeSingle().catch(() => ({ data: null })),
-          ]);
+          let apiData = null;
+          let ordData = null;
+          let inqData = null;
 
-          const found = apiData || ordData || inqData;
-          if (found) {
+          if (isUuid) {
+            const [{ data: dApi }, { data: dOrd }, { data: dInq }] = await Promise.all([
+              supabase.from('api_orders').select('*').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
+              supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
+              supabase.from('inquiries').select('*').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
+            ]);
+            apiData = dApi;
+            ordData = dOrd;
+            inqData = dInq;
+          } else {
+            // CleanId is an order_number (e.g. ORD-XXXXXXXX, API-XXXXX, B2B-XXXXX)
+            const [{ data: dOrdByNum }, { data: dApiByReseller }] = await Promise.all([
+              supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('order_number', cleanId).maybeSingle().catch(() => ({ data: null })),
+              supabase.from('api_orders').select('*').eq('reseller_order_id', cleanId).maybeSingle().catch(() => ({ data: null })),
+            ]);
+            ordData = dOrdByNum;
+            apiData = dApiByReseller;
+
+            // Case-insensitive fallback if exact match wasn't found
+            if (!ordData) {
+              const { data: dOrdIlike } = await supabase
+                .from('orders')
+                .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+                .ilike('order_number', cleanId)
+                .maybeSingle()
+                .catch(() => ({ data: null }));
+              if (dOrdIlike) ordData = dOrdIlike;
+            }
+
+            // Try RPC with the resolved UUID
+            if (ordData?.id && uuidRegex.test(ordData.id)) {
+              try {
+                const { data: rpcData, error: rpcErr } = await supabase.rpc('get_order_tracking', {
+                  order_id: ordData.id
+                });
+                if (!rpcErr && rpcData && rpcData.length > 0) {
+                  trackingOrder = rpcData[0];
+                }
+              } catch (e) {
+                console.warn('RPC lookup with resolved order ID fallback:', e);
+              }
+            }
+          }
+
+          if (ordData) {
+            const deliveryAddr = Array.isArray(ordData.order_delivery_addresses) ? ordData.order_delivery_addresses[0] : ordData.order_delivery_addresses;
+            const dropshipSender = Array.isArray(ordData.order_dropship_senders) ? ordData.order_dropship_senders[0] : ordData.order_dropship_senders;
+            const fulfillments = Array.isArray(ordData.order_fulfillments) ? ordData.order_fulfillments : [];
+            const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+            const itemsList = (Array.isArray(ordData.order_items) && ordData.order_items.length > 0)
+              ? ordData.order_items.map(it => ({
+                  ...it,
+                  price: it.unit_price ?? it.price,
+                  product_title: it.product_title || it.title,
+                  image: it.thumbnail_url || it.image,
+                }))
+              : (ordData.items || []);
+
             trackingOrder = {
-              ...found,
-              buyer_name: found.recipient_name || found.buyer_name,
-              phone: found.recipient_phone || found.phone,
-              email: found.recipient_email || found.email,
-              pincode: found.recipient_pincode || found.pincode,
-              is_dropship: Boolean(found.is_dropship || apiData),
-              dropship_sender_name: found.sender_name || found.dropship_sender_name,
-              dropship_sender_phone: found.sender_phone || found.dropship_sender_phone,
-              dropship_recipient_name: found.recipient_name || found.dropship_recipient_name,
-              dropship_recipient_phone: found.recipient_phone || found.dropship_recipient_phone,
-              dropship_recipient_address: found.recipient_address || found.dropship_recipient_address,
-              dropship_recipient_city: found.recipient_city || found.dropship_recipient_city,
-              dropship_recipient_state: found.recipient_state || found.dropship_recipient_state,
-              dropship_recipient_pincode: found.recipient_pincode || found.dropship_recipient_pincode,
-              dropship_packing_preference: found.packing_preference || found.dropship_packing_preference,
-              message: found.shipping_notes || found.message,
+              ...ordData,
+              order_delivery_addresses: deliveryAddr,
+              order_dropship_senders: dropshipSender,
+              order_items: itemsList,
+              items: itemsList,
+              buyer_name: deliveryAddr?.recipient_name || ordData.buyer_name,
+              phone: deliveryAddr?.phone || ordData.phone,
+              email: deliveryAddr?.email || ordData.email,
+              pincode: deliveryAddr?.pincode || ordData.pincode,
+              is_dropship: Boolean(ordData.is_dropship),
+              dropship_sender_name: dropshipSender?.sender_name || ordData.dropship_sender_name,
+              dropship_sender_phone: dropshipSender?.sender_phone || ordData.dropship_sender_phone,
+              dropship_recipient_name: deliveryAddr?.recipient_name || ordData.dropship_recipient_name || ordData.buyer_name,
+              dropship_recipient_phone: deliveryAddr?.phone || ordData.dropship_recipient_phone || ordData.phone,
+              dropship_recipient_address: deliveryAddr?.address_line1 || ordData.dropship_recipient_address,
+              dropship_recipient_city: deliveryAddr?.city || ordData.dropship_recipient_city,
+              dropship_recipient_state: deliveryAddr?.state || ordData.dropship_recipient_state,
+              dropship_recipient_pincode: deliveryAddr?.pincode || ordData.dropship_recipient_pincode || ordData.pincode,
+              dropship_packing_preference: dropshipSender?.packing_preference || ordData.dropship_packing_preference,
+              tracking_carrier: latestFulfillment?.tracking_carrier || ordData.tracking_carrier,
+              tracking_number: latestFulfillment?.tracking_number || ordData.tracking_number,
+              tracking_message: latestFulfillment?.tracking_message || ordData.tracking_message,
+              dispatched_at: latestFulfillment?.dispatched_at || null,
+              delivered_at: latestFulfillment?.delivered_at || null,
             };
+          } else {
+            const found = apiData || inqData;
+            if (found) {
+              trackingOrder = {
+                ...found,
+                buyer_name: found.recipient_name || found.buyer_name,
+                phone: found.recipient_phone || found.phone,
+                email: found.recipient_email || found.email,
+                pincode: found.recipient_pincode || found.pincode,
+                is_dropship: Boolean(found.is_dropship || apiData),
+                dropship_sender_name: found.sender_name || found.dropship_sender_name,
+                dropship_sender_phone: found.sender_phone || found.dropship_sender_phone,
+                dropship_recipient_name: found.recipient_name || found.dropship_recipient_name,
+                dropship_recipient_phone: found.recipient_phone || found.dropship_recipient_phone,
+                dropship_recipient_address: found.recipient_address || found.dropship_recipient_address,
+                dropship_recipient_city: found.recipient_city || found.dropship_recipient_city,
+                dropship_recipient_state: found.recipient_state || found.dropship_recipient_state,
+                dropship_recipient_pincode: found.recipient_pincode || found.dropship_recipient_pincode,
+                dropship_packing_preference: found.packing_preference || found.dropship_packing_preference,
+                message: found.shipping_notes || found.message,
+              };
+            }
           }
         }
 
@@ -191,6 +274,25 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   // Helper to parse delivery address from message block or dropship fields
   const parsedAddress = useMemo(() => {
     if (!order) return null;
+
+    const deliveryAddr = Array.isArray(order.order_delivery_addresses)
+      ? order.order_delivery_addresses[0]
+      : (order.order_delivery_addresses || order.recipient);
+
+    if (deliveryAddr && (deliveryAddr.address_line1 || deliveryAddr.city)) {
+      const cityStatePin = [
+        deliveryAddr.city,
+        deliveryAddr.state,
+        deliveryAddr.pincode ? `PIN: ${deliveryAddr.pincode}` : ''
+      ].filter(Boolean).join(', ');
+
+      return {
+        name: deliveryAddr.recipient_name || order.buyer_name,
+        phone: deliveryAddr.phone || order.phone,
+        address: deliveryAddr.address_line1 + (deliveryAddr.address_line2 ? `, ${deliveryAddr.address_line2}` : ''),
+        city: cityStatePin,
+      };
+    }
 
     // If dedicated dropship columns are populated
     if (order.dropship_recipient_address) {

@@ -19,16 +19,21 @@ export function profileRowFromUser(user) {
   if (!user?.id) return null;
   const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
 
-  const isVendor = isVendorProfile(buyerProfile) || user?.user_metadata?.role === 'vendor';
-  const isBusiness = !isVendor && (
+  const isBusiness = (
     buyerProfile.user_type === 'business' ||
     user?.user_metadata?.user_type === 'business' ||
     buyerProfile.buyer_type === 'business' ||
     buyerProfile.buyer_type === 'reseller' ||
+    buyerProfile.buyer_type === 'wholesale' ||
     buyerProfile.role === 'reseller' ||
     buyerProfile.role === 'business' ||
-    (buyerProfile.buyer_subtype && !['customer', 'user', ''].includes(buyerProfile.buyer_subtype.toLowerCase().trim())) ||
+    (buyerProfile.buyer_subtype && !['customer', 'user', ''].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim()) && !['vendor', 'weaver', 'cluster'].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim())) ||
     Boolean(buyerProfile.business_name?.trim())
+  );
+
+  const isVendor = !isBusiness && (
+    isVendorProfile(buyerProfile) ||
+    isVendorProfile(user?.user_metadata)
   );
 
   const storedAttr = getStoredAttribution();
@@ -99,12 +104,24 @@ export async function syncProfileFromUser(user) {
 
   if (existingProfile) {
     // Preserve administrative role promotions if present in DB
-    if (existingProfile.role && existingProfile.role !== 'customer') {
+    if (existingProfile.role === 'admin') {
+      profileRow.role = 'admin';
+    } else if (existingProfile.role && existingProfile.role !== 'customer') {
       profileRow.role = existingProfile.role;
     }
-    if (existingProfile.user_type && profileRow.user_type === 'customer' && existingProfile.user_type !== 'customer') {
+
+    // Never allow background sync to downgrade an existing business/reseller profile to supplier
+    if (
+      (existingProfile.user_type === 'business' || existingProfile.buyer_type === 'business' || existingProfile.role === 'reseller') &&
+      profileRow.user_type === 'supplier'
+    ) {
+      profileRow.user_type = 'business';
+      profileRow.buyer_type = 'business';
+      profileRow.role = existingProfile.role === 'admin' ? 'admin' : 'reseller';
+    } else if (existingProfile.user_type && profileRow.user_type === 'customer' && existingProfile.user_type !== 'customer') {
       profileRow.user_type = existingProfile.user_type;
     }
+
     if (existingProfile.buyer_type && profileRow.buyer_type === 'customer' && existingProfile.buyer_type !== 'customer') {
       profileRow.buyer_type = existingProfile.buyer_type;
     }

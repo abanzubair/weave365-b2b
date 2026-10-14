@@ -729,7 +729,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
     let ordersQuery = supabase
       .from('orders')
-      .select('*');
+      .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)');
 
     let inquiriesQuery = supabase
       .from('inquiries')
@@ -785,7 +785,46 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       message: a.shipping_notes || a.message,
     }));
 
-    const combinedRaw = [...normalizedApiOrders, ...(ordersData || []), ...(inqData || [])];
+    const normalizedOrders = (ordersData || []).map(o => {
+      const deliveryAddr = Array.isArray(o.order_delivery_addresses) ? o.order_delivery_addresses[0] : o.order_delivery_addresses;
+      const dropshipSender = Array.isArray(o.order_dropship_senders) ? o.order_dropship_senders[0] : o.order_dropship_senders;
+      const fulfillments = Array.isArray(o.order_fulfillments) ? o.order_fulfillments : [];
+      const latestFulfillment = fulfillments.slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0];
+      const itemsList = (Array.isArray(o.order_items) && o.order_items.length > 0)
+        ? o.order_items.map(it => ({
+            sku: it.variant_code || it.product_id,
+            product_id: it.product_id,
+            title: it.product_title || it.title,
+            color: it.color || 'Standard',
+            quantity: it.quantity || 1,
+            price: it.unit_price ?? it.price ?? 0,
+            image: it.thumbnail_url || it.image,
+          }))
+        : (o.items || []);
+
+      return {
+        ...o,
+        _sourceTable: 'orders',
+        buyer_name: deliveryAddr?.recipient_name || o.buyer_name,
+        phone: deliveryAddr?.phone || o.phone,
+        email: deliveryAddr?.email || o.email,
+        pincode: deliveryAddr?.pincode || o.pincode,
+        dropship_recipient_name: deliveryAddr?.recipient_name || o.dropship_recipient_name,
+        dropship_recipient_phone: deliveryAddr?.phone || o.dropship_recipient_phone,
+        dropship_recipient_address: deliveryAddr?.address_line1 || o.dropship_recipient_address,
+        dropship_recipient_city: deliveryAddr?.city || o.dropship_recipient_city,
+        dropship_recipient_state: deliveryAddr?.state || o.dropship_recipient_state,
+        dropship_recipient_pincode: deliveryAddr?.pincode || o.dropship_recipient_pincode,
+        dropship_sender_name: dropshipSender?.sender_name || o.dropship_sender_name,
+        dropship_sender_phone: dropshipSender?.sender_phone || o.dropship_sender_phone,
+        tracking_carrier: latestFulfillment?.tracking_carrier || o.tracking_carrier,
+        tracking_number: latestFulfillment?.tracking_number || o.tracking_number,
+        tracking_message: latestFulfillment?.tracking_message || o.tracking_message,
+        items: itemsList,
+      };
+    });
+
+    const combinedRaw = [...normalizedApiOrders, ...normalizedOrders, ...(inqData || [])];
     // Deduplicate by ID
     const seen = new Set();
     const rawOrders = [];
@@ -818,6 +857,7 @@ export async function handleDeveloperApiGet(request, pathSegments) {
 
       return {
         id: o.id,
+        order_number: o.order_number || null,
         reseller_order_id: extractedResellerOrderId,
         created_at: o.created_at,
         updated_at: o.updated_at,
@@ -1405,7 +1445,9 @@ export async function handleDeveloperApiPost(request, pathSegments) {
         insertedOrder = apiRes.data;
       } else {
         // 2. Fallback: orders table
+        const orderNumber = reseller_order_id ? `API-${reseller_order_id}` : `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
         const orderPayload = {
+          order_number: orderNumber,
           user_id: auth.keyRecord.user_id,
           buyer_name: cust.name,
           business_name: senderName,
@@ -1460,12 +1502,14 @@ export async function handleDeveloperApiPost(request, pathSegments) {
       return Response.json({
         status: 'success',
         order_id: insertedOrder.id,
+        order_number: insertedOrder.order_number || null,
         reseller_order_id: reseller_order_id || null,
         message: 'Order received successfully and queued for wholesale fulfillment.',
-        tracking_url: `https://www.weave365.com/order-tracking/${insertedOrder.id}`,
+        tracking_url: `https://www.weave365.com/order-tracking/${encodeURIComponent(insertedOrder.order_number || insertedOrder.id)}`,
         estimated_dispatch: '24-48 Business Hours',
         order: {
           id: insertedOrder.id,
+          order_number: insertedOrder.order_number || null,
           status: 'new',
           status_label: 'New / Under Review',
           is_dropship: true,

@@ -56,6 +56,23 @@ async function updateSupabaseOrderTracking(id, { status, trackingCarrier, tracki
   };
   const { error } = await supabase.from(table).update(payload).eq('id', id);
   if (error) throw error;
+
+  if (sourceTable === 'orders' && (trackingCarrier || trackingNumber)) {
+    try {
+      await supabase.from('order_fulfillments').insert({
+        order_id: id,
+        tracking_carrier: trackingCarrier || 'Delhivery',
+        tracking_number: trackingNumber || '',
+        tracking_message: trackingMessage || null,
+        status: status === 'delivered' ? 'delivered' : 'dispatched',
+        dispatched_at: new Date().toISOString(),
+        delivered_at: status === 'delivered' ? new Date().toISOString() : null,
+      });
+    } catch (e) {
+      // Non-blocking if table or trigger already handled it
+      console.warn('[AdminTrackingPanel] order_fulfillments insert notice:', e);
+    }
+  }
 }
 
 // Carrier tracking link generator
@@ -239,7 +256,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       );
     }
 
-    let imageSrc = item.image || item.image_url || '';
+    let imageSrc = item.thumbnail_url || item.image || item.image_url || '';
     if (!imageSrc && matchedProd) {
       if (itemColor && matchedProd.colorOptions) {
         const matchedOpt = matchedProd.colorOptions.find(c => String(c.name || '').toLowerCase() === itemColor);
@@ -255,7 +272,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
     const title = item.product_title || item.title || matchedProd?.title || matchedProd?.name || 'Handloom Banarasi Saree';
     const color = item.color || matchedVariant?.color || 'Standard';
-    const price = Number(item.price) || Number(matchedVariant?.prices?.b2r) || Number(matchedProd?.price) || 0;
+    const price = Number(item.unit_price) || Number(item.price) || Number(matchedVariant?.prices?.b2r) || Number(matchedProd?.price) || 0;
     const targetProductId = matchedProd?.id || item.product_id || baseCode || skuCode;
     const categorySlug = getProductCategorySlug(targetProductId, matchedProd?.category);
     const queryParams = [];
@@ -288,8 +305,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     const phoneWithCountry = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     
     const recipientName = inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer';
-    const orderIdShort = inquiry.id.substring(0, 8);
-    const trackingUrl = `https://weave365.com/order-tracking/${inquiry.id}`;
+    const orderIdShort = inquiry.order_number || inquiry.id.substring(0, 8);
+    const trackingUrl = `https://weave365.com/order-tracking/${encodeURIComponent(inquiry.order_number || inquiry.id)}`;
     const carrierText = inquiry.tracking_carrier ? ` via ${inquiry.tracking_carrier} (AWB: ${inquiry.tracking_number || 'in transit'})` : '';
     
     const msg = `Hello ${recipientName}, your order #${orderIdShort} from Weave365 is confirmed${carrierText}.\n\nYou can track live delivery status here:\n${trackingUrl}\n\nThank you for choosing authentic Banarasi handlooms!`;
@@ -298,23 +315,32 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
   const handlePrintBlindLabel = (inquiry) => {
     if (typeof window === 'undefined') return;
-    const senderName = inquiry.dropship_sender_name || inquiry.business_name || inquiry.buyer_name || 'Partner Store';
-    const senderPhone = inquiry.dropship_sender_phone || inquiry.phone || 'N/A';
-    const senderAddrText = inquiry.dropship_sender_address ? `${inquiry.dropship_sender_address}, ${inquiry.dropship_sender_city || ''} ${inquiry.dropship_sender_state || ''} ${inquiry.dropship_sender_pincode || ''}`.trim() : '';
+    const deliveryAddr = Array.isArray(inquiry.order_delivery_addresses) ? inquiry.order_delivery_addresses[0] : inquiry.order_delivery_addresses;
+    const dropshipSender = Array.isArray(inquiry.order_dropship_senders) ? inquiry.order_dropship_senders[0] : inquiry.order_dropship_senders;
+
+    const senderName = dropshipSender?.sender_name || inquiry.dropship_sender_name || inquiry.business_name || inquiry.buyer_name || 'Partner Store';
+    const senderPhone = dropshipSender?.sender_phone || inquiry.dropship_sender_phone || inquiry.phone || 'N/A';
+    const senderAddrText = dropshipSender?.sender_address 
+      ? `${dropshipSender.sender_address}, ${dropshipSender.sender_city || ''} ${dropshipSender.sender_state || ''} ${dropshipSender.sender_pincode || ''}`.trim() 
+      : (inquiry.dropship_sender_address ? `${inquiry.dropship_sender_address}, ${inquiry.dropship_sender_city || ''} ${inquiry.dropship_sender_state || ''} ${inquiry.dropship_sender_pincode || ''}`.trim() : '');
     
-    const recipientName = inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer';
-    const recipientPhone = inquiry.dropship_recipient_phone || inquiry.phone || 'N/A';
-    const recipientAddress = inquiry.dropship_recipient_address || getParsedAddress(inquiry.message) || 'Address in order details';
-    const recipientCity = inquiry.dropship_recipient_city || '';
-    const recipientState = inquiry.dropship_recipient_state || '';
-    const recipientPincode = inquiry.dropship_recipient_pincode || inquiry.pincode || '';
+    const recipientName = deliveryAddr?.recipient_name || inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer';
+    const recipientPhone = deliveryAddr?.phone || inquiry.dropship_recipient_phone || inquiry.phone || 'N/A';
+    const recipientAddress = deliveryAddr?.address_line1 || inquiry.dropship_recipient_address || getParsedAddress(inquiry.message) || 'Address in order details';
+    const recipientCity = deliveryAddr?.city || inquiry.dropship_recipient_city || '';
+    const recipientState = deliveryAddr?.state || inquiry.dropship_recipient_state || '';
+    const recipientPincode = deliveryAddr?.pincode || inquiry.dropship_recipient_pincode || inquiry.pincode || '';
     const formattedDestLine = [recipientCity, recipientState].filter(Boolean).join(', ');
     
-    const orderIdShort = String(inquiry.id).substring(0, 8);
+    const orderIdShort = inquiry.order_number || String(inquiry.id).substring(0, 8);
     const orderDate = new Date(inquiry.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    const packingPref = inquiry.dropship_packing_preference || 'Blind Packaging (No Supplier Invoices)';
+    const packingPref = dropshipSender?.packing_preference || inquiry.dropship_packing_preference || 'Blind Packaging (No Supplier Invoices)';
 
-    const itemsRows = (inquiry.items || []).map((it, idx) => {
+    const labelItems = (Array.isArray(inquiry.order_items) && inquiry.order_items.length > 0)
+      ? inquiry.order_items
+      : (inquiry.items || []);
+
+    const itemsRows = labelItems.map((it, idx) => {
       const resolved = resolveItemDetails(it);
       return `
         <tr>
@@ -327,7 +353,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       `;
     }).join('');
 
-    const totalQty = (inquiry.items || []).reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
+    const totalQty = labelItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -942,19 +968,19 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     <td>
                       <div className="admin-order-id-col">
                         <div className="admin-id-copy-row">
-                          <code className="admin-order-code" title={inquiry.id}>
-                            {inquiry.id.substring(0, 8)}
+                          <code className="admin-order-code" title={inquiry.order_number || inquiry.id}>
+                            {inquiry.order_number || inquiry.id.substring(0, 8)}
                           </code>
                           <button 
                             type="button" 
-                            onClick={() => handleCopy(inquiry.id, inquiry.id)}
+                            onClick={() => handleCopy(inquiry.order_number || inquiry.id, inquiry.id)}
                             className="admin-btn-icon-subtle"
-                            title="Copy full Order ID"
+                            title="Copy full Order Reference"
                           >
                             {copyFeedback[inquiry.id] ? <Check size={12} style={{ color: '#15803d' }} /> : <Copy size={12} />}
                           </button>
                           <a 
-                            href={`/order-tracking/${inquiry.id}`}
+                            href={`/order-tracking/${encodeURIComponent(inquiry.order_number || inquiry.id)}`}
                             target="_blank" 
                             rel="noreferrer"
                             className="admin-btn-icon-subtle"
@@ -1154,11 +1180,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   <h3 className="admin-modal-title">
                     {activeModalTab === 'details' ? (
                       <>
-                        <Layers size={18} /> Order Details #{selectedInquiry.id.substring(0, 8)}
+                        <Layers size={18} /> Order Details #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
                       </>
                     ) : (
                       <>
-                        <Truck size={18} /> Update Fulfillment #{selectedInquiry.id.substring(0, 8)}
+                        <Truck size={18} /> Update Fulfillment #{selectedInquiry.order_number || selectedInquiry.id.substring(0, 8)}
                       </>
                     )}
                   </h3>
@@ -1204,7 +1230,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 className={`admin-modal-tab-btn ${activeModalTab === 'details' ? 'active' : ''}`}
                 onClick={() => setActiveModalTab('details')}
               >
-                <Layers size={14} /> Order Details & Items ({(selectedInquiry.items || []).length || 1})
+                <Layers size={14} /> Order Details & Items ({(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)})
               </button>
             </div>
 
@@ -1221,7 +1247,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 </div>
                 <div className="admin-context-pill">
                   <Package size={13} className="admin-context-icon" />
-                  <span><strong>{(selectedInquiry.items || []).length || 1} Item(s)</strong> {selectedInquiry.total_amount ? `• ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}</span>
+                  <span><strong>{(selectedInquiry.order_items?.length || selectedInquiry.items?.length || 1)} Item(s)</strong> {selectedInquiry.total_amount ? `• ₹${Number(selectedInquiry.total_amount).toLocaleString('en-IN')}` : ''}</span>
                 </div>
               </div>
             )}
@@ -1469,72 +1495,79 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                   </div>
 
                   {/* Items Detailed Table */}
-                  <div className="admin-inspect-items-wrap">
-                    <div className="admin-section-header">
-                      <span className="admin-section-title">ORDERED ITEMS ({(selectedInquiry.items || []).length || 1})</span>
-                    </div>
-                    <table className="admin-inspect-table">
-                      <thead>
-                        <tr>
-                          <th>Item</th>
-                          <th>SKU / Variant</th>
-                          <th>Color</th>
-                          <th style={{ textAlign: 'center' }}>Qty</th>
-                          <th style={{ textAlign: 'right' }}>Price</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(selectedInquiry.items || []).map((it, idx) => {
-                          const resolved = resolveItemDetails(it);
-                          return (
-                            <tr key={idx}>
-                              <td>
-                                <a 
-                                  href={resolved.productUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="admin-inspect-item-cell"
-                                  title={`Open ${resolved.title} page in new tab ↗`}
-                                >
-                                  <img 
-                                    src={resolved.image} 
-                                    alt={resolved.title} 
-                                    className="admin-inspect-item-img"
-                                    onError={(e) => { e.target.src = fallbackProductImage; }}
-                                  />
-                                  <span className="admin-inspect-item-title">{resolved.title}</span>
-                                </a>
-                              </td>
-                              <td><code className="admin-sku-code">{resolved.sku}</code></td>
-                              <td><span className="admin-color-tag">{resolved.color}</span></td>
-                              <td style={{ textAlign: 'center' }}><strong>{resolved.quantity}</strong></td>
-                              <td style={{ textAlign: 'right', fontWeight: 600 }}>{resolved.price > 0 ? formatMoney(resolved.price * resolved.quantity) : 'Wholesale Tier'}</td>
+                  {(() => {
+                    const inspectItems = (Array.isArray(selectedInquiry.order_items) && selectedInquiry.order_items.length > 0)
+                      ? selectedInquiry.order_items
+                      : (Array.isArray(selectedInquiry.items) ? selectedInquiry.items : []);
+                    return (
+                      <div className="admin-inspect-items-wrap">
+                        <div className="admin-section-header">
+                          <span className="admin-section-title">ORDERED ITEMS ({inspectItems.length || 1})</span>
+                        </div>
+                        <table className="admin-inspect-table">
+                          <thead>
+                            <tr>
+                              <th>Item</th>
+                              <th>SKU / Variant</th>
+                              <th>Color</th>
+                              <th style={{ textAlign: 'center' }}>Qty</th>
+                              <th style={{ textAlign: 'right' }}>Price</th>
                             </tr>
-                          );
-                        })}
-                      </tbody>
-                      <tfoot>
-                        <tr className="admin-inspect-total-row">
-                          <td colSpan="3" style={{ fontWeight: 700, color: '#0f172a' }}>
-                            Total Items: {(selectedInquiry.items || []).reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} unit(s)
-                          </td>
-                          <td style={{ textAlign: 'center', fontWeight: 700 }}>
-                            {(selectedInquiry.items || []).reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)}
-                          </td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>
-                            {formatMoney(
-                              (selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
-                                ? Number(selectedInquiry.total_amount)
-                                : ((selectedInquiry.items || []).reduce((acc, it) => {
-                                    const resolved = resolveItemDetails(it);
-                                    return acc + (resolved.price * resolved.quantity);
-                                  }, 0) || 0)
-                            )}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
+                          </thead>
+                          <tbody>
+                            {inspectItems.map((it, idx) => {
+                              const resolved = resolveItemDetails(it);
+                              return (
+                                <tr key={idx}>
+                                  <td>
+                                    <a 
+                                      href={resolved.productUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="admin-inspect-item-cell"
+                                      title={`Open ${resolved.title} page in new tab ↗`}
+                                    >
+                                      <img 
+                                        src={resolved.image} 
+                                        alt={resolved.title} 
+                                        className="admin-inspect-item-img"
+                                        onError={(e) => { e.target.src = fallbackProductImage; }}
+                                      />
+                                      <span className="admin-inspect-item-title">{resolved.title}</span>
+                                    </a>
+                                  </td>
+                                  <td><code className="admin-sku-code">{resolved.sku}</code></td>
+                                  <td><span className="admin-color-tag">{resolved.color}</span></td>
+                                  <td style={{ textAlign: 'center' }}><strong>{resolved.quantity}</strong></td>
+                                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{resolved.price > 0 ? formatMoney(resolved.price * resolved.quantity) : 'Wholesale Tier'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr className="admin-inspect-total-row">
+                              <td colSpan="3" style={{ fontWeight: 700, color: '#0f172a' }}>
+                                Total Items: {inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} unit(s)
+                              </td>
+                              <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                                {inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)}
+                              </td>
+                              <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>
+                                {formatMoney(
+                                  (selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
+                                    ? Number(selectedInquiry.total_amount)
+                                    : (inspectItems.reduce((acc, it) => {
+                                        const resolved = resolveItemDetails(it);
+                                        return acc + (resolved.price * resolved.quantity);
+                                      }, 0) || 0)
+                                )}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    );
+                  })()}
 
                   {/* Inspection Footer Actions (Balanced 1-Row Layout) */}
                   <div className="admin-modal-footer">

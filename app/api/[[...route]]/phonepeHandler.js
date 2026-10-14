@@ -184,7 +184,7 @@ async function verifyWebhookAuth(request, pp) {
 async function markOrderPaid({ supabase, merchantOrderId, paidAmountPaise, transactionId, source }) {
   const { data: order, error } = await supabase
     .from('orders')
-    .select('id, status, message, total_amount')
+    .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
     .eq('cf_order_id', merchantOrderId)
     .maybeSingle();
 
@@ -216,12 +216,12 @@ async function markOrderPaid({ supabase, merchantOrderId, paidAmountPaise, trans
 
   // Email service is idempotent (tags the order message once sent)
   try {
-    await sendBuyerOrderConfirmationEmail({ orderId: order.id, supabase });
+    await sendBuyerOrderConfirmationEmail({ orderId: order.id, order, supabase });
   } catch (emailErr) {
     console.error(`[PhonePe ${source}] Error sending buyer confirmation email:`, emailErr);
   }
 
-  return { ok: true, orderId: order.id };
+  return { ok: true, orderId: order.id, orderNumber: order.order_number || (order.id ? `ORD-${order.id.slice(0, 8).toUpperCase()}` : null) };
 }
 
 /**
@@ -303,8 +303,10 @@ export async function handleCreateOrder(request) {
     const validUserId = (user_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id))
       ? user_id
       : null;
+    const generatedOrderNumber = `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
     const orderPayload = {
+      order_number: generatedOrderNumber,
       user_id: validUserId,
       email: email || null,
       buyer_name: isDropship ? (dropship_details.sender_name || fullName) : fullName,
@@ -343,10 +345,11 @@ export async function handleCreateOrder(request) {
     };
 
     let dbOrderId = null;
+    let resolvedOrderNumber = generatedOrderNumber;
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     let existingPendingQuery = supabase
       .from('orders')
-      .select('id')
+      .select('id, order_number')
       .eq('status', 'pending_payment')
       .gt('created_at', twoHoursAgo)
       .order('created_at', { ascending: false })
@@ -362,12 +365,15 @@ export async function handleCreateOrder(request) {
 
     if (existingOrders && existingOrders.length > 0) {
       dbOrderId = existingOrders[0].id;
-      await supabase.from('orders').update(orderPayload).eq('id', dbOrderId);
+      if (existingOrders[0].order_number) {
+        resolvedOrderNumber = existingOrders[0].order_number;
+      }
+      await supabase.from('orders').update({ ...orderPayload, order_number: resolvedOrderNumber }).eq('id', dbOrderId);
     } else {
       const { data: dbOrder, error: dbError } = await supabase
         .from('orders')
         .insert(orderPayload)
-        .select('id')
+        .select('id, order_number')
         .single();
 
       if (dbError) {
@@ -378,6 +384,9 @@ export async function handleCreateOrder(request) {
         );
       }
       dbOrderId = dbOrder.id;
+      if (dbOrder.order_number) {
+        resolvedOrderNumber = dbOrder.order_number;
+      }
     }
 
     // PhonePe merchantOrderId: max 63 chars, alphanumeric / underscore / hyphen
@@ -432,6 +441,7 @@ export async function handleCreateOrder(request) {
         redirect_url: ppData.redirectUrl,
         order_id: merchantOrderId,
         db_order_id: dbOrderId,
+        order_number: resolvedOrderNumber,
         order_currency: 'INR',
         order_amount: chargeInr,
         environment: pp.env,
@@ -477,6 +487,7 @@ export async function handleVerifyOrder(request) {
     const isPaid = orderState === 'COMPLETED';
     let dbOrderId = null;
 
+    let orderNumber = null;
     if (isPaid) {
       const txn = status.data.paymentDetails?.[0]?.transactionId;
       const result = await markOrderPaid({
@@ -493,6 +504,7 @@ export async function handleVerifyOrder(request) {
         );
       }
       dbOrderId = result.orderId;
+      orderNumber = result.orderNumber;
     }
 
     return Response.json(
@@ -501,6 +513,7 @@ export async function handleVerifyOrder(request) {
         order_status: orderState,
         is_paid: isPaid,
         db_order_id: dbOrderId,
+        order_number: orderNumber || (dbOrderId ? `ORD-${dbOrderId.slice(0, 8).toUpperCase()}` : null),
         order_amount: Number(status.data.amount) / 100,
         order_currency: 'INR',
       },

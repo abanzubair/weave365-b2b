@@ -178,8 +178,10 @@ export async function handleCreateOrder(request) {
     const validUserId = (user_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id))
       ? user_id
       : null;
+    const generatedOrderNumber = `ORD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
     const orderPayload = {
+      order_number: generatedOrderNumber,
       user_id: validUserId,
       email: email || null,
       buyer_name: isDropship ? (dropship_details.sender_name || fullName) : fullName,
@@ -217,12 +219,13 @@ export async function handleCreateOrder(request) {
     };
 
     let dbOrderId = null;
+    let resolvedOrderNumber = generatedOrderNumber;
 
     // Check if there is an existing pending_payment order for this user/phone created in the last 2 hours
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     let existingPendingQuery = supabase
       .from('orders')
-      .select('id')
+      .select('id, order_number')
       .eq('status', 'pending_payment')
       .gt('created_at', twoHoursAgo)
       .order('created_at', { ascending: false })
@@ -238,15 +241,18 @@ export async function handleCreateOrder(request) {
 
     if (existingOrders && existingOrders.length > 0) {
       dbOrderId = existingOrders[0].id;
+      if (existingOrders[0].order_number) {
+        resolvedOrderNumber = existingOrders[0].order_number;
+      }
       await supabase
         .from('orders')
-        .update(orderPayload)
+        .update({ ...orderPayload, order_number: resolvedOrderNumber })
         .eq('id', dbOrderId);
     } else {
       const { data: dbOrder, error: dbError } = await supabase
         .from('orders')
         .insert(orderPayload)
-        .select('id')
+        .select('id, order_number')
         .single();
 
       if (dbError) {
@@ -257,6 +263,9 @@ export async function handleCreateOrder(request) {
         );
       }
       dbOrderId = dbOrder.id;
+      if (dbOrder.order_number) {
+        resolvedOrderNumber = dbOrder.order_number;
+      }
     }
     // Cashfree order_id max 45 chars alphanumeric, underscore, hyphen
     const cleanDbId = dbOrderId.replace(/-/g, '').slice(0, 16);
@@ -356,6 +365,7 @@ export async function handleCreateOrder(request) {
         payment_session_id: cfData.payment_session_id,
         order_id: cfOrderId,
         db_order_id: dbOrderId,
+        order_number: resolvedOrderNumber,
         order_currency: cfData.order_currency || finalCurrency,
         order_amount: cfData.order_amount || finalAmount,
         environment: cf.env,
@@ -448,11 +458,22 @@ export async function handleVerifyOrder(request) {
         }
       }
 
-      // Automatically dispatch minimal confirmation email to buyer
+      let order3NF = null;
+
+      // Automatically dispatch minimal confirmation email to buyer using normalized 3NF data
       if (targetOrderId) {
         try {
+          const { data: fetched3NF } = await supabase
+            .from('orders')
+            .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+            .eq('id', targetOrderId)
+            .maybeSingle();
+
+          if (fetched3NF) order3NF = fetched3NF;
+
           await sendBuyerOrderConfirmationEmail({
             orderId: targetOrderId,
+            order: order3NF || null,
             supabase,
           });
         } catch (emailErr) {
@@ -469,6 +490,9 @@ export async function handleVerifyOrder(request) {
         order_amount: cfOrder.order_amount,
         order_currency: cfOrder.order_currency || 'INR',
         cf_order: cfOrder,
+        db_order_id: targetOrderId,
+        order_id: cfOrder.order_id,
+        order_number: order3NF?.order_number || (targetOrderId ? `ORD-${targetOrderId.slice(0, 8).toUpperCase()}` : null),
       },
       { status: 200, headers: corsHeaders }
     );
@@ -554,8 +578,15 @@ export async function handleWebhook(request) {
 
           // Automatically dispatch minimal confirmation email to buyer (idempotency prevents double send)
           try {
+            const { data: order3NF } = await supabase
+              .from('orders')
+              .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+              .eq('id', target.id)
+              .maybeSingle();
+
             await sendBuyerOrderConfirmationEmail({
               orderId: target.id,
+              order: order3NF || null,
               supabase,
             });
           } catch (emailErr) {
