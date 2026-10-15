@@ -72,8 +72,41 @@ function getImagesForVariant(product, variant, hasSubVariants) {
   return images;
 }
 
-export async function GET() {
+let cachedShoppingXml = null;
+let shoppingCacheTime = 0;
+const SHOPPING_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+export async function GET(request) {
   try {
+    // 1. In-memory cache check (returns in < 0.05ms CPU)
+    if (cachedShoppingXml && (Date.now() - shoppingCacheTime < SHOPPING_TTL_MS)) {
+      return new Response(cachedShoppingXml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+          'CDN-Cache-Control': 'max-age=86400',
+          'Cloudflare-CDN-Cache-Control': 'max-age=86400',
+        },
+      });
+    }
+
+    // 2. Cloudflare Edge Cache check (shared across isolates)
+    const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
+    const cacheUrl = request?.url || `${siteUrl}/api/feed/google-shopping`;
+    const cacheKey = new Request(cacheUrl, { method: 'GET' });
+
+    if (cache) {
+      try {
+        const match = await cache.match(cacheKey);
+        if (match) {
+          return match;
+        }
+      } catch (e) {
+        // Ignore cache match error
+      }
+    }
+
     const products = await fetchProducts();
     if (!products || !Array.isArray(products)) {
       throw new Error('Failed to retrieve products.');
@@ -179,13 +212,28 @@ export async function GET() {
   </channel>
 </rss>`;
 
-    return new Response(feedXml, {
+    cachedShoppingXml = feedXml;
+    shoppingCacheTime = Date.now();
+
+    const response = new Response(feedXml, {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=3600',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+        'CDN-Cache-Control': 'max-age=86400',
+        'Cloudflare-CDN-Cache-Control': 'max-age=86400',
       },
     });
+
+    if (cache) {
+      try {
+        await cache.put(cacheKey, response.clone());
+      } catch (e) {
+        // Ignore cache put error
+      }
+    }
+
+    return response;
 
   } catch (err) {
     console.error('Error generating Google Shopping XML feed:', err);

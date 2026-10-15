@@ -57,8 +57,14 @@ function setBrowserStorageCache(key, data) {
   }
 }
 
+let normalizedProductsCache = null;
+let normalizedProductsTimestamp = 0;
+const NORMALIZED_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export function clearProductDataCache() {
   memoryCache.clear();
+  normalizedProductsCache = null;
+  normalizedProductsTimestamp = 0;
   if (typeof window !== 'undefined') {
     try {
       const keysToRemove = [];
@@ -167,6 +173,7 @@ function normalizeLoadedProduct(product, idx) {
   const hasArchivedTag = statusTags.some((t) => t.key === 'archived' || t.key === 'archive' || t.key === 'archieved');
 
   const hasRawArchive = (function() {
+    if (product.isArchived || hasArchivedTag) return true;
     if (!product.raw) return false;
     for (const [key, val] of Object.entries(product.raw)) {
       const normKey = key.toLowerCase().replace(/[\s_-]+/g, '');
@@ -279,6 +286,10 @@ function transformSellerProductToCatalog(sp) {
 }
 
 export const fetchProducts = safeCache(async function fetchProducts() {
+  if (normalizedProductsCache && (Date.now() - normalizedProductsTimestamp < NORMALIZED_CACHE_TTL_MS)) {
+    return normalizedProductsCache;
+  }
+
   const cachedJson = await fetchSyncedJsonCached('products_json');
   if (cachedJson && Array.isArray(cachedJson)) {
     let normalizedProducts = cachedJson.map((p, idx) => normalizeLoadedProduct(p, idx));
@@ -311,7 +322,7 @@ export const fetchProducts = safeCache(async function fetchProducts() {
           for (const row of stockRows) {
             if (row.product_id) stockMap.set(row.product_id, row);
           }
-          return normalizedProducts.map((product) => {
+          normalizedProducts = normalizedProducts.map((product) => {
             const key = product.id || product.groupKey;
             const row = stockMap.get(key);
             if (!row) return product;
@@ -386,6 +397,8 @@ export const fetchProducts = safeCache(async function fetchProducts() {
         // Fallback to normalizedProducts
       }
     }
+    normalizedProductsCache = normalizedProducts;
+    normalizedProductsTimestamp = Date.now();
     return normalizedProducts;
   }
   return [];

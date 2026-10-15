@@ -2,11 +2,44 @@ import { fetchProducts, fetchSupabaseBlogPosts, fetchSupabaseLandingPages, fetch
 import { getProductCategorySlug } from '../../../src/config.js';
 import { blogPosts } from '../../../src/data/blogPosts.js';
 
+let cachedSitemapXml = null;
+let sitemapCacheTime = 0;
+const SITEMAP_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
 export async function generateSitemapXml(request) {
-  const hostHeader = request.headers.get('host') || 'www.weave365.com';
+  const hostHeader = request?.headers?.get('host') || 'www.weave365.com';
   let host = hostHeader === 'weave365.com' ? 'www.weave365.com' : hostHeader;
   const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`;
   const siteUrl = rawSiteUrl.replace(/\/$/, '');
+
+  // 1. In-memory cache check (returns in < 0.05ms CPU)
+  if (cachedSitemapXml && (Date.now() - sitemapCacheTime < SITEMAP_TTL_MS)) {
+    return new Response(cachedSitemapXml, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+        'CDN-Cache-Control': 'max-age=86400',
+        'Cloudflare-CDN-Cache-Control': 'max-age=86400',
+      },
+    });
+  }
+
+  // 2. Cloudflare Edge Cache check (shared across isolates)
+  const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
+  const cacheUrl = request?.url || `${siteUrl}/sitemap.xml`;
+  const cacheKey = new Request(cacheUrl, { method: 'GET' });
+
+  if (cache) {
+    try {
+      const match = await cache.match(cacheKey);
+      if (match) {
+        return match;
+      }
+    } catch (e) {
+      // Ignore cache match error
+    }
+  }
 
   const staticPages = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
@@ -220,11 +253,26 @@ ${entries
   .join('\n')}
 </urlset>`;
 
-  return new Response(xml, {
+  cachedSitemapXml = xml;
+  sitemapCacheTime = Date.now();
+
+  const response = new Response(xml, {
     status: 200,
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+      'CDN-Cache-Control': 'max-age=86400',
+      'Cloudflare-CDN-Cache-Control': 'max-age=86400',
     },
   });
+
+  if (cache) {
+    try {
+      await cache.put(cacheKey, response.clone());
+    } catch (e) {
+      // Ignore cache put error
+    }
+  }
+
+  return response;
 }

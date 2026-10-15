@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/_next/static/*",
+    "/assets/*",
+    "/fonts/*",
+    "/images/*",
+    "/deskH.webp",
+    "/mobH.webp",
+    "/logo.webp",
+    "/boutique-hero.webp",
+    "/signup.webp",
+    "/artisan_at_loom_premium.webp",
+    "/banarasi_loom_detail.webp",
+    "/reseller_premium_catalog_display.webp",
+    "/apple-touch-icon.png",
+    "/favicon-32.png",
+    "/favicon.png",
+    "/og-image.png",
+    "/opengraph-image.png",
+    "/twitter-image.png",
+    "/robots.txt"
+  ]
+}

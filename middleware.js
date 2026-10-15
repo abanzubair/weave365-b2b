@@ -29,22 +29,6 @@ function applySecurityHeaders(res) {
 export function middleware(request) {
   const url = request.nextUrl.clone();
   const host = request.headers.get('host');
-  const path = url.pathname;
-
-  // Rewrite /sitemap.xml to the unified Edge API sitemap handler
-  if (path === '/sitemap.xml' || path === '/sitemap') {
-    url.pathname = '/api/sitemap.xml';
-    return NextResponse.rewrite(url);
-  }
-
-  // Skip redirect for static robots.txt and google verification files
-  if (
-    path === '/robots.txt' || 
-    (path.startsWith('/google') && path.endsWith('.html'))
-  ) {
-    const res = NextResponse.next();
-    return applySecurityHeaders(res);
-  }
 
   if (host === 'weave365.com') {
     url.hostname = 'www.weave365.com';
@@ -79,7 +63,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon (favicon files)
      * - assets (internal assets)
+     * - static files with file extensions (.webp, .png, .jpg, .svg, .ico, .txt, .xml, .html)
      */
-    '/((?!api|_next/static|_next/image|favicon|assets).*)',
+    '/((?!api|_next/static|_next/image|favicon|assets|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|txt|xml|html)$).*)',
   ],
 };

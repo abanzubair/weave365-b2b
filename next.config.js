@@ -206,6 +206,14 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/sitemap.xml',
+        destination: '/api/sitemap.xml',
+      },
+      {
+        source: '/sitemap',
+        destination: '/api/sitemap.xml',
+      },
+      {
         source: '/cdn-cgi/image/:path*',
         destination: 'https://assets.weave365.com/cdn-cgi/image/:path*',
       },

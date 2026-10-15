@@ -9,7 +9,7 @@
     "start": "next start -H 0.0.0.0",
     "test": "echo \"No tests configured\" && exit 0",
     "check-supabase-allowance": "node scripts/check-supabase-allowance.js",
-    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:build": "npx @cloudflare/next-on-pages && node scripts/apply-routes.js",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {

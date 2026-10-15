@@ -135,10 +135,34 @@ function transformSellerProductToCatalog(sp) {
   };
 }
 
+const catalogMemoryCache = new Map();
+const CATALOG_MEMORY_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'products';
+
+    // 1. In-memory cache check (< 0.05ms CPU)
+    const memCached = catalogMemoryCache.get(type);
+    if (memCached && (Date.now() - memCached.timestamp < CATALOG_MEMORY_TTL_MS)) {
+      return new Response(memCached.body, {
+        status: 200,
+        headers: cdnCacheHeaders,
+      });
+    }
+
+    // 2. Cloudflare Edge Cache check (shared across isolates in edge PoP)
+    const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
+    const cacheKey = new Request(request.url, { method: 'GET' });
+    if (cache) {
+      try {
+        const match = await cache.match(cacheKey);
+        if (match) return match;
+      } catch (e) {
+        // Ignore cache match error
+      }
+    }
 
     const supabase = await getSupabase();
     if (!supabase) {
@@ -152,6 +176,22 @@ export async function GET(request) {
       products: 'products_json',
       config: 'config_json',
       hero: 'hero_json',
+    };
+
+    const respondAndCache = async (bodyString) => {
+      catalogMemoryCache.set(type, { body: bodyString, timestamp: Date.now() });
+      const res = new Response(bodyString, {
+        status: 200,
+        headers: cdnCacheHeaders,
+      });
+      if (cache) {
+        try {
+          await cache.put(cacheKey, res.clone());
+        } catch (e) {
+          // Ignore cache put error
+        }
+      }
+      return res;
     };
 
     if (type === 'all') {
@@ -202,10 +242,7 @@ export async function GET(request) {
         result.products = [...approvedMapped, ...result.products];
       }
 
-      return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: cdnCacheHeaders,
-      });
+      return respondAndCache(JSON.stringify(result));
     }
 
     if (type === 'products') {
@@ -247,10 +284,7 @@ export async function GET(request) {
         products = [...approvedMapped, ...products];
       }
 
-      return new Response(JSON.stringify(products), {
-        status: 200,
-        headers: cdnCacheHeaders,
-      });
+      return respondAndCache(JSON.stringify(products));
     }
 
     const targetKey = typeToKey[type] || 'products_json';
@@ -268,11 +302,7 @@ export async function GET(request) {
     }
 
     const rawJson = data?.csv_data || (type === 'hero' ? '[]' : '{}');
-
-    return new Response(rawJson, {
-      status: 200,
-      headers: cdnCacheHeaders,
-    });
+    return respondAndCache(rawJson);
   } catch (err) {
     console.error('[Catalog API] Error:', err);
     return new Response(JSON.stringify({ error: err.message || 'Server error' }), {
