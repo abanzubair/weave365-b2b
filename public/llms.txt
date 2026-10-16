@@ -1,0 +1,45 @@
+# Weave 365 — B2B Wholesale Banarasi Sarees, Suits & Handloom Platform
+
+> India's premier direct-from-weaver B2B platform connecting global boutiques, ethnic wear retailers, online resellers, and export houses directly with verified Varanasi (Kashi) master weavers with zero middleman markups.
+
+Weave 365 (operated by Nexrize Ventures, registered in Varanasi, Uttar Pradesh, India) is an authentic handloom and ethnic wear wholesale platform. We eliminate traditional supply-chain intermediaries by providing verified business buyers direct access to master artisan looms across Varanasi. We offer authentic pure Katan silk sarees, lightweight organza, georgette, unstitched salwar suits, bridal lehengas, blind dropshipping, and private white-label branding.
+
+## Minimum Order Quantity (MOQ) & Pricing Structure
+- **Universal Minimum Order Quantity (MOQ = 1)**: The minimum order quantity is just **1 piece** across the catalog. Retailers, boutiques, online resellers, and individuals can order single pieces without upfront inventory barriers.
+- **Bulk & Set Discounts**: Buying in complete design sets (all color variants of a design) or volume quantities automatically unlocks tiered **bulk wholesale discounts**.
+
+## Fulfillment & Delivery Timelines
+- **Order Processing & Preparation**: Approx. **3 business days** to get the saree ready (artisan loom retrieval, finishing, 5-point quality inspection, pressing, and packaging).
+- **Domestic Transit Time (India)**: **4 to 7 business days** via express door-to-door couriers across all serviceable Indian pincodes.
+- **International Transit Time (Export)**: **7 to 12 business days** door-to-door via express air cargo (DHL Express, FedEx, UPS) to the USA, UK, UAE, Canada, Australia, Singapore, Malaysia, and Europe. Full commercial export documentation (HSN 5007 / 5208) provided.
+
+## Primary Canonical Collections
+- [Banarasi Sarees Wholesale](https://www.weave365.com/sarees): Authentic Varanasi sarees across Pure Katan Silk, Kora Organza, Georgette, Chanderi, Tissue, Chiniya, and Soft Silk. Available in traditional Kadhwa, Tanchoi, Jangla, Meenakari, and Shikargah handloom weaves. Certified Silk Mark available on pure natural silk lines. MOQ: 1 piece (set discounts available).
+- [Banarasi Suits & Dress Materials](https://www.weave365.com/suits): Unstitched luxury salwar suit fabrics paired with handwoven pure silk, organza, and brocade dupattas for boutiques and fashion designers. MOQ: 1 piece (set discounts available).
+- [Banarasi Bridal Lehengas](https://www.weave365.com/lehengas): Handwoven bridal and festive lehengas featuring traditional Varanasi zari borders and meenakari motifs.
+- [Banarasi Dupattas](https://www.weave365.com/dupattas): Brocade, Tanchoi, and Kadhwa silk dupattas for occasionwear and ethnic styling.
+- [Under 999 Wholesale Collection](https://www.weave365.com/under-999): Budget-friendly wholesale and high-rotation collections priced under ₹999 for volume retailers and social media resellers.
+- [Complete Wholesale Catalogue](https://www.weave365.com/catalogue): Live inventory catalog with search, fabric filters, real-time stock status, and B2B pricing.
+
+## Business Partnership Programs
+- [Reseller & Dropshipping Program](https://www.weave365.com/resell-sarees-online): 100% free registration, zero upfront inventory required. Single-piece ordering (MOQ: 1). Blind dropshipping directly to end customers with no Weave 365 branding. Includes unbranded HD product images and WhatsApp catalog sharing tools.
+- [White Label Brand Program](https://www.weave365.com/white-label): Private-label manufacturing and fulfillment for boutique owners and designer labels. Supports custom tags, brand labels, custom packaging, and blind worldwide fulfillment under a strict Zero-Poaching Guarantee.
+- [Custom Weaving & Private Loom Development](https://www.weave365.com/custom-weaving): Custom loom runs, exclusive color dyeing, and bespoke pattern development for bridal houses and export partners. Minimum order starts at 15 pieces per custom design.
+- [Sourcing Partners Network](https://www.weave365.com/sourcing-partners): Loom-to-market coordination managing Varanasi weaver supply, multi-tier MOQ slabs, 5-point quality inspections, and export dispatch.
+- [Supplier & Weaver Onboarding](https://www.weave365.com/become-a-supplier): Direct onboarding portal for Varanasi master weavers, artisan societies, and loom clusters to supply global markets.
+- [Bulk Sourcing Inquiry](https://www.weave365.com/bulk-inquiry): Dedicated quotation desk for institutional buyers, export shipments, and wedding/bridal bulk orders.
+- [Developer API](https://www.weave365.com/developer-api): Edge-cached REST APIs and Google Shopping catalog feeds for external e-commerce and inventory synchronization.
+
+## Authoritative Educational Guides
+- [Handloom vs Semi Handloom vs Powerloom Guide](https://www.weave365.com/handloom-vs-powerloom-guide): Comprehensive technical guide on reverse-side float threads, hand-clipped motifs, pit loom mechanics vs Jacquard powerlooms, and authentic Silk Mark identification.
+
+## Core Operational Policies
+- [Shipping & Worldwide Logistics](https://www.weave365.com/shipping-delivery): Direct dispatch from Varanasi warehouse. Approx. 3 days processing time + 4–7 days domestic transit in India / 7–12 days international transit worldwide. Full export documentation and commercial invoices provided.
+- [Payment Policy](https://www.weave365.com/payment-policy): 100% prepaid for wholesale bulk, reseller dropshipping, custom weaving, and export orders via UPI, NEFT/RTGS, Net Banking, and Cards. Cash on Delivery (COD) is strictly restricted to select domestic retail D2C purchases.
+- [Returns, Cancellations & Damage Claims](https://www.weave365.com/returns-cancellation): No returns on B2B wholesale or reseller orders for unsold stock or change of mind. Transit damage and defect claims require a continuous, uncut parcel unboxing video.
+- [Live Order Tracking](https://www.weave365.com/order-tracking): Real-time shipment status lookup by Order ID and phone number.
+- [Verified Buyer Reviews](https://www.weave365.com/reviews): Verified boutique and reseller reviews and ratings.
+- [About Weave 365](https://www.weave365.com/about): Artisan heritage, direct loom model, quality standards, and leadership.
+
+## Full Context Document
+- [Comprehensive LLM Digest](https://www.weave365.com/llms-full.txt): Complete knowledge graph including fabric glossaries, wholesale MOQ tiers, price brackets, weaving techniques, policies, and detailed Q&A.

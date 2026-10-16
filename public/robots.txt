@@ -3,4 +3,28 @@ Allow: /
 Disallow: /admin
 Disallow: /account
 
+# Explicitly permit AI Search and Answer Engine Bots
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
 Sitemap: https://www.weave365.com/sitemap.xml
+# LLM Context File: https://www.weave365.com/llms.txt
+# Comprehensive LLM Digest: https://www.weave365.com/llms-full.txt

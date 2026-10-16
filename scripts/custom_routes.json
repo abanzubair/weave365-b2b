@@ -22,6 +22,8 @@
     "/og-image.png",
     "/opengraph-image.png",
     "/twitter-image.png",
-    "/robots.txt"
+    "/robots.txt",
+    "/llms.txt",
+    "/llms-full.txt"
   ]
 }
