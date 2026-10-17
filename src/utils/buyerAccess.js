@@ -19,11 +19,27 @@ export function isVendorProfile(profile) {
   const userType = String(profile.user_type || '').toLowerCase().trim();
   const type = String(profile.buyer_type || '').toLowerCase().trim();
   const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
-  const email = String(profile.email || '').toLowerCase().trim();
 
-  // Admin users and internal mock/test supplier accounts are not genuine vendor partners
-  if (role === 'admin' || userType === 'admin' || email === 'weave365@gmail.com' || email.startsWith('weave365+')) {
+  // Admin users are not vendor partners
+  if (role === 'admin' || userType === 'admin') {
     return false;
+  }
+
+  const isExplicitBusinessRoleOrType =
+    role === 'reseller' ||
+    userType === 'business' ||
+    type === 'business' ||
+    userType === 'reseller' ||
+    type === 'reseller';
+
+  // Explicit supplier / vendor role or type (ensuring they are not a business wholesale buyer)
+  const isVendorRoleOrType =
+    (type === 'vendor' || type === 'supplier' || type === 'partner') ||
+    (userType === 'supplier' || userType === 'vendor') ||
+    (role === 'vendor' || role === 'supplier');
+
+  if (isVendorRoleOrType && !isExplicitBusinessRoleOrType) {
+    return true;
   }
 
   // An account with an assigned genuine vendor code is a verified supplier partner
@@ -32,7 +48,7 @@ export function isVendorProfile(profile) {
     return true;
   }
 
-  // Resellers, wholesalers, online stores, boutiques, and retail customers are buyers, NOT vendors
+  // Resellers, online stores, boutiques, and retail customers are buyers, NOT vendors
   if (
     subtype.includes('reseller') ||
     subtype.includes('wholeseller') ||
@@ -42,34 +58,24 @@ export function isVendorProfile(profile) {
     subtype === 'buyer' ||
     subtype === 'customer' ||
     subtype === 'user' ||
-    role === 'reseller' ||
-    type === 'reseller' ||
-    userType === 'reseller'
+    isExplicitBusinessRoleOrType
   ) {
     return false;
   }
 
-  // Explicit vendor / supplier / weaver / artisan subtypes
+  // Explicit vendor / supplier / weaver / artisan / cluster subtypes
   const isVendorSubtype =
     subtype === 'vendor' ||
     subtype === 'weaver' ||
+    subtype === 'cluster' ||
+    subtype === 'supplier' ||
     subtype.includes('weaver') ||
     subtype.includes('artisan') ||
+    subtype.includes('cluster') ||
     subtype.includes('partner / weaver') ||
     subtype === 'vendor partner';
 
   if (isVendorSubtype) {
-    return true;
-  }
-
-  // Explicit supplier / vendor role or type (ensuring they are not a business wholesale buyer)
-  const isVendorRoleOrType =
-    (type === 'vendor' || type === 'supplier' || type === 'partner') ||
-    (userType === 'supplier' || userType === 'vendor') ||
-    (role === 'vendor' || role === 'supplier');
-
-  if (isVendorRoleOrType && userType !== 'business' && type !== 'business') {
-    if (!subtype || subtype === 'customer') return false;
     return true;
   }
 
@@ -93,7 +99,7 @@ export function normalizeBuyerType(value, subtype) {
     sub.includes('reseller') ||
     sub.includes('wholeseller') ||
     sub.includes('wholesale') ||
-    (sub && sub !== 'customer' && sub !== 'user')
+    (sub && !['customer', 'user', 'vendor', 'supplier', 'weaver', 'cluster'].includes(sub))
   ) {
     return 'business';
   }
@@ -108,7 +114,7 @@ export function isVaranasiPincode(value) {
 
 export function applyAutoApprovalToBuyerProfile(profile) {
   if (!profile) return profile;
-  const isVendor = isVendorProfile(profile);
+  const isVendor = isVendorProfile(profile) || profile.user_type === 'supplier' || profile.role === 'vendor' || profile.buyer_type === 'vendor';
   const isBusiness = !isVendor && (
     profile.user_type === 'business' ||
     profile.buyer_type === 'business' ||
@@ -116,7 +122,7 @@ export function applyAutoApprovalToBuyerProfile(profile) {
     profile.buyer_type === 'wholesale' ||
     profile.role === 'reseller' ||
     profile.role === 'business' ||
-    (profile.buyer_subtype && !['customer', 'user', ''].includes(String(profile.buyer_subtype).toLowerCase().trim())) ||
+    (profile.buyer_subtype && !['customer', 'user', ''].includes(String(profile.buyer_subtype).toLowerCase().trim()) && !['vendor', 'weaver', 'cluster', 'supplier'].includes(String(profile.buyer_subtype).toLowerCase().trim())) ||
     Boolean(profile.business_name?.trim())
   );
 
@@ -144,7 +150,7 @@ export function detectAccountCategory(user, buyerProfile) {
   const role = String(p.role || user?.user_metadata?.role || '').toLowerCase().trim();
 
   // 1. Check genuine verified vendor first
-  if (isVendorProfile(p)) {
+  if (isVendorProfile(p) || userType === 'supplier' || userType === 'vendor' || buyerType === 'vendor' || role === 'vendor' || role === 'supplier') {
     return 'supplier';
   }
 
@@ -177,7 +183,8 @@ export function detectAccountCategory(user, buyerProfile) {
     role === 'vendor' ||
     buyerSubtype.includes('vendor') ||
     buyerSubtype.includes('supplier') ||
-    buyerSubtype.includes('weaver')
+    buyerSubtype.includes('weaver') ||
+    buyerSubtype.includes('cluster')
   ) {
     return 'supplier';
   }

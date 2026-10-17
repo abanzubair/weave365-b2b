@@ -180,12 +180,14 @@ export default function BuyerPipeline({
 
   const getProfileRoleKey = (p) => {
     if (!p) return 'customer';
+    if (isVendorProfile(p) || p.user_type === 'supplier' || p.role === 'vendor' || p.buyer_type === 'vendor') {
+      return 'supplier';
+    }
     const subtype = String(p.buyer_subtype || '').toLowerCase().trim();
-    if (subtype.includes('reseller') || subtype.includes('wholeseller') || p.role === 'reseller' || p.user_type === 'business') {
+    if (subtype.includes('reseller') || subtype.includes('wholeseller') || p.role === 'reseller' || p.user_type === 'business' || p.buyer_type === 'business' || p.buyer_type === 'reseller') {
       return 'reseller';
     }
-    if (isVendorProfile(p)) return 'supplier';
-    const isBusiness = p.user_type === 'business' || p.buyer_type === 'business' || p.buyer_type === 'reseller' || p.role === 'reseller' || (p.buyer_subtype && p.buyer_subtype.toLowerCase() !== 'customer') || Boolean(p.business_name?.trim());
+    const isBusiness = (p.buyer_subtype && p.buyer_subtype.toLowerCase() !== 'customer') || Boolean(p.business_name?.trim());
     return isBusiness ? 'reseller' : 'customer';
   };
 
@@ -226,12 +228,16 @@ export default function BuyerPipeline({
         newUserType = 'business';
         newRole = 'reseller';
         newBuyerType = 'business';
-        newBuyerSubtype = inspectProfile.qualification?.business_type_label || inspectProfile.buyer_subtype || 'Reseller';
+        const existingSub = String(inspectProfile.buyer_subtype || '').toLowerCase().trim();
+        const isBuyerSub = existingSub && !['customer', 'user', 'supplier', 'vendor', 'weaver', 'cluster'].includes(existingSub);
+        newBuyerSubtype = inspectProfile.qualification?.business_type_label || (isBuyerSub ? inspectProfile.buyer_subtype : 'Reseller');
       } else if (selectedRoleToSet === 'supplier') {
         newUserType = 'supplier';
         newRole = 'vendor';
         newBuyerType = 'vendor';
-        newBuyerSubtype = inspectProfile.qualification?.business_type || inspectProfile.buyer_subtype || 'Supplier';
+        const existingSub = String(inspectProfile.buyer_subtype || '').toLowerCase().trim();
+        const isVendorSub = existingSub && !['customer', 'user', 'reseller', 'wholesaler', 'wholeseller', 'boutique', 'buyer', 'retailer'].includes(existingSub);
+        newBuyerSubtype = inspectProfile.qualification?.business_type || (isVendorSub ? inspectProfile.buyer_subtype : 'Supplier');
       }
 
       const requiresLock = selectedRoleToSet !== 'customer' && !isCategoryDetailsComplete(inspectProfile, selectedRoleToSet);
@@ -293,28 +299,20 @@ export default function BuyerPipeline({
     };
 
     if (userTypeFilter === 'customer') {
-      profiles = profiles.filter((p) => (
-        !isVendorProfile(p) &&
-        p.user_type !== 'business' &&
-        p.buyer_type !== 'business' &&
-        p.buyer_type !== 'reseller' &&
-        p.role !== 'reseller' &&
-        (!p.buyer_subtype || p.buyer_subtype.toLowerCase() === 'customer') &&
-        !Boolean(p.business_name?.trim()) &&
-        !isIncomplete(p)
-      ));
+      profiles = profiles.filter((p) => {
+        const roleKey = getProfileRoleKey(p);
+        return roleKey === 'customer' && !isIncomplete(p);
+      });
     } else if (userTypeFilter === 'business') {
-      profiles = profiles.filter((p) => (
-        (p.user_type === 'business' ||
-         p.buyer_type === 'business' ||
-         p.buyer_type === 'reseller' ||
-         p.role === 'reseller' ||
-         (p.buyer_subtype && p.buyer_subtype.toLowerCase() !== 'customer') ||
-         Boolean(p.business_name?.trim())) &&
-        !isVendorProfile(p)
-      ));
+      profiles = profiles.filter((p) => {
+        const roleKey = getProfileRoleKey(p);
+        return roleKey === 'reseller';
+      });
     } else if (userTypeFilter === 'vendor') {
-      profiles = profiles.filter((p) => isVendorProfile(p));
+      profiles = profiles.filter((p) => {
+        const roleKey = getProfileRoleKey(p);
+        return roleKey === 'supplier';
+      });
     } else if (userTypeFilter === 'locked') {
       profiles = profiles.filter((p) => isAccountLocked(p));
     } else if (userTypeFilter === 'incomplete') {
@@ -389,7 +387,14 @@ export default function BuyerPipeline({
 
   const getBuyerTypeLabel = (profile) => {
     if (!profile) return 'Customer';
-    if (isVendorProfile(profile)) return 'Vendor Partner';
+    const roleKey = getProfileRoleKey(profile);
+    if (roleKey === 'supplier') {
+      const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
+      if (subtype && !['customer', 'user', 'reseller', 'wholesaler', 'wholesale', 'buyer'].includes(subtype)) {
+        return toTitleCase(subtype);
+      }
+      return 'Vendor Partner';
+    }
     const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
     if (subtype && subtype !== 'customer' && subtype !== 'user') return toTitleCase(subtype);
     if (profile.user_type === 'business' || profile.buyer_type === 'business' || profile.buyer_type === 'reseller' || profile.role === 'reseller' || Boolean(profile.business_name?.trim())) {

@@ -19,7 +19,19 @@ export function profileRowFromUser(user) {
   if (!user?.id) return null;
   const buyerProfile = user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
 
-  const isBusiness = (
+  const isVendor = (
+    isVendorProfile(buyerProfile) ||
+    isVendorProfile(user?.user_metadata) ||
+    buyerProfile.user_type === 'supplier' ||
+    buyerProfile.user_type === 'vendor' ||
+    buyerProfile.role === 'vendor' ||
+    buyerProfile.buyer_type === 'vendor' ||
+    user?.user_metadata?.user_type === 'supplier' ||
+    user?.user_metadata?.user_type === 'vendor' ||
+    user?.user_metadata?.role === 'vendor'
+  );
+
+  const isBusiness = !isVendor && (
     buyerProfile.user_type === 'business' ||
     user?.user_metadata?.user_type === 'business' ||
     buyerProfile.buyer_type === 'business' ||
@@ -27,13 +39,8 @@ export function profileRowFromUser(user) {
     buyerProfile.buyer_type === 'wholesale' ||
     buyerProfile.role === 'reseller' ||
     buyerProfile.role === 'business' ||
-    (buyerProfile.buyer_subtype && !['customer', 'user', ''].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim()) && !['vendor', 'weaver', 'cluster'].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim())) ||
+    (buyerProfile.buyer_subtype && !['customer', 'user', ''].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim()) && !['vendor', 'weaver', 'cluster', 'supplier'].includes(String(buyerProfile.buyer_subtype).toLowerCase().trim())) ||
     Boolean(buyerProfile.business_name?.trim())
-  );
-
-  const isVendor = !isBusiness && (
-    isVendorProfile(buyerProfile) ||
-    isVendorProfile(user?.user_metadata)
   );
 
   const storedAttr = getStoredAttribution();
@@ -110,8 +117,10 @@ export async function syncProfileFromUser(user) {
       profileRow.role = existingProfile.role;
     }
 
-    // Never allow background sync to downgrade an existing business/reseller profile to supplier
+    // Never allow background sync to downgrade an existing business/reseller profile to supplier (unless DB was changed to supplier)
     if (
+      existingProfile.user_type !== 'supplier' &&
+      existingProfile.role !== 'vendor' &&
       (existingProfile.user_type === 'business' || existingProfile.buyer_type === 'business' || existingProfile.role === 'reseller') &&
       profileRow.user_type === 'supplier'
     ) {
