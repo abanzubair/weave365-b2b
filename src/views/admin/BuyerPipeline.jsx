@@ -240,21 +240,26 @@ export default function BuyerPipeline({
         newBuyerSubtype = inspectProfile.qualification?.business_type || (isVendorSub ? inspectProfile.buyer_subtype : 'Supplier');
       }
 
-      const requiresLock = selectedRoleToSet !== 'customer' && !isCategoryDetailsComplete(inspectProfile, selectedRoleToSet);
-      const finalLockStatus = requiresLock ? true : lockStatusToSet;
+      // Respect the admin's manual lock status selection (allow admin override)
+      const finalLockStatus = Boolean(lockStatusToSet);
 
       const existingQual = (typeof inspectProfile.qualification === 'object' && inspectProfile.qualification) ? inspectProfile.qualification : {};
       const newQual = {
         ...existingQual,
         account_locked: finalLockStatus,
-        locked_reason: finalLockStatus ? 'switched_by_admin_pending_details' : null,
+        locked_reason: finalLockStatus ? (existingQual.locked_reason || 'switched_by_admin_pending_details') : null,
+        ...(finalLockStatus === false ? { form_completed: true } : {}),
       };
+
+      // Fallback business_name to full_name if currently empty for reseller
+      const resolvedBusinessName = inspectProfile.business_name?.trim() || (selectedRoleToSet === 'reseller' ? inspectProfile.full_name?.trim() : '');
 
       const updateData = {
         user_type: newUserType,
         role: newRole,
         buyer_type: newBuyerType,
         buyer_subtype: newBuyerSubtype,
+        ...(resolvedBusinessName ? { business_name: resolvedBusinessName } : {}),
         qualification: newQual,
         updated_at: new Date().toISOString(),
       };

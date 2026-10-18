@@ -267,9 +267,15 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
       return;
     }
 
-    if (selectedCategory === 'reseller' && !formData.businessName.trim()) {
-      setStatusMessage({ type: 'error', text: 'Please enter your Business / Store Name.' });
-      return;
+    if (selectedCategory === 'reseller') {
+      if (!formData.businessName.trim()) {
+        setStatusMessage({ type: 'error', text: 'Please enter your Business / Store Name.' });
+        return;
+      }
+      if (!formData.socialHandle.trim()) {
+        setStatusMessage({ type: 'error', text: 'Please enter your Instagram or Social Handle.' });
+        return;
+      }
     }
 
     if (selectedCategory === 'supplier') {
@@ -319,6 +325,9 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
         qualificationData = {
           ...existingQual,
           user_type: 'business',
+          business_name: formData.businessName.trim(),
+          social_handle: formData.socialHandle.trim(),
+          instagram: formData.socialHandle.trim(),
           business_type: formData.businessType,
           business_type_label: matched?.label || formData.businessType,
           business_experience: formData.businessExperience,
@@ -994,6 +1003,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                 <div className="account-form-field">
                   <label className="account-form-label" htmlFor="biz-social">
                     <span>Instagram / Social Handle</span>
+                    <span className="account-label-required">*</span>
                   </label>
                   <input
                     id="biz-social"
@@ -1002,6 +1012,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                     value={formData.socialHandle}
                     onChange={(e) => handleChange('socialHandle', e.target.value)}
                     placeholder="@yourboutique"
+                    required
                   />
                 </div>
               </div>
