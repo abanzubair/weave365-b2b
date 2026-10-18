@@ -108,58 +108,24 @@ export function generateReviewsJsonLd(reviews = SEED_REVIEWS, currentSiteUrl = s
       name: 'Weave 365',
       url: base,
     },
-    itemReviewed: {
-      '@type': 'Product',
-      name: 'Weave 365 Wholesale Banarasi Sarees Collection',
-      image: `${base}/favicon.png`,
-    },
   }));
 
   return {
     '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'Store',
-        '@id': `${base}/#store`,
-        name: 'Weave 365 Wholesale',
-        url: base,
-        image: `${base}/favicon.png`,
-        description: 'Wholesale Banarasi sarees, suits, lehengas and handloom fabrics direct from Varanasi master weavers for boutiques and retailers across India.',
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: stats.avgRating,
-          bestRating: '5',
-          worstRating: '1',
-          reviewCount: String(stats.verifiedCount),
-        },
-        review: reviewItems,
-      },
-      {
-        '@type': 'Product',
-        '@id': `${base}/#wholesale-saree-collection`,
-        name: 'Weave 365 Wholesale Banarasi Sarees Collection',
-        description: 'Direct-from-weaver wholesale pure Katan silk, organza, and georgette Banarasi sarees with authentic zari for boutiques and retailers.',
-        image: `${base}/favicon.png`,
-        brand: {
-          '@type': 'Brand',
-          name: 'Weave 365',
-        },
-        offers: {
-          '@type': 'AggregateOffer',
-          priceCurrency: 'INR',
-          lowPrice: '999',
-          highPrice: '25000',
-        },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: stats.avgRating,
-          bestRating: '5',
-          worstRating: '1',
-          reviewCount: String(stats.verifiedCount),
-        },
-        review: reviewItems,
-      },
-    ],
+    '@type': 'Store',
+    '@id': `${base}/#store`,
+    name: 'Weave 365 Wholesale',
+    url: base,
+    image: `${base}/favicon.png`,
+    description: 'Wholesale Banarasi sarees, suits, lehengas and handloom fabrics direct from Varanasi master weavers for boutiques and retailers across India.',
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: stats.avgRating,
+      bestRating: '5',
+      worstRating: '1',
+      reviewCount: String(stats.verifiedCount),
+    },
+    review: reviewItems,
   };
 }
 

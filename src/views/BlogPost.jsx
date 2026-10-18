@@ -473,6 +473,20 @@ export function BlogPost({ postSlug, navigate, blogs = [] }) {
         );
       }
 
+      // AEO Quick Answer Box
+      if (trimmed.startsWith('> **AEO Quick Answer:**') || trimmed.startsWith('> **Quick Answer:**')) {
+        const cleanContent = trimmed.replace(/^>\s*\*\*(AEO Quick Answer|Quick Answer):\*\*\s*/i, '').trim();
+        return (
+          <div key={idx} className="aeo-quick-answer-card">
+            <div className="aeo-badge">
+              <span className="aeo-icon">💡</span>
+              <span className="aeo-label">Quick Answer & Summary</span>
+            </div>
+            <p className="aeo-text">{renderTextWithLinks(cleanContent)}</p>
+          </div>
+        );
+      }
+
       // Blockquotes
       if (trimmed.startsWith('> ')) {
         const quoteText = trimmed.substring(2).trim();

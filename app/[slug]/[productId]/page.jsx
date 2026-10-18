@@ -37,6 +37,67 @@ function generateProductSchemas(product, activeReviews = [], requestedColor = nu
   const displayPrice = variant.prices?.single || variant.prices?.mrp || 2500;
   const images = primaryImage ? [primaryImage, ...(product.images || []).filter(img => img !== primaryImage)] : (product.images || []);
 
+  const merchantReturnPolicy = {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'IN',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+    merchantReturnLink: `${siteUrl}/returns-cancellation`,
+  };
+
+  const shippingDetails = {
+    '@type': 'OfferShippingDetails',
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      value: 0,
+      currency: 'INR',
+    },
+    shippingDestination: {
+      '@type': 'DefinedRegion',
+      addressCountry: 'IN',
+    },
+    deliveryTime: {
+      '@type': 'ShippingDeliveryTime',
+      handlingTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 1,
+        maxValue: 3,
+        unitCode: 'DAY',
+      },
+      transitTime: {
+        '@type': 'QuantitativeValue',
+        minValue: 4,
+        maxValue: 7,
+        unitCode: 'DAY',
+      },
+    },
+  };
+
+  const productOffers = requestedColor
+    ? {
+        '@type': 'Offer',
+        priceCurrency: 'INR',
+        price: displayPrice,
+        priceValidUntil: '2027-12-31',
+        itemCondition: 'https://schema.org/NewCondition',
+        availability: 'https://schema.org/InStock',
+        url: prodUrl,
+        hasMerchantReturnPolicy: merchantReturnPolicy,
+        shippingDetails: shippingDetails,
+      }
+    : {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'INR',
+        lowPrice: displayPrice,
+        highPrice: Math.round(displayPrice * 1.5),
+        offerCount: Math.max(1, totalColors),
+        priceValidUntil: '2027-12-31',
+        itemCondition: 'https://schema.org/NewCondition',
+        availability: 'https://schema.org/InStock',
+        url: prodUrl,
+        hasMerchantReturnPolicy: merchantReturnPolicy,
+        shippingDetails: shippingDetails,
+      };
+
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -50,16 +111,7 @@ function generateProductSchemas(product, activeReviews = [], requestedColor = nu
       '@type': 'Brand',
       name: storeConfig.name || 'Weave 365',
     },
-    offers: {
-      '@type': requestedColor ? 'Offer' : 'AggregateOffer',
-      priceCurrency: 'INR',
-      price: displayPrice,
-      lowPrice: displayPrice,
-      highPrice: Math.round(displayPrice * 1.5),
-      offerCount: totalColors,
-      availability: 'https://schema.org/InStock',
-      url: prodUrl,
-    },
+    offers: productOffers,
   };
 
   if (activeReviews && activeReviews.length > 0) {

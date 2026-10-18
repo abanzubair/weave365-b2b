@@ -6,6 +6,24 @@ let cachedSitemapXml = null;
 let sitemapCacheTime = 0;
 const SITEMAP_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+function escapeXml(unsafe) {
+  if (!unsafe) return '';
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function formatLastMod(val) {
+  try {
+    const d = val instanceof Date ? val : new Date(val);
+    if (!isNaN(d.getTime())) return d.toISOString();
+  } catch {}
+  return new Date().toISOString();
+}
+
 export async function generateSitemapXml(request) {
   const hostHeader = request?.headers?.get('host') || 'www.weave365.com';
   let host = hostHeader === 'weave365.com' ? 'www.weave365.com' : hostHeader;
@@ -244,10 +262,10 @@ export async function generateSitemapXml(request) {
 ${entries
   .map(
     (e) => `  <url>
-    <loc>${e.url}</loc>
-    <lastmod>${(e.lastModified instanceof Date ? e.lastModified : new Date(e.lastModified)).toISOString()}</lastmod>
-    <changefreq>${e.changeFrequency || 'weekly'}</changefreq>
-    <priority>${e.priority || 0.7}</priority>
+    <loc>${escapeXml(e.url)}</loc>
+    <lastmod>${formatLastMod(e.lastModified)}</lastmod>
+    <changefreq>${escapeXml(e.changeFrequency || 'weekly')}</changefreq>
+    <priority>${typeof e.priority === 'number' ? e.priority.toFixed(2).replace(/\.00$/, '.0') : '0.7'}</priority>
   </url>`
   )
   .join('\n')}

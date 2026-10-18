@@ -63,6 +63,19 @@ export default async function BlogPostPage({ params }) {
     },
   };
 
+  const faqSchema = post.faqs && post.faqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: post.faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  } : null;
+
   return (
     <>
       <script
@@ -71,6 +84,14 @@ export default async function BlogPostPage({ params }) {
           __html: JSON.stringify(articleSchema).replace(/</g, '\\u003c'),
         }}
       />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c'),
+          }}
+        />
+      )}
       <BlogPostClient slug={slug} initialBlogs={allPosts} />
     </>
   );

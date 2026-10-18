@@ -131,15 +131,7 @@ function ReviewItemCard({ review, isClone = false }) {
   const hasTitle = Boolean(review.title && review.title.trim());
 
   return (
-    <article
-      className="home-review-card-distill"
-      {...(!isClone
-        ? {
-            itemScope: true,
-            itemType: 'https://schema.org/Review',
-          }
-        : {})}
-    >
+    <article className="home-review-card-distill">
       <div className="home-review-card-top">
         <div
           className="home-review-stars-row"
@@ -157,49 +149,18 @@ function ReviewItemCard({ review, isClone = false }) {
         </div>
       </div>
 
-      {!isClone && (
-        <div
-          itemProp="reviewRating"
-          itemScope
-          itemType="https://schema.org/Rating"
-          style={{ display: 'none' }}
-        >
-          <meta itemProp="ratingValue" content={String(rating)} />
-          <meta itemProp="bestRating" content="5" />
-          <meta itemProp="worstRating" content="1" />
-        </div>
-      )}
-
       {hasTitle && (
-        <h3
-          className="home-review-card-title"
-          {...(!isClone ? { itemProp: 'name' } : {})}
-        >
+        <h3 className="home-review-card-title">
           {review.title}
         </h3>
       )}
 
-      <blockquote
-        className="home-review-card-quote"
-        {...(!isClone ? { itemProp: 'reviewBody' } : {})}
-      >
+      <blockquote className="home-review-card-quote">
         “{review.comment}”
       </blockquote>
 
-      <div
-        className="home-review-card-author"
-        {...(!isClone
-          ? {
-              itemProp: 'author',
-              itemScope: true,
-              itemType: 'https://schema.org/Person',
-            }
-          : {})}
-      >
-        <span
-          className="home-review-author-name"
-          {...(!isClone ? { itemProp: 'name' } : {})}
-        >
+      <div className="home-review-card-author">
+        <span className="home-review-author-name">
           {reviewerName}
         </span>
         {businessName && (
@@ -208,13 +169,6 @@ function ReviewItemCard({ review, isClone = false }) {
           </span>
         )}
       </div>
-
-      {!isClone && (
-        <meta
-          itemProp="itemReviewed"
-          content="Weave 365 Wholesale Banarasi Sarees"
-        />
-      )}
     </article>
   );
 }
