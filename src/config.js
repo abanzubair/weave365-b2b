@@ -48,6 +48,7 @@ export const storeConfig = {
   name: process.env.NEXT_PUBLIC_STORE_NAME || 'Weave 365',
   companyName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'Nexrize Ventures',
   gstin: process.env.NEXT_PUBLIC_STORE_GSTIN || '09ADDPA8944K1ZA',
+  iec: process.env.NEXT_PUBLIC_STORE_IEC || 'ADDPA8944K',
   brandName: 'Weave 365',
   registeredOffice: 'Varanasi, Uttar Pradesh, India',
   subtitle: process.env.NEXT_PUBLIC_STORE_SUBTITLE || 'WHOLESALE',

@@ -7,7 +7,7 @@ import { storeConfig } from '../config.js';
 import brandLogo from '../../assets/Weave365.svg';
 import { assetSrc } from '../utils/assetSrc.js';
 import { AppLink } from './AppLink.jsx';
-import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Building2, Tag, FileText } from './icons.jsx';
+import { Instagram, Youtube, Facebook, MapPin, Phone, Mail, Building2, Tag, FileText, Globe } from './icons.jsx';
 
 function LinkedInIcon({ size = 15, className = "" }) {
   return (
@@ -82,6 +82,13 @@ export function Footer({ navigate }) {
               <div className="contact-text">
                 <strong className="contact-label">GSTIN:</strong>{' '}
                 <span className="contact-value">{storeConfig.gstin || '09ADDPA8944K1ZA'}</span>
+              </div>
+            </div>
+            <div className="footer-contact-line">
+              <Globe size={14} className="contact-icon" />
+              <div className="contact-text">
+                <strong className="contact-label">IEC:</strong>{' '}
+                <span className="contact-value">{storeConfig.iec || 'ADDPA8944K'}</span>
               </div>
             </div>
             <div className="footer-contact-line">

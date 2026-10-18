@@ -9,6 +9,7 @@
 - **Legal Entity**: Nexrize Ventures
 - **Operating Brand**: Weave 365 (Weave365 Wholesale)
 - **GSTIN**: 09ADDPA8944K1ZA
+- **IEC**: ADDPA8944K
 - **Headquarters & Registered Facility**: Varanasi (Kashi), Uttar Pradesh, India
 - **Official Website**: https://www.weave365.com
 - **Core Business Classification**: B2B Textile Wholesale Marketplace, Direct-from-Weaver Procurement Network, White-Label Dropshipper, Handloom Exporter.
