@@ -38,8 +38,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyId = () => {
-    if (!order?.id) return;
-    navigator.clipboard.writeText(order.id);
+    const idToCopy = order?.order_number || order?.id;
+    if (!idToCopy) return;
+    navigator.clipboard.writeText(idToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -101,9 +102,19 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           return;
         }
 
-        const cleanId = inquiryId.trim();
+        const cleanId = inquiryId.trim().replace(/^#/, '');
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         const isUuid = uuidRegex.test(cleanId);
+
+        const safeQuery = async (queryPromise) => {
+          try {
+            const res = await queryPromise;
+            return res || { data: null };
+          } catch (err) {
+            console.warn('Tracking query fallback warning:', err);
+            return { data: null };
+          }
+        };
 
         let trackingOrder = null;
 
@@ -129,9 +140,9 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
           if (isUuid) {
             const [{ data: dApi }, { data: dOrd }, { data: dInq }] = await Promise.all([
-              supabase.from('api_orders').select('*').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
-              supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
-              supabase.from('inquiries').select('*').eq('id', cleanId).maybeSingle().catch(() => ({ data: null })),
+              safeQuery(supabase.from('api_orders').select('*').eq('id', cleanId).maybeSingle()),
+              safeQuery(supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('id', cleanId).maybeSingle()),
+              safeQuery(supabase.from('inquiries').select('*').eq('id', cleanId).maybeSingle()),
             ]);
             apiData = dApi;
             ordData = dOrd;
@@ -139,21 +150,33 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
           } else {
             // CleanId is an order_number (e.g. ORD-XXXXXXXX, API-XXXXX, B2B-XXXXX)
             const [{ data: dOrdByNum }, { data: dApiByReseller }] = await Promise.all([
-              supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('order_number', cleanId).maybeSingle().catch(() => ({ data: null })),
-              supabase.from('api_orders').select('*').eq('reseller_order_id', cleanId).maybeSingle().catch(() => ({ data: null })),
+              safeQuery(supabase.from('orders').select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)').eq('order_number', cleanId).maybeSingle()),
+              safeQuery(supabase.from('api_orders').select('*').eq('reseller_order_id', cleanId).maybeSingle()),
             ]);
             ordData = dOrdByNum;
             apiData = dApiByReseller;
 
             // Case-insensitive fallback if exact match wasn't found
             if (!ordData) {
-              const { data: dOrdIlike } = await supabase
-                .from('orders')
-                .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
-                .ilike('order_number', cleanId)
-                .maybeSingle()
-                .catch(() => ({ data: null }));
+              const { data: dOrdIlike } = await safeQuery(
+                supabase
+                  .from('orders')
+                  .select('*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)')
+                  .ilike('order_number', cleanId)
+                  .maybeSingle()
+              );
               if (dOrdIlike) ordData = dOrdIlike;
+            }
+
+            if (!apiData) {
+              const { data: dApiIlike } = await safeQuery(
+                supabase
+                  .from('api_orders')
+                  .select('*')
+                  .ilike('reseller_order_id', cleanId)
+                  .maybeSingle()
+              );
+              if (dApiIlike) apiData = dApiIlike;
             }
 
             // Try RPC with the resolved UUID
@@ -171,7 +194,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             }
           }
 
-          if (ordData) {
+          if (!trackingOrder && ordData) {
             const deliveryAddr = Array.isArray(ordData.order_delivery_addresses) ? ordData.order_delivery_addresses[0] : ordData.order_delivery_addresses;
             const dropshipSender = Array.isArray(ordData.order_dropship_senders) ? ordData.order_dropship_senders[0] : ordData.order_dropship_senders;
             const fulfillments = Array.isArray(ordData.order_fulfillments) ? ordData.order_fulfillments : [];
@@ -211,7 +234,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
               dispatched_at: latestFulfillment?.dispatched_at || null,
               delivered_at: latestFulfillment?.delivered_at || null,
             };
-          } else {
+          } else if (!trackingOrder) {
             const found = apiData || inqData;
             if (found) {
               trackingOrder = {
@@ -264,7 +287,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   // Handle manual tracking lookup
   const handleLookupSubmit = (e) => {
     e.preventDefault();
-    const cleanId = searchId.trim();
+    const cleanId = searchId.trim().replace(/^#/, '');
     if (!cleanId) return;
     if (navigate) {
       navigate('order-tracking', cleanId);
@@ -509,8 +532,10 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             <div className="tracking-meta-header">
               <div className="tracking-meta-left">
                 <div className="tracking-id-display-row">
-                  <strong className="tracking-short-id">#{String(order.id).substring(0, 8)}</strong>
-                  <code className="tracking-full-id">{order.id}</code>
+                  <strong className="tracking-short-id">
+                    {order.order_number ? `#${order.order_number}` : `#${String(order.id).substring(0, 8)}`}
+                  </strong>
+                  <code className="tracking-full-id">{order.order_number || order.id}</code>
                   <button 
                     type="button"
                     onClick={handleCopyId}
