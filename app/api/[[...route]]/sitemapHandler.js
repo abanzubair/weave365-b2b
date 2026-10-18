@@ -43,19 +43,18 @@ export async function generateSitemapXml(request) {
     });
   }
 
-  // 2. Cloudflare Edge Cache check (shared across isolates)
+  // 2. Invalidate any stale Cloudflare worker Cache API entries so fresh, escaped XML is served
   const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
   const cacheUrl = request?.url || `${siteUrl}/sitemap.xml`;
   const cacheKey = new Request(cacheUrl, { method: 'GET' });
 
   if (cache) {
     try {
-      const match = await cache.match(cacheKey);
-      if (match) {
-        return match;
-      }
+      await cache.delete(cacheKey);
+      await cache.delete(new Request('https://www.weave365.com/sitemap.xml', { method: 'GET' }));
+      await cache.delete(new Request(`${siteUrl}/sitemap.xml`, { method: 'GET' }));
     } catch (e) {
-      // Ignore cache match error
+      // Ignore cache delete error
     }
   }
 
@@ -283,14 +282,6 @@ ${entries
       'Cloudflare-CDN-Cache-Control': 'max-age=86400',
     },
   });
-
-  if (cache) {
-    try {
-      await cache.put(cacheKey, response.clone());
-    } catch (e) {
-      // Ignore cache put error
-    }
-  }
 
   return response;
 }
