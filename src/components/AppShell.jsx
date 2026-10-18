@@ -296,7 +296,7 @@ export function AppShell({ children }) {
           }
           return;
         }
-        if (curUser?.id !== sessionUser.id) {
+        if (curUser?.id !== sessionUser.id || sessionUser.updated_at !== curUser?.updated_at) {
           setUser(sessionUser);
         }
       };

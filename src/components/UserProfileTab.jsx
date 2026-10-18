@@ -449,7 +449,16 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
 
         let { error: dbError } = await supabase
           .from('profiles')
-          .upsert(profileRow, { onConflict: 'id' });
+          .update(profileRow)
+          .eq('id', user.id);
+
+        if (dbError) {
+          // If update failed (e.g. profile row doesn't exist yet), fallback to upsert
+          const upsertResult = await supabase
+            .from('profiles')
+            .upsert(profileRow, { onConflict: 'id' });
+          dbError = upsertResult.error;
+        }
 
         if (dbError && (
           dbError.message?.includes('qualification') ||
@@ -462,7 +471,8 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
           const { qualification, user_type, website, social_handle, country, ...fallbackRow } = profileRow;
           const retryResult = await supabase
             .from('profiles')
-            .upsert(fallbackRow, { onConflict: 'id' });
+            .update(fallbackRow)
+            .eq('id', user.id);
           dbError = retryResult.error;
         }
 

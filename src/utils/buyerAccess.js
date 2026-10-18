@@ -279,20 +279,11 @@ export function priceNoticeForAccess(buyerAccess) {
 export function isAccountLocked(profile, user) {
   if (!profile && !user) return false;
   const p = profile || user?.user_metadata?.buyer_profile || user?.buyer_profile || {};
-  const qual = (typeof p.qualification === 'object' && p.qualification) ? p.qualification : (user?.user_metadata?.qualification || {});
+  const qual = (typeof p.qualification === 'object' && p.qualification && Object.keys(p.qualification).length > 0)
+    ? p.qualification
+    : (user?.user_metadata?.buyer_profile?.qualification || user?.user_metadata?.qualification || {});
 
-  // 1. Explicit lock flag in qualification JSONB or on profile object
-  if (
-    qual.account_locked === true ||
-    p.account_locked === true ||
-    p.is_locked === true ||
-    user?.user_metadata?.account_locked === true ||
-    user?.user_metadata?.is_locked === true
-  ) {
-    return true;
-  }
-
-  // 2. Identify account role
+  // 1. Identify account role
   const userType = String(p.user_type || user?.user_metadata?.user_type || '').toLowerCase().trim();
   const role = String(p.role || user?.user_metadata?.role || '').toLowerCase().trim();
   const buyerType = String(p.buyer_type || '').toLowerCase().trim();
@@ -303,11 +294,35 @@ export function isAccountLocked(profile, user) {
     return false;
   }
 
+  // Explicit unlock flag takes precedence if set by form completion
+  const isExplicitlyUnlocked =
+    qual.account_locked === false ||
+    p.account_locked === false ||
+    user?.user_metadata?.account_locked === false ||
+    user?.user_metadata?.buyer_profile?.account_locked === false;
+
+  // 2. Explicit lock flag in qualification JSONB or on profile object
+  if (
+    !isExplicitlyUnlocked && (
+      qual.account_locked === true ||
+      p.account_locked === true ||
+      p.is_locked === true ||
+      user?.user_metadata?.account_locked === true ||
+      user?.user_metadata?.is_locked === true ||
+      user?.user_metadata?.buyer_profile?.account_locked === true
+    )
+  ) {
+    return true;
+  }
+
   const isVendor = userType === 'supplier' || userType === 'vendor' || role === 'vendor' || buyerType === 'vendor' || buyerSubtype.includes('vendor') || buyerSubtype.includes('supplier');
   const isReseller = userType === 'business' || userType === 'reseller' || role === 'reseller' || buyerType === 'business' || buyerSubtype.includes('reseller');
 
-  // 3. For Business/Reseller: account is locked unless the business account form is complete
+  // 3. For Business/Reseller: if explicitly unlocked and business name is present, unlock; otherwise verify complete details
   if (isReseller) {
+    if (isExplicitlyUnlocked && (p.business_name || qual.business_name)) {
+      return false;
+    }
     if (!isCategoryDetailsComplete(p, 'reseller')) {
       return true;
     }
@@ -318,13 +333,16 @@ export function isAccountLocked(profile, user) {
     if (Boolean(p.vendor_code) || p.approval_status === 'approved') {
       return false;
     }
+    if (isExplicitlyUnlocked && (p.business_name || qual.business_name)) {
+      return false;
+    }
     if (!isCategoryDetailsComplete(p, 'supplier')) {
       return true;
     }
   }
 
   // 5. If explicit unlock was set AND requirements are fulfilled
-  if (qual.account_locked === false || p.account_locked === false) {
+  if (isExplicitlyUnlocked) {
     return false;
   }
 

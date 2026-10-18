@@ -209,7 +209,35 @@ export async function loadProfileForUser(user) {
     .eq('id', user.id)
     .maybeSingle();
 
-  return { profile: data || fallbackProfile, error };
+  if (!data) {
+    return { profile: fallbackProfile, error };
+  }
+
+  // Deep-merge database row with auth metadata to ensure qualifications and lock state aren't wiped on reload
+  const fallbackQual = (typeof fallbackProfile?.qualification === 'object' && fallbackProfile.qualification) ? fallbackProfile.qualification : {};
+  const dbQual = (typeof data.qualification === 'object' && data.qualification) ? data.qualification : {};
+  const mergedQual = {
+    ...fallbackQual,
+    ...dbQual,
+  };
+
+  // Explicit unlock flag takes precedence if either DB or auth metadata marked it unlocked
+  const accountLocked = (typeof dbQual.account_locked === 'boolean')
+    ? dbQual.account_locked
+    : (typeof data.account_locked === 'boolean'
+      ? data.account_locked
+      : (typeof fallbackQual.account_locked === 'boolean'
+        ? fallbackQual.account_locked
+        : fallbackProfile?.account_locked));
+
+  const mergedProfile = {
+    ...(fallbackProfile || {}),
+    ...data,
+    qualification: mergedQual,
+    ...(accountLocked !== undefined ? { account_locked: accountLocked } : {}),
+  };
+
+  return { profile: mergedProfile, error };
 }
 
 export function isProfileComplete(user, buyerProfile) {
