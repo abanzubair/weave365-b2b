@@ -31,5 +31,12 @@
     "supabase": "^2.108.0",
     "vercel": "^59.11.7",
     "wrangler": "^4.93.0"
+  },
+  "overrides": {
+    "tar": "^7.5.22",
+    "braces": "^3.0.3",
+    "smol-toml": "^1.9.1",
+    "postcss": "^8.5.31",
+    "source-map-js": "^1.2.2"
   }
 }
