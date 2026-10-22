@@ -38,20 +38,10 @@ import {
   INITIAL_SUPPLIER_FORM,
   validateBusinessQualification,
   validateSupplierQualification,
+  COUNTRY_DIAL_CODES,
 } from '../components/signup/signupConstants.js';
 
-const countryCodes = [
-  { value: '+91', label: 'India +91' },
-  { value: '+1', label: 'USA / Canada +1' },
-  { value: '+44', label: 'UK +44' },
-  { value: '+971', label: 'UAE +971' },
-  { value: '+65', label: 'Singapore +65' },
-  { value: '+60', label: 'Malaysia +60' },
-  { value: '+61', label: 'Australia +61' },
-  { value: '+974', label: 'Qatar +974' },
-  { value: '+966', label: 'Saudi Arabia +966' },
-  { value: '+965', label: 'Kuwait +965' },
-];
+const countryCodes = COUNTRY_DIAL_CODES;
 
 function toTitleCaseName(value) {
   return String(value || '')
@@ -261,6 +251,7 @@ export function SignupPage({
           supplierForm,
           profileDraft: {
             fullName: profile.fullName,
+            countryCode: profile.countryCode,
             businessName: profile.businessName,
             website: profile.website,
             socialHandle: profile.socialHandle,
@@ -569,6 +560,7 @@ export function SignupPage({
       fullName: supplierForm.contact_person || prev.fullName,
       businessName: supplierForm.business_name || prev.businessName,
       city: supplierForm.location_city || prev.city,
+      countryCode: supplierForm.phone_country_code || prev.countryCode || '+91',
       whatsapp: String(supplierForm.phone || '').replace(/\D/g, '').slice(0, 15) || prev.whatsapp,
       website: (supplierForm.ecommerce_website || '').trim() || prev.website,
       socialHandle: (supplierForm.instagram || '').trim() || prev.socialHandle,
@@ -655,11 +647,14 @@ export function SignupPage({
     const userType = isVendor ? 'supplier' : (isBusiness ? 'business' : 'customer');
     const buyerType = isVendor ? 'vendor' : (isBusiness ? 'business' : 'customer');
     const role = isVendor ? 'vendor' : (isBusiness ? 'reseller' : 'customer');
+    const resolvedCountryCode = isVendor
+      ? (supplierForm.phone_country_code || profile.countryCode || '+91')
+      : (profile.countryCode || '+91');
 
     return applyAutoApprovalToBuyerProfile({
       full_name: cleanName,
-      whatsapp: `${profile.countryCode} ${cleanWhatsapp}`,
-      whatsapp_country_code: profile.countryCode,
+      whatsapp: `${resolvedCountryCode} ${cleanWhatsapp}`,
+      whatsapp_country_code: resolvedCountryCode,
       whatsapp_number: cleanWhatsapp,
       business_name: cleanBusinessName,
       website: cleanWebsite,
@@ -1894,7 +1889,7 @@ export function SignupPage({
                                 {supplierForm.business_name || profile.businessName || 'Supplier Firm'}
                               </h3>
                               <p className="signup-supplier-contact-line">
-                                Contact: <strong>{supplierForm.contact_person || profile.fullName}</strong> • <strong>{supplierForm.business_email || email}</strong> • <strong>+91 {supplierForm.phone || profile.whatsapp}</strong>
+                                Contact: <strong>{supplierForm.contact_person || profile.fullName}</strong> • <strong>{supplierForm.business_email || email}</strong> • <strong>{supplierForm.phone_country_code || profile.countryCode || '+91'} {supplierForm.phone || profile.whatsapp}</strong>
                               </p>
                               <p className="signup-supplier-loc-line">
                                 Location: <strong>{supplierForm.location_city || profile.city}</strong>
@@ -1995,17 +1990,18 @@ export function SignupPage({
                                 </>
                               )}
 
-                              {/* WhatsApp Number */}
+                              {/* Mobile / WhatsApp Number */}
                               <div className="signup-field signup-field-full">
-                                <label className="signup-label">WhatsApp Number *</label>
+                                <label className="signup-label">Mobile / WhatsApp Number *</label>
                                 <div className="signup-input-phone-group">
                                   <select
                                     className="signup-select"
                                     value={profile.countryCode}
                                     onChange={(e) => updateProfile('countryCode', e.target.value)}
+                                    aria-label="Country Code"
                                   >
                                     {countryCodes.map((item) => (
-                                      <option key={item.value} value={item.value}>
+                                      <option key={`${item.value}-${item.label}`} value={item.value}>
                                         {item.label}
                                       </option>
                                     ))}
@@ -2019,7 +2015,7 @@ export function SignupPage({
                                         e.target.value.replace(/\D/g, '').slice(0, 15)
                                       )
                                     }
-                                    placeholder="Enter WhatsApp / phone number"
+                                    placeholder="Enter mobile / WhatsApp number"
                                     autoComplete="tel-national"
                                     maxLength={15}
                                     required

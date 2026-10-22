@@ -3,6 +3,98 @@
  * @description Constants, options, and validation rules for Weave 365 signup & qualification flow.
  */
 
+export const COUNTRY_DIAL_CODES = [
+  // Primary & Top Diaspora / Export Markets
+  { value: '+91', label: 'India (+91)' },
+  { value: '+1', label: 'USA (+1)' },
+  { value: '+44', label: 'UK (+44)' },
+  { value: '+971', label: 'UAE (+971)' },
+  { value: '+1', label: 'Canada (+1)' },
+  { value: '+61', label: 'Australia (+61)' },
+  { value: '+65', label: 'Singapore (+65)' },
+  { value: '+60', label: 'Malaysia (+60)' },
+  { value: '+974', label: 'Qatar (+974)' },
+  { value: '+966', label: 'Saudi Arabia (+966)' },
+  { value: '+965', label: 'Kuwait (+965)' },
+  { value: '+968', label: 'Oman (+968)' },
+  { value: '+973', label: 'Bahrain (+973)' },
+  { value: '+64', label: 'New Zealand (+64)' },
+  { value: '+27', label: 'South Africa (+27)' },
+  { value: '+230', label: 'Mauritius (+230)' },
+  { value: '+679', label: 'Fiji (+679)' },
+  { value: '+1868', label: 'Trinidad & Tobago (+1868)' },
+  { value: '+592', label: 'Guyana (+592)' },
+  { value: '+597', label: 'Suriname (+597)' },
+
+  // South Asia & Neighboring
+  { value: '+977', label: 'Nepal (+977)' },
+  { value: '+94', label: 'Sri Lanka (+94)' },
+  { value: '+880', label: 'Bangladesh (+880)' },
+  { value: '+92', label: 'Pakistan (+92)' },
+  { value: '+975', label: 'Bhutan (+975)' },
+  { value: '+960', label: 'Maldives (+960)' },
+
+  // Europe
+  { value: '+49', label: 'Germany (+49)' },
+  { value: '+33', label: 'France (+33)' },
+  { value: '+31', label: 'Netherlands (+31)' },
+  { value: '+41', label: 'Switzerland (+41)' },
+  { value: '+39', label: 'Italy (+39)' },
+  { value: '+34', label: 'Spain (+34)' },
+  { value: '+353', label: 'Ireland (+353)' },
+  { value: '+46', label: 'Sweden (+46)' },
+  { value: '+47', label: 'Norway (+47)' },
+  { value: '+45', label: 'Denmark (+45)' },
+  { value: '+32', label: 'Belgium (+32)' },
+  { value: '+43', label: 'Austria (+43)' },
+  { value: '+351', label: 'Portugal (+351)' },
+  { value: '+30', label: 'Greece (+30)' },
+  { value: '+48', label: 'Poland (+48)' },
+  { value: '+420', label: 'Czech Republic (+420)' },
+  { value: '+358', label: 'Finland (+358)' },
+  { value: '+36', label: 'Hungary (+36)' },
+  { value: '+40', label: 'Romania (+40)' },
+  { value: '+352', label: 'Luxembourg (+352)' },
+
+  // Asia & Pacific
+  { value: '+852', label: 'Hong Kong (+852)' },
+  { value: '+81', label: 'Japan (+81)' },
+  { value: '+82', label: 'South Korea (+82)' },
+  { value: '+886', label: 'Taiwan (+886)' },
+  { value: '+66', label: 'Thailand (+66)' },
+  { value: '+62', label: 'Indonesia (+62)' },
+  { value: '+63', label: 'Philippines (+63)' },
+  { value: '+84', label: 'Vietnam (+84)' },
+
+  // Middle East & Africa
+  { value: '+90', label: 'Turkey (+90)' },
+  { value: '+20', label: 'Egypt (+20)' },
+  { value: '+254', label: 'Kenya (+254)' },
+  { value: '+234', label: 'Nigeria (+234)' },
+  { value: '+233', label: 'Ghana (+233)' },
+  { value: '+255', label: 'Tanzania (+255)' },
+  { value: '+256', label: 'Uganda (+256)' },
+  { value: '+212', label: 'Morocco (+212)' },
+  { value: '+972', label: 'Israel (+972)' },
+  { value: '+962', label: 'Jordan (+962)' },
+  { value: '+961', label: 'Lebanon (+961)' },
+
+  // Americas & Caribbean
+  { value: '+52', label: 'Mexico (+52)' },
+  { value: '+55', label: 'Brazil (+55)' },
+  { value: '+54', label: 'Argentina (+54)' },
+  { value: '+56', label: 'Chile (+56)' },
+  { value: '+57', label: 'Colombia (+57)' },
+  { value: '+51', label: 'Peru (+51)' },
+  { value: '+1876', label: 'Jamaica (+1876)' },
+  { value: '+1246', label: 'Barbados (+1246)' },
+  { value: '+1242', label: 'Bahamas (+1242)' },
+  { value: '+506', label: 'Costa Rica (+506)' },
+  { value: '+507', label: 'Panama (+507)' },
+];
+
+export const countryCodes = COUNTRY_DIAL_CODES;
+
 export const USER_TYPES = [
   {
     id: 'business',
@@ -131,6 +223,7 @@ export const INITIAL_SUPPLIER_FORM = {
   has_gst: '', // 'Yes' | 'No'
   gstin: '',
   business_email: '',
+  phone_country_code: '+91',
   phone: '',
   instagram: '',
   ecommerce_website: '',
@@ -227,7 +320,7 @@ export function validateSupplierQualification(form) {
 
   const cleanPhone = String(form?.phone || '').replace(/\D/g, '').slice(0, 15);
   if (cleanPhone.length < 6 || cleanPhone.length > 15) {
-    return { isValid: false, error: 'Please enter a valid WhatsApp / Phone Number.', field: 'phone' };
+    return { isValid: false, error: 'Please enter a valid Mobile / WhatsApp Number.', field: 'phone' };
   }
 
   if (!form?.instagram?.trim()) {

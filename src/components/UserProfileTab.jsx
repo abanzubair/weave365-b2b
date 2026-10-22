@@ -27,20 +27,10 @@ import {
   SUPPLIER_PRODUCTS,
   SUPPLIER_WEAVING_TYPES,
   SUPPLIER_CATALOGUE_SOURCES,
+  COUNTRY_DIAL_CODES,
 } from './signup/signupConstants.js';
 
-const countryCodes = [
-  { value: '+91', label: 'India (+91)' },
-  { value: '+1', label: 'USA / Canada (+1)' },
-  { value: '+44', label: 'UK (+44)' },
-  { value: '+971', label: 'UAE (+971)' },
-  { value: '+65', label: 'Singapore (+65)' },
-  { value: '+60', label: 'Malaysia (+60)' },
-  { value: '+61', label: 'Australia (+61)' },
-  { value: '+974', label: 'Qatar (+974)' },
-  { value: '+966', label: 'Saudi Arabia (+966)' },
-  { value: '+965', label: 'Kuwait (+965)' },
-];
+const countryCodes = COUNTRY_DIAL_CODES;
 
 const categoryOptions = ['Saree', 'Suit', 'Lehenga', 'Dupatta', 'Under 999'];
 
@@ -685,7 +675,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                         aria-label="Country Code"
                       >
                         {countryCodes.map((c) => (
-                          <option key={c.value} value={c.value}>
+                          <option key={`${c.value}-${c.label}`} value={c.value}>
                             {c.label}
                           </option>
                         ))}
@@ -916,7 +906,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                         aria-label="Country Code"
                       >
                         {countryCodes.map((c) => (
-                          <option key={c.value} value={c.value}>
+                          <option key={`${c.value}-${c.label}`} value={c.value}>
                             {c.label}
                           </option>
                         ))}
@@ -1333,7 +1323,7 @@ export function UserProfileTab({ user, buyerProfile, setBuyerProfile, setUser })
                         aria-label="Country Code"
                       >
                         {countryCodes.map((c) => (
-                          <option key={c.value} value={c.value}>
+                          <option key={`${c.value}-${c.label}`} value={c.value}>
                             {c.label}
                           </option>
                         ))}

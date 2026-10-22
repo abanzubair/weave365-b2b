@@ -10,6 +10,7 @@ import {
   SUPPLIER_PRODUCTS,
   SUPPLIER_WEAVING_TYPES,
   SUPPLIER_CATALOGUE_SOURCES,
+  COUNTRY_DIAL_CODES,
 } from './signupConstants.js';
 
 export function SupplierOnboardingForm({
@@ -123,20 +124,34 @@ export function SupplierOnboardingForm({
               />
             </div>
 
-            {/* WhatsApp / Phone Number */}
+            {/* Mobile / WhatsApp Number */}
             <div className={`signup-field ${errorField === 'phone' ? 'has-error' : ''}`}>
               <label className="signup-label">
-                <span>WhatsApp / Phone Number *</span>
+                <span>Mobile / WhatsApp Number *</span>
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, '').slice(0, 15))}
-                placeholder="WhatsApp / Phone number"
-                maxLength={15}
-                className="signup-input"
-                required
-              />
+              <div className="signup-input-phone-group">
+                <select
+                  className="signup-select"
+                  value={formData.phone_country_code || '+91'}
+                  onChange={(e) => handleInputChange('phone_country_code', e.target.value)}
+                  aria-label="Country Code"
+                >
+                  {COUNTRY_DIAL_CODES.map((item) => (
+                    <option key={`${item.value}-${item.label}`} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, '').slice(0, 15))}
+                  placeholder="Mobile / WhatsApp number"
+                  maxLength={15}
+                  className="signup-input"
+                  required
+                />
+              </div>
             </div>
 
             {/* Instagram Account */}
