@@ -15,6 +15,8 @@ import {
   ArrowDown,
   AlertCircle,
   ArrowRight,
+  Tag,
+  X,
 } from '../components/icons.jsx';
 import { storeConfig } from '../config.js';
 import {
@@ -97,6 +99,14 @@ export function CheckoutPage({
   const [paymentGateway, setPaymentGateway] = useState(
     PHONEPE_ENABLED ? 'phonepe' : 'cashfree'
   );
+
+  // Private Coupon / Promo Code State
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [isCouponValidating, setIsCouponValidating] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccessMessage, setCouponSuccessMessage] = useState('');
 
   // Auto-verify if customer returned from a gateway redirect
   // (?order_id= for Cashfree, ?pp_order_id= for PhonePe)
@@ -371,11 +381,31 @@ export function CheckoutPage({
     return Math.max(0, Math.round(totalBulkDiscount));
   }, [items, productPricing]);
 
+  // Dynamic coupon recalculation if cart items change while a coupon is applied
+  useEffect(() => {
+    if (appliedCoupon) {
+      const cartItemsAmount = Math.max(0, (baseTotal || 0) - (discount || 0));
+      if (appliedCoupon.min_order_amount > 0 && cartItemsAmount < appliedCoupon.min_order_amount) {
+        setCouponError(`Coupon removed: Cart total is now below the minimum order requirement of ₹${appliedCoupon.min_order_amount}.`);
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        return;
+      }
+      if (appliedCoupon.discount_type === 'percentage') {
+        let disc = (cartItemsAmount * Number(appliedCoupon.discount_value)) / 100;
+        if (appliedCoupon.max_discount_amount > 0) disc = Math.min(disc, Number(appliedCoupon.max_discount_amount));
+        setCouponDiscount(Number(Number(disc).toFixed(2)));
+      } else {
+        setCouponDiscount(Math.min(cartItemsAmount, Number(appliedCoupon.discount_value) || 0));
+      }
+    }
+  }, [baseTotal, discount, appliedCoupon]);
+
   const grossItemsTotal = useMemo(() => {
     return (baseTotal || 0) + bulkDiscount;
   }, [baseTotal, bulkDiscount]);
 
-  const total = Math.max(0, (baseTotal || 0) - (discount || 0)) + shippingFee;
+  const total = Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0)) + shippingFee;
 
   // Marked-up INR total preserving the selected country's custom markup for gateways/fallbacks
   const markedUpInrTotal = useMemo(() => {
@@ -390,16 +420,70 @@ export function CheckoutPage({
     };
     const inrTotals = calculateLocalizedHybridCartTotals(items, priceAccess, countryInrConfig, exchangeRates);
     const inrShipping = shippingSpeed === 'expedited' ? (billedWeightKg * 150) : 0;
-    return Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0)) + inrShipping;
-  }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg]);
-
+    return Math.max(0, (inrTotals.total || 0) - (inrTotals.discount || 0) - (couponDiscount || 0)) + inrShipping;
+  }, [items, priceAccess, currentCountry, exchangeRates, shippingSpeed, billedWeightKg, couponDiscount]);
 
   const { baseAmount, gstAmount } = useMemo(() => {
-    const netItems = Math.max(0, (baseTotal || 0) - (discount || 0));
+    const netItems = Math.max(0, (baseTotal || 0) - (discount || 0) - (couponDiscount || 0));
     const base = Number((netItems / 1.05).toFixed(2));
     const gst = Number((netItems - base).toFixed(2));
     return { baseAmount: base, gstAmount: gst };
-  }, [baseTotal, discount]);
+  }, [baseTotal, discount, couponDiscount]);
+
+  // Handle Buyer Applying Private Coupon Code
+  const handleApplyCoupon = async (e) => {
+    e?.preventDefault();
+    const cleanCode = couponCodeInput.trim().toUpperCase();
+    if (!cleanCode) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+
+    setIsCouponValidating(true);
+    setCouponError('');
+    setCouponSuccessMessage('');
+
+    try {
+      const cartItemsAmount = Math.max(0, (baseTotal || 0) - (discount || 0));
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: cleanCode,
+          cart_total: cartItemsAmount,
+          phone: formPhone || user?.user_metadata?.phone || '',
+          email: email || user?.email || '',
+          user_id: user?.id || null,
+          currency: (currentCountry?.currency || 'INR').toUpperCase(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        throw new Error(data.error || 'Invalid coupon code.');
+      }
+
+      setAppliedCoupon(data.coupon);
+      setCouponDiscount(Number(data.discount_amount) || 0);
+      setCouponSuccessMessage(data.message || `Coupon "${data.coupon?.code}" applied successfully!`);
+      setCouponError('');
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+      setCouponError(err.message || 'Failed to apply coupon.');
+      setCouponSuccessMessage('');
+    } finally {
+      setIsCouponValidating(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponCodeInput('');
+    setCouponError('');
+    setCouponSuccessMessage('');
+  };
 
 
 
@@ -479,6 +563,8 @@ export function CheckoutPage({
     country_code: currentCountry?.code || 'IN',
     country_name: currentCountry?.name || 'India',
     markup_percent: Number(currentCountry?.markupPercent || 0),
+    coupon_code: appliedCoupon ? appliedCoupon.code : null,
+    coupon_discount: couponDiscount || 0,
     notes: dropshipNotes,
   });
 
@@ -615,6 +701,8 @@ export function CheckoutPage({
           paymentMethod: 'cashfree',
           deliveryDetails,
           cfOrderId: data.order_id,
+          couponCode: appliedCoupon?.code,
+          couponDiscount: couponDiscount,
         });
 
         const saleAmount = items.reduce((sum, it) => sum + (Number(customerPrice(it.variant?.prices, priceAccess)) || 0) * (Number(it.quantity) || 1), 0);
@@ -806,6 +894,15 @@ export function CheckoutPage({
                 </span>
               </div>
             )}
+
+            {createdOrder?.couponCode && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px', paddingTop: '2px' }}>
+                <span style={{ color: '#16a34a', fontWeight: '600' }}>Coupon Applied</span>
+                <span style={{ fontWeight: '600', color: '#16a34a', textAlign: 'right' }}>
+                  {createdOrder.couponCode} (-{formatMoney(createdOrder.couponDiscount, { currency: createdOrder?.currency || currentCountry?.currency })})
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Contextual Notice */}
@@ -942,6 +1039,68 @@ export function CheckoutPage({
               )}
             </div>
 
+            {/* Promo / Private Coupon Code Section */}
+            <div className="checkout-coupon-box">
+              {appliedCoupon ? (
+                <div className="checkout-coupon-applied-card">
+                  <div className="checkout-coupon-applied-info">
+                    <span className="checkout-coupon-applied-badge">
+                      <Tag size={15} /> {appliedCoupon.code}
+                    </span>
+                    <span className="checkout-coupon-applied-savings">
+                      ({appliedCoupon.discount_summary || formatMoney(couponDiscount, { currency: currentCountry?.currency }) + ' off'})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="checkout-coupon-remove-btn"
+                    onClick={handleRemoveCoupon}
+                    title="Remove coupon"
+                  >
+                    <X size={14} /> Remove
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplyCoupon} className="checkout-coupon-form">
+                  <div className="checkout-coupon-input-wrap">
+                    <Tag size={14} className="checkout-coupon-icon" />
+                    <input
+                      type="text"
+                      className="checkout-coupon-input"
+                      placeholder="Add coupon code"
+                      value={couponCodeInput}
+                      onChange={(e) => {
+                        setCouponCodeInput(e.target.value.toUpperCase());
+                        if (couponError) setCouponError('');
+                      }}
+                      maxLength={30}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="checkout-coupon-apply-btn"
+                    disabled={isCouponValidating || !couponCodeInput.trim()}
+                  >
+                    {isCouponValidating ? 'Checking...' : 'Apply'}
+                  </button>
+                </form>
+              )}
+
+              {couponError && (
+                <div className="checkout-coupon-alert-error">
+                  <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                  <span>{couponError}</span>
+                </div>
+              )}
+
+              {couponSuccessMessage && !couponError && (
+                <div className="checkout-coupon-alert-success">
+                  <Check size={14} style={{ flexShrink: 0 }} />
+                  <span>{couponSuccessMessage}</span>
+                </div>
+              )}
+            </div>
+
             {/* Financial Summary Table */}
             <div className="checkout-financial-table">
               {bulkDiscount > 0 && (
@@ -972,6 +1131,13 @@ export function CheckoutPage({
                 <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
                   <span>Combo Discount</span>
                   <span>-{formatMoney(discount, { currency: currentCountry?.currency })}</span>
+                </div>
+              )}
+
+              {couponDiscount > 0 && (
+                <div className="checkout-summary-row" style={{ color: '#16a34a', fontWeight: '600' }}>
+                  <span>Coupon Discount ({appliedCoupon?.code})</span>
+                  <span>-{formatMoney(couponDiscount, { currency: currentCountry?.currency, fractionDigits: 2 })}</span>
                 </div>
               )}
 

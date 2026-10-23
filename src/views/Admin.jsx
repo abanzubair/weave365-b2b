@@ -34,6 +34,7 @@ import {
   X,
   ShieldCheck,
   Globe,
+  Tag,
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { getStorefrontSupabase } from '../services/boutiqueSyncService.js';
@@ -60,6 +61,7 @@ import { InvoiceCourierManager } from './admin/InvoiceCourierManager.jsx';
 import AdminStockManager from './admin/AdminStockManager.jsx';
 import ApiManager from './admin/ApiManager.jsx';
 import CountryPricingManager from './admin/CountryPricingManager.jsx';
+import CouponsManager from './admin/CouponsManager.jsx';
 
 import { storeConfig } from '../config.js';
 import { isVendorProfile } from '../utils/buyerAccess.js';
@@ -84,6 +86,7 @@ const optionalTables = [
   { key: 'blog_posts', label: 'Blog Posts' },
   { key: 'page_seo_settings', label: 'Page SEO Settings' },
   { key: 'influencer_profiles', label: 'Influencer Profiles' },
+  { key: 'coupons', label: 'Coupons' },
 ];
 
 const emptyAdminData = {
@@ -662,6 +665,7 @@ export function Admin({
         { key: 'enquires', label: 'Enquiry', icon: Inbox, badge: newEnquiriesCount > 0 ? newEnquiriesCount : null },
         { key: 'tracking', label: 'Order', icon: Truck, badge: newOrdersCount > 0 ? newOrdersCount : null },
         { key: 'invoice-slip', label: 'Invoice', icon: Printer, badge: null },
+        { key: 'coupons', label: 'Coupons', icon: Tag, badge: null },
         { key: 'influencers', label: 'Affiliate', icon: Users, badge: (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length > 0 ? (adminData.optional.influencer_profiles || []).filter(p => !p.is_approved).length : null },
         { key: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: pendingReviews.length > 0 ? pendingReviews.length : null },
       ],
@@ -998,6 +1002,14 @@ export function Admin({
 
           {activeTab === 'api-manager' && (
             <ApiManager
+              adminData={adminData}
+              loadAdminData={loadAdminData}
+              user={activeUser}
+            />
+          )}
+
+          {activeTab === 'coupons' && (
+            <CouponsManager
               adminData={adminData}
               loadAdminData={loadAdminData}
               user={activeUser}

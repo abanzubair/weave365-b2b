@@ -2374,3 +2374,71 @@ create policy "Admin all actions on seller products"
   with check (public.is_admin());
 
 
+-- -------------------------------------------------------------------------------
+-- PRIVATE COUPONS & PROMO CODE SYSTEM (ADMIN CONTROLLED)
+-- -------------------------------------------------------------------------------
+
+create table if not exists public.coupons (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  discount_type text not null default 'percentage' check (discount_type in ('percentage', 'fixed')),
+  discount_value numeric(10, 2) not null check (discount_value > 0),
+  min_order_amount numeric(10, 2) default 0,
+  max_discount_amount numeric(10, 2), -- Optional maximum cap for percentage discounts
+  usage_limit integer not null default 1 check (usage_limit > 0), -- Total times code can be used
+  times_used integer not null default 0 check (times_used >= 0),
+  per_user_limit integer default 1 check (per_user_limit > 0),    -- Times a single customer can use it
+  is_active boolean not null default true,
+  expires_at timestamptz,
+  description text,                                              -- Admin notes / recipient details
+  created_by text,
+  created_at timestamptz default timezone('utc'::text, now()) not null,
+  updated_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists coupons_code_idx on public.coupons (code);
+create index if not exists coupons_active_idx on public.coupons (is_active);
+
+create table if not exists public.coupon_usages (
+  id uuid primary key default gen_random_uuid(),
+  coupon_id uuid references public.coupons(id) on delete cascade,
+  order_id uuid references public.orders(id) on delete set null,
+  order_number text,
+  user_id uuid references auth.users(id) on delete set null,
+  buyer_email text,
+  buyer_phone text,
+  discount_amount numeric(10, 2) not null,
+  order_total numeric(10, 2),
+  used_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists coupon_usages_coupon_id_idx on public.coupon_usages (coupon_id);
+create index if not exists coupon_usages_phone_idx on public.coupon_usages (buyer_phone);
+create index if not exists coupon_usages_email_idx on public.coupon_usages (buyer_email);
+create index if not exists coupon_usages_user_id_idx on public.coupon_usages (user_id);
+
+-- Ensure orders table tracks applied coupons
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS coupon_code text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS coupon_discount numeric(10, 2) DEFAULT 0;
+
+-- Row Level Security
+alter table public.coupons enable row level security;
+alter table public.coupon_usages enable row level security;
+
+-- Coupons are private to administrators only (never listed publicly)
+drop policy if exists "Admin all on coupons" on public.coupons;
+create policy "Admin all on coupons"
+  on public.coupons for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admin all on coupon_usages" on public.coupon_usages;
+create policy "Admin all on coupon_usages"
+  on public.coupon_usages for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+
+

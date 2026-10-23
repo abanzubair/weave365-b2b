@@ -9,6 +9,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
+import { recordCouponUsage } from './couponsHandler.js';
 
 export const runtime = 'edge';
 
@@ -129,6 +130,8 @@ export async function handleCreateOrder(request) {
       markup_percent = 0,
       shipping_mode = 'standard',
       shipping_speed = 'standard',
+      coupon_code = null,
+      coupon_discount = 0,
       notes = '',
     } = body;
 
@@ -191,7 +194,9 @@ export async function handleCreateOrder(request) {
       status: 'pending_payment',
       payment_method: 'cashfree',
       total_amount: requestedAmount,
-      message: `CASHFREE CHECKOUT ORDER\nTotal: ${currencySymbol}${requestedAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (${orderCurrency})\nCurrency: ${orderCurrency}\nStatus: Pending Cashfree Payment\nNotes: ${notes || 'None'}`,
+      coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+      coupon_discount: Number(coupon_discount) || 0,
+      message: `CASHFREE CHECKOUT ORDER\nTotal: ${currencySymbol}${requestedAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (${orderCurrency})\nCurrency: ${orderCurrency}${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-${currencySymbol}${Number(coupon_discount) || 0})` : ''}\nStatus: Pending Cashfree Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
       dropship_sender_phone: isDropship ? (dropship_details.sender_phone || null) : null,
@@ -476,6 +481,19 @@ export async function handleVerifyOrder(request) {
             order: order3NF || null,
             supabase,
           });
+
+          if (order3NF?.coupon_code) {
+            void recordCouponUsage(supabase, {
+              couponCode: order3NF.coupon_code,
+              orderId: targetOrderId,
+              orderNumber: order3NF.order_number,
+              userId: order3NF.user_id,
+              email: order3NF.email,
+              phone: order3NF.phone,
+              discountAmount: order3NF.coupon_discount,
+              orderTotal: order3NF.total_amount,
+            });
+          }
         } catch (emailErr) {
           console.error('[Cashfree verifyOrder] Error sending buyer confirmation email:', emailErr);
         }
@@ -589,6 +607,19 @@ export async function handleWebhook(request) {
               order: order3NF || null,
               supabase,
             });
+
+            if (order3NF?.coupon_code) {
+              void recordCouponUsage(supabase, {
+                couponCode: order3NF.coupon_code,
+                orderId: target.id,
+                orderNumber: order3NF.order_number,
+                userId: order3NF.user_id,
+                email: order3NF.email,
+                phone: order3NF.phone,
+                discountAmount: order3NF.coupon_discount,
+                orderTotal: order3NF.total_amount,
+              });
+            }
           } catch (emailErr) {
             console.error('[Cashfree Webhook] Error sending buyer confirmation email:', emailErr);
           }

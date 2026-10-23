@@ -8,6 +8,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
+import { recordCouponUsage } from './couponsHandler.js';
 
 export const runtime = 'edge';
 
@@ -44,6 +45,8 @@ export async function POST(request) {
       dropship_details = {},
       items = [],
       total_amount = 0,
+      coupon_code = null,
+      coupon_discount = 0,
       notes = '',
     } = body;
 
@@ -120,6 +123,8 @@ export async function POST(request) {
       pincode: pincode,
       status: 'new',
       total_amount: Number(Number(total_amount).toFixed(2)),
+      coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+      coupon_discount: Number(coupon_discount) || 0,
       message: orderMessage,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
@@ -161,6 +166,19 @@ export async function POST(request) {
 
     const orderId = insertedOrder?.id;
     const resolvedOrderNumber = insertedOrder?.order_number || orderNumber;
+
+    if (coupon_code) {
+      void recordCouponUsage(supabase, {
+        couponCode: coupon_code,
+        orderId,
+        orderNumber: resolvedOrderNumber,
+        userId: validUserId,
+        email: email || null,
+        phone,
+        discountAmount: coupon_discount,
+        orderTotal: total_amount,
+      });
+    }
 
     // Retrieve normalized 3NF order entities for downstream email and verification
     let normalizedOrder = null;

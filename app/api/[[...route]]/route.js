@@ -38,6 +38,12 @@ import {
   handleVerifyOrder as phonepeVerifyOrder,
   handleWebhook as phonepeWebhook,
 } from './phonepeHandler.js';
+import {
+  handleAdminCouponsGet,
+  handleAdminCouponsPost,
+  handleAdminCouponsDelete,
+  handleValidateCoupon,
+} from './couponsHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
@@ -48,6 +54,7 @@ export async function GET(request, { params }) {
     return handleDeveloperApiGet(request, routeArray);
   }
 
+  if (routeKey === 'admin/coupons' || routeKey === 'coupons') return handleAdminCouponsGet(request);
   if (routeKey === 'seller/products' || routeKey === 'seller-products') return handleSellerProductGet(request);
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
@@ -71,6 +78,8 @@ export async function POST(request, { params }) {
     return handleDeveloperApiPost(request, routeArray);
   }
 
+  if (routeKey === 'admin/coupons') return handleAdminCouponsPost(request);
+  if (routeKey === 'coupons/validate' || routeKey === 'coupon/validate') return handleValidateCoupon(request);
   if (routeKey === 'seller/products' || routeKey === 'seller-products') return handleSellerProductPost(request);
   if (routeKey === 'admin/seller-products') return handleAdminSellerProductPatch(request);
   if (routeKey === 'orders' || routeKey === 'order') return orderPost(request);
@@ -91,6 +100,16 @@ export async function POST(request, { params }) {
   if (routeKey === 'admin/sync') return adminSyncPost(request);
   if (routeKey === 'check-email' || routeKey === 'auth/check-email') return checkEmailPost(request);
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
+}
+
+export async function DELETE(request, { params }) {
+  const resolvedParams = await params;
+  const routeArray = resolvedParams?.route || [];
+  const routeKey = routeArray.join('/');
+
+  if (routeKey === 'admin/coupons') return handleAdminCouponsDelete(request);
+
+  return Response.json({ error: `DELETE /api/${routeKey} Not Found` }, { status: 404 });
 }
 
 export async function PATCH(request, { params }) {

@@ -18,6 +18,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { sendBuyerOrderConfirmationEmail } from './buyerEmailService.js';
+import { recordCouponUsage } from './couponsHandler.js';
 
 export const runtime = 'edge';
 
@@ -217,6 +218,18 @@ async function markOrderPaid({ supabase, merchantOrderId, paidAmountPaise, trans
   // Email service is idempotent (tags the order message once sent)
   try {
     await sendBuyerOrderConfirmationEmail({ orderId: order.id, order, supabase });
+    if (order.coupon_code) {
+      void recordCouponUsage(supabase, {
+        couponCode: order.coupon_code,
+        orderId: order.id,
+        orderNumber: order.order_number,
+        userId: order.user_id,
+        email: order.email,
+        phone: order.phone,
+        discountAmount: order.coupon_discount,
+        orderTotal: order.total_amount,
+      });
+    }
   } catch (emailErr) {
     console.error(`[PhonePe ${source}] Error sending buyer confirmation email:`, emailErr);
   }
@@ -250,6 +263,8 @@ export async function handleCreateOrder(request) {
       currency = 'INR',
       base_inr_total = 0,
       shipping_mode = 'standard',
+      coupon_code = null,
+      coupon_discount = 0,
       notes = '',
     } = body;
 
@@ -316,7 +331,9 @@ export async function handleCreateOrder(request) {
       status: 'pending_payment',
       payment_method: 'phonepe',
       total_amount: chargeInr,
-      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
+      coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+      coupon_discount: Number(coupon_discount) || 0,
+      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-₹${Number(coupon_discount) || 0})` : ''}\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
       dropship_sender_phone: isDropship ? (dropship_details.sender_phone || null) : null,
