@@ -1995,14 +1995,19 @@ export function ProductDetail({
               {colorOptions.length > 0 && (
                 <section className="product-variation-card" aria-labelledby="product-variation-heading">
                   <div className="variation-card-head">
-                    <div className="variation-title-group">
-                      <h2 id="product-variation-heading">Color:</h2>
-                      <span className="active-color-name">{selectedColorName || 'Selected'}</span>
-                      <span className="color-count-pill">{colorOptions.length} Colors</span>
+                    <div className="variation-header-top">
+                      <div className="variation-title-group">
+                        <h2 id="product-variation-heading">Color</h2>
+                        <span className="color-count-pill">{colorOptions.length} Colors</span>
+                      </div>
+                      <button type="button" className="view-drawer-link" onClick={() => setVariationDrawerOpen(true)}>
+                        <span>View Color Grid</span>
+                        <span className="view-drawer-arrow" aria-hidden="true">↗</span>
+                      </button>
                     </div>
-                    <button type="button" className="view-drawer-link" onClick={() => setVariationDrawerOpen(true)}>
-                      View Color Grid ↗
-                    </button>
+                    <div className="active-color-name">
+                      {selectedColorName || 'Selected'}
+                    </div>
                   </div>
                   <div className="color-swatch-row clean-scroll" role="group" aria-label="Available colors">
                     {colorOptions.map((option, index) => {

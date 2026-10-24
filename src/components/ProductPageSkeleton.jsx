@@ -79,8 +79,11 @@ export default function ProductPageSkeleton() {
           {/* Variations Swatches Card */}
           <div className="product-variation-card">
             <div className="variation-card-head">
-              <div className="skeleton-variation-title skeleton-shimmer"></div>
-              <div className="skeleton-variation-link skeleton-shimmer"></div>
+              <div className="variation-header-top">
+                <div className="skeleton-variation-title skeleton-shimmer"></div>
+                <div className="skeleton-variation-link skeleton-shimmer"></div>
+              </div>
+              <div className="skeleton-shimmer" style={{ width: '110px', height: '14px', borderRadius: '4px' }}></div>
             </div>
             <div className="skeleton-disclaimer skeleton-shimmer" style={{ width: '120px', marginBottom: '16px' }}></div>
             <div className="color-swatch-row">
