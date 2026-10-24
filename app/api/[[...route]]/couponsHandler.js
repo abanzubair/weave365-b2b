@@ -251,6 +251,43 @@ export async function handleAdminCouponsPost(request) {
         updated_at: new Date().toISOString(),
       };
 
+      if (body.code !== undefined) {
+        const cleanCode = String(body.code || '').trim().toUpperCase().replace(/[^A-Z0-9-_]/g, '');
+        if (cleanCode.length < 3) {
+          return Response.json({ error: 'Coupon code must be at least 3 characters long.' }, { status: 400, headers: corsHeaders });
+        }
+        const { data: existing } = await supabase
+          .from('coupons')
+          .select('id')
+          .ilike('code', cleanCode)
+          .neq('id', id)
+          .maybeSingle();
+
+        if (existing) {
+          return Response.json({ error: `Coupon code "${cleanCode}" already exists. Please choose a different code.` }, { status: 400, headers: corsHeaders });
+        }
+        updatePayload.code = cleanCode;
+      }
+
+      if (body.discount_type !== undefined) {
+        updatePayload.discount_type = body.discount_type === 'fixed' ? 'fixed' : 'percentage';
+        if (updatePayload.discount_type === 'fixed') {
+          updatePayload.max_discount_amount = null;
+        }
+      }
+
+      if (body.discount_value !== undefined) {
+        const discountVal = Number(body.discount_value);
+        if (isNaN(discountVal) || discountVal <= 0) {
+          return Response.json({ error: 'Discount value must be a positive number.' }, { status: 400, headers: corsHeaders });
+        }
+        const effectiveType = updatePayload.discount_type || body.discount_type;
+        if (effectiveType === 'percentage' && discountVal > 100) {
+          return Response.json({ error: 'Percentage discount cannot exceed 100%.' }, { status: 400, headers: corsHeaders });
+        }
+        updatePayload.discount_value = discountVal;
+      }
+
       if (body.usage_limit !== undefined) {
         updatePayload.usage_limit = Math.max(1, parseInt(body.usage_limit, 10));
       }
@@ -261,7 +298,9 @@ export async function handleAdminCouponsPost(request) {
         updatePayload.min_order_amount = Math.max(0, Number(body.min_order_amount));
       }
       if (body.max_discount_amount !== undefined) {
-        updatePayload.max_discount_amount = body.max_discount_amount ? Math.max(0, Number(body.max_discount_amount)) : null;
+        if (updatePayload.discount_type !== 'fixed') {
+          updatePayload.max_discount_amount = body.max_discount_amount ? Math.max(0, Number(body.max_discount_amount)) : null;
+        }
       }
       if (body.expires_at !== undefined) {
         updatePayload.expires_at = body.expires_at ? new Date(body.expires_at).toISOString() : null;

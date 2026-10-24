@@ -159,7 +159,7 @@ export default function CouponsManager({ adminData, user }) {
         usage_limit: parseInt(formData.usage_limit, 10) || 1,
         per_user_limit: parseInt(formData.per_user_limit, 10) || 1,
         min_order_amount: Number(formData.min_order_amount) || 0,
-        max_discount_amount: formData.max_discount_amount ? Number(formData.max_discount_amount) : null,
+        max_discount_amount: formData.discount_type === 'percentage' && formData.max_discount_amount ? Number(formData.max_discount_amount) : null,
         expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
         description: formData.description.trim(),
         is_active: formData.is_active,
@@ -805,17 +805,24 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                   ) : (
                     <div className="coupon-form-group">
                       <label className="coupon-form-label">
-                        <span>Min Order Amount (₹)</span>
-                        <span className="coupon-form-hint">Optional</span>
+                        <span>Discount Mode</span>
+                        <span className="coupon-form-hint">Fixed Flat Deduction</span>
                       </label>
-                      <input
-                        type="number"
-                        min="0"
+                      <div
                         className="coupon-form-input"
-                        placeholder="e.g. 2000"
-                        value={formData.min_order_amount}
-                        onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value })}
-                      />
+                        style={{
+                          background: '#f8fafc',
+                          color: '#475569',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '0.84rem',
+                          fontWeight: '500',
+                          borderStyle: 'dashed',
+                        }}
+                      >
+                        Flat ₹{formData.discount_value || 0} off cart total
+                      </div>
                     </div>
                   )}
                 </div>
@@ -861,41 +868,23 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                   </div>
                 </div>
 
-                {/* Min Order & Expiration Date (for percentage mode) */}
-                {formData.discount_type === 'percentage' && (
-                  <div className="coupon-form-row">
-                    <div className="coupon-form-group">
-                      <label className="coupon-form-label">
-                        <span>Min Order Amount (₹)</span>
-                        <span className="coupon-form-hint">Optional</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        className="coupon-form-input"
-                        placeholder="e.g. 2000"
-                        value={formData.min_order_amount}
-                        onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="coupon-form-group">
-                      <label className="coupon-form-label">
-                        <span>Expiry Date</span>
-                        <span className="coupon-form-hint">Optional</span>
-                      </label>
-                      <input
-                        type="date"
-                        className="coupon-form-input"
-                        value={formData.expires_at}
-                        onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                      />
-                    </div>
+                {/* Min Order & Expiration Date */}
+                <div className="coupon-form-row">
+                  <div className="coupon-form-group">
+                    <label className="coupon-form-label">
+                      <span>Min Order Amount (₹)</span>
+                      <span className="coupon-form-hint">Optional</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="coupon-form-input"
+                      placeholder="e.g. 2000"
+                      value={formData.min_order_amount}
+                      onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value })}
+                    />
                   </div>
-                )}
 
-                {/* Expiration Date (for fixed mode) */}
-                {formData.discount_type === 'fixed' && (
                   <div className="coupon-form-group">
                     <label className="coupon-form-label">
                       <span>Expiry Date</span>
@@ -908,7 +897,7 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
                       onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
                     />
                   </div>
-                )}
+                </div>
 
                 {/* Private Notes */}
                 <div className="coupon-form-group">
