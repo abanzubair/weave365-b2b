@@ -36,7 +36,8 @@ import {
   HelpCircle,
   ArrowUpRight,
   ArrowDown,
-  ArrowUp
+  ArrowUp,
+  Tag
 } from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
@@ -272,7 +273,23 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
     const title = item.product_title || item.title || matchedProd?.title || matchedProd?.name || 'Handloom Banarasi Saree';
     const color = item.color || matchedVariant?.color || 'Standard';
-    const price = Number(item.unit_price) || Number(item.price) || Number(matchedVariant?.prices?.b2r) || Number(matchedProd?.price) || 0;
+    const qty = Math.max(1, parseInt(item.quantity || 1, 10));
+    const setSize = matchedProd?.totalColors || matchedProd?.variants?.length || 1;
+    const isUnder999 = String(matchedProd?.category || '').toLowerCase() === 'under 999';
+    const isSinglePiece = isUnder999 || setSize <= 1 || qty < setSize;
+
+    const b2rPrice = Number(matchedVariant?.prices?.b2r || matchedVariant?.prices?.single || matchedProd?.resellerPrice || 0);
+    const mrpPrice = Number(matchedVariant?.prices?.mrp || matchedVariant?.prices?.offer || matchedProd?.price || 0);
+    const recordedPrice = Number(item.unit_price) || Number(item.price) || 0;
+
+    let price = recordedPrice;
+    // If recordedPrice was saved as wholesale mrp but item was ordered as single-piece (or recordedPrice is 0),
+    // resolve to b2rPrice (the single-piece price shown to buyers on the storefront product page)
+    if (isSinglePiece && b2rPrice > 0 && (recordedPrice === 0 || recordedPrice === mrpPrice)) {
+      price = b2rPrice;
+    } else if (!price) {
+      price = (isSinglePiece && b2rPrice > 0) ? b2rPrice : (mrpPrice || b2rPrice || 0);
+    }
     const targetProductId = matchedProd?.id || item.product_id || baseCode || skuCode;
     const categorySlug = getProductCategorySlug(targetProductId, matchedProd?.category);
     const queryParams = [];
@@ -1545,24 +1562,87 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             })}
                           </tbody>
                           <tfoot>
-                            <tr className="admin-inspect-total-row">
-                              <td colSpan="3" style={{ fontWeight: 700, color: '#0f172a' }}>
-                                Total Items: {inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)} unit(s)
-                              </td>
-                              <td style={{ textAlign: 'center', fontWeight: 700 }}>
-                                {inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)}
-                              </td>
-                              <td style={{ textAlign: 'right', fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>
-                                {formatMoney(
-                                  (selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
-                                    ? Number(selectedInquiry.total_amount)
-                                    : (inspectItems.reduce((acc, it) => {
-                                        const resolved = resolveItemDetails(it);
-                                        return acc + (resolved.price * resolved.quantity);
-                                      }, 0) || 0)
-                                )}
-                              </td>
-                            </tr>
+                            {(() => {
+                              const totalQuantity = inspectItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
+                              const itemsSubtotal = inspectItems.reduce((acc, it) => {
+                                const resolved = resolveItemDetails(it);
+                                return acc + (resolved.price * resolved.quantity);
+                              }, 0);
+
+                              let couponDiscount = Number(selectedInquiry.coupon_discount || 0);
+                              let couponCode = selectedInquiry.coupon_code || '';
+                              if (!couponDiscount && selectedInquiry.message) {
+                                const match = selectedInquiry.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+                                if (match) {
+                                  couponCode = couponCode || match[1];
+                                  couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
+                                }
+                              }
+
+                              const finalTotal = (selectedInquiry.total_amount !== undefined && selectedInquiry.total_amount !== null && Number(selectedInquiry.total_amount) > 0)
+                                ? Number(selectedInquiry.total_amount)
+                                : Math.max(0, itemsSubtotal - couponDiscount);
+
+                              const paymentMethod = selectedInquiry.payment_method 
+                                ? selectedInquiry.payment_method.toUpperCase() 
+                                : 'ONLINE PAYMENT';
+
+                              if (couponDiscount > 0) {
+                                return (
+                                  <>
+                                    <tr className="admin-inspect-summary-subtotal">
+                                      <td colSpan="4">
+                                        <span className="admin-inspect-subtotal-label">Items Subtotal</span>
+                                        <span className="admin-inspect-subtotal-units">({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                                      </td>
+                                      <td style={{ textAlign: 'right' }}>
+                                        <span className="admin-inspect-subtotal-amount">{formatMoney(itemsSubtotal)}</span>
+                                      </td>
+                                    </tr>
+                                    <tr className="admin-inspect-summary-coupon">
+                                      <td colSpan="4">
+                                        <div className="admin-inspect-coupon-wrap">
+                                          <span className="admin-inspect-coupon-label">Applied Coupon</span>
+                                          <span className="admin-inspect-coupon-pill">
+                                            <Tag size={10.5} /> {couponCode || 'APPLIED'}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td style={{ textAlign: 'right' }}>
+                                        <span className="admin-inspect-coupon-amount">-{formatMoney(couponDiscount)}</span>
+                                      </td>
+                                    </tr>
+                                    <tr className="admin-inspect-summary-total">
+                                      <td colSpan="4">
+                                        <div className="admin-inspect-total-left">
+                                          <span className="admin-inspect-total-label">Total Paid</span>
+                                          <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                        </div>
+                                      </td>
+                                      <td style={{ textAlign: 'right' }}>
+                                        <span className="admin-inspect-total-amount">{formatMoney(finalTotal)}</span>
+                                      </td>
+                                    </tr>
+                                  </>
+                                );
+                              }
+
+                              return (
+                                <tr className="admin-inspect-summary-total">
+                                  <td colSpan="4">
+                                    <div className="admin-inspect-total-left">
+                                      <span className="admin-inspect-total-label">Total Items ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                                      {selectedInquiry.payment_method && (
+                                        <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td style={{ textAlign: 'right' }}>
+                                    <span className="admin-inspect-total-amount">{formatMoney(finalTotal)}</span>
+                                  </td>
+                                </tr>
+                              );
+                            })()}
                           </tfoot>
                         </table>
                       </div>

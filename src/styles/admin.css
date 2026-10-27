@@ -6150,6 +6150,118 @@
   border-top: 2px solid #e2e8f0;
 }
 
+/* Order Details Inspection Summary Rows */
+.admin-inspect-summary-subtotal td {
+  padding: 11px 14px 6px;
+  border-top: 1.5px solid #e2e8f0;
+  border-bottom: none;
+  background: #ffffff;
+}
+
+.admin-inspect-subtotal-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: -0.1px;
+}
+
+.admin-inspect-subtotal-units {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.admin-inspect-subtotal-amount {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-inspect-summary-coupon td {
+  padding: 6px 14px 8px;
+  border-bottom: none;
+  background: #ffffff;
+}
+
+.admin-inspect-coupon-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-inspect-coupon-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 2.5px 8px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.4px;
+}
+
+.admin-inspect-coupon-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #059669;
+}
+
+.admin-inspect-coupon-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #059669;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-inspect-summary-total td {
+  padding: 12px 14px;
+  border-top: 1.5px solid #cbd5e1;
+  border-bottom: none;
+  background: #f8fafc;
+}
+
+.admin-inspect-total-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-inspect-total-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.1px;
+}
+
+.admin-inspect-payment-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2.5px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-inspect-total-amount {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+}
+
 .admin-inspect-item-cell {
   display: flex;
   align-items: center;

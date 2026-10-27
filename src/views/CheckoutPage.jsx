@@ -543,8 +543,20 @@ export function CheckoutPage({
       packing_preference: packingPreference,
     },
     items: items.map((item) => {
-      const rawPrice = Number(customerPrice(item.variant?.prices, priceAccess)) || 0;
-      const locPrice = getLocalizedPrice(rawPrice, currentCountry, exchangeRates);
+      const pricing = productPricing[item.productGroupKey] || productPricing[item.product?.id];
+      const isCompleteSet = pricing && pricing.completeSets > 0 && pricing.extraPieces === 0;
+      const baseSingle = Number(
+        (isCompleteSet ? (item.variant?.prices?.mrp || item.variant?.prices?.offer) : null) ||
+        item.variant?.prices?.b2r ||
+        item.variant?.prices?.single ||
+        item.variant?.prices?.reseller ||
+        item.variant?.prices?.mrp ||
+        item.variant?.prices?.offer ||
+        item.product?.resellerPrice ||
+        item.product?.price ||
+        0
+      );
+      const locPrice = getLocalizedPrice(baseSingle, currentCountry, exchangeRates);
       return {
         product_id: item.productGroupKey,
         product_title: item.product?.title || '',
@@ -552,8 +564,8 @@ export function CheckoutPage({
         color: item.selectedColorName || 'Standard',
         quantity: item.quantity,
         price: locPrice.finalPrice,
-        base_inr_price: locPrice.markedUpBasePrice || rawPrice,
-        original_inr_price: rawPrice,
+        base_inr_price: locPrice.markedUpBasePrice || baseSingle,
+        original_inr_price: baseSingle,
       };
     }),
     total_amount: total,
@@ -710,14 +722,29 @@ export function CheckoutPage({
           orderId: data.db_order_id,
           buyerId: priceAccess?.userId || user?.id || null,
           buyerName: priceAccess?.buyerName || deliveryDetails.full_name || 'Guest Buyer',
-          items: items.map((item) => ({
-            product_id: item.productGroupKey,
-            product_title: item.product?.title || '',
-            variant_code: item.variant?.code || '',
-            color: item.selectedColorName || '',
-            quantity: item.quantity,
-            price: customerPrice(item.variant?.prices, priceAccess),
-          })),
+          items: items.map((item) => {
+            const pricing = productPricing[item.productGroupKey] || productPricing[item.product?.id];
+            const isCompleteSet = pricing && pricing.completeSets > 0 && pricing.extraPieces === 0;
+            const baseSingle = Number(
+              (isCompleteSet ? (item.variant?.prices?.mrp || item.variant?.prices?.offer) : null) ||
+              item.variant?.prices?.b2r ||
+              item.variant?.prices?.single ||
+              item.variant?.prices?.reseller ||
+              item.variant?.prices?.mrp ||
+              item.variant?.prices?.offer ||
+              item.product?.resellerPrice ||
+              item.product?.price ||
+              0
+            );
+            return {
+              product_id: item.productGroupKey,
+              product_title: item.product?.title || '',
+              variant_code: item.variant?.code || '',
+              color: item.selectedColorName || '',
+              quantity: item.quantity,
+              price: baseSingle,
+            };
+          }),
           saleAmount: saleAmount > 0 ? saleAmount : (total || 0),
         });
 
