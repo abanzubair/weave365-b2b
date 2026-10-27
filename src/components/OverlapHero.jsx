@@ -17,14 +17,18 @@ const OVERLAP_HERO_CSS = `
   background-color: var(--hero-bg, #ffffff);
   overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .overlap-hero-container {
   position: relative;
   width: 100%;
+  flex: 1;
   --hero-padding-x: clamp(20px, 4.5vw, 64px);
   --hero-padding-y: clamp(2.5rem, 4.5vw, 4.5rem);
-  max-width: calc(1440px + (var(--hero-padding-x) * 2));
+  max-width: clamp(1200px, 88vw, 1300px);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -271,6 +275,10 @@ const OVERLAP_HERO_CSS = `
 }
 
 @media (min-width: 900px) {
+  .overlap-hero {
+    min-height: clamp(620px, 82vh, 760px);
+  }
+
   .overlap-hero-features-desktop {
     display: flex;
   }
@@ -281,11 +289,11 @@ const OVERLAP_HERO_CSS = `
 
   .overlap-hero-container {
     display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-columns: 1.12fr 0.88fr;
     align-items: center;
-    gap: clamp(2rem, 4vw, 4.5rem);
-    padding-top: clamp(3rem, 5vw, 4.75rem);
-    padding-bottom: clamp(3rem, 5vw, 4.75rem);
+    gap: clamp(2rem, 3.5vw, 3.5rem);
+    padding-top: clamp(4rem, 6vw, 6rem);
+    padding-bottom: clamp(4rem, 6vw, 6rem);
   }
 
   .overlap-hero-content-layer {
@@ -296,21 +304,21 @@ const OVERLAP_HERO_CSS = `
   .overlap-hero-content-left {
     align-items: flex-start;
     text-align: left;
-    max-width: 580px;
+    max-width: 620px;
   }
 
   .overlap-hero-tagline {
-    font-size: clamp(2.3rem, 3.4vw, 3.5rem);
-    line-height: 1.15;
+    font-size: clamp(2.5rem, 3.8vw, 3.9rem);
+    line-height: 1.14;
     letter-spacing: -0.015em;
     margin-bottom: 1.35rem;
   }
 
   .overlap-hero-description {
-    font-size: clamp(0.98rem, 1.05vw, 1.1rem);
+    font-size: clamp(1rem, 1.1vw, 1.14rem);
     line-height: 1.65;
-    margin-bottom: 2rem;
-    max-width: 480px;
+    margin-bottom: 2.2rem;
+    max-width: 520px;
   }
 
   .overlap-hero-actions {
@@ -319,24 +327,24 @@ const OVERLAP_HERO_CSS = `
   }
 
   .overlap-hero-btn {
-    height: 50px;
-    min-height: 50px;
-    padding: 0 30px;
-    font-size: 0.94rem;
+    height: 52px;
+    min-height: 52px;
+    padding: 0 32px;
+    font-size: 0.95rem;
   }
 
   .overlap-hero-media-layer {
     order: 2;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .overlap-hero-card {
-    max-width: 540px;
+    max-width: 590px;
     border-radius: 32px;
   }
 
   .overlap-hero-picture {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 13;
   }
 }
 
@@ -538,6 +546,11 @@ export function OverlapHero({ navigate }) {
           <div className="overlap-hero-card">
             <picture className="overlap-hero-picture">
               <source
+                media="(min-width: 900px)"
+                type="image/webp"
+                srcSet="/assets/banner/heroFreeWebsite.webp"
+              />
+              <source
                 media="(min-width: 641px)"
                 type="image/avif"
                 srcSet="/assets/banner/heroFreeWebsite-600.avif"
@@ -548,15 +561,15 @@ export function OverlapHero({ navigate }) {
                 srcSet="/assets/banner/heroFreeWebsite-600.webp"
               />
               <img
-                src="/assets/banner/heroFreeWebsite-400.webp"
+                src="/assets/banner/heroFreeWebsite-600.webp"
                 alt="Source Banarasi sarees and suits from Varanasi"
                 className="overlap-hero-img"
                 draggable="false"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
-                width={400}
-                height={300}
+                width={600}
+                height={488}
               />
             </picture>
           </div>
