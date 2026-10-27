@@ -152,6 +152,86 @@ async function fetchSyncedJson(id) {
   return null;
 }
 
+/**
+ * High-speed paginated product retrieval.
+ * Connects to the Edge-optimized /api/catalog endpoint with pagination parameters
+ * to protect edge worker CPU time limits.
+ */
+export async function fetchPaginatedProducts({
+  page = 1,
+  limit = 50,
+  category = '',
+  search = '',
+  stockStatus = '',
+} = {}) {
+  const params = new URLSearchParams({
+    type: 'products',
+    page: String(page),
+    limit: String(limit),
+  });
+  if (category) params.set('category', category);
+  if (search) params.set('search', search);
+  if (stockStatus) params.set('stock_status', stockStatus);
+
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch(`/api/catalog?${params.toString()}`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('[Data] Paginated /api/catalog fetch error, falling back to cached full list:', e.message);
+    }
+  }
+
+  // Fallback for SSR / server contexts
+  const allProds = await fetchProducts();
+  let filtered = allProds || [];
+  if (category) {
+    const catLower = category.toLowerCase().trim();
+    filtered = filtered.filter((p) => String(p.category || '').toLowerCase().trim() === catLower);
+  }
+  if (stockStatus) {
+    const sLower = stockStatus.toLowerCase().trim();
+    filtered = filtered.filter((p) => {
+      if (sLower === 'ready-stock') return p.isReadyStock || p.stockStatusOverride === 'ready-stock';
+      if (sLower === 'out-of-stock') return p.isOutOfStock || p.stockStatusOverride === 'out-of-stock';
+      return (p.stockStatusOverride || '').toLowerCase() === sLower;
+    });
+  }
+  if (search) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter((p) =>
+      String(p.id || '').toLowerCase().includes(q) ||
+      String(p.title || p.name || '').toLowerCase().includes(q) ||
+      String(p.fabric || '').toLowerCase().includes(q)
+    );
+  }
+
+  const total = filtered.length;
+  const safeLimit = Math.min(250, Math.max(1, limit));
+  const safePage = Math.max(1, page);
+  const offset = (safePage - 1) * safeLimit;
+  const paginatedSlice = filtered.slice(offset, offset + safeLimit);
+  const totalPages = Math.ceil(total / safeLimit);
+  const hasMore = offset + safeLimit < total;
+
+  return {
+    products: paginatedSlice,
+    pagination: {
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages,
+      hasMore,
+      nextOffset: hasMore ? offset + safeLimit : null,
+      prevOffset: offset > 0 ? Math.max(0, offset - safeLimit) : null,
+      nextPage: hasMore ? safePage + 1 : null,
+      prevPage: safePage > 1 ? safePage - 1 : null,
+    },
+  };
+}
+
 export const fetchConfigOptions = safeCache(async function fetchConfigOptions() {
   const cachedJson = await fetchSyncedJsonCached('config_json');
   if (cachedJson) return cachedJson;

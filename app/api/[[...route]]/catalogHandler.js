@@ -142,9 +142,10 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'products';
+    const cacheKeyStr = request.url;
 
     // 1. In-memory cache check (< 0.05ms CPU)
-    const memCached = catalogMemoryCache.get(type);
+    const memCached = catalogMemoryCache.get(cacheKeyStr);
     if (memCached && (Date.now() - memCached.timestamp < CATALOG_MEMORY_TTL_MS)) {
       return new Response(memCached.body, {
         status: 200,
@@ -179,7 +180,7 @@ export async function GET(request) {
     };
 
     const respondAndCache = async (bodyString) => {
-      catalogMemoryCache.set(type, { body: bodyString, timestamp: Date.now() });
+      catalogMemoryCache.set(cacheKeyStr, { body: bodyString, timestamp: Date.now() });
       const res = new Response(bodyString, {
         status: 200,
         headers: cdnCacheHeaders,
@@ -192,6 +193,77 @@ export async function GET(request) {
         }
       }
       return res;
+    };
+
+    // Pagination & Filter Parameters
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
+    const hasPagination = pageParam !== null || limitParam !== null || offsetParam !== null || searchParams.has('paginate');
+
+    const page = Math.max(1, parseInt(pageParam || '1', 10));
+    const limit = Math.min(250, Math.max(1, parseInt(limitParam || '50', 10)));
+    const offset = offsetParam !== null
+      ? Math.max(0, parseInt(offsetParam, 10))
+      : (page - 1) * limit;
+
+    const categoryFilter = searchParams.get('category');
+    const stockStatusFilter = searchParams.get('stock_status');
+    const searchQuery = searchParams.get('search') || searchParams.get('q');
+
+    const applyFiltersAndPagination = (items) => {
+      let filtered = items;
+
+      if (categoryFilter) {
+        const catLower = categoryFilter.toLowerCase().trim();
+        filtered = filtered.filter((p) => String(p.category || '').toLowerCase().trim() === catLower);
+      }
+
+      if (stockStatusFilter) {
+        const sLower = stockStatusFilter.toLowerCase().trim();
+        filtered = filtered.filter((p) => {
+          if (sLower === 'ready-stock') return p.isReadyStock || p.stockStatusOverride === 'ready-stock';
+          if (sLower === 'out-of-stock') return p.isOutOfStock || p.stockStatusOverride === 'out-of-stock';
+          return (p.stockStatusOverride || '').toLowerCase() === sLower;
+        });
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter((p) =>
+          String(p.id || '').toLowerCase().includes(q) ||
+          String(p.title || p.name || '').toLowerCase().includes(q) ||
+          String(p.fabric || '').toLowerCase().includes(q) ||
+          String(p.weave || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (!hasPagination) {
+        return { isPaginated: false, data: filtered };
+      }
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / limit);
+      const paginatedSlice = filtered.slice(offset, offset + limit);
+      const hasMore = offset + limit < total;
+
+      return {
+        isPaginated: true,
+        data: {
+          products: paginatedSlice,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages,
+            hasMore,
+            nextOffset: hasMore ? offset + limit : null,
+            prevOffset: offset > 0 ? Math.max(0, offset - limit) : null,
+            nextPage: hasMore ? page + 1 : null,
+            prevPage: page > 1 ? page - 1 : null,
+          },
+        },
+      };
     };
 
     if (type === 'all') {
@@ -242,6 +314,14 @@ export async function GET(request) {
         result.products = [...approvedMapped, ...result.products];
       }
 
+      const processed = applyFiltersAndPagination(result.products);
+      if (processed.isPaginated) {
+        result.products = processed.data.products;
+        result.pagination = processed.data.pagination;
+      } else {
+        result.products = processed.data;
+      }
+
       return respondAndCache(JSON.stringify(result));
     }
 
@@ -284,7 +364,10 @@ export async function GET(request) {
         products = [...approvedMapped, ...products];
       }
 
-      return respondAndCache(JSON.stringify(products));
+      const processed = applyFiltersAndPagination(products);
+      const responsePayload = processed.isPaginated ? processed.data : processed.data;
+
+      return respondAndCache(JSON.stringify(responsePayload));
     }
 
     const targetKey = typeToKey[type] || 'products_json';

@@ -106,6 +106,15 @@ export async function POST(request) {
     // 3. Trigger central sync implementation with secure database client
     const { syncSheetsToSupabase } = await import('../../../src/productData.js');
     await syncSheetsToSupabase(supabase);
+
+    // 4. Pre-generate and store fresh sitemap in Supabase sheet_data
+    try {
+      const { pregenerateAndSaveSitemap } = await import('./sitemapHandler.js');
+      await pregenerateAndSaveSitemap(supabase);
+    } catch (sitemapErr) {
+      console.warn('[admin sync] Optional sitemap pregeneration notice:', sitemapErr.message);
+    }
+
     const timestamp = new Date().toISOString();
 
     return new Response(JSON.stringify({ success: true, timestamp }), {

@@ -404,11 +404,47 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       });
     }
 
+    // Pagination & Cursor Limits (Default limit 50, max 250)
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
+    const totalProducts = resultProducts.length;
+
+    const limit = Math.min(250, Math.max(1, parseInt(limitParam || '50', 10)));
+    const page = Math.max(1, parseInt(pageParam || '1', 10));
+    const offset = offsetParam !== null
+      ? Math.max(0, parseInt(offsetParam, 10))
+      : (page - 1) * limit;
+
+    const totalPages = Math.ceil(totalProducts / limit);
+    const hasMore = offset + limit < totalProducts;
+
+    const paginationMeta = {
+      total: totalProducts,
+      page,
+      limit,
+      total_pages: totalPages,
+      has_more: hasMore,
+      next_page: hasMore ? page + 1 : null,
+      prev_page: page > 1 ? page - 1 : null,
+      next_offset: hasMore ? offset + limit : null,
+      prev_offset: offset > 0 ? Math.max(0, offset - limit) : null,
+    };
+
+    // Slice products BEFORE running CPU-heavy variant/color mappings
+    const paginatedProducts = resultProducts.slice(offset, offset + limit);
+
     // Format for Shopify if requested
     const format = searchParams.get('format');
     if (format === 'shopify' || format === 'matrixify') {
-      const shopifyFeed = formatForShopify(resultProducts);
-      return Response.json({ status: 'success', total_products: shopifyFeed.length, products: shopifyFeed }, {
+      const shopifyFeed = formatForShopify(paginatedProducts);
+      return Response.json({
+        status: 'success',
+        pagination: paginationMeta,
+        total_products: totalProducts,
+        page_products: shopifyFeed.length,
+        products: shopifyFeed,
+      }, {
         status: 200,
         headers: { ...securePrivateHeaders, ...cors },
       });
@@ -419,9 +455,11 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       status: 'success',
       tier: auth.keyRecord.tier,
       client_name: auth.keyRecord.client_name,
-      total_products: resultProducts.length,
+      pagination: paginationMeta,
+      total_products: totalProducts,
+      page_products: paginatedProducts.length,
       last_synced_at: new Date().toISOString(),
-      products: resultProducts.map((p) => {
+      products: paginatedProducts.map((p) => {
         const firstPrices = p.variants?.[0]?.prices || {};
         const resellerPrice = Number(firstPrices.b2r || firstPrices.single || p.resellerPrice || p.price || 0);
 

@@ -24,40 +24,19 @@ function formatLastMod(val) {
   return new Date().toISOString();
 }
 
-export async function generateSitemapXml(request) {
-  const hostHeader = request?.headers?.get('host') || 'www.weave365.com';
-  let host = hostHeader === 'weave365.com' ? 'www.weave365.com' : hostHeader;
-  const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`;
-  const siteUrl = rawSiteUrl.replace(/\/$/, '');
-
-  // 1. In-memory cache check (returns in < 0.05ms CPU)
-  if (cachedSitemapXml && (Date.now() - sitemapCacheTime < SITEMAP_TTL_MS)) {
-    return new Response(cachedSitemapXml, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
-        'CDN-Cache-Control': 'max-age=86400',
-        'Cloudflare-CDN-Cache-Control': 'max-age=86400',
-      },
-    });
+let supabaseInstance = null;
+async function getSupabase() {
+  if (!supabaseInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    const { createClient } = await import('@supabase/supabase-js');
+    supabaseInstance = createClient(url, key);
   }
+  return supabaseInstance;
+}
 
-  // 2. Invalidate any stale Cloudflare worker Cache API entries so fresh, escaped XML is served
-  const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
-  const cacheUrl = request?.url || `${siteUrl}/sitemap.xml`;
-  const cacheKey = new Request(cacheUrl, { method: 'GET' });
-
-  if (cache) {
-    try {
-      await cache.delete(cacheKey);
-      await cache.delete(new Request('https://www.weave365.com/sitemap.xml', { method: 'GET' }));
-      await cache.delete(new Request(`${siteUrl}/sitemap.xml`, { method: 'GET' }));
-    } catch (e) {
-      // Ignore cache delete error
-    }
-  }
-
+export async function buildSitemapXmlString(siteUrl) {
   const staticPages = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
     { url: `${siteUrl}/catalogue`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
@@ -105,7 +84,7 @@ export async function generateSitemapXml(request) {
     console.warn('Sitemap: Failed to fetch Supabase landing pages:', err.message);
   }
 
-  const seoLandingSitemaps = activeLandingPages.map((page) => ({
+  const seoLandingSitemaps = (activeLandingPages || []).map((page) => ({
     url: `${siteUrl}/${page.slug.replace(/^\//, '')}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
@@ -256,7 +235,7 @@ export async function generateSitemapXml(request) {
   });
 
   const entries = Array.from(sitemapMap.values());
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries
   .map(
@@ -269,19 +248,133 @@ ${entries
   )
   .join('\n')}
 </urlset>`;
+}
+
+/**
+ * Pre-generate sitemap XML and save into Supabase sheet_data table.
+ * Used during catalog sync to offload generation completely from edge requests.
+ */
+export async function pregenerateAndSaveSitemap(supabaseOverride = null, customSiteUrl = null) {
+  try {
+    const supabase = supabaseOverride || await getSupabase();
+    if (!supabase) return null;
+    const siteUrl = (customSiteUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.weave365.com').replace(/\/$/, '');
+    const xml = await buildSitemapXmlString(siteUrl);
+    if (xml) {
+      await supabase.from('sheet_data').upsert({
+        id: 'sitemap_xml',
+        csv_data: xml,
+        updated_at: new Date().toISOString(),
+      });
+      cachedSitemapXml = xml;
+      sitemapCacheTime = Date.now();
+      console.log('✅ Successfully pre-generated and stored sitemap_xml in Supabase sheet_data.');
+      return xml;
+    }
+  } catch (err) {
+    console.error('[pregenerateAndSaveSitemap] Failed to pre-generate sitemap:', err.message);
+  }
+  return null;
+}
+
+export async function generateSitemapXml(request) {
+  const hostHeader = request?.headers?.get('host') || 'www.weave365.com';
+  let host = hostHeader === 'weave365.com' ? 'www.weave365.com' : hostHeader;
+  const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`;
+  const siteUrl = rawSiteUrl.replace(/\/$/, '');
+
+  const sitemapResponseHeaders = {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+    'CDN-Cache-Control': 'max-age=86400',
+    'Cloudflare-CDN-Cache-Control': 'max-age=86400',
+  };
+
+  // 1. In-memory cache check (< 0.05ms CPU)
+  if (cachedSitemapXml && (Date.now() - sitemapCacheTime < SITEMAP_TTL_MS)) {
+    return new Response(cachedSitemapXml, {
+      status: 200,
+      headers: sitemapResponseHeaders,
+    });
+  }
+
+  // 2. Cloudflare Edge Cache check (shared across isolates in edge PoP, 0ms CPU)
+  const cache = typeof caches !== 'undefined' && caches?.default ? caches.default : null;
+  const cacheUrl = request?.url || `${siteUrl}/sitemap.xml`;
+  const cacheKey = new Request(cacheUrl, { method: 'GET' });
+
+  if (cache) {
+    try {
+      const match = await cache.match(cacheKey);
+      if (match) return match;
+    } catch (e) {
+      // Ignore cache match error
+    }
+  }
+
+  // 3. Fast Database Read of Pre-generated Sitemap (< 0.5ms CPU, pure DB I/O)
+  const supabase = await getSupabase();
+  if (supabase) {
+    try {
+      const { data: sheetRow } = await supabase
+        .from('sheet_data')
+        .select('csv_data, updated_at')
+        .eq('id', 'sitemap_xml')
+        .maybeSingle();
+
+      if (sheetRow?.csv_data) {
+        const xml = sheetRow.csv_data;
+        cachedSitemapXml = xml;
+        sitemapCacheTime = Date.now();
+
+        const response = new Response(xml, {
+          status: 200,
+          headers: sitemapResponseHeaders,
+        });
+
+        if (cache) {
+          try {
+            await cache.put(cacheKey, response.clone());
+          } catch {}
+        }
+
+        return response;
+      }
+    } catch (dbErr) {
+      console.warn('[Sitemap] Failed to read pre-generated sitemap from sheet_data:', dbErr.message);
+    }
+  }
+
+  // 4. Cold Fallback: If sitemap_xml is not yet pre-generated in sheet_data, build it once and store it
+  console.log('[Sitemap] Generating sitemap XML on edge (cold fallback)...');
+  const xml = await buildSitemapXmlString(siteUrl);
 
   cachedSitemapXml = xml;
   sitemapCacheTime = Date.now();
 
   const response = new Response(xml, {
     status: 200,
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
-      'CDN-Cache-Control': 'max-age=86400',
-      'Cloudflare-CDN-Cache-Control': 'max-age=86400',
-    },
+    headers: sitemapResponseHeaders,
   });
+
+  if (cache) {
+    try {
+      await cache.put(cacheKey, response.clone());
+    } catch {}
+  }
+
+  // Asynchronously persist to sheet_data for all future requests without blocking response
+  if (supabase) {
+    supabase.from('sheet_data').upsert({
+      id: 'sitemap_xml',
+      csv_data: xml,
+      updated_at: new Date().toISOString(),
+    }).then(() => {
+      console.log('✅ Saved cold-fallback sitemap_xml to sheet_data');
+    }).catch((e) => {
+      console.warn('[Sitemap] Failed to persist cold fallback to sheet_data:', e.message);
+    });
+  }
 
   return response;
 }

@@ -72,22 +72,36 @@ function getImagesForVariant(product, variant, hasSubVariants) {
   return images;
 }
 
+let supabaseInstance = null;
+async function getSupabase() {
+  if (!supabaseInstance) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    const { createClient } = await import('@supabase/supabase-js');
+    supabaseInstance = createClient(url, key);
+  }
+  return supabaseInstance;
+}
+
 let cachedShoppingXml = null;
 let shoppingCacheTime = 0;
 const SHOPPING_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 export async function GET(request) {
   try {
+    const shoppingResponseHeaders = {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
+      'CDN-Cache-Control': 'max-age=86400',
+      'Cloudflare-CDN-Cache-Control': 'max-age=86400',
+    };
+
     // 1. In-memory cache check (returns in < 0.05ms CPU)
     if (cachedShoppingXml && (Date.now() - shoppingCacheTime < SHOPPING_TTL_MS)) {
       return new Response(cachedShoppingXml, {
         status: 200,
-        headers: {
-          'Content-Type': 'application/xml; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
-          'CDN-Cache-Control': 'max-age=86400',
-          'Cloudflare-CDN-Cache-Control': 'max-age=86400',
-        },
+        headers: shoppingResponseHeaders,
       });
     }
 
@@ -104,6 +118,33 @@ export async function GET(request) {
         }
       } catch (e) {
         // Ignore cache match error
+      }
+    }
+
+    // 3. Fast Database Read of Pre-generated Feed (< 0.5ms CPU)
+    const supabase = await getSupabase();
+    if (supabase) {
+      try {
+        const { data: sheetRow } = await supabase
+          .from('sheet_data')
+          .select('csv_data')
+          .eq('id', 'google_shopping_xml')
+          .maybeSingle();
+
+        if (sheetRow?.csv_data) {
+          cachedShoppingXml = sheetRow.csv_data;
+          shoppingCacheTime = Date.now();
+          const response = new Response(sheetRow.csv_data, {
+            status: 200,
+            headers: shoppingResponseHeaders,
+          });
+          if (cache) {
+            try { await cache.put(cacheKey, response.clone()); } catch {}
+          }
+          return response;
+        }
+      } catch (dbErr) {
+        console.warn('[Google Shopping] Failed to read pre-generated feed from sheet_data:', dbErr.message);
       }
     }
 
