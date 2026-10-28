@@ -329,9 +329,9 @@ export function CheckoutPage({
     let totalGrams = 0;
     (items || []).forEach((item) => {
       const qty = Number(item.quantity) || 1;
-      const rawW = item.product?.weight;
-      let grams = 800; // default saree/suit set weight is 800g (0.8 kg)
-      if (rawW && !isNaN(Number(rawW))) {
+      const rawW = item.product?.weight ?? item.weight ?? item.variant?.weight;
+      let grams = 1200; // default Banarasi saree/suit set packaged weight is 1.2 kg (1200g)
+      if (rawW && !isNaN(Number(rawW)) && Number(rawW) > 0) {
         const num = Number(rawW);
         grams = num > 15 ? num : num * 1000;
       }
@@ -566,6 +566,7 @@ export function CheckoutPage({
         price: locPrice.finalPrice,
         base_inr_price: locPrice.markedUpBasePrice || baseSingle,
         original_inr_price: baseSingle,
+        weight: Number(item.product?.weight ?? item.weight ?? 1.2),
       };
     }),
     total_amount: total,

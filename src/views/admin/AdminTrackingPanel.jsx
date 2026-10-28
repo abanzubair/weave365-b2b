@@ -1622,7 +1622,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       <tr className="admin-inspect-summary-shipping">
                                         <td colSpan="4">
                                           <span className="admin-inspect-shipping-label">
-                                            Shipping &amp; Delivery {shippingFee === 150 ? '(Expedited Air)' : ''}
+                                            Shipping &amp; Delivery (Expedited Air)
                                           </span>
                                         </td>
                                         <td style={{ textAlign: 'right' }}>

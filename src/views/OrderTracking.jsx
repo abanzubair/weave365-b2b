@@ -20,7 +20,8 @@ import {
   Check,
   PackageCheck,
   MapPin,
-  Clock
+  Clock,
+  Tag
 } from '../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../supabaseClient.js';
 import { formatMoney, fallbackProductImage } from '../storefrontShared.jsx';
@@ -157,6 +158,43 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     const sum = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
     return sum || 0;
   }, [order?.total_amount, order?.message, resolvedItems]);
+
+  // Complete Amount Breakup calculation (Subtotal, Coupon Discount, Shipping, Total)
+  const amountBreakdown = useMemo(() => {
+    const totalQuantity = resolvedItems.reduce((acc, it) => acc + (Number(it.qty) || 1), 0);
+    const itemsSubtotal = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+
+    let couponDiscount = Number(order?.coupon_discount || 0);
+    let couponCode = order?.coupon_code || '';
+    if (!couponDiscount && order?.message) {
+      const match = order.message.match(/Coupon:\s*([A-Z0-9_-]+)\s*\(-?₹?([0-9.,]+)\)/i);
+      if (match) {
+        couponCode = couponCode || match[1];
+        couponDiscount = Number(match[2].replace(/,/g, '')) || 0;
+      }
+    }
+
+    const finalTotal = totalOrderValue;
+    const netItems = Math.max(0, itemsSubtotal - couponDiscount);
+    const shippingFee = Math.max(0, finalTotal - netItems);
+
+    let isExpedited = shippingFee > 0;
+    if (order?.shipping_speed) {
+      isExpedited = order.shipping_speed === 'expedited';
+    } else if (order?.message) {
+      isExpedited = /Shipping:\s*Expedited/i.test(order.message) || shippingFee > 0;
+    }
+
+    return {
+      totalQuantity,
+      itemsSubtotal,
+      couponDiscount,
+      couponCode,
+      shippingFee,
+      isExpedited,
+      finalTotal,
+    };
+  }, [resolvedItems, order, totalOrderValue]);
 
   // Ensure catalog products are available for image & title lookups
   useEffect(() => {
@@ -852,12 +890,55 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   ))}
                 </div>
 
-                {/* Items Total Summary (Distilled) */}
-                <div className="tracking-total-summary-card">
-                  <span>Total Order Value</span>
-                  <strong>
-                    {formatMoney(totalOrderValue, { currency: orderCurrency })}
-                  </strong>
+                {/* Complete Amount Breakup */}
+                <div className="tracking-amount-breakup-card">
+                  <div className="tracking-breakup-row">
+                    <span className="tracking-breakup-label">
+                      Items Subtotal ({amountBreakdown.totalQuantity} unit{amountBreakdown.totalQuantity > 1 ? 's' : ''})
+                    </span>
+                    <span className="tracking-breakup-val">
+                      {formatMoney(amountBreakdown.itemsSubtotal, { currency: orderCurrency })}
+                    </span>
+                  </div>
+
+                  {amountBreakdown.couponDiscount > 0 && (
+                    <div className="tracking-breakup-row tracking-coupon-row">
+                      <span className="tracking-breakup-label">
+                        Applied Coupon
+                        {amountBreakdown.couponCode && (
+                          <span className="tracking-coupon-pill">
+                            <Tag size={10.5} /> {amountBreakdown.couponCode}
+                          </span>
+                        )}
+                      </span>
+                      <span className="tracking-breakup-val tracking-coupon-amount">
+                        -{formatMoney(amountBreakdown.couponDiscount, { currency: orderCurrency })}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="tracking-breakup-row">
+                    <span className="tracking-breakup-label">
+                      Shipping &amp; Delivery
+                      {amountBreakdown.isExpedited && (
+                        <span className="tracking-shipping-badge">Expedited Air</span>
+                      )}
+                    </span>
+                    <span className={`tracking-breakup-val ${amountBreakdown.shippingFee === 0 ? 'tracking-free-shipping' : ''}`}>
+                      {amountBreakdown.shippingFee > 0
+                        ? `+${formatMoney(amountBreakdown.shippingFee, { currency: orderCurrency })}`
+                        : 'FREE (Standard)'}
+                    </span>
+                  </div>
+
+                  <div className="tracking-breakup-divider" />
+
+                  <div className="tracking-breakup-row tracking-total-row">
+                    <span className="tracking-total-label">Total Paid</span>
+                    <strong className="tracking-total-amount">
+                      {formatMoney(amountBreakdown.finalTotal, { currency: orderCurrency })}
+                    </strong>
+                  </div>
                 </div>
               </div>
             )}

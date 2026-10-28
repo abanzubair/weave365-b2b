@@ -293,9 +293,12 @@ function normalizeLoadedProduct(product, idx) {
   }
 
   const stockTimestamp = product.stockInDate ? new Date(product.stockInDate).getTime() : NaN;
+  const parsedWeight = Number(product.weight);
+  const resolvedWeight = (!isNaN(parsedWeight) && parsedWeight > 0) ? parsedWeight : 1.2;
 
   return {
     ...product,
+    weight: resolvedWeight,
     _originalIndex: product._originalIndex !== undefined ? product._originalIndex : (typeof idx === 'number' ? idx : 0),
     _stockTimestamp: isNaN(stockTimestamp) ? 0 : stockTimestamp,
     isNew,
@@ -352,6 +355,7 @@ function transformSellerProductToCatalog(sp) {
     variants,
     colorOptions,
     totalColors: colorOptions.length,
+    weight: (sp.weight && !isNaN(Number(sp.weight)) && Number(sp.weight) > 0) ? Number(sp.weight) : 1.2,
     status: 'Ready Stock',
     statusTags: [{ key: 'ready-stock', label: 'Ready Stock' }],
     isReadyStock: true,
@@ -622,7 +626,7 @@ export async function parseProductCsv(text) {
       weight: (function() {
         const key = Object.keys(row).find(k => k.trim().toLowerCase() === 'weight') || 'Weight';
         const val = String(row[key] || '').replace(/[^\d.]/g, '');
-        return val ? Number(val) : null;
+        return val ? Number(val) : 1.2;
       })(),
       totalColors: parseTotalColors(row.Col || row.Color, colorEntries),
       quantity: (function() {

@@ -64,10 +64,15 @@ export function upsertCart(cart, product, variant, quantity, colorSelection = {}
   const existing = cart.find((item) => (
     item.productGroupKey === product.id && item.variantCode === cartVariantCode
   ));
+  const itemWeight = (function() {
+    const raw = Number(product?.weight ?? colorSelection?.weight);
+    return (!isNaN(raw) && raw > 0) ? raw : 1.2;
+  })();
+
   if (existing) {
     return cart.map((item) =>
       item.productGroupKey === product.id && item.variantCode === cartVariantCode
-        ? { ...item, quantity: item.quantity + quantity }
+        ? { ...item, quantity: item.quantity + quantity, weight: item.weight || itemWeight }
         : item,
     );
   }
@@ -77,6 +82,7 @@ export function upsertCart(cart, product, variant, quantity, colorSelection = {}
       productGroupKey: product.id,
       variantCode: cartVariantCode,
       quantity,
+      weight: itemWeight,
     },
   ];
 }

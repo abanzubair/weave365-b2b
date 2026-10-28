@@ -487,28 +487,48 @@ export function AppShell({ children }) {
 
   const productsById = useMemo(() => {
     const map = new Map();
-    products.forEach((p) => map.set(p.id, p));
+    (products || []).forEach((p) => {
+      if (p.id) {
+        map.set(p.id, p);
+        map.set(String(p.id), p);
+      }
+      if (p.groupKey) {
+        map.set(p.groupKey, p);
+        map.set(String(p.groupKey), p);
+      }
+    });
     return map;
   }, [products]);
 
   const cartProducts = useMemo(() => {
     return cart
       .map((item) => {
-        const product = productsById.get(item.productGroupKey);
+        const product =
+          productsById.get(item.productGroupKey) ||
+          productsById.get(String(item.productGroupKey)) ||
+          productsById.get(Number(item.productGroupKey));
         const { baseVariantCode, colorName } = parseCartVariantCode(item.variantCode);
         const variant = resolveItemVariant(product, item.variantCode, colorName) || product?.variants?.find((entry) => entry.code === baseVariantCode);
         const colorOptions = product?.colorOptions || [];
         const selectedColorName = colorName || variant?.color || colorOptions[0]?.name || '';
         const selectedColor = colorOptions.find((entry) => entry.name === selectedColorName);
+        const resolvedWeight = (function() {
+          const w = Number(product?.weight ?? item.weight);
+          return (!isNaN(w) && w > 0) ? w : 1.2;
+        })();
         return product && variant
           ? {
               ...item,
-              product,
+              product: {
+                ...product,
+                weight: resolvedWeight,
+              },
               variant,
               baseVariantCode,
               selectedColorName,
               selectedColorImage: selectedColor?.image || variant.image || product.images[0],
               colorOptions,
+              weight: resolvedWeight,
             }
           : null;
       })
