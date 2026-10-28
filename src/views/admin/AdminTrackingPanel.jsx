@@ -349,7 +349,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     const recipientPincode = deliveryAddr?.pincode || inquiry.dropship_recipient_pincode || inquiry.pincode || '';
     const formattedDestLine = [recipientCity, recipientState].filter(Boolean).join(', ');
     
-    const orderIdShort = inquiry.order_number || String(inquiry.id).substring(0, 8);
+    const rawOrderId = inquiry.order_number || String(inquiry.id || '').substring(0, 8);
+    const displayOrderId = String(rawOrderId)
+      .replace(/^#+/, '')
+      .replace(/^ORD[-_\s]*/i, '')
+      .replace(/^#+/, '')
+      .trim()
+      .substring(0, 8)
+      .toUpperCase();
+    const orderIdShort = displayOrderId;
     const orderDate = new Date(inquiry.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     const packingPref = dropshipSender?.packing_preference || inquiry.dropship_packing_preference || 'Blind Packaging (No Supplier Invoices)';
 
@@ -361,7 +369,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       const resolved = resolveItemDetails(it);
       return `
         <tr>
-          <td class="check-col"><div class="check-box"></div></td>
           <td class="sku-cell">${resolved.sku}</td>
           <td class="title-cell">${resolved.title}</td>
           <td class="color-cell">${resolved.color}</td>
@@ -377,14 +384,14 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>Dispatch Slip #${orderIdShort}</title>
+        <title>Dispatch Slip ${orderIdShort}</title>
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #0f172a;
             background: #ffffff;
-            line-height: 1.4;
+            line-height: 1.45;
             padding: 24px;
           }
           .slip-wrapper {
@@ -397,26 +404,17 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           .slip-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 14px;
+            padding-bottom: 12px;
             margin-bottom: 18px;
           }
-          .slip-title-wrap h1 {
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: #0f172a;
-            margin-bottom: 3px;
-          }
           .slip-meta {
-            font-size: 12px;
+            font-size: 13px;
             color: #475569;
           }
           .slip-meta strong {
             color: #0f172a;
-            font-family: monospace;
           }
           .print-btn {
             background: #0f172a;
@@ -446,21 +444,21 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           }
           .card-tag {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 600;
             color: #64748b;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             margin-bottom: 6px;
           }
           .party-name {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 600;
             color: #0f172a;
             margin-bottom: 3px;
           }
           .party-phone {
-            font-size: 12.5px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 500;
             color: #334155;
             margin-bottom: 4px;
           }
@@ -472,8 +470,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           .pincode-highlight {
             display: inline-block;
             margin-top: 6px;
-            font-size: 13px;
-            font-weight: 800;
+            font-size: 12.5px;
+            font-weight: 600;
             color: #0f172a;
             letter-spacing: 0.5px;
           }
@@ -484,13 +482,20 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
-            padding: 8px 12px;
+            padding: 9px 14px;
             font-size: 12px;
             color: #334155;
             margin-bottom: 18px;
           }
           .spec-row strong {
             color: #0f172a;
+            font-weight: 600;
+          }
+          .spec-row .order-id-val {
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
           }
           .manifest-table {
             width: 100%;
@@ -514,29 +519,22 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             border-bottom: 1px solid #e2e8f0;
             vertical-align: middle;
           }
-          .check-col { width: 30px; text-align: center; }
-          .check-box {
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid #94a3b8;
-            border-radius: 3px;
-            margin: 0 auto;
-          }
           .sku-cell {
             font-family: monospace;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             color: #0f172a;
+            letter-spacing: 0.5px;
             white-space: nowrap;
           }
           .title-cell { color: #1e293b; font-weight: 500; }
           .color-cell { color: #334155; }
-          .qty-cell { text-align: center; font-weight: 700; color: #0f172a; white-space: nowrap; }
+          .qty-cell { text-align: center; font-weight: 600; color: #0f172a; white-space: nowrap; }
           .manifest-footer td {
             border-top: 1.5px solid #0f172a;
             border-bottom: none;
-            padding: 10px;
-            font-weight: 700;
+            padding: 9px 10px;
+            font-weight: 600;
             color: #0f172a;
           }
           .compliance-footer {
@@ -545,7 +543,6 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             font-size: 11px;
             color: #475569;
             text-align: center;
-            letter-spacing: 0.2px;
           }
           .compliance-footer strong {
             color: #0f172a;
@@ -562,9 +559,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
         <div class="slip-wrapper">
           <div class="slip-header">
             <div class="slip-title-wrap">
-              <h1>Blind Dropship Dispatch Slip</h1>
               <div class="slip-meta">
-                Ref ID: <strong>${inquiry.id}</strong> &nbsp;•&nbsp; Date: <strong>${orderDate}</strong>
+                Date: <strong>${orderDate}</strong>
               </div>
             </div>
             <button class="print-btn" onclick="window.print()">Print Slip</button>
@@ -592,14 +588,13 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
           </div>
 
           <div class="spec-row">
-            <span>Packaging: <strong>${packingPref}</strong></span>
+            <span>Order ID: <strong class="order-id-val">${displayOrderId}</strong></span>
             <span>Total Units: <strong>${totalQty} item(s)</strong></span>
           </div>
 
           <table class="manifest-table">
             <thead>
               <tr>
-                <th class="check-col">QC</th>
                 <th>SKU Code</th>
                 <th>Item Description</th>
                 <th>Color</th>
@@ -611,15 +606,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             </tbody>
             <tfoot>
               <tr class="manifest-footer">
-                <td colspan="4">Total Items In Package</td>
+                <td colspan="3">Total Items</td>
                 <td style="text-align: center;">${totalQty} pc</td>
               </tr>
             </tfoot>
           </table>
-
-          <div class="compliance-footer">
-            <strong>Warehouse Instructions:</strong> Direct dropship dispatch. Do not enclose supplier invoices, leaflets, or external branding.
-          </div>
         </div>
       </body>
       </html>
