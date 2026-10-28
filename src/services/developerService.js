@@ -63,16 +63,16 @@ export function getUtcDaysAgoStr(days = 14) {
 export const TIER_CONFIGS = {
   growth: {
     name: 'Growth Partner',
-    priceLabel: '₹399 / month',
-    price: 399,
+    priceLabel: '₹299 / month',
+    price: 299,
     monthlyQuota: 10000,
     rateLimitRps: 3,
     description: '10,000 requests/month for production stores with 5-15 min stock sync and priority support.',
   },
   pro: {
     name: 'Pro / Scale',
-    priceLabel: '₹599 / month',
-    price: 599,
+    priceLabel: '₹499 / month',
+    price: 499,
     monthlyQuota: 25000,
     rateLimitRps: 5,
     description: '25,000 requests/month for multi-store portals with priority warehouse dispatch and account manager.',
@@ -603,7 +603,7 @@ export const developerService = {
     const activeKeysCount = (allKeys || []).filter(k => k.is_active).length;
     const paidTiers = (allKeys || []).filter(k => k.tier === 'growth' || k.tier === 'pro');
     const monthlyRevenueEst = paidTiers.reduce((sum, k) => {
-      return sum + (k.tier === 'growth' ? 399 : 599);
+      return sum + (k.tier === 'growth' ? 299 : 499);
     }, 0);
 
     return {

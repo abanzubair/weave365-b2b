@@ -1024,22 +1024,22 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <tr>
                     <td><strong>Every 1–2 Hours</strong></td>
                     <td>~360–720 req / month</td>
-                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — Continuous 24/7 sync</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹299)</span> — Continuous 24/7 sync</td>
                   </tr>
                   <tr>
                     <td><strong>Every 15 Minutes</strong></td>
                     <td>~2,880 req / month</td>
-                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — High-frequency sync</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹299)</span> — High-frequency sync</td>
                   </tr>
                   <tr>
                     <td><strong>Every 5 Minutes</strong></td>
                     <td>~8,640 req / month</td>
-                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — Near real-time sync</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹299)</span> — Near real-time sync</td>
                   </tr>
                   <tr>
                     <td><strong>Real-Time / Multi-Store</strong></td>
                     <td>~15,000–25,000 req / month</td>
-                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Pro Scale (₹599)</span> — Dedicated high volume sync</td>
+                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Pro Scale (₹499)</span> — Dedicated high volume sync</td>
                   </tr>
                 </tbody>
               </table>
@@ -1082,7 +1082,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <p className="api-pricing-desc">For active stores &amp; automated dropshipping</p>
                   </div>
                   <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹399</span>
+                    <span className="api-pricing-amount">₹299</span>
                     <span className="api-pricing-period">/ month</span>
                   </div>
 
@@ -1117,7 +1117,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹399/mo)"
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹299/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="api-pricing-btn primary"
@@ -1134,7 +1134,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <p className="api-pricing-desc">For multi-store brands &amp; high volume</p>
                   </div>
                   <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹599</span>
+                    <span className="api-pricing-amount">₹499</span>
                     <span className="api-pricing-period">/ month</span>
                   </div>
 
@@ -1169,7 +1169,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹599/mo)"
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹499/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="api-pricing-btn secondary"

@@ -454,8 +454,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
             onChange={(e) => setTierFilter(e.target.value)}
           >
             <option value="all">All Tiers</option>
-            <option value="growth">Growth Partner (₹399)</option>
-            <option value="pro">Pro / Scale (₹599)</option>
+            <option value="growth">Growth Partner (₹299)</option>
+            <option value="pro">Pro / Scale (₹499)</option>
             <option value="free">Legacy Free</option>
           </select>
 
@@ -786,8 +786,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                   }}
                   style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
                 >
-                  <option value="growth">Growth Partner (₹399/mo) - 10,000 req/mo</option>
-                  <option value="pro">Pro / Scale (₹599/mo) - 25,000 req/mo</option>
+                  <option value="growth">Growth Partner (₹299/mo) - 10,000 req/mo</option>
+                  <option value="pro">Pro / Scale (₹499/mo) - 25,000 req/mo</option>
                   <option value="free">Legacy Free - 1,000 req/mo</option>
                 </select>
               </label>
@@ -990,8 +990,8 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
                     onChange={(e) => setNewTier(e.target.value)}
                     style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.875rem', background: '#ffffff', color: '#0f172a' }}
                   >
-                    <option value="growth">Growth Partner (₹399/mo) - 10,000 req/mo + Order API</option>
-                    <option value="pro">Pro / Scale (₹599/mo) - 25,000 req/mo</option>
+                    <option value="growth">Growth Partner (₹299/mo) - 10,000 req/mo + Order API</option>
+                    <option value="pro">Pro / Scale (₹499/mo) - 25,000 req/mo</option>
                   </select>
                 </label>
 
