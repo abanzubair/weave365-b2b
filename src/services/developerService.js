@@ -71,8 +71,8 @@ export const TIER_CONFIGS = {
   },
   pro: {
     name: 'Pro / Scale',
-    priceLabel: '₹499 / month',
-    price: 499,
+    priceLabel: '₹599 / month',
+    price: 599,
     monthlyQuota: 25000,
     rateLimitRps: 5,
     description: '25,000 requests/month for multi-store portals with priority warehouse dispatch and account manager.',
@@ -603,7 +603,7 @@ export const developerService = {
     const activeKeysCount = (allKeys || []).filter(k => k.is_active).length;
     const paidTiers = (allKeys || []).filter(k => k.tier === 'growth' || k.tier === 'pro');
     const monthlyRevenueEst = paidTiers.reduce((sum, k) => {
-      return sum + (k.tier === 'growth' ? 399 : 499);
+      return sum + (k.tier === 'growth' ? 399 : 599);
     }, 0);
 
     return {

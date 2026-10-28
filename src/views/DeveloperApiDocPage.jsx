@@ -1039,7 +1039,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <tr>
                     <td><strong>Real-Time / Multi-Store</strong></td>
                     <td>~15,000–25,000 req / month</td>
-                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Pro Scale (₹499)</span> — Dedicated high volume sync</td>
+                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Pro Scale (₹599)</span> — Dedicated high volume sync</td>
                   </tr>
                 </tbody>
               </table>
@@ -1134,7 +1134,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <p className="api-pricing-desc">For multi-store brands &amp; high volume</p>
                   </div>
                   <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹499</span>
+                    <span className="api-pricing-amount">₹599</span>
                     <span className="api-pricing-period">/ month</span>
                   </div>
 
@@ -1169,7 +1169,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹499/mo)"
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹599/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="api-pricing-btn secondary"
