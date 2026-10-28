@@ -61,29 +61,29 @@ export function getUtcDaysAgoStr(days = 14) {
 
 
 export const TIER_CONFIGS = {
-  free: {
-    name: 'Starter (Free)',
-    priceLabel: '₹0 / month',
-    price: 0,
-    monthlyQuota: 2000,
-    rateLimitRps: 1,
-    description: 'Full API access (Catalog, Stock Sync & Orders) up to 2,000 requests/month for testing and setup.',
-  },
   growth: {
     name: 'Growth Partner',
-    priceLabel: '₹699 / month',
-    price: 699,
-    monthlyQuota: 20000,
-    rateLimitRps: 5,
-    description: '20,000 requests/month for production stores with frequent 5-15 min stock sync and priority support.',
+    priceLabel: '₹399 / month',
+    price: 399,
+    monthlyQuota: 10000,
+    rateLimitRps: 3,
+    description: '10,000 requests/month for production stores with 5-15 min stock sync and priority support.',
   },
   pro: {
     name: 'Pro / Scale',
-    priceLabel: '₹1,499 / month',
-    price: 1499,
-    monthlyQuota: 75000,
-    rateLimitRps: 15,
-    description: '75,000 requests/month for multi-store portals with priority warehouse dispatch and account manager.',
+    priceLabel: '₹499 / month',
+    price: 499,
+    monthlyQuota: 25000,
+    rateLimitRps: 5,
+    description: '25,000 requests/month for multi-store portals with priority warehouse dispatch and account manager.',
+  },
+  free: {
+    name: 'Starter (Legacy)',
+    priceLabel: '₹0 / month',
+    price: 0,
+    monthlyQuota: 1000,
+    rateLimitRps: 1,
+    description: 'Legacy starter testing tier.',
   },
 };
 
@@ -243,10 +243,10 @@ export const developerService = {
   /**
    * Create a new API Key for a user
    */
-  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'free', customQuota, customRps, ordersEnabled = false, isActive = false, requestDetails = null }) {
+  async createApiKey(userId, { clientName, clientWebsite = '', domainOwnerName = '', gstNumber = '', tier = 'growth', customQuota, customRps, ordersEnabled = false, isActive = false, requestDetails = null }) {
     if (!isSupabaseConfigured || !userId) throw new Error('Supabase not configured or missing userId');
 
-    const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.free;
+    const tierConfig = TIER_CONFIGS[tier] || TIER_CONFIGS.growth;
     const rawKey = generateRawApiKey();
     const keyHash = await hashApiKey(rawKey);
     // Non-secret masked prefix for dashboard reference and logging (e.g. w365_live_9a7f...d82e)
@@ -603,7 +603,7 @@ export const developerService = {
     const activeKeysCount = (allKeys || []).filter(k => k.is_active).length;
     const paidTiers = (allKeys || []).filter(k => k.tier === 'growth' || k.tier === 'pro');
     const monthlyRevenueEst = paidTiers.reduce((sum, k) => {
-      return sum + (k.tier === 'growth' ? 699 : 1499);
+      return sum + (k.tier === 'growth' ? 399 : 499);
     }, 0);
 
     return {

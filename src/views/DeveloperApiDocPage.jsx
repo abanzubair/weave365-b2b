@@ -984,9 +984,9 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
   "client_name": "My Reseller Store",
   "client_website": "https://mystore.com",
   "tier": "growth",
-  "monthly_quota": 20000,
+  "monthly_quota": 10000,
   "month_total_used": 1420,
-  "remaining_quota": 18580,
+  "remaining_quota": 8580,
   "rate_limit_rps": 3,
   "is_active": true,
   "orders_enabled": true,
@@ -1022,24 +1022,24 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Every 2 Hours</strong></td>
-                    <td>~360 req / month</td>
-                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Runs smoothly all 30 days</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Every 1 Hour</strong></td>
-                    <td>~720 req / month</td>
-                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Starter (Free)</span> — Fits within 2,000 quota</td>
+                    <td><strong>Every 1–2 Hours</strong></td>
+                    <td>~360–720 req / month</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — Continuous 24/7 sync</td>
                   </tr>
                   <tr>
                     <td><strong>Every 15 Minutes</strong></td>
                     <td>~2,880 req / month</td>
-                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Continuous 24/7 sync</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — High-frequency sync</td>
                   </tr>
                   <tr>
                     <td><strong>Every 5 Minutes</strong></td>
                     <td>~8,640 req / month</td>
-                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹699)</span> — Near real-time sync</td>
+                    <td><span style={{ color: '#2563eb', fontWeight: 600 }}>Growth Partner (₹399)</span> — Near real-time sync</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Real-Time / Multi-Store</strong></td>
+                    <td>~15,000–25,000 req / month</td>
+                    <td><span style={{ color: '#0f172a', fontWeight: 600 }}>Pro Scale (₹499)</span> — Dedicated high volume sync</td>
                   </tr>
                 </tbody>
               </table>
@@ -1058,10 +1058,10 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
               <pre className="api-code-pre">{`{
   "status": "error",
   "code": "QUOTA_EXCEEDED",
-  "message": "Monthly API quota of 20,000 requests has been exceeded.",
+  "message": "Monthly API quota of 10,000 requests has been exceeded.",
   "upgrade_info": {
     "current_tier": "growth",
-    "monthly_quota": 20000,
+    "monthly_quota": 10000,
     "whatsapp_support": "+91 9919101369"
   }
 }`}</pre>
@@ -1073,50 +1073,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
             <h2>Pricing Tiers</h2>
             <p>Select a plan matched to your store&apos;s monthly catalog sync volume:</p>
 
-            <div className="api-pricing-grid">
-              {/* Starter */}
-              <div className="api-pricing-card">
-                <div className="api-pricing-top">
-                  <div className="api-pricing-header">
-                    <span className="api-pricing-name">Starter</span>
-                    <p className="api-pricing-desc">For testing &amp; initial catalog sync</p>
-                  </div>
-                  <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹0</span>
-                    <span className="api-pricing-period">/ month</span>
-                  </div>
-
-                  <div className="api-pricing-divider" />
-
-                  <ul className="api-pricing-features">
-                    <li>
-                      <Check size={14} className="api-feature-icon" />
-                      <span><strong>2,000</strong> requests / month</span>
-                    </li>
-                    <li>
-                      <Check size={14} className="api-feature-icon" />
-                      <span>Wholesale Catalog &amp; Stock API</span>
-                    </li>
-                    <li>
-                      <Check size={14} className="api-feature-icon" />
-                      <span>Standard 1–2 hr sync intervals</span>
-                    </li>
-                    <li>
-                      <Check size={14} className="api-feature-icon" />
-                      <span>Standard community docs &amp; guides</span>
-                    </li>
-                    <li className="disabled">
-                      <span className="api-feature-dash">—</span>
-                      <span>Dropship Order API (Growth tier)</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <a href="/account?tab=developer" className="api-pricing-btn secondary">
-                  Get Started Free
-                </a>
-              </div>
-
+            <div className="api-pricing-grid" style={{ maxWidth: '860px', margin: '1.75rem auto' }}>
               {/* Growth Partner */}
               <div className="api-pricing-card featured">
                 <div className="api-pricing-top">
@@ -1125,7 +1082,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <p className="api-pricing-desc">For active stores &amp; automated dropshipping</p>
                   </div>
                   <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹699</span>
+                    <span className="api-pricing-amount">₹399</span>
                     <span className="api-pricing-period">/ month</span>
                   </div>
 
@@ -1134,7 +1091,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <ul className="api-pricing-features">
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span><strong>20,000</strong> requests / month</span>
+                      <span><strong>10,000</strong> requests / month</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Rate limit: <strong>3 req / sec</strong></span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
@@ -1156,7 +1117,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹699/mo)"
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Growth%20Partner%20API%20Tier%20(₹399/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="api-pricing-btn primary"
@@ -1173,7 +1134,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                     <p className="api-pricing-desc">For multi-store brands &amp; high volume</p>
                   </div>
                   <div className="api-pricing-price-wrap">
-                    <span className="api-pricing-amount">₹1,499</span>
+                    <span className="api-pricing-amount">₹499</span>
                     <span className="api-pricing-period">/ month</span>
                   </div>
 
@@ -1182,7 +1143,11 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                   <ul className="api-pricing-features">
                     <li>
                       <Check size={14} className="api-feature-icon" />
-                      <span><strong>75,000</strong> requests / month</span>
+                      <span><strong>25,000</strong> requests / month</span>
+                    </li>
+                    <li>
+                      <Check size={14} className="api-feature-icon" />
+                      <span>Rate limit: <strong>5 req / sec</strong></span>
                     </li>
                     <li>
                       <Check size={14} className="api-feature-icon" />
@@ -1204,7 +1169,7 @@ Authorization: Bearer w365_live_9a7f8e1b4c3d2e...</pre>
                 </div>
 
                 <a
-                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹1499/mo)"
+                  href="https://wa.me/919919101369?text=Hi%20Weave365,%20I%20want%20to%20activate%20the%20Pro%20API%20Tier%20(₹499/mo)"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="api-pricing-btn secondary"

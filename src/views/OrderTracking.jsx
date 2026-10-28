@@ -57,6 +57,107 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
     return 'INR';
   }, [order]);
 
+  // Resolve item details (image, title, unitPrice, totalPrice) consistently for display & total calculations
+  const resolvedItems = useMemo(() => {
+    const rawItems = Array.isArray(order?.order_items) && order.order_items.length > 0
+      ? order.order_items
+      : (Array.isArray(order?.items) ? order.items : []);
+
+    if (rawItems.length === 0) return [];
+
+    return rawItems.map((item, index) => {
+      const itemCode = String(item.variant_code || item.sku || item.product_id || item.id || '').trim().toLowerCase();
+      const baseCode = itemCode.includes('-') ? itemCode.split('-')[0].trim().toLowerCase() : itemCode;
+      const itemColor = String(item.color || '').trim().toLowerCase();
+
+      // Find product in catalog (exact match first, then baseCode fallback)
+      let matchedProduct = (catalogProducts || []).find(p => {
+        const pId = String(p.id || '').toLowerCase();
+        const pGroup = String(p.groupKey || '').toLowerCase();
+        if (pId && pId === itemCode) return true;
+        if (pGroup && pGroup === itemCode) return true;
+        if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === itemCode)) return true;
+        return false;
+      });
+
+      if (!matchedProduct && baseCode) {
+        matchedProduct = (catalogProducts || []).find(p => {
+          const pId = String(p.id || '').toLowerCase();
+          const pGroup = String(p.groupKey || '').toLowerCase();
+          return (pId && pId === baseCode) || (pGroup && pGroup === baseCode);
+        });
+      }
+
+      let matchedVariant = null;
+      if (matchedProduct?.variants) {
+        matchedVariant = matchedProduct.variants.find(v => 
+          String(v.code || '').toLowerCase() === itemCode || 
+          (itemColor && String(v.color || v.colorName || '').toLowerCase() === itemColor)
+        );
+      }
+
+      // Resolve image
+      let imageSrc = item.image || item.image_url || item.thumbnail_url || '';
+      if (!imageSrc && matchedProduct) {
+        if (item.color && matchedProduct.colorOptions) {
+          const matchedColorOpt = matchedProduct.colorOptions.find(c => String(c.name || '').toLowerCase() === itemColor);
+          if (matchedColorOpt?.image) imageSrc = matchedColorOpt.image;
+        }
+        if (!imageSrc && item.color && matchedProduct.colorImages && matchedProduct.colorImages[item.color]) {
+          imageSrc = matchedProduct.colorImages[item.color];
+        }
+        if (!imageSrc) {
+          imageSrc = matchedVariant?.image || matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
+        }
+      }
+      if (!imageSrc) imageSrc = fallbackProductImage;
+
+      // Resolve title
+      const title = item.product_title || item.title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
+
+      // Resolve price (handling unit_price, price, total_price, or catalog prices)
+      let unitPrice = Number(item.unit_price ?? item.price ?? 0);
+      if (!unitPrice && matchedProduct) {
+        const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
+        unitPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
+      }
+
+      const qty = Math.max(1, parseInt(item.quantity || 1, 10));
+      const totalPrice = unitPrice > 0 ? unitPrice * qty : (Number(item.total_price) || null);
+
+      return {
+        ...item,
+        index,
+        title,
+        imageSrc,
+        unitPrice,
+        qty,
+        totalPrice,
+      };
+    });
+  }, [order?.items, order?.order_items, catalogProducts]);
+
+  // Robust Total Order Value calculation
+  const totalOrderValue = useMemo(() => {
+    // 1. Explicit positive order.total_amount
+    if (order?.total_amount !== undefined && order?.total_amount !== null && Number(order.total_amount) > 0) {
+      return Number(order.total_amount);
+    }
+
+    // 2. Parse from message if available (e.g. "Total: ₹1,491" or "Total: ₹ 1491")
+    if (order?.message) {
+      const match = order.message.match(/Total:\s*₹?\s*([0-9.,]+)/i);
+      if (match) {
+        const parsed = Number(match[1].replace(/,/g, ''));
+        if (parsed > 0) return parsed;
+      }
+    }
+
+    // 3. Sum of resolved item totals
+    const sum = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+    return sum || 0;
+  }, [order?.total_amount, order?.message, resolvedItems]);
+
   // Ensure catalog products are available for image & title lookups
   useEffect(() => {
     if (products && products.length > 0) {
@@ -186,7 +287,13 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
                   order_id: ordData.id
                 });
                 if (!rpcErr && rpcData && rpcData.length > 0) {
-                  trackingOrder = rpcData[0];
+                  trackingOrder = {
+                    ...ordData,
+                    ...rpcData[0],
+                    total_amount: (rpcData[0].total_amount !== undefined && rpcData[0].total_amount !== null && Number(rpcData[0].total_amount) > 0)
+                      ? Number(rpcData[0].total_amount)
+                      : (ordData.total_amount !== undefined && ordData.total_amount !== null ? Number(ordData.total_amount) : undefined),
+                  };
                 }
               } catch (e) {
                 console.warn('RPC lookup with resolved order ID fallback:', e);
@@ -261,7 +368,24 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
         if (active) {
           if (trackingOrder) {
-            setOrder(trackingOrder);
+            // Normalize items so unit_price and price are always available
+            const rawItems = Array.isArray(trackingOrder.order_items) && trackingOrder.order_items.length > 0
+              ? trackingOrder.order_items
+              : (Array.isArray(trackingOrder.items) ? trackingOrder.items : []);
+
+            const normalizedItems = rawItems.map(it => ({
+              ...it,
+              price: Number(it.unit_price ?? it.price ?? 0) || 0,
+              unit_price: Number(it.unit_price ?? it.price ?? 0) || 0,
+              quantity: Math.max(1, parseInt(it.quantity || 1, 10)),
+              product_title: it.product_title || it.title,
+              image: it.thumbnail_url || it.image,
+            }));
+
+            setOrder({
+              ...trackingOrder,
+              items: normalizedItems,
+            });
           } else {
             setError('Order tracking ID not found. Please verify your ID or contact support.');
             setOrder(null);
@@ -684,125 +808,55 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
             </div>
 
             {/* Items Summary Section (Distilled) */}
-            {order.items && order.items.length > 0 && (
+            {resolvedItems.length > 0 && (
               <div className="tracking-items-section">
                 <div className="tracking-items-header">
                   <h3 className="tracking-items-title">
-                    Ordered Items ({(order.items || []).length})
+                    Ordered Items ({resolvedItems.length})
                   </h3>
                 </div>
 
                 <div className="tracking-items-list">
-                  {order.items.map((item, index) => {
-                    const itemCode = String(item.variant_code || item.sku || item.product_id || item.id || '').trim().toLowerCase();
-                    const baseCode = itemCode.includes('-') ? itemCode.split('-')[0].trim() : itemCode;
-                    const itemColor = String(item.color || '').trim().toLowerCase();
-
-                    // Find product in catalog (exact match first, then baseCode fallback)
-                    let matchedProduct = (catalogProducts || []).find(p => {
-                      const pId = String(p.id || '').toLowerCase();
-                      const pGroup = String(p.groupKey || '').toLowerCase();
-                      if (pId && pId === itemCode) return true;
-                      if (pGroup && pGroup === itemCode) return true;
-                      if (p.variants && p.variants.some(v => String(v.code || '').toLowerCase() === itemCode)) return true;
-                      return false;
-                    });
-
-                    if (!matchedProduct && baseCode) {
-                      matchedProduct = (catalogProducts || []).find(p => {
-                        const pId = String(p.id || '').toLowerCase();
-                        const pGroup = String(p.groupKey || '').toLowerCase();
-                        return (pId && pId === baseCode) || (pGroup && pGroup === baseCode);
-                      });
-                    }
-
-                    let matchedVariant = null;
-                    if (matchedProduct?.variants) {
-                      matchedVariant = matchedProduct.variants.find(v => 
-                        String(v.code || '').toLowerCase() === itemCode || 
-                        (itemColor && String(v.color || v.colorName || '').toLowerCase() === itemColor)
-                      );
-                    }
-
-                    // Resolve image
-                    let imageSrc = item.image || item.image_url || '';
-                    if (!imageSrc && matchedProduct) {
-                      if (item.color && matchedProduct.colorOptions) {
-                        const matchedColorOpt = matchedProduct.colorOptions.find(c => String(c.name || '').toLowerCase() === itemColor);
-                        if (matchedColorOpt?.image) imageSrc = matchedColorOpt.image;
-                      }
-                      if (!imageSrc && item.color && matchedProduct.colorImages && matchedProduct.colorImages[item.color]) {
-                        imageSrc = matchedProduct.colorImages[item.color];
-                      }
-                      if (!imageSrc) {
-                        imageSrc = matchedVariant?.image || matchedVariant?.images?.[0] || matchedProduct.images?.[0] || '';
-                      }
-                    }
-                    if (!imageSrc) imageSrc = fallbackProductImage;
-
-                    // Resolve title
-                    const title = item.product_title || item.title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
-
-                    // Resolve price
-                    let unitPrice = Number(item.price);
-                    if (!unitPrice && matchedProduct) {
-                      const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
-                      unitPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
-                    }
-
-                    const qty = Math.max(1, parseInt(item.quantity || 1, 10));
-                    const totalPrice = unitPrice > 0 ? unitPrice * qty : null;
-
-                    return (
-                      <div key={index} className="tracking-item-row">
-                        <img 
-                          src={getOptimizedImageUrl(imageSrc, 'thumbnail')} 
-                          alt={title} 
-                          className="tracking-item-img"
-                          loading="lazy"
-                          onError={(e) => {
-                            const fallback = getOriginalImageUrl(imageSrc);
-                            if (e.currentTarget.src !== fallback && fallback) {
-                              e.currentTarget.src = fallback;
-                            } else {
-                              e.currentTarget.src = fallbackProductImage;
-                            }
-                          }}
-                        />
-                        <div className="tracking-item-info">
-                          <div className="tracking-item-name">{title}</div>
-                          <div className="tracking-item-meta">
-                            {(item.variant_code || item.sku) && (
-                              <span className="item-meta-item">Code: <code>{item.variant_code || item.sku}</code></span>
-                            )}
-                            {item.color && (
-                              <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
-                            )}
-                            <span className="item-meta-item">Qty: {qty}</span>
-                          </div>
-                        </div>
-                        <div className="tracking-item-price">
-                          {totalPrice ? formatMoney(totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * qty, { currency: orderCurrency }) : 'Wholesale Direct')}
+                  {resolvedItems.map((item, index) => (
+                    <div key={index} className="tracking-item-row">
+                      <img 
+                        src={getOptimizedImageUrl(item.imageSrc, 'thumbnail')} 
+                        alt={item.title} 
+                        className="tracking-item-img"
+                        loading="lazy"
+                        onError={(e) => {
+                          const fallback = getOriginalImageUrl(item.imageSrc);
+                          if (e.currentTarget.src !== fallback && fallback) {
+                            e.currentTarget.src = fallback;
+                          } else {
+                            e.currentTarget.src = fallbackProductImage;
+                          }
+                        }}
+                      />
+                      <div className="tracking-item-info">
+                        <div className="tracking-item-name">{item.title}</div>
+                        <div className="tracking-item-meta">
+                          {(item.variant_code || item.sku) && (
+                            <span className="item-meta-item">Code: <code>{item.variant_code || item.sku}</code></span>
+                          )}
+                          {item.color && (
+                            <span className="item-meta-item">Color: <strong>{item.color}</strong></span>
+                          )}
+                          <span className="item-meta-item">Qty: {item.qty}</span>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="tracking-item-price">
+                        {item.totalPrice ? formatMoney(item.totalPrice, { currency: orderCurrency }) : (item.price ? formatMoney(item.price * item.qty, { currency: orderCurrency }) : 'Wholesale Direct')}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Items Total Summary (Distilled) */}
                 <div className="tracking-total-summary-card">
                   <span>Total Order Value</span>
                   <strong>
-                    {formatMoney(
-                      (order.total_amount !== undefined && order.total_amount !== null && Number(order.total_amount) > 0)
-                        ? Number(order.total_amount)
-                        : ((order.items || []).reduce((acc, it) => {
-                            const unitPrice = Number(it.price) || 0;
-                            const qty = Number(it.quantity) || 1;
-                            return acc + (unitPrice * qty);
-                          }, 0) || 0),
-                      { currency: orderCurrency }
-                    )}
+                    {formatMoney(totalOrderValue, { currency: orderCurrency })}
                   </strong>
                 </div>
               </div>

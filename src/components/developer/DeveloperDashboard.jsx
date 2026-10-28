@@ -1327,6 +1327,16 @@ export function DeveloperDashboard({
               <span>Visit Weave 365</span>
             </button>
             <a
+              href="/developer-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-btn-docs"
+              title="Open Weave 365 Developer API Documentation"
+            >
+              <BookOpen size={16} />
+              <span>API Documentation ↗</span>
+            </a>
+            <a
               href={waSupportUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -1347,10 +1357,22 @@ export function DeveloperDashboard({
       <div className="dev-api-request-container">
         <div className="dev-api-request-card">
           <div className="dev-api-request-header">
-            <h2 className="dev-api-request-title">API Access Request</h2>
-            <p className="dev-api-request-subtitle">
-              Submit your business and integration requirements to request access to the Weave 365 Developer API.
-            </p>
+            <div className="dev-api-request-header-content">
+              <h2 className="dev-api-request-title">API Access Request</h2>
+              <p className="dev-api-request-subtitle">
+                Submit your business and integration requirements to request access to the Weave 365 Developer API.
+              </p>
+            </div>
+            <a
+              href="/developer-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="dev-api-doc-link-btn"
+              title="Explore Weave 365 REST API Documentation & Endpoints"
+            >
+              <BookOpen size={15} />
+              <span>API Documentation ↗</span>
+            </a>
           </div>
 
           <form onSubmit={handleSubmitApiAccessRequest} className="dev-api-form">
@@ -1813,7 +1835,7 @@ export function DeveloperDashboard({
                 Monthly API Quota Reached ({monthlyQuota.toLocaleString()} requests)
               </div>
               <p style={{ margin: '3px 0 0', fontSize: '0.85rem', color: '#7f1d1d', lineHeight: '1.4' }}>
-                Storefront API requests are currently paused and returning HTTP 429 rate limits. Quota resets in {daysInMonthLeft} {daysInMonthLeft === 1 ? 'day' : 'days'} (1st of next month), or upgrade to Growth Partner (20,000 req/mo) to resume immediately.
+                Storefront API requests are currently paused and returning HTTP 429 rate limits. Quota resets in {daysInMonthLeft} {daysInMonthLeft === 1 ? 'day' : 'days'} (1st of next month), or contact support to upgrade to Growth Partner (10,000 req/mo) or Pro Scale (25,000 req/mo).
               </p>
             </div>
           </div>

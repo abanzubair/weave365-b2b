@@ -28,7 +28,7 @@ const OVERLAP_HERO_CSS = `
   flex: 1;
   --hero-padding-x: clamp(20px, 4.5vw, 64px);
   --hero-padding-y: clamp(2.5rem, 4.5vw, 4.5rem);
-  max-width: clamp(1200px, 88vw, 1300px);
+  max-width: calc(1600px + (var(--hero-padding-x) * 2));
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -59,14 +59,14 @@ const OVERLAP_HERO_CSS = `
 }
 
 .overlap-hero-tagline {
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
-  font-size: clamp(2.1rem, 4.2vw, 3.6rem);
-  font-weight: 500;
-  color: var(--hero-ink, #16130F);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  margin: 0 0 clamp(1rem, 1.6vw, 1.4rem) 0;
-  text-wrap: balance;
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif) !important;
+  font-size: clamp(2.4rem, 4.2vw, 3.8rem) !important;
+  font-weight: 600 !important;
+  color: var(--hero-ink, #16130F) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.015em !important;
+  margin: 0 0 clamp(1rem, 1.6vw, 1.4rem) 0 !important;
+  text-wrap: balance !important;
 }
 
 .overlap-hero-tagline .hero-line {
@@ -75,9 +75,9 @@ const OVERLAP_HERO_CSS = `
 
 .overlap-hero-tagline .hero-accent-word,
 .overlap-hero-tagline .hero-accent-italic {
-  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif);
+  font-family: var(--font-heading, 'Cormorant Garamond', Georgia, serif) !important;
   font-style: normal !important;
-  font-weight: 500;
+  font-weight: 600 !important;
   color: var(--hero-accent, var(--gold, #B78646)) !important;
 }
 
@@ -183,11 +183,19 @@ const OVERLAP_HERO_CSS = `
 
 .overlap-hero-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 620px;
   background-color: #ffffff;
   border-radius: clamp(22px, 3.5vw, 32px);
   overflow: hidden;
-  box-shadow: 0 20px 48px -12px rgba(45, 30, 20, 0.12);
+  box-shadow: 0 22px 52px -12px rgba(45, 30, 20, 0.13);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) {
+  .overlap-hero-card:hover {
+    transform: translateY(-3px) scale(1.008);
+    box-shadow: 0 28px 60px -12px rgba(45, 30, 20, 0.18);
+  }
 }
 
 .overlap-hero-picture {
@@ -206,6 +214,13 @@ const OVERLAP_HERO_CSS = `
   display: block;
   user-select: none;
   -webkit-user-drag: none;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) {
+  .overlap-hero-card:hover .overlap-hero-img {
+    transform: scale(1.025);
+  }
 }
 
 /* ── Full-Width Dark Features Bar ── */
@@ -217,12 +232,12 @@ const OVERLAP_HERO_CSS = `
 }
 
 .overlap-hero-features-desktop {
-  max-width: 1440px;
+  max-width: calc(1600px + (clamp(20px, 4.5vw, 64px) * 2));
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px clamp(20px, 4.5vw, 64px);
+  padding: 18px clamp(20px, 4.5vw, 64px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -232,7 +247,7 @@ const OVERLAP_HERO_CSS = `
   width: 100%;
   overflow: hidden;
   position: relative;
-  padding: 13px 0;
+  padding: 14px 0;
   box-sizing: border-box;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
@@ -241,7 +256,7 @@ const OVERLAP_HERO_CSS = `
 .overlap-hero-features-track {
   display: flex;
   width: max-content;
-  gap: 32px;
+  gap: 36px;
   animation: heroFeaturesMarquee 22s linear infinite;
   will-change: transform;
 }
@@ -260,12 +275,12 @@ const OVERLAP_HERO_CSS = `
 .overlap-hero-feature-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #F3EFE6;
+  gap: 10px;
+  color: #FAF8F5;
   font-family: var(--font-body, 'Manrope', system-ui, sans-serif);
-  font-size: clamp(0.82rem, 0.95vw, 0.92rem);
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-size: clamp(0.96rem, 1.1vw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.012em;
   white-space: nowrap;
 }
 
@@ -276,7 +291,7 @@ const OVERLAP_HERO_CSS = `
 
 @media (min-width: 900px) {
   .overlap-hero {
-    min-height: clamp(620px, 82vh, 760px);
+    min-height: clamp(660px, 84vh, 800px);
   }
 
   .overlap-hero-features-desktop {
@@ -289,11 +304,11 @@ const OVERLAP_HERO_CSS = `
 
   .overlap-hero-container {
     display: grid;
-    grid-template-columns: 1.12fr 0.88fr;
+    grid-template-columns: 1fr 1.15fr;
     align-items: center;
-    gap: clamp(2rem, 3.5vw, 3.5rem);
-    padding-top: clamp(4rem, 6vw, 6rem);
-    padding-bottom: clamp(4rem, 6vw, 6rem);
+    gap: clamp(2.5rem, 4vw, 4rem);
+    padding-top: clamp(3.2rem, 5vw, 5rem);
+    padding-bottom: clamp(3.2rem, 5vw, 5rem);
   }
 
   .overlap-hero-content-layer {
@@ -304,21 +319,22 @@ const OVERLAP_HERO_CSS = `
   .overlap-hero-content-left {
     align-items: flex-start;
     text-align: left;
-    max-width: 620px;
+    max-width: 640px;
   }
 
   .overlap-hero-tagline {
-    font-size: clamp(2.5rem, 3.8vw, 3.9rem);
-    line-height: 1.14;
-    letter-spacing: -0.015em;
-    margin-bottom: 1.35rem;
+    font-size: clamp(2.6rem, 3.6vw, 3.9rem) !important;
+    font-weight: 600 !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.015em !important;
+    margin-bottom: 1.35rem !important;
   }
 
   .overlap-hero-description {
     font-size: clamp(1rem, 1.1vw, 1.14rem);
     line-height: 1.65;
     margin-bottom: 2.2rem;
-    max-width: 520px;
+    max-width: 560px;
   }
 
   .overlap-hero-actions {
@@ -336,15 +352,16 @@ const OVERLAP_HERO_CSS = `
   .overlap-hero-media-layer {
     order: 2;
     justify-content: center;
+    width: 100%;
   }
 
   .overlap-hero-card {
-    max-width: 590px;
+    max-width: 820px;
     border-radius: 32px;
   }
 
   .overlap-hero-picture {
-    aspect-ratio: 16 / 13;
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -365,6 +382,20 @@ const OVERLAP_HERO_CSS = `
     padding-bottom: 2.25rem;
   }
 
+  .overlap-hero-tagline {
+    font-size: clamp(2.5rem, 5vw, 3.2rem) !important;
+    font-weight: 600 !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.015em !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .overlap-hero-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
   .overlap-hero-actions {
     flex-direction: row;
     width: auto;
@@ -380,26 +411,28 @@ const OVERLAP_HERO_CSS = `
 
 @media (max-width: 599px) {
   .overlap-hero-container {
-    gap: 1.35rem;
+    gap: 1.5rem;
     padding-top: 1.25rem;
-    padding-bottom: 1.65rem;
-    padding-left: 18px;
-    padding-right: 18px;
+    padding-bottom: 1.75rem;
+    padding-left: clamp(14px, 4vw, 20px);
+    padding-right: clamp(14px, 4vw, 20px);
   }
 
   .overlap-hero-tagline {
-    font-size: clamp(1.95rem, 8vw, 2.45rem);
-    line-height: 1.14;
-    letter-spacing: -0.015em;
-    margin-bottom: 0.75rem;
+    font-size: clamp(2.1rem, 7.8vw, 2.65rem) !important;
+    font-weight: 600 !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.015em !important;
+    margin-bottom: 0.85rem !important;
+    width: 100% !important;
   }
 
   .overlap-hero-description {
-    font-size: 0.88rem;
-    line-height: 1.5;
+    font-size: 0.94rem;
+    line-height: 1.55;
     color: #4D4740;
-    margin-bottom: 1.25rem;
-    max-width: 380px;
+    margin-bottom: 1.35rem;
+    max-width: 400px;
   }
 
   .overlap-hero-actions {
@@ -419,9 +452,10 @@ const OVERLAP_HERO_CSS = `
   }
 
   .overlap-hero-card {
-    max-width: 440px;
-    border-radius: 20px;
-    box-shadow: 0 10px 28px -6px rgba(45, 30, 20, 0.1);
+    width: 100%;
+    max-width: 520px;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px -6px rgba(45, 30, 20, 0.12);
   }
 
   .overlap-hero-picture {
@@ -429,8 +463,9 @@ const OVERLAP_HERO_CSS = `
   }
 
   .overlap-hero-feature-item {
-    font-size: 0.82rem;
-    gap: 7px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    gap: 8px;
   }
 }
 
@@ -467,7 +502,13 @@ const OVERLAP_HERO_CSS = `
 
 .dark-mode .overlap-hero-card {
   background-color: #1c1b19;
-  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 22px 52px -12px rgba(0, 0, 0, 0.55);
+}
+
+@media (hover: hover) {
+  .dark-mode .overlap-hero-card:hover {
+    box-shadow: 0 30px 64px -12px rgba(0, 0, 0, 0.7);
+  }
 }
 `;
 
@@ -568,8 +609,8 @@ export function OverlapHero({ navigate }) {
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
-                width={600}
-                height={488}
+                width={800}
+                height={598}
               />
             </picture>
           </div>
@@ -585,12 +626,12 @@ export function OverlapHero({ navigate }) {
             <div key={hl} className="overlap-hero-feature-item">
               <svg
                 className="feature-check"
-                width="15"
-                height="15"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
@@ -609,12 +650,12 @@ export function OverlapHero({ navigate }) {
               <div key={`${hl}-${i}`} className="overlap-hero-feature-item">
                 <svg
                   className="feature-check"
-                  width="14"
-                  height="14"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.5"
+                  strokeWidth="2.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   aria-hidden="true"

@@ -183,7 +183,7 @@ async function authenticateApiKey(request, supabase) {
     return {
       authenticated: false,
       status: 429,
-      error: `Monthly API request quota reached (${keyRecord.monthly_quota} requests). Upgrade to the Growth Partner Tier (₹699/mo) or contact support on WhatsApp to increase your limit.`,
+      error: `Monthly API request quota reached (${keyRecord.monthly_quota} requests). Upgrade to Growth Partner (₹399/mo) or Pro Scale (₹499/mo), or contact support on WhatsApp to increase your limit.`,
       code: 'QUOTA_EXCEEDED',
       isQuotaExceeded: true,
       keyRecord,
@@ -352,7 +352,8 @@ export async function handleDeveloperApiGet(request, pathSegments) {
       upgrade_info: auth.isQuotaExceeded ? {
         current_tier: auth.keyRecord?.tier,
         monthly_quota: auth.keyRecord?.monthly_quota,
-        growth_tier_price: '₹699/month (20,000 requests)',
+        growth_tier_price: '₹399/month (10,000 requests)',
+        pro_tier_price: '₹499/month (25,000 requests)',
         whatsapp_support: '+91 9919101369',
       } : undefined,
     };

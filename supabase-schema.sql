@@ -1578,11 +1578,11 @@ create table if not exists public.api_keys (
   client_website text,                    -- e.g. "https://www.example.com"
   domain_owner_name text,                 -- Domain owner / primary developer
   gst_number text,                        -- Optional GSTIN / tax registration number
-  tier text not null default 'free',      -- 'free', 'growth', 'pro'
+  tier text not null default 'growth',    -- 'growth', 'pro', 'free'
   catalog_mode text not null default 'all', -- 'all' (entire master catalog) or 'curated' (selected_skus only)
   selected_skus jsonb default '[]'::jsonb, -- array of chosen product SKUs e.g. ["100001", "100005"]
-  monthly_quota integer not null default 2000,
-  rate_limit_rps integer not null default 1,
+  monthly_quota integer not null default 10000,
+  rate_limit_rps integer not null default 3,
   is_active boolean not null default true,
   orders_enabled boolean not null default false, -- Explicit admin-controlled toggle for /api/v1/orders
   allowed_endpoints jsonb default '["catalog", "stock", "product"]'::jsonb,
@@ -1820,6 +1820,7 @@ RETURNS TABLE (
   dropship_recipient_state text,
   dropship_recipient_pincode text,
   dropship_packing_preference text,
+  total_amount numeric(12, 2),
   created_at timestamptz,
   updated_at timestamptz
 ) 
@@ -1866,6 +1867,7 @@ BEGIN
     coalesce(a.state, o.dropship_recipient_state) AS dropship_recipient_state,
     coalesce(a.pincode, o.dropship_recipient_pincode) AS dropship_recipient_pincode,
     coalesce(s.packing_preference, o.dropship_packing_preference) AS dropship_packing_preference,
+    o.total_amount,
     o.created_at,
     o.updated_at
   FROM public.orders o

@@ -187,7 +187,7 @@
   }
 
   /* Universal Responsive Headings for Tablets and Mobile Devices */
-  h1, .h1,
+  h1:not(.overlap-hero-tagline), .h1:not(.overlap-hero-tagline),
   .reviews-h1,
   .contact-h1,
   .hero-headline,
@@ -1366,7 +1366,7 @@
     --site-padding: 12px;
   }
 
-  h1, .h1,
+  h1:not(.overlap-hero-tagline), .h1:not(.overlap-hero-tagline),
   .reviews-h1,
   .contact-h1,
   .hero-headline,
