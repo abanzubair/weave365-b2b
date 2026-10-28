@@ -6220,6 +6220,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+.admin-inspect-summary-shipping td {
+  padding: 6px 14px 8px;
+  border-bottom: none;
+  background: #ffffff;
+}
+
+.admin-inspect-shipping-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.admin-inspect-shipping-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
 .admin-inspect-summary-total td {
   padding: 12px 14px;
   border-top: 1.5px solid #cbd5e1;

@@ -1587,7 +1587,11 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                 ? selectedInquiry.payment_method.toUpperCase() 
                                 : 'ONLINE PAYMENT';
 
-                              if (couponDiscount > 0) {
+                              const netItems = Math.max(0, itemsSubtotal - couponDiscount);
+                              const shippingFee = Math.max(0, finalTotal - netItems);
+                              const hasAdjustments = couponDiscount > 0 || shippingFee > 0;
+
+                              if (hasAdjustments) {
                                 return (
                                   <>
                                     <tr className="admin-inspect-summary-subtotal">
@@ -1599,24 +1603,40 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         <span className="admin-inspect-subtotal-amount">{formatMoney(itemsSubtotal)}</span>
                                       </td>
                                     </tr>
-                                    <tr className="admin-inspect-summary-coupon">
-                                      <td colSpan="4">
-                                        <div className="admin-inspect-coupon-wrap">
-                                          <span className="admin-inspect-coupon-label">Applied Coupon</span>
-                                          <span className="admin-inspect-coupon-pill">
-                                            <Tag size={10.5} /> {couponCode || 'APPLIED'}
+                                    {couponDiscount > 0 && (
+                                      <tr className="admin-inspect-summary-coupon">
+                                        <td colSpan="4">
+                                          <div className="admin-inspect-coupon-wrap">
+                                            <span className="admin-inspect-coupon-label">Applied Coupon</span>
+                                            <span className="admin-inspect-coupon-pill">
+                                              <Tag size={10.5} /> {couponCode || 'APPLIED'}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                          <span className="admin-inspect-coupon-amount">-{formatMoney(couponDiscount)}</span>
+                                        </td>
+                                      </tr>
+                                    )}
+                                    {shippingFee > 0 && (
+                                      <tr className="admin-inspect-summary-shipping">
+                                        <td colSpan="4">
+                                          <span className="admin-inspect-shipping-label">
+                                            Shipping &amp; Delivery {shippingFee === 150 ? '(Expedited Air)' : ''}
                                           </span>
-                                        </div>
-                                      </td>
-                                      <td style={{ textAlign: 'right' }}>
-                                        <span className="admin-inspect-coupon-amount">-{formatMoney(couponDiscount)}</span>
-                                      </td>
-                                    </tr>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                          <span className="admin-inspect-shipping-amount">+{formatMoney(shippingFee)}</span>
+                                        </td>
+                                      </tr>
+                                    )}
                                     <tr className="admin-inspect-summary-total">
                                       <td colSpan="4">
                                         <div className="admin-inspect-total-left">
                                           <span className="admin-inspect-total-label">Total Paid</span>
-                                          <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                          {selectedInquiry.payment_method && (
+                                            <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                          )}
                                         </div>
                                       </td>
                                       <td style={{ textAlign: 'right' }}>
@@ -1631,7 +1651,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                 <tr className="admin-inspect-summary-total">
                                   <td colSpan="4">
                                     <div className="admin-inspect-total-left">
-                                      <span className="admin-inspect-total-label">Total Items ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                                      <span className="admin-inspect-total-label">Total Paid ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
                                       {selectedInquiry.payment_method && (
                                         <span className="admin-inspect-payment-pill">{paymentMethod}</span>
                                       )}
