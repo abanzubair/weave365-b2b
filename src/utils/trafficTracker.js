@@ -61,6 +61,17 @@ export function trackSiteTraffic() {
       return;
     }
 
+    // 0c. Ignore automated bots, crawlers, headless browsers & WebDriver
+    if (navigator.webdriver) {
+      return;
+    }
+    const ua = (navigator.userAgent || '').toLowerCase();
+    if (
+      /(googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|bytespider|semrushbot|ahrefsbot|mj12bot|headlesschrome|phantomjs|lighthouse|screaming frog|spider|crawler|crawl)/i.test(ua)
+    ) {
+      return;
+    }
+
     // 1. Session & Navigation Deduplication
     // Check if new external referrer or campaign query parameter arrived
     const search = window.location.search || '';

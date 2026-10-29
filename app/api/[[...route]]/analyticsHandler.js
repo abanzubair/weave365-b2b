@@ -60,6 +60,16 @@ export async function POST(request) {
     const body = await request.json();
     const { path, referrer, searchParams, fullUrl, userAgent, sessionId } = body || {};
 
+    // 0. Bot & Automated Crawler Filtering (Cloudflare Bot Score, Verified Bots, and Scraper User-Agents)
+    const rawUA = userAgent || request.headers.get('user-agent') || '';
+    const isVerifiedBot = request.cf?.verifiedBot === true;
+    const botScore = request.cf?.botManagement?.score ?? parseInt(request.headers.get('cf-bot-score') || '100', 10);
+    const BOT_REGEX = /(googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|bytespider|semrushbot|ahrefsbot|mj12bot|headlesschrome|phantomjs|lighthouse|screaming frog|spider|crawler|crawl|curl\/|wget\/|python-requests|node-fetch|axios|go-http-client|mediapartners-google)/i;
+
+    if (isVerifiedBot || botScore < 30 || BOT_REGEX.test(rawUA)) {
+      return Response.json({ status: 'ignored_bot' }, { status: 200 });
+    }
+
     // 1. Extract Geolocation from Vercel & Cloudflare Edge Headers / Objects
     const host = (request.headers.get('host') || '').toLowerCase();
     const isLocal = host.includes('localhost') ||
@@ -70,22 +80,33 @@ export async function POST(request) {
                     host.endsWith('.local');
 
     const vercelCity = request.headers.get('x-vercel-ip-city');
+    const vercelRegion = request.headers.get('x-vercel-ip-country-region');
     const vercelCountry = request.headers.get('x-vercel-ip-country');
     const cfCity = request.cf?.city;
+    const cfRegion = request.cf?.region || request.headers.get('cf-region');
     const cfCountry = request.cf?.country;
     const cfHeaderCity = request.headers.get('cf-ipcity');
     const cfHeaderCountry = request.headers.get('cf-ipcountry');
-    const cfRegion = request.headers.get('cf-region');
 
     const country = (vercelCountry || cfCountry || cfHeaderCountry || 'IN').toUpperCase();
-    let rawCity = vercelCity || cfCity || cfHeaderCity || cfRegion;
+    let rawCity = vercelCity || cfCity || cfHeaderCity;
+    let rawRegion = vercelRegion || cfRegion;
     if (rawCity) {
       try { rawCity = decodeURIComponent(rawCity); } catch (e) {}
     }
-    const city = rawCity || (isLocal ? 'Local Dev Network' : 'India');
+    if (rawRegion) {
+      try { rawRegion = decodeURIComponent(rawRegion); } catch (e) {}
+    }
+
+    let displayCity = rawCity;
+    if (rawCity && rawRegion && rawCity.toLowerCase() !== rawRegion.toLowerCase()) {
+      displayCity = `${rawCity} (${rawRegion})`;
+    } else if (!rawCity && rawRegion) {
+      displayCity = rawRegion;
+    }
+    const city = displayCity || (isLocal ? 'Local Dev Network' : 'India');
 
     // 2. Classify Referrer & Device Specs securely
-    const rawUA = userAgent || request.headers.get('user-agent') || '';
     const trafficSource = classifyTraffic({
       referrer,
       searchParams,
@@ -94,6 +115,11 @@ export async function POST(request) {
       path: path || '/'
     });
     const deviceSpecs = parseDeviceDetails(rawUA);
+
+    // Filter out clients with completely unknown signatures
+    if (deviceSpecs.deviceOs === 'Unknown' && deviceSpecs.browser === 'Unknown') {
+      return Response.json({ status: 'ignored_unknown_client' }, { status: 200 });
+    }
 
     // 3. Security Sanitize strings
     const safePath = (path || '/').slice(0, 200);

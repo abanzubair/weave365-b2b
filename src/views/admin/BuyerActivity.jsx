@@ -82,6 +82,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   const [siteAnalytics, setSiteAnalytics] = useState([]);
   const [trafficLoading, setTrafficLoading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [hideBots, setHideBots] = useState(true);
 
   // Load site analytics from Supabase
   const loadTrafficAnalytics = async () => {
@@ -493,6 +494,8 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
 
   // Filtered raw site analytics (Excludes /admin pages, localhost, and local dev network)
   const cleanSiteAnalytics = useMemo(() => {
+    const DATACENTER_BOT_CITIES = ['dallas', 'ashburn', 'moses lake', 'social circle', 'forest city', 'boydton', 'council bluffs', 'quincy', 'leesburg'];
+
     return siteAnalytics.filter((t) => {
       const cityLower = String(t.city || '').toLowerCase();
       const pathLower = String(t.path || '').toLowerCase();
@@ -505,9 +508,19 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       ) {
         return false;
       }
+
+      if (hideBots) {
+        // Unknown device & browser
+        if (t.device_os === 'Unknown' && t.browser === 'Unknown') return false;
+        // Known crawler datacenter locations
+        const countryUpper = String(t.country || '').toUpperCase();
+        if (countryUpper === 'US' && DATACENTER_BOT_CITIES.some(dc => cityLower.includes(dc))) return false;
+        if (countryUpper === 'SG' && String(t.device_os || '').toLowerCase() === 'macos' && !t.referrer) return false;
+      }
+
       return true;
     });
-  }, [siteAnalytics]);
+  }, [siteAnalytics, hideBots]);
 
   // Traffic Analytics Breakdown Calculations
   const trafficMetrics = useMemo(() => {
@@ -1445,7 +1458,29 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setHideBots(!hideBots)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: hideBots ? '1px solid #16a34a' : '1px solid #cbd5e1',
+                  background: hideBots ? '#f0fdf4' : '#ffffff',
+                  color: hideBots ? '#15803d' : '#64748b',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Toggle filtering of automated bot crawlers (Googlebot, Bingbot, Datacenter scrapers)"
+              >
+                <span>{hideBots ? '🛡️ Real Humans Only' : 'Show All (Including Bots)'}</span>
+              </button>
+
               {['all', 'AI Assistant', 'Social Media', 'Search Engine', 'Direct / App'].map((cat) => (
                 <button
                   key={cat}
