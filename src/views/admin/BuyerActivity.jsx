@@ -82,7 +82,19 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
   const [siteAnalytics, setSiteAnalytics] = useState([]);
   const [trafficLoading, setTrafficLoading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [hideBots, setHideBots] = useState(true);
+  const [onlyRealTraffic, setOnlyRealTraffic] = useState(true);
+  const [appliedRealTraffic, setAppliedRealTraffic] = useState(true);
+  const [toggleAnimState, setToggleAnimState] = useState(null);
+
+  // Smooth delayed toggle: allows the prominent spring bounce animation to play fluidly before heavy table filtering
+  const handleToggleRealTraffic = () => {
+    const next = !onlyRealTraffic;
+    setOnlyRealTraffic(next);
+    setToggleAnimState(next ? 'on' : 'off');
+    setTimeout(() => {
+      setAppliedRealTraffic(next);
+    }, 280);
+  };
 
   // Load site analytics from Supabase
   const loadTrafficAnalytics = async () => {
@@ -492,13 +504,20 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
     });
   }, [groupedBuyers, activityFilter, typeFilter, searchQuery, sortBy]);
 
-  // Filtered raw site analytics (Excludes /admin pages, localhost, and local dev network)
+  // Filtered raw site analytics (Excludes /admin pages, localhost, and crawler bots)
   const cleanSiteAnalytics = useMemo(() => {
-    const DATACENTER_BOT_CITIES = ['dallas', 'ashburn', 'moses lake', 'social circle', 'forest city', 'boydton', 'council bluffs', 'quincy', 'leesburg'];
+    const DATACENTER_BOT_CITIES = [
+      'dallas', 'ashburn', 'moses lake', 'social circle', 'forest city', 'boydton',
+      'council bluffs', 'quincy', 'leesburg', 'prineville', 'oklahoma city', 'phoenix',
+      'richmond', 'des moines', 'seattle', 'san jose', 'boardman', 'columbus', 'north bergen',
+      'centreville', 'mountain view', 'gallatin', 'cheyenne'
+    ];
 
     return siteAnalytics.filter((t) => {
       const cityLower = String(t.city || '').toLowerCase();
       const pathLower = String(t.path || '').toLowerCase();
+
+      // 1. Exclude localhost and admin panel views
       if (
         cityLower.includes('localhost') ||
         cityLower.includes('local dev') ||
@@ -509,18 +528,46 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
         return false;
       }
 
-      if (hideBots) {
-        // Unknown device & browser
-        if (t.device_os === 'Unknown' && t.browser === 'Unknown') return false;
-        // Known crawler datacenter locations
+      // 2. Real Traffic Only (Default ON): Safely filters out all automated crawler bots
+      if (appliedRealTraffic) {
+        // Drop unknown device & browser
+        if (t.device_os === 'Unknown' || t.browser === 'Unknown') return false;
+
         const countryUpper = String(t.country || '').toUpperCase();
-        if (countryUpper === 'US' && DATACENTER_BOT_CITIES.some(dc => cityLower.includes(dc))) return false;
-        if (countryUpper === 'SG' && String(t.device_os || '').toLowerCase() === 'macos' && !t.referrer) return false;
+        const srcNameLower = String(t.source_name || '').toLowerCase();
+        const srcCatLower = String(t.source_category || '').toLowerCase();
+
+        // Always keep real social/messaging campaign traffic (WhatsApp, Instagram, etc.)
+        if (srcNameLower.includes('whatsapp') || srcNameLower.includes('instagram') || srcCatLower.includes('social')) {
+          return true;
+        }
+
+        // Always keep genuine AI assistant referrals (ChatGPT, Gemini, Claude)
+        if (srcCatLower.includes('ai assistant')) {
+          return true;
+        }
+
+        // Always keep genuine Indian traffic
+        if (countryUpper === 'IN') {
+          return true;
+        }
+
+        // Foreign cloud datacenter crawlers:
+        // Any foreign direct hit without referrer or foreign search bot is an automated crawler (Meta, Googlebot, AWS, etc.)
+        if (!t.referrer) {
+          return false;
+        }
+        if (['US', 'SG', 'IE', 'SE', 'DE', 'CN', 'NL', 'CA'].includes(countryUpper) && srcCatLower.includes('search')) {
+          return false;
+        }
+        if (DATACENTER_BOT_CITIES.some((dc) => cityLower.includes(dc))) {
+          return false;
+        }
       }
 
       return true;
     });
-  }, [siteAnalytics, hideBots]);
+  }, [siteAnalytics, appliedRealTraffic]);
 
   // Traffic Analytics Breakdown Calculations
   const trafficMetrics = useMemo(() => {
@@ -1458,48 +1505,133 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                type="button"
-                onClick={() => setHideBots(!hideBots)}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Subtle Natural Spring Bounce Keyframes */}
+              <style>{`
+                @keyframes toggleBounceOn {
+                  0% { transform: translateX(0px); }
+                  60% { transform: translateX(20.5px); }
+                  82% { transform: translateX(17.5px); }
+                  100% { transform: translateX(18px); }
+                }
+                @keyframes toggleBounceOff {
+                  0% { transform: translateX(18px); }
+                  60% { transform: translateX(-2.5px); }
+                  82% { transform: translateX(0.5px); }
+                  100% { transform: translateX(0px); }
+                }
+              `}</style>
+
+              {/* Minimal Clean Toggle Switch (Subtle Natural Spring Animation) */}
+              <div
+                onClick={handleToggleRealTraffic}
+                role="switch"
+                aria-checked={onlyRealTraffic}
                 style={{
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  border: hideBots ? '1px solid #16a34a' : '1px solid #cbd5e1',
-                  background: hideBots ? '#f0fdf4' : '#ffffff',
-                  color: hideBots ? '#15803d' : '#64748b',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s ease'
+                  gap: '10px',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
+                  border: onlyRealTraffic ? '1px solid #86efac' : '1px solid #cbd5e1',
+                  background: onlyRealTraffic ? '#f0fdf4' : '#ffffff',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  height: '38px',
+                  boxSizing: 'border-box',
+                  transition: 'background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease',
+                  boxShadow: onlyRealTraffic ? '0 1px 3px rgba(22, 163, 74, 0.12)' : '0 1px 2px rgba(0, 0, 0, 0.03)'
                 }}
-                title="Toggle filtering of automated bot crawlers (Googlebot, Bingbot, Datacenter scrapers)"
+                title={onlyRealTraffic ? 'Real human traffic only (Click to show crawlers)' : 'Showing all traffic including crawlers (Click to filter)'}
               >
-                <span>{hideBots ? '🛡️ Real Humans Only' : 'Show All (Including Bots)'}</span>
-              </button>
-
-              {['all', 'AI Assistant', 'Social Media', 'Search Engine', 'Direct / App'].map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategoryFilter(cat)}
+                {/* Switch Track */}
+                <div
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: '20px',
+                    position: 'relative',
+                    width: '38px',
+                    height: '20px',
+                    borderRadius: '999px',
+                    background: onlyRealTraffic ? '#16a34a' : '#cbd5e1',
+                    boxShadow: onlyRealTraffic ? 'inset 0 1px 2px rgba(0,0,0,0.12)' : 'inset 0 1px 2px rgba(0,0,0,0.06)',
+                    transition: 'background-color 0.25s ease, box-shadow 0.25s ease',
+                    flexShrink: 0
+                  }}
+                >
+                  {/* Subtle Spring Bounce Thumb */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '2px',
+                      left: '2px',
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
+                      background: '#ffffff',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
+                      transform: onlyRealTraffic ? 'translateX(18px)' : 'translateX(0px)',
+                      animation: toggleAnimState === 'on'
+                        ? 'toggleBounceOn 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards'
+                        : toggleAnimState === 'off'
+                        ? 'toggleBounceOff 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards'
+                        : 'none',
+                      willChange: 'transform',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </div>
+                {/* Static Label: Size never shifts */}
+                <span
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: onlyRealTraffic ? '#15803d' : '#64748b',
+                    whiteSpace: 'nowrap',
+                    transition: 'color 0.35s ease'
+                  }}
+                >
+                  Real Traffic Only
+                </span>
+              </div>
+
+              {/* 5 Channels in a Clean Dropdown Selector */}
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <select
+                  id="traffic-channel-filter"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    padding: '8px 34px 8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#0f172a',
                     fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    border: '1px solid #cbd5e1',
-                    background: categoryFilter === cat ? '#2563eb' : '#ffffff',
-                    color: categoryFilter === cat ? '#ffffff' : '#475569'
+                    outline: 'none',
+                    height: '38px',
+                    boxSizing: 'border-box'
                   }}
+                  title="Filter traffic by source channel"
                 >
-                  {cat === 'all' ? 'All Channels' : cat}
-                </button>
-              ))}
+                  <option value="all">All Channels</option>
+                  <option value="AI Assistant">🤖 AI Assistant</option>
+                  <option value="Social Media">📲 Social Media</option>
+                  <option value="Search Engine">🔍 Search Engine</option>
+                  <option value="Direct / App">🔗 Direct / App</option>
+                </select>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    pointerEvents: 'none',
+                    color: '#64748b'
+                  }}
+                />
+              </div>
             </div>
           </div>
 

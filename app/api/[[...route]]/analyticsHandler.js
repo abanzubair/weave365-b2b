@@ -93,9 +93,11 @@ export async function POST(request) {
     let rawRegion = vercelRegion || cfRegion;
     if (rawCity) {
       try { rawCity = decodeURIComponent(rawCity); } catch (e) {}
+      if (rawCity === 'undefined' || rawCity === 'null') rawCity = null;
     }
     if (rawRegion) {
       try { rawRegion = decodeURIComponent(rawRegion); } catch (e) {}
+      if (rawRegion === 'undefined' || rawRegion === 'null') rawRegion = null;
     }
 
     let displayCity = rawCity;
@@ -119,6 +121,17 @@ export async function POST(request) {
     // Filter out clients with completely unknown signatures
     if (deviceSpecs.deviceOs === 'Unknown' && deviceSpecs.browser === 'Unknown') {
       return Response.json({ status: 'ignored_unknown_client' }, { status: 200 });
+    }
+
+    // Drop automated foreign datacenter scrapers without referrer or campaign
+    const isForeign = country !== 'IN';
+    const hasCampaign = /[?&](utm_|ref|source|via|origin|gclid|fbclid)/i.test(searchParams || '') ||
+                        /whatsapp|instagram/i.test(trafficSource.name || '');
+    if (isForeign && !(referrer || '') && !hasCampaign && (country === 'SG' || country === 'US')) {
+      const DATACENTER_BOT_CITIES = ['prineville', 'dallas', 'ashburn', 'moses lake', 'social circle', 'forest city', 'boydton', 'council bluffs', 'singapore', 'richmond', 'oklahoma city', 'phoenix'];
+      if (DATACENTER_BOT_CITIES.some(dc => (rawCity || '').toLowerCase().includes(dc))) {
+        return Response.json({ status: 'ignored_datacenter_crawler' }, { status: 200 });
+      }
     }
 
     // 3. Security Sanitize strings
