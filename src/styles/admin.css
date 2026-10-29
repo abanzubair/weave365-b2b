@@ -9044,6 +9044,507 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────
+   WEBSITE TRAFFIC & AI ANALYTICS TABLE (DESKTOP & BASE)
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ───────────────────────────────────────────────────────────────────
+   DECLUTTERED ULTRA-MINIMAL OVERVIEW CARDS
+   Clean pastel canvas, dot labels, big numbers, short captions, zero clutter
+   ─────────────────────────────────────────────────────────────────── */
+
+.traffic-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.traffic-overview-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 110px;
+  box-sizing: border-box;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.traffic-overview-card[role="button"] {
+  cursor: pointer;
+}
+
+.traffic-overview-card[role="button"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Card 1: Warm Sand / Champagne */
+.card-style-total {
+  background: #fbf7f0;
+  border: 1px solid #f2e7d5;
+}
+.card-style-total:hover {
+  border-color: #e6d3ba;
+}
+
+/* Card 2: Soft Lilac / Lavender */
+.card-style-ai {
+  background: #f7f3fb;
+  border: 1px solid #ede3f5;
+}
+.card-style-ai:hover {
+  border-color: #ddcced;
+}
+
+/* Card 3: Soft Rose / Coral */
+.card-style-social {
+  background: #fdf5f6;
+  border: 1px solid #f8dfdf;
+}
+.card-style-social:hover {
+  border-color: #f1c7cb;
+}
+
+/* Card 4: Soft Mint / Sage */
+.card-style-mobile {
+  background: #f1f8f4;
+  border: 1px solid #dbeae0;
+}
+
+/* Clean Header Label (No pill!) */
+.overview-header-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: -0.01em;
+}
+
+.overview-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-amber { background: #d97706; }
+.dot-purple { background: #8b5cf6; }
+.dot-pink { background: #ec4899; }
+.dot-emerald { background: #10b981; }
+
+.overview-metric-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 10px 0 6px;
+}
+
+.overview-sub-caption {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.traffic-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.traffic-breakdown-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.traffic-breakdown-card:hover {
+  border-color: #cbd5e1;
+}
+
+.breakdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.breakdown-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.breakdown-header-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown-empty-text {
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 12px 0;
+}
+
+.traffic-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.traffic-breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  padding: 5px 6px;
+  margin: -3px -6px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.traffic-breakdown-row:hover {
+  background-color: #f8fafc;
+}
+
+.traffic-breakdown-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.traffic-breakdown-item-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
+}
+
+.traffic-breakdown-row:hover .traffic-breakdown-item-name {
+  color: #0f172a;
+}
+
+.traffic-breakdown-item-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.traffic-breakdown-track {
+  width: 100%;
+  height: 4px;
+  background-color: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.traffic-breakdown-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.traffic-breakdown-bar.bar-purple {
+  background-color: #8b5cf6;
+}
+
+.traffic-breakdown-bar.bar-pink {
+  background-color: #ec4899;
+}
+
+.traffic-breakdown-bar.bar-amber {
+  background-color: #f59e0b;
+}
+
+.traffic-toolbar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.traffic-search-wrap {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+}
+
+.traffic-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.traffic-search-input {
+  width: 100%;
+  padding: 9px 34px 9px 36px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.traffic-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.traffic-search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.traffic-search-clear-btn:hover {
+  color: #0f172a;
+}
+
+.traffic-toolbar-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.traffic-table-wrapper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.buyer-activity-table.table-traffic th {
+  white-space: nowrap;
+}
+
+.buyer-activity-table tbody tr.traffic-row {
+  transition: background-color 0.12s ease;
+}
+
+.buyer-activity-table tbody tr.traffic-row:hover {
+  background-color: #f8fafc;
+}
+
+.traffic-row td {
+  vertical-align: middle;
+}
+
+.traffic-cell-date {
+  font-size: 13px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.traffic-date-primary {
+  display: block;
+  font-weight: 500;
+  color: #334155;
+  font-size: 13px;
+}
+
+.traffic-date-relative {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.traffic-path-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.traffic-page-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.traffic-page-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.traffic-path-subtle {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: #64748b;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  transition: color 0.15s ease;
+}
+
+.traffic-page-link-btn:hover .traffic-path-subtle {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.traffic-ext-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.traffic-page-link-btn:hover .traffic-ext-icon {
+  color: #2563eb;
+}
+
+.traffic-referrer-subtle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.traffic-ref-tag {
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: lowercase;
+}
+
+.traffic-ref-domain {
+  color: #64748b;
+}
+
+.traffic-source-cell-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.traffic-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.traffic-mobile-timestamp {
+  display: none;
+}
+
+.traffic-device-cell-inner {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.traffic-device-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.traffic-device-icon.icon-mobile {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.traffic-device-icon.icon-desktop {
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.traffic-location-cell-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.traffic-loc-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.traffic-loc-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.traffic-empty-cell {
+  padding: 36px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.traffic-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ───────────────────────────────────────────────────────────────────
    MOBILE RESPONSIVE OPTIMIZATIONS FOR BUYER ACTIVITY & INTENT
    High-density stacked cards, touch-optimized actions, horizontal pill strip
    ─────────────────────────────────────────────────────────────────── */
@@ -9361,6 +9862,305 @@
     width: 100%;
     display: flex;
     justify-content: stretch;
+  }
+
+  /* 5. Website Traffic Analytics Mobile Responsive Layout */
+  .traffic-overview-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .traffic-overview-card {
+    border-radius: 14px !important;
+    padding: 13px 14px !important;
+    min-height: 98px !important;
+  }
+
+  .overview-header-label {
+    font-size: 11.5px !important;
+    gap: 5px !important;
+  }
+
+  .overview-dot {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .overview-metric-number {
+    font-size: 26px !important;
+    margin: 8px 0 4px !important;
+  }
+
+  .overview-sub-caption {
+    font-size: 11px !important;
+  }
+
+  .traffic-breakdown-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .traffic-breakdown-card {
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .breakdown-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .traffic-breakdown-list {
+    gap: 11px !important;
+  }
+
+  .traffic-breakdown-item-name {
+    font-size: 13px !important;
+  }
+
+  .traffic-breakdown-item-count {
+    font-size: 12.5px !important;
+  }
+
+  .traffic-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+
+  .traffic-search-wrap {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .traffic-toolbar-controls {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .traffic-real-toggle {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+    height: 36px !important;
+  }
+
+  .traffic-channel-select-wrap {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .traffic-channel-select {
+    width: 100% !important;
+    height: 36px !important;
+    padding: 6px 26px 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Traffic Table -> Clean Minimal Unified Card Row Layout */
+  .buyer-activity-table.table-traffic thead {
+    display: none !important;
+  }
+
+  .buyer-activity-table.table-traffic,
+  .buyer-activity-table.table-traffic tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .buyer-activity-table tbody tr.traffic-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 6px 12px !important;
+    padding: 13px 15px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    align-items: center !important;
+    transition: background-color 0.15s ease !important;
+  }
+
+  .buyer-activity-table tbody tr.traffic-row:last-child {
+    border-bottom: none !important;
+  }
+
+  .buyer-activity-table tbody tr.traffic-row:active,
+  .buyer-activity-table tbody tr.traffic-row:hover {
+    background-color: #fafbfd !important;
+  }
+
+  /* Reset all td defaults from the generic .buyer-activity-table td */
+  .traffic-row td {
+    padding: 0 !important;
+    border: none !important;
+    width: auto !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 1. Date cell hidden on mobile */
+  .traffic-row .traffic-cell-date {
+    display: none !important;
+  }
+
+  /* 2. Page Title & Path (Row 1 of Card) */
+  .traffic-row .traffic-cell-path {
+    grid-row: 1 !important;
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 2px !important;
+  }
+
+  .traffic-row .traffic-page-title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .traffic-row .traffic-page-link-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    text-decoration: none !important;
+    margin-top: 1px !important;
+  }
+
+  .traffic-row .traffic-path-subtle {
+    font-size: 11.5px !important;
+    color: #64748b !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .traffic-row .traffic-referrer-subtle {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    margin-top: 2px !important;
+  }
+
+  /* 3. Source Badge & Relative Time (Row 2 of Card) */
+  .traffic-row .traffic-cell-source {
+    grid-row: 2 !important;
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 2px 0 !important;
+  }
+
+  .traffic-row .traffic-source-cell-inner {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .traffic-row .traffic-source-badge {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    font-size: 11.5px !important;
+    padding: 3px 9px !important;
+    border-radius: 999px !important;
+    gap: 5px !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+  }
+
+  .traffic-row .traffic-mobile-timestamp {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    font-size: 11.5px !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* 4. Device Column on bottom left (Row 3, Col 1 of Card) */
+  .traffic-row .traffic-cell-device {
+    grid-row: 3 !important;
+    grid-column: 1 / 2 !important;
+    display: block !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+    min-width: 0 !important;
+  }
+
+  .traffic-row .traffic-device-primary {
+    font-size: 11.5px !important;
+    color: #64748b !important;
+    gap: 5px !important;
+  }
+
+  .traffic-row .traffic-device-name {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* 5. Location Column on bottom right (Row 3, Col 2 of Card) */
+  .traffic-row .traffic-cell-location {
+    grid-row: 3 !important;
+    grid-column: 2 / 3 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+    min-width: 0 !important;
+  }
+
+  .traffic-row .traffic-location-cell-inner {
+    font-size: 11.5px !important;
+    color: #475569 !important;
+    font-weight: 500 !important;
+    justify-content: flex-end !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+  }
+
+  .traffic-row .traffic-loc-name {
+    max-width: 150px !important;
+    font-size: 11.5px !important;
+    text-align: right !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .buyer-activity-table tbody tr.traffic-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .traffic-row .traffic-cell-device {
+    grid-row: 3 !important;
+    grid-column: 1 / -1 !important;
+  }
+
+  .traffic-row .traffic-cell-location {
+    grid-row: 4 !important;
+    grid-column: 1 / -1 !important;
+    justify-content: flex-start !important;
+  }
+
+  .traffic-row .traffic-location-cell-inner {
+    justify-content: flex-start !important;
+  }
+
+  .traffic-row .traffic-loc-name {
+    text-align: left !important;
+    max-width: 100% !important;
   }
 }
 

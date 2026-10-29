@@ -207,10 +207,23 @@ export function classifyTraffic({
   // TIER 2: Universal Domain & Hostname Classifier
   // ---------------------------------------------------------------------------
   if (refHost) {
+    // Exclude own domain & local dev navigation from external referral classification
+    const isInternalHost = refHost.includes('weave365') || refHost === 'localhost' || refHost.endsWith('.local');
+    if (isInternalHost) {
+      return buildResult({
+        category: 'Direct / App',
+        name: 'Internal Navigation',
+        brand: 'Weave365',
+        type: 'direct',
+        refHost,
+        cleanPath
+      });
+    }
+
     // 2a. AI Assistant / Agent Domain Heuristics
     const isAiTld = refHost.endsWith('.ai') || refHost.endsWith('.chat') || refHost.endsWith('.bot');
     const isAiSubdomain = /^(ai|chat|copilot|assistant|gemini|claude|agent|llm|gpt)\./i.test(refHost);
-    const hasAiKeyword = AI_KEYWORDS.some(k => refHost.includes(k) || refPath.includes(k));
+    const hasAiKeyword = AI_KEYWORDS.some(k => refHost.includes(k));
 
     if ((isAiTld || isAiSubdomain || hasAiKeyword) && !refHost.includes('github') && !refHost.includes('gitlab')) {
       const brand = extractBrandFromHost(refHost);

@@ -23,11 +23,96 @@ import {
   TrendingUp,
   Download,
   ChevronUp,
-  X
+  X,
+  ExternalLink
 } from '../../components/icons.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
+
+/**
+ * Clean technical jargon from source names (e.g. Dark App Link -> Direct Link)
+ */
+function cleanSourceName(sourceName) {
+  if (!sourceName) return 'Direct Visit';
+  if (sourceName.includes('Dark App Link') || sourceName.includes('Referrer Stripped')) {
+    return 'Direct Link';
+  }
+  return sourceName;
+}
+
+/**
+ * Clean source/AI labels for clean breakdown presentation
+ */
+function cleanBreakdownName(name) {
+  if (!name) return 'Direct Visit';
+  let clean = name.replace(/\s+AI$/i, '').trim();
+  if (clean.toLowerCase() === 'whatsapp') return 'WhatsApp';
+  return cleanSourceName(clean);
+}
+
+/**
+ * Human-friendly title resolver for web page paths
+ */
+function formatPageTitle(path) {
+  if (!path || path === '/' || path === '') return 'Home Page';
+
+  const clean = path.split('?')[0].replace(/\/+$/, '');
+
+  if (clean === '/order-tracking' || clean.startsWith('/order-tracking/')) {
+    const parts = clean.split('/');
+    if (parts.length > 2 && parts[2]) {
+      const id = parts[2];
+      const shortId = id.length > 10 ? `${id.slice(0, 6)}...${id.slice(-4)}` : id;
+      return `Order Tracking #${shortId}`;
+    }
+    return 'Order Tracking';
+  }
+
+  if (clean === '/catalogue') return 'Product Catalogue';
+  if (clean === '/wholesale-catalogue') return 'Wholesale Catalogue';
+  if (clean === '/cart') return 'Shopping Cart';
+  if (clean === '/checkout') return 'Checkout Page';
+  if (clean === '/favorites' || clean === '/favourites') return 'Wishlist';
+  if (clean === '/account') return 'Customer Account';
+  if (clean === '/bulk-inquiry') return 'Bulk Inquiry';
+  if (clean === '/reseller-dashboard') return 'Reseller Dashboard';
+  if (clean === '/resell') return 'Reseller Hub';
+  if (clean === '/sell-banarasi-sarees' || clean === '/sellers') return 'Seller Portal';
+  if (clean === '/contact') return 'Contact Us';
+  if (clean === '/about') return 'About Weave 365';
+  if (clean === '/new-arrivals') return 'New Arrivals';
+  if (clean.startsWith('/blog')) return 'Blog Article';
+
+  // Category & Product URL pattern: /[category]/[productId]
+  const segments = clean.split('/').filter(Boolean);
+  if (segments.length === 2) {
+    const catName = segments[0]
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return `${catName} #${segments[1]}`;
+  }
+  if (segments.length === 1) {
+    return segments[0]
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  return clean;
+}
+
+/**
+ * Clean referrer hostname for minimal display
+ */
+function extractReferrerDisplay(referrer) {
+  if (!referrer) return '';
+  try {
+    const url = new URL(referrer.startsWith('http') ? referrer : `https://${referrer}`);
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    return referrer.slice(0, 30);
+  }
+}
 
 /**
  * Helper to get badge styling & icons for traffic sources
@@ -68,7 +153,37 @@ function getSourceBadge(sourceCategory, sourceName) {
  * 2. Main Website Traffic & AI Referral Analytics (ChatGPT, Gemini, Claude, Location, Device)
  */
 export default function BuyerActivity({ adminData, products = [], loadAdminData }) {
-  const [viewMode, setViewMode] = useState('interactions'); // 'interactions' | 'traffic'
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const sub = params.get('subtab') || params.get('view') || params.get('mode') || params.get('section');
+        if (sub === 'traffic' || sub === 'web' || sub === 'website' || sub === 'analytics') return 'traffic';
+      } catch {
+        // ignore
+      }
+    }
+    return 'interactions';
+  });
+
+  const handleSwitchView = (mode) => {
+    setViewMode(mode);
+    setSearchQuery('');
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        if (mode === 'traffic') {
+          url.searchParams.set('subtab', 'traffic');
+        } else {
+          url.searchParams.delete('subtab');
+        }
+        window.history.replaceState({}, '', url.toString());
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   const [activityFilter, setActivityFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'cart_qty' | 'activity_count' | 'intent'
@@ -513,7 +628,19 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       'centreville', 'mountain view', 'gallatin', 'cheyenne'
     ];
 
-    return siteAnalytics.filter((t) => {
+    return siteAnalytics
+      .map((t) => {
+        // Sanitize any false-positive internal navigation misclassified as AI Assistant
+        if (
+          t.source_category === 'AI Assistant' &&
+          (String(t.source_name || '').toLowerCase().includes('weave') ||
+           String(t.referrer || '').toLowerCase().includes('weave365'))
+        ) {
+          return { ...t, source_category: 'Direct / App', source_name: 'Direct Link' };
+        }
+        return t;
+      })
+      .filter((t) => {
       const cityLower = String(t.city || '').toLowerCase();
       const pathLower = String(t.path || '').toLowerCase();
 
@@ -764,7 +891,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
             <button
               type="button"
-              onClick={() => { setViewMode('interactions'); setSearchQuery(''); }}
+              onClick={() => handleSwitchView('interactions')}
               style={{
                 padding: '7px 16px',
                 borderRadius: '6px',
@@ -784,7 +911,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
             </button>
             <button
               type="button"
-              onClick={() => { setViewMode('traffic'); setSearchQuery(''); }}
+              onClick={() => handleSwitchView('traffic')}
               style={{
                 padding: '7px 16px',
                 borderRadius: '6px',
@@ -1364,183 +1491,263 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
       ) : (
         /* Website Traffic & AI Referral Analytics View */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Top Overview Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Globe size={22} />
+          {/* Top Overview Cards Grid (Decluttered Ultra-Minimal Cards) */}
+          <div className="traffic-overview-grid">
+            <div
+              className="traffic-overview-card card-style-total"
+              onClick={() => { setCategoryFilter('all'); setSearchQuery(''); }}
+              role="button"
+              tabIndex={0}
+              title="Click to view all traffic"
+            >
+              <div className="overview-header-label">
+                <span className="overview-dot dot-amber" />
+                <span>Total Traffic</span>
               </div>
-              <div>
-                <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Total Website Visits</span>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a' }}>{trafficMetrics.totalVisits}</div>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Unique Sessions</span>
-              </div>
+              <div className="overview-metric-number">{trafficMetrics.totalVisits}</div>
+              <div className="overview-sub-caption">Unique sessions</div>
             </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f3e8ff', color: '#6b21a8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bot size={22} />
+            <div
+              className="traffic-overview-card card-style-ai"
+              onClick={() => { setCategoryFilter('AI Assistant'); setSearchQuery(''); }}
+              role="button"
+              tabIndex={0}
+              title="Click to filter by AI Assistants"
+            >
+              <div className="overview-header-label">
+                <span className="overview-dot dot-purple" />
+                <span>AI Assistants</span>
               </div>
-              <div>
-                <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>AI Assistant Traffic</span>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#6b21a8' }}>{trafficMetrics.aiVisits}</div>
-                <span style={{ fontSize: '12px', color: '#6b21a8', fontWeight: 600 }}>ChatGPT, Gemini, Claude</span>
-              </div>
+              <div className="overview-metric-number">{trafficMetrics.aiVisits}</div>
+              <div className="overview-sub-caption">ChatGPT, Gemini, Claude</div>
             </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#fdf2f8', color: '#db2777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <TrendingUp size={22} />
+            <div
+              className="traffic-overview-card card-style-social"
+              onClick={() => { setCategoryFilter(categoryFilter === 'Social Media' ? 'all' : 'Social Media'); setSearchQuery(''); }}
+              role="button"
+              tabIndex={0}
+              title="Click to filter by Social & Search"
+            >
+              <div className="overview-header-label">
+                <span className="overview-dot dot-pink" />
+                <span>Social &amp; Search</span>
               </div>
-              <div>
-                <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Social & Search</span>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#db2777' }}>{trafficMetrics.socialVisits + trafficMetrics.searchVisits}</div>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Instagram, WhatsApp, Google</span>
-              </div>
+              <div className="overview-metric-number">{trafficMetrics.socialVisits + trafficMetrics.searchVisits}</div>
+              <div className="overview-sub-caption">Google, Instagram, WhatsApp</div>
             </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'flex', gap: '14px', alignItems: 'center' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#f0fdf4', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Smartphone size={22} />
+            <div
+              className="traffic-overview-card card-style-mobile"
+              title={`${trafficMetrics.mobileCount} mobile smartphones vs ${trafficMetrics.desktopCount} desktop PCs`}
+            >
+              <div className="overview-header-label">
+                <span className="overview-dot dot-emerald" />
+                <span>Mobile Devices</span>
               </div>
-              <div>
-                <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Mobile Devices</span>
-                <div style={{ fontSize: '24px', fontWeight: 800, color: '#16a34a' }}>{trafficMetrics.mobilePercent}%</div>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>{trafficMetrics.mobileCount} Mobile vs {trafficMetrics.desktopCount} PC</span>
-              </div>
+              <div className="overview-metric-number">{trafficMetrics.mobilePercent}%</div>
+              <div className="overview-sub-caption">{trafficMetrics.mobileCount} Mobile · {trafficMetrics.desktopCount} PC</div>
             </div>
           </div>
 
           {/* Breakdown Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-            {/* AI Traffic Breakdown */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
-                <Bot size={20} style={{ color: '#6b21a8' }} /> AI Assistants Referral Breakdown
+          <div className="traffic-breakdown-grid">
+            {/* 1. AI Assistants Breakdown */}
+            <div className="traffic-breakdown-card">
+              <div className="breakdown-header">
+                <div className="breakdown-header-title">
+                  <span className="overview-dot dot-purple" />
+                  <span>AI Assistants</span>
+                </div>
+                <span className="breakdown-header-meta">
+                  {trafficMetrics.aiVisits} total
+                </span>
               </div>
               {trafficMetrics.topAiList.length === 0 ? (
-                <div style={{ fontSize: '13.5px', color: '#94a3b8', fontStyle: 'italic', padding: '12px 0' }}>
-                  No AI referrals recorded yet. (Detects ChatGPT, Gemini, Claude, Perplexity, Copilot, DeepSeek).
+                <div className="breakdown-empty-text">
+                  No AI referrals recorded yet
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {trafficMetrics.topAiList.map(([aiName, count]) => (
-                    <div key={aiName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                      <span style={{ fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>🤖</span> {aiName}
-                      </span>
-                      <span style={{ background: '#f3e8ff', color: '#6b21a8', padding: '2px 10px', borderRadius: '12px', fontSize: '12.5px', fontWeight: 700 }}>
-                        {count} visits
-                      </span>
-                    </div>
-                  ))}
+                <div className="traffic-breakdown-list">
+                  {(() => {
+                    const maxVal = trafficMetrics.topAiList[0][1] || 1;
+                    return trafficMetrics.topAiList.map(([aiName, count]) => {
+                      const displayName = cleanBreakdownName(aiName);
+                      const pct = Math.max(5, Math.round((count / maxVal) * 100));
+                      return (
+                        <div
+                          key={aiName}
+                          className="traffic-breakdown-row"
+                          onClick={() => {
+                            setCategoryFilter('AI Assistant');
+                            setSearchQuery(aiName.toLowerCase().includes('chatgpt') ? 'chatgpt' : displayName.toLowerCase());
+                          }}
+                          title={`Click to filter traffic by "${displayName}"`}
+                        >
+                          <div className="traffic-breakdown-row-top">
+                            <span className="traffic-breakdown-item-name">{displayName}</span>
+                            <span className="traffic-breakdown-item-count">{count}</span>
+                          </div>
+                          <div className="traffic-breakdown-track">
+                            <div className="traffic-breakdown-bar bar-purple" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
 
-            {/* Social & Search Breakdown */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
-                <Globe size={20} style={{ color: '#2563eb' }} /> Top Social & Search Channels
+            {/* 2. Social & Search Channels Breakdown */}
+            <div className="traffic-breakdown-card">
+              <div className="breakdown-header">
+                <div className="breakdown-header-title">
+                  <span className="overview-dot dot-pink" />
+                  <span>Channels &amp; Search</span>
+                </div>
+                <span className="breakdown-header-meta">
+                  {trafficMetrics.socialVisits + trafficMetrics.searchVisits} total
+                </span>
               </div>
               {trafficMetrics.topSocialList.length === 0 ? (
-                <div style={{ fontSize: '13.5px', color: '#94a3b8', fontStyle: 'italic', padding: '12px 0' }}>
-                  No social/search visits logged yet.
+                <div className="breakdown-empty-text">
+                  No social or search visits logged
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {trafficMetrics.topSocialList.map(([srcName, count]) => {
-                    const badge = getSourceBadge('Social Media', srcName);
-                    return (
-                      <div key={srcName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                        <span style={{ fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{badge.icon}</span> {srcName}
-                        </span>
-                        <span style={{ background: badge.bg, color: badge.color, padding: '2px 10px', borderRadius: '12px', fontSize: '12.5px', fontWeight: 700 }}>
-                          {count} visits
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="traffic-breakdown-list">
+                  {(() => {
+                    const maxVal = trafficMetrics.topSocialList[0][1] || 1;
+                    return trafficMetrics.topSocialList.map(([srcName, count]) => {
+                      const displayName = cleanBreakdownName(srcName);
+                      const pct = Math.max(5, Math.round((count / maxVal) * 100));
+                      return (
+                        <div
+                          key={srcName}
+                          className="traffic-breakdown-row"
+                          onClick={() => {
+                            setCategoryFilter('all');
+                            setSearchQuery(displayName.toLowerCase());
+                          }}
+                          title={`Click to filter traffic by "${displayName}"`}
+                        >
+                          <div className="traffic-breakdown-row-top">
+                            <span className="traffic-breakdown-item-name">{displayName}</span>
+                            <span className="traffic-breakdown-item-count">{count}</span>
+                          </div>
+                          <div className="traffic-breakdown-track">
+                            <div className="traffic-breakdown-bar bar-pink" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
 
-            {/* Geographic Cities Breakdown */}
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
-                <MapPin size={20} style={{ color: '#dc2626' }} /> Top Visitor Locations (Cities)
+            {/* 3. Geographic Cities Breakdown */}
+            <div className="traffic-breakdown-card">
+              <div className="breakdown-header">
+                <div className="breakdown-header-title">
+                  <span className="overview-dot dot-amber" />
+                  <span>Top Cities</span>
+                </div>
+                <span className="breakdown-header-meta">
+                  India
+                </span>
               </div>
               {trafficMetrics.topCitiesList.length === 0 ? (
-                <div style={{ fontSize: '13.5px', color: '#94a3b8', fontStyle: 'italic', padding: '12px 0' }}>
-                  No location data recorded yet.
+                <div className="breakdown-empty-text">
+                  No visitor location data recorded yet
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {trafficMetrics.topCitiesList.map(([cityName, count]) => (
-                    <div key={cityName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' }}>
-                      <span style={{ fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>📍</span> {cityName}
-                      </span>
-                      <span style={{ background: '#fef2f2', color: '#dc2626', padding: '2px 10px', borderRadius: '12px', fontSize: '12.5px', fontWeight: 700 }}>
-                        {count} visits
-                      </span>
-                    </div>
-                  ))}
+                <div className="traffic-breakdown-list">
+                  {(() => {
+                    const maxVal = trafficMetrics.topCitiesList[0][1] || 1;
+                    return trafficMetrics.topCitiesList.map(([cityName, count]) => {
+                      const pct = Math.max(5, Math.round((count / maxVal) * 100));
+                      return (
+                        <div
+                          key={cityName}
+                          className="traffic-breakdown-row"
+                          onClick={() => {
+                            setCategoryFilter('all');
+                            setSearchQuery(cityName.toLowerCase());
+                          }}
+                          title={`Click to filter traffic by "${cityName}"`}
+                        >
+                          <div className="traffic-breakdown-row-top">
+                            <span className="traffic-breakdown-item-name">{cityName}</span>
+                            <span className="traffic-breakdown-item-count">{count}</span>
+                          </div>
+                          <div className="traffic-breakdown-track">
+                            <div className="traffic-breakdown-bar bar-amber" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
           </div>
 
           {/* Search & Filter Toolbar */}
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', background: '#ffffff', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-            <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <div className="traffic-toolbar">
+            <div className="traffic-search-wrap">
+              <Search size={16} className="traffic-search-icon" />
               <input
                 type="text"
-                placeholder="Search traffic by path, AI source (ChatGPT, Gemini), city, device, browser..."
+                placeholder="Search traffic by path, AI source, city, device, browser..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+                className="traffic-search-input"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="traffic-search-clear-btn"
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              {/* Subtle Natural Spring Bounce Keyframes */}
+            <div className="traffic-toolbar-controls">
+              {/* Subtle Natural Spring Bounce Feedback */}
               <style>{`
-                @keyframes toggleBounceOn {
-                  0% { transform: translateX(0px); }
-                  60% { transform: translateX(20.5px); }
-                  82% { transform: translateX(17.5px); }
-                  100% { transform: translateX(18px); }
+                .traffic-real-toggle:hover {
+                  border-color: #94a3b8 !important;
                 }
-                @keyframes toggleBounceOff {
-                  0% { transform: translateX(18px); }
-                  60% { transform: translateX(-2.5px); }
-                  82% { transform: translateX(0.5px); }
-                  100% { transform: translateX(0px); }
+                .traffic-real-toggle:active {
+                  transform: scale(0.98);
                 }
               `}</style>
 
-              {/* Minimal Clean Toggle Switch (Subtle Natural Spring Animation) */}
+              {/* Minimal Clean Toggle Switch (Flat, Prominent Spring Bounce) */}
               <div
                 onClick={handleToggleRealTraffic}
                 role="switch"
                 aria-checked={onlyRealTraffic}
+                className="traffic-real-toggle"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px',
                   padding: '7px 14px',
                   borderRadius: '8px',
-                  border: onlyRealTraffic ? '1px solid #86efac' : '1px solid #cbd5e1',
-                  background: onlyRealTraffic ? '#f0fdf4' : '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
                   cursor: 'pointer',
                   userSelect: 'none',
                   height: '38px',
                   boxSizing: 'border-box',
-                  transition: 'background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease',
-                  boxShadow: onlyRealTraffic ? '0 1px 3px rgba(22, 163, 74, 0.12)' : '0 1px 2px rgba(0, 0, 0, 0.03)'
+                  boxShadow: 'none',
+                  transition: 'border-color 0.15s ease, transform 0.1s ease'
                 }}
                 title={onlyRealTraffic ? 'Real human traffic only (Click to show crawlers)' : 'Showing all traffic including crawlers (Click to filter)'}
               >
@@ -1551,13 +1758,13 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                     width: '38px',
                     height: '20px',
                     borderRadius: '999px',
-                    background: onlyRealTraffic ? '#16a34a' : '#cbd5e1',
-                    boxShadow: onlyRealTraffic ? 'inset 0 1px 2px rgba(0,0,0,0.12)' : 'inset 0 1px 2px rgba(0,0,0,0.06)',
-                    transition: 'background-color 0.25s ease, box-shadow 0.25s ease',
+                    background: onlyRealTraffic ? '#0f172a' : '#cbd5e1',
+                    boxShadow: 'none',
+                    transition: 'background-color 0.25s ease',
                     flexShrink: 0
                   }}
                 >
-                  {/* Subtle Spring Bounce Thumb */}
+                  {/* Natural Spring Bounce Thumb (Overshoots & Springs into Place) */}
                   <div
                     style={{
                       position: 'absolute',
@@ -1567,26 +1774,23 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                       height: '16px',
                       borderRadius: '50%',
                       background: '#ffffff',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
+                      boxShadow: 'none',
+                      boxSizing: 'border-box',
                       transform: onlyRealTraffic ? 'translateX(18px)' : 'translateX(0px)',
-                      animation: toggleAnimState === 'on'
-                        ? 'toggleBounceOn 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards'
-                        : toggleAnimState === 'off'
-                        ? 'toggleBounceOff 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards'
-                        : 'none',
+                      transition: 'transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       willChange: 'transform',
                       pointerEvents: 'none'
                     }}
                   />
                 </div>
-                {/* Static Label: Size never shifts */}
+                {/* Static Label */}
                 <span
                   style={{
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: onlyRealTraffic ? '#15803d' : '#64748b',
+                    color: onlyRealTraffic ? '#0f172a' : '#64748b',
                     whiteSpace: 'nowrap',
-                    transition: 'color 0.35s ease'
+                    transition: 'color 0.25s ease'
                   }}
                 >
                   Real Traffic Only
@@ -1594,9 +1798,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
               </div>
 
               {/* 5 Channels in a Clean Dropdown Selector */}
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <div className="traffic-channel-select-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <select
                   id="traffic-channel-filter"
+                  className="traffic-channel-select"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                   style={{
@@ -1636,83 +1841,124 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
           </div>
 
           {/* Traffic Table */}
-          <div className="buyer-activity-table-wrapper" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-            <table className="buyer-activity-table">
+          <div className="buyer-activity-table-wrapper traffic-table-wrapper">
+            <table className="buyer-activity-table table-traffic">
               <thead>
                 <tr>
-                  <th style={{ width: '200px' }}>Date & Time</th>
+                  <th style={{ width: '180px' }}>Date &amp; Time</th>
                   <th>Page Path</th>
-                  <th style={{ width: '180px' }}>Traffic Source</th>
-                  <th style={{ width: '150px' }}>Device & OS</th>
+                  <th style={{ width: '190px' }}>Traffic Source</th>
+                  <th style={{ width: '160px' }}>Device &amp; OS</th>
                   <th style={{ width: '160px' }}>Location</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTraffic.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="empty-state-cell" style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
-                      {trafficLoading ? 'Loading traffic analytics...' : 'No site traffic records logged yet.'}
+                    <td colSpan={5} className="empty-state-cell traffic-empty-cell">
+                      <div className="traffic-empty-content">
+                        <Activity size={24} style={{ color: '#94a3b8', marginBottom: '8px' }} />
+                        <div>{trafficLoading ? 'Loading traffic analytics...' : 'No site traffic records logged yet.'}</div>
+                        {!trafficLoading && searchQuery && (
+                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                            No traffic matches "{searchQuery}". Try clearing filters or search.
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   filteredTraffic.map((item) => {
-                    const dateStr = new Date(item.created_at).toLocaleString('en-IN', {
+                    const dateObj = new Date(item.created_at);
+                    const dateStr = dateObj.toLocaleString('en-IN', {
                       day: 'numeric',
                       month: 'short',
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
                     });
-                    const badge = getSourceBadge(item.source_category, item.source_name);
+                    const relativeTime = formatTimeClean(item.created_at);
+                    const cleanSource = cleanSourceName(item.source_name);
+                    const badge = getSourceBadge(item.source_category, cleanSource);
+                    const locationText = item.city
+                      ? `${item.city}, ${item.country || 'IN'}`
+                      : (item.country || 'India');
+                    const pageTitle = formatPageTitle(item.path);
+                    const referrerDisplay = extractReferrerDisplay(item.referrer);
+                    const deviceLabel = `${item.device_os || item.device_type || 'Desktop'}${item.browser ? ` · ${item.browser}` : ''}`;
 
                     return (
-                      <tr key={item.id}>
-                        <td style={{ fontSize: '13px', color: '#64748b', whiteSpace: 'nowrap' }}>{dateStr}</td>
-
-                        <td>
-                          <code style={{ fontSize: '13.5px', fontWeight: 700, color: '#0f172a', background: '#f8fafc', padding: '3px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                            {item.path}
-                          </code>
-                          {item.referrer && (
-                            <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.referrer}>
-                              Ref: {item.referrer}
-                            </span>
-                          )}
+                      <tr key={item.id} className="traffic-row">
+                        {/* 1. Date & Time (Visible on Desktop) */}
+                        <td className="traffic-cell-date" title={dateStr}>
+                          <span className="traffic-date-primary">{dateStr}</span>
+                          <span className="traffic-date-relative">{relativeTime}</span>
                         </td>
 
-                        <td>
-                          <span style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '4px 10px',
-                            borderRadius: '12px',
-                            fontSize: '12.5px',
-                            fontWeight: 700,
-                            background: badge.bg,
-                            color: badge.color
-                          }}>
-                            <span>{badge.icon}</span> {item.source_name}
-                          </span>
-                          <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                            {item.source_category}
-                          </span>
-                        </td>
-
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', fontWeight: 600, color: '#1e293b' }}>
-                            {item.device_type === 'Mobile' || item.device_type === 'Tablet'
-                              ? <Smartphone size={15} style={{ color: '#16a34a' }} />
-                              : <Laptop size={15} style={{ color: '#2563eb' }} />}
-                            <span>{item.device_type} ({item.device_os})</span>
+                        {/* 2. Page Title & Path (Row 2 on Mobile) */}
+                        <td className="traffic-cell-path">
+                          <div className="traffic-path-container">
+                            <span className="traffic-page-title">{pageTitle}</span>
+                            <a
+                              href={item.path}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="traffic-page-link-btn"
+                              title={`Open ${item.path} in new tab`}
+                            >
+                              <span className="traffic-path-subtle">{item.path}</span>
+                              <ExternalLink size={12} className="traffic-ext-icon" />
+                            </a>
+                            {referrerDisplay && (
+                              <div className="traffic-referrer-subtle" title={item.referrer}>
+                                <span className="traffic-ref-tag">via</span>
+                                <span className="traffic-ref-domain">{referrerDisplay}</span>
+                              </div>
+                            )}
                           </div>
-                          <span style={{ display: 'block', fontSize: '11px', color: '#64748b' }}>{item.browser}</span>
                         </td>
 
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13.5px', fontWeight: 600, color: '#0f172a' }}>
-                            <MapPin size={14} style={{ color: '#dc2626' }} />
-                            <span>{item.city ? `${item.city}, ${item.country || 'IN'}` : (item.country || 'IN')}</span>
+                        {/* 3. Traffic Source & Relative Time (Row 1 on Mobile) */}
+                        <td className="traffic-cell-source">
+                          <div className="traffic-source-cell-inner">
+                            <span
+                              className="traffic-source-badge"
+                              style={{
+                                background: badge.bg,
+                                color: badge.color
+                              }}
+                            >
+                              <span className="traffic-source-icon">{badge.icon}</span>
+                              <span className="traffic-source-name">{cleanSource}</span>
+                            </span>
+
+                            {/* Mobile Timestamp */}
+                            <span className="traffic-mobile-timestamp" title={dateStr}>
+                              <Clock size={11} className="traffic-clock-icon" />
+                              <span>{relativeTime}</span>
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* 4. Device & OS (Row 3, Col 1 on Mobile) */}
+                        <td className="traffic-cell-device">
+                          <div className="traffic-device-cell-inner">
+                            <div className="traffic-device-primary" title={`${item.device_type} (${item.device_os || 'OS'}) · ${item.browser || ''}`}>
+                              {item.device_type === 'Mobile' || item.device_type === 'Tablet'
+                                ? <Smartphone size={13} className="traffic-device-icon icon-mobile" />
+                                : <Laptop size={13} className="traffic-device-icon icon-desktop" />}
+                              <span className="traffic-device-name">{deviceLabel}</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 5. Location (Row 3, Col 2 on Mobile) */}
+                        <td className="traffic-cell-location">
+                          <div className="traffic-location-cell-inner">
+                            <MapPin size={13} className="traffic-loc-icon" />
+                            <span className="traffic-loc-name" title={locationText}>
+                              {locationText}
+                            </span>
                           </div>
                         </td>
                       </tr>
