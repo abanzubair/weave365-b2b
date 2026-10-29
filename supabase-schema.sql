@@ -43,6 +43,7 @@ alter table public.profiles add column if not exists pincode text;
 alter table public.profiles add column if not exists website text;
 alter table public.profiles add column if not exists social_handle text;
 alter table public.profiles add column if not exists interested_categories jsonb default '[]'::jsonb;
+alter table public.profiles add column if not exists last_seen_at timestamptz default now();
 alter table public.profiles add column if not exists price_group text default 'pending';
 alter table public.profiles add column if not exists approval_status text default 'pending';
 alter table public.profiles add column if not exists role text default 'customer';

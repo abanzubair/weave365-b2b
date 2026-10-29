@@ -411,6 +411,39 @@ export function AppShell({ children }) {
     };
   }, [currentUserId, setBuyerProfile, setVendorOnboarding, setIsProfileHydrated]);
 
+  // Active user online presence heartbeat (throttled every 3 minutes when page is active)
+  useEffect(() => {
+    if (!currentUserId || typeof window === 'undefined') return;
+
+    let heartbeatTimer = null;
+    const sendHeartbeat = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      try {
+        void fetch('/api/presence', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUserId }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {}
+    };
+
+    sendHeartbeat();
+    heartbeatTimer = setInterval(sendHeartbeat, 3 * 60 * 1000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        sendHeartbeat();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      if (heartbeatTimer) clearInterval(heartbeatTimer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [currentUserId]);
+
   // Load Saved Cart & Favorites on User Change
   useEffect(() => {
     if (!currentUserId) {

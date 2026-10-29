@@ -32,6 +32,7 @@ import {
   isAdminUser,
 } from './AdminShared.jsx';
 import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
+import { resolveBuyerPresence } from '../../utils/presenceResolver.js';
 import {
   BUSINESS_TYPES,
   BUSINESS_EXPERIENCE_OPTIONS,
@@ -139,6 +140,7 @@ export default function BuyerPipeline({
   // Local state for filters and sorting
   const [userTypeFilter, setUserTypeFilter] = useState('all');
   const [acquisitionFilter, setAcquisitionFilter] = useState('all');
+  const [activityFilter, setActivityFilter] = useState('all');
   const [userPageLimit, setUserPageLimit] = useState('10');
   const [userSortField, setUserSortField] = useState('date');
   const [userSortOrder, setUserSortOrder] = useState('desc');
@@ -160,11 +162,36 @@ export default function BuyerPipeline({
   const siteAnalyticsList = adminData?.optional?.site_analytics || [];
   const acquisitionMap = useMemo(() => {
     const map = new Map();
+    const presenceData = adminData?.userPresence || {};
     (adminData.profiles || []).forEach((p) => {
-      map.set(p.id, resolveBuyerAcquisition(p, siteAnalyticsList));
+      const authAcq = presenceData[p.id]?.acquisition;
+      const profileWithAcq = authAcq ? { ...p, acquisition: p.acquisition || authAcq } : p;
+      map.set(p.id, resolveBuyerAcquisition(profileWithAcq, siteAnalyticsList));
     });
     return map;
-  }, [adminData.profiles, siteAnalyticsList]);
+  }, [adminData.profiles, adminData.userPresence, siteAnalyticsList]);
+
+  // Real-time & historical "Last Seen" presence map
+  const presenceMap = useMemo(() => {
+    const map = new Map();
+    const presenceData = adminData?.userPresence || {};
+    const ordersList = adminData?.optional?.orders || [];
+    const inqList = adminData?.optional?.inquiries || [];
+    const dlList = adminData?.optional?.download_logs || [];
+
+    (adminData.profiles || []).forEach((p) => {
+      const presence = resolveBuyerPresence(p, {
+        userPresenceMap: presenceData,
+        cartRows: userCartMap.get(p.id) || [],
+        favoriteRows: userFavoriteMap.get(p.id) || [],
+        orders: ordersList.filter((o) => o.user_id === p.id || o.buyer_id === p.id || (p.email && o.customer_email === p.email)),
+        inquiries: inqList.filter((i) => i.user_id === p.id || (p.email && i.email === p.email) || (p.whatsapp && i.phone === p.whatsapp)),
+        downloadLogs: dlList.filter((d) => d.user_id === p.id || (p.email && d.user_email === p.email)),
+      });
+      map.set(p.id, presence);
+    });
+    return map;
+  }, [adminData.profiles, adminData.userPresence, adminData.optional, userCartMap, userFavoriteMap]);
 
   const storefrontsByReseller = useMemo(() => {
     const list = adminData?.optional?.boutique_tenants || adminData?.optional?.reseller_storefronts || [];
@@ -335,6 +362,15 @@ export default function BuyerPipeline({
       });
     }
 
+    // Filter by online status / activity timeline
+    if (activityFilter === 'online') {
+      profiles = profiles.filter((p) => presenceMap.get(p.id)?.isOnline === true);
+    } else if (activityFilter === 'today') {
+      profiles = profiles.filter((p) => presenceMap.get(p.id)?.isToday === true);
+    } else if (activityFilter === 'week') {
+      profiles = profiles.filter((p) => presenceMap.get(p.id)?.isThisWeek === true);
+    }
+
     // Apply search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -351,7 +387,10 @@ export default function BuyerPipeline({
     }
     return [...profiles].sort((a, b) => {
       let valA, valB;
-      if (userSortField === 'name') {
+      if (userSortField === 'last_seen') {
+        valA = presenceMap.get(a.id)?.timestamp || 0;
+        valB = presenceMap.get(b.id)?.timestamp || 0;
+      } else if (userSortField === 'name') {
         valA = String(a.business_name || a.full_name || '').toLowerCase();
         valB = String(b.business_name || b.full_name || '').toLowerCase();
       } else if (userSortField === 'order_list') {
@@ -373,7 +412,7 @@ export default function BuyerPipeline({
       if (valA > valB) return userSortOrder === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter, acquisitionFilter, acquisitionMap, searchQuery]);
+  }, [adminData.profiles, userCartMap, userFavoriteMap, userSortField, userSortOrder, userTypeFilter, acquisitionFilter, activityFilter, acquisitionMap, presenceMap, searchQuery]);
 
   const displayedProfiles = useMemo(() => {
     if (userPageLimit === 'all') return sortedProfiles;
@@ -394,18 +433,34 @@ export default function BuyerPipeline({
     if (!profile) return 'Customer';
     const roleKey = getProfileRoleKey(profile);
     if (roleKey === 'supplier') {
-      const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
-      if (subtype && !['customer', 'user', 'reseller', 'wholesaler', 'wholesale', 'buyer'].includes(subtype)) {
-        return toTitleCase(subtype);
+      const rawSub = String(profile.buyer_subtype || '').trim();
+      const cleanSub = rawSub.split('(')[0].split('/')[0].trim();
+      if (cleanSub && !['customer', 'user', 'reseller', 'wholesaler', 'wholesale', 'buyer'].includes(cleanSub.toLowerCase())) {
+        return toTitleCase(cleanSub);
       }
       return 'Vendor Partner';
     }
-    const subtype = String(profile.buyer_subtype || '').toLowerCase().trim();
-    if (subtype && subtype !== 'customer' && subtype !== 'user') return toTitleCase(subtype);
+    const rawSub = String(profile.buyer_subtype || '').trim();
+    if (rawSub) {
+      let clean = rawSub.split('(')[0].split('/')[0].trim();
+      if (clean.toLowerCase() === 'wholeseller') clean = 'Wholesaler';
+      if (clean.toLowerCase() === 'buyer') clean = 'Business';
+      if (clean && !['customer', 'user'].includes(clean.toLowerCase())) {
+        return toTitleCase(clean);
+      }
+    }
     if (profile.user_type === 'business' || profile.buyer_type === 'business' || profile.buyer_type === 'reseller' || profile.role === 'reseller' || Boolean(profile.business_name?.trim())) {
       return 'Business Buyer';
     }
     return 'Customer';
+  };
+
+  const getBuyerRoleClass = (profile) => {
+    const label = String(getBuyerTypeLabel(profile) || '').toLowerCase();
+    if (label.includes('store') || label.includes('boutique')) return 'type-store';
+    if (label.includes('reseller') || label.includes('business') || label.includes('wholesale')) return 'type-reseller';
+    if (label.includes('vendor') || label.includes('supplier')) return 'type-supplier';
+    return 'type-customer';
   };
 
 
@@ -422,6 +477,8 @@ export default function BuyerPipeline({
       ? profile.interested_categories.join(', ')
       : '';
     const attr = acquisitionMap.get(profile.id);
+    const presence = presenceMap.get(profile.id);
+    const lastSeenStr = presence?.isOnline ? 'Online (Active now)' : (presence?.fullFormatted || 'Never');
 
     const row = [
       toTitleCase(profile.full_name),
@@ -429,6 +486,7 @@ export default function BuyerPipeline({
       `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
       profile.email || '',
       profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+      lastSeenStr,
       attr ? `${attr.cleanName} (↳ ${attr.landingPath})` : 'Direct',
       profile.social_handle || profile.socialHandle || '',
       profile.website || profile.client_website || '',
@@ -456,6 +514,8 @@ export default function BuyerPipeline({
         ? profile.interested_categories.join(', ')
         : '';
       const attr = acquisitionMap.get(profile.id);
+      const presence = presenceMap.get(profile.id);
+      const lastSeenStr = presence?.isOnline ? 'Online (Active now)' : (presence?.fullFormatted || 'Never');
 
       return [
         toTitleCase(profile.full_name),
@@ -463,6 +523,7 @@ export default function BuyerPipeline({
         `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        lastSeenStr,
         attr ? `${attr.cleanName} (↳ ${attr.landingPath})` : 'Direct',
         profile.social_handle || profile.socialHandle || '',
         profile.website || profile.client_website || '',
@@ -485,17 +546,24 @@ export default function BuyerPipeline({
       alert('No data to export.');
       return;
     }
-    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Social Handle', 'Website', 'Categories', 'Type', 'Behavior'];
+    const headers = ['Name', 'Business', 'City', 'Email', 'Phone', 'Registered', 'Last Seen', 'Acquisition', 'Social Handle', 'Website', 'Categories', 'Type', 'Behavior'];
     const csvRows = sortedProfiles.map(profile => {
       const categoriesStr = Array.isArray(profile.interested_categories)
         ? profile.interested_categories.join('; ')
         : '';
+      const attr = acquisitionMap.get(profile.id);
+      const presence = presenceMap.get(profile.id);
+      const lastSeenStr = presence?.isOnline ? 'Online (Active now)' : (presence?.fullFormatted || 'Never');
+      const registeredStr = profile.created_at ? new Date(profile.created_at).toLocaleString('en-US') : 'N/A';
       return [
         toTitleCase(profile.full_name),
         toTitleCase(profile.business_name),
         `${toTitleCase(profile.city)}${profile.city && profile.pincode ? ', ' : ''}${profile.pincode || ''}`,
         profile.email || '',
         profile.whatsapp ? profile.whatsapp.replace('+', '') : '',
+        registeredStr,
+        lastSeenStr,
+        attr ? `${attr.cleanName} (${attr.landingPath || '/'})` : 'Direct',
         profile.social_handle || profile.socialHandle || '',
         profile.website || profile.client_website || '',
         categoriesStr,
@@ -580,11 +648,25 @@ export default function BuyerPipeline({
           </select>
 
           <select
+            value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value)}
+            className="pipeline-filter-select"
+            title="Filter by online status or recent activity"
+          >
+            <option value="all">All Activity</option>
+            <option value="online">🟢 Online Now</option>
+            <option value="today">⚡ Active Today</option>
+            <option value="week">📅 Active This Week</option>
+          </select>
+
+          <select
             value={userSortField}
             onChange={(e) => setUserSortField(e.target.value)}
             className="pipeline-filter-select"
+            title="Sort buyer accounts"
           >
-            <option value="date">Sort: Date</option>
+            <option value="last_seen">Sort: Last Seen</option>
+            <option value="date">Sort: Registered Date</option>
             <option value="name">Sort: Name</option>
             <option value="order_list">Sort: Orders</option>
             <option value="favourites">Sort: Favourites</option>
@@ -616,11 +698,11 @@ export default function BuyerPipeline({
             <thead>
               <tr>
                 <th className="pipeline-col-sno">S.No.</th>
-                <th className="pipeline-col-registered">Registered</th>
+                <th className="pipeline-col-activity">Activity</th>
                 <th className="pipeline-col-buyer">Buyer</th>
-                <th className="pipeline-col-acquisition">Acquisition</th>
+                <th className="pipeline-col-acquisition">Source</th>
                 <th className="pipeline-col-type">Type</th>
-                <th className="pipeline-col-items">Cart & Fav</th>
+                <th className="pipeline-col-items">Items</th>
                 <th className="pipeline-col-action">Action</th>
               </tr>
             </thead>
@@ -639,159 +721,190 @@ export default function BuyerPipeline({
 
                 return (
                   <tr key={profile.id}>
-                    <td className="pipeline-col-sno"><strong>{sortedProfiles.length - index}</strong></td>
-                    <td className="pipeline-col-registered">
-                      {profile.created_at ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <strong style={{ fontSize: '12.5px', color: '#0f172a' }}>
-                            {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </strong>
-                          <span style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
-                            {new Date(profile.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                          </span>
-                        </div>
-                      ) : 'N/A'}
+                    <td className="pipeline-col-sno">
+                      <span className="pipeline-sno-num">{sortedProfiles.length - index}</span>
+                    </td>
+                    <td className="pipeline-col-activity">
+                      {(() => {
+                        const presence = presenceMap.get(profile.id);
+                        const joinedStr = profile.created_at
+                          ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                          : '—';
+                        return (
+                          <div className="pipeline-timing-cell">
+                            <div className="pipeline-timing-main">
+                              {presence?.isOnline ? (
+                                <span className="pipeline-online-pill">
+                                  <span className="pipeline-online-dot" />
+                                  <span>Online</span>
+                                </span>
+                              ) : (
+                                <span className="pipeline-last-seen-text" title={`Last active: ${presence?.fullFormatted || 'Never'}`}>
+                                  <strong className="pipeline-timing-primary">{presence?.primaryLabel || '—'}</strong>
+                                  {presence?.secondaryLabel && (
+                                    <span className="pipeline-timing-secondary"> · {presence.secondaryLabel}</span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                            <span className="pipeline-joined-sub" title={profile.created_at ? new Date(profile.created_at).toLocaleString() : ''}>
+                              Joined {joinedStr}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="pipeline-col-buyer">
-                      <div className="pipeline-buyer-cell">
-                        <strong
-                          className="admin-capitalize"
-                          title={profile.full_name || profile.business_name || 'Unnamed'}
-                        >
-                          {profile.full_name || profile.business_name || 'Unnamed'}
-                        </strong>
-                        {profile.business_name && profile.full_name && (
-                          <span className="pipeline-buyer-business" title={profile.business_name}>
-                            {profile.business_name}
-                          </span>
-                        )}
-                        {(profile.city || profile.pincode) && (
-                          <span
-                            className="pipeline-buyer-location"
-                            title={`${profile.city || 'No City'}${profile.pincode ? `, ${profile.pincode}` : ''}`}
+                      <div className="pipeline-buyer-compact">
+                        <div className="pipeline-buyer-top-row">
+                          <strong
+                            className="pipeline-buyer-name admin-capitalize"
+                            title={profile.full_name || profile.business_name || 'Unnamed'}
                           >
-                            {profile.city || 'No City'}{profile.pincode ? `, ${profile.pincode}` : ''}
-                          </span>
-                        )}
-                        {profile.email && (
-                          <a
-                            href={`mailto:${profile.email}`}
-                            className="pipeline-buyer-email"
-                            title={profile.email}
-                          >
-                            {profile.email}
-                          </a>
-                        )}
-                        {profile.whatsapp && (
-                          <a
-                            href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="pipeline-buyer-phone"
-                            title={profile.whatsapp}
-                          >
-                            {profile.whatsapp}
-                          </a>
-                        )}
+                            {profile.full_name || profile.business_name || 'Unnamed'}
+                          </strong>
+                          {profile.business_name && profile.full_name && (
+                            <span className="pipeline-buyer-biz-tag" title={profile.business_name}>
+                              · {profile.business_name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="pipeline-buyer-sub-row">
+                          {profile.email && (
+                            <a
+                              href={`mailto:${profile.email}`}
+                              className="pipeline-buyer-sub-link"
+                              title={profile.email}
+                            >
+                              {profile.email}
+                            </a>
+                          )}
+                          {(profile.city || profile.pincode) && profile.email && (
+                            <span className="pipeline-buyer-sub-dot">·</span>
+                          )}
+                          {(profile.city || profile.pincode) && (
+                            <span
+                              className="pipeline-buyer-sub-text"
+                              title={`${profile.city || ''}${profile.pincode ? `, ${profile.pincode}` : ''}`}
+                            >
+                              {profile.city || 'No City'}
+                            </span>
+                          )}
+                          {profile.whatsapp && (profile.email || profile.city) && (
+                            <span className="pipeline-buyer-sub-dot">·</span>
+                          )}
+                          {profile.whatsapp && (
+                            <a
+                              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="pipeline-buyer-sub-link"
+                              title={profile.whatsapp}
+                            >
+                              {profile.whatsapp}
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="pipeline-col-acquisition">
                       {(() => {
                         const attr = acquisitionMap.get(profile.id);
-                        if (!attr) return <span className="pipeline-text-muted">—</span>;
+                        if (!attr) return <span className="pipeline-empty-dash">—</span>;
                         return (
-                          <div className="pipeline-acquisition-cell" title={attr.tooltip}>
-                            <span className={`acquisition-badge ${attr.badgeClass}`}>
-                              <span className="attr-icon">{attr.icon}</span>
-                              <span className="attr-name">{attr.cleanName}</span>
-                            </span>
-                            {attr.landingPath && (
-                              <span className="acquisition-landing-path" title={`Landing route: ${attr.landingPath}`}>
-                                ↳ {attr.landingPath}
-                              </span>
-                            )}
-                          </div>
+                          <span
+                            className={`acquisition-badge ${attr.badgeClass}`}
+                            title={`${attr.cleanName}${attr.landingPath ? ` (Landing: ${attr.landingPath})` : ''}`}
+                          >
+                            <span className="attr-icon">{attr.icon}</span>
+                            <span className="attr-name">{attr.cleanName}</span>
+                          </span>
                         );
                       })()}
                     </td>
                     <td className="pipeline-col-type">
-                      <span className="pipeline-type-label" onClick={() => openInspectModal(profile)} style={{ cursor: 'pointer' }}>
+                      <span
+                        className={`pipeline-type-badge ${getBuyerRoleClass(profile)}`}
+                        onClick={() => openInspectModal(profile)}
+                        title={`Type: ${profile.buyer_subtype || getBuyerTypeLabel(profile)} (Click to view details or switch role)`}
+                      >
                         {getBuyerTypeLabel(profile)}
                       </span>
                       {isAccountLocked(profile) && (
-                        <span className="pipeline-locked-tag" title="Account locked: User must complete profile details in Accounts > Profile">
-                          <Lock size={10} /> Locked
-                        </span>
-                      )}
-                      {profile.qualification?.monthly_budget_label && (
-                        <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px' }} title={`Monthly Budget: ${profile.qualification.monthly_budget_label}`}>
-                          {profile.qualification.monthly_budget_label}
+                        <span className="pipeline-locked-tag" title="Account locked" style={{ marginLeft: '4px' }}>
+                          <Lock size={10} />
                         </span>
                       )}
                     </td>
                     <td className="pipeline-col-items">
-                      <div className="pipeline-items-cell">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedUserList({ profile, type: 'cart' })}
-                          className={`admin-list-link-btn cart-btn ${cartRows.length > 0 ? 'has-items' : 'empty'}`}
-                          disabled={cartRows.length === 0}
-                          title={cartRows.length > 0 ? `View ${cartRows.length} cart ${cartRows.length === 1 ? 'item' : 'items'}` : 'Cart is empty'}
-                        >
-                          <ShoppingBag size={14} strokeWidth={2.2} />
-                          <span>{cartRows.length} Cart</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
-                          className={`admin-list-link-btn fav-btn ${favoriteRows.length > 0 ? 'has-items' : 'empty'}`}
-                          disabled={favoriteRows.length === 0}
-                          title={favoriteRows.length > 0 ? `View ${favoriteRows.length} favourite ${favoriteRows.length === 1 ? 'item' : 'items'}` : 'No favourites'}
-                        >
-                          <Heart size={14} strokeWidth={2.2} />
-                          <span>{favoriteRows.length} {favoriteRows.length === 1 ? 'Fav' : 'Favs'}</span>
-                        </button>
+                      <div className="pipeline-items-cell" style={{ flexDirection: 'row', gap: '4px', alignItems: 'center' }}>
+                        {cartRows.length === 0 && favoriteRows.length === 0 ? (
+                          <span className="pipeline-empty-dash" title="No cart or favourite items">—</span>
+                        ) : (
+                          <>
+                            {cartRows.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedUserList({ profile, type: 'cart' })}
+                                className="pipeline-item-chip cart"
+                                title={`View ${cartRows.length} cart ${cartRows.length === 1 ? 'item' : 'items'}`}
+                              >
+                                <ShoppingBag size={12} strokeWidth={2.2} />
+                                <span>{cartRows.length}</span>
+                              </button>
+                            )}
+                            {favoriteRows.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedUserList({ profile, type: 'favorite' })}
+                                className="pipeline-item-chip fav"
+                                title={`View ${favoriteRows.length} favourite ${favoriteRows.length === 1 ? 'item' : 'items'}`}
+                              >
+                                <Heart size={12} strokeWidth={2.2} />
+                                <span>{favoriteRows.length}</span>
+                              </button>
+                            )}
+                          </>
+                        )}
                       </div>
                     </td>
                     <td className="pipeline-col-action">
-                      <div className="pipeline-action-cell">
-                        <div className="pipeline-action-buttons-row">
-                          <button
-                            type="button"
-                            onClick={() => openInspectModal(profile)}
-                            className="pipeline-action-details-btn"
-                            title="View all signup details and switch account type"
-                          >
-                            <Eye size={13} />
-                            <span>Details</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyUserDetails(profile)}
-                            className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
-                            title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
-                          >
-                            {copyFeedback[profile.id] ? (
-                              <Check size={16} className="icon-check-anim" />
-                            ) : (
-                              <Copy size={16} />
-                            )}
-                          </button>
-                          {storeUrl && (
-                            <a
-                              href={storeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="pipeline-action-icon-btn pipeline-store-link-btn"
-                              title={`Open reseller storefront: ${storeDisplayName} (${storeUrl})`}
-                            >
-                              <Globe size={14} />
-                            </a>
+                      <div className="pipeline-action-row-inline">
+                        <button
+                          type="button"
+                          onClick={() => openInspectModal(profile)}
+                          className="pipeline-action-details-btn"
+                          title="View all details & switch account type"
+                        >
+                          <Eye size={12} />
+                          <span>Details</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyUserDetails(profile)}
+                          className={`pipeline-action-icon-btn ${copyFeedback[profile.id] ? 'copied' : ''}`}
+                          title={copyFeedback[profile.id] ? 'Copied!' : 'Copy details'}
+                        >
+                          {copyFeedback[profile.id] ? (
+                            <Check size={13} className="icon-check-anim" />
+                          ) : (
+                            <Copy size={12} />
                           )}
-                        </div>
+                        </button>
+                        {storeUrl && (
+                          <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pipeline-action-icon-btn pipeline-store-link-btn"
+                            title={`Open reseller storefront: ${storeDisplayName}`}
+                          >
+                            <Globe size={12} />
+                          </a>
+                        )}
                         {toggleResellerDashboard && (
                           <label
-                            className="pipeline-switch-toggle"
+                            className={`pipeline-switch-toggle ${profile.reseller_dashboard_enabled ? 'is-enabled' : ''}`}
                             title={`Reseller Website: ${profile.reseller_dashboard_enabled ? 'Enabled' : 'Disabled'} (Click to toggle)`}
                           >
                             <input
@@ -803,8 +916,8 @@ export default function BuyerPipeline({
                             <span className="pipeline-switch-track">
                               <span className="pipeline-switch-thumb" />
                             </span>
-                            <span className={`pipeline-switch-label ${profile.reseller_dashboard_enabled ? 'active' : ''}`}>
-                              Website
+                            <span className="pipeline-switch-label">
+                              Web
                             </span>
                           </label>
                         )}
@@ -872,27 +985,37 @@ export default function BuyerPipeline({
                     </span>
                     {isAccountLocked(inspectProfile) ? (
                       <span className="pipeline-locked-tag">
-                        <Lock size={11} /> Locked (Pending Profile)
+                        <Lock size={11} /> Locked
                       </span>
                     ) : (
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
+                      <span className="pipeline-active-tag">
                         ✓ Active &amp; Unlocked
                       </span>
                     )}
                   </div>
                 </div>
                 <p className="pipeline-modal-meta">
-                  User ID: {inspectProfile.id.slice(0, 8)}... • Registered:{' '}
-                  {inspectProfile.created_at
-                    ? new Date(inspectProfile.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })
-                    : 'N/A'}
+                  <span>Registered {inspectProfile.created_at ? new Date(inspectProfile.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</span>
+                  <span className="meta-sep">·</span>
+                  {(() => {
+                    const presence = presenceMap.get(inspectProfile.id);
+                    if (!presence) return <span>Last active: —</span>;
+                    if (presence.isOnline) {
+                      return (
+                        <span className="pipeline-online-pill" style={{ verticalAlign: 'middle' }}>
+                          <span className="pipeline-online-dot" />
+                          <span>Online Now</span>
+                        </span>
+                      );
+                    }
+                    return (
+                      <span>
+                        Last active: <strong style={{ color: '#334155', fontWeight: 600 }}>{presence.fullFormatted}</strong>
+                      </span>
+                    );
+                  })()}
+                  <span className="meta-sep">·</span>
+                  <span>ID: <code>{inspectProfile.id.slice(0, 8)}</code></span>
                 </p>
               </div>
               <button
@@ -901,7 +1024,7 @@ export default function BuyerPipeline({
                 onClick={() => setInspectProfile(null)}
                 aria-label="Close modal"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
@@ -916,7 +1039,7 @@ export default function BuyerPipeline({
                     rel="noopener noreferrer"
                     className="pipeline-qa-btn whatsapp"
                   >
-                    <WhatsappIcon size={15} />
+                    <WhatsappIcon size={14} />
                     <span>Chat on WhatsApp</span>
                   </a>
                 )}
@@ -925,16 +1048,20 @@ export default function BuyerPipeline({
                     href={`mailto:${inspectProfile.email}`}
                     className="pipeline-qa-btn email"
                   >
-                    <Mail size={14} />
+                    <Mail size={13} />
                     <span>{inspectProfile.email}</span>
                   </a>
                 )}
                 <button
                   type="button"
                   onClick={() => handleCopyUserDetails(inspectProfile)}
-                  className="pipeline-qa-btn copy"
+                  className={`pipeline-qa-btn copy ${copyFeedback[inspectProfile.id] ? 'copied' : ''}`}
                 >
-                  <Copy size={14} />
+                  {copyFeedback[inspectProfile.id] ? (
+                    <Check size={13} className="icon-check-anim" />
+                  ) : (
+                    <Copy size={13} />
+                  )}
                   <span>{copyFeedback[inspectProfile.id] ? 'Copied Details!' : 'Copy Summary'}</span>
                 </button>
               </div>
@@ -943,7 +1070,7 @@ export default function BuyerPipeline({
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Users size={16} /> Contact &amp; Location
+                    <Users size={14} /> Contact &amp; Location
                   </h4>
                 </div>
                 <div className="pipeline-detail-grid">
@@ -986,7 +1113,7 @@ export default function BuyerPipeline({
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Globe size={16} /> Online Presence &amp; Marketing
+                    <Globe size={14} /> Online Presence &amp; Marketing
                   </h4>
                 </div>
                 <div className="pipeline-detail-grid">
@@ -1023,8 +1150,20 @@ export default function BuyerPipeline({
                     <span className="pipeline-detail-val">
                       {(() => {
                         const attr = acquisitionMap.get(inspectProfile.id);
-                        if (!attr) return 'Direct / None';
-                        return `${attr.cleanName} ${attr.landingPath ? `(↳ ${attr.landingPath})` : ''}`;
+                        if (!attr) return '—';
+                        return (
+                          <div className="pipeline-modal-acq-chip">
+                            <span className={`acquisition-badge ${attr.badgeClass}`}>
+                              <span className="attr-icon">{attr.icon}</span>
+                              <span className="attr-name">{attr.cleanName}</span>
+                            </span>
+                            {attr.landingPath && (
+                              <span className="pipeline-modal-acq-path">
+                                {attr.landingPath}
+                              </span>
+                            )}
+                          </div>
+                        );
                       })()}
                     </span>
                   </div>
@@ -1047,9 +1186,9 @@ export default function BuyerPipeline({
               <div className="pipeline-detail-card">
                 <div className="pipeline-detail-card-head">
                   <h4 className="pipeline-detail-card-title">
-                    <Building size={16} /> Business Qualification Details
+                    <Building size={14} /> Business Qualification Details
                   </h4>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  <span className="pipeline-detail-card-sub">
                     Entered during signup or profile update
                   </span>
                 </div>
@@ -1163,8 +1302,8 @@ export default function BuyerPipeline({
               <div className="pipeline-switch-role-card">
                 <div className="pipeline-switch-header">
                   <div className="pipeline-switch-title-wrap">
-                    <Shield size={16} />
-                    <span className="pipeline-switch-title">Switch Account Type</span>
+                    <Shield size={14} />
+                    <span className="pipeline-switch-title">Account Role &amp; Permissions</span>
                   </div>
                   <span className="pipeline-switch-hint">Takes effect on save</span>
                 </div>

@@ -31,8 +31,8 @@ const REGION_PROXIMITY_MAP = {
 export function resolveBuyerAcquisition(profile, siteAnalyticsList = []) {
   if (!profile) return null;
 
-  // 1. Direct saved attribution on profile
-  let rawAcquisition = profile.acquisition;
+  // 1. Direct saved attribution on profile or auth user_metadata
+  let rawAcquisition = profile.acquisition || profile.user_metadata?.acquisition || profile.user_metadata?.buyer_profile?.acquisition;
   if (typeof rawAcquisition === 'string') {
     try {
       rawAcquisition = JSON.parse(rawAcquisition);
@@ -41,7 +41,7 @@ export function resolveBuyerAcquisition(profile, siteAnalyticsList = []) {
     }
   }
 
-  if (rawAcquisition && rawAcquisition.name) {
+  if (rawAcquisition && (rawAcquisition.name || rawAcquisition.brand || rawAcquisition.category)) {
     return enrichAttribution(rawAcquisition, profile);
   }
 

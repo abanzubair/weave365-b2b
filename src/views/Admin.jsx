@@ -93,6 +93,7 @@ const emptyAdminData = {
   profiles: [],
   cartItems: [],
   favorites: [],
+  userPresence: {},
   optional: {},
   errors: {},
 };
@@ -295,10 +296,42 @@ export function Admin({
     optional.reseller_storefronts = secondaryTenants;
     optional.boutique_tenants = secondaryTenants;
 
+    // Fetch administrative auth presence (last_sign_in_at, last_seen_at)
+    let userPresence = {};
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || '';
+      if (token) {
+        const presRes = await fetch('/api/admin/presence', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (presRes.ok) {
+          const presJson = await presRes.json();
+          if (presJson?.presence) {
+            userPresence = presJson.presence;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Admin] Could not load user presence data:', e.message);
+    }
+
+    const enrichedProfiles = (profiles.data || []).map((p) => {
+      const authData = userPresence[p.id];
+      if (!authData) return p;
+      return {
+        ...p,
+        acquisition: p.acquisition || authData.acquisition || null,
+        last_sign_in_at: p.last_sign_in_at || authData.last_sign_in_at || null,
+        last_seen_at: p.last_seen_at || authData.last_seen_at || null,
+      };
+    });
+
     setAdminData({
-      profiles: profiles.data,
+      profiles: enrichedProfiles,
       cartItems: cartItems.data,
       favorites: favorites.data,
+      userPresence,
       optional,
       errors,
     });

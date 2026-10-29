@@ -44,6 +44,7 @@ import {
   handleAdminCouponsDelete,
   handleValidateCoupon,
 } from './couponsHandler.js';
+import { GET as presenceGet, POST as presencePost } from './presenceHandler.js';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
@@ -55,6 +56,7 @@ export async function GET(request, { params }) {
   }
 
   if (routeKey === 'admin/coupons' || routeKey === 'coupons') return handleAdminCouponsGet(request);
+  if (routeKey === 'admin/presence' || routeKey === 'admin/users-presence') return presenceGet(request);
   if (routeKey === 'seller/products' || routeKey === 'seller-products') return handleSellerProductGet(request);
   if (routeKey === 'sitemap.xml' || routeKey === 'sitemap') return generateSitemapXml(request);
   if (routeKey === 'catalog') return catalogGet(request);
@@ -99,6 +101,7 @@ export async function POST(request, { params }) {
   if (routeKey === 'vendor-registration') return vendorRegistrationPost(request);
   if (routeKey === 'admin/sync') return adminSyncPost(request);
   if (routeKey === 'check-email' || routeKey === 'auth/check-email') return checkEmailPost(request);
+  if (routeKey === 'presence' || routeKey === 'admin/presence') return presencePost(request);
   return Response.json({ error: `POST /api/${routeKey} Not Found` }, { status: 404 });
 }
 
