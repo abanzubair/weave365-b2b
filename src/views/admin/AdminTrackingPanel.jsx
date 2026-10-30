@@ -283,9 +283,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
     const recordedPrice = Number(item.unit_price) || Number(item.price) || 0;
 
     let price = recordedPrice;
-    // If recordedPrice was saved as wholesale mrp but item was ordered as single-piece (or recordedPrice is 0),
+    // If recordedPrice was saved as wholesale mrp (or 0) but item was ordered as single-piece,
     // resolve to b2rPrice (the single-piece price shown to buyers on the storefront product page)
-    if (isSinglePiece && b2rPrice > 0 && (recordedPrice === 0 || recordedPrice === mrpPrice)) {
+    if (isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
       price = b2rPrice;
     } else if (!price) {
       price = (isSinglePiece && b2rPrice > 0) ? b2rPrice : (mrpPrice || b2rPrice || 0);
@@ -1578,9 +1578,46 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                 ? selectedInquiry.payment_method.toUpperCase() 
                                 : 'ONLINE PAYMENT';
 
+                              let isExpedited = String(selectedInquiry.shipping_speed || '').toLowerCase() === 'expedited' ||
+                                /Shipping:\s*Expedited/i.test(selectedInquiry.message || '');
+
+                              let explicitShippingFee = null;
+                              const feeMatch = (selectedInquiry.message || '').match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
+                                               (selectedInquiry.message || '').match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+                              if (feeMatch) {
+                                explicitShippingFee = Number(feeMatch[1].replace(/,/g, '')) || 0;
+                              }
+
                               const netItems = Math.max(0, itemsSubtotal - couponDiscount);
-                              const shippingFee = Math.max(0, finalTotal - netItems);
-                              const hasAdjustments = couponDiscount > 0 || shippingFee > 0;
+                              const diff = finalTotal - netItems;
+
+                              // Heuristic for orders where shipping_speed was not saved to DB:
+                              // If diff is a clean positive multiple of ₹150 (the exact expedited rate in India: ₹150, ₹300, ₹450, etc.)
+                              if (!isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
+                                isExpedited = true;
+                                explicitShippingFee = Math.round(diff);
+                              }
+
+                              let shippingFee = 0;
+                              let displayItemsSubtotal = itemsSubtotal;
+
+                              if (isExpedited) {
+                                if (explicitShippingFee !== null && !isNaN(explicitShippingFee)) {
+                                  shippingFee = explicitShippingFee;
+                                } else {
+                                  shippingFee = Math.max(0, finalTotal - netItems);
+                                }
+                                if (Math.abs((displayItemsSubtotal - couponDiscount + shippingFee) - finalTotal) > 0.01) {
+                                  displayItemsSubtotal = Math.max(0, finalTotal - shippingFee + couponDiscount);
+                                }
+                              } else {
+                                shippingFee = 0;
+                                if (finalTotal > 0 && Math.abs((displayItemsSubtotal - couponDiscount) - finalTotal) > 0.01) {
+                                  displayItemsSubtotal = Math.max(0, finalTotal + couponDiscount);
+                                }
+                              }
+
+                              const hasAdjustments = couponDiscount > 0 || shippingFee > 0 || Math.abs(displayItemsSubtotal - finalTotal) > 0.01;
 
                               if (hasAdjustments) {
                                 return (
@@ -1591,7 +1628,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         <span className="admin-inspect-subtotal-units">({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
                                       </td>
                                       <td style={{ textAlign: 'right' }}>
-                                        <span className="admin-inspect-subtotal-amount">{formatMoney(itemsSubtotal)}</span>
+                                        <span className="admin-inspect-subtotal-amount">{formatMoney(displayItemsSubtotal)}</span>
                                       </td>
                                     </tr>
                                     {couponDiscount > 0 && (
@@ -1613,7 +1650,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                       <tr className="admin-inspect-summary-shipping">
                                         <td colSpan="4">
                                           <span className="admin-inspect-shipping-label">
-                                            Shipping &amp; Delivery (Expedited Air)
+                                            Shipping &amp; Delivery {isExpedited ? '(Expedited Air)' : ''}
                                           </span>
                                         </td>
                                         <td style={{ textAlign: 'right' }}>

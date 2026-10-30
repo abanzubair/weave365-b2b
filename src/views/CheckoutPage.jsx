@@ -532,6 +532,7 @@ export function CheckoutPage({
     email: email || user?.email || '',
     shipping_mode: shippingMode,
     shipping_speed: shippingSpeed,
+    shipping_amount: shippingFee,
     delivery_details: deliveryDetails,
     dropship_details: {
       sender_name: senderName,

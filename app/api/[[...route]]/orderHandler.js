@@ -41,6 +41,7 @@ export async function POST(request) {
       payment_method = 'upi',
       shipping_mode = 'standard',
       shipping_speed = 'standard',
+      shipping_amount = 0,
       delivery_details = {},
       dropship_details = {},
       items = [],
@@ -103,7 +104,7 @@ export async function POST(request) {
 
     const orderMessage = isDropship
       ? `DIRECT DROPSHIP ORDER (BLIND PACKAGING)\nPayment: ${paymentLabel}\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\n\nSender (Parcel Label):\nName: ${dropship_details.sender_name || 'Reseller'}\nPhone: ${dropship_details.sender_phone || 'N/A'}\nAddress: ${dropship_details.sender_address || ''}, ${dropship_details.sender_city || ''}, ${dropship_details.sender_state || ''} - ${dropship_details.sender_pincode || ''}\n\nDeliver To (Recipient):\nName: ${fullName}\nPhone: ${phone}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\nPackaging: ${dropship_details.packing_preference || 'Blind Shipping'}\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`
-      : `B2B ORDER (${paymentLabel})\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\nShipping: ${shipping_speed === 'expedited' ? 'Expedited (2-3 Days)' : 'Standard Free (4-5 Days)'}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
+      : `B2B ORDER (${paymentLabel})\nTotal: ₹${Number(total_amount).toLocaleString('en-IN')}\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${Number(shipping_amount) > 0 ? ` (+₹${Number(shipping_amount)})` : ''}` : 'Standard Free (4-5 Days)'}\n\nDelivery Address:\nName: ${fullName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\nAddress: ${addr1}${delivery_details.address_line2 ? ', ' + delivery_details.address_line2 : ''}\nCity: ${city}, ${state} - ${pincode}\nCountry: India\n\nItems:\n${orderItemsSummary}${notes ? '\n\nNotes: ' + notes : ''}`;
 
     // Clean user_id (must be valid UUID or null)
     const validUserId = (user_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id))

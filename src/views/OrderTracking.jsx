@@ -117,13 +117,24 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
       const title = item.product_title || item.title || matchedProduct?.title || matchedProduct?.name || 'Handloom Banarasi Saree';
 
       // Resolve price (handling unit_price, price, total_price, or catalog prices)
-      let unitPrice = Number(item.unit_price ?? item.price ?? 0);
-      if (!unitPrice && matchedProduct) {
-        const prices = matchedVariant?.prices || matchedProduct?.variants?.[0]?.prices || {};
-        unitPrice = Number(prices.b2r || prices.single || matchedProduct?.resellerPrice || matchedProduct?.price || 0);
+      const qty = Math.max(1, parseInt(item.quantity || 1, 10));
+      const setSize = matchedProduct?.totalColors || matchedProduct?.variants?.length || 1;
+      const isUnder999 = String(matchedProduct?.category || '').toLowerCase() === 'under 999';
+      const isSinglePiece = isUnder999 || setSize <= 1 || qty < setSize;
+
+      const b2rPrice = Number(matchedVariant?.prices?.b2r || matchedVariant?.prices?.single || matchedProduct?.resellerPrice || 0);
+      const mrpPrice = Number(matchedVariant?.prices?.mrp || matchedVariant?.prices?.offer || matchedProduct?.price || 0);
+      const recordedPrice = Number(item.unit_price ?? item.price ?? 0);
+
+      let unitPrice = recordedPrice;
+      // If recordedPrice was saved as wholesale mrp (or 0) but item was ordered as single-piece,
+      // resolve to b2rPrice (the single-piece price shown to buyers on the storefront product page)
+      if (isSinglePiece && b2rPrice > 0 && (recordedPrice <= mrpPrice || recordedPrice === 0)) {
+        unitPrice = b2rPrice;
+      } else if (!unitPrice) {
+        unitPrice = (isSinglePiece && b2rPrice > 0) ? b2rPrice : (mrpPrice || b2rPrice || 0);
       }
 
-      const qty = Math.max(1, parseInt(item.quantity || 1, 10));
       const totalPrice = unitPrice > 0 ? unitPrice * qty : (Number(item.total_price) || null);
 
       return {
@@ -162,7 +173,7 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
   // Complete Amount Breakup calculation (Subtotal, Coupon Discount, Shipping, Total)
   const amountBreakdown = useMemo(() => {
     const totalQuantity = resolvedItems.reduce((acc, it) => acc + (Number(it.qty) || 1), 0);
-    const itemsSubtotal = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
+    let itemsSubtotal = resolvedItems.reduce((acc, it) => acc + (it.totalPrice || (it.unitPrice * it.qty) || 0), 0);
 
     let couponDiscount = Number(order?.coupon_discount || 0);
     let couponCode = order?.coupon_code || '';
@@ -176,13 +187,55 @@ export function OrderTracking({ inquiryId, products = [], navigate, user }) {
 
     const finalTotal = totalOrderValue;
     const netItems = Math.max(0, itemsSubtotal - couponDiscount);
-    const shippingFee = Math.max(0, finalTotal - netItems);
+    const diff = finalTotal - netItems;
 
-    let isExpedited = shippingFee > 0;
+    // Check if the order explicitly requested expedited delivery
+    let isExpedited = false;
+    let explicitShippingFee = null;
+
     if (order?.shipping_speed) {
-      isExpedited = order.shipping_speed === 'expedited';
-    } else if (order?.message) {
-      isExpedited = /Shipping:\s*Expedited/i.test(order.message) || shippingFee > 0;
+      isExpedited = String(order.shipping_speed).toLowerCase() === 'expedited';
+    }
+
+    if (order?.message) {
+      if (/Shipping:\s*Expedited/i.test(order.message)) {
+        isExpedited = true;
+      }
+      const feeMatch = order.message.match(/Shipping Fee:\s*₹?([0-9.,]+)/i) ||
+                       order.message.match(/Expedited\s*\([^)]*\)\s*\(\+?₹?([0-9.,]+)\)/i);
+      if (feeMatch) {
+        explicitShippingFee = Number(feeMatch[1].replace(/,/g, ''));
+      }
+    }
+
+    // Heuristic for orders where shipping_speed was not saved to DB:
+    // If diff is a clean positive multiple of ₹150 (the exact expedited rate in India: ₹150, ₹300, ₹450, etc.)
+    if (!isExpedited && diff > 0 && Math.round(diff) % 150 === 0) {
+      isExpedited = true;
+      explicitShippingFee = Math.round(diff);
+    }
+
+    let shippingFee = 0;
+    if (isExpedited) {
+      if (explicitShippingFee !== null && !isNaN(explicitShippingFee)) {
+        shippingFee = explicitShippingFee;
+      } else {
+        shippingFee = Math.max(0, finalTotal - netItems);
+      }
+      // Reconcile itemsSubtotal if catalog prices drifted slightly:
+      // finalTotal = itemsSubtotal - couponDiscount + shippingFee => itemsSubtotal = finalTotal - shippingFee + couponDiscount
+      if (Math.abs((itemsSubtotal - couponDiscount + shippingFee) - finalTotal) > 0.01) {
+        itemsSubtotal = Math.max(0, finalTotal - shippingFee + couponDiscount);
+      }
+    } else {
+      // Standard shipping in India is ALWAYS Free (₹0)
+      shippingFee = 0;
+      // In standard free shipping: Total Paid = Items Subtotal - Coupon Discount
+      // If there was any catalog price drift or discrepancy between recorded wholesale unit prices
+      // and what was actually charged at checkout, sync itemsSubtotal with finalTotal + couponDiscount
+      if (finalTotal > 0 && Math.abs((itemsSubtotal - couponDiscount) - finalTotal) > 0.01) {
+        itemsSubtotal = Math.max(0, finalTotal + couponDiscount);
+      }
     }
 
     return {
