@@ -14,6 +14,7 @@ import { ROUTE_FIRST_IMAGES } from '../../utils/seoHelper.js';
 import {
   normalizeSeoPath,
   mapSeoRow,
+  AdminLoadingScreen,
 } from './AdminShared.jsx';
 
 const pageSeoTableSql = `CREATE TABLE IF NOT EXISTS public.page_seo_settings (
@@ -224,6 +225,7 @@ const categorySeoDefaults = Object.entries(seoCategoryRoutes || {})
 export default function SeoSettings({
   adminData,
   loadAdminData,
+  loading = false,
 }) {
   const [pageSeoId, setPageSeoId] = useState(null);
   const [pageSeoPath, setPageSeoPath] = useState('/');
@@ -379,6 +381,15 @@ export default function SeoSettings({
     } finally {
       setIsSubmittingPageSeo(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading SEO Configurations..."
+        subtitle="Fetching page metadata and search engine indexing configurations…"
+      />
+    );
   }
 
   return (

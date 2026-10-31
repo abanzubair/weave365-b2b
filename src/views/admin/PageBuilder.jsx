@@ -6,11 +6,13 @@ import {
   Trash2,
 } from '../../components/icons.jsx';
 import { saveSupabaseLandingPage, deleteSupabaseLandingPage, fetchSupabaseLandingPages } from '../../productData.js';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 export default function PageBuilder({
   landingPages = [],
   setLandingPages,
   adminData,
+  loading: propsLoading = false,
 }) {
   const [isLoadingPages, setIsLoadingPages] = useState(false);
 
@@ -200,6 +202,15 @@ export default function PageBuilder({
     } finally {
       setIsDeletingBuilder(false);
     }
+  }
+
+  if ((isLoadingPages && (!landingPages || landingPages.length === 0)) || propsLoading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Page Builder..."
+        subtitle="Fetching custom landing pages and visual layouts…"
+      />
+    );
   }
 
   return (

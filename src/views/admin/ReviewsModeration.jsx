@@ -1,6 +1,7 @@
 import React from 'react';
 import { Clock, Check, Eye, RefreshCw, MessageSquareText, ThumbsUp, Trash2, PhotoIcon } from '../../components/icons.jsx';
 import { SharpStar } from '../ReviewsPage.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 export function ReviewsModeration({
   reviewsFilter,
@@ -13,10 +14,12 @@ export function ReviewsModeration({
   reviewsError,
   loadSiteReviews,
   reviewActionLoading,
-  handleReviewAction
+  handleReviewAction,
+  loading = false,
 }) {
   const isProductMode = reviewsCategory === 'product';
   const activeList = isProductMode ? allProductReviews : allSiteReviews;
+  const isOverallLoading = reviewsLoading || loading;
 
   return (
     <div className="admin-reviews-tab">
@@ -77,11 +80,11 @@ export function ReviewsModeration({
         </div>
       )}
 
-      {reviewsLoading ? (
-        <div className="admin-reviews-loading">
-          <RefreshCw size={28} className="spin" />
-          <p>Loading reviews...</p>
-        </div>
+      {isOverallLoading ? (
+        <AdminLoadingScreen
+          title="Loading Customer Reviews..."
+          subtitle="Fetching verified product reviews and service testimonials for moderation…"
+        />
       ) : (() => {
         const filtered = reviewsFilter === 'all' ? activeList : activeList.filter(r => r.status === reviewsFilter);
         if (filtered.length === 0) {

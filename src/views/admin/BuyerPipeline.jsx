@@ -30,6 +30,7 @@ import { adminEmails, storeConfig } from '../../config.js';
 import {
   joinByUser,
   isAdminUser,
+  AdminLoadingScreen,
 } from './AdminShared.jsx';
 import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
 import { resolveBuyerPresence } from '../../utils/presenceResolver.js';
@@ -136,6 +137,7 @@ export default function BuyerPipeline({
   updateInquiryStatus,
   user,
   updateProfile,
+  loading = false,
 }) {
   // Local state for filters and sorting
   const [userTypeFilter, setUserTypeFilter] = useState('all');
@@ -580,6 +582,15 @@ export default function BuyerPipeline({
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (loading || status === 'loading') {
+    return (
+      <AdminLoadingScreen
+        title="Loading Customer Accounts..."
+        subtitle="Fetching registered buyers, tiers, and purchase intent…"
+      />
+    );
+  }
 
   return (
     <>

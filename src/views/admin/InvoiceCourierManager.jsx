@@ -7,6 +7,7 @@ import {
   Check,
   RefreshCw,
 } from '../../components/icons.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 /**
  * InvoiceCourierManager Component
@@ -15,7 +16,7 @@ import {
  * - Blind Courier Shipping Labels
  * - Delivery tracking records
  */
-export function InvoiceCourierManager({ inquiries = [], products = [], loadAdminData }) {
+export function InvoiceCourierManager({ inquiries = [], products = [], loadAdminData, loading = false }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('orders');
   const [copyFeedback, setCopyFeedback] = useState({});
@@ -259,6 +260,15 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
       printWin.document.close();
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Invoices & Courier Slips..."
+        subtitle="Preparing print-ready shipping manifests and order receipts…"
+      />
+    );
+  }
 
   return (
     <div className="invoice-courier-container" style={{ padding: '24px' }}>

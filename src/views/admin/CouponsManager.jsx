@@ -35,6 +35,7 @@ import {
 } from '../../components/icons.jsx';
 import { supabase } from '../../supabaseClient.js';
 import '../../styles/couponsAdmin.css';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 const INITIAL_FORM = {
   code: '',
@@ -49,10 +50,11 @@ const INITIAL_FORM = {
   is_active: true,
 };
 
-export default function CouponsManager({ adminData, user }) {
+export default function CouponsManager({ adminData, loadAdminData, user, loading: propsLoading = false }) {
   const [coupons, setCoupons] = useState([]);
   const [usages, setUsages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isOverallLoading = isLoading || propsLoading;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -459,10 +461,13 @@ Apply this code directly at checkout on https://www.weave365.com/checkout. Happy
 
       {/* Table Card */}
       <div className="coupons-table-card">
-        {isLoading && coupons.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b' }}>
-            <RefreshCw size={24} className="admin-spin" style={{ margin: '0 auto 12px' }} />
-            <p style={{ margin: 0, fontWeight: 500 }}>Loading coupons...</p>
+        {isOverallLoading ? (
+          <div style={{ padding: '36px 20px' }}>
+            <AdminLoadingScreen
+              compact
+              title="Loading Promotional Coupons..."
+              subtitle="Fetching discount codes, usage limits, and active promotions…"
+            />
           </div>
         ) : filteredCoupons.length === 0 ? (
           <div className="coupons-empty-state">

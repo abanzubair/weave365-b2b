@@ -11,6 +11,7 @@ import {
   Printer,
   Database,
 } from '../../components/icons.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 export default function DashboardOverview({
   adminData,
@@ -19,6 +20,7 @@ export default function DashboardOverview({
   setSelectedUserList,
   handleManualSync,
   syncStatus,
+  loading = false,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -539,6 +541,15 @@ export default function DashboardOverview({
   }, [enquiryRows, currentPage]);
 
   const totalPages = Math.max(1, Math.ceil(enquiryRows.length / itemsPerPage));
+
+  if (loading || syncStatus === 'loading') {
+    return (
+      <AdminLoadingScreen
+        title={syncStatus === 'loading' ? 'Syncing Google Sheets Catalog...' : 'Loading Dashboard Overview...'}
+        subtitle={syncStatus === 'loading' ? 'Updating inventory and synchronizing Supabase tables…' : 'Calculating sales volume, order metrics, and pending tasks…'}
+      />
+    );
+  }
 
   return (
     <div className="dashboard-overview-container">

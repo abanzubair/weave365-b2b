@@ -44,6 +44,7 @@ import { fetchProducts, clearProductDataCache } from '../../productData.js';
 import { useStorefront } from '../../store/useStorefront.js';
 import { fallbackProductImage } from '../../storefrontShared.jsx';
 import { AppLink } from '../../components/AppLink.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 function normalizeVendorCode(vid) {
   if (!vid || vid === 'all' || vid === 'N/A') return '';
@@ -57,11 +58,13 @@ export default function AdminStockManager({
   products = [],
   user,
   buyerProfile,
+  loading: propsLoading = false,
 }) {
   const [catalogProducts, setCatalogProducts] = useState(() => (Array.isArray(products) && products.length >= 25 ? products : []));
   const [stockOverrides, setStockOverrides] = useState(() => getVendorStockLocal());
   const [loading, setLoading] = useState(() => !Array.isArray(products) || products.length < 25);
   const [refreshing, setRefreshing] = useState(false);
+  const isOverallLoading = loading || propsLoading;
 
   // Filter & Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -762,11 +765,11 @@ export default function AdminStockManager({
       )}
 
       {/* 5. Products Content Area */}
-      {loading ? (
-        <div className="admin-stock-loading-box">
-          <RefreshCw size={32} className="spin" />
-          <p>Loading master vendor stock catalog and database overrides…</p>
-        </div>
+      {isOverallLoading ? (
+        <AdminLoadingScreen
+          title="Loading Master Products & Stock..."
+          subtitle="Loading vendor stock catalog and database overrides…"
+        />
       ) : paginatedProducts.length === 0 ? (
         <div className="admin-stock-empty-box">
           <Boxes size={48} style={{ color: '#b8860b', opacity: 0.5, margin: '0 auto 12px' }} />

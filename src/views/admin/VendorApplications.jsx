@@ -39,6 +39,7 @@ import {
 } from '../../utils/vendorStockService.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { SellerUploadsModeration } from './SellerUploadsModeration.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 function toTitleCase(str) {
   if (!str) return '';
@@ -99,6 +100,7 @@ export default function VendorApplications({
   products = [],
   user,
   setActiveTab,
+  loading = false,
 }) {
   // Local state
   const [subTab, setSubTab] = useState('vendors'); // 'vendors' | 'uploads'
@@ -519,6 +521,15 @@ export default function VendorApplications({
     if (!inspectVendor?.vendor_code) return { products: [], total: 0, disabledCount: 0, activeCount: 0, allDisabled: false };
     return getVendorProductsInfo(inspectVendor.vendor_code);
   }, [inspectVendor?.vendor_code, getVendorProductsInfo]);
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Vendor Partners..."
+        subtitle="Fetching artisan weavers, loom codes, and onboarding applications…"
+      />
+    );
+  }
 
   return (
     <div className="admin-partners-tab">

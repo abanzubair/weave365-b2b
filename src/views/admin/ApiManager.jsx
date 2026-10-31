@@ -40,9 +40,11 @@ import {
 import { developerService, TIER_CONFIGS } from '../../services/developerService.js';
 import { DeveloperDashboard, ConfirmActionModal } from '../../components/developer/DeveloperDashboard.jsx';
 import '../../styles/developerDashboard.css';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
-export default function ApiManager({ adminData, loadAdminData, user }) {
+export default function ApiManager({ adminData, loadAdminData, user, loading: propsLoading = false }) {
   const [loading, setLoading] = useState(true);
+  const isOverallLoading = loading || propsLoading;
   const [systemOverview, setSystemOverview] = useState(null);
   const [allKeys, setAllKeys] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -336,6 +338,15 @@ export default function ApiManager({ adminData, loadAdminData, user }) {
   const candidateProfiles = useMemo(() => {
     return adminData?.profiles || [];
   }, [adminData?.profiles]);
+
+  if (isOverallLoading && (!systemOverview || allKeys.length === 0)) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Developer API Credentials..."
+        subtitle="Fetching API credentials, rate limits, and endpoint telemetry…"
+      />
+    );
+  }
 
   return (
     <div className="api-manager-container" style={{ maxWidth: '1600px', width: '100%', margin: '0 auto' }}>

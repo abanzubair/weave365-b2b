@@ -75,6 +75,7 @@ import {
   joinByUser,
   UserListModal,
   LightboxOverlay,
+  AdminLoadingScreen,
 } from './admin/AdminShared.jsx';
 
 const optionalTables = [
@@ -88,6 +89,81 @@ const optionalTables = [
   { key: 'influencer_profiles', label: 'Influencer Profiles' },
   { key: 'coupons', label: 'Coupons' },
 ];
+
+export const TAB_LOADING_METADATA = {
+  'dashboard': {
+    title: 'Loading Dashboard Overview...',
+    subtitle: 'Calculating sales metrics, active orders, and pending B2B activities…',
+  },
+  'admins': {
+    title: 'Loading Administrator Accounts...',
+    subtitle: 'Fetching admin permissions, roles, and security access…',
+  },
+  'pipeline': {
+    title: 'Loading Customer Accounts...',
+    subtitle: 'Fetching registered buyers, tiers, and purchase intent…',
+  },
+  'partners': {
+    title: 'Loading Vendor Partners...',
+    subtitle: 'Fetching artisan weavers, loom codes, and onboarding applications…',
+  },
+  'stock': {
+    title: 'Loading Master Products & Stock...',
+    subtitle: 'Syncing master catalog, price groups, and inventory overrides…',
+  },
+  'buyer-activity': {
+    title: 'Loading Buyer Activity & Intent...',
+    subtitle: 'Gathering real-time customer carts, wishlist items, and intent data…',
+  },
+  'enquires': {
+    title: 'Loading Customer Enquiries...',
+    subtitle: 'Fetching wholesale inquiries and direct quote requests…',
+  },
+  'tracking': {
+    title: 'Loading Orders & Live Tracking...',
+    subtitle: 'Syncing dispatches, courier tracking, and order fulfillments…',
+  },
+  'invoice-slip': {
+    title: 'Loading Invoices & Courier Slips...',
+    subtitle: 'Preparing print-ready shipping manifests and order receipts…',
+  },
+  'coupons': {
+    title: 'Loading Promotional Coupons...',
+    subtitle: 'Fetching discount codes, usage limits, and active promotions…',
+  },
+  'influencers': {
+    title: 'Loading Affiliate & Influencers...',
+    subtitle: 'Fetching partner profiles, referral traffic, and commission stats…',
+  },
+  'reviews': {
+    title: 'Loading Customer Reviews...',
+    subtitle: 'Fetching product reviews and service testimonials for moderation…',
+  },
+  'country-pricing': {
+    title: 'Loading Country Pricing...',
+    subtitle: 'Fetching international currency rules and regional markups…',
+  },
+  'blogs': {
+    title: 'Loading Blog Articles...',
+    subtitle: 'Fetching published articles, guides, and drafts…',
+  },
+  'builder': {
+    title: 'Loading Page Builder...',
+    subtitle: 'Fetching custom landing pages and visual layouts…',
+  },
+  'directory': {
+    title: 'Loading Internal Link Directory...',
+    subtitle: 'Fetching internal links and SEO category connections…',
+  },
+  'seo': {
+    title: 'Loading SEO Configurations...',
+    subtitle: 'Fetching page metadata and search engine indexing configurations…',
+  },
+  'api-manager': {
+    title: 'Loading Developer API Manager...',
+    subtitle: 'Fetching API credentials, rate limits, and endpoint telemetry…',
+  },
+};
 
 const emptyAdminData = {
   profiles: [],
@@ -112,7 +188,7 @@ export function Admin({
   setLandingPages,
   navigate
 }) {
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState('loading');
   const [syncStatus, setSyncStatus] = useState('idle');
   const [adminData, setAdminData] = useState(emptyAdminData);
 
@@ -242,100 +318,108 @@ export function Admin({
 
   // API Call: Fetch all admin database tables
   async function loadAdminData() {
-    if (!isSupabaseConfigured || !allowed) return;
+    if (!isSupabaseConfigured || !allowed) {
+      setStatus('ready');
+      return;
+    }
 
     setStatus('loading');
-    const [profiles, cartItems, favorites] = await Promise.all([
-      safeSelect('profiles'),
-      safeSelect('cart_items'),
-      safeSelect('favorites'),
-    ]);
-
-    const optionalResults = await Promise.all(
-      optionalTables.map(async (table) => {
-        const query = table.key === 'orders'
-          ? '*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)'
-          : '*';
-        const result = await safeSelect(table.key, query);
-        return [table.key, result];
-      }),
-    );
-
-    const optional = {};
-    const errors = {};
-
-    [
-      ['profiles', profiles],
-      ['cart_items', cartItems],
-      ['favorites', favorites],
-      ...optionalResults,
-    ].forEach(([key, result]) => {
-      if (result.error) errors[key] = result.error.message;
-    });
-
-    const sfDb = getStorefrontSupabase();
-    let secondaryTenants = [];
-    if (sfDb) {
-      try {
-        const { data: tenants } = await sfDb.from('boutique_tenants').select('*');
-        if (tenants) {
-          secondaryTenants = tenants.map(t => ({
-            ...t,
-            reseller_id: t.reseller_id || t.owner_id || t.about_text?.match(/"reseller_id":"([^"]+)"/)?.[1] || null,
-          }));
-        }
-      } catch (e) {
-        console.warn('Failed to load tenants from secondary DB:', e);
-      }
-    }
-
-    optionalResults.forEach(([key, result]) => {
-      optional[key] = result.data;
-    });
-
-    optional.reseller_storefronts = secondaryTenants;
-    optional.boutique_tenants = secondaryTenants;
-
-    // Fetch administrative auth presence (last_sign_in_at, last_seen_at)
-    let userPresence = {};
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || '';
-      if (token) {
-        const presRes = await fetch('/api/admin/presence', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (presRes.ok) {
-          const presJson = await presRes.json();
-          if (presJson?.presence) {
-            userPresence = presJson.presence;
+      const [profiles, cartItems, favorites] = await Promise.all([
+        safeSelect('profiles'),
+        safeSelect('cart_items'),
+        safeSelect('favorites'),
+      ]);
+
+      const optionalResults = await Promise.all(
+        optionalTables.map(async (table) => {
+          const query = table.key === 'orders'
+            ? '*, order_delivery_addresses(*), order_dropship_senders(*), order_items(*), order_fulfillments(*)'
+            : '*';
+          const result = await safeSelect(table.key, query);
+          return [table.key, result];
+        }),
+      );
+
+      const optional = {};
+      const errors = {};
+
+      [
+        ['profiles', profiles],
+        ['cart_items', cartItems],
+        ['favorites', favorites],
+        ...optionalResults,
+      ].forEach(([key, result]) => {
+        if (result.error) errors[key] = result.error.message;
+      });
+
+      const sfDb = getStorefrontSupabase();
+      let secondaryTenants = [];
+      if (sfDb) {
+        try {
+          const { data: tenants } = await sfDb.from('boutique_tenants').select('*');
+          if (tenants) {
+            secondaryTenants = tenants.map(t => ({
+              ...t,
+              reseller_id: t.reseller_id || t.owner_id || t.about_text?.match(/"reseller_id":"([^"]+)"/)?.[1] || null,
+            }));
+          }
+        } catch (e) {
+          console.warn('Failed to load tenants from secondary DB:', e);
+        }
+      }
+
+      optionalResults.forEach(([key, result]) => {
+        optional[key] = result.data;
+      });
+
+      optional.reseller_storefronts = secondaryTenants;
+      optional.boutique_tenants = secondaryTenants;
+
+      // Fetch administrative auth presence (last_sign_in_at, last_seen_at)
+      let userPresence = {};
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token || '';
+        if (token) {
+          const presRes = await fetch('/api/admin/presence', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (presRes.ok) {
+            const presJson = await presRes.json();
+            if (presJson?.presence) {
+              userPresence = presJson.presence;
+            }
           }
         }
+      } catch (e) {
+        console.warn('[Admin] Could not load user presence data:', e.message);
       }
-    } catch (e) {
-      console.warn('[Admin] Could not load user presence data:', e.message);
+
+      const enrichedProfiles = (profiles.data || []).map((p) => {
+        const authData = userPresence[p.id];
+        if (!authData) return p;
+        return {
+          ...p,
+          acquisition: p.acquisition || authData.acquisition || null,
+          last_sign_in_at: p.last_sign_in_at || authData.last_sign_in_at || null,
+          last_seen_at: p.last_seen_at || authData.last_seen_at || null,
+        };
+      });
+
+      setAdminData({
+        profiles: enrichedProfiles,
+        cartItems: cartItems.data,
+        favorites: favorites.data,
+        userPresence,
+        optional,
+        errors,
+      });
+    } catch (err) {
+      console.error('[Admin] Error loading admin data:', err);
+    } finally {
+      setStatus('ready');
     }
-
-    const enrichedProfiles = (profiles.data || []).map((p) => {
-      const authData = userPresence[p.id];
-      if (!authData) return p;
-      return {
-        ...p,
-        acquisition: p.acquisition || authData.acquisition || null,
-        last_sign_in_at: p.last_sign_in_at || authData.last_sign_in_at || null,
-        last_seen_at: p.last_seen_at || authData.last_seen_at || null,
-      };
-    });
-
-    setAdminData({
-      profiles: enrichedProfiles,
-      cartItems: cartItems.data,
-      favorites: favorites.data,
-      userPresence,
-      optional,
-      errors,
-    });
-    setStatus('ready');
   }
 
   // API Call: Sync Google Sheets manual trigger
@@ -727,13 +811,10 @@ export function Admin({
   if (authChecking) {
     return (
       <section className="admin-loading-screen">
-        <div className="admin-loading-card">
-          <div className="admin-loading-spinner-wrap">
-            <div className="admin-loading-spinner" />
-          </div>
-          <h2 className="admin-loading-title">Weave 365 Admin</h2>
-          <p className="admin-loading-desc">Verifying credentials and loading dashboard...</p>
-        </div>
+        <AdminLoadingScreen
+          title="Weave 365 Admin"
+          subtitle="Verifying credentials and loading dashboard..."
+        />
       </section>
     );
   }
@@ -893,160 +974,183 @@ export function Admin({
         </header>
 
         <div className="admin-page-scrollable-content">
-          {activeTab === 'dashboard' && (
-            <DashboardOverview
-              adminData={adminData}
-              updateInquiryStatus={updateInquiryStatus}
-              loadAdminData={loadAdminData}
-              setSelectedUserList={setSelectedUserList}
-              handleManualSync={handleManualSync}
-              syncStatus={syncStatus}
+          {status === 'loading' ? (
+            <AdminLoadingScreen
+              title={TAB_LOADING_METADATA[activeTab]?.title || `Loading ${activeTabItem?.label || 'Admin'}...`}
+              subtitle={TAB_LOADING_METADATA[activeTab]?.subtitle || 'Fetching real-time records from secure database…'}
             />
-          )}
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <DashboardOverview
+                  adminData={adminData}
+                  updateInquiryStatus={updateInquiryStatus}
+                  loadAdminData={loadAdminData}
+                  setSelectedUserList={setSelectedUserList}
+                  handleManualSync={handleManualSync}
+                  syncStatus={syncStatus}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'admins' && (
-            <AdminsManager
-              adminData={adminData}
-              user={activeUser}
-              toggleResellerDashboard={toggleResellerDashboard}
-            />
-          )}
+              {activeTab === 'admins' && (
+                <AdminsManager
+                  adminData={adminData}
+                  user={activeUser}
+                  toggleResellerDashboard={toggleResellerDashboard}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'pipeline' && (
-            <BuyerPipeline
-              adminData={adminData}
-              status={status}
-              syncStatus={syncStatus}
-              loadAdminData={loadAdminData}
-              handleManualSync={handleManualSync}
-              setSelectedUserList={setSelectedUserList}
-              toggleResellerDashboard={toggleResellerDashboard}
-              updateInquiryStatus={updateInquiryStatus}
-              user={activeUser}
-              updateProfile={updateVendorProfile}
-            />
-          )}
+              {activeTab === 'pipeline' && (
+                <BuyerPipeline
+                  adminData={adminData}
+                  status={status}
+                  syncStatus={syncStatus}
+                  loadAdminData={loadAdminData}
+                  handleManualSync={handleManualSync}
+                  setSelectedUserList={setSelectedUserList}
+                  toggleResellerDashboard={toggleResellerDashboard}
+                  updateInquiryStatus={updateInquiryStatus}
+                  user={activeUser}
+                  updateProfile={updateVendorProfile}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'blogs' && (
-            <BlogManager
-              blogs={blogs}
-              setBlogs={setBlogs}
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-            />
-          )}
+              {activeTab === 'blogs' && (
+                <BlogManager
+                  blogs={blogs}
+                  setBlogs={setBlogs}
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'seo' && (
-            <SeoSettings
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-            />
-          )}
+              {activeTab === 'seo' && (
+                <SeoSettings
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'builder' && (
-            <PageBuilder
-              landingPages={landingPages}
-              setLandingPages={setLandingPages}
-              adminData={adminData}
-            />
-          )}
+              {activeTab === 'builder' && (
+                <PageBuilder
+                  landingPages={landingPages}
+                  setLandingPages={setLandingPages}
+                  adminData={adminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'directory' && (
-            <DirectoryManager />
-          )}
+              {activeTab === 'directory' && (
+                <DirectoryManager loading={status === 'loading'} />
+              )}
 
-          {activeTab === 'reviews' && (
-            <ReviewsModeration
-              reviewsFilter={reviewsFilter}
-              setReviewsFilter={setReviewsFilter}
-              reviewsCategory={reviewsCategory}
-              setReviewsCategory={setReviewsCategory}
-              allSiteReviews={allSiteReviews}
-              allProductReviews={allProductReviews}
-              reviewsLoading={reviewsLoading}
-              reviewsError={reviewsError}
-              loadSiteReviews={loadSiteReviews}
-              reviewActionLoading={reviewActionLoading}
-              handleReviewAction={handleReviewAction}
-            />
-          )}
+              {activeTab === 'reviews' && (
+                <ReviewsModeration
+                  reviewsFilter={reviewsFilter}
+                  setReviewsFilter={setReviewsFilter}
+                  reviewsCategory={reviewsCategory}
+                  setReviewsCategory={setReviewsCategory}
+                  allSiteReviews={allSiteReviews}
+                  allProductReviews={allProductReviews}
+                  reviewsLoading={reviewsLoading}
+                  reviewsError={reviewsError}
+                  loadSiteReviews={loadSiteReviews}
+                  reviewActionLoading={reviewActionLoading}
+                  handleReviewAction={handleReviewAction}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'partners' && (
-            <VendorApplications
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-              updateVendorProfile={updateVendorProfile}
-              products={products}
-              user={activeUser}
-              buyerProfile={buyerProfile}
-              navigate={navigate}
-              setActiveTab={setActiveTab}
-            />
-          )}
+              {activeTab === 'partners' && (
+                <VendorApplications
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  updateVendorProfile={updateVendorProfile}
+                  products={products}
+                  user={activeUser}
+                  buyerProfile={buyerProfile}
+                  navigate={navigate}
+                  setActiveTab={setActiveTab}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'tracking' && (
-            <AdminTrackingPanel
-              inquiries={enquiryRows}
-              products={products}
-              loadAdminData={loadAdminData}
-            />
-          )}
+              {activeTab === 'tracking' && (
+                <AdminTrackingPanel
+                  inquiries={enquiryRows}
+                  products={products}
+                  loadAdminData={loadAdminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'stock' && (
-            <AdminStockManager
-              products={products}
-              user={activeUser}
-              buyerProfile={buyerProfile}
-            />
-          )}
+              {activeTab === 'stock' && (
+                <AdminStockManager
+                  products={products}
+                  user={activeUser}
+                  buyerProfile={buyerProfile}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'influencers' && (
-            <InfluencerManager />
-          )}
+              {activeTab === 'influencers' && (
+                <InfluencerManager loading={status === 'loading'} />
+              )}
 
-          {activeTab === 'buyer-activity' && (
-            <BuyerActivity
-              adminData={adminData}
-              products={products}
-              loadAdminData={loadAdminData}
-            />
-          )}
+              {activeTab === 'buyer-activity' && (
+                <BuyerActivity
+                  adminData={adminData}
+                  products={products}
+                  loadAdminData={loadAdminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'invoice-slip' && (
-            <InvoiceCourierManager
-              inquiries={enquiryRows}
-              products={products}
-              loadAdminData={loadAdminData}
-            />
-          )}
+              {activeTab === 'invoice-slip' && (
+                <InvoiceCourierManager
+                  inquiries={enquiryRows}
+                  products={products}
+                  loadAdminData={loadAdminData}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'enquires' && (
-            <EnquiresManager
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-              products={products}
-              loading={status === 'loading'}
-            />
-          )}
+              {activeTab === 'enquires' && (
+                <EnquiresManager
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  products={products}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'country-pricing' && (
-            <CountryPricingManager adminData={adminData} />
-          )}
+              {activeTab === 'country-pricing' && (
+                <CountryPricingManager adminData={adminData} loading={status === 'loading'} />
+              )}
 
-          {activeTab === 'api-manager' && (
-            <ApiManager
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-              user={activeUser}
-            />
-          )}
+              {activeTab === 'api-manager' && (
+                <ApiManager
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  user={activeUser}
+                  loading={status === 'loading'}
+                />
+              )}
 
-          {activeTab === 'coupons' && (
-            <CouponsManager
-              adminData={adminData}
-              loadAdminData={loadAdminData}
-              user={activeUser}
-            />
+              {activeTab === 'coupons' && (
+                <CouponsManager
+                  adminData={adminData}
+                  loadAdminData={loadAdminData}
+                  user={activeUser}
+                  loading={status === 'loading'}
+                />
+              )}
+            </>
           )}
         </div>
       </main>

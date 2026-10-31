@@ -21,9 +21,9 @@ import {
   ExternalLink,
 } from '../../components/icons.jsx';
 import { adminEmails } from '../../config.js';
-import { isAdminUser } from './AdminShared.jsx';
+import { isAdminUser, AdminLoadingScreen } from './AdminShared.jsx';
 
-export default function AdminsManager({ adminData, user, toggleResellerDashboard }) {
+export default function AdminsManager({ adminData, user, toggleResellerDashboard, loading = false }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedEmail, setCopiedEmail] = useState(null);
 
@@ -80,6 +80,15 @@ export default function AdminsManager({ adminData, user, toggleResellerDashboard
     setCopiedEmail(email);
     setTimeout(() => setCopiedEmail(null), 1800);
   };
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Administrator Accounts..."
+        subtitle="Fetching admin permissions, roles, and security access…"
+      />
+    );
+  }
 
   return (
     <div className="admin-page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

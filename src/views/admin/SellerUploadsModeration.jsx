@@ -25,6 +25,7 @@ import {
   Sparkles,
   Layers,
 } from '../../components/icons.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 export function SellerUploadsModeration() {
   const [products, setProducts] = useState([]);
@@ -336,9 +337,11 @@ export function SellerUploadsModeration() {
 
       {/* 4. Products Table / List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#78716c' }}>
-          Loading seller uploads...
-        </div>
+        <AdminLoadingScreen
+          compact
+          title="Loading Seller Product Submissions..."
+          subtitle="Fetching submitted products and artisan details for moderation…"
+        />
       ) : filteredProducts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px 0', background: '#fff', borderRadius: 12, border: '1px solid #e7e5e4', color: '#78716c' }}>
           <Boxes size={36} style={{ opacity: 0.3, marginBottom: 10 }} />

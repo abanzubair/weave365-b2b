@@ -450,3 +450,5 @@ export function LightboxOverlay({ lightboxImage, setLightboxImage }) {
     document.body
   );
 }
+
+export { default as AdminLoadingScreen } from './AdminLoadingScreen.jsx';

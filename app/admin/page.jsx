@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import AdminClient from './AdminClient.jsx';
+import AdminLoadingScreen from '../../src/views/admin/AdminLoadingScreen.jsx';
 
 export const metadata = {
   title: 'Admin Dashboard | Weave 365',
@@ -11,7 +12,16 @@ export const metadata = {
 
 export default function AdminPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <section className="admin-loading-screen" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+          <AdminLoadingScreen
+            title="Weave 365 Admin"
+            subtitle="Initializing administrator dashboard…"
+          />
+        </section>
+      }
+    >
       <AdminClient />
     </Suspense>
   );

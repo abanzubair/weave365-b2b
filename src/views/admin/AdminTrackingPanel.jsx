@@ -42,6 +42,7 @@ import {
 import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 async function updateSupabaseOrderTracking(id, { status, trackingCarrier, trackingNumber, trackingMessage, sourceTable }) {
   let table = 'inquiries';
@@ -178,7 +179,7 @@ export function getOrderStatusDisplay(status) {
   };
 }
 
-export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminData }) {
+export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminData, loading = false }) {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('tracking'); // 'tracking' | 'details'
   const [searchQuery, setSearchQuery] = useState('');
@@ -752,6 +753,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
   // Quick carrier suggestions
   const carrierSuggestions = ['Delhivery', 'BlueDart', 'DTDC', 'DHL Express', 'India Post Speed Post', 'Shadowfax', 'Trackon'];
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Orders & Live Tracking..."
+        subtitle="Syncing dispatches, courier tracking, and order fulfillments…"
+      />
+    );
+  }
 
   return (
     <div className="admin-tracking-container-refined">

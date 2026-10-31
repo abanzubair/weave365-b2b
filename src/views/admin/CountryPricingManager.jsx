@@ -22,8 +22,9 @@ import { useCountryCurrency, PRESET_ADDITIONAL_COUNTRIES } from '../../store/use
 import { getLocalizedPrice } from '../../services/pricingService.js';
 import { supabase } from '../../supabaseClient.js';
 import '../../styles/countryPricingAdmin.css';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
-export default function CountryPricingManager({ adminData }) {
+export default function CountryPricingManager({ adminData, loading = false }) {
   const {
     countries: storeCountries,
     exchangeRates: storeRates,
@@ -338,6 +339,15 @@ export default function CountryPricingManager({ adminData }) {
       return 'Recently';
     }
   }, [exchangeMeta?.lastUpdated]);
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Country Pricing..."
+        subtitle="Fetching international currency rules and regional markups…"
+      />
+    );
+  }
 
   return (
     <div className="cpa-container">

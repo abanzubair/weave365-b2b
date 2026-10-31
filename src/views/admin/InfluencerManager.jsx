@@ -16,6 +16,7 @@ import {
 } from '../../components/icons.jsx';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { formatMoney } from '../../storefrontShared.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 /**
  * Parses user agent and referrer string to detect origin social media & device type
@@ -113,9 +114,10 @@ export function parseClickMetadata(referrer, userAgent) {
   return { source, sourceIcon, sourceBadgeBg, sourceBadgeColor, device, os, deviceType };
 }
 
-export default function InfluencerManager() {
+export default function InfluencerManager({ loading: propsLoading = false } = {}) {
   const [activeSubTab, setActiveSubTab] = useState('applications'); // 'applications' | 'influencers' | 'referrals' | 'clicks'
   const [loading, setLoading] = useState(false);
+  const isOverallLoading = loading || propsLoading;
   const [error, setError] = useState('');
   const [profiles, setProfiles] = useState([]);
   const [referrals, setReferrals] = useState([]);
@@ -554,11 +556,11 @@ export default function InfluencerManager() {
       )}
 
       {/* 6. List and Table Rendering */}
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--muted)', gap: '10px' }}>
-          <RefreshCw size={24} className="spin" />
-          <span>Loading data...</span>
-        </div>
+      {isOverallLoading ? (
+        <AdminLoadingScreen
+          title="Loading Affiliate & Influencers..."
+          subtitle="Fetching partner profiles, referral traffic, and commission stats…"
+        />
       ) : activeSubTab === 'clicks' ? (
         /* Link Visits & Traffic Analytics Sub-Tab */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

@@ -29,6 +29,7 @@ import {
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
 import { resolveBuyerAcquisition } from '../../utils/acquisitionResolver.js';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 /**
  * Clean technical jargon from source names (e.g. Dark App Link -> Direct Link)
@@ -152,7 +153,16 @@ function getSourceBadge(sourceCategory, sourceName) {
  * 1. Customer Interactions Timeline (Favourites, Quotes/Enquiries, Shopping & Abandoned Carts)
  * 2. Main Website Traffic & AI Referral Analytics (ChatGPT, Gemini, Claude, Location, Device)
  */
-export default function BuyerActivity({ adminData, products = [], loadAdminData }) {
+export default function BuyerActivity({ adminData, products = [], loadAdminData, loading = false }) {
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Buyer Activity & Intent..."
+        subtitle="Gathering real-time customer carts, wishlist items, and intent data…"
+      />
+    );
+  }
+
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -940,7 +950,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
             }}
             title="Refresh Data"
           >
-            <RefreshCw size={16} className={trafficLoading ? 'spin' : ''} /> Refresh
+            <RefreshCw size={16} className={(trafficLoading || loading) ? 'spin' : ''} /> Refresh
           </button>
         </div>
       </div>
@@ -1853,13 +1863,23 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData 
                 </tr>
               </thead>
               <tbody>
-                {filteredTraffic.length === 0 ? (
+                {trafficLoading ? (
+                  <tr>
+                    <td colSpan={5} className="empty-state-cell traffic-empty-cell" style={{ padding: '60px 20px' }}>
+                      <AdminLoadingScreen
+                        compact
+                        title="Loading Website Traffic & AI Analytics..."
+                        subtitle="Fetching real-time visitors, referrers, and AI assistant journeys…"
+                      />
+                    </td>
+                  </tr>
+                ) : filteredTraffic.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="empty-state-cell traffic-empty-cell">
                       <div className="traffic-empty-content">
                         <Activity size={24} style={{ color: '#94a3b8', marginBottom: '8px' }} />
-                        <div>{trafficLoading ? 'Loading traffic analytics...' : 'No site traffic records logged yet.'}</div>
-                        {!trafficLoading && searchQuery && (
+                        <div>No site traffic records logged yet.</div>
+                        {searchQuery && (
                           <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
                             No traffic matches "{searchQuery}". Try clearing filters or search.
                           </div>

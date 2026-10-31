@@ -14,12 +14,14 @@ import {
 import { saveSupabaseBlogPost, fetchSupabaseBlogPosts } from '../../productData.js';
 import { blogPosts } from '../../data/blogPosts.js';
 import { supabase } from '../../supabaseClient.js';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 export default function BlogManager({
   blogs = [],
   setBlogs,
   adminData,
   loadAdminData,
+  loading: propsLoading = false,
 }) {
   // Blog editor form states
   const [isLoadingPosts, setIsLoadingPosts] = useState(false);
@@ -274,6 +276,15 @@ export default function BlogManager({
     } catch (err) {
       alert('Failed to delete blog post: ' + err.message);
     }
+  }
+
+  if ((isLoadingPosts && (!blogs || blogs.length === 0)) || propsLoading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Blog Articles..."
+        subtitle="Fetching published articles, guides, and drafts…"
+      />
+    );
   }
 
   return (

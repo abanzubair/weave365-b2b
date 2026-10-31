@@ -22,6 +22,7 @@ import { parseCartVariantCode, resolveItemSku, resolveItemVariant } from '../../
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug, siteUrl } from '../../config.js';
 import { WhatsappIcon } from '../../components/WhatsappIcon.jsx';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 const GROUPING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours (1 day)
 
@@ -448,6 +449,15 @@ export default function EnquiresManager({
   };
 
   const newCount = statusCounts.new || 0;
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Customer Enquiries..."
+        subtitle="Fetching wholesale requests and order inquiries…"
+      />
+    );
+  }
 
   return (
     <div className="admin-enquiries-page">

@@ -27,6 +27,7 @@ import {
   DEFAULT_DIRECTORY_CONFIG
 } from '../../utils/directoryService.js';
 import { getCategorySlug } from '../../config.js';
+import AdminLoadingScreen from './AdminLoadingScreen.jsx';
 
 const AVAILABLE_ICONS = [
   'Compass', 'Grid', 'BookOpen', 'Briefcase', 'Layers',
@@ -41,7 +42,7 @@ const LINK_TYPES = [
   { label: 'Custom URL / Path', value: 'custom_url' }
 ];
 
-export default function DirectoryManager() {
+export default function DirectoryManager({ loading = false } = {}) {
   const [config, setConfig] = useState(DEFAULT_DIRECTORY_CONFIG);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
@@ -199,6 +200,15 @@ export default function DirectoryManager() {
     navigator.clipboard.writeText(DIRECTORY_TABLE_SQL);
     alert('Supabase SQL copied to clipboard! You can paste and run this in your Supabase SQL Editor if needed.');
   };
+
+  if (loading) {
+    return (
+      <AdminLoadingScreen
+        title="Loading Internal Link Directory..."
+        subtitle="Fetching directory navigation and category links…"
+      />
+    );
+  }
 
   return (
     <div className="directory-manager-container">
