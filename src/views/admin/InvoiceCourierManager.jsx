@@ -8,6 +8,7 @@ import {
   RefreshCw,
 } from '../../components/icons.jsx';
 import AdminLoadingScreen from './AdminLoadingScreen.jsx';
+import { printCourierSlip } from '../../utils/courierSlipGenerator.js';
 
 /**
  * InvoiceCourierManager Component
@@ -192,73 +193,7 @@ export function InvoiceCourierManager({ inquiries = [], products = [], loadAdmin
   };
 
   const handlePrintCourierSlip = (inquiry) => {
-    if (typeof window === 'undefined') return;
-    const slipCode = inquiry.id ? String(inquiry.id).slice(0, 8).toUpperCase() : 'SLIP-101';
-    const senderName = inquiry.dropship_sender_name || inquiry.business_name || 'Weave365 Logistics Partner';
-    const senderPhone = inquiry.dropship_sender_phone || inquiry.phone || '+91 9919101369';
-    const recipientName = inquiry.buyer_name || inquiry.full_name || 'Valued Customer';
-    const recipientPhone = inquiry.phone || inquiry.whatsapp || 'N/A';
-    const carrier = inquiry.tracking_carrier || 'Delhivery Express';
-    const trackingNum = inquiry.tracking_number || 'TRK-' + Math.floor(100000 + Math.random() * 900000);
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Courier Dispatch Slip - #${slipCode}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; color: #0f172a; }
-          .slip-container { border: 2px solid #0f172a; border-radius: 8px; padding: 24px; max-width: 550px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-          .badge { background: #2563eb; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-          .box { border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #f8fafc; }
-          .title { font-size: 10px; text-transform: uppercase; font-weight: bold; color: #64748b; margin-bottom: 4px; }
-          .tracking-box { border: 2px solid #2563eb; background: #eff6ff; padding: 12px; border-radius: 6px; text-align: center; margin-top: 16px; }
-          .barcode { font-family: monospace; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #1e3a8a; }
-        </style>
-      </head>
-      <body>
-        <div class="slip-container">
-          <div class="header">
-            <div>
-              <h2 style="margin:0; font-size: 20px;">COURIER DISPATCH SLIP</h2>
-              <div style="font-size: 12px; color: #64748b;">Ref #${slipCode}</div>
-            </div>
-            <div class="badge">PRIORITY SHIPMENT</div>
-          </div>
-
-          <div class="grid">
-            <div class="box">
-              <div class="title">SHIP FROM</div>
-              <div style="font-weight: bold;">${senderName}</div>
-              <div>Phone: ${senderPhone}</div>
-              <div>Varanasi, Uttar Pradesh</div>
-            </div>
-            <div class="box">
-              <div class="title">SHIP TO (RECIPIENT)</div>
-              <div style="font-weight: bold;">${recipientName}</div>
-              <div>Phone: ${recipientPhone}</div>
-              <div>${inquiry.city || ''} ${inquiry.pincode || ''}</div>
-            </div>
-          </div>
-
-          <div class="tracking-box">
-            <div style="font-size: 11px; text-transform: uppercase; font-weight: bold; color: #1d4ed8;">Carrier: ${carrier}</div>
-            <div class="barcode">${trackingNum}</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Scan or track at carrier portal</div>
-          </div>
-        </div>
-        <script>window.onload = function() { window.print(); }</script>
-      </body>
-      </html>
-    `;
-
-    const printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.write(htmlContent);
-      printWin.document.close();
-    }
+    printCourierSlip(inquiry, products);
   };
 
   if (loading) {

@@ -90,6 +90,8 @@ export function CheckoutPage({
     'Blind Packaging (Zero Supplier Branding / No Price Tags)'
   );
   const [dropshipNotes, setDropshipNotes] = useState('');
+  const [dropshipBilledPrice, setDropshipBilledPrice] = useState('');
+  const [dropshipDiscount, setDropshipDiscount] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -506,6 +508,11 @@ export function CheckoutPage({
       return null;
     }
 
+    if (shippingMode === 'dropship' && (!dropshipBilledPrice || Number(dropshipBilledPrice) <= 0)) {
+      alert('Please enter the retail price to show on the customer parcel slip.');
+      return null;
+    }
+
     return {
       full_name: formName.trim(),
       phone_number: formPhone.trim(),
@@ -522,65 +529,83 @@ export function CheckoutPage({
       dropship_sender_state: shippingMode === 'dropship' ? senderState.trim() : null,
       dropship_sender_pincode: shippingMode === 'dropship' ? senderPincode.trim() : null,
       dropship_packing_preference: shippingMode === 'dropship' ? packingPreference : null,
+      dropship_billed_price: shippingMode === 'dropship' && dropshipBilledPrice ? Number(dropshipBilledPrice) : null,
+      dropship_discount: shippingMode === 'dropship' && dropshipDiscount ? Number(dropshipDiscount) : null,
     };
   };
 
 
   // Shared create-order request body used by every gateway
-  const buildCreateOrderBody = (deliveryDetails) => ({
-    user_id: user?.id || null,
-    email: email || user?.email || '',
-    shipping_mode: shippingMode,
-    shipping_speed: shippingSpeed,
-    shipping_amount: shippingFee,
-    delivery_details: deliveryDetails,
-    dropship_details: {
-      sender_name: senderName,
-      sender_phone: senderPhone,
-      sender_address: senderAddress,
-      sender_city: senderCity,
-      sender_state: senderState,
-      sender_pincode: senderPincode,
-      packing_preference: packingPreference,
-    },
-    items: items.map((item) => {
-      const pricing = productPricing[item.productGroupKey] || productPricing[item.product?.id];
-      const isCompleteSet = pricing && pricing.completeSets > 0 && pricing.extraPieces === 0;
-      const baseSingle = Number(
-        (isCompleteSet ? (item.variant?.prices?.mrp || item.variant?.prices?.offer) : null) ||
-        item.variant?.prices?.b2r ||
-        item.variant?.prices?.single ||
-        item.variant?.prices?.reseller ||
-        item.variant?.prices?.mrp ||
-        item.variant?.prices?.offer ||
-        item.product?.resellerPrice ||
-        item.product?.price ||
-        0
-      );
-      const locPrice = getLocalizedPrice(baseSingle, currentCountry, exchangeRates);
-      return {
-        product_id: item.productGroupKey,
-        product_title: item.product?.title || '',
-        variant_code: item.variant?.code || '',
-        color: item.selectedColorName || 'Standard',
-        quantity: item.quantity,
-        price: locPrice.finalPrice,
-        base_inr_price: locPrice.markedUpBasePrice || baseSingle,
-        original_inr_price: baseSingle,
-        weight: Number(item.product?.weight ?? item.weight ?? 1.2),
-      };
-    }),
-    total_amount: total,
-    currency: (currentCountry?.currency || 'INR').toUpperCase(),
-    currency_symbol: currentCountry?.currencySymbol || '₹',
-    base_inr_total: markedUpInrTotal,
-    country_code: currentCountry?.code || 'IN',
-    country_name: currentCountry?.name || 'India',
-    markup_percent: Number(currentCountry?.markupPercent || 0),
-    coupon_code: appliedCoupon ? appliedCoupon.code : null,
-    coupon_discount: couponDiscount || 0,
-    notes: dropshipNotes,
-  });
+  const buildCreateOrderBody = (deliveryDetails) => {
+    const customBilledPriceNum = shippingMode === 'dropship' && dropshipBilledPrice ? Number(dropshipBilledPrice) : null;
+    const customDiscountNum = shippingMode === 'dropship' && dropshipDiscount ? Number(dropshipDiscount) : null;
+    
+    let resolvedNotes = dropshipNotes || '';
+    if (customBilledPriceNum) {
+      const priceTag = `Billed Price on Parcel Slip: ₹${customBilledPriceNum.toLocaleString('en-IN')}`;
+      const discTag = customDiscountNum ? ` | Discount on Slip: ₹${customDiscountNum.toLocaleString('en-IN')}` : '';
+      resolvedNotes = resolvedNotes ? `${resolvedNotes} | ${priceTag}${discTag}` : `${priceTag}${discTag}`;
+    }
+
+    return {
+      user_id: user?.id || null,
+      email: email || user?.email || '',
+      shipping_mode: shippingMode,
+      shipping_speed: shippingSpeed,
+      shipping_amount: shippingFee,
+      delivery_details: deliveryDetails,
+      dropship_details: {
+        sender_name: senderName,
+        sender_phone: senderPhone,
+        sender_address: senderAddress,
+        sender_city: senderCity,
+        sender_state: senderState,
+        sender_pincode: senderPincode,
+        packing_preference: packingPreference,
+        custom_billed_price: customBilledPriceNum,
+        custom_discount: customDiscountNum,
+      },
+      items: items.map((item) => {
+        const pricing = productPricing[item.productGroupKey] || productPricing[item.product?.id];
+        const isCompleteSet = pricing && pricing.completeSets > 0 && pricing.extraPieces === 0;
+        const baseSingle = Number(
+          (isCompleteSet ? (item.variant?.prices?.mrp || item.variant?.prices?.offer) : null) ||
+          item.variant?.prices?.b2r ||
+          item.variant?.prices?.single ||
+          item.variant?.prices?.reseller ||
+          item.variant?.prices?.mrp ||
+          item.variant?.prices?.offer ||
+          item.product?.resellerPrice ||
+          item.product?.price ||
+          0
+        );
+        const locPrice = getLocalizedPrice(baseSingle, currentCountry, exchangeRates);
+        return {
+          product_id: item.productGroupKey,
+          product_title: item.product?.title || '',
+          variant_code: item.variant?.code || '',
+          color: item.selectedColorName || 'Standard',
+          quantity: item.quantity,
+          price: locPrice.finalPrice,
+          base_inr_price: locPrice.markedUpBasePrice || baseSingle,
+          original_inr_price: baseSingle,
+          weight: Number(item.product?.weight ?? item.weight ?? 1.2),
+          custom_billed_price: customBilledPriceNum,
+          custom_discount: customDiscountNum,
+        };
+      }),
+      total_amount: total,
+      currency: (currentCountry?.currency || 'INR').toUpperCase(),
+      currency_symbol: currentCountry?.currencySymbol || '₹',
+      base_inr_total: markedUpInrTotal,
+      country_code: currentCountry?.code || 'IN',
+      country_name: currentCountry?.name || 'India',
+      markup_percent: Number(currentCountry?.markupPercent || 0),
+      coupon_code: appliedCoupon ? appliedCoupon.code : null,
+      coupon_discount: couponDiscount || 0,
+      notes: resolvedNotes,
+    };
+  };
 
   // Persist the delivery address if the customer asked us to (shared by every gateway)
   const saveAddressIfRequested = async (deliveryDetails) => {
@@ -1593,6 +1618,41 @@ export function CheckoutPage({
                       <div className="checkout-field">
                         <label>Country</label>
                         <input type="text" className="checkout-input" value="India" disabled />
+                      </div>
+                    </div>
+
+                    {/* Parcel Slip Pricing */}
+                    <div className="checkout-section-title" style={{ marginTop: '20px' }}>
+                      <Tag size={18} /> Parcel Slip Pricing
+                    </div>
+
+                    <div className="checkout-input-row">
+                      <div className="checkout-field">
+                        <label htmlFor="dropship-billed-price">Price on Slip (₹) *</label>
+                        <input
+                          id="dropship-billed-price"
+                          type="number"
+                          min="1"
+                          step="1"
+                          className="checkout-input"
+                          placeholder="e.g. 4000"
+                          value={dropshipBilledPrice}
+                          onChange={(e) => setDropshipBilledPrice(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="checkout-field">
+                        <label htmlFor="dropship-discount">Discount on Slip (₹)</label>
+                        <input
+                          id="dropship-discount"
+                          type="number"
+                          min="0"
+                          step="1"
+                          className="checkout-input"
+                          placeholder="e.g. 200"
+                          value={dropshipDiscount}
+                          onChange={(e) => setDropshipDiscount(e.target.value)}
+                        />
                       </div>
                     </div>
                   </>

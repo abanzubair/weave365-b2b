@@ -172,6 +172,7 @@ const emptyAdminData = {
   userPresence: {},
   optional: {},
   errors: {},
+  hasLoaded: false,
 };
 
 export function Admin({
@@ -318,8 +319,12 @@ export function Admin({
 
   // API Call: Fetch all admin database tables
   async function loadAdminData() {
-    if (!isSupabaseConfigured || !allowed) {
+    if (!isSupabaseConfigured) {
       setStatus('ready');
+      return;
+    }
+    if (!allowed) {
+      // Credentials not resolved yet or user unauthorized; don't mark as ready prematurely
       return;
     }
 
@@ -414,9 +419,15 @@ export function Admin({
         userPresence,
         optional,
         errors,
+        hasLoaded: true,
       });
     } catch (err) {
       console.error('[Admin] Error loading admin data:', err);
+      setAdminData((prev) => ({
+        ...prev,
+        hasLoaded: true,
+        errors: { ...(prev.errors || {}), load: err.message },
+      }));
     } finally {
       setStatus('ready');
     }
@@ -808,6 +819,8 @@ export function Admin({
     return { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard };
   }, [activeTab, sidebarSections]);
 
+  const isDataLoading = status === 'loading' || !adminData?.hasLoaded;
+
   if (authChecking) {
     return (
       <section className="admin-loading-screen">
@@ -974,7 +987,7 @@ export function Admin({
         </header>
 
         <div className="admin-page-scrollable-content">
-          {status === 'loading' ? (
+          {isDataLoading ? (
             <AdminLoadingScreen
               title={TAB_LOADING_METADATA[activeTab]?.title || `Loading ${activeTabItem?.label || 'Admin'}...`}
               subtitle={TAB_LOADING_METADATA[activeTab]?.subtitle || 'Fetching real-time records from secure database…'}
@@ -989,7 +1002,7 @@ export function Admin({
                   setSelectedUserList={setSelectedUserList}
                   handleManualSync={handleManualSync}
                   syncStatus={syncStatus}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -998,7 +1011,7 @@ export function Admin({
                   adminData={adminData}
                   user={activeUser}
                   toggleResellerDashboard={toggleResellerDashboard}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1014,7 +1027,7 @@ export function Admin({
                   updateInquiryStatus={updateInquiryStatus}
                   user={activeUser}
                   updateProfile={updateVendorProfile}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1024,7 +1037,7 @@ export function Admin({
                   setBlogs={setBlogs}
                   adminData={adminData}
                   loadAdminData={loadAdminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1032,7 +1045,7 @@ export function Admin({
                 <SeoSettings
                   adminData={adminData}
                   loadAdminData={loadAdminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1041,12 +1054,12 @@ export function Admin({
                   landingPages={landingPages}
                   setLandingPages={setLandingPages}
                   adminData={adminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
               {activeTab === 'directory' && (
-                <DirectoryManager loading={status === 'loading'} />
+                <DirectoryManager loading={isDataLoading} />
               )}
 
               {activeTab === 'reviews' && (
@@ -1062,7 +1075,7 @@ export function Admin({
                   loadSiteReviews={loadSiteReviews}
                   reviewActionLoading={reviewActionLoading}
                   handleReviewAction={handleReviewAction}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1076,7 +1089,7 @@ export function Admin({
                   buyerProfile={buyerProfile}
                   navigate={navigate}
                   setActiveTab={setActiveTab}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1085,7 +1098,7 @@ export function Admin({
                   inquiries={enquiryRows}
                   products={products}
                   loadAdminData={loadAdminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1094,12 +1107,12 @@ export function Admin({
                   products={products}
                   user={activeUser}
                   buyerProfile={buyerProfile}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
               {activeTab === 'influencers' && (
-                <InfluencerManager loading={status === 'loading'} />
+                <InfluencerManager loading={isDataLoading} />
               )}
 
               {activeTab === 'buyer-activity' && (
@@ -1107,7 +1120,7 @@ export function Admin({
                   adminData={adminData}
                   products={products}
                   loadAdminData={loadAdminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1116,7 +1129,7 @@ export function Admin({
                   inquiries={enquiryRows}
                   products={products}
                   loadAdminData={loadAdminData}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1125,12 +1138,12 @@ export function Admin({
                   adminData={adminData}
                   loadAdminData={loadAdminData}
                   products={products}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
               {activeTab === 'country-pricing' && (
-                <CountryPricingManager adminData={adminData} loading={status === 'loading'} />
+                <CountryPricingManager adminData={adminData} loading={isDataLoading} />
               )}
 
               {activeTab === 'api-manager' && (
@@ -1138,7 +1151,7 @@ export function Admin({
                   adminData={adminData}
                   loadAdminData={loadAdminData}
                   user={activeUser}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
 
@@ -1147,7 +1160,7 @@ export function Admin({
                   adminData={adminData}
                   loadAdminData={loadAdminData}
                   user={activeUser}
-                  loading={status === 'loading'}
+                  loading={isDataLoading}
                 />
               )}
             </>

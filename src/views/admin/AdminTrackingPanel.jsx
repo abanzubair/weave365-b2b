@@ -43,6 +43,7 @@ import { supabase } from '../../supabaseClient.js';
 import { fallbackProductImage, formatMoney } from '../../storefrontShared.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import AdminLoadingScreen from './AdminLoadingScreen.jsx';
+import { printCourierSlip, getDropshipCustomPricing } from '../../utils/courierSlipGenerator.js';
 
 async function updateSupabaseOrderTracking(id, { status, trackingCarrier, trackingNumber, trackingMessage, sourceTable }) {
   let table = 'inquiries';
@@ -332,296 +333,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
   };
 
   const handlePrintBlindLabel = (inquiry) => {
-    if (typeof window === 'undefined') return;
-    const deliveryAddr = Array.isArray(inquiry.order_delivery_addresses) ? inquiry.order_delivery_addresses[0] : inquiry.order_delivery_addresses;
-    const dropshipSender = Array.isArray(inquiry.order_dropship_senders) ? inquiry.order_dropship_senders[0] : inquiry.order_dropship_senders;
-
-    const senderName = dropshipSender?.sender_name || inquiry.dropship_sender_name || inquiry.business_name || inquiry.buyer_name || 'Partner Store';
-    const senderPhone = dropshipSender?.sender_phone || inquiry.dropship_sender_phone || inquiry.phone || 'N/A';
-    const senderAddrText = dropshipSender?.sender_address 
-      ? `${dropshipSender.sender_address}, ${dropshipSender.sender_city || ''} ${dropshipSender.sender_state || ''} ${dropshipSender.sender_pincode || ''}`.trim() 
-      : (inquiry.dropship_sender_address ? `${inquiry.dropship_sender_address}, ${inquiry.dropship_sender_city || ''} ${inquiry.dropship_sender_state || ''} ${inquiry.dropship_sender_pincode || ''}`.trim() : '');
-    
-    const recipientName = deliveryAddr?.recipient_name || inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer';
-    const recipientPhone = deliveryAddr?.phone || inquiry.dropship_recipient_phone || inquiry.phone || 'N/A';
-    const recipientAddress = deliveryAddr?.address_line1 || inquiry.dropship_recipient_address || getParsedAddress(inquiry.message) || 'Address in order details';
-    const recipientCity = deliveryAddr?.city || inquiry.dropship_recipient_city || '';
-    const recipientState = deliveryAddr?.state || inquiry.dropship_recipient_state || '';
-    const recipientPincode = deliveryAddr?.pincode || inquiry.dropship_recipient_pincode || inquiry.pincode || '';
-    const formattedDestLine = [recipientCity, recipientState].filter(Boolean).join(', ');
-    
-    const rawOrderId = inquiry.order_number || String(inquiry.id || '').substring(0, 8);
-    const displayOrderId = String(rawOrderId)
-      .replace(/^#+/, '')
-      .replace(/^ORD[-_\s]*/i, '')
-      .replace(/^#+/, '')
-      .trim()
-      .substring(0, 8)
-      .toUpperCase();
-    const orderIdShort = displayOrderId;
-    const orderDate = new Date(inquiry.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    const packingPref = dropshipSender?.packing_preference || inquiry.dropship_packing_preference || 'Blind Packaging (No Supplier Invoices)';
-
-    const labelItems = (Array.isArray(inquiry.order_items) && inquiry.order_items.length > 0)
-      ? inquiry.order_items
-      : (inquiry.items || []);
-
-    const itemsRows = labelItems.map((it, idx) => {
-      const resolved = resolveItemDetails(it);
-      return `
-        <tr>
-          <td class="sku-cell">${resolved.sku}</td>
-          <td class="title-cell">${resolved.title}</td>
-          <td class="color-cell">${resolved.color}</td>
-          <td class="qty-cell">${resolved.quantity} pc</td>
-        </tr>
-      `;
-    }).join('');
-
-    const totalQty = labelItems.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>Dispatch Slip ${orderIdShort}</title>
-        <style>
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            color: #0f172a;
-            background: #ffffff;
-            line-height: 1.45;
-            padding: 24px;
-          }
-          .slip-wrapper {
-            max-width: 650px;
-            margin: 0 auto;
-            border: 1.5px solid #0f172a;
-            border-radius: 6px;
-            padding: 24px;
-          }
-          .slip-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 12px;
-            margin-bottom: 18px;
-          }
-          .slip-meta {
-            font-size: 13px;
-            color: #475569;
-          }
-          .slip-meta strong {
-            color: #0f172a;
-          }
-          .print-btn {
-            background: #0f172a;
-            color: #ffffff;
-            border: none;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 4px;
-            cursor: pointer;
-          }
-          .address-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 18px;
-          }
-          .address-card {
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 12px 14px;
-            background: #ffffff;
-          }
-          .address-card.recipient-card {
-            border-color: #0f172a;
-            background: #fafafa;
-          }
-          .card-tag {
-            font-size: 10px;
-            font-weight: 600;
-            color: #64748b;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-          }
-          .party-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 3px;
-          }
-          .party-phone {
-            font-size: 12px;
-            font-weight: 500;
-            color: #334155;
-            margin-bottom: 4px;
-          }
-          .party-address {
-            font-size: 12.5px;
-            color: #334155;
-            line-height: 1.4;
-          }
-          .pincode-highlight {
-            display: inline-block;
-            margin-top: 6px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #0f172a;
-            letter-spacing: 0.5px;
-          }
-          .spec-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 9px 14px;
-            font-size: 12px;
-            color: #334155;
-            margin-bottom: 18px;
-          }
-          .spec-row strong {
-            color: #0f172a;
-            font-weight: 600;
-          }
-          .spec-row .order-id-val {
-            font-family: monospace;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-          }
-          .manifest-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12.5px;
-            margin-bottom: 18px;
-          }
-          .manifest-table th {
-            text-align: left;
-            padding: 8px 10px;
-            font-size: 10.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #475569;
-            border-bottom: 1.5px solid #cbd5e1;
-            background: #f8fafc;
-          }
-          .manifest-table td {
-            padding: 9px 10px;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: middle;
-          }
-          .sku-cell {
-            font-family: monospace;
-            font-size: 12px;
-            font-weight: 600;
-            color: #0f172a;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-          }
-          .title-cell { color: #1e293b; font-weight: 500; }
-          .color-cell { color: #334155; }
-          .qty-cell { text-align: center; font-weight: 600; color: #0f172a; white-space: nowrap; }
-          .manifest-footer td {
-            border-top: 1.5px solid #0f172a;
-            border-bottom: none;
-            padding: 9px 10px;
-            font-weight: 600;
-            color: #0f172a;
-          }
-          .compliance-footer {
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 12px;
-            font-size: 11px;
-            color: #475569;
-            text-align: center;
-          }
-          .compliance-footer strong {
-            color: #0f172a;
-          }
-          @media print {
-            body { padding: 0; }
-            .slip-wrapper { border-width: 1px; max-width: 100%; border-radius: 0; }
-            .print-btn { display: none; }
-            @page { margin: 10mm; size: auto; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="slip-wrapper">
-          <div class="slip-header">
-            <div class="slip-title-wrap">
-              <div class="slip-meta">
-                Date: <strong>${orderDate}</strong>
-              </div>
-            </div>
-            <button class="print-btn" onclick="window.print()">Print Slip</button>
-          </div>
-
-          <div class="address-section">
-            <div class="address-card">
-              <div class="card-tag">SHIP FROM (SENDER)</div>
-              <div class="party-name">${senderName}</div>
-              <div class="party-phone">Phone: ${senderPhone}</div>
-              ${senderAddrText ? `<div class="party-address">${senderAddrText}</div>` : ''}
-            </div>
-
-            <div class="address-card recipient-card">
-              <div class="card-tag">SHIP TO (RECIPIENT)</div>
-              <div class="party-name">${recipientName}</div>
-              <div class="party-phone">Phone: ${recipientPhone}</div>
-              <div class="party-address">${recipientAddress}</div>
-              ${formattedDestLine || recipientPincode ? `
-                <div class="pincode-highlight">
-                  ${formattedDestLine} ${recipientPincode ? `• PIN: ${recipientPincode}` : ''}
-                </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <div class="spec-row">
-            <span>Order ID: <strong class="order-id-val">${displayOrderId}</strong></span>
-            <span>Total Units: <strong>${totalQty} item(s)</strong></span>
-          </div>
-
-          <table class="manifest-table">
-            <thead>
-              <tr>
-                <th>SKU Code</th>
-                <th>Item Description</th>
-                <th>Color</th>
-                <th style="text-align: center;">Qty</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsRows}
-            </tbody>
-            <tfoot>
-              <tr class="manifest-footer">
-                <td colspan="3">Total Items</td>
-                <td style="text-align: center;">${totalQty} pc</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.write(htmlContent);
-      printWin.document.close();
-    }
+    printCourierSlip(inquiry, products);
   };
 
   // Helper template filler for quick notification message
@@ -931,24 +643,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
             <thead>
               <tr>
                 <th 
-                  style={{ width: '135px', cursor: 'pointer', userSelect: 'none' }}
+                  style={{ width: '110px', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setDateSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
                   title={`Sort by Date: currently ${dateSortOrder === 'desc' ? 'Latest at top (newest first)' : 'Oldest first'}. Click to toggle.`}
                 >
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                    <span>Date & Source</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span>Date</span>
                     {dateSortOrder === 'desc' ? (
-                      <ArrowDown size={12} style={{ color: '#4f46e5' }} />
+                      <ArrowDown size={11} style={{ color: '#4f46e5' }} />
                     ) : (
-                      <ArrowUp size={12} style={{ color: '#4f46e5' }} />
+                      <ArrowUp size={11} style={{ color: '#4f46e5' }} />
                     )}
                   </div>
                 </th>
-                <th style={{ width: '150px' }}>Order ID</th>
-                <th>Recipient & Destination</th>
-                <th>Ordered Items</th>
-                <th style={{ width: '150px' }}>Carrier & Tracking</th>
-                <th style={{ width: '140px', whiteSpace: 'nowrap' }}>Status</th>
+                <th style={{ width: '115px' }}>Order ID</th>
+                <th style={{ width: '230px' }}>Recipient & Destination</th>
+                <th style={{ width: '185px' }}>Items</th>
+                <th style={{ width: '135px' }}>Carrier & Tracking</th>
+                <th style={{ width: '115px', whiteSpace: 'nowrap' }}>Status</th>
                 <th style={{ width: '160px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -958,11 +670,15 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                 const addressText = inquiry.dropship_recipient_address 
                   ? `${inquiry.dropship_recipient_address}${inquiry.dropship_recipient_city ? `, ${inquiry.dropship_recipient_city}` : ''}${inquiry.dropship_recipient_state ? `, ${inquiry.dropship_recipient_state}` : ''}${inquiry.dropship_recipient_pincode ? ` - ${inquiry.dropship_recipient_pincode}` : ''}`
                   : parsedAddr;
-                const currentStatus = (inquiry.status || 'new').toLowerCase();
+                const cityState = (inquiry.dropship_recipient_city || inquiry.dropship_recipient_state)
+                  ? [inquiry.dropship_recipient_city, inquiry.dropship_recipient_state].filter(Boolean).join(', ')
+                  : (addressText ? addressText.replace(/\s+/g, ' ').trim() : 'Address on file');
                 const isDropship = inquiry.isDropship;
                 const itemsList = inquiry.items || [];
+                const totalItemsQty = itemsList.reduce((sum, it) => sum + Math.max(1, parseInt(it.quantity || 1, 10)), 0);
                 const carrierTrackingUrl = getCarrierTrackingUrl(inquiry.tracking_carrier, inquiry.tracking_number);
                 const whatsAppUrl = getBuyerWhatsAppUrl(inquiry);
+                const customPricing = getDropshipCustomPricing(inquiry);
 
                 return (
                   <tr key={inquiry.id} className={`admin-order-row ${isDropship ? 'is-dropship-row' : ''}`}>
@@ -970,14 +686,23 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     <td>
                       <div className="admin-order-date-col">
                         <span className="admin-date-primary">
-                          {new Date(inquiry.created_at).toLocaleDateString('en-IN', {
+                          {inquiry.created_at ? new Date(inquiry.created_at).toLocaleDateString('en-IN', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric'
-                          })}
+                          }) : '—'}
                         </span>
+                        {inquiry.created_at && (
+                          <span className="admin-date-time">
+                            {new Date(inquiry.created_at).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </span>
+                        )}
                         <span className={`admin-source-badge ${isDropship ? 'badge-dropship' : 'badge-direct'}`}>
-                          {isDropship ? 'Dropship' : 'Direct Order'}
+                          {isDropship ? 'Dropship' : 'Direct'}
                         </span>
                       </div>
                     </td>
@@ -993,22 +718,24 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             type="button" 
                             onClick={() => handleCopy(inquiry.order_number || inquiry.id, inquiry.id)}
                             className="admin-btn-icon-subtle"
-                            title="Copy full Order Reference"
+                            title="Copy Order ID"
                           >
-                            {copyFeedback[inquiry.id] ? <Check size={12} style={{ color: '#15803d' }} /> : <Copy size={12} />}
+                            {copyFeedback[inquiry.id] ? <Check size={11} style={{ color: '#15803d' }} /> : <Copy size={11} />}
                           </button>
                           <a 
                             href={`/order-tracking/${encodeURIComponent(inquiry.order_number || inquiry.id)}`}
                             target="_blank" 
                             rel="noreferrer"
                             className="admin-btn-icon-subtle"
-                            title="Open Buyer Live Tracking Page"
+                            title="Open Buyer Tracking Page"
                           >
-                            <ExternalLink size={12} />
+                            <ExternalLink size={11} />
                           </a>
                         </div>
                         {inquiry.reseller_order_id && (
-                          <span className="admin-reseller-ref">Ref: #{inquiry.reseller_order_id}</span>
+                          <span className="admin-reseller-ref" title={`Ref: #${inquiry.reseller_order_id}`}>
+                            Ref: #{inquiry.reseller_order_id}
+                          </span>
                         )}
                       </div>
                     </td>
@@ -1017,33 +744,34 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     <td>
                       <div className="admin-recipient-col">
                         <div className="admin-recipient-name-row">
-                          <strong className="admin-recipient-name">
+                          <strong className="admin-recipient-name" title={inquiry.dropship_recipient_name || inquiry.buyer_name}>
                             {inquiry.dropship_recipient_name || inquiry.buyer_name || 'Customer'}
                           </strong>
-                          {(inquiry.dropship_recipient_phone || inquiry.phone) && (
-                            <span className="admin-recipient-phone">
-                              · {inquiry.dropship_recipient_phone || inquiry.phone}
-                            </span>
-                          )}
                           {whatsAppUrl && (
                             <a 
                               href={whatsAppUrl} 
                               target="_blank" 
                               rel="noreferrer"
                               className="admin-wa-icon-link"
-                              title="Send order update on WhatsApp"
+                              title="Chat on WhatsApp"
                             >
-                              <MessageCircle size={12} />
+                              <MessageCircle size={11} />
                             </a>
                           )}
                         </div>
                         <div className="admin-destination-text" title={addressText}>
-                          <MapPin size={12} className="admin-pin-icon" />
-                          <span>{addressText || 'Address in order records'}</span>
+                          <MapPin size={11} className="admin-pin-icon" />
+                          <span className="admin-loc-name">{cityState}</span>
+                          {(inquiry.dropship_recipient_phone || inquiry.phone) && (
+                            <>
+                              <span className="admin-dot-sep">·</span>
+                              <span className="admin-phone-text">{inquiry.dropship_recipient_phone || inquiry.phone}</span>
+                            </>
+                          )}
                         </div>
                         {isDropship && (
                           <div className="admin-sender-subtext">
-                            From: <strong>{inquiry.dropship_sender_name || inquiry.business_name || 'Reseller Store'}</strong>
+                            via <strong>{inquiry.dropship_sender_name || inquiry.business_name || 'Reseller Store'}</strong>
                           </div>
                         )}
                       </div>
@@ -1051,39 +779,83 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
 
                     {/* Ordered Items Summary */}
                     <td>
-                      <div className="admin-items-summary-wrap">
-                        {itemsList.slice(0, 3).map((it, idx) => {
-                          const resolved = resolveItemDetails(it);
-                          return (
+                      {itemsList.length === 1 ? (() => {
+                        const resolved = resolveItemDetails(itemsList[0]);
+                        return (
+                          <div className="admin-item-single-row">
                             <a 
-                              key={idx} 
                               href={resolved.productUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="admin-item-thumb-row" 
-                              title={`View ${resolved.title} (${resolved.color}) on Storefront ↗`}
+                              className="admin-item-thumb-link"
+                              title={`View ${resolved.title} on Storefront ↗`}
                             >
                               <img 
                                 src={resolved.image} 
                                 alt={resolved.title} 
-                                className="admin-item-thumb"
+                                className="admin-item-avatar"
                                 onError={(e) => { e.target.src = fallbackProductImage; }}
                               />
-                              <div className="admin-item-meta">
-                                <span className="admin-item-sku-label">{resolved.sku}</span>
-                                <span className="admin-item-color-label">{resolved.color}</span>
-                              </div>
-                              <span className="admin-item-qty-badge">x{resolved.quantity}</span>
                             </a>
-                          );
-                        })}
-                        {itemsList.length > 3 && (
-                          <span className="admin-items-more-badge">+{itemsList.length - 3} more</span>
-                        )}
-                        {itemsList.length === 0 && (
-                          <span className="admin-text-muted-subtle">{inquiry.variant_code || 'Standard Product'}</span>
-                        )}
-                      </div>
+                            <div className="admin-item-text-info">
+                              <span className="admin-item-sku" title={resolved.sku}>{resolved.sku}</span>
+                              <span className="admin-item-desc" title={`${resolved.color} · ${resolved.quantity} pc`}>
+                                {resolved.color !== 'Standard' ? `${resolved.color} · ` : ''}{resolved.quantity} {resolved.quantity > 1 ? 'pcs' : 'pc'}
+                              </span>
+                              {isDropship && customPricing.hasCustom && (
+                                <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
+                                  Bill: ₹{customPricing.billedPrice.toLocaleString('en-IN')}{customPricing.discount > 0 ? ` (-₹${customPricing.discount.toLocaleString('en-IN')})` : ''}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })() : itemsList.length > 1 ? (() => {
+                        const visibleItems = itemsList.slice(0, 3);
+                        const remainingCount = itemsList.length - 3;
+                        return (
+                          <div 
+                            className="admin-items-stack-wrap"
+                            onClick={() => handleOpenEditor(inquiry, 'details')}
+                            title="Click to view all items in order"
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className="admin-items-avatar-stack">
+                              {visibleItems.map((it, idx) => {
+                                const resolved = resolveItemDetails(it);
+                                return (
+                                  <img 
+                                    key={idx} 
+                                    src={resolved.image} 
+                                    alt={resolved.title} 
+                                    className="admin-item-avatar stacked"
+                                    style={{ zIndex: 3 - idx }}
+                                    onError={(e) => { e.target.src = fallbackProductImage; }}
+                                    title={`${resolved.sku} (${resolved.color}) x${resolved.quantity}`}
+                                  />
+                                );
+                              })}
+                              {remainingCount > 0 && (
+                                <span className="admin-items-avatar-more" style={{ zIndex: 0 }}>
+                                  +{remainingCount}
+                                </span>
+                              )}
+                            </div>
+                            <div className="admin-item-text-info">
+                              <strong className="admin-item-total-qty">{totalItemsQty} items</strong>
+                              <span className="admin-item-styles-count">{itemsList.length} styles</span>
+                              {isDropship && customPricing.hasCustom && (
+                                <span className="admin-slip-price-pill" title="Retail price printed on customer parcel slip">
+                                  Bill: ₹{customPricing.billedPrice.toLocaleString('en-IN')}{customPricing.discount > 0 ? ` (-₹${customPricing.discount.toLocaleString('en-IN')})` : ''}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })() : (
+                        <span className="admin-text-muted-subtle">{inquiry.variant_code || '1 Standard Item'}</span>
+                      )}
                     </td>
 
                     {/* Logistics Carrier & Tracking */}
@@ -1092,8 +864,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                         <div className="admin-carrier-col">
                           <strong className="admin-carrier-title">{inquiry.tracking_carrier}</strong>
                           <div className="admin-awb-row">
-                            <span className="admin-carrier-awb" title={inquiry.tracking_number}>
-                              AWB: {inquiry.tracking_number || 'Pending'}
+                            <span className="admin-carrier-awb" title={inquiry.tracking_number || 'Pending'}>
+                              {inquiry.tracking_number ? `AWB: ${inquiry.tracking_number}` : 'AWB: Pending'}
                             </span>
                             {inquiry.tracking_number && (
                               <button 
@@ -1113,7 +885,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                 className="admin-btn-icon-subtle"
                                 title={`Track on ${inquiry.tracking_carrier}`}
                               >
-                                <ArrowUpRight size={12} />
+                                <ArrowUpRight size={11} />
                               </a>
                             )}
                           </div>
@@ -1145,7 +917,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           className="admin-btn-action-primary"
                           title="Update Tracking & Fulfillment"
                         >
-                          <Edit3 size={14} /> <span>Update</span>
+                          <Edit3 size={13} /> <span>Update</span>
                         </button>
                         {isDropship && (
                           <button
@@ -1154,7 +926,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                             className="admin-btn-action-slip"
                             title="Print Blind Dispatch Slip"
                           >
-                            <Printer size={14} /> <span>Slip</span>
+                            <Printer size={13} /> <span>Slip</span>
                           </button>
                         )}
                         <button
@@ -1163,7 +935,7 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                           className="admin-btn-action-ghost"
                           title="View Full Order Details"
                         >
-                          <Eye size={15} />
+                          <Eye size={13} />
                         </button>
                       </div>
                     </td>
@@ -1464,7 +1236,9 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
               )}
 
               {/* TAB 2: Full Order & Items Inspection (Impeccable Layout) */}
-              {activeModalTab === 'details' && (
+              {activeModalTab === 'details' && (() => {
+                const modalCustomPricing = getDropshipCustomPricing(selectedInquiry);
+                return (
                 <div className="admin-order-full-inspection">
                   
                   {/* Address Summary Cards */}
@@ -1487,6 +1261,36 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                       <p className="admin-inspect-detail">Phone: {selectedInquiry.dropship_sender_phone || selectedInquiry.phone || 'N/A'}</p>
                       {selectedInquiry.dropship_sender_address && (
                         <p className="admin-inspect-detail">{selectedInquiry.dropship_sender_address}</p>
+                      )}
+                      {modalCustomPricing.hasCustom && (
+                        <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: '#166534' }}>
+                              Customer Parcel Slip Price:
+                            </span>
+                            <strong style={{ fontSize: '12px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                              ₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')}
+                            </strong>
+                          </div>
+                          {modalCustomPricing.discount > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '3px' }}>
+                              <span style={{ fontSize: '11px', color: '#dc2626' }}>
+                                Slip Discount:
+                              </span>
+                              <span style={{ fontSize: '11.5px', color: '#dc2626', fontFamily: 'ui-monospace, monospace' }}>
+                                -₹{modalCustomPricing.discount.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '2px' }}>
+                            <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                              Net Printed on Invoice:
+                            </span>
+                            <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#0f172a', fontFamily: 'ui-monospace, monospace' }}>
+                              ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
 
@@ -1681,24 +1485,78 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                                         <span className="admin-inspect-total-amount">{formatMoney(finalTotal)}</span>
                                       </td>
                                     </tr>
+                                    {modalCustomPricing.hasCustom && (
+                                      <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
+                                        <td colSpan="4">
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
+                                              Customer Parcel Slip Value
+                                            </span>
+                                            <span className="admin-slip-price-pill" style={{ margin: 0 }}>
+                                              Printed on Bill &amp; Slip
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                            <strong style={{ fontSize: '13px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                              ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
+                                            </strong>
+                                            {modalCustomPricing.discount > 0 && (
+                                              <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                                                (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
                                   </>
                                 );
                               }
 
                               return (
-                                <tr className="admin-inspect-summary-total">
-                                  <td colSpan="4">
-                                    <div className="admin-inspect-total-left">
-                                      <span className="admin-inspect-total-label">Total Paid ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
-                                      {selectedInquiry.payment_method && (
-                                        <span className="admin-inspect-payment-pill">{paymentMethod}</span>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    <span className="admin-inspect-total-amount">{formatMoney(finalTotal)}</span>
-                                  </td>
-                                </tr>
+                                <>
+                                  <tr className="admin-inspect-summary-total">
+                                    <td colSpan="4">
+                                      <div className="admin-inspect-total-left">
+                                        <span className="admin-inspect-total-label">Total Paid ({totalQuantity} unit{totalQuantity > 1 ? 's' : ''})</span>
+                                        {selectedInquiry.payment_method && (
+                                          <span className="admin-inspect-payment-pill">{paymentMethod}</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      <span className="admin-inspect-total-amount">{formatMoney(finalTotal)}</span>
+                                    </td>
+                                  </tr>
+                                  {modalCustomPricing.hasCustom && (
+                                    <tr style={{ background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
+                                      <td colSpan="4">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#166534' }}>
+                                            Customer Parcel Slip Value
+                                          </span>
+                                          <span className="admin-slip-price-pill" style={{ margin: 0 }}>
+                                            Printed on Bill &amp; Slip
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td style={{ textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                          <strong style={{ fontSize: '13px', color: '#166534', fontFamily: 'ui-monospace, monospace' }}>
+                                            ₹{modalCustomPricing.netPrice.toLocaleString('en-IN')}
+                                          </strong>
+                                          {modalCustomPricing.discount > 0 && (
+                                            <span style={{ fontSize: '10.5px', color: '#64748b' }}>
+                                              (₹{modalCustomPricing.billedPrice.toLocaleString('en-IN')} - ₹{modalCustomPricing.discount.toLocaleString('en-IN')})
+                                            </span>
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </>
                               );
                             })()}
                           </tfoot>
@@ -1752,7 +1610,8 @@ export function AdminTrackingPanel({ inquiries = [], products = [], loadAdminDat
                     </div>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
             </div>
 

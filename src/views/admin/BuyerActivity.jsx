@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import {
   Activity,
   Search,
@@ -24,7 +24,8 @@ import {
   Download,
   ChevronUp,
   X,
-  ExternalLink
+  ExternalLink,
+  Zap
 } from '../../components/icons.jsx';
 import { getProductCategorySlug } from '../../config.js';
 import { isSupabaseConfigured, supabase } from '../../supabaseClient.js';
@@ -1117,11 +1118,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
               <table className="buyer-activity-table table-grouped">
                 <thead>
                   <tr>
-                    <th style={{ width: '140px' }}>Last Active</th>
-                    <th style={{ width: '250px' }}>Buyer &amp; Location</th>
-                    <th style={{ width: '230px' }}>Intent Summary</th>
-                    <th style={{ width: '280px' }}>Products of Interest</th>
-                    <th style={{ width: '200px', textAlign: 'right' }}>Actions</th>
+                    <th style={{ width: '125px' }}>Last Active</th>
+                    <th style={{ width: '240px' }}>Buyer &amp; Location</th>
+                    <th style={{ width: '235px' }}>Intent Summary</th>
+                    <th style={{ width: '260px' }}>Products of Interest</th>
+                    <th style={{ width: '180px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1139,147 +1140,148 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                       const topProd = group.products[0];
 
                       return (
-                        <tr key={group.key} className="buyer-group-row-wrapper">
-                          <td colSpan={5} style={{ padding: 0, border: 'none' }}>
-                            <div className={`buyer-group-main-row ${isExpanded ? 'is-expanded' : ''}`}>
-                              {/* 1. Time / Last Active */}
-                              <div className="group-col col-time">
-                                <span className="time-relative">{formatTimeClean(group.lastActive)}</span>
-                              </div>
+                        <Fragment key={group.key}>
+                          <tr className={`buyer-group-row ${isExpanded ? 'is-expanded' : ''}`}>
+                            {/* 1. Time / Last Active */}
+                            <td className="col-time">
+                              <span className="time-relative">{formatTimeClean(group.lastActive)}</span>
+                            </td>
 
-                              {/* 2. Buyer & Tier */}
-                              <div className="group-col col-buyer">
-                                <div className="buyer-primary-row">
-                                  <span className="buyer-name" title={b.name}>{b.name}</span>
-                                  <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
-                                    {b.type}
+                            {/* 2. Buyer & Tier */}
+                            <td className="col-buyer">
+                              <div className="buyer-primary-row">
+                                <span className="buyer-name" title={b.name}>{b.name}</span>
+                                <span className={`badge-buyer-tier tier-${b.type.toLowerCase()}`}>
+                                  {b.type}
+                                </span>
+                                <span className="mobile-time-badge">{formatTimeClean(group.lastActive)}</span>
+                              </div>
+                              <div className="buyer-secondary-row">
+                                {b.businessName && b.businessName !== 'B2B Client' && b.businessName.toLowerCase() !== b.name.toLowerCase() && (
+                                  <span className="buyer-biz">{b.businessName} · </span>
+                                )}
+                                <span className="buyer-loc">{b.location}</span>
+                                {b.phone && <span className="buyer-phone"> · {b.phone}</span>}
+                              </div>
+                            </td>
+
+                            {/* 3. Intent Summary */}
+                            <td className="col-intent">
+                              <div className="intent-badges-row">
+                                {group.totalCartQty >= 15 ? (
+                                  <span className="intent-badge badge-high-volume" title={`High Volume Lead: ${group.totalCartQty} total pieces in wholesale cart`}>
+                                    <Zap size={11} /> {group.totalCartQty} Bulk Items
                                   </span>
-                                  <span className="mobile-time-badge">{formatTimeClean(group.lastActive)}</span>
-                                </div>
-                                <div className="buyer-secondary-row">
-                                  {b.businessName && b.businessName !== 'B2B Client' && (
-                                    <span className="buyer-biz">{b.businessName} · </span>
-                                  )}
-                                  <span className="buyer-loc">{b.location}</span>
-                                  {b.phone && <span className="buyer-phone"> · {b.phone}</span>}
-                                </div>
-                              </div>
-
-                              {/* 3. Intent Summary */}
-                              <div className="group-col col-intent">
-                                <div className="intent-badges-row">
-                                  {group.totalCartQty >= 15 ? (
-                                    <span className="intent-badge badge-high-volume" title={`High Volume Lead: ${group.totalCartQty} total pieces in wholesale cart`}>
-                                      🔥 {group.totalCartQty} Bulk Items
-                                    </span>
-                                  ) : group.totalCartQty >= 5 ? (
-                                    <span className="intent-badge badge-bulk-cart" title={`Active cart with ${group.totalCartQty} items`}>
-                                      🛍️ {group.totalCartQty} in Cart
-                                    </span>
-                                  ) : null}
-                                  {group.counts.total >= 5 && (
-                                    <span className="intent-badge badge-high-activity" title={`${group.counts.total} total recorded interactions`}>
-                                      ⚡ {group.counts.total} Acts
-                                    </span>
-                                  )}
-                                  {group.counts.abandoned > 0 && (
-                                    <span className="intent-badge badge-abandoned" title="Cart left idle for >24 hours without checkout">
-                                      <Clock size={12} /> Abandoned ({group.counts.abandoned})
-                                    </span>
-                                  )}
-                                  {group.counts.enquiry > 0 && (
-                                    <span className="intent-badge badge-enquiry" title="Wholesale enquiry submitted">
-                                      <MessageSquare size={12} /> Enquiry ({group.counts.enquiry})
-                                    </span>
-                                  )}
-                                  {group.counts.download > 0 && (
-                                    <span className="intent-badge badge-download" title="Catalogues downloaded">
-                                      <Download size={12} /> {group.counts.download} DLs
-                                    </span>
-                                  )}
-                                  {group.counts.favourites > 0 && (
-                                    <span className="intent-badge badge-fav" title="Favourited items">
-                                      <Heart size={12} /> {group.counts.favourites}
-                                    </span>
-                                  )}
-                                  {group.counts.cart > 0 && (
-                                    <span className="intent-badge badge-cart" title="Items currently in cart (<24 hours old)">
-                                      <ShoppingBag size={12} /> Active Cart
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* 4. Products */}
-                              <div className="group-col col-products">
-                                {topProd ? (
-                                  <div className="product-compact-preview">
-                                    {topProd.image ? (
-                                      <img src={topProd.image} alt={topProd.title} className="compact-prod-thumb" />
-                                    ) : (
-                                      <div className="compact-thumb-fallback"><Building size={14} /></div>
-                                    )}
-                                    <div className="compact-prod-info">
-                                      <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title">
-                                        {topProd.title}
-                                      </a>
-                                      <div className="compact-prod-meta">
-                                        <span>Qty: <strong>{topProd.qty}</strong></span>
-                                        {group.totalCartQty > topProd.qty && (
-                                          <span className="compact-total-cart-pill" title="Total cart items across all products">
-                                            Total {group.totalCartQty}
-                                          </span>
-                                        )}
-                                        {group.products.length > 1 && (
-                                          <span className="compact-more-pill">+{group.products.length - 1} more</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted">—</span>
+                                ) : group.totalCartQty >= 5 ? (
+                                  <span className="intent-badge badge-bulk-cart" title={`Active cart with ${group.totalCartQty} items`}>
+                                    <ShoppingBag size={11} /> {group.totalCartQty} in Cart
+                                  </span>
+                                ) : null}
+                                {group.counts.abandoned > 0 && (
+                                  <span className="intent-badge badge-abandoned" title="Cart left idle for >24 hours without checkout">
+                                    <Clock size={11} /> Abandoned ({group.counts.abandoned})
+                                  </span>
+                                )}
+                                {group.counts.cart > 0 && group.totalCartQty < 5 && (
+                                  <span className="intent-badge badge-cart" title="Items currently in cart (<24 hours old)">
+                                    <ShoppingBag size={11} /> Active Cart
+                                  </span>
+                                )}
+                                {group.counts.download > 0 && (
+                                  <span className="intent-badge badge-download" title="Catalogues downloaded">
+                                    <Download size={11} /> {group.counts.download} DLs
+                                  </span>
+                                )}
+                                {group.counts.favourites > 0 && (
+                                  <span className="intent-badge badge-fav" title="Favourited items">
+                                    <Heart size={11} /> {group.counts.favourites}
+                                  </span>
+                                )}
+                                {group.counts.enquiry > 0 && (
+                                  <span className="intent-badge badge-enquiry" title="Wholesale enquiry submitted">
+                                    <MessageSquare size={11} /> Enquiry ({group.counts.enquiry})
+                                  </span>
+                                )}
+                                {group.counts.total >= 5 && (
+                                  <span className="intent-badge badge-high-activity" title={`${group.counts.total} total recorded interactions`}>
+                                    <Zap size={11} /> {group.counts.total} Acts
+                                  </span>
                                 )}
                               </div>
+                            </td>
 
-                              {/* 5. Actions */}
-                              <div className="group-col col-actions">
-                                <div className="actions-cluster">
-                                  {waLink && (
-                                    <a
-                                      href={waLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="btn-quick-wa"
-                                      title="Direct WhatsApp with prefilled intent context"
-                                    >
-                                      <MessageSquare size={13} />
-                                      <span>WhatsApp</span>
-                                    </a>
+                            {/* 4. Products */}
+                            <td className="col-products">
+                              {topProd ? (
+                                <div className="product-compact-preview">
+                                  {topProd.image ? (
+                                    <img src={topProd.image} alt={topProd.title} className="compact-prod-thumb" />
+                                  ) : (
+                                    <div className="compact-thumb-fallback"><ShoppingBag size={14} /></div>
                                   )}
-                                  <button
-                                    type="button"
-                                    className="btn-icon-soft"
-                                    onClick={() => handleCopyGroup(group)}
-                                    title="Copy buyer summary"
-                                  >
-                                    {copyFeedback[group.key] ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={`btn-expand-trigger ${isExpanded ? 'active' : ''}`}
-                                    onClick={() => setExpandedBuyerKey(isExpanded ? null : group.key)}
-                                    title={isExpanded ? 'Collapse history' : 'Expand session history'}
-                                  >
-                                    <span>{group.activities.length} logs</span>
-                                    {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                                  </button>
+                                  <div className="compact-prod-info">
+                                    <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title" title={topProd.title}>
+                                      {topProd.title}
+                                    </a>
+                                    <div className="compact-prod-meta">
+                                      <span>Qty: <strong>{topProd.qty}</strong></span>
+                                      {group.totalCartQty > topProd.qty && (
+                                        <span className="compact-total-cart-pill" title="Total cart items across all products">
+                                          Total {group.totalCartQty}
+                                        </span>
+                                      )}
+                                      {group.products.length > 1 && (
+                                        <span className="compact-more-pill">+{group.products.length - 1} more</span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
+                              ) : (
+                                <span className="text-muted">—</span>
+                              )}
+                            </td>
 
-                            {/* Expandable Session Timeline Drawer */}
-                            {isExpanded && (
-                              <div className="buyer-timeline-drawer">
+                            {/* 5. Actions */}
+                            <td className="col-actions">
+                              <div className="actions-cluster">
+                                {waLink && (
+                                  <a
+                                    href={waLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-quick-wa"
+                                    title="Direct WhatsApp with prefilled intent context"
+                                  >
+                                    <MessageSquare size={12} />
+                                    <span>WhatsApp</span>
+                                  </a>
+                                )}
+                                <button
+                                  type="button"
+                                  className="btn-icon-soft"
+                                  onClick={() => handleCopyGroup(group)}
+                                  title="Copy buyer summary"
+                                >
+                                  {copyFeedback[group.key] ? <Check size={13} style={{ color: '#10b981' }} /> : <Copy size={13} />}
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`btn-expand-trigger ${isExpanded ? 'active' : ''}`}
+                                  onClick={() => setExpandedBuyerKey(isExpanded ? null : group.key)}
+                                  title={isExpanded ? 'Collapse history' : 'Expand session history'}
+                                >
+                                  <span>{group.activities.length} logs</span>
+                                  {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+
+                          {/* Expandable Session Timeline Drawer */}
+                          {isExpanded && (
+                            <tr className="buyer-drawer-row">
+                              <td colSpan={5} className="buyer-drawer-cell">
+                                <div className="buyer-timeline-drawer">
                                 <div className="drawer-header">
                                   <div className="drawer-title-block">
                                     <span className="drawer-title">Session Activity Timeline</span>
@@ -1376,9 +1378,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                   ))}
                                 </div>
                               </div>
-                            )}
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                       );
                     })
                   )}
@@ -1389,11 +1392,11 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
               <table className="buyer-activity-table table-feed">
                 <thead>
                   <tr>
-                    <th style={{ width: '150px' }}>Date &amp; Time</th>
-                    <th style={{ width: '230px' }}>Buyer &amp; Tier</th>
-                    <th style={{ width: '150px' }}>Activity Type</th>
-                    <th style={{ width: '310px' }}>Product Involved</th>
-                    <th style={{ width: '150px', textAlign: 'right' }}>Actions</th>
+                    <th style={{ width: '125px' }}>Date &amp; Time</th>
+                    <th style={{ width: '240px' }}>Buyer &amp; Tier</th>
+                    <th style={{ width: '135px' }}>Activity Type</th>
+                    <th style={{ width: '360px' }}>Product Involved</th>
+                    <th style={{ width: '180px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1441,10 +1444,10 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                 {topProd.image ? (
                                   <img src={topProd.image} alt={topProd.title} className="compact-prod-thumb" />
                                 ) : (
-                                  <div className="compact-thumb-fallback"><Building size={14} /></div>
+                                  <div className="compact-thumb-fallback"><ShoppingBag size={14} /></div>
                                 )}
                                 <div className="compact-prod-info">
-                                  <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title">
+                                  <a href={topProd.url} target="_blank" rel="noopener noreferrer" className="compact-prod-title" title={topProd.title}>
                                     {topProd.title}
                                   </a>
                                   <div className="compact-prod-meta">
@@ -1475,7 +1478,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                   className="btn-quick-wa"
                                   title="WhatsApp Buyer"
                                 >
-                                  <MessageSquare size={13} />
+                                  <MessageSquare size={12} />
                                   <span>WhatsApp</span>
                                 </a>
                               )}
@@ -1485,7 +1488,7 @@ export default function BuyerActivity({ adminData, products = [], loadAdminData,
                                 onClick={() => handleCopyActivity(act)}
                                 title="Copy event details"
                               >
-                                {copyFeedback[act.id] ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                                {copyFeedback[act.id] ? <Check size={13} style={{ color: '#10b981' }} /> : <Copy size={13} />}
                               </button>
                             </div>
                           </td>

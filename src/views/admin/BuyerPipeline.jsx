@@ -321,16 +321,18 @@ export default function BuyerPipeline({
     }
   };
 
+  const isIncomplete = (p) => {
+    if (!p) return false;
+    const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '');
+    return cleanPhone.length < 6 || !String(p.city || '').trim();
+  };
+
   const sortedProfiles = useMemo(() => {
     let profiles = (adminData.profiles || []).filter((p) => {
       const email = String(p.email || '').toLowerCase().trim();
       const isConfiguredAdmin = (adminEmails || []).some((adm) => String(adm).toLowerCase().trim() === email);
       return !isAdminUser(p) && !isConfiguredAdmin && p.role !== 'admin';
     });
-    const isIncomplete = (p) => {
-      const cleanPhone = String(p.whatsapp_number || p.whatsapp || '').replace(/\D/g, '');
-      return cleanPhone.length < 6 || !String(p.city || '').trim();
-    };
 
     if (userTypeFilter === 'customer') {
       profiles = profiles.filter((p) => {
@@ -340,21 +342,19 @@ export default function BuyerPipeline({
     } else if (userTypeFilter === 'business') {
       profiles = profiles.filter((p) => {
         const roleKey = getProfileRoleKey(p);
-        return roleKey === 'reseller';
+        return roleKey === 'reseller' && !isIncomplete(p);
       });
     } else if (userTypeFilter === 'vendor') {
       profiles = profiles.filter((p) => {
         const roleKey = getProfileRoleKey(p);
-        return roleKey === 'supplier';
+        return roleKey === 'supplier' && !isIncomplete(p);
       });
     } else if (userTypeFilter === 'locked') {
       profiles = profiles.filter((p) => isAccountLocked(p));
     } else if (userTypeFilter === 'incomplete') {
       profiles = profiles.filter((p) => isIncomplete(p));
-    } else {
-      // 'all' -> Default view: verified buyers and vendors with completed details
-      profiles = profiles.filter((p) => !isIncomplete(p));
     }
+    // When 'all', retain all accounts including drop-offs (incomplete)
 
     // Filter by marketing acquisition channel
     if (acquisitionFilter !== 'all') {
@@ -433,6 +433,7 @@ export default function BuyerPipeline({
 
   const getBuyerTypeLabel = (profile) => {
     if (!profile) return 'Customer';
+    if (isIncomplete(profile)) return 'Drop Off';
     const roleKey = getProfileRoleKey(profile);
     if (roleKey === 'supplier') {
       const rawSub = String(profile.buyer_subtype || '').trim();
@@ -458,6 +459,7 @@ export default function BuyerPipeline({
   };
 
   const getBuyerRoleClass = (profile) => {
+    if (isIncomplete(profile)) return 'type-dropoff';
     const label = String(getBuyerTypeLabel(profile) || '').toLowerCase();
     if (label.includes('store') || label.includes('boutique')) return 'type-store';
     if (label.includes('reseller') || label.includes('business') || label.includes('wholesale')) return 'type-reseller';
@@ -583,7 +585,7 @@ export default function BuyerPipeline({
     URL.revokeObjectURL(url);
   };
 
-  if (loading || status === 'loading') {
+  if (loading || status === 'loading' || !adminData?.hasLoaded) {
     return (
       <AdminLoadingScreen
         title="Loading Customer Accounts..."
@@ -940,7 +942,9 @@ export default function BuyerPipeline({
               })}
               {displayedProfiles.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="admin-table-empty">No profiles found.</td>
+                  <td colSpan="7" className="admin-table-empty">
+                    {adminData?.hasLoaded === false ? 'Loading accounts...' : 'No profiles found.'}
+                  </td>
                 </tr>
               )}
             </tbody>

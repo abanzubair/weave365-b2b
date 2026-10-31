@@ -335,7 +335,7 @@ export async function handleCreateOrder(request) {
       total_amount: chargeInr,
       coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
       coupon_discount: Number(coupon_discount) || 0,
-      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${Number(shipping_amount) > 0 ? ` (+₹${Number(shipping_amount)})` : ''}` : 'Standard Free (4-5 Days)'}${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-₹${Number(coupon_discount) || 0})` : ''}\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
+      message: `PHONEPE CHECKOUT ORDER\nTotal: ₹${chargeInr.toLocaleString('en-IN', { maximumFractionDigits: 2 })} (INR)\nCurrency: INR\nShipping: ${shipping_speed === 'expedited' ? `Expedited (2-3 Days)${Number(shipping_amount) > 0 ? ` (+₹${Number(shipping_amount)})` : ''}` : 'Standard Free (4-5 Days)'}${coupon_code ? `\nCoupon: ${String(coupon_code).trim().toUpperCase()} (-₹${Number(coupon_discount) || 0})` : ''}${isDropship && dropship_details.custom_billed_price ? `\nBilled Price on Parcel Slip: ₹${Number(dropship_details.custom_billed_price).toLocaleString('en-IN')}` : ''}${isDropship && dropship_details.custom_discount ? `\nDiscount on Slip: ₹${Number(dropship_details.custom_discount).toLocaleString('en-IN')}` : ''}\nStatus: Pending PhonePe Payment\nNotes: ${notes || 'None'}`,
       is_dropship: isDropship,
       dropship_sender_name: isDropship ? (dropship_details.sender_name || null) : null,
       dropship_sender_phone: isDropship ? (dropship_details.sender_phone || null) : null,
@@ -360,6 +360,8 @@ export async function handleCreateOrder(request) {
         price: isInr ? (Number(item.price) || 0) : (Number(item.base_inr_price) || Number(item.price) || 0),
         currency: 'INR',
         base_inr_price: Number(item.base_inr_price) || Number(item.price) || 0,
+        custom_billed_price: item.custom_billed_price || dropship_details.custom_billed_price || null,
+        custom_discount: item.custom_discount || dropship_details.custom_discount || null,
       })),
     };
 
